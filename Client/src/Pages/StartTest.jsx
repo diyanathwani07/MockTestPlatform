@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./StartTest.css";
+import "../css/StartTest.css";
+
 
 function StartTest() {
   const navigate = useNavigate();

@@ -1,145 +1,199 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import QuizHeader from "../components/QuizHeader";
-import "../css/Result.css";
+import axios from "axios";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../css/Register.css";
 
-function Result() {
-  const location = useLocation();
+
+function Register() {
   const navigate = useNavigate();
 
-  // data is sent via navigate("/result", { state: data }) from Quiz.jsx
-  const data = location.state;
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    district: "",
+    state: "",
+  });
 
-  if (!data) {
-    return (
-      <div className="result-page">
-        <QuizHeader />
-        <div className="result-empty">
-          <h2>No result data found.</h2>
-          <p>Please attempt the test first.</p>
-          <button className="back-btn" onClick={() => navigate("/")}>
-            Go to Test
-          </button>
-        </div>
-      </div>
-    );
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords do not match!");
+    return;
   }
 
-  const {
-    score = 0,
-    total = 0,
-    correct = 0,
-    incorrect = 0,
-    unanswered = 0,
-    percentage,
-    questions = [],
-    userAnswers = [],
-  } = data;
+  try {
+    const res = await axios.post(
+  "http://localhost:5000/api/auth/register",
+  {
+    fullName: formData.fullName,
+    email: formData.email,
+    phone: formData.phone,
+    password: formData.password,
+    district: formData.district,
+    state: formData.state,
+  }
+);
 
-  const computedPercentage =
-    percentage !== undefined
-      ? percentage
-      : total
-      ? ((score / total) * 100).toFixed(2)
-      : 0;
+    alert(res.data.message);
+
+    navigate("/");
+  } catch (error) {
+  console.log(error.response);
+  console.log(error.response?.data);
+
+  alert(
+    error.response?.data?.message ||
+    error.message ||
+    "Registration Failed"
+  );
+}
 
   return (
-    <div className="result-page">
-      <QuizHeader />
+    <div className="register-page">
 
-      <div className="result-summary">
-        <h1>Test Result</h1>
+      {/* Background Shapes */}
+      <div className="top-left"></div>
+      <div className="bottom-right"></div>
+      <div className="big-circle"></div>
+      <div className="small-circle"></div>
 
-        <div className="summary-cards">
-          <div className="card total">
-            <h3>Total Questions</h3>
-            <p>{total}</p>
-          </div>
+      {/* Register Card */}
+      <div className="register-card">
 
-          <div className="card score">
-            <h3>Score</h3>
-            <p>{score}</p>
-          </div>
-
-          <div className="card correct">
-            <h3>Correct</h3>
-            <p>{correct}</p>
-          </div>
-
-          <div className="card incorrect">
-            <h3>Incorrect</h3>
-            <p>{incorrect}</p>
-          </div>
-
-          <div className="card unanswered">
-            <h3>Unanswered</h3>
-            <p>{unanswered}</p>
-          </div>
-
-          <div className="card percentage">
-            <h3>Percentage</h3>
-            <p>{computedPercentage}%</p>
-          </div>
+        <div className="logo-section">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png"
+            alt="logo"
+          />
+          <h1>Teaching Pariksha</h1>
         </div>
-      </div>
 
-      {questions.length > 0 && (
-        <div className="result-details">
-          <h2>Answer Review</h2>
+        <h2>Create Account</h2>
 
-          <div className="review-list">
-            {questions.map((q, index) => {
-              const userAns = userAnswers[index];
-              const isCorrect = q.correctAnswer
-                ? userAns === q.correctAnswer
-                : undefined;
+        <p className="subtitle">
+          Register to start your preparation
+        </p>
 
-              return (
-                <div className="review-item" key={q.id || index}>
-                  <div className="review-question">
-                    <span className="q-number">Q{index + 1}.</span>{" "}
-                    {q.english}
-                  </div>
+        <form onSubmit={handleSubmit}>
 
-                  <div className="review-answers">
-                    <p>
-                      <strong>Your Answer: </strong>
-                      <span
-                        className={
-                          userAns === undefined
-                            ? "unanswered-text"
-                            : isCorrect === false
-                            ? "wrong-text"
-                            : "correct-text"
-                        }
-                      >
-                        {userAns !== undefined ? userAns : "Not Answered"}
-                      </span>
-                    </p>
-
-                    {q.correctAnswer && (
-                      <p>
-                        <strong>Correct Answer: </strong>
-                        <span className="correct-text">
-                          {q.correctAnswer}
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="input-box">
+            <label>Full Name</label>
+            <input
+              type="text"
+              name="fullName"
+              placeholder="Enter your full name"
+              value={formData.fullName}
+              onChange={handleChange}
+              required
+            />
           </div>
-        </div>
-      )}
 
-      <div className="result-actions">
-        <button className="back-btn" onClick={() => navigate("/")}>
-          Back to Test
-        </button>
+          <div className="input-box">
+            <label>Phone Number</label>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Enter phone number"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-box">
+            <label>Email Address</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter email address"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-box">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Create password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-box">
+            <label>Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-box">
+            <label>District</label>
+            <input
+              type="text"
+              name="district"
+              placeholder="Enter district"
+              value={formData.district}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-box">
+            <label>State</label>
+            <input
+              type="text"
+              name="state"
+              placeholder="Enter state"
+              value={formData.state}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="terms-box">
+            <input type="checkbox" id="terms" required />
+            <label htmlFor="terms">
+              I agree to the Terms & Conditions
+            </label>
+          </div>
+
+          <button type="submit">
+            Create Account
+          </button>
+
+        </form>
+
+        <div className="register">
+          Already have an account?
+          <Link to="/">
+            <span> Login</span>
+          </Link>
+        </div>
+
       </div>
     </div>
   );
 }
 
-export default Result;
+export default Register;

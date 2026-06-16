@@ -1,6 +1,7 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Login.css";
+import "../css/Login.css";
 
 function Login() {
 
@@ -9,15 +10,34 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/auth/login",
+      {
+        email,
+        password,
+      }
+    );
 
-    alert("Login Successful");
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem(
+      "user",
+      JSON.stringify(res.data.user)
+    );
 
-    navigate("/starttest");
+    alert(res.data.message);
 
-  };
+    navigate("/start-test");
+  } catch (error) {
+    alert(
+      error.response?.data?.message ||
+      "Login Failed"
+    );
+  }
+};
 
   return (
     <div className="login-page">

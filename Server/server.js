@@ -1,14 +1,26 @@
+const authRoutes = require("./routes/authRoutes");
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
+const connectDB = require("./config/db");
 
 const app = express();
 const PORT = 5000;
+const dns = require("dns");
 
+// Change DNS
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
+// MongoDB Connection
+connectDB();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Correct answers
-const answers = [
+// Correct Answers
+const Answers = [
   "Library",
   "Meta",
   "JavaScript XML",
@@ -41,38 +53,65 @@ const answers = [
   "UI development",
 ];
 
-// ✅ HOME
+// Home Route
 app.get("/", (req, res) => {
-  res.send("Server Running 🚀");
+  res.send("Teaching Pariksha API Running 🚀");
 });
 
-// ✅ SUBMIT QUIZ (NO DATABASE)
+// Submit Quiz
 app.post("/submit", (req, res) => {
-  const { userAnswers } = req.body;
+  const { userAnswers, questions } = req.body;
 
   if (!userAnswers) {
-    return res.status(400).json({ error: "No answers received" });
+    return res.status(400).json({
+      error: "No answers received",
+    });
   }
 
   let score = 0;
+  let correct = 0;
+  let incorrect = 0;
+  let unanswered = 0;
 
-  answers.forEach((correct, i) => {
-    if (userAnswers[i] === correct) {
+  const total = Answers.length;
+
+  Answers.forEach((correctAnswer, index) => {
+    const userAns = userAnswers[index];
+
+    if (userAns === undefined || userAns === null) {
+      unanswered++;
+    } else if (userAns === correctAnswer) {
       score++;
+      correct++;
+    } else {
+      incorrect++;
     }
   });
 
-  const total = answers.length;
-  const percentage = (score / total) * 100;
+  const percentage = ((score / total) * 100).toFixed(2);
+
+  // attach correctAnswer to each question so Result page can show the review
+  const questionsWithAnswers = (questions || []).map((q, i) => ({
+    ...q,
+    correctAnswer: Answers[i],
+  }));
 
   res.json({
     success: true,
     score,
     total,
+    correct,
+    incorrect,
+    unanswered,
     percentage,
+    questions: questionsWithAnswers,
+    userAnswers,
   });
 });
 
+app.use("/api/auth", authRoutes);
+
+// Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
