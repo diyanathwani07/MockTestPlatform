@@ -199,7 +199,7 @@ function Quiz() {
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
 
-  const [timeLeft, setTimeLeft] = useState(9905);
+  const [timeLeft, setTimeLeft] = useState(1800);
 
   const [reviewQuestions, setReviewQuestions] = useState([]);
 
@@ -263,7 +263,8 @@ function Quiz() {
 
       console.log("RESULT:", data);
 
-      navigate("/result", { state: data });
+    console.log("Navigating to /result");    
+    navigate("/result", { state: data });
 
     } catch (err) {
       console.error("Submit Error:", err);

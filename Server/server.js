@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const resultRoutes = require("./routes/resultRoutes");
 
 const app = express();
 const PORT = 5000;
@@ -109,7 +110,11 @@ app.post("/submit", (req, res) => {
   });
 });
 
+
+
 app.use("/api/auth", authRoutes);
+
+app.use("/api/results", resultRoutes);
 
 // Start Server
 app.listen(PORT, () => {

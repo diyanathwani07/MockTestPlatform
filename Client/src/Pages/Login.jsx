@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import "../css/Login.css";
 
 function Login() {
@@ -9,35 +10,34 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const res = await axios.post(
-      "http://localhost:5000/api/auth/login",
-      {
-        email,
-        password,
-      }
-    );
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
-    localStorage.setItem("token", res.data.token);
-    localStorage.setItem(
-      "user",
-      JSON.stringify(res.data.user)
-    );
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
 
-    alert(res.data.message);
-
-    navigate("/start-test");
-  } catch (error) {
-    alert(
-      error.response?.data?.message ||
-      "Login Failed"
-    );
-  }
-};
+      navigate("/start-test");
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+        "Login Failed"
+      );
+    }
+  };
 
   return (
     <div className="login-page">
@@ -86,15 +86,28 @@ function Login() {
 
             <label>Password</label>
 
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <span
+                className="toggle-eye"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </span>
+            </div>
 
           </div>
+
+          <p className="forgot-password">
+            <Link to="/forgot-password">Forgot Password?</Link>
+          </p>
 
           <button type="submit">
             Login
@@ -103,13 +116,7 @@ function Login() {
         </form>
 
         <div className="register-link">
-
-          New here?
-
-          <Link to="/register">
-            <span> Create Account</span>
-          </Link>
-
+          New here? <Link to="/register"><span>Create Account</span></Link>
         </div>
 
       </div>

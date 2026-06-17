@@ -58,6 +58,7 @@ function Register() {
     "Registration Failed"
   );
 }
+  };
 
   return (
     <div className="register-page">

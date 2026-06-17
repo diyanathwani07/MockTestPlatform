@@ -184,6 +184,38 @@ body {
   gap: 20px;
 }
 
+/* TIMER BOX (standalone, above Candidate Panel) */
+.timer-box-panel {
+  background: #fff;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(29, 43, 100, 0.08);
+}
+
+.timer-box-panel h3 {
+  background: #0d2ea6;
+  color: #fff;
+  padding: 12px 15px;
+  margin: 0;
+  font-size: 15px;
+}
+
+.timer-display {
+  padding: 18px 15px;
+  text-align: center;
+  background: #1a237e;
+}
+
+.timer-display span,
+.timer-display p,
+.timer-display div {
+  color: #ffd54f;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-family: "Poppins", sans-serif;
+}
+
 /* CANDIDATE PANEL */
 .candidate-panel {
   background: white;

@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ForgotPassword from "./pages/ForgotPassword";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -13,10 +15,39 @@ function App() {
 
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/start-test" element={<StartTest />} />
-        <Route path="/quiz" element={<Quiz />} />
-        <Route path="/result" element={<Result />} />
+        <Route
+  path="/start-test"
+  element={
+    <ProtectedRoute>
+      <StartTest />
+    </ProtectedRoute>
+  }
+/>
 
+<Route
+  path="/forgot-password"
+  element={<ForgotPassword />}
+/>  
+
+<Route path="/login" element={<Login />} />
+
+<Route
+  path="/quiz"
+  element={
+    <ProtectedRoute>
+      <Quiz />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/result"
+  element={
+    <ProtectedRoute>
+      <Result />
+    </ProtectedRoute>
+  }
+/>
       </Routes>
     </BrowserRouter>
   );

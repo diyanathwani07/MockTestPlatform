@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
+import axios from "axios";
 
 function Result() {
   const location = useLocation();
@@ -9,6 +10,66 @@ function Result() {
 
   // data is sent via navigate("/result", { state: data }) from Quiz.jsx
   const data = location.state;
+
+  const score = data?.score ?? 0;
+  const total = data?.total ?? 0;
+  const correct = data?.correct ?? 0;
+  const incorrect = data?.incorrect ?? 0;
+  const unanswered = data?.unanswered ?? 0;
+  const percentage = data?.percentage;
+  const questions = data?.questions ?? [];
+  const userAnswers = data?.userAnswers ?? [];
+
+  const computedPercentage =
+    percentage !== undefined && percentage !== null
+      ? Number(percentage).toFixed(2)
+      : total
+      ? ((score / total) * 100).toFixed(2)
+      : "0.00";
+
+  // Save result to MongoDB whenever this page loads with valid data
+  useEffect(() => {
+    if (!data) return; // nothing to save if user landed here without quiz data
+
+    console.log("Result Page Loaded");
+
+    const saveResult = async () => {
+      try {
+        console.log("Saving Result...");
+
+        const userString = localStorage.getItem("user");
+        console.log("user from localStorage:", userString);
+
+        const user = userString ? JSON.parse(userString) : null;
+
+        if (!user || !user.id) {
+          console.log("SAVE SKIPPED: no logged-in user found in localStorage");
+          return;
+        }
+
+        const res = await axios.post(
+          "http://localhost:5000/api/results/save",
+          {
+            userId: user.id,
+            score,
+            total,
+            correct,
+            incorrect,
+            percentage: Number(computedPercentage),
+          }
+        );
+
+        console.log("Result Saved");
+        console.log(res.data);
+      } catch (error) {
+        console.log("SAVE ERROR");
+        console.log(error);
+      }
+    };
+
+    saveResult();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!data) {
     return (
@@ -24,24 +85,6 @@ function Result() {
       </div>
     );
   }
-
-  const {
-    score = 0,
-    total = 0,
-    correct = 0,
-    incorrect = 0,
-    unanswered = 0,
-    percentage,
-    questions = [],
-    userAnswers = [],
-  } = data;
-
-  const computedPercentage =
-    percentage !== undefined && percentage !== null
-      ? Number(percentage).toFixed(2)
-      : total
-      ? ((score / total) * 100).toFixed(2)
-      : "0.00";
 
   return (
     <div className="result-page">
@@ -137,6 +180,7 @@ function Result() {
         <button className="back-btn" onClick={() => navigate("/")}>
           Back to Login
         </button>
+
       </div>
     </div>
   );
