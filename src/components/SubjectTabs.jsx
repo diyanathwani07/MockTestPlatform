@@ -1,21 +1,13 @@
 import React from "react";
 
-function SubjectTabs() {
+// Accept the subject as a prop
+function SubjectTabs({ examSubject }) {
   return (
-    <div className="top-tabs">
-
-      <button className="active-tab">
-        Section 1
-      </button>
-
-      <button>
-        Section 2
-      </button>
-
-      <button>
-        Section 3
-      </button>
-
+    <div className="top-tabs-container">
+      <div className="active-subject-tab">
+        {/* Display the dynamically selected subject */}
+        {examSubject}
+      </div>
     </div>
   );
 }

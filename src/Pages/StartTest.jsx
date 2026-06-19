@@ -1,26 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/StartTest.css";
 
-
 function StartTest() {
   const navigate = useNavigate();
+  
+  // State to track which exam the user selects from the dropdown
+  const [selectedSubject, setSelectedSubject] = useState("BPSC - Quantitative Aptitude");
 
   const handleStart = () => {
-    navigate("/quiz");
+    // Pass the selected subject to the Quiz page using state
+    navigate("/quiz", { state: { subject: selectedSubject } });
   };
 
   return (
     <div className="start-page">
-
-      {/* Background */}
       <div className="top-left"></div>
       <div className="bottom-right"></div>
       <div className="big-circle"></div>
       <div className="small-circle"></div>
 
       <div className="start-card">
-
         <div className="logo">
           <span className="icon">📝</span>
           <h1>Teaching Pariksha</h1>
@@ -29,7 +29,6 @@ function StartTest() {
         <h2>Test Instructions</h2>
 
         <div className="instruction-table">
-
           <div className="row">
             <div className="label">Name</div>
             <div className="value">Diya Nathwani</div>
@@ -38,6 +37,22 @@ function StartTest() {
           <div className="row">
             <div className="label">Email</div>
             <div className="value">diyanathwani@gmail.com</div>
+          </div>
+
+          {/* DYNAMIC SUBJECT DROPDOWN */}
+          <div className="row">
+            <div className="label">Select Subject</div>
+            <div className="value">
+              <select 
+                className="subject-dropdown"
+                value={selectedSubject} 
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              >
+                <option value="BPSC - Quantitative Aptitude">BPSC - Quantitative Aptitude</option>
+                <option value="BPSC - General English">BPSC - General English</option>
+                <option value="BPSC - Reasoning">BPSC - Reasoning</option>
+              </select>
+            </div>
           </div>
 
           <div className="row">
@@ -62,20 +77,11 @@ function StartTest() {
               ❌ Don't use external help
             </div>
           </div>
-
-          <div className="row">
-            <div className="label">Certificate</div>
-            <div className="value">
-              Certificate will be issued after successful completion.
-            </div>
-          </div>
-
         </div>
 
         <button className="start-btn" onClick={handleStart}>
           Start Test
         </button>
-
       </div>
     </div>
   );
