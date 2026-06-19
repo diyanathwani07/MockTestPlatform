@@ -1,16 +1,20 @@
 import React from "react";
+import ThemeToggle from "./ThemeToggle";
 
 function QuizHeader() {
   return (
     <div className="header">
+      <ThemeToggle />
+
       <div className="logo-section">
         <h1>Teaching Pariksha</h1>
-        <h2>BPSC TEST 5</h2>
+        <h2>React Mock Test</h2>
       </div>
 
-      <div className="instruction">
+      <button className="instruction-btn">
         Instructions
-      </div>
+      </button>
+
     </div>
   );
 }

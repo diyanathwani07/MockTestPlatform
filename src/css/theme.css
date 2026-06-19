@@ -1,0 +1,212 @@
+/* ============================================
+   TEACHING PARIKSHA — THEME VARIABLES
+   Light mode = default, Dark mode = [data-theme="dark"]
+   ============================================ */
+
+:root {
+  /* Backgrounds */
+  --bg-page:        #FAFAFC;
+  --bg-card:        #ffffff;
+  --bg-input:       #FCFBFF;
+  --bg-header:      #ffffff;
+  --bg-sidebar:     #1a1a2e;
+
+  /* Text */
+  --text-primary:   #1a1a2e;
+  --text-secondary: #4a4760;
+  --text-muted:     #a8a5bd;
+
+  /* Borders */
+  --border-color:   #ECE9F7;
+  --border-input:   #e4e1f0;
+
+  /* Brand */
+  --violet:         #6E3FF3;
+  --violet-dark:    #2D1B69;
+  --gold:           #F4C842;
+  --green:          #1aa971;
+  --red:            #e2436b;
+
+  /* Cards */
+  --card-shadow:    0 1px 3px rgba(26, 26, 46, 0.04);
+  --card-hover-shadow: 0 12px 24px -8px rgba(26, 26, 46, 0.10);
+
+  /* Option cards */
+  --option-bg:      #FCFBFF;
+  --option-hover:   #F5F2FF;
+}
+
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-page:        #0f0e17;
+  --bg-card:        #1c1b2e;
+  --bg-input:       #252438;
+  --bg-header:      #15141f;
+  --bg-sidebar:     #0f0e17;
+
+  /* Text */
+  --text-primary:   #f0eeff;
+  --text-secondary: #c4bfe8;
+  --text-muted:     #6b6880;
+
+  /* Borders */
+  --border-color:   #2e2c45;
+  --border-input:   #3a3852;
+
+  /* Cards */
+  --card-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
+  --card-hover-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+
+  /* Option cards */
+  --option-bg:      #1c1b2e;
+  --option-hover:   #252438;
+}
+
+/* ============================================
+   APPLY VARIABLES GLOBALLY
+   ============================================ */
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* HEADER */
+.header {
+  background: var(--bg-header);
+  border-bottom-color: var(--border-color);
+}
+
+.logo-section h1 {
+  color: var(--text-primary);
+}
+
+/* CARDS */
+.question-section,
+.candidate-panel,
+.palette,
+.login-card,
+.form-card,
+.quiz-table-wrapper,
+.stat-card,
+.review-item,
+.card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+/* INPUTS */
+.input-box input,
+.form-field input,
+.form-field select,
+.form-field textarea {
+  background: var(--bg-input);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+.input-box input::placeholder,
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* QUESTION BOX */
+.question-box p {
+  color: var(--text-primary);
+}
+
+.question-box h3 {
+  color: var(--text-muted);
+}
+
+/* OPTIONS */
+.option-card {
+  background: var(--option-bg);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.option-card:hover {
+  background: var(--option-hover);
+}
+
+/* STATUS LIST */
+.status-list p {
+  color: var(--text-secondary);
+}
+
+/* TABS */
+.top-tabs {
+  background: var(--bg-header);
+  border-bottom-color: var(--border-color);
+}
+
+.top-tabs button {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* TABLE */
+.quiz-table thead {
+  background: var(--bg-input);
+}
+
+.quiz-table th {
+  color: var(--text-muted);
+}
+
+.quiz-table td {
+  color: var(--text-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+.quiz-table tbody tr:hover {
+  background: var(--option-hover);
+}
+
+/* PALETTE BUTTONS */
+.palette-grid button {
+  background: var(--option-bg);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* FORM LABELS */
+.form-field label,
+.input-box label {
+  color: var(--text-primary);
+}
+
+/* MANAGE COUNT */
+.manage-count,
+.navbar-role {
+  color: var(--text-muted);
+}
+
+.navbar-name,
+.navbar-title {
+  color: var(--text-primary);
+}
+
+.admin-navbar {
+  background: var(--bg-header);
+  border-bottom-color: var(--border-color);
+}
+
+/* RESULT PAGE */
+.result-page {
+  background: var(--bg-page);
+}
+
+.result-summary h1,
+.result-details h2,
+.review-question {
+  color: var(--text-primary);
+}
+
+.card h3 {
+  color: var(--text-muted);
+}
