@@ -14,7 +14,7 @@ function AdminSidebar() {
     { label: "Users", path: "/admin/users", icon: "👥" },
     { label: "Results", path: "/admin/results", icon: "🏆" },
     { label: "Reports", path: "/admin/reports", icon: "📈" },
-    { label: "Settings", path: "/admin/settings", icon: "⚙️" },
+    { label: "Audit Log", path: "/admin/Audit Log", icon: "📜" },
   ];
 
   const handleLogout = () => {

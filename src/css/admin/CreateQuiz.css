@@ -162,7 +162,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  grid-column: 1 / -1; /* Stretch cleanly across the layout wrapper */
+  grid-column: 1 / -1;
 }
 
 .bilingual-option-card {
@@ -260,14 +260,74 @@
   transform: none;
 }
 
+
+/* ==========================================================================
+   🚨 APEX SPECIFICITY STRIKE: FORCES OBSIDIAN ON CREATE QUIZ
+   ========================================================================== */
+
+/* 1. Force the Form Cards into Slate Blue Container */
+body.dark-mode .create-quiz-page .form-card,
+body.dark-mode .create-quiz-page .question-block,
+body.dark-mode .create-quiz-page .bilingual-option-card {
+  background-color: #131428 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Text & Badges */
+body.dark-mode .create-quiz-page .form-card-title,
+body.dark-mode .create-quiz-page .checkbox-field label {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .create-quiz-page .question-number,
+body.dark-mode .create-quiz-page .question-count-badge {
+  background-color: #1E1F38 !important;
+  border-color: #2D1B69 !important;
+  color: #A882FF !important;
+}
+
+/* 2. Tier-5 Override: Forces all Inputs to turn Deep Obsidian */
+body.dark-mode .create-quiz-page .form-field input:nth-child(n),
+body.dark-mode .create-quiz-page .form-field select:nth-child(n),
+body.dark-mode .create-quiz-page .form-field textarea:nth-child(n),
+body.dark-mode .create-quiz-page .option-inputs-row input:nth-child(n) {
+  background-color: #080914 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .create-quiz-page .form-field input:focus,
+body.dark-mode .create-quiz-page .form-field textarea:focus {
+  border-color: #6E3FF3 !important;
+  box-shadow: 0 0 10px rgba(110, 63, 243, 0.4) !important;
+  background-color: #05060E !important;
+}
+
+body.dark-mode .create-quiz-page .form-field label {
+  color: #94A3B8 !important;
+}
+
+/* 3. Word Import Box */
+body.dark-mode .create-quiz-page .docx-parser {
+  background-color: #0E0F21 !important;
+  border-color: #2D1B69 !important;
+}
+body.dark-mode .create-quiz-page .docx-parser:hover {
+  background-color: #131428 !important;
+  border-color: #6E3FF3 !important;
+}
+
+/* Remove Buttons in the Dark */
+body.dark-mode .create-quiz-page .remove-question-btn {
+  background-color: #35171D !important;
+  border-color: #D63355 !important;
+  color: #FF859E !important;
+}
+
+
 /* ── RESPONSIVE DESIGN ── */
 @media (max-width: 768px) {
-  .form-grid, .options-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .option-inputs-row {
-    flex-direction: column;
-    gap: 8px;
-  }
+  .form-grid, .options-grid { grid-template-columns: 1fr; }
+  .option-inputs-row { flex-direction: column; gap: 8px; }
 }

@@ -4,10 +4,12 @@ import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
+import DateSelector from "./components/DateSelector";
 
 function Results() {
   const [results, setResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
     const fetchResults = async () => {

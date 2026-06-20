@@ -19,14 +19,10 @@ function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("token");
-
         const res = await axios.get(
           "http://localhost:5000/api/quizzes/stats/dashboard",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
         setStats(res.data);
       } catch (err) {
         console.error("Dashboard stats error:", err);
@@ -35,7 +31,6 @@ function AdminDashboard() {
         setLoading(false);
       }
     };
-
     fetchStats();
   }, []);
 
@@ -49,34 +44,32 @@ function AdminDashboard() {
   return (
     <div className="admin-layout">
       <AdminSidebar />
-
       <div className="admin-main">
         <AdminNavbar title="Dashboard Overview" />
 
         <div className="admin-content">
-
           {error && <p className="admin-error">{error}</p>}
 
+          {/* 1. WELCOME GREETING BANNER FIRST */}
+          <div className="dashboard-welcome-card" style={{ marginBottom: "28px" }}>
+            <h3>Welcome back, Admin</h3>
+            <p>
+              Manage quizzes, monitor candidate performance, and oversee the
+              entire examination platform from this panel.
+            </p>
+          </div>
+
+          {/* 2. STAT METRICS GRID SECOND */}
           <div className="stat-cards-grid">
             {cards.map((card) => (
               <div className={`stat-card accent-${card.accent}`} key={card.label}>
                 <div className="stat-card-icon">{card.icon}</div>
                 <div>
                   <p className="stat-card-label">{card.label}</p>
-                  <p className="stat-card-value">
-                    {loading ? "—" : card.value}
-                  </p>
+                  <p className="stat-card-value">{loading ? "—" : card.value}</p>
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="dashboard-welcome-card">
-            <h3>Welcome back, Admin</h3>
-            <p>
-              Manage quizzes, monitor candidate performance, and oversee the
-              entire examination platform from this panel.
-            </p>
           </div>
 
         </div>

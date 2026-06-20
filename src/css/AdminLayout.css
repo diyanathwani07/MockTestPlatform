@@ -1,304 +1,92 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background-color: #FAFAFC; }
+
+/* 1. APEX THEME SWITCH */
+.navbar-right-controls { display: flex; align-items: center; gap: 16px; }
+.theme-pill-switch {
+  width: 58px; height: 28px; border-radius: 50px; background-color: #EDEAF5;
+  border: 1.5px solid #DCD6EC; position: relative; display: flex; align-items: center;
+  padding: 0 5px; cursor: pointer; transition: all 0.25s ease;
+}
+.pill-thumb-slider {
+  position: absolute; top: 2px; left: 3px; width: 21px; height: 21px; border-radius: 50%;
+  background-color: #FFFFFF; box-shadow: 0 1px 4px rgba(45, 27, 105, 0.3);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-  background: #FAFAFC;
+/* 2. MASTER OBSIDIAN DARK MODE */
+body.dark-mode { background-color: #0B0C1A !important; color: #E2E8F0 !important; }
+body.dark-mode .admin-navbar, body.dark-mode .admin-sidebar, 
+body.dark-mode .form-card, body.dark-mode .quiz-table-wrapper {
+  background-color: #131428 !important; border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
-/* ── SIDEBAR ──────────────────────────────────── */
-.admin-sidebar {
-  width: 250px;
-  background: #1a1a2e;
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+/* 3. UNIFIED PILL DESIGN (SEARCH & DATE) */
+.manage-command-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+
+.pill-search-container, .pill-date-container {
+  display: flex; align-items: center; background: #ffffff;
+  border: 1.5px solid #E2DDF0; border-radius: 100px; padding: 10px 18px;
+  width: 240px; gap: 10px; transition: all 0.2s ease;
 }
 
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 26px 22px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+body.dark-mode .pill-search-container, body.dark-mode .pill-date-container {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.logo-emoji { font-size: 20px; }
-
-.logo-text {
-  font-family: 'Fraunces', serif;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
+.pill-search-input, .pill-date-input {
+  border: none; background: transparent !important; outline: none; width: 100%;
+  font-size: 13px; color: #1a1a2e; cursor: pointer;
 }
 
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  padding: 16px 14px;
-  gap: 4px;
-  overflow-y: auto;
-  flex: 1;
+body.dark-mode .pill-search-input, body.dark-mode .pill-date-input { color: #FFFFFF !important; }
+
+/* FORCE CALENDAR INTERFACE */
+.pill-date-input {
+  width: 100% !important;
+  appearance: none !important; /* Removes default browser styling */
+  -webkit-appearance: none !important;
+  cursor: pointer !important;
 }
 
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border-radius: 10px;
-  color: #a8a5bd;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all .15s;
-  border: none;
-  background: none;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-}
-
-.sidebar-link:hover {
-  background: rgba(255,255,255,0.06);
-  color: #fff;
-}
-
-.sidebar-link.active {
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
-  color: #fff;
-  box-shadow: 0 4px 14px -4px rgba(110,63,243,0.5);
-}
-
-.sidebar-icon {
-  font-size: 16px;
+/* Force the calendar icon to exist and be visible */
+.pill-date-input::-webkit-calendar-picker-indicator {
+  display: block !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  position: absolute;
+  right: 15px;
   width: 20px;
-  text-align: center;
-  flex-shrink: 0;
+  height: 20px;
+  opacity: 1 !important;
+  z-index: 9999 !important;
 }
 
-.logout-link {
-  margin-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  padding-top: 16px;
-  color: #e2436b;
+/* Dark mode adjustment for the calendar icon */
+body.dark-mode .pill-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(2);
 }
 
-.logout-link:hover {
-  background: rgba(226,67,107,0.1);
-  color: #e2436b;
+/* 4. SIDEBAR & NAVBAR */
+.admin-sidebar { width: 250px; background: #1a1a2e; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0; }
+.sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a8a5bd; text-decoration: none; transition: 0.15s; }
+.sidebar-link.active { background: linear-gradient(135deg, #2D1B69, #6E3FF3); color: #fff; }
+
+.admin-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.admin-navbar { background: #fff; border-bottom: 1.5px solid #ECE9F7; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+
+/* 5. TEXT STEAMROLLER (Fixes lingering black text) */
+body.dark-mode .admin-content h1, body.dark-mode .admin-content h2, 
+body.dark-mode .admin-content p, body.dark-mode .admin-content label,
+body.dark-mode .quiz-table td, body.dark-mode .navbar-title {
+  color: #FFFFFF !important;
 }
 
-/* ── MAIN AREA ────────────────────────────────── */
-.admin-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.admin-navbar {
-  background: #fff;
-  border-bottom: 1.5px solid #ECE9F7;
-  padding: 20px 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar-title {
-  font-family: 'Fraunces', serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: #1a1a2e;
-}
-
-.navbar-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.navbar-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.navbar-name {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #1a1a2e;
-}
-
-.navbar-role {
-  font-size: 11.5px;
-  color: #a8a5bd;
-}
-
-/* ── CONTENT AREA ─────────────────────────────── */
-.admin-content {
-  padding: 28px 32px;
-  flex: 1;
-  /* NO max-width here — let page-specific CSS control it */
-}
-
-/* ── ERROR BOX ────────────────────────────────── */
-.admin-error {
-  background: #fdeef1;
-  color: #7a1f30;
-  border: 1px solid #f5b8c4;
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  font-size: 13.5px;
-}
-
-/* ── STATUS MESSAGE (base — overridden per page) ─ */
-.admin-status-message {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 13px 18px;
-  border-radius: 12px;
-  font-size: 13.5px;
-  font-weight: 500;
-  margin-bottom: 24px;
-  /* default: info/purple */
-  background: #f0ecff;
-  color: #2D1B69;
-  border: 1px solid #ddd6fb;
-}
-
-.admin-status-message.status-success {
-  background: #e4f8f0;
-  color: #0a5c3f;
-  border-color: #a3e6cc;
-}
-
-.admin-status-message.status-error {
-  background: #fdeef1;
-  color: #7a1f30;
-  border-color: #f5b8c4;
-}
-
-/* ── COMMAND BAR (Appended) ─────────────────────── */
-.manage-header-premium {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  background: #ffffff;
-  padding: 14px 20px;
-  border-radius: 14px;
-  border: 1px solid #ECE9F7;
-  box-shadow: 0 4px 20px rgba(45, 27, 105, 0.03);
-  gap: 20px;
-}
-
-.search-box-container {
-  display: flex;
-  align-items: center;
-  background: #FAFAFC;
-  border: 1.5px solid #ECE9F7;
-  border-radius: 10px;
-  padding: 8px 14px;
-  width: 320px;
-  gap: 10px;
-  transition: all .2s ease;
-}
-
-.search-box-container:focus-within {
-  background: #ffffff;
-  border-color: #6E3FF3;
-  box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
-}
-
-.vector-search-icon {
-  color: #a8a5bd;
-  flex-shrink: 0;
-}
-
-.search-box-container:focus-within .vector-search-icon {
-  color: #6E3FF3;
-}
-
-.pro-search-input {
-  border: none;
-  background: transparent;
-  outline: none;
-  width: 100%;
-  font-size: 13.5px;
-  color: #1a1a2e;
-  font-family: 'Inter', sans-serif;
-}
-
-.pro-search-input::placeholder {
-  color: #a8a5bd;
-}
-
-.search-hotkey-badge {
-  background: #ECE9F7;
-  color: #a8a5bd;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 5px;
-  user-select: none;
-  pointer-events: none;
-}
-
-.pro-create-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
-  color: #ffffff;
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: all .15s;
-  box-shadow: 0 4px 14px -4px rgba(110, 63, 243, 0.5);
-  white-space: nowrap;
-  width: auto;
-  flex-shrink: 0;
-}
-
-.pro-create-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px -4px rgba(110, 63, 243, 0.65);
-}
-
-.btn-plus-icon {
-  flex-shrink: 0;
-}
-
-/* ── MOBILE ───────────────────────────────────── */
+/* 6. RESPONSIVE */
 @media (max-width: 900px) {
   .admin-sidebar { width: 70px; }
-  .logo-text,
-  .sidebar-link span:not(.sidebar-icon) { display: none; }
-  .sidebar-link { justify-content: center; }
-  .admin-content { padding: 20px 16px; }
+  .manage-command-bar { flex-direction: column; align-items: stretch; }
 }

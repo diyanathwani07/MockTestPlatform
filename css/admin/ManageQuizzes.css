@@ -262,3 +262,60 @@
     min-width: 700px;
   }
 }
+/* ==========================================================================
+   🌌 MASTER OBSIDIAN OVERRIDES (Fixes Quizzes, Results, Users, & Create)
+   ========================================================================== */
+
+/* 1. Fix Invisible Admin Name & Titles */
+body.dark-mode .navbar-name,
+body.dark-mode .navbar-title,
+body.dark-mode .user-name-text,
+body.dark-mode .quiz-table td {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .navbar-role {
+  color: #94A3B8 !important;
+}
+
+/* 2. Kill the Blinding White Table Headers */
+body.dark-mode .quiz-table thead,
+body.dark-mode .reports-analytics-table thead {
+  background-color: #1A1B35 !important;
+  border-bottom: 2px solid #2D1B69 !important;
+}
+
+body.dark-mode .quiz-table th,
+body.dark-mode .reports-analytics-table th {
+  color: #A8B2C1 !important;
+  background-color: transparent !important;
+}
+
+/* 3. Kill the Jarring White Table Wrappers & Cards */
+body.dark-mode .quiz-table-wrapper,
+body.dark-mode .form-card {
+  background-color: #131428 !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 4. Fix the Blinding White Hover Rows (Results Page Fix) */
+body.dark-mode .quiz-table tbody tr:hover,
+body.dark-mode .reports-analytics-table tbody tr:hover {
+  background-color: rgba(110, 63, 243, 0.18) !important;
+}
+
+/* 5. Fix Inputs & Search Bars on these pages */
+body.dark-mode .pro-search-input,
+body.dark-mode .form-field input,
+body.dark-mode select {
+  color: #FFFFFF !important;
+  background-color: #080914 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .search-hotkey-badge {
+  background-color: #1E1F38 !important;
+  color: #A882FF !important;
+  border-color: #2D1B69 !important;
+}

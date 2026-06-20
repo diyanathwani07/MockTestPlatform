@@ -13,366 +13,460 @@
   background: #FAFAFC;
 }
 
-/* SIDEBAR */
-
-.admin-sidebar {
-  width: 250px;
-  background: #1a1a2e;
+/* ==========================================================================
+   🌙 1. THE APEX 3D PILL SWITCH
+   ========================================================================== */
+.navbar-right-controls {
   display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
 }
 
-.sidebar-logo {
+.theme-pill-switch {
+  width: 58px;
+  height: 28px;
+  border-radius: 50px;
+  background-color: #EDEAF5;
+  border: 1.5px solid #DCD6EC;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 26px 22px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.logo-emoji {
-  font-size: 20px;
-}
-
-.logo-text {
-  font-family: 'Fraunces', serif;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  padding: 16px 14px;
-  gap: 4px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border-radius: 10px;
-  color: #a8a5bd;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all .15s;
-  border: none;
-  background: none;
+  padding: 0 5px;
   cursor: pointer;
-  width: 100%;
-  text-align: left;
-}
-
-.sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-
-.sidebar-link.active {
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
-  color: #fff;
-  box-shadow: 0 4px 14px -4px rgba(110, 63, 243, 0.5);
-}
-
-.sidebar-icon {
-  font-size: 16px;
-  width: 20px;
-  text-align: center;
+  box-shadow: inset 0 2px 4px rgba(45, 27, 105, 0.15);
+  user-select: none;
   flex-shrink: 0;
+  transition: all 0.25s ease;
 }
 
-.logout-link {
-  margin-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 16px;
-  color: #e2436b;
-}
-
-.logout-link:hover {
-  background: rgba(226, 67, 107, 0.1);
-  color: #e2436b;
-}
-
-/* MAIN AREA */
-
-.admin-main {
-  flex: 1;
+.pill-track-icons {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.admin-navbar {
-  background: #fff;
-  border-bottom: 1.5px solid #ECE9F7;
-  padding: 20px 32px;
-  display: flex;
+  width: 100%;
   justify-content: space-between;
-  align-items: center;
+  font-size: 11px;
+  line-height: 1;
+  pointer-events: none;
 }
 
-.navbar-title {
-  font-family: 'Fraunces', serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: #1a1a2e;
-}
-
-.navbar-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.navbar-avatar {
-  width: 38px;
-  height: 38px;
+.pill-thumb-slider {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 21px;
+  height: 21px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(45, 27, 105, 0.3);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s;
 }
 
-.navbar-name {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #1a1a2e;
+body.dark-mode .pill-thumb-slider {
+  transform: translateX(29px);
+  background-color: #6E3FF3;
+  box-shadow: 0 0 10px #6E3FF3;
 }
 
-.navbar-role {
-  font-size: 11.5px;
-  color: #a8a5bd;
+body.dark-mode .theme-pill-switch {
+  background-color: #131428;
+  border-color: #2D1B69;
 }
 
-.admin-content {
-  padding: 28px 32px;
-  flex: 1;
-}
-
-.admin-error {
-  background: #FCEBEB;
-  color: #791F1F;
-  border: 1px solid #f0c4c4;
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  font-size: 13.5px;
-}
-
-.admin-status-message {
-  background: #F8F6FF;
-  color: #2D1B69;
-  border-left: 3px solid #6E3FF3;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  font-size: 13.5px;
-}
-
-/* MOBILE */
-@media (max-width: 900px) {
-  .admin-sidebar {
-    width: 70px;
-  }
-
-  .logo-text,
-  .sidebar-link span:not(.sidebar-icon) {
-    display: none;
-  }
-
-  .sidebar-link {
-    justify-content: center;
-  }
-}
-
+/* ==========================================================================
+   🔍 2. BULLETPROOF SEARCH BAR ENGINE (Kills the White Box-in-a-Pill Bug)
+   ========================================================================== */
 
 .pill-search-container {
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border: 1.5px solid #E2DDF0;
-  border-radius: 100px; /* <--- This creates the perfect Pill Shape */
-  padding: 10px 18px;
+  border-radius: 100px !important;
+  padding: 10px 20px;
   width: 340px;
   gap: 12px;
   margin-bottom: 24px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 10px rgba(45, 27, 105, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.pill-search-container:focus-within {
-  border-color: #6E3FF3;
-  box-shadow: 0 0 0 4px rgba(110, 63, 243, 0.12);
+/* ─── THE CROWBAR: Forces the inner <input> to be 100% naked & transparent ─── */
+.pill-search-container input,
+.pill-search-input,
+.pro-search-input {
+  background-color: transparent !important; /* Physically evaporates the white box */
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
 }
 
-.pill-search-icon {
-  color: #8C87A4;
-  flex-shrink: 0;
-  transition: color 0.2s;
+/* Defeat Google Chrome's stubborn yellow/white Autofill background hijack */
+.pill-search-container input:-webkit-autofill,
+.pill-search-container input:-webkit-autofill:focus {
+  transition: background-color 600000s 0s, color 600000s 0s !important;
 }
 
-.pill-search-container:focus-within .pill-search-icon {
-  color: #6E3FF3;
+/* --- DARK MODE SEARCH STATE --- */
+body.dark-mode .pill-search-container {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
-.pill-search-input {
-  border: none;
-  background: transparent;
-  outline: none;
-  width: 100%;
-  font-size: 13.5px;
-  color: #1a1a2e;
-  font-family: 'Inter', sans-serif;
-  padding: 0;
+body.dark-mode .pill-search-container:focus-within {
+  border-color: #6E3FF3 !important;
+  background-color: rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 0 0 15px rgba(110, 63, 243, 0.35) !important;
 }
 
-.pill-search-input::placeholder {
-  color: #a8a5bd;
+body.dark-mode .pill-search-icon { color: #94A3B8 !important; }
+body.dark-mode .pill-search-container input { color: #FFFFFF !important; font-weight: 500 !important; }
+body.dark-mode .pill-search-container input::placeholder { color: #64748B !important; }
+
+
+/* --- LIGHT MODE SEARCH STATE --- */
+body:not(.dark-mode) .pill-search-container {
+  background-color: #FFFFFF !important;
+  border: 1.5px solid #E2DDF0 !important; 
+  box-shadow: 0 2px 10px rgba(45, 27, 105, 0.02) !important;
 }
 
-
-
-.user-info-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+body:not(.dark-mode) .pill-search-container:focus-within {
+  border-color: #6E3FF3 !important;
+  box-shadow: 0 0 0 4px rgba(110, 63, 243, 0.12) !important;
 }
 
+body:not(.dark-mode) .pill-search-container input { color: #1a1a2e !important; }
+body:not(.dark-mode) .pill-search-container input::placeholder { color: #a8a5bd !important; }
+
+/* ==========================================================================
+   🌌 3. MASTER OBSIDIAN NIGHT MODE (Tables + Create Quiz Form Welder)
+   ========================================================================== */
+body.dark-mode,
+body.dark-mode .admin-layout,
+body.dark-mode .admin-main {
+  background-color: #0B0C1A !important; 
+  color: #E2E8F0 !important;
+}
+
+body.dark-mode .admin-navbar,
+body.dark-mode .admin-sidebar,
+body.dark-mode .quiz-table-wrapper,
+body.dark-mode .reports-table-wrapper {
+  background-color: #131428 !important; 
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ─── WELDED IN: Fixes Create Quiz Form Cards & Dropzones in Dark Mode ─── */
+body.dark-mode .form-card,
+body.dark-mode .question-block,
+body.dark-mode .import-dropzone,
+body.dark-mode .quiz-details-container {
+  background-color: #131428 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .form-card h3,
+body.dark-mode .question-block h4,
+body.dark-mode .form-field label {
+  color: #FFFFFF !important;
+}
+
+/* Create Quiz Inputs inside Dark Mode */
+body.dark-mode .form-card input,
+body.dark-mode .form-card textarea,
+body.dark-mode .form-card select,
+body.dark-mode .question-block input,
+body.dark-mode .question-block textarea,
+body.dark-mode .question-block select,
+body.dark-mode .form-field input,
+body.dark-mode .form-field textarea {
+  background-color: #080914 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .form-card input:focus,
+body.dark-mode .question-block input:focus,
+body.dark-mode .form-field input:focus {
+  border-color: #6E3FF3 !important;
+  box-shadow: 0 0 10px rgba(110, 63, 243, 0.4) !important;
+}
+
+/* Text Highlights */
+body.dark-mode .navbar-title, body.dark-mode .user-name-text, body.dark-mode .rep-name, body.dark-mode .drop-name { color: #FFFFFF !important; }
+body.dark-mode .navbar-role, body.dark-mode .rep-email, body.dark-mode .drop-role { color: #94A3B8 !important; }
+
+/* Table Dominator */
+body.dark-mode .quiz-table thead, body.dark-mode .reports-analytics-table thead, body.dark-mode .quiz-table thead tr {
+  background-color: #1A1B35 !important; border-bottom: 2px solid #2D1B69 !important;
+}
+body.dark-mode .quiz-table th, body.dark-mode .reports-analytics-table th { color: #A8B2C1 !important; background-color: transparent !important; }
+
+body.dark-mode .quiz-table tbody tr:nth-child(n), body.dark-mode .reports-analytics-table tbody tr:nth-child(n) {
+  background-color: #131428 !important; color: #FFFFFF !important;
+}
+body.dark-mode .quiz-table td, body.dark-mode .reports-analytics-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; color: #FFFFFF !important; background-color: transparent !important;
+}
+body.dark-mode .quiz-table tbody tr:hover, body.dark-mode .reports-analytics-table tbody tr:hover { background-color: rgba(110, 63, 243, 0.25) !important; }
+
+
+/* ==========================================================================
+   ☀️ 4. MASTER SUNLIGHT MODE (Sanitizes Rogue Black Sharpies)
+   ========================================================================== */
+body:not(.dark-mode) { background-color: #FAFAFC !important; color: #1a1a2e !important; }
+body:not(.dark-mode) .admin-layout, body:not(.dark-mode) .admin-main { background-color: #FAFAFC !important; }
+
+body:not(.dark-mode) .admin-navbar, body:not(.dark-mode) .stat-card, body:not(.dark-mode) .form-card, 
+body:not(.dark-mode) .quiz-table-wrapper, body:not(.dark-mode) .reports-table-wrapper, body:not(.dark-mode) .question-block {
+  background-color: #FFFFFF !important; border-color: #ECE9F7 !important; box-shadow: 0 2px 10px rgba(45, 27, 105, 0.02) !important;
+}
+
+body:not(.dark-mode) .stat-card-value, body:not(.dark-mode) .navbar-title, body:not(.dark-mode) .user-name-text { color: #1a1a2e !important; }
+
+body:not(.dark-mode) .quiz-table thead, body:not(.dark-mode) .reports-analytics-table thead {
+  background-color: #FCFBFF !important; border-bottom: 1.5px solid #ECE9F7 !important;
+}
+body:not(.dark-mode) .quiz-table th { color: #a8a5bd !important; }
+
+body:not(.dark-mode) .quiz-table tbody tr:nth-child(n), body:not(.dark-mode) .reports-analytics-table tbody tr:nth-child(n) {
+  background-color: #FFFFFF !important; color: #1a1a2e !important;
+}
+body:not(.dark-mode) .quiz-table td { border-bottom: 1px solid #F8F7FC !important; color: #2b2840 !important; }
+body:not(.dark-mode) .quiz-table tbody tr:hover { background-color: #F4F2FA !important; }
+
+/* Light Form Inputs */
+body:not(.dark-mode) input:not([type="checkbox"]), body:not(.dark-mode) textarea, body:not(.dark-mode) select {
+  background-color: #FAFAFC !important; color: #1a1a2e !important; border: 1px solid #DCD6EC !important;
+}
+body:not(.dark-mode) input::placeholder, body:not(.dark-mode) textarea::placeholder { color: #a8a5bd !important; }
+
+
+/* ==========================================================================
+   🔔 5. NOTIFICATION BELL & NEON PROFILE DROPDOWN
+   ========================================================================== */
+.nav-bell-btn {
+  background: transparent; border: none; font-size: 17px; cursor: pointer;
+  position: relative; padding: 4px; transition: transform 0.15s; user-select: none;
+}
+.nav-bell-btn:hover { transform: scale(1.18); }
+
+.bell-badge {
+  position: absolute; top: 2px; right: 2px; width: 7px; height: 7px;
+  background-color: #E2436B; border-radius: 50%; box-shadow: 0 0 6px #E2436B;
+}
+
+.profile-dropdown-wrapper { position: relative; }
+
+.avatar-neon-trigger {
+  width: 40px; height: 40px; border-radius: 50%;
+  background-color: #00E676; color: #0B0C1A; font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.45); transition: all 0.15s ease; user-select: none;
+}
+.avatar-neon-trigger:hover { transform: scale(1.06); box-shadow: 0 0 18px rgba(0, 230, 118, 0.7); }
+
+.profile-floating-menu {
+  position: absolute; top: 52px; right: 0; width: 190px;
+  background-color: #131428; border: 1px solid #2D1B69; border-radius: 12px;
+  padding: 10px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 9999;
+  animation: dropFade 0.15s ease-out forwards;
+}
+
+@keyframes dropFade { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+.drop-user-info { padding: 4px 16px 6px 16px; }
+.drop-name { font-size: 13px; font-weight: 700; color: #FFFFFF; }
+.drop-role { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+.drop-divider { height: 1px; background-color: rgba(255,255,255,0.08); margin: 6px 0; }
+
+.drop-link { display: block; padding: 8px 16px; font-size: 12.5px; font-weight: 500; color: #E2E8F0; text-decoration: none; transition: background 0.15s; }
+.drop-link:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+.drop-logout { color: #F5A623 !important; font-weight: 600; }
+.drop-logout:hover { background-color: rgba(245, 166, 35, 0.12); }
+
+
+/* ==========================================================================
+   6. SIDEBAR
+   ========================================================================== */
+.admin-sidebar { width: 250px; background: #1a1a2e; display: flex; flex-direction: column; flex-shrink: 0; position: sticky; top: 0; height: 100vh; }
+.sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 26px 22px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.logo-emoji { font-size: 20px; }
+.logo-text { font-family: 'Fraunces', serif; color: #fff; font-size: 16px; font-weight: 600; }
+
+.sidebar-nav { display: flex; flex-direction: column; padding: 16px 14px; gap: 4px; overflow-y: auto; flex: 1; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px;
+  color: #a8a5bd; text-decoration: none; font-size: 14px; font-weight: 500; transition: all .15s;
+  border: none; background: none; cursor: pointer; width: 100%; text-align: left;
+}
+.sidebar-link:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.sidebar-link.active { background: linear-gradient(135deg, #2D1B69, #6E3FF3); color: #fff; box-shadow: 0 4px 14px -4px rgba(110, 63, 243, 0.5); }
+.sidebar-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+.logout-link { margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px; color: #e2436b; }
+.logout-link:hover { background: rgba(226, 67, 107, 0.1); color: #e2436b; }
+
+
+/* ==========================================================================
+   7. MAIN AREA & NAVBAR
+   ========================================================================== */
+.admin-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.admin-navbar { background: #fff; border-bottom: 1.5px solid #ECE9F7; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+.navbar-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: #1a1a2e; }
+
+.admin-content { padding: 28px 32px; flex: 1; }
+.admin-error { background: #FCEBEB; color: #791F1F; border: 1px solid #f0c4c4; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13.5px; }
+.admin-status-message { background: #F8F6FF; color: #2D1B69; border-left: 3px solid #6E3FF3; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13.5px; }
+
+
+/* ==========================================================================
+   8. REUSABLE UI WIDGETS
+   ========================================================================== */
+.user-info-cell { display: flex; align-items: center; gap: 12px; }
 .user-avatar-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%; /* <--- Forces a perfect circle */
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 13px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(45, 27, 105, 0.2);
+  width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; flex-shrink: 0;
 }
+.user-name-text { font-weight: 600; color: #1a1a2e; }
 
-.user-name-text {
-  font-weight: 600;
-  color: #1a1a2e;
-}
+.manage-command-bar { display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 24px; width: 100%; gap: 20px; }
 
-
-.manage-command-bar {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between; /* <--- Pushes Search LEFT, Button RIGHT */
-  align-items: center;
-  margin-bottom: 24px;
-  width: 100%;
-  gap: 20px;
-}
-
-/* Rounded Pill Button to match the search bar */
 .create-quiz-pill-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
-  color: #ffffff;
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 11px 24px;
-  border-radius: 100px; /* Perfectly round edges */
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  
-  /* These clamp it down so it can never stretch wide again: */
-  width: fit-content; 
-  flex-shrink: 0;
-  
-  box-shadow: 0 4px 14px -4px rgba(110, 63, 243, 0.5);
-  transition: all 0.2s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: #ffffff; font-size: 13.5px; font-weight: 600; padding: 11px 24px; border-radius: 100px; border: none; cursor: pointer;
+  white-space: nowrap; width: fit-content; flex-shrink: 0; box-shadow: 0 4px 14px -4px rgba(110, 63, 243, 0.5); transition: all 0.2s ease;
 }
+.create-quiz-pill-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px -4px rgba(110, 63, 243, 0.65); }
 
-.create-quiz-pill-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px -4px rgba(110, 63, 243, 0.65);
+
+/* ==========================================================================
+   9. QUESTION CARD BUILDER
+   ========================================================================== */
+.question-card-header { display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1.5px solid #F1EFFA; width: 100%; }
+.question-badge { background: #F1EFFA; color: #2D1B69; font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 8px; letter-spacing: 0.5px; }
+
+.remove-btn-compact {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #FCEBEB; color: #D92D2D;
+  font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px; border: 1px solid #F5B8C4; cursor: pointer;
+  white-space: nowrap; width: fit-content; flex-shrink: 0; transition: all 0.15s ease;
 }
+.remove-btn-compact:hover { background: #D92D2D; color: #ffffff; border-color: #D92D2D; box-shadow: 0 4px 12px rgba(217, 45, 45, 0.2); }
 
-@media (max-width: 768px) {
-  .manage-command-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .pill-search-container {
-    width: 100%;
-  }
+
+/* ==========================================================================
+   10. MANAGE USERS: PIXEL-PERFECT DETAILS
+   ========================================================================== */
+.page-breadcrumbs { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 500; margin-top: -12px; margin-bottom: 24px; }
+.crumb-inactive { color: #a8a5bd; }
+.crumb-separator { color: #64748B; font-size: 11px; }
+.crumb-active { color: #6E3FF3; font-weight: 600; }
+body.dark-mode .crumb-active { color: #A882FF; }
+
+.user-join-date { font-size: 11px; color: #a8a5bd; margin-top: 3px; font-weight: 400; }
+body.dark-mode .user-join-date { color: #64748B; }
+.user-email-text { font-size: 13.5px; }
+body.dark-mode .user-email-text { color: #CBD5E1 !important; }
+
+.role-outline-badge { display: inline-block; padding: 4px 14px; border-radius: 100px; font-size: 11.5px; font-weight: 600; text-transform: capitalize; }
+.role-user { border: 1px solid #0A5C3F; color: #0A5C3F; }
+body.dark-mode .role-user { border-color: #22C55E; color: #22C55E; background: rgba(34, 197, 94, 0.08); }
+.role-admin { border: 1px solid #0066FF; color: #0066FF; }
+body.dark-mode .role-admin { border-color: #38BDF8; color: #38BDF8; background: rgba(56, 189, 248, 0.08); }
+
+.status-active-cell { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #10B981; box-shadow: 0 0 8px #10B981; }
+
+.action-dots-btn { background: transparent; border: none; color: #a8a5bd; font-size: 18px; font-weight: 700; cursor: pointer; padding: 4px 10px; border-radius: 6px; }
+.action-dots-btn:hover { background: rgba(110, 63, 243, 0.1); color: #6E3FF3; }
+body.dark-mode .action-dots-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+.table-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid #F5F3FB; background: #FCFBFF; }
+body.dark-mode .table-pagination-footer { background: #0E0F21 !important; border-top-color: rgba(255, 255, 255, 0.05); }
+
+.pagination-info { font-size: 12.5px; color: #a8a5bd; }
+.pagination-controls { display: flex; gap: 6px; }
+.page-nav-btn { background: transparent; border: 1px solid #E2DDF0; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #1a1a2e; cursor: pointer; }
+body.dark-mode .page-nav-btn { border-color: rgba(255,255,255,0.1); color: #fff; }
+.page-nav-btn.active-page { background: #6E3FF3; color: #ffffff; border-color: #6E3FF3; box-shadow: 0 2px 8px rgba(110, 63, 243, 0.4); }
+
+
+/* ==========================================================================
+   11. RESPONSIVE MEDIA QUERIES (Locked to the absolute bottom)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .admin-sidebar { width: 70px; }
+  .logo-text, .sidebar-link span:not(.sidebar-icon) { display: none; }
+  .sidebar-link { justify-content: center; }
+  .manage-command-bar { flex-direction: column; align-items: stretch; }
+  .pill-search-container { width: 100%; }
 }
 
 /* ==========================================================================
-   QUESTION CARD HEADER (Create/Edit Quiz)
+   🚨 CSS OVERLORD: FORCING DARK MODE ON ALL SUB-PAGES
    ========================================================================== */
 
-.question-card-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between; /* <--- Pushes Badge LEFT, Button RIGHT */
-  align-items: center;
-  padding-bottom: 16px;
-  margin-bottom: 20px;
-  border-bottom: 1.5px solid #F1EFFA;
-  width: 100%;
+/* 1. Force the Search Container background to disappear */
+body.dark-mode .pill-search-container,
+body.dark-mode .manage-command-bar .pill-search-container {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.question-badge {
-  background: #F1EFFA;
-  color: #2D1B69;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 8px;
-  letter-spacing: 0.5px;
+/* 2. Force the Search Input to be transparent */
+body.dark-mode .pill-search-container input {
+    background-color: transparent !important;
+    color: #FFFFFF !important;
 }
 
-/* Mathematically Clamped Remove Button */
-.remove-btn-compact {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: #FCEBEB;
-  color: #D92D2D;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #F5B8C4;
-  cursor: pointer;
-  
-  /* These lines prevent the giant red rectangular wall effect: */
-  white-space: nowrap;
-  width: fit-content;
-  flex-shrink: 0;
-  
-  transition: all 0.15s ease;
+/* 3. Global Table row override to crush local CSS zebra striping */
+body.dark-mode table tbody tr,
+body.dark-mode table tbody tr:nth-child(even),
+body.dark-mode table tbody tr:nth-child(odd) {
+    background-color: #131428 !important;
+    color: #FFFFFF !important;
 }
 
-.remove-btn-compact:hover {
-  background: #D92D2D;
-  color: #ffffff;
-  border-color: #D92D2D;
-  box-shadow: 0 4px 12px rgba(217, 45, 45, 0.2);
+/* 4. Ensure table cells remain dark */
+body.dark-mode table td {
+    background-color: transparent !important;
+    color: #FFFFFF !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}/* ==========================================================================
+   🚨 CSS OVERLORD: FORCING DARK MODE ON ALL SUB-PAGES
+   ========================================================================== */
+
+/* 1. Force the Search Container background to disappear */
+body.dark-mode .pill-search-container,
+body.dark-mode .manage-command-bar .pill-search-container {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
+/* 2. Force the Search Input to be transparent */
+body.dark-mode .pill-search-container input {
+    background-color: transparent !important;
+    color: #FFFFFF !important;
+}
+
+/* 3. Global Table row override to crush local CSS zebra striping */
+body.dark-mode table tbody tr,
+body.dark-mode table tbody tr:nth-child(even),
+body.dark-mode table tbody tr:nth-child(odd) {
+    background-color: #131428 !important;
+    color: #FFFFFF !important;
+}
+
+/* 4. Ensure table cells remain dark */
+body.dark-mode table td {
+    background-color: transparent !important;
+    color: #FFFFFF !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
