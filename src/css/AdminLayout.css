@@ -199,6 +199,101 @@
   border-color: #f5b8c4;
 }
 
+/* ── COMMAND BAR (Appended) ─────────────────────── */
+.manage-header-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: #ffffff;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1px solid #ECE9F7;
+  box-shadow: 0 4px 20px rgba(45, 27, 105, 0.03);
+  gap: 20px;
+}
+
+.search-box-container {
+  display: flex;
+  align-items: center;
+  background: #FAFAFC;
+  border: 1.5px solid #ECE9F7;
+  border-radius: 10px;
+  padding: 8px 14px;
+  width: 320px;
+  gap: 10px;
+  transition: all .2s ease;
+}
+
+.search-box-container:focus-within {
+  background: #ffffff;
+  border-color: #6E3FF3;
+  box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
+}
+
+.vector-search-icon {
+  color: #a8a5bd;
+  flex-shrink: 0;
+}
+
+.search-box-container:focus-within .vector-search-icon {
+  color: #6E3FF3;
+}
+
+.pro-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 13.5px;
+  color: #1a1a2e;
+  font-family: 'Inter', sans-serif;
+}
+
+.pro-search-input::placeholder {
+  color: #a8a5bd;
+}
+
+.search-hotkey-badge {
+  background: #ECE9F7;
+  color: #a8a5bd;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.pro-create-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  box-shadow: 0 4px 14px -4px rgba(110, 63, 243, 0.5);
+  white-space: nowrap;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.pro-create-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -4px rgba(110, 63, 243, 0.65);
+}
+
+.btn-plus-icon {
+  flex-shrink: 0;
+}
+
 /* ── MOBILE ───────────────────────────────────── */
 @media (max-width: 900px) {
   .admin-sidebar { width: 70px; }

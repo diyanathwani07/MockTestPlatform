@@ -11,6 +11,7 @@ function ManageQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -61,6 +62,11 @@ function ManageQuizzes() {
     }
   };
 
+  const filteredQuizzes = quizzes.filter((quiz) =>
+    quiz.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quiz.subject?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="admin-layout">
       <AdminSidebar />
@@ -69,21 +75,42 @@ function ManageQuizzes() {
         <AdminNavbar title="Manage Quizzes" />
 
         <div className="admin-content">
-
           {message && <p className="admin-status-message">{message}</p>}
 
-          <div className="manage-header">
-            <p className="manage-count">
-              {loading ? "Loading..." : `${quizzes.length} quiz(es) found`}
-            </p>
+          {/* COMMAND BAR: Pushes Search LEFT, Button RIGHT */}
+          <div className="manage-command-bar">
+            
+            {/* 1. Reuses the Pill Search Bar */}
+            <div className="pill-search-container" style={{ marginBottom: 0 }}>
+              <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              
+              <input
+                type="text"
+                placeholder="Search quizzes by title or subject..."
+                className="pill-search-input"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerm}
+              />
+            </div>
+
+            {/* 2. Shrunken Pill Button on the far right */}
             <button
-              className="create-new-btn"
+              className="create-quiz-pill-btn"
               onClick={() => navigate("/admin/create-quiz")}
             >
-              + Create New Quiz
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Create Quiz</span>
             </button>
+
           </div>
 
+          {/* TABLE CONTAINER */}
           <div className="quiz-table-wrapper">
             <table className="quiz-table">
               <thead>
@@ -97,9 +124,9 @@ function ManageQuizzes() {
                 </tr>
               </thead>
               <tbody>
-                {quizzes.map((quiz) => (
+                {filteredQuizzes.map((quiz) => (
                   <tr key={quiz._id}>
-                    <td>{quiz.title}</td>
+                    <td style={{ fontWeight: "600", color: "#1a1a2e" }}>{quiz.title}</td>
                     <td>{quiz.subject}</td>
                     <td>{quiz.duration} min</td>
                     <td>{quiz.questions?.length || 0}</td>
@@ -114,6 +141,7 @@ function ManageQuizzes() {
                       </span>
                     </td>
                     <td className="action-cell">
+                      {/* Preserved your exact preferred Edit & Delete buttons */}
                       <button
                         className="edit-btn"
                         onClick={() => navigate(`/admin/edit-quiz/${quiz._id}`)}
@@ -130,10 +158,10 @@ function ManageQuizzes() {
                   </tr>
                 ))}
 
-                {!loading && quizzes.length === 0 && (
+                {!loading && filteredQuizzes.length === 0 && (
                   <tr>
                     <td colSpan={6} className="empty-row">
-                      No quizzes created yet.
+                      No quizzes found matching your search.
                     </td>
                   </tr>
                 )}

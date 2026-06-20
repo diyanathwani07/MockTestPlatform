@@ -197,3 +197,182 @@
     justify-content: center;
   }
 }
+
+
+.pill-search-container {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #E2DDF0;
+  border-radius: 100px; /* <--- This creates the perfect Pill Shape */
+  padding: 10px 18px;
+  width: 340px;
+  gap: 12px;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(45, 27, 105, 0.02);
+}
+
+.pill-search-container:focus-within {
+  border-color: #6E3FF3;
+  box-shadow: 0 0 0 4px rgba(110, 63, 243, 0.12);
+}
+
+.pill-search-icon {
+  color: #8C87A4;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.pill-search-container:focus-within .pill-search-icon {
+  color: #6E3FF3;
+}
+
+.pill-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 13.5px;
+  color: #1a1a2e;
+  font-family: 'Inter', sans-serif;
+  padding: 0;
+}
+
+.pill-search-input::placeholder {
+  color: #a8a5bd;
+}
+
+
+
+.user-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%; /* <--- Forces a perfect circle */
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(45, 27, 105, 0.2);
+}
+
+.user-name-text {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+
+.manage-command-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* <--- Pushes Search LEFT, Button RIGHT */
+  align-items: center;
+  margin-bottom: 24px;
+  width: 100%;
+  gap: 20px;
+}
+
+/* Rounded Pill Button to match the search bar */
+.create-quiz-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 11px 24px;
+  border-radius: 100px; /* Perfectly round edges */
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  
+  /* These clamp it down so it can never stretch wide again: */
+  width: fit-content; 
+  flex-shrink: 0;
+  
+  box-shadow: 0 4px 14px -4px rgba(110, 63, 243, 0.5);
+  transition: all 0.2s ease;
+}
+
+.create-quiz-pill-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -4px rgba(110, 63, 243, 0.65);
+}
+
+@media (max-width: 768px) {
+  .manage-command-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pill-search-container {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   QUESTION CARD HEADER (Create/Edit Quiz)
+   ========================================================================== */
+
+.question-card-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* <--- Pushes Badge LEFT, Button RIGHT */
+  align-items: center;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1.5px solid #F1EFFA;
+  width: 100%;
+}
+
+.question-badge {
+  background: #F1EFFA;
+  color: #2D1B69;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Mathematically Clamped Remove Button */
+.remove-btn-compact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #FCEBEB;
+  color: #D92D2D;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #F5B8C4;
+  cursor: pointer;
+  
+  /* These lines prevent the giant red rectangular wall effect: */
+  white-space: nowrap;
+  width: fit-content;
+  flex-shrink: 0;
+  
+  transition: all 0.15s ease;
+}
+
+.remove-btn-compact:hover {
+  background: #D92D2D;
+  color: #ffffff;
+  border-color: #D92D2D;
+  box-shadow: 0 4px 12px rgba(217, 45, 45, 0.2);
+}
+

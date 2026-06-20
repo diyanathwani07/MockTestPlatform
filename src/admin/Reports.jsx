@@ -9,6 +9,11 @@ function Reports() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ── 3-WAY DRILL DOWN SEARCH STATES ──
+  const [searchCandidate, setSearchCandidate] = useState("");
+  const [searchQuiz, setSearchQuiz] = useState("");
+  const [searchSubject, setSearchSubject] = useState("");
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -28,6 +33,7 @@ function Reports() {
     fetchResults();
   }, [token]);
 
+  // Preserved your exact KPI math
   const avgPercentage = results.length
     ? (
         results.reduce((sum, r) => sum + Number(r.percentage || 0), 0) /
@@ -45,15 +51,29 @@ function Reports() {
     { label: "Failed (<40%)", value: failCount, icon: "❌", accent: "navy" },
   ];
 
+  // ── MULTI-FILTER MATCHING LOGIC ──
+  const filteredResults = results.filter((r) => {
+    const candName = r.userId?.fullName || "";
+    const quizTitle = r.quizId?.title || "";
+    const subjName = r.quizId?.subject || "";
+
+    const matchC = candName.toLowerCase().includes(searchCandidate.toLowerCase());
+    const matchQ = quizTitle.toLowerCase().includes(searchQuiz.toLowerCase());
+    const matchS = subjName.toLowerCase().includes(searchSubject.toLowerCase());
+
+    return matchC && matchQ && matchS;
+  });
+
   return (
     <div className="admin-layout">
       <AdminSidebar />
 
       <div className="admin-main">
-        <AdminNavbar title="Reports" />
+        <AdminNavbar title="Reports & Analytics" />
 
         <div className="admin-content">
 
+          {/* 1. YOUR ORIGINAL KPI GRID */}
           <div className="stat-cards-grid">
             {cards.map((card) => (
               <div className={`stat-card accent-${card.accent}`} key={card.label}>
@@ -68,13 +88,109 @@ function Reports() {
             ))}
           </div>
 
-          <div className="dashboard-welcome-card">
-            <h3>Performance Summary</h3>
+          {/* 2. YOUR ORIGINAL PURPLE BANNER */}
+          <div className="dashboard-welcome-card" style={{ marginBottom: "24px" }}>
+            <h3>Performance Summary & Drill-Down</h3>
             <p>
-              This report aggregates results across all quizzes and candidates.
-              Pass threshold is currently set at 40% — adjust this logic in
-              Reports.jsx if your platform uses a different cutoff.
+              This report aggregates results across all quizzes. Use the 3-way command bar below 
+              to drill down into specific candidate names, quizzes, or academic subjects.
             </p>
+          </div>
+
+          {/* 3. 3-WAY LIVE COMMAND BAR (Zero button bloat) */}
+          <div className="reports-filter-bar">
+            
+            <div className="report-search-pill">
+              <span>👤</span>
+              <input
+                type="text"
+                placeholder="Filter by Candidate Name..."
+                value={searchCandidate}
+                onChange={(e) => setSearchCandidate(e.target.value)}
+              />
+            </div>
+
+            <div className="report-search-pill">
+              <span>📄</span>
+              <input
+                type="text"
+                placeholder="Filter by Quiz Title..."
+                value={searchQuiz}
+                onChange={(e) => setSearchQuiz(e.target.value)}
+              />
+            </div>
+
+            <div className="report-search-pill">
+              <span>📚</span>
+              <input
+                type="text"
+                placeholder="Filter by Subject..."
+                value={searchSubject}
+                onChange={(e) => setSearchSubject(e.target.value)}
+              />
+            </div>
+
+          </div>
+
+          {/* 4. NEW: CANDIDATE DRILL-DOWN TABLE */}
+          <div className="reports-table-wrapper">
+            <table className="reports-analytics-table">
+              <thead>
+                <tr>
+                  <th>Candidate Name</th>
+                  <th>Quiz Title</th>
+                  <th>Subject</th>
+                  <th>Score</th>
+                  <th>Percentage</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredResults.map((r) => {
+                  const isPass = Number(r.percentage) >= 40;
+
+                  return (
+                    <tr key={r._id}>
+                      
+                      <td>
+                        <div className="rep-user-cell">
+                          <div className="rep-avatar">
+                            {r.userId?.fullName?.charAt(0).toUpperCase() || "?"}
+                          </div>
+                          <div>
+                            <div className="rep-name">{r.userId?.fullName || "Unknown Candidate"}</div>
+                            <div className="rep-email">{r.userId?.email || "No email recorded"}</div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td style={{ fontWeight: 600, color: "#1a1a2e" }}>{r.quizId?.title || "Untitled Quiz"}</td>
+                      <td>{r.quizId?.subject || "General"}</td>
+                      <td style={{ fontWeight: 700 }}>{r.score} / {r.total}</td>
+                      <td style={{ fontWeight: 600 }}>{Number(r.percentage || 0).toFixed(1)}%</td>
+                      
+                      <td>
+                        <span className={`rep-badge ${isPass ? "rep-pass" : "rep-fail"}`}>
+                          {isPass ? "Passed" : "Failed"}
+                        </span>
+                      </td>
+
+                      <td style={{ color: "#a8a5bd", fontSize: "13px" }}>
+                        {new Date(r.createdAt).toLocaleDateString()}
+                      </td>
+
+                    </tr>
+                  );
+                })}
+
+                {!loading && filteredResults.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="rep-empty">No candidate records match your filter combination.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
         </div>

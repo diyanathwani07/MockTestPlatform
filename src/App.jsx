@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ForgotPassword from "./Pages/ForgotPassword";
 import AdminRoute from "./components/AdminRoute";
+import EditQuiz from "./admin/EditQuiz";
 
 import AdminDashboard from "./admin/AdminDashboard";
 import CreateQuiz from "./admin/CreateQuiz";
@@ -77,6 +78,15 @@ function App() {
           element={
             <AdminRoute>
               <CreateQuiz />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/edit-quiz/:id"
+          element={
+            <AdminRoute>
+              <EditQuiz />
             </AdminRoute>
           }
         />

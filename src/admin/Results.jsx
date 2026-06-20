@@ -7,44 +7,51 @@ import "../css/admin/ManageQuizzes.css";
 
 function Results() {
   const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-
-  const token = localStorage.getItem("token");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchResults = async () => {
       try {
+        const token = localStorage.getItem("token");
         const res = await axios.get("http://localhost:5000/api/admin/results", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setResults(res.data);
       } catch (error) {
         console.error("Fetch Results Error:", error);
-        setMessage("Failed to load results.");
-      } finally {
-        setLoading(false);
       }
     };
-
     fetchResults();
-  }, [token]);
+  }, []);
+
+  const filteredResults = results.filter((r) => 
+    r.userId?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="admin-layout">
       <AdminSidebar />
-
       <div className="admin-main">
         <AdminNavbar title="Results" />
-
         <div className="admin-content">
 
-          {message && <p className="admin-status-message">{message}</p>}
+          {/* ROUNDED PILL SEARCH BAR */}
+          <div className="pill-search-container">
+            <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            
+            <input 
+              type="text" 
+              placeholder="Search candidate results by name..." 
+              className="pill-search-input"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchTerm}
+            />
+          </div>
 
-          <p className="manage-count">
-            {loading ? "Loading..." : `${results.length} attempt(s) recorded`}
-          </p>
-
+          {/* TABLE CONTAINER */}
           <div className="quiz-table-wrapper">
             <table className="quiz-table">
               <thead>
@@ -52,30 +59,30 @@ function Results() {
                   <th>Candidate</th>
                   <th>Email</th>
                   <th>Score</th>
-                  <th>Correct</th>
-                  <th>Incorrect</th>
-                  <th>Percentage</th>
-                  <th>Date</th>
+                  <th>Date Completed</th>
                 </tr>
               </thead>
               <tbody>
-                {results.map((r) => (
+                {filteredResults.map((r) => (
                   <tr key={r._id}>
-                    <td>{r.userId?.fullName || "—"}</td>
+                    <td>
+                      {/* FIXED CIRCULAR AVATAR */}
+                      <div className="user-info-cell">
+                        <div className="user-avatar-circle">
+                          {r.userId?.fullName?.charAt(0).toUpperCase() || "?"}
+                        </div>
+                        <span className="user-name-text">{r.userId?.fullName || "Unknown User"}</span>
+                      </div>
+                    </td>
                     <td>{r.userId?.email || "—"}</td>
-                    <td>{r.score} / {r.total}</td>
-                    <td>{r.correct}</td>
-                    <td>{r.incorrect}</td>
-                    <td>{r.percentage}%</td>
+                    <td><span className="status-badge status-published" style={{fontWeight: 700}}>{r.score} / {r.total}</span></td>
                     <td>{new Date(r.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
 
-                {!loading && results.length === 0 && (
+                {filteredResults.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="empty-row">
-                      No attempts recorded yet.
-                    </td>
+                    <td colSpan={4} className="empty-row">No test records found matching your search.</td>
                   </tr>
                 )}
               </tbody>

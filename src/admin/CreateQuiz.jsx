@@ -7,23 +7,16 @@ import DocxParser from "./components/DocxParser";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
 
-// Helper to initialize a pristine bilingual question object
 const emptyQuestion = () => ({
   questionEnglish: "",
   questionHindi: "",
-  options: [
-    { english: "", hindi: "" }, // Option A
-    { english: "", hindi: "" }, // Option B
-    { english: "", hindi: "" }, // Option C
-    { english: "", hindi: "" }, // Option D
-  ],
-  correctAnswer: "", // Stores "A", "B", "C", or "D"
+  options: ["", "", "", ""],
+  correctAnswer: "",
 });
 
 function CreateQuiz() {
   const navigate = useNavigate();
 
-  // Quiz Metadata State
   const [quizMeta, setQuizMeta] = useState({
     title: "",
     subject: "",
@@ -38,7 +31,6 @@ function CreateQuiz() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // Handle updates for general quiz metadata fields
   const handleMetaChange = (e) => {
     const { name, value, type, checked } = e.target;
     setQuizMeta((prev) => ({
@@ -47,18 +39,14 @@ function CreateQuiz() {
     }));
   };
 
-  // Callback triggered when Word file is parsed successfully
   const handleQuestionsLoaded = (parsedQuestions) => {
-    if (parsedQuestions && parsedQuestions.length > 0) {
-      setQuestions(parsedQuestions);
-      setMessage({
-        text: `✅ ${parsedQuestions.length} questions successfully imported from Word file.`,
-        type: "status-success",
-      });
-    }
+    setQuestions(parsedQuestions);
+    setMessage({
+      text: `✅ ${parsedQuestions.length} questions imported from Word file. Review and submit below.`,
+      type: "status-success",
+    });
   };
 
-  // Handle core question field text changes (English or Hindi strings)
   const handleQuestionChange = (index, field, value) => {
     setQuestions((prev) => {
       const updated = [...prev];
@@ -67,26 +55,21 @@ function CreateQuiz() {
     });
   };
 
-  // Handle specific changes inside our new bilingual options nested state structure
-  const handleOptionChange = (qIndex, optIndex, lang, value) => {
+  const handleOptionChange = (qIndex, optIndex, value) => {
     setQuestions((prev) => {
       const updated = [...prev];
       const newOptions = [...updated[qIndex].options];
-      newOptions[optIndex] = { ...newOptions[optIndex], [lang]: value };
+      newOptions[optIndex] = value;
       updated[qIndex] = { ...updated[qIndex], options: newOptions };
       return updated;
     });
   };
 
-  const addQuestion = () => {
-    setQuestions((prev) => [...prev, emptyQuestion()]);
-  };
+  const addQuestion = () => setQuestions((prev) => [...prev, emptyQuestion()]);
 
-  const removeQuestion = (index) => {
+  const removeQuestion = (index) =>
     setQuestions((prev) => prev.filter((_, i) => i !== index));
-  };
 
-  // Validates form compliance before server submission
   const validateForm = () => {
     if (!quizMeta.title || !quizMeta.subject || !quizMeta.duration) {
       setMessage({ text: "Please fill in Title, Subject, and Duration.", type: "status-error" });
@@ -94,16 +77,24 @@ function CreateQuiz() {
     }
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
-      if (!q.questionEnglish.trim()) {
+      if (!q.questionEnglish || !q.questionEnglish.trim()) {
         setMessage({ text: `Question ${i + 1}: English question text is required.`, type: "status-error" });
         return false;
       }
-      if (q.options.some((opt) => !opt.english.trim())) {
-        setMessage({ text: `Question ${i + 1}: All four English options must be filled.`, type: "status-error" });
+      if (!q.options || q.options.length !== 4) {
+        setMessage({ text: `Question ${i + 1}: Must have exactly 4 options.`, type: "status-error" });
         return false;
       }
+      for (let j = 0; j < q.options.length; j++) {
+        const opt = q.options[j];
+        const optText = typeof opt === "object" ? (opt.english || opt.hindi || "") : opt;
+        if (!optText || !String(optText).trim()) {
+          setMessage({ text: `Question ${i + 1}, Option ${["A","B","C","D"][j]}: Option text cannot be blank.`, type: "status-error" });
+          return false;
+        }
+      }
       if (!q.correctAnswer) {
-        setMessage({ text: `Question ${i + 1}: Please select a correct answer option.`, type: "status-error" });
+        setMessage({ text: `Question ${i + 1}: Please select the correct answer.`, type: "status-error" });
         return false;
       }
     }
@@ -113,18 +104,26 @@ function CreateQuiz() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ text: "", type: "" });
-
     if (!validateForm()) return;
 
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+
+      const sanitizedQuestions = questions.map(q => ({
+        ...q,
+        options: q.options.map(opt => typeof opt === "object" ? (opt.english || opt.hindi || "") : String(opt).trim())
+      }));
+
+      const payload = { ...quizMeta, questions: sanitizedQuestions };
+      console.log("Shipping sanitized payload to server...", payload);
+
       await axios.post(
         "http://localhost:5000/api/quizzes",
-        { ...quizMeta, questions },
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessage({ text: "Quiz created successfully!", type: "status-success" });
+      setMessage({ text: "✅ Quiz created successfully!", type: "status-success" });
       setTimeout(() => navigate("/admin/manage-quizzes"), 1200);
     } catch (error) {
       console.error("Create Quiz Error:", error);
@@ -140,25 +139,25 @@ function CreateQuiz() {
   return (
     <div className="admin-layout">
       <AdminSidebar />
-
       <div className="admin-main">
         <AdminNavbar title="Create Quiz" />
 
         <div className="admin-content">
           <div className="create-quiz-page">
-            
+
             {message.text && (
-              <div className={`form-card admin-status-message ${message.type}`}>
+              <p className={`admin-status-message ${message.type}`}>
                 {message.text}
-              </div>
+              </p>
             )}
 
             <form onSubmit={handleSubmit}>
-              
-              {/* ── SECTION 1: QUIZ DETAILS ── */}
+
+              {/* ── QUIZ DETAILS ── */}
               <div className="form-card">
                 <h3 className="form-card-title">Quiz Details</h3>
                 <div className="form-grid">
+
                   <div className="form-field">
                     <label>Quiz Title</label>
                     <input
@@ -190,7 +189,7 @@ function CreateQuiz() {
                       value={quizMeta.description}
                       onChange={handleMetaChange}
                       placeholder="Brief description of this quiz"
-                      rows={3}
+                      rows={2}
                     />
                   </div>
 
@@ -242,19 +241,20 @@ function CreateQuiz() {
                       Publish immediately
                     </label>
                   </div>
+
                 </div>
               </div>
 
-              {/* ── SECTION 2: BULK IMPORT ── */}
+              {/* ── IMPORT FROM WORD ── */}
               <div className="form-card">
                 <h3 className="form-card-title">Import Questions from Word</h3>
                 <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
               </div>
 
-              {/* ── SECTION 3: QUESTION BUILDER ── */}
+              {/* ── QUESTION BUILDER ── */}
               <div className="form-card">
-                <h3 className="form-card-title" style={{ justifyContent: "space-between" }}>
-                  <span>Questions</span>
+                <h3 className="form-card-title">
+                  Questions
                   <span className="question-count-badge">
                     {questions.length} question{questions.length !== 1 ? "s" : ""}
                   </span>
@@ -262,21 +262,28 @@ function CreateQuiz() {
 
                 {questions.map((q, qIndex) => (
                   <div className="question-block" key={qIndex}>
-                    
-                    <div className="question-block-header">
-                      <span className="question-number">Question {qIndex + 1}</span>
+
+                    {/* ── POLISHED CARD HEADER (Pushes Remove button right) ── */}
+                    <div className="question-card-header">
+                      <span className="question-badge">Question {qIndex + 1}</span>
+                      
                       {questions.length > 1 && (
                         <button
                           type="button"
-                          className="remove-question-btn"
+                          className="remove-btn-compact"
                           onClick={() => removeQuestion(qIndex)}
                         >
-                          ✕ Remove
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                          <span>Remove</span>
                         </button>
                       )}
                     </div>
 
                     <div className="form-grid">
+
                       <div className="form-field full-width">
                         <label>Question (English)</label>
                         <textarea
@@ -301,36 +308,21 @@ function CreateQuiz() {
                         />
                       </div>
 
-                      {/* ── BILINGUAL 2x2 OPTIONS LAYOUT BLOCK ── */}
-                      <div className="options-grid">
-                        {["A", "B", "C", "D"].map((label, optIndex) => (
-                          <div className="bilingual-option-card" key={label}>
-                            <span className="option-label-tag">Option {label}</span>
-                            <div className="bilingual-inputs-wrapper">
-                              <input
-                                type="text"
-                                value={q.options[optIndex]?.english || ""}
-                                onChange={(e) =>
-                                  handleOptionChange(qIndex, optIndex, "english", e.target.value)
-                                }
-                                placeholder="English Text"
-                                className="bilingual-opt-input"
-                              />
-                              <input
-                                type="text"
-                                value={q.options[optIndex]?.hindi || ""}
-                                onChange={(e) =>
-                                  handleOptionChange(qIndex, optIndex, "hindi", e.target.value)
-                                }
-                                placeholder="हिंदी पाठ (वैकल्पिक)"
-                                className="bilingual-opt-input"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      {["A", "B", "C", "D"].map((label, optIndex) => (
+                        <div className="form-field" key={label}>
+                          <label>Option {label}</label>
+                          <input
+                            type="text"
+                            value={typeof q.options[optIndex] === "object" ? (q.options[optIndex]?.english || q.options[optIndex]?.hindi || "") : q.options[optIndex]}
+                            onChange={(e) =>
+                              handleOptionChange(qIndex, optIndex, e.target.value)
+                            }
+                            placeholder={`Option ${label}`}
+                          />
+                        </div>
+                      ))}
 
-                      <div className="form-field full-width">
+                      <div className="form-field">
                         <label>Correct Answer</label>
                         <select
                           value={q.correctAnswer}
@@ -339,10 +331,14 @@ function CreateQuiz() {
                           }
                         >
                           <option value="">Select correct answer</option>
-                          <option value="A">A</option>
-                          <option value="B">B</option>
-                          <option value="C">C</option>
-                          <option value="D">D</option>
+                          {q.options.map((opt, i) => {
+                            const optStr = typeof opt === "object" ? (opt.english || opt.hindi || "") : opt;
+                            return optStr ? (
+                              <option key={i} value={optStr}>
+                                {["A", "B", "C", "D"][i]}. {optStr}
+                              </option>
+                            ) : null;
+                          })}
                         </select>
                       </div>
 
@@ -355,9 +351,10 @@ function CreateQuiz() {
                 </button>
               </div>
 
-              {/* ── SUBMIT QUIZ ACTION ── */}
               <button type="submit" className="submit-quiz-btn" disabled={loading}>
-                {loading ? "Creating quiz…" : "Create Quiz"}
+                {loading
+                  ? "Creating quiz…"
+                  : `Create Quiz (${questions.length} Question${questions.length !== 1 ? "s" : ""})`}
               </button>
 
             </form>

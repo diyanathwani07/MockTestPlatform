@@ -1,16 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../css/StartTest.css";
 
 function StartTest() {
   const navigate = useNavigate();
   
-  // State to track which exam the user selects from the dropdown
-  const [selectedSubject, setSelectedSubject] = useState("BPSC - Quantitative Aptitude");
+  const [quizzes, setQuizzes] = useState([]);
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 🌐 THE CATCHER'S MITT: Fetch all live quizzes from MongoDB when the page loads
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/quizzes?published=true");
+        const liveQuizzes = response.data;
+        setQuizzes(liveQuizzes);
+        
+        // Automatically select the most recently created quiz by default
+        if (liveQuizzes.length > 0) {
+          setSelectedQuiz(liveQuizzes[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching quizzes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuizzes();
+  }, []);
+
+  const handleDropdownChange = (e) => {
+    const foundQuiz = quizzes.find((q) => q._id === e.target.value);
+    setSelectedQuiz(foundQuiz);
+  };
 
   const handleStart = () => {
-    // Pass the selected subject to the Quiz page using state
-    navigate("/quiz", { state: { subject: selectedSubject } });
+    if (!selectedQuiz) return alert("Please select a quiz first!");
+
+    // Pass the entire quiz footprint over to the Quiz Interface
+    navigate("/quiz", { 
+      state: { 
+        subject: selectedQuiz.subject,
+        quizId: selectedQuiz._id,
+        quizTitle: selectedQuiz.title,
+        duration: selectedQuiz.duration
+      } 
+    });
   };
 
   return (
@@ -39,25 +77,37 @@ function StartTest() {
             <div className="value">diyanathwani@gmail.com</div>
           </div>
 
-          {/* DYNAMIC SUBJECT DROPDOWN */}
+          {/* ── LIVE MONGODB SUBJECT DROPDOWN ── */}
           <div className="row">
             <div className="label">Select Subject</div>
             <div className="value">
               <select 
                 className="subject-dropdown"
-                value={selectedSubject} 
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                value={selectedQuiz ? selectedQuiz._id : ""} 
+                onChange={handleDropdownChange}
+                disabled={loading || quizzes.length === 0}
               >
-                <option value="BPSC - Quantitative Aptitude">BPSC - Quantitative Aptitude</option>
-                <option value="BPSC - General English">BPSC - General English</option>
-                <option value="BPSC - Reasoning">BPSC - Reasoning</option>
+                {loading ? (
+                  <option value="">Loading live exams...</option>
+                ) : quizzes.length === 0 ? (
+                  <option value="">No published exams found</option>
+                ) : (
+                  quizzes.map((quiz) => (
+                    <option key={quiz._id} value={quiz._id}>
+                      {quiz.title} ({quiz.subject})
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>
 
+          {/* ── DYNAMIC DURATION DISPLAY ── */}
           <div className="row">
             <div className="label">Duration</div>
-            <div className="value">60 Minutes</div>
+            <div className="value">
+              {selectedQuiz ? `${selectedQuiz.duration} Minutes` : "60 Minutes"}
+            </div>
           </div>
 
           <div className="row">
@@ -79,8 +129,12 @@ function StartTest() {
           </div>
         </div>
 
-        <button className="start-btn" onClick={handleStart}>
-          Start Test
+        <button 
+          className="start-btn" 
+          onClick={handleStart}
+          disabled={loading || !selectedQuiz}
+        >
+          {loading ? "Connecting..." : "Start Test"}
         </button>
       </div>
     </div>
