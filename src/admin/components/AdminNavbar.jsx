@@ -1,72 +1,49 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
+import { useTheme } from "../../context/ThemeContext";
 import "../../css/admin/AdminLayout.css";
 
 function AdminNavbar({ title }) {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
-  
-  // State to control opening/closing the neon avatar menu
+  const { toggleTheme } = useTheme(); 
   const [profileOpen, setProfileOpen] = useState(false);
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add("dark-mode");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.body.classList.remove("dark-mode");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDarkMode]);
+  const navigate = useNavigate();
 
   return (
     <header className="admin-navbar">
-      <h1 className="navbar-title">{title}</h1>
-
-      <div className="navbar-right-controls">
-        
-        {/* 1. 3D Theme Pill */}
-        <div 
-          className="theme-pill-switch"
-          onClick={() => setIsDarkMode((prev) => !prev)}
-          title="Switch Theme"
+      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13.5px", fontWeight: "500", color: "var(--text-secondary)" }}>
+        <span 
+          onClick={() => navigate("/admin/dashboard")}
+          style={{ cursor: "pointer", transition: "color 0.15s" }}
+          onMouseEnter={(e) => e.target.style.color = "var(--violet)"}
+          onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}
         >
-          <div className="pill-track-icons">
-            <span>☀️</span>
-            <span>🌙</span>
-          </div>
+          Dashboard
+        </span>
+        <span style={{ color: "var(--text-muted)" }}>&gt;</span>
+        <span style={{ color: "var(--text-primary)", fontWeight: "700" }}>{title}</span>
+      </div>
+
+      <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        
+        {/* 3D Sun/Moon Theme Toggle */}
+        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
+          <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
           <div className="pill-thumb-slider"></div>
         </div>
 
-        {/* 2. Notification Bell (with tiny red unread dot) */}
-        <button className="nav-bell-btn" title="Notifications">
-          🔔
-          <span className="bell-badge"></span>
-        </button>
+        {/* Notification Bell */}
+        <button className="nav-bell-btn" title="Notifications">🔔</button>
 
-        {/* 3. Clickable Neon Green Profile Hook */}
+        {/* Profile */}
         <div className="profile-dropdown-wrapper">
-          <div 
-            className="avatar-neon-trigger"
-            onClick={() => setProfileOpen(!profileOpen)}
-          >
-            DN
-          </div>
-
-          {/* Floating Obsidian Dropdown Box */}
+          <div className="avatar-neon-trigger" onClick={() => setProfileOpen(!profileOpen)}>DN</div>
           {profileOpen && (
             <div className="profile-floating-menu">
-              <div className="drop-user-info">
-                <div className="drop-name">Diya Nathwani</div>
-                <div className="drop-role">Administrator</div>
-              </div>
-              <div className="drop-divider"></div>
-              <a href="#profile" className="drop-link">👤 My Profile</a>
-              <a href="#logout" className="drop-link drop-logout">🚪 Log Out</a>
+              <div className="drop-link" onClick={() => navigate("/admin/profile")}>👤 My Profile</div>
+              <div className="drop-link" onClick={() => { localStorage.clear(); navigate("/"); }}>🚪 Log Out</div>
             </div>
           )}
         </div>
-
       </div>
     </header>
   );

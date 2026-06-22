@@ -62,12 +62,14 @@ function DocxParser({ onQuestionsLoaded }) {
   };
 
   return (
-    <div className="docx-parser">
-      <div className="docx-parser-header">
-        <h4>📄 Import Questions from Word File</h4>
+    <div className="docx-parser-compact" style={{ padding: "10px 14px", border: "1.5px dashed var(--border-input)", borderRadius: "10px", backgroundColor: "var(--bg-input)", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)" }}>📄 Import Qs (.docx)</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <a
           href="#"
-          className="download-template-link"
+          style={{ fontSize: "11.5px", color: "var(--violet)", fontWeight: "700", textDecoration: "none" }}
           onClick={(e) => {
             e.preventDefault();
             alert(
@@ -83,30 +85,42 @@ function DocxParser({ onQuestionsLoaded }) {
             );
           }}
         >
-          View Format Guide
+          Guide
         </a>
+        <label className="docx-upload-label" style={{ cursor: "pointer" }}>
+          <input
+            type="file"
+            accept=".docx"
+            onChange={parseDocx}
+            disabled={parsing}
+            style={{ display: "none" }}
+          />
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "6px", 
+            padding: "6px 12px", 
+            border: "1.5px solid var(--violet)", 
+            borderRadius: "6px", 
+            backgroundColor: "rgba(110, 63, 243, 0.08)",
+            color: "var(--violet)",
+            fontSize: "11.5px",
+            fontWeight: "700",
+            transition: "all 0.2s"
+          }}>
+            <span>{parsing ? "Wait..." : "📤 Import"}</span>
+          </div>
+        </label>
       </div>
-
-      <label className="docx-upload-label">
-        <input
-          type="file"
-          accept=".docx"
-          onChange={parseDocx}
-          disabled={parsing}
-          className="docx-upload-input"
-          style={{ display: "none" }} // Keeps visual consistency with your custom CSS button
-        />
-        <span className="docx-upload-btn" style={{ cursor: "pointer", display: "inline-block" }}>
-          {parsing ? "Parsing..." : "📂 Choose .docx File"}
-        </span>
-      </label>
-
       {status && (
         <p
-          className={`docx-status ${
-            status.startsWith("✅") ? "docx-success" : "docx-error"
-          }`}
-          style={{ marginTop: "12px", fontSize: "13.5px", fontWeight: "500" }}
+          className={`docx-status ${status.startsWith("✅") ? "docx-success" : "docx-error"}`}
+          style={{ 
+            margin: "0", 
+            fontSize: "11px", 
+            fontWeight: "600",
+            color: status.startsWith("✅") ? "var(--green)" : "var(--red)"
+          }}
         >
           {status}
         </p>

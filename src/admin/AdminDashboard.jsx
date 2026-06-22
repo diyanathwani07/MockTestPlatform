@@ -50,14 +50,6 @@ function AdminDashboard() {
         <div className="admin-content">
           {error && <p className="admin-error">{error}</p>}
 
-          {/* 1. WELCOME GREETING BANNER FIRST */}
-          <div className="dashboard-welcome-card" style={{ marginBottom: "28px" }}>
-            <h3>Welcome back, Admin</h3>
-            <p>
-              Manage quizzes, monitor candidate performance, and oversee the
-              entire examination platform from this panel.
-            </p>
-          </div>
 
           {/* 2. STAT METRICS GRID SECOND */}
           <div className="stat-cards-grid">

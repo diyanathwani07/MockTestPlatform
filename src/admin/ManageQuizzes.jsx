@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminSidebar from "./components/AdminSidebar";
+import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
-import "../css/admin/AdminLayout.css";
-import "../css/admin/ManageQuizzes.css";
+import AdminSidebar from "./components/AdminSidebar";
 
 function ManageQuizzes() {
-  const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-
-  const token = localStorage.getItem("token");
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const navigate = useNavigate();
 
   const fetchQuizzes = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/quizzes");
-      setQuizzes(res.data);
+      const response = await axios.get("http://localhost:5000/api/quizzes");
+      setQuizzes(response.data);
     } catch (error) {
       console.error("Fetch Quizzes Error:", error);
-      setMessage("Failed to load quizzes.");
     } finally {
       setLoading(false);
     }
@@ -31,142 +26,222 @@ function ManageQuizzes() {
     fetchQuizzes();
   }, []);
 
-  const togglePublish = async (quiz) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/quizzes/${quiz._id}`,
-        { published: !quiz.published },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchQuizzes();
-    } catch (error) {
-      console.error("Toggle Publish Error:", error);
-      setMessage("Failed to update quiz status.");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this quiz? This cannot be undone.")) {
-      return;
-    }
-
-    try {
-      await axios.delete(`http://localhost:5000/api/quizzes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMessage("Quiz deleted successfully.");
-      fetchQuizzes();
-    } catch (error) {
-      console.error("Delete Quiz Error:", error);
-      setMessage("Failed to delete quiz.");
-    }
-  };
-
-  const filteredQuizzes = quizzes.filter((quiz) =>
-    quiz.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quiz.subject?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredQuizzes = quizzes.filter(q => 
+    q.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    q.subject?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDelete = async (id, title) => {
+    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`http://localhost:5000/api/quizzes/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setQuizzes(quizzes.filter(q => q._id !== id));
+      } catch (error) {
+        console.error("Delete Quiz Error:", error);
+        alert("Failed to delete quiz.");
+      }
+    }
+  };
+
   return (
-    <div className="admin-layout">
+    <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
 
-      <div className="admin-main">
+      <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar title="Manage Quizzes" />
 
-        <div className="admin-content">
-          {message && <p className="admin-status-message">{message}</p>}
+        <div className="admin-content" style={{ padding: "32px", flex: 1, textAlign: "left" }}>
 
-          {/* COMMAND BAR: Pushes Search LEFT, Button RIGHT */}
-          <div className="manage-command-bar">
+          {/* ─── APEX COMMAND BAR ─── */}
+          <div className="armored-admin-card" style={{ 
+            backgroundColor: "var(--bg-card)", 
+            border: "1.5px solid var(--border-color)", 
+            borderRadius: "16px", 
+            padding: "24px 32px", 
+            marginBottom: "28px", 
+            boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            textAlign: "left"
+          }}>
             
-            {/* 1. Reuses the Pill Search Bar */}
-            <div className="pill-search-container" style={{ marginBottom: 0 }}>
-              <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              
-              <input
-                type="text"
-                placeholder="Search quizzes by title or subject..."
-                className="pill-search-input"
-                onChange={(e) => setSearchTerm(e.target.value)}
-                value={searchTerm}
-              />
+            <div style={{ marginBottom: "16px", textAlign: "left" }}>
+              <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
+                Active Assessment Modules
+              </h2>
+              <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600" }}>
+                Total Quizzes in Bank: {filteredQuizzes.length}
+              </span>
             </div>
 
-            {/* 2. Shrunken Pill Button on the far right */}
-            <button
-              className="create-quiz-pill-btn"
-              onClick={() => navigate("/admin/create-quiz")}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              <span>Create Quiz</span>
-            </button>
+            {/* Sleek Rounded Search Bar (Smaller & Left Aligned) */}
+            <div style={{ 
+              display: "flex", alignItems: "center", gap: "10px", 
+              backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
+              borderRadius: "100px", padding: "8px 16px", width: "100%", maxWidth: "320px",
+              boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
+            }}>
+              <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
+              <input 
+                type="text" 
+                placeholder="Search quiz or subject..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
+              />
+              {searchTerm && (
+                <span 
+                  onClick={() => setSearchTerm("")}
+                  style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold" }}
+                  title="Clear search"
+                >
+                  ✕
+                </span>
+              )}
+            </div>
 
           </div>
 
-          {/* TABLE CONTAINER */}
-          <div className="quiz-table-wrapper">
-            <table className="quiz-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Subject</th>
-                  <th>Duration</th>
-                  <th>Questions</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredQuizzes.map((quiz) => (
-                  <tr key={quiz._id}>
-                    <td style={{ fontWeight: "600", color: "#1a1a2e" }}>{quiz.title}</td>
-                    <td>{quiz.subject}</td>
-                    <td>{quiz.duration} min</td>
-                    <td>{quiz.questions?.length || 0}</td>
-                    <td>
-                      <span
-                        className={`status-badge ${
-                          quiz.published ? "status-published" : "status-draft"
-                        }`}
-                        onClick={() => togglePublish(quiz)}
-                      >
-                        {quiz.published ? "Published" : "Draft"}
-                      </span>
-                    </td>
-                    <td className="action-cell">
-                      {/* Preserved your exact preferred Edit & Delete buttons */}
-                      <button
-                        className="edit-btn"
-                        onClick={() => navigate(`/admin/edit-quiz/${quiz._id}`)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDelete(quiz._id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
+          {/* ─── DATA TABLE ─── */}
+          <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: 0, overflowX: "auto", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
+            {loading ? (
+              <div style={{ padding: "64px 20px", textAlign: "center", color: "var(--text-secondary)", fontSize: "15px" }}>
+                ⏳ Loading quizzes from database...
+              </div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "var(--bg-page)", borderBottom: "1.5px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
+                    <th style={{ padding: "18px 28px", fontWeight: "700" }}>Title</th>
+                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Subject</th>
+                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Duration</th>
+                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Questions</th>
+                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Status</th>
+                    <th style={{ padding: "18px 28px", fontWeight: "700", textAlign: "right" }}>Actions</th>
                   </tr>
-                ))}
+                </thead>
+                <tbody className="report-table-body">
+                  {filteredQuizzes.length > 0 ? (
+                    filteredQuizzes.map((quiz) => (
+                      <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "14px" }}>
+                        
+                        <td style={{ padding: "18px 28px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          {quiz.title}
+                        </td>
+                        
+                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "500" }}>
+                          {quiz.subject}
+                        </td>
+                        
+                        <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)" }}>
+                          {quiz.duration} min
+                        </td>
+                        
+                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)" }}>
+                          {quiz.questions?.length || 0}
+                        </td>
+                        
+                        <td style={{ padding: "18px 24px" }}>
+                          <span style={{
+                            backgroundColor: 
+                              quiz.status === "Published" ? "#E4F8F0" : 
+                              quiz.status === "Scheduled" ? "#EFF6FF" : "#F1F5F9",
+                            color: 
+                              quiz.status === "Published" ? "#10B981" : 
+                              quiz.status === "Scheduled" ? "#3B82F6" : "#475569",
+                            padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: "700", display: "inline-block"
+                          }}>
+                            {quiz.status || "Draft"}
+                          </span>
+                        </td>
 
-                {!loading && filteredQuizzes.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="empty-row">
-                      No quizzes found matching your search.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                        <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible" }}>
+                          <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
+                            <button 
+                              onClick={() => setActiveDropdown(activeDropdown === quiz._id ? null : quiz._id)}
+                              style={{ 
+                                background: "transparent", 
+                                border: "none", 
+                                color: "var(--text-primary)", 
+                                fontSize: "18px", 
+                                fontWeight: "bold",
+                                cursor: "pointer", 
+                                padding: "4px 12px",
+                                outline: "none"
+                              }}
+                              title="Quiz Actions"
+                            >
+                              ⋮
+                            </button>
+                            
+                            {activeDropdown === quiz._id && (
+                              <>
+                                {/* Global backdrop to dismiss dropdown on outer click */}
+                                <div 
+                                  onClick={() => setActiveDropdown(null)}
+                                  style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
+                                />
+                                
+                                {/* Floating context dropdown menu */}
+                                <div style={{ 
+                                  position: "absolute", 
+                                  right: 0, 
+                                  top: "28px", 
+                                  backgroundColor: "var(--bg-card)", 
+                                  border: "1.5px solid var(--border-color)", 
+                                  borderRadius: "10px", 
+                                  padding: "6px 0", 
+                                  minWidth: "130px", 
+                                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)", 
+                                  zIndex: 100,
+                                  textAlign: "left"
+                                }}>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-quiz/${quiz._id}`); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                  >
+                                    ✏️ Edit
+                                  </div>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-quiz/${quiz._id}`); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                  >
+                                    📅 Schedule
+                                  </div>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)" }}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                  >
+                                    🗑️ Delete
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </td>
+
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" style={{ padding: "64px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: "15px" }}>
+                        No examination modules match "{searchTerm}".
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
 
         </div>

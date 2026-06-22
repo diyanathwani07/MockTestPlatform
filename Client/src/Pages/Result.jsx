@@ -8,7 +8,7 @@ function Result() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // data is sent via navigate("/result", { state: data }) from Quiz.jsx
+  // Grab the packet handed over by Quiz.jsx
   const data = location.state;
 
   const score = data?.score ?? 0;
@@ -19,7 +19,9 @@ function Result() {
   const percentage = data?.percentage;
   const questions = data?.questions ?? [];
   const userAnswers = data?.userAnswers ?? [];
-
+  
+  // Safely inherit the Exam Name
+const examTitle = data?.title || data?.subject || localStorage.getItem("lastExamTaken") || "Performance Scorecard";
   const computedPercentage =
     percentage !== undefined && percentage !== null
       ? Number(percentage).toFixed(2)
@@ -27,23 +29,17 @@ function Result() {
       ? ((score / total) * 100).toFixed(2)
       : "0.00";
 
-  // Save result to MongoDB whenever this page loads with valid data
+  // ─── MONGODB AUTO-SAVE ENGINE ───
   useEffect(() => {
-    if (!data) return; // nothing to save if user landed here without quiz data
-
-    console.log("Result Page Loaded");
+    if (!data) return; 
 
     const saveResult = async () => {
       try {
-        console.log("Saving Result...");
-
         const userString = localStorage.getItem("user");
-        console.log("user from localStorage:", userString);
-
         const user = userString ? JSON.parse(userString) : null;
 
         if (!user || !user.id) {
-          console.log("SAVE SKIPPED: no logged-in user found in localStorage");
+          console.log("Save Skipped: No authenticated user inside localStorage");
           return;
         }
 
@@ -58,28 +54,25 @@ function Result() {
             percentage: Number(computedPercentage),
           }
         );
-
-        console.log("Result Saved");
-        console.log(res.data);
+        console.log("Secure Result Payload logged to DB:", res.data);
       } catch (error) {
-        console.log("SAVE ERROR");
-        console.log(error);
+        console.error("MongoDB Save Error:", error);
       }
     };
 
     saveResult();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [data, score, total, correct, incorrect, computedPercentage]);
 
+  // Fallback view if a user tries to type /result directly into the URL bar
   if (!data) {
     return (
       <div className="result-page">
-        <QuizHeader />
+        <QuizHeader title="Test Result" showInstructions={false} />
         <div className="result-empty">
-          <h2>No result data found.</h2>
-          <p>Please attempt the test first.</p>
+          <h2>No Exam Record Detected</h2>
+          <p>You must complete an active examination session to generate a score report.</p>
           <button className="back-btn" onClick={() => navigate("/")}>
-            Go to Test
+            Return to Portal
           </button>
         </div>
       </div>
@@ -88,39 +81,39 @@ function Result() {
 
   return (
     <div className="result-page">
-      <QuizHeader />
+      <QuizHeader title={examTitle} showInstructions={false} />
 
       <div className="result-summary">
-        <h1>Test Result</h1>
+        <h1>Performance Scorecard</h1>
 
         <div className="summary-cards">
-          <div className="card total">
+          <div className="card total-card">
             <h3>Total Questions</h3>
             <p>{total}</p>
           </div>
 
-          <div className="card score">
-            <h3>Score</h3>
+          <div className="card score-card">
+            <h3>Points Earned</h3>
             <p>{score}</p>
           </div>
 
-          <div className="card correct">
+          <div className="card correct-card">
             <h3>Correct</h3>
             <p>{correct}</p>
           </div>
 
-          <div className="card incorrect">
+          <div className="card incorrect-card">
             <h3>Incorrect</h3>
             <p>{incorrect}</p>
           </div>
 
-          <div className="card unanswered">
-            <h3>Unanswered</h3>
+          <div className="card unanswered-card">
+            <h3>Skipped</h3>
             <p>{unanswered}</p>
           </div>
 
-          <div className="card percentage">
-            <h3>Percentage</h3>
+          <div className="card percentage-card">
+            <h3>Accuracy</h3>
             <p>{computedPercentage}%</p>
           </div>
         </div>
@@ -128,7 +121,7 @@ function Result() {
 
       {questions.length > 0 && (
         <div className="result-details">
-          <h2>Answer Review</h2>
+          <h2>Detailed Answer Key</h2>
 
           <div className="review-list">
             {questions.map((q, index) => {
@@ -138,15 +131,18 @@ function Result() {
                 : undefined;
 
               return (
-                <div className="review-item" key={q.id || index}>
+                <div className="review-item" key={q._id || index}>
+                  
+                  {/* Question Prompt */}
                   <div className="review-question">
                     <span className="q-number">Q{index + 1}.</span>{" "}
-                    {q.english}
+                    {q.english || q.questionEnglish}
                   </div>
 
+                  {/* User vs Correct Breakdown */}
                   <div className="review-answers">
                     <p>
-                      <strong>Your Answer: </strong>
+                      <span className="ans-label">Your Answer: </span>
                       <span
                         className={
                           userAns === undefined
@@ -162,12 +158,19 @@ function Result() {
 
                     {q.correctAnswer && (
                       <p>
-                        <strong>Correct Answer: </strong>
-                        <span className="correct-text">
-                          {q.correctAnswer}
-                        </span>
+                        <span className="ans-label">Correct Answer: </span>
+                        <span className="correct-text">{q.correctAnswer}</span>
                       </p>
                     )}
+
+                    {/* ─── THE EXPLANATION REVEAL ENGINE ─── */}
+                    {(q.explanation || q.answerExplanation) && (
+                      <div className="explanation-wrapper">
+                        <span className="explanation-label">💡 Explanation</span>
+                        <p className="explanation-text">{q.explanation || q.answerExplanation}</p>
+                      </div>
+                    )}
+
                   </div>
                 </div>
               );
@@ -178,9 +181,8 @@ function Result() {
 
       <div className="result-actions">
         <button className="back-btn" onClick={() => navigate("/")}>
-          Back to Login
+          Return to Dashboard
         </button>
-
       </div>
     </div>
   );

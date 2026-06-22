@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useTheme } from "../context/ThemeContext";
 import "../css/StartTest.css";
 
 function StartTest() {
   const navigate = useNavigate();
+  const { toggleTheme } = useTheme();
   
   const [quizzes, setQuizzes] = useState([]);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -53,6 +55,12 @@ function StartTest() {
 
   return (
     <div className="start-page">
+      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
+          <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+          <div className="pill-thumb-slider"></div>
+        </div>
+      </div>
       <div className="top-left"></div>
       <div className="bottom-right"></div>
       <div className="big-circle"></div>

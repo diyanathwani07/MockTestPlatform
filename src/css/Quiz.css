@@ -202,11 +202,11 @@ body {
   align-items: center; 
 }
 
-.review-btn { background: #F4C842; color: #1a1a2e; }
-.clear-btn  { background: #c51414; color: #e2436b; border: 1.5px solid #f7d6e0 !important; }
-.prev-btn   { background: #F1EFFA; color: #2D1B69 !important; }
-.next-btn   { background: linear-gradient(135deg, #2D1B69, #6E3FF3); }
-.submit-btn { background: linear-gradient(135deg, #15803d, #22a85a); }
+.review-btn { background: #F4C842 !important; color: #FFFFFF !important; border: none !important; }
+.clear-btn  { background: #C51414 !important; color: #FFFFFF !important; border: none !important; }
+.prev-btn   { background: #F1EFFA !important; color: #2D1B69 !important; border: 1.5px solid #D8D3F0 !important; }
+.next-btn   { background: #3730A3 !important; color: #FFFFFF !important; border: none !important; }
+.submit-btn { background: #16A34A !important; color: #FFFFFF !important; border: none !important; }
 
 /* ================= RIGHT PANEL & TIMER ================= */
 .right-panel { 
@@ -361,27 +361,27 @@ body {
 }
 
 .palette-btn.q-answered {
-  background-color: #1aa971;
-  color: #fff;
-  border-color: #1aa971;
+  background: #10B981 !important;
+  color: #fff !important;
+  border-color: #10B981 !important;
 }
 
 .palette-btn.q-not-answered {
-  background-color: #e2436b;
-  color: #fff;
-  border-color: #e2436b;
+  background: #C51414 !important;
+  color: #fff !important;
+  border-color: #C51414 !important;
 }
 
 .palette-btn.q-not-visited {
-  background-color: #FCFBFF;
-  color: #4a4760;
-  border-color: #ECE9F7;
+  background: #F1EFFA !important;
+  color: #2D1B69 !important;
+  border-color: #D8D3F0 !important;
 }
 
 .palette-btn.q-review {
-  background-color: #F4C842;
-  color: #1a1a2e;
-  border-color: #F4C842;
+  background: #F4C842 !important;
+  color: #1a1a2e !important;
+  border-color: #F4C842 !important;
 }
 
 /* ================= INSTRUCTIONS PAGE ================= */

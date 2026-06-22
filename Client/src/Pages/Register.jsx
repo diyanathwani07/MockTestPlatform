@@ -1,11 +1,13 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 import "../css/Register.css";
 
 
 function Register() {
   const navigate = useNavigate();
+  const { toggleTheme } = useTheme();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -62,6 +64,12 @@ function Register() {
 
   return (
     <div className="register-page">
+      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
+          <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+          <div className="pill-thumb-slider"></div>
+        </div>
+      </div>
 
       {/* Background Shapes */}
       <div className="top-left"></div>

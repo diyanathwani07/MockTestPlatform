@@ -2,10 +2,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ForgotPassword from "./Pages/ForgotPassword";
 import AdminRoute from "./components/AdminRoute";
-import EditQuiz from "./admin/EditQuiz";
+
 
 import AdminDashboard from "./admin/AdminDashboard";
 import CreateQuiz from "./admin/CreateQuiz";
+import EditQuiz from "./admin/EditQuiz";
 import ManageQuizzes from "./admin/ManageQuizzes";
 import Subjects from "./admin/Subjects";
 import AdminQuestions from "./admin/Questions";
@@ -13,6 +14,11 @@ import AdminUsers from "./admin/Users";
 import AdminResults from "./admin/Results";
 import Reports from "./admin/Reports";
 import Settings from "./admin/Settings";
+
+
+// ─── 🎯 FORENSICALLY CORRECTED PATHS ───
+import AuditLog from "./admin/AuditLog"; // <── (Requires src/admin/AuditLog.jsx to exist!)
+import AdminProfile from "./admin/components/AdminProfile"; // <── Re-routed into 'components'
 
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
@@ -62,10 +68,21 @@ function App() {
           }
         />
 
-        {/* ADMIN ROUTES */}
+        {/* ================= ADMIN ROUTES ================= */}
 
+        {/* DOOR 1: Catches people typing localhost:5173/admin */}
         <Route
           path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+
+        {/* DOOR 2: Catches the Sidebar clicking /admin/dashboard */}
+        <Route
+          path="/admin/dashboard"
           element={
             <AdminRoute>
               <AdminDashboard />
@@ -81,6 +98,8 @@ function App() {
             </AdminRoute>
           }
         />
+
+        <Route path="/admin" element={<AdminDashboard />} />
 
         <Route
           path="/admin/edit-quiz/:id"
@@ -150,6 +169,25 @@ function App() {
           element={
             <AdminRoute>
               <Settings />
+            </AdminRoute>
+          }
+        />
+
+        {/* ─── 2. THE TWO MISSING DOORS UNLOCKED HERE ─── */}
+        <Route
+          path="/admin/audit-log"
+          element={
+            <AdminRoute>
+              <AuditLog />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/profile"
+          element={
+            <AdminRoute>
+              <AdminProfile />
             </AdminRoute>
           }
         />

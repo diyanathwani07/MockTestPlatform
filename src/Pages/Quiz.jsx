@@ -1,49 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios"; // 📦 IMPORTED AXIOS TO TALK TO MONGO
-
-import QuizHeader from "../components/QuizHeader";
-import SubjectTabs from "../components/SubjectTabs";
-import CandidatePanel from "../components/CandidatePanel";
-import QuestionPalette from "../components/QuestionPalette";
-
-import "../css/Quiz.css";
+import axios from "axios";
+import { useTheme } from "../context/ThemeContext";
 
 function Quiz() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toggleTheme } = useTheme();
 
-  // 🪝 Grab the footprint handed over from StartTest.jsx
-  const examSubject = location.state?.subject || "BPSC - Quantitative Aptitude";
+  // 🪝 1. GRABS THE EXACT EXAM CLICKED IN 'StartTest.jsx'
+  const examSubject = location.state?.subject || localStorage.getItem("lastExamTaken") || "General Studies";
   const quizId = location.state?.quizId;
   const initialDurationMinutes = location.state?.duration || 30;
 
-  const [activeTab, setActiveTab] = useState("Quantitative Aptitude");
-  
-  // 🧠 REPLACED STATIC ARRAY WITH DYNAMIC STATE
+  // Immediately cache subject so Result page always knows what exam was taken
+  // (survives backend redirects, page refreshes, etc.)
+  if (location.state?.subject) {
+    localStorage.setItem("lastExamTaken", location.state.subject);
+  }
+
+  // Grab logged-in user's name for the Profile Card
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const candidateName = storedUser.fullName || "Registered Aspirant";
+
   const [questions, setQuestions] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
 
   const [userAnswers, setUserAnswers] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(initialDurationMinutes * 60); // Dynamically converts DB minutes to seconds!
+  const [timeLeft, setTimeLeft] = useState(initialDurationMinutes * 60);
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
 
-  // 🌐 THE BRAIN INJECTION: Fetch the real MongoDB test on load
+  // 🌐 MONGO FETCH (Untouched - Your exact logic)
   useEffect(() => {
     const fetchLiveExam = async () => {
       if (!quizId) {
-        alert("No Exam ID detected! Redirecting back to exam selection.");
+        alert("No Exam ID detected! Redirecting back.");
         navigate("/start-test");
         return;
       }
-
       try {
         const response = await axios.get(`http://localhost:5000/api/quizzes/${quizId}`);
         const rawQuestions = response.data.questions || [];
-
-        // 🛡️ THE TRANSLATOR: Maps Mongo's 'questionEnglish' to your frontend's 'english' instantly
         const mappedQuestions = rawQuestions.map((q, idx) => ({
           id: idx + 1,
           _id: q._id,
@@ -52,43 +51,34 @@ function Quiz() {
           options: q.options || [],
           correctAnswer: q.correctAnswer || ""
         }));
-
         setQuestions(mappedQuestions);
         setUserAnswers(new Array(mappedQuestions.length).fill(undefined));
       } catch (err) {
-        console.error("Failed to load exam packet:", err);
-        alert("Could not load exam data. Server might be unreachable.");
+        console.error(err);
+        alert("Could not load exam packet from MongoDB.");
       } finally {
         setPageLoading(false);
       }
     };
-
     fetchLiveExam();
   }, [quizId, navigate]);
 
-  // Timer logic
+  // Timer Tick
   useEffect(() => {
-    if (pageLoading) return; // Don't tick the clock while the DB is loading!
-
+    if (pageLoading) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
-
     return () => clearInterval(timer);
   }, [pageLoading]);
 
   // Visited Tracker
   useEffect(() => {
-    setVisitedQuestions((prev) =>
-      prev.includes(currentQuestion) ? prev : [...prev, currentQuestion]
-    );
+    setVisitedQuestions((prev) => prev.includes(currentQuestion) ? prev : [...prev, currentQuestion]);
   }, [currentQuestion]);
 
   const markForReview = () => {
-    setReviewQuestions((prev) => {
-      if (prev.includes(currentQuestion)) return prev;
-      return [...prev, currentQuestion];
-    });
+    setReviewQuestions((prev) => prev.includes(currentQuestion) ? prev : [...prev, currentQuestion]);
   };
 
   const clearResponse = () => {
@@ -101,32 +91,76 @@ function Quiz() {
 
   const submitQuiz = async () => {
     if (!window.confirm("Are you sure you want to submit your exam?")) return;
-
     try {
       const res = await fetch("http://localhost:5000/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userAnswers,
-          questions, // Now contains the true DB questions with their real correctAnswers
-        }),
+        body: JSON.stringify({ userAnswers, questions }),
       });
-
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
-
-      const data = await res.json();
-      navigate("/result", { state: data });
-
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const serverData = await res.json();
+      // Always carry subject/title forward so Result header shows the right name
+      navigate("/result", { 
+        state: { 
+          ...serverData,
+          title: examSubject,
+          subject: examSubject,
+          questions,
+          userAnswers
+        } 
+      });
     } catch (err) {
-      console.error("Submit Error:", err);
-      alert("Failed to grade test. Please check if your Node backend is live.");
+      // Offline fallback — grade locally and still show subject on result page
+      let correct = 0, incorrect = 0, unanswered = 0;
+      questions.forEach((q, i) => {
+        const ans = userAnswers[i];
+        if (ans === undefined || ans === null) unanswered++;
+        else if (ans === q.correctAnswer) correct++;
+        else incorrect++;
+      });
+      const total = questions.length;
+      navigate("/result", {
+        state: {
+          title: examSubject,
+          subject: examSubject,
+          score: correct,
+          total,
+          correct,
+          incorrect,
+          unanswered,
+          percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
+          questions,
+          userAnswers
+        }
+      });
     }
+  };
+
+
+  // Helper to turn 1800 seconds into "00 : 30 : 00"
+  const formatTimeBox = (totalSecs) => {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    return `${h.toString().padStart(2, "0")} : ${m.toString().padStart(2, "0")} : ${s.toString().padStart(2, "0")}`;
+  };
+
+  // Helper to decide button colors in the Palette
+  const getPaletteStatus = (idx) => {
+    if (reviewQuestions.includes(idx)) return "review";
+    if (userAnswers[idx] !== undefined) return "answered";
+    if (visitedQuestions.includes(idx)) return "visited";
+    return "unvisited";
   };
 
   if (pageLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "120px", fontSize: "22px", fontFamily: "sans-serif" }}>
-        ⏳ Loading Secure Exam Simulator...
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-page)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "40px 60px", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", textAlign: "center" }}>
+          <div style={{ fontSize: "40px", marginBottom: "12px", animation: "spin 1s infinite" }}>⏳</div>
+          <h3 style={{ margin: 0, color: "var(--text-primary)", fontFamily: "sans-serif" }}>Decrypting Exam Packet...</h3>
+          <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "6px" }}>Establishing secure handshake with MongoDB</p>
+        </div>
       </div>
     );
   }
@@ -134,88 +168,257 @@ function Quiz() {
   const current = questions[currentQuestion];
 
   return (
-    <div className="quiz-page">
-      <QuizHeader />
-      <SubjectTabs examSubject={examSubject} />
+    <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh", paddingBottom: "60px", color: "var(--text-primary)", fontFamily: "'Inter', sans-serif", userSelect: "none" }}>
+      
+      {/* ─── TOP HEADER ─── */}
+      <header style={{ backgroundColor: "var(--bg-header)", borderBottom: "1.5px solid var(--border-color)", marginBottom: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 36px", maxWidth: "1400px", margin: "0 auto" }}>
 
-      <div className="main-layout">
-        {/* Left Side: Question Area */}
-        <div className="question-section">
-          <h2>Question No. {currentQuestion + 1}</h2>
+          {/* LEFT: Brand only */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "linear-gradient(135deg, #2D1B69, #6E3FF3)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "18px" }}>🎓</div>
+            <h1 style={{ fontSize: "18px", fontWeight: "700", margin: 0, color: "var(--text-primary)" }}>Teaching Pariksha</h1>
+          </div>
 
-          <div className="question-box">
-            <h3>English</h3>
-            <p>{current?.english}</p>
+          {/* CENTER: Dynamic Subject Name */}
+          <div style={{ fontWeight: "700", fontSize: "15px", color: "#DC2626", letterSpacing: "0.5px", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#DC2626", display: "inline-block", animation: "pulse 1.5s infinite" }}></span>
+            {examSubject}
+          </div>
 
-            {current?.hindi && (
-              <>
-                <h3>Hindi</h3>
-                <p>{current?.hindi}</p>
-              </>
+          {/* RIGHT: Theme toggle + Instructions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
+              <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+              <div className="pill-thumb-slider"></div>
+            </div>
+            <button style={{ background: "#1E1B4B", color: "#FFF", border: "none", borderRadius: "10px", padding: "10px 20px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}>
+              Instructions
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Centering wrapper */}
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 36px" }}>
+
+        {/* ─── 2. DYNAMIC EXAM TITLE PILL ─── */}
+        <div style={{ marginBottom: "20px" }}>
+          <span style={{ backgroundColor: "#1E1B4B", color: "#FFF", fontWeight: "600", fontSize: "13px", padding: "8px 18px", borderRadius: "10px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+            <span>⊞</span> {examSubject}
+          </span>
+        </div>
+
+        {/* ─── 3. VIEWPORT GRID ─── */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "24px" }}>
+        
+        {/* LEFT: QUESTION & OPTIONS */}
+        <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "32px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "var(--card-shadow)" }}>
+          
+          <div>
+            {/* Question Number Bar */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <span style={{ backgroundColor: "var(--bg-page)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", fontWeight: "700", fontSize: "13px", padding: "8px 16px", borderRadius: "20px" }}>
+                Question No. {currentQuestion + 1} of {questions.length}
+              </span>
+            </div>
+
+            {/* English Question */}
+            {current?.english && (
+              <div style={{ marginBottom: current?.hindi ? "20px" : "30px", textAlign: "left" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: "700", lineHeight: "1.5", margin: 0, color: "var(--text-primary)", textAlign: "left" }}>{current.english}</h2>
+              </div>
             )}
+
+            {/* Hindi Question */}
+            {current?.hindi && (
+              <div style={{ marginBottom: "30px", textAlign: "left" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: "600", lineHeight: "1.5", color: "var(--text-secondary)", margin: 0, textAlign: "left" }}>{current.hindi}</h2>
+              </div>
+            )}
+
+            {/* Options */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "40px" }}>
+              {current?.options.map((option) => {
+                const isSelected = userAnswers[currentQuestion] === option;
+                return (
+                  <div 
+                    key={option}
+                    onClick={() => {
+                      setUserAnswers((prev) => {
+                        const updated = [...prev];
+                        updated[currentQuestion] = option;
+                        return updated;
+                      });
+                    }}
+                    className={`option-card ${isSelected ? "selected-opt-card" : ""}`}
+                    style={{ 
+                      border: isSelected ? "2.5px solid var(--violet)" : "1.5px solid var(--border-color)", 
+                      backgroundColor: isSelected ? "var(--option-hover)" : "var(--bg-card)", 
+                      borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "16px", cursor: "pointer",
+                      fontWeight: "600", fontSize: "15px", transition: "all 0.15s ease",
+                      color: "var(--text-primary)"
+                    }}
+                  >
+                    <div style={{ 
+                      width: "20px", height: "20px", borderRadius: "50%", 
+                      border: isSelected ? "6px solid var(--violet)" : "2.5px solid var(--text-muted)", backgroundColor: "var(--bg-card)" 
+                    }} />
+                    <span>{option}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="options">
-            {current?.options.map((option) => (
-              <label className="option-card" key={option}>
-                <input
-                  type="radio"
-                  name={`question-${currentQuestion}`}
-                  checked={userAnswers[currentQuestion] === option}
-                  onChange={() => {
-                    setUserAnswers((prev) => {
-                      const updated = [...prev];
-                      updated[currentQuestion] = option;
-                      return updated;
-                    });
-                  }}
-                />
-                {option}
-              </label>
-            ))}
+          {/* Bottom Action Controls */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", borderTop: "1.5px solid var(--border-color)", paddingTop: "24px" }}>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button onClick={markForReview} style={{ background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+                Mark Review
+              </button>
+              <button onClick={clearResponse} style={{ background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+                Clear Response
+              </button>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button 
+                onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))} 
+                disabled={currentQuestion === 0}
+                style={{ 
+                  background: "#F1EFFA",
+                  color: "#2D1B69", 
+                  border: "1.5px solid #D8D3F0", 
+                  borderRadius: "10px", 
+                  padding: "12px 24px", 
+                  fontWeight: "700", 
+                  fontSize: "13px", 
+                  cursor: currentQuestion === 0 ? "not-allowed" : "pointer",
+                  opacity: currentQuestion === 0 ? 0.5 : 1,
+                  transition: "all 0.15s ease",
+                  width: "auto"
+                }}
+              >
+                Previous
+              </button>
+              <button 
+                onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))} 
+                disabled={currentQuestion === questions.length - 1}
+                style={{ 
+                  background: "#3730A3",
+                  color: "#FFFFFF", 
+                  border: "none", 
+                  borderRadius: "10px", 
+                  padding: "12px 32px", 
+                  fontWeight: "700", 
+                  fontSize: "13px", 
+                  cursor: currentQuestion === questions.length - 1 ? "not-allowed" : "pointer",
+                  opacity: currentQuestion === questions.length - 1 ? 0.5 : 1,
+                  transition: "all 0.15s ease",
+                  width: "auto"
+                }}
+              >
+                Next
+              </button>
+              {currentQuestion === questions.length - 1 && (
+                <button onClick={submitQuiz} style={{ background: "#16A34A", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 28px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+                  Submit Test
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="button-group">
-            <button className="review-btn" onClick={markForReview}>
-              Mark Review
-            </button>
-            <button className="clear-btn" onClick={clearResponse}>
-              Clear Response
-            </button>
-            <button
-              className="prev-btn"
-              onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))}
-            >
-              Previous
-            </button>
-            <button
-              className="next-btn"
-              onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))}
-            >
-              Next
-            </button>
-            <button type="button" className="submit-btn" onClick={submitQuiz}>
-              Submit Test
-            </button>
-          </div>
         </div>
 
-        {/* Right Side: Candidate Info & Question Palette */}
-        <div className="right-panel">
-          <CandidatePanel timeLeft={timeLeft} />
+        {/* RIGHT PANEL: LIVE TELEMETRY */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          
+          {/* 1. Candidate Info */}
+          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
+              👤 Aspirant Identity
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(110, 63, 243, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold", color: "var(--violet)" }}>
+                {candidateName.charAt(0)}
+              </div>
+              <div style={{ overflow: "hidden" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 2px 0", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{candidateName}</h3>
+                <span style={{ fontSize: "12px", color: "var(--violet)", fontWeight: "600", display: "block", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
+                  {examSubject}
+                </span>
+              </div>
+            </div>
+          </div>
 
-          <QuestionPalette
-            questions={questions}
-            currentQuestion={currentQuestion}
-            setCurrentQuestion={setCurrentQuestion}
-            userAnswers={userAnswers}
-            reviewQuestions={reviewQuestions}
-            visitedQuestions={visitedQuestions}
-          />
+          {/* 2. Clock */}
+          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "12px", display: "block", textAlign: "center" }}>
+              ⏱️ Time Remaining
+            </span>
+            <div style={{ textAlign: "center", padding: "8px 0 16px 0", borderBottom: "1.5px solid var(--border-color)", marginBottom: "16px" }}>
+              <div style={{ fontSize: "34px", fontWeight: "800", color: timeLeft < 300 ? "#DC2626" : "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
+                {formatTimeBox(timeLeft)}
+              </div>
+              <div style={{ display: "flex", justifyContent: "center", gap: "34px", color: "var(--text-muted)", fontSize: "10px", fontWeight: "700", marginTop: "4px" }}>
+                <span>HRS</span>
+                <span>MINS</span>
+                <span>SECS</span>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981" }} /> Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#C51414" }} /> Not Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--border-color)" }} /> Not Visited</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
+            </div>
+          </div>
+
+          {/* 3. Real-Time Palette Grid */}
+          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
+              🎨 Navigation Palette
+            </span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", maxHeight: "240px", overflowY: "auto", paddingRight: "4px" }}>
+              {questions.map((_, idx) => {
+                const status = getPaletteStatus(idx);
+                const isCurrent = currentQuestion === idx;
+
+                let bg = "var(--bg-card)";
+                let col = "var(--text-secondary)";
+                let bdr = "1.5px solid var(--border-color)";
+
+                if (status === "answered") { bg = "#10B981"; col = "#FFF"; bdr = "none"; }
+                else if (status === "review") { bg = "#F4C842"; col = "#FFF"; bdr = "none"; }
+                else if (status === "visited") { bg = "#C51414"; col = "#FFF"; bdr = "none"; }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentQuestion(idx)}
+                    style={{
+                      height: "40px", borderRadius: "8px", backgroundColor: bg, color: col, 
+                      border: isCurrent ? "2px solid var(--text-primary)" : bdr,
+                      fontWeight: "700", fontSize: "13px", cursor: "pointer",
+                      boxShadow: isCurrent ? "0 0 0 2px rgba(110, 63, 243, 0.2)" : "none"
+                    }}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
+
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default Quiz;

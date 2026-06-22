@@ -88,14 +88,7 @@ function Reports() {
             ))}
           </div>
 
-          {/* 2. YOUR ORIGINAL PURPLE BANNER */}
-          <div className="dashboard-welcome-card" style={{ marginBottom: "24px" }}>
-            <h3>Performance Summary & Drill-Down</h3>
-            <p>
-              This report aggregates results across all quizzes. Use the 3-way command bar below 
-              to drill down into specific candidate names, quizzes, or academic subjects.
-            </p>
-          </div>
+
 
           {/* 3. 3-WAY LIVE COMMAND BAR (Zero button bloat) */}
           <div className="reports-filter-bar">

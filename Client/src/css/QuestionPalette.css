@@ -38,30 +38,30 @@
 }
 
 .palette-btn.active {
-  outline: 3px solid #1a237e;
+  outline: 3px solid #6E3FF3;
   outline-offset: 1px;
 }
 
 .palette-btn.q-answered {
-  background-color: #4caf50;
+  background-color: #10B981;
   color: #fff;
-  border-color: #4caf50;
+  border-color: #10B981;
 }
 
 .palette-btn.q-not-answered {
-  background-color: #f44336;
+  background-color: #C51414;
   color: #fff;
-  border-color: #f44336;
+  border-color: #C51414;
 }
 
 .palette-btn.q-not-visited {
-  background-color: #e0e0e0;
-  color: #333;
-  border-color: #ccc;
+  background-color: #F1EFFA;
+  color: #2D1B69;
+  border-color: #ECE9F7;
 }
 
 .palette-btn.q-review {
-  background-color: #9c27b0;
+  background-color: #F4C842;
   color: #fff;
-  border-color: #9c27b0;
+  border-color: #F4C842;
 }

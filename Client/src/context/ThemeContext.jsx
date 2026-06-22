@@ -27,7 +27,6 @@ export function ThemeProvider({ children }) {
   );
 }
 
-// ─── This is where useTheme is BORN. It gets exported to the world! ───
 export function useTheme() {
   return useContext(ThemeContext);
 }

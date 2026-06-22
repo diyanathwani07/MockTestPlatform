@@ -10,7 +10,7 @@
 .start-page {
     position: relative;
     min-height: 100vh;
-    background: #f7f5ff;
+    background: var(--bg-page);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -63,10 +63,11 @@
 /* Main Card */
 .start-card {
     width: 850px;
-    background: white;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
     border-radius: 30px;
     padding: 50px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, .08);
+    box-shadow: var(--card-shadow);
     z-index: 10;
 }
 
@@ -84,7 +85,7 @@
 
 .logo h1 {
     font-size: 34px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 /* Heading */
@@ -92,25 +93,25 @@ h2 {
     text-align: center;
     margin: 25px 0 40px;
     font-size: 52px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 /* Table */
 .row {
     display: flex;
     padding: 20px 0;
-    border-bottom: 1px solid #ececec;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .label {
     width: 180px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .value {
     flex: 1;
-    color: #6b7280;
+    color: var(--text-secondary);
     line-height: 1.8;
 }
 
@@ -142,18 +143,18 @@ h2 {
 .subject-dropdown {
     width: 100%;
     padding: 10px 15px;
-    border: 2px solid #ececec;
+    border: 2px solid var(--border-input);
     border-radius: 8px;
     font-size: 15px;
-    color: #6a11cb;
+    color: var(--violet);
     font-weight: 600;
-    background-color: #fcfbffe6;
+    background-color: var(--bg-input);
     cursor: pointer;
     outline: none;
     transition: all 0.2s ease;
 }
 
 .subject-dropdown:focus {
-    border-color: #6a11cb;
-    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    border-color: var(--violet);
+    box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
 }

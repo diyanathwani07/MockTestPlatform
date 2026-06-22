@@ -19,6 +19,8 @@ function Result() {
   const percentage = data?.percentage;
   const questions = data?.questions ?? [];
   const userAnswers = data?.userAnswers ?? [];
+  // Read subject from navigation state (set by Quiz.jsx), then localStorage, then fallback
+  const examTitle = data?.subject || data?.title || localStorage.getItem("lastExamTaken") || "Examination";
 
   const computedPercentage =
     percentage !== undefined && percentage !== null
@@ -74,7 +76,7 @@ function Result() {
   if (!data) {
     return (
       <div className="result-page">
-        <QuizHeader />
+        <QuizHeader title={examTitle} showInstructions={false} />
         <div className="result-empty">
           <h2>No result data found.</h2>
           <p>Please attempt the test first.</p>
@@ -88,10 +90,10 @@ function Result() {
 
   return (
     <div className="result-page">
-      <QuizHeader />
+      <QuizHeader title={examTitle} showInstructions={false} />
 
       <div className="result-summary">
-        <h1>Test Result</h1>
+        <h1>{examTitle} — Result</h1>
 
         <div className="summary-cards">
           <div className="card total">

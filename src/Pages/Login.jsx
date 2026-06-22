@@ -2,10 +2,12 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 import "../css/Login.css";
 
 function Login() {
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { toggleTheme } = useTheme();
 
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
@@ -44,6 +46,12 @@ const handleSubmit = async (e) => {
 
 return (
   <div className="login-page">
+    <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+      <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
+        <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+        <div className="pill-thumb-slider"></div>
+      </div>
+    </div>
     <div className="top-left"></div>
     <div className="bottom-right"></div>
     <div className="big-circle"></div>

@@ -11,7 +11,7 @@
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background: #f5f2ff;
+  background: var(--bg-page);
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -67,10 +67,11 @@
 .login-card {
   position: relative;
   width: 500px;
-  background: white;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
   padding: 45px 50px;
   border-radius: 24px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
+  box-shadow: var(--card-shadow);
   z-index: 10;
 }
 
@@ -88,7 +89,7 @@
 
 .logo-section h1 {
   font-size: 26px;
-  color: #10143a;
+  color: var(--text-primary);
   font-weight: 700;
 }
 
@@ -97,12 +98,12 @@
 .login-card h2 {
   margin-top: 24px;
   font-size: 36px;
-  color: #10143a;
+  color: var(--text-primary);
   font-weight: 700;
 }
 
 .login-card p {
-  color: #7c839d;
+  color: var(--text-secondary);
   margin-top: 8px;
   margin-bottom: 30px;
   font-size: 15px;
@@ -119,13 +120,15 @@
   margin-bottom: 8px;
   font-weight: 600;
   font-size: 14px;
-  color: #10143a;
+  color: var(--text-primary);
 }
 
 .input-box input {
   width: 100%;
   height: 52px;
-  border: 1px solid #ddd;
+  background-color: var(--bg-input);
+  border: 1.5px solid var(--border-input);
+  color: var(--text-primary);
   border-radius: 12px;
   padding: 0 18px;
   font-size: 15px;
@@ -134,8 +137,8 @@
 }
 
 .input-box input:focus {
-  border-color: #6a11cb;
-  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
 }
 
 /* Password field with eye toggle */
@@ -209,12 +212,12 @@ button[type="submit"]:hover {
 .register-link {
   text-align: center;
   margin-top: 26px;
-  color: #555;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .register-link span {
-  color: #6a11cb;
+  color: var(--violet);
   font-weight: 600;
   text-decoration: underline;
 }

@@ -1,58 +1,30 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import "../../css/admin/AdminLayout.css";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
 
 function AdminSidebar() {
-  const navigate = useNavigate();
-
-  const menuItems = [
-    { label: "Dashboard", path: "/admin", icon: "📊" },
-    { label: "Create Quiz", path: "/admin/create-quiz", icon: "✏️" },
-    { label: "Manage Quizzes", path: "/admin/manage-quizzes", icon: "📋" },
-    { label: "Subjects", path: "/admin/subjects", icon: "📚" },
-    { label: "Questions", path: "/admin/questions", icon: "❓" },
-    { label: "Users", path: "/admin/users", icon: "👥" },
-    { label: "Results", path: "/admin/results", icon: "🏆" },
-    { label: "Reports", path: "/admin/reports", icon: "📈" },
-    { label: "Audit Log", path: "/admin/Audit Log", icon: "📜" },
-  ];
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
   return (
-    <div className="admin-sidebar">
-
+    <aside className="admin-sidebar">
       <div className="sidebar-logo">
         <span className="logo-emoji">🎓</span>
         <span className="logo-text">Teaching Pariksha</span>
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === "/admin"}
-            className={({ isActive }) =>
-              `sidebar-link ${isActive ? "active" : ""}`
-            }
-          >
-            <span className="sidebar-icon">{item.icon}</span>
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-
-        <button className="sidebar-link logout-link" onClick={handleLogout}>
-          <span className="sidebar-icon">🚪</span>
-          <span>Logout</span>
-        </button>
+        <NavLink to="/admin/dashboard" className="sidebar-link">📊 Dashboard</NavLink>
+        <NavLink to="/admin/create-quiz" className="sidebar-link">✏️ Create Quiz</NavLink>
+        <NavLink to="/admin/manage-quizzes" className="sidebar-link">📋 Manage Quizzes</NavLink>
+        <NavLink to="/admin/subjects" className="sidebar-link">📚 Subjects</NavLink>
+        <NavLink to="/admin/questions" className="sidebar-link">❓ Questions</NavLink>
+        <NavLink to="/admin/users" className="sidebar-link">👥 Users</NavLink>
+        <NavLink to="/admin/results" className="sidebar-link">🏆 Results</NavLink>
+        <NavLink to="/admin/reports" className="sidebar-link">📈 Reports</NavLink>
+        
+        {/* ─── FIXED: Changed from "Audit Log" to "audit-log" ─── */}
+        <NavLink to="/admin/audit-log" className="sidebar-link">📜 Audit Log</NavLink>
       </nav>
 
-    </div>
+      {/* The bottom left Logout button has been permanently eradicated */}
+    </aside>
   );
 }
 
