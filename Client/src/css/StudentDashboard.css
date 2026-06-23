@@ -1,0 +1,440 @@
+/* ============================================
+   STUDENT DASHBOARD — Full Dark Mode Support
+   ============================================ */
+
+/* ── PAGE ── */
+.sd-page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── NAVBAR ── */
+.sd-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 64px;
+  background: var(--bg-header);
+  border-bottom: 1.5px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.sd-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sd-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.sd-brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sd-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.sd-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sd-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6E3FF3, #2D1B69);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sd-user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.sd-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sd-user-email {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.sd-logout-btn {
+  background: transparent !important;
+  color: #DC2626 !important;
+  border: 1.5px solid #DC2626 !important;
+  border-radius: 8px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  width: auto !important;
+  height: auto !important;
+  transition: all 0.15s ease !important;
+}
+
+.sd-logout-btn:hover {
+  background: #DC2626 !important;
+  color: white !important;
+  transform: none !important;
+}
+
+/* ── HERO BANNER ── */
+.sd-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1E1B4B 0%, #2D1B69 50%, #3730A3 100%);
+  padding: 48px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sd-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.sd-hero-greeting {
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  margin: 0 0 6px 0;
+  font-weight: 500;
+}
+
+.sd-hero-name {
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.5px;
+}
+
+.sd-hero-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+  font-weight: 400;
+}
+
+.sd-hero-graphic {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  pointer-events: none;
+}
+
+.sd-hero-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.08;
+  background: white;
+}
+.sd-hero-circle.c1 { width: 220px; height: 220px; right: -60px; top: -60px; }
+.sd-hero-circle.c2 { width: 140px; height: 140px; right: 80px;  top: 20px; }
+.sd-hero-circle.c3 { width: 80px;  height: 80px;  right: 30px;  bottom: -20px; }
+
+/* ── CONTENT AREA ── */
+.sd-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 40px 60px;
+}
+
+/* ── SECTION TITLE ── */
+.sd-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+/* ── EXAM GRID ── */
+.sd-exam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.sd-exam-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--card-shadow);
+}
+
+.sd-exam-card:hover {
+  border-color: #6E3FF3;
+  box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
+  transform: translateY(-2px);
+}
+
+.sd-exam-active {
+  border-color: #6E3FF3 !important;
+  background: rgba(110, 63, 243, 0.06) !important;
+  box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.15) !important;
+}
+
+.sd-exam-icon {
+  font-size: 28px;
+  width: 52px;
+  height: 52px;
+  background: var(--bg-input);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sd-exam-info {
+  flex: 1;
+}
+
+.sd-exam-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.sd-exam-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.sd-exam-arrow {
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.sd-arrow-up {
+  transform: rotate(180deg);
+}
+
+/* ── SUBJECTS PANEL ── */
+.sd-subjects-panel {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  padding: 28px 28px 32px;
+  box-shadow: var(--card-shadow);
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sd-subjects-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1.5px solid var(--border-color);
+}
+
+.sd-subjects-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sd-subjects-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.sd-subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.sd-subject-card {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sd-subject-card:hover {
+  border-color: #6E3FF3;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(110, 63, 243, 0.15);
+}
+
+.sd-subject-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sd-subject-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sd-subject-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sd-subject-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.sd-subject-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.sd-start-btn {
+  margin-top: 6px;
+  background: linear-gradient(135deg, #3730A3, #6E3FF3) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  height: auto !important;
+  text-align: center !important;
+  transition: all 0.2s ease !important;
+  letter-spacing: 0.3px !important;
+}
+
+.sd-start-btn:hover {
+  transform: none !important;
+  opacity: 0.92 !important;
+  box-shadow: 0 4px 16px rgba(110, 63, 243, 0.35) !important;
+}
+
+/* ── LOADING ── */
+.sd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.sd-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: #6E3FF3;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── EMPTY STATE ── */
+.sd-empty {
+  text-align: center;
+  padding: 80px 0;
+  color: var(--text-muted);
+}
+
+.sd-empty-icon {
+  font-size: 52px;
+  margin-bottom: 16px;
+}
+
+.sd-empty h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.sd-empty p {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .sd-navbar { padding: 0 20px; }
+  .sd-hero   { padding: 32px 20px; }
+  .sd-hero-name { font-size: 26px; }
+  .sd-content { padding: 24px 20px 40px; }
+  .sd-exam-grid { grid-template-columns: 1fr; }
+  .sd-subjects-grid { grid-template-columns: 1fr; }
+  .sd-user-info { display: none; }
+}

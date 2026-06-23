@@ -1,146 +1,489 @@
-/* ==========================================================================
-   🌌 MASTER QUIZ STYLES (Armored with the Obsidian Steamroller)
-   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
-.quiz-page {
-  font-family: 'Inter', sans-serif;
-  background-color: #FAFAFC;
-  min-height: 100vh;
-  color: #1a1a2e;
-  transition: background-color 0.25s ease, color 0.25s ease;
-  padding-bottom: 80px;
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+  font-family: 'Inter', sans-serif; 
 }
 
-/* --- MAIN LAYOUT GRID --- */
-.main-layout {
+body { 
+  background: #FAFAFC; 
+}
+
+/* ================= HEADER ================= */
+.header { 
+  background: #fff; 
+  padding: 18px 40px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  border-bottom: 1px solid #e5e7eb; 
+  position: sticky; 
+  top: 0; 
+  z-index: 100; 
+}
+
+.logo-section { 
+  display: flex; 
+  align-items: center; 
+  gap: 20px; 
+}
+
+.logo-section h1 { 
+  font-size: 32px; 
+  font-weight: 700; 
+  color: #172554; 
+}
+
+/* Keeps the logo on the left */
+.logo-section h1 { 
+  font-size: 32px; 
+  font-weight: 700; 
+  color: #172554; 
+}
+
+/* Places the test title perfectly in the center of the screen */
+.test-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.test-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.instruction-btn { 
+  background: linear-gradient(135deg, #312e81, #7c3aed); 
+  color: white; 
+  border: none; 
+  border-radius: 14px; 
+  padding: 12px 26px; 
+  font-size: 15px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  width: auto !important; 
+  height: auto !important; 
+  min-width: 140px; 
+  max-width: 160px; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  flex: none !important; 
+  transition: 0.3s; 
+}
+
+.instruction-btn:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 10px 20px rgba(79,70,229,.25); 
+}
+
+/* ================= COMPACT SUBJECT TAB ================= */
+.top-tabs-container {
   display: flex;
-  gap: 24px;
-  padding: 24px 40px;
-  max-width: 1600px;
-  margin: 0 auto;
+  justify-content: flex-start; /* Aligns tab to the left */
+  padding: 20px 40px 0px 40px; 
+  background: #FAFAFC;
 }
 
-/* --- LEFT: QUESTION CANVAS --- */
-.question-section {
-  flex: 3;
-  background-color: #FFFFFF;
-  border: 1.5px solid #ECE9F7;
-  border-radius: 18px;
-  padding: 36px 40px;
-  box-shadow: 0 4px 20px rgba(45, 27, 105, 0.02);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.25s ease;
+.active-subject-tab {
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: white;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px; /* Sleek pill shape */
+  box-shadow: 0 4px 10px rgba(110, 63, 243, 0.2);
+  display: inline-block;
 }
 
-.q-meta-stripe { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.question-section h2 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; margin: 0; color: #1a1a2e; }
+/* ================= MAIN LAYOUT ================= */
+.main-layout { 
+  display: flex; 
+  gap: 20px; 
+  padding: 24px 40px; 
+}
 
-.review-flag { background-color: #FEF3C7; color: #B45309; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 6px; }
+/* Left: Question Area */
+.question-section { 
+  flex: 3; 
+  background: white; 
+  border-radius: 18px; 
+  padding: 36px 40px; 
+  border: 1px solid #F1EFFA; 
+}
 
-.question-box { margin-bottom: 32px; }
-.lang-hint { font-size: 11px; font-weight: 700; color: #6E3FF3; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px; }
-.hindi-hint { margin-top: 20px; color: #0284C7; }
-.q-prompt-text { font-size: 17px; line-height: 1.6; font-weight: 500; margin: 0; color: #1a1a2e; }
+.question-section h2 { 
+  font-family: 'Fraunces', serif; 
+  color: #1a1a2e; 
+  font-size: 26px; 
+  font-weight: 600; 
+  margin-bottom: 24px; 
+}
+
+.question-box { 
+  margin-bottom: 32px; 
+}
+
+.question-box h3 { 
+  font-size: 11.5px; 
+  font-weight: 700; 
+  color: #a8a5bd; 
+  text-transform: uppercase; 
+  letter-spacing: 0.8px; 
+  margin-top: 18px; 
+  margin-bottom: 8px; 
+}
+
+.question-box p { 
+  font-size: 17px; 
+  font-weight: 500; 
+  line-height: 1.6; 
+  color: #1a1a2e; 
+}
 
 /* Options */
-.options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
-
-.option-card {
-  display: flex; align-items: center; gap: 14px;
-  background-color: #FCFBFF; border: 1.5px solid #ECE9F7;
-  border-radius: 12px; padding: 16px 20px; cursor: pointer;
-  transition: all 0.15s ease; user-select: none; font-size: 15px; color: #2b2840;
+.options { 
+  margin-top: 24px; 
 }
 
-.option-card:hover { background-color: #F5F2FF; border-color: #C7B9F8; }
-.selected-opt-card { background-color: #F0ECFF !important; border-color: #6E3FF3 !important; font-weight: 600; }
-.option-card input { width: 18px; height: 18px; accent-color: #6E3FF3; cursor: pointer; }
-
-/* Action Buttons */
-.button-group {
-  margin-top: auto; padding-top: 24px; border-top: 1.5px solid #ECE9F7;
-  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+.option-card { 
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  border: 1.5px solid #ECE9F7; 
+  border-radius: 12px; 
+  padding: 15px 20px; 
+  margin-bottom: 12px; 
+  cursor: pointer; 
+  font-size: 15px; 
+  color: #2b2840; 
+  background: #FCFBFF; 
+  transition: all .15s; 
 }
 
-.button-group button {
-  border: none; padding: 13px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s ease; width: fit-content !important; flex: none !important;
+.option-card:hover { 
+  background: #F5F2FF; 
+  border-color: #d4cef0; 
+}
+
+.option-card input { 
+  width: 18px; 
+  height: 18px; 
+  accent-color: #6E3FF3; 
+  flex-shrink: 0; 
+  cursor: pointer;
+}
+
+/* Bottom Action Buttons */
+.button-group { 
+  display: flex; 
+  flex-direction: row; 
+  flex-wrap: wrap; 
+  gap: 12px; 
+  margin-top: 32px; 
+  align-items: center; 
+}
+
+.button-group button { 
+  border: none; 
+  padding: 13px 24px; 
+  border-radius: 10px; 
+  color: white; 
+  font-size: 14px; 
+  cursor: pointer; 
+  font-weight: 600; 
+  white-space: nowrap; 
+  width: fit-content; 
+  display: inline-flex; 
+  align-items: center; 
 }
 
 .review-btn { background: #F4C842 !important; color: #FFFFFF !important; border: none !important; }
 .clear-btn  { background: #C51414 !important; color: #FFFFFF !important; border: none !important; }
-.prev-btn   { background: #F1EFFA !important; color: #2D1B69 !important; border: 1.5px solid #D8D3F0 !important; margin-left: auto; }
+.prev-btn   { background: #F1EFFA !important; color: #2D1B69 !important; border: 1.5px solid #D8D3F0 !important; }
 .next-btn   { background: #3730A3 !important; color: #FFFFFF !important; border: none !important; }
 .submit-btn { background: #16A34A !important; color: #FFFFFF !important; border: none !important; }
 
-
-/* --- RIGHT: SIDE PANELS --- */
-.right-panel { flex: 1.2; display: flex; flex-direction: column; gap: 20px; min-width: 320px; max-width: 380px; }
-
-
-/* ==========================================================================
-   🚨 THE OBSIDIAN STEAMROLLER (Physically kills the white boxes in Dark Mode)
-   ========================================================================== */
-
-/* 1. Global Page Background */
-body.dark-mode .quiz-page {
-  background-color: #0B0C1A !important;
-  color: #E2E8F0 !important;
+/* ================= RIGHT PANEL & TIMER ================= */
+.right-panel { 
+  flex: 1.3; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 18px; 
 }
 
-/* 2. Forcibly paint the 3 stubborn White Containers into deep space glass */
-body.dark-mode .question-section,
-body.dark-mode .candidate-panel,
-body.dark-mode .question-palette {
-  background-color: #131428 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
-  color: #FFFFFF !important;
+.timer-box-panel { 
+  background: #1a1a2e; 
+  border-radius: 16px; 
+  overflow: hidden; 
 }
 
-/* 3. Re-light all the typography inside those boxes to high-contrast white */
-body.dark-mode .question-section h2,
-body.dark-mode .q-prompt-text,
-body.dark-mode .candidate-panel h3,
-body.dark-mode .candidate-info h4,
-body.dark-mode .palette-header {
-  color: #FFFFFF !important;
-  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+.timer-box-panel h3 { 
+  background: rgba(255, 255, 255, 0.06); 
+  color: #a8a5bd; 
+  padding: 12px 18px; 
+  margin: 0; 
+  font-size: 11px; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
 }
 
-/* Sub-text muted blue-grey */
-body.dark-mode .candidate-info p,
-body.dark-mode .status-list p {
-  color: #94A3B8 !important;
+.timer-display { 
+  padding: 22px 18px; 
+  text-align: center; 
 }
 
-/* 4. Dark Mode Option Cards */
-body.dark-mode .option-card {
-  background-color: #080914 !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: #E2E8F0 !important;
+.timer-display .timer { 
+  font-family: 'JetBrains Mono', monospace; 
+  color: #F4C842; 
+  font-size: 30px; 
+  font-weight: 700; 
+  letter-spacing: 2px; 
 }
 
-body.dark-mode .option-card:hover {
-  background-color: rgba(110, 63, 243, 0.15) !important;
-  border-color: #6E3FF3 !important;
+/* ================= CANDIDATE PANEL ================= */
+.candidate-panel { 
+  background: white; 
+  border-radius: 16px; 
+  overflow: hidden; 
+  border: 1px solid #F1EFFA; 
 }
 
-body.dark-mode .selected-opt-card {
-  background-color: #1E1B3A !important;
-  border-color: #A882FF !important;
-  color: #FFFFFF !important;
+.candidate-panel h3 { 
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3); 
+  color: white; 
+  padding: 14px 18px; 
+  font-size: 13px; 
+  font-weight: 600; 
+  margin: 0; 
 }
 
-body.dark-mode .button-group {
-  border-top-color: rgba(255, 255, 255, 0.08) !important;
+.candidate-info { 
+  display: flex; 
+  align-items: center; 
+  gap: 14px; 
+  padding: 20px; 
 }
 
+.candidate-info img { 
+  width: 56px; 
+  height: 56px; 
+  border-radius: 50%; 
+  border: 2px solid #F1EFFA; 
+}
 
-/* --- RESPONSIVE BREAKPOINT --- */
-@media (max-width: 1024px) {
+.candidate-info h4 { 
+  font-size: 16px; 
+  color: #1a1a2e; 
+}
+
+.candidate-info p { 
+  color: #a8a5bd; 
+  margin-top: 3px; 
+  font-size: 13px; 
+}
+
+.status-list { 
+  padding: 6px 20px 18px; 
+}
+
+.status-list p { 
+  margin-bottom: 9px; 
+  font-size: 13.5px; 
+  color: #4a4760; 
+  display: flex; 
+  align-items: center; 
+}
+
+/* CSS Status Dots */
+.status-dot { 
+  display: inline-block; 
+  width: 12px; 
+  height: 12px; 
+  border-radius: 50%; 
+  margin-right: 8px; 
+}
+.status-dot.answered { background-color: #1aa971; }
+.status-dot.not-answered { background-color: #e2436b; }
+.status-dot.not-visited { background-color: #e0e0e0; }
+.status-dot.review { background-color: #F4C842; }
+
+
+/* ================= QUESTION PALETTE ================= */
+.question-palette {
+  margin-top: 10px;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #F1EFFA;
+}
+
+.palette-header {
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 14px 18px;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 16px;
+}
+
+.palette-btn {
+  width: 100%;
+  height: 38px;
+  border: 1.5px solid #ECE9F7;
+  border-radius: 8px;
+  background: #FCFBFF;
+  color: #4a4760;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.palette-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.palette-btn.active {
+  outline: 2.5px solid #6E3FF3;
+  outline-offset: 1px;
+}
+
+.palette-btn.q-answered {
+  background: #10B981 !important;
+  color: #fff !important;
+  border-color: #10B981 !important;
+}
+
+.palette-btn.q-not-answered {
+  background: #C51414 !important;
+  color: #fff !important;
+  border-color: #C51414 !important;
+}
+
+.palette-btn.q-not-visited {
+  background: #F1EFFA !important;
+  color: #2D1B69 !important;
+  border-color: #D8D3F0 !important;
+}
+
+.palette-btn.q-review {
+  background: #F4C842 !important;
+  color: #1a1a2e !important;
+  border-color: #F4C842 !important;
+}
+
+/* ================= INSTRUCTIONS PAGE ================= */
+.instructions-wrapper { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  min-height: 100vh; 
+  background: #FAFAFC; 
+  padding: 20px; 
+}
+
+.instructions-card { 
+  background: white; 
+  padding: 40px; 
+  border-radius: 18px; 
+  border: 1px solid #F1EFFA; 
+  box-shadow: 0 10px 30px rgba(45, 27, 105, 0.05); 
+  max-width: 600px; 
+  width: 100%; 
+}
+
+.instructions-header { 
+  text-align: center; 
+  margin-bottom: 30px; 
+}
+
+.instructions-header h2 { 
+  font-size: 16px; 
+  color: #a8a5bd; 
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
+  margin-bottom: 8px; 
+}
+
+.instructions-header h1 { 
+  font-family: 'Fraunces', serif; 
+  color: #1a1a2e; 
+  font-size: 28px; 
+}
+
+.instructions-table { 
+  width: 100%; 
+  border-collapse: collapse; 
+}
+
+.instructions-table td { 
+  padding: 16px 0; 
+  border-bottom: 1px solid #F1EFFA; 
+  font-size: 15px; 
+}
+
+.instructions-table .label { 
+  font-weight: 600; 
+  color: #1a1a2e; 
+  width: 120px; 
+}
+
+.instructions-table .value { 
+  color: #4a4760; 
+}
+
+.subject-highlight { 
+  color: #6E3FF3 !important; 
+  font-weight: 700; 
+}
+
+.rules-list { 
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+}
+
+.rules-list li { 
+  margin-bottom: 6px; 
+}
+
+.rules-list.success { color: #1aa971; }
+.rules-list.danger { color: #e2436b; }
+
+.start-test-btn { 
+  width: 100%; 
+  padding: 16px; 
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3); 
+  color: white; 
+  border: none; 
+  border-radius: 12px; 
+  font-size: 16px; 
+  font-weight: 600; 
+  margin-top: 32px; 
+  cursor: pointer; 
+  transition: transform 0.2s, box-shadow 0.2s; 
+}
+
+.start-test-btn:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 20px rgba(110, 63, 243, 0.25); 
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .header { flex-wrap: wrap; }
   .main-layout { flex-direction: column; }
-  .right-panel { max-width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .question-palette { grid-column: 1 / -1; }
+  .top-tabs-container { padding: 15px 20px; }
 }

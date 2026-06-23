@@ -1,135 +1,151 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
-import "../css/Login.css";
-import "../css/ForgotPassword.css";
+// Make sure your CSS file is imported here!
+import "../css/ForgotPassword.css"; 
 
-function ForgotPassword() {
+const ForgotPassword = () => {
   const navigate = useNavigate();
 
-  // step 1 = enter email, step 2 = enter OTP, step 3 = set new password
+  // Multi-step state: 1 = Email, 2 = OTP, 3 = New Password
   const [step, setStep] = useState(1);
-
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const API_BASE = "http://localhost:5000/api/auth";
 
-  // STEP 1: send OTP to email
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    setLoading(true);
+  // STEP 1: Request OTP via real API
+  const handleRequestOtp = async (e) => {
+    if (e) e.preventDefault();
+    if (!email) return;
+
+    setIsLoading(true);
+    setIsError(false);
+    setStatusMessage("Sending OTP to your email...");
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/forgot-password",
-        { email }
-      );
+      const res = await fetch(`${API_BASE}/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-      setMessage(res.data.message || "OTP sent to your email");
-      setStep(2);
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatusMessage("✅ " + data.message);
+        setStep(2);
+      } else {
+        setIsError(true);
+        setStatusMessage("❌ " + data.message);
+      }
     } catch (error) {
-      setMessage(
-        error.response?.data?.message || "Failed to send OTP. Try again."
-      );
+      setIsError(true);
+      setStatusMessage("❌ Network error. Please check your connection.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  // STEP 2: verify OTP
+  // STEP 2: Verify OTP via real API
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setLoading(true);
+    if (otp.length < 4) {
+      setStatusMessage("Please enter the complete OTP.");
+      return;
+    }
+
+    setIsLoading(true);
+    setIsError(false);
+    setStatusMessage("Verifying OTP...");
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/verify-otp",
-        { email, otp }
-      );
+      const res = await fetch(`${API_BASE}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      });
 
-      setMessage(res.data.message || "OTP verified");
-      setStep(3);
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatusMessage("✅ " + data.message);
+        setStep(3);
+      } else {
+        setIsError(true);
+        setStatusMessage("❌ " + data.message);
+      }
     } catch (error) {
-      setMessage(
-        error.response?.data?.message || "Invalid or expired OTP."
-      );
+      setIsError(true);
+      setStatusMessage("❌ Network error. Please check your connection.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  // STEP 3: reset password
-  const handleResetPassword = async (e) => {
+  // STEP 3: Reset password via real API
+  const handleSavePassword = async (e) => {
     e.preventDefault();
-    setMessage("");
-
-    if (newPassword !== confirmPassword) {
-      setMessage("Passwords do not match.");
+    if (!newPassword || newPassword.length < 6) {
+      setIsError(true);
+      setStatusMessage("Password must be at least 6 characters.");
       return;
     }
 
-    if (newPassword.length < 6) {
-      setMessage("Password must be at least 6 characters.");
-      return;
-    }
-
-    setLoading(true);
+    setIsLoading(true);
+    setIsError(false);
+    setStatusMessage("Updating your password...");
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/reset-password",
-        { email, otp, newPassword }
-      );
+      const res = await fetch(`${API_BASE}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, newPassword }),
+      });
 
-      setMessage(res.data.message || "Password reset successful!");
+      const data = await res.json();
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      if (res.ok) {
+        setStatusMessage("✅ " + data.message);
+        setTimeout(() => navigate("/login"), 1500);
+      } else {
+        setIsError(true);
+        setStatusMessage("❌ " + data.message);
+      }
     } catch (error) {
-      setMessage(
-        error.response?.data?.message || "Failed to reset password."
-      );
+      setIsError(true);
+      setStatusMessage("❌ Network error. Please check your connection.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="login-page">
-
+      {/* Background Blobs */}
       <div className="top-left"></div>
       <div className="bottom-right"></div>
       <div className="big-circle"></div>
       <div className="small-circle"></div>
 
       <div className="login-card">
-
         <div className="logo-section">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png"
-            alt="logo"
-          />
+          <span style={{ fontSize: "20px" }}>🎓</span>
           <h1>Teaching Pariksha</h1>
         </div>
 
-        <h2>Reset Password</h2>
+        <h2>Account Recovery</h2>
 
-        <p>
-          {step === 1 && "Enter your email to receive an OTP"}
-          {step === 2 && "Enter the OTP sent to your email"}
-          {step === 3 && "Set your new password"}
+        <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "20px" }}>
+          {step === 1 && "Enter your email address and we'll send you an OTP to reset your password."}
+          {step === 2 && `Type the 6-digit OTP sent to ${email}`}
+          {step === 3 && "Create a new secure password for your account."}
         </p>
 
-        {/* STEP PROGRESS */}
+        {/* ─── YOUR STEP INDICATOR WIRING ─── */}
         <div className="step-indicator">
           <div className={`step-dot ${step >= 1 ? "active" : ""}`}>1</div>
           <div className={`step-line ${step >= 2 ? "active" : ""}`}></div>
@@ -138,101 +154,88 @@ function ForgotPassword() {
           <div className={`step-dot ${step >= 3 ? "active" : ""}`}>3</div>
         </div>
 
-        {message && <p className="status-message">{message}</p>}
+        {/* ─── YOUR STATUS MESSAGE WIRING ─── */}
+        {statusMessage && (
+          <div className="status-message" style={isError ? { color: "#ef4444", background: "#fef2f2" } : {}}>
+            🔒 {statusMessage}
+          </div>
+        )}
 
-        {/* STEP 1: EMAIL */}
+        {/* ─── STEP 1 FORM ─── */}
         {step === 1 && (
-          <form onSubmit={handleSendOtp}>
+          <form onSubmit={handleRequestOtp}>
             <div className="input-box">
-              <label>Email Address</label>
-              <input
-                type="email"
-                placeholder="Enter your registered email"
+              <label htmlFor="email">Email Address</label>
+              <input 
+                type="email" 
+                id="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                placeholder="e.g., diyanathwani@gmail.com" 
+                required 
               />
             </div>
-
-            <button type="submit" disabled={loading}>
-              {loading ? "Sending OTP..." : "Send OTP"}
+            {/* Uses your disabled CSS state automatically */}
+            <button type="submit" disabled={isLoading || !email}>
+              {isLoading ? "Sending OTP..." : "Send OTP"}
             </button>
           </form>
         )}
 
-        {/* STEP 2: OTP */}
+        {/* ─── STEP 2 FORM ─── */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp}>
-            <div className="input-box">
-              <label>OTP</label>
-              <input
-                type="text"
-                placeholder="Enter 6-digit OTP"
+            <div className="input-box" style={{ textAlign: "center" }}>
+              <label htmlFor="otp">6-Digit Security OTP</label>
+              <input 
+                type="text" 
+                id="otp" 
+                maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                maxLength={6}
-                required
+                placeholder="• • • • • •" 
+                style={{ fontSize: "20px", letterSpacing: "6px", textAlign: "center", fontWeight: "bold", color: "#6E3FF3" }}
+                required 
               />
             </div>
-
-            <button type="submit" disabled={loading}>
-              {loading ? "Verifying..." : "Verify OTP"}
+            <button type="submit" disabled={isLoading || otp.length < 4}>
+              {isLoading ? "Verifying..." : "Verify OTP"}
             </button>
 
-            <p className="resend-link">
-              Didn't get the code?{" "}
-              <span onClick={handleSendOtp}>Resend OTP</span>
-            </p>
+            {/* ─── YOUR RESEND LINK WIRING ─── */}
+            <div className="resend-link">
+              Didn't receive the email? <span onClick={handleRequestOtp}>Resend Code</span>
+            </div>
           </form>
         )}
 
-        {/* STEP 3: NEW PASSWORD */}
+        {/* ─── STEP 3 FORM ─── */}
         {step === 3 && (
-          <form onSubmit={handleResetPassword}>
+          <form onSubmit={handleSavePassword}>
             <div className="input-box">
-              <label>New Password</label>
-              <div className="password-wrapper">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
-                <span
-                  className="toggle-eye"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </span>
-              </div>
-            </div>
-
-            <div className="input-box">
-              <label>Confirm Password</label>
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Re-enter new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+              <label htmlFor="new-pwd">New Password</label>
+              <input 
+                type="password" 
+                id="new-pwd" 
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters" 
+                required 
               />
             </div>
-
-            <button type="submit" disabled={loading}>
-              {loading ? "Resetting..." : "Reset Password"}
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update Password"}
             </button>
           </form>
         )}
 
-        <div className="register-link">
-          <Link to="/login"><span>Back to Login</span></Link>
+        <div style={{ marginTop: "24px", fontSize: "13px", fontWeight: "600" }}>
+          <Link to="/login" style={{ color: "#64748B", textDecoration: "none" }}>← Return to Portal Login</Link>
         </div>
 
       </div>
-
     </div>
   );
-}
+};
 
 export default ForgotPassword;

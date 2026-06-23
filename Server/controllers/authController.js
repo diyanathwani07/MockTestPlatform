@@ -56,7 +56,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-// Login User
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -95,6 +94,7 @@ const loginUser = async (req, res) => {
       }
     );
 
+    // Success Response
     res.status(200).json({
       success: true,
       message: "Login Successful",
@@ -103,8 +103,10 @@ const loginUser = async (req, res) => {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
+        role: user.role,
       },
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -112,7 +114,6 @@ const loginUser = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   registerUser,
   loginUser,

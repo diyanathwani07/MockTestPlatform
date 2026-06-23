@@ -1,5 +1,11 @@
-const authRoutes = require("./routes/authRoutes");
 require("dotenv").config();
+
+const quizRoutes = require("./routes/quizRoutes");
+const authRoutes = require("./routes/authRoutes");
+const adminResultRoutes = require("./routes/adminResultRoutes");
+const adminUserRoutes = require("./routes/adminUserRoutes");
+const Quiz = require("./models/Quiz");
+
 
 const express = require("express");
 const cors = require("cors");
@@ -20,52 +26,18 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Correct Answers
-const Answers = [
-  "Library",
-  "Meta",
-  "JavaScript XML",
-  "Hook",
-  "Side effects",
-  "JavaScript",
-  "Reusable UI",
-  "Copy of real DOM",
-  "Data passing",
-  "useState",
-  "Meta",
-  "Single Page App",
-  "Virtual DOM",
-  "Data storage",
-  "React Router",
-  "JavaScript XML",
-  "Package Manager",
-  "Frontend Library",
-  "Meta",
-  "Unique ID",
-  "State management",
-  "useEffect",
-  "User action",
-  "Declarative",
-  "Special function",
-  "Compiler",
-  "JSX",
-  "Rendering based on condition",
-  "Empty wrapper",
-  "UI development",
-];
-
 // Home Route
 app.get("/", (req, res) => {
   res.send("Teaching Pariksha API Running 🚀");
 });
 
-// Submit Quiz
+// 🧠 THE DYNAMIC GRADER: Grades any test in the database instantly
 app.post("/submit", (req, res) => {
   const { userAnswers, questions } = req.body;
 
-  if (!userAnswers) {
+  if (!userAnswers || !questions) {
     return res.status(400).json({
-      error: "No answers received",
+      error: "Missing exam data packets",
     });
   }
 
@@ -74,14 +46,17 @@ app.post("/submit", (req, res) => {
   let incorrect = 0;
   let unanswered = 0;
 
-  const total = Answers.length;
+  const total = questions.length;
 
-  Answers.forEach((correctAnswer, index) => {
+  questions.forEach((q, index) => {
     const userAns = userAnswers[index];
+    const actualAnswer = q.correctAnswer; // <-- Pulled directly out of MongoDB's question object!
 
-    if (userAns === undefined || userAns === null) {
+    if (userAns === undefined || userAns === null || userAns === "") {
       unanswered++;
-    } else if (userAns === correctAnswer) {
+    } else if (
+      String(userAns).trim().toLowerCase() === String(actualAnswer).trim().toLowerCase()
+    ) {
       score++;
       correct++;
     } else {
@@ -89,13 +64,7 @@ app.post("/submit", (req, res) => {
     }
   });
 
-  const percentage = ((score / total) * 100).toFixed(2);
-
-  // attach correctAnswer to each question so Result page can show the review
-  const questionsWithAnswers = (questions || []).map((q, i) => ({
-    ...q,
-    correctAnswer: Answers[i],
-  }));
+  const percentage = total > 0 ? ((score / total) * 100).toFixed(2) : "0.00";
 
   res.json({
     success: true,
@@ -105,16 +74,39 @@ app.post("/submit", (req, res) => {
     incorrect,
     unanswered,
     percentage,
-    questions: questionsWithAnswers,
+    questions, // Already contains the real correctAnswer inside it for the Review Page!
     userAnswers,
   });
 });
 
-
-
 app.use("/api/auth", authRoutes);
-
+app.use("/api/quizzes", quizRoutes);
 app.use("/api/results", resultRoutes);
+app.use("/api/admin/users", adminUserRoutes);
+app.use("/api/admin/results", adminResultRoutes);
+// Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
+setInterval(async () => {
+  try {
+    const now = new Date();
+    const scheduledQuizzes = await Quiz.find({
+      status: "Scheduled",
+      published: false,
+      scheduledDate: { $lte: now }
+    });
+
+    if (scheduledQuizzes.length > 0) {
+      console.log(`[Scheduler] Found ${scheduledQuizzes.length} scheduled quiz(zes) to publish.`);
+      for (const quiz of scheduledQuizzes) {
+        quiz.status = "Published";
+        quiz.published = true;
+        await quiz.save();
+        console.log(`[Scheduler] Successfully published quiz: "${quiz.title}" (ID: ${quiz._id})`);
+      }
+    }
+  } catch (error) {
+    console.error("[Scheduler Error] Failed to process scheduled quizzes:", error);
+  }
+}, 30000);
 
 // Start Server
 app.listen(PORT, () => {

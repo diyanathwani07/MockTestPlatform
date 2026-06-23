@@ -11,7 +11,7 @@
   position:relative;
   width:100%;
   min-height:100vh;
-  background:#f5f2ff;
+  background:var(--bg-page);
   overflow:hidden;
   display:flex;
   justify-content:center;
@@ -69,10 +69,11 @@
 .register-card{
   position:relative;
   width:650px;
-  background:white;
+  background:var(--bg-card);
+  border:1.5px solid var(--border-color);
   padding:50px;
   border-radius:30px;
-  box-shadow:0 15px 40px rgba(0,0,0,.08);
+  box-shadow:var(--card-shadow);
   z-index:10;
 }
 
@@ -90,7 +91,7 @@
 
 .logo-section h1{
   font-size:45px;
-  color:#10143a;
+  color:var(--text-primary);
   font-weight:700;
 }
 
@@ -99,12 +100,12 @@
   text-align:center;
   margin-top:20px;
   font-size:55px;
-  color:#10143a;
+  color:var(--text-primary);
 }
 
 .subtitle{
   text-align:center;
-  color:#7c839d;
+  color:var(--text-secondary);
   margin-bottom:30px;
 }
 
@@ -117,13 +118,15 @@
   display:block;
   margin-bottom:10px;
   font-weight:600;
-  color:#10143a;
+  color:var(--text-primary);
 }
 
 .input-box input{
   width:100%;
   height:60px;
-  border:1px solid #ddd;
+  background-color:var(--bg-input);
+  border:1.5px solid var(--border-input);
+  color:var(--text-primary);
   border-radius:15px;
   padding:0 20px;
   font-size:16px;
@@ -131,7 +134,7 @@
 }
 
 .input-box input:focus{
-  border-color:#6a11cb;
+  border-color:var(--violet);
 }
 
 /* Terms */
@@ -143,7 +146,7 @@
 }
 
 .terms-box label{
-  color:#666;
+  color:var(--text-secondary);
 }
 
 /* Button - scoped to registration form only */
@@ -168,10 +171,10 @@
 .register{
   text-align:center;
   margin-top:25px;
-  color:#888;
+  color:var(--text-muted);
 }
 
 .register span{
-  color:#6a11cb;
+  color:var(--violet);
   font-weight:600;
 }

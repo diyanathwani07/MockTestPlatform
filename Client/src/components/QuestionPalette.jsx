@@ -1,15 +1,8 @@
 import React from "react";
 import "../css/QuestionPalette.css";
 
-function QuestionPalette({
-  questions,
-  currentQuestion,
-  setCurrentQuestion,
-  userAnswers,
-  reviewQuestions,
-  visitedQuestions,
-}) {
-
+function QuestionPalette({ questions, currentQuestion, setCurrentQuestion, userAnswers, reviewQuestions, visitedQuestions }) {
+  
   const getStatusClass = (index) => {
     const isAnswered = userAnswers[index] !== undefined && userAnswers[index] !== null;
     const isReview = reviewQuestions.includes(index);
@@ -24,11 +17,10 @@ function QuestionPalette({
   return (
     <div className="question-palette">
       <div className="palette-header">Question Palette</div>
-
       <div className="palette-grid">
         {questions.map((q, index) => (
           <button
-            key={q.id}
+            key={q.id || index}
             className={`palette-btn ${getStatusClass(index)} ${index === currentQuestion ? "active" : ""}`}
             onClick={() => setCurrentQuestion(index)}
           >

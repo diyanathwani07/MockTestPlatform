@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
+}
+
+.register-page{
+  position:relative;
+  width:100%;
+  min-height:100vh;
+  background:#f5f2ff;
+  overflow:hidden;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* Top Left Shape */
+.top-left{
+  position:absolute;
+  top:-200px;
+  left:-150px;
+  width:600px;
+  height:600px;
+  background:linear-gradient(135deg,#6a11cb,#7b3ff3);
+  border-radius:100px;
+  transform:rotate(45deg);
+  opacity:.9;
+}
+
+/* Bottom Right Shape */
+.bottom-right{
+  position:absolute;
+  bottom:-200px;
+  right:-150px;
+  width:600px;
+  height:600px;
+  background:linear-gradient(135deg,#7b3ff3,#3d1fc7);
+  border-radius:100px;
+  transform:rotate(45deg);
+}
+
+/* Big Circle */
+.big-circle{
+  position:absolute;
+  top:-150px;
+  right:-150px;
+  width:450px;
+  height:450px;
+  border:2px solid rgba(123,63,243,.15);
+  border-radius:50%;
+}
+
+/* Small Circle */
+.small-circle{
+  position:absolute;
+  bottom:80px;
+  left:80px;
+  width:60px;
+  height:60px;
+  border:3px solid rgba(123,63,243,.3);
+  border-radius:50%;
+}
+
+/* Card */
+.register-card{
+  position:relative;
+  width:650px;
+  background:white;
+  padding:50px;
+  border-radius:30px;
+  box-shadow:0 15px 40px rgba(0,0,0,.08);
+  z-index:10;
+}
+
+/* Logo */
+.logo-section{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+}
+
+.logo-section img{
+  width:70px;
+}
+
+.logo-section h1{
+  font-size:45px;
+  color:#10143a;
+  font-weight:700;
+}
+
+/* Heading */
+.register-card h2{
+  text-align:center;
+  margin-top:20px;
+  font-size:55px;
+  color:#10143a;
+}
+
+.subtitle{
+  text-align:center;
+  color:#7c839d;
+  margin-bottom:30px;
+}
+
+/* Input Box */
+.input-box{
+  margin-bottom:20px;
+}
+
+.input-box label{
+  display:block;
+  margin-bottom:10px;
+  font-weight:600;
+  color:#10143a;
+}
+
+.input-box input{
+  width:100%;
+  height:60px;
+  border:1px solid #ddd;
+  border-radius:15px;
+  padding:0 20px;
+  font-size:16px;
+  outline:none;
+}
+
+.input-box input:focus{
+  border-color:#6a11cb;
+}
+
+/* Terms */
+.terms-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.terms-box label{
+  color:#666;
+}
+
+/* Button - scoped to registration form only */
+.register-card button{
+  width:100%;
+  height:60px;
+  border:none;
+  border-radius:15px;
+  background:linear-gradient(90deg,#6a11cb,#7b3ff3);
+  color:white;
+  font-size:20px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.register-card button:hover{
+  transform:translateY(-3px);
+}
+
+/* Login Link */
+.register{
+  text-align:center;
+  margin-top:25px;
+  color:#888;
+}
+
+.register span{
+  color:#6a11cb;
+  font-weight:600;
+}

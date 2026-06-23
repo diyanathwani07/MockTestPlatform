@@ -8,6 +8,37 @@ const resultSchema = new mongoose.Schema(
       required: true,
     },
 
+    quizId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Quiz",
+      default: null,
+    },
+
+    quizTitle: {
+      type: String,
+      default: null,
+    },
+
+    subject: {
+      type: String,
+      default: null,
+    },
+
+    examName: {
+      type: String,
+      default: null,
+    },
+
+    reaction: {
+      type: String,
+      default: null,
+    },
+
+    feedbackMessage: {
+      type: String,
+      default: null,
+    },
+
     score: {
       type: Number,
       required: true,

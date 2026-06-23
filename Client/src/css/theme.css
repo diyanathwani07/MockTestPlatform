@@ -62,10 +62,161 @@
   --option-hover:   #252438;
 }
 
+/* ============================================
+   APPLY VARIABLES GLOBALLY
+   ============================================ */
+
 body {
   background: var(--bg-page);
   color: var(--text-primary);
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* HEADER */
+.header {
+  background: var(--bg-header);
+  border-bottom-color: var(--border-color);
+}
+
+.logo-section h1 {
+  color: var(--text-primary);
+}
+
+/* CARDS */
+.question-section,
+.candidate-panel,
+.palette,
+.login-card,
+.form-card,
+.quiz-table-wrapper,
+.stat-card,
+.review-item,
+.card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+/* INPUTS */
+.input-box input,
+.form-field input,
+.form-field select,
+.form-field textarea {
+  background: var(--bg-input);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+.input-box input::placeholder,
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* QUESTION BOX */
+.question-box p {
+  color: var(--text-primary);
+}
+
+.question-box h3 {
+  color: var(--text-muted);
+}
+
+/* OPTIONS */
+.option-card {
+  background: var(--option-bg);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.option-card:hover {
+  background: var(--option-hover);
+  border-color: var(--violet);
+}
+
+.option-card.selected-opt-card {
+  border-color: var(--violet) !important;
+  background-color: var(--option-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* STATUS LIST */
+.status-list p {
+  color: var(--text-secondary);
+}
+
+/* TABS */
+.top-tabs {
+  background: var(--bg-header);
+  border-bottom-color: var(--border-color);
+}
+
+.top-tabs button {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* TABLE */
+.quiz-table thead {
+  background: var(--bg-input);
+}
+
+.quiz-table th {
+  color: var(--text-muted);
+}
+
+.quiz-table td {
+  color: var(--text-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+.quiz-table tbody tr:hover {
+  background: var(--option-hover);
+}
+
+/* PALETTE BUTTONS */
+.palette-grid button {
+  background: var(--option-bg);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* FORM LABELS */
+.form-field label,
+.input-box label {
+  color: var(--text-primary);
+}
+
+/* MANAGE COUNT */
+.manage-count,
+.navbar-role {
+  color: var(--text-muted);
+}
+
+.navbar-name,
+.navbar-title {
+  color: var(--text-primary);
+}
+
+.admin-navbar {
+  background: var(--bg-header);
+  border-bottom-color: var(--border-color);
+}
+
+/* RESULT PAGE */
+.result-page {
+  background: var(--bg-page);
+}
+
+.result-summary h1,
+.result-details h2,
+.review-question {
+  color: var(--text-primary);
+}
+
+.card h3 {
+  color: var(--text-muted);
 }
 
 /* Theme Switch Pill Global Styles */

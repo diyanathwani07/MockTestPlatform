@@ -6,11 +6,13 @@ function Timer({ timeLeft }) {
   const seconds = timeLeft % 60;
 
   return (
-    <div className="candidate-timer">
-      Time Left :
-      {String(hours).padStart(2, "0")} :
-      {String(minutes).padStart(2, "0")} :
-      {String(seconds).padStart(2, "0")}
+    <div className="timer-box-panel">
+      <h3>Time Left</h3>
+      <div className="timer-display">
+        <div className="timer">
+          {String(hours).padStart(2, "0")} : {String(minutes).padStart(2, "0")} : {String(seconds).padStart(2, "0")}
+        </div>
+      </div>
     </div>
   );
 }

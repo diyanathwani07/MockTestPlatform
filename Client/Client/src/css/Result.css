@@ -1,0 +1,158 @@
+/* ==========================================================================
+   🏆 MASTER RESULT PAGE STYLES (Dual-Theme Auto Inverting)
+   ========================================================================== */
+
+.result-page {
+  font-family: 'Inter', sans-serif;
+  background-color: #FAFAFC;
+  min-height: 100vh;
+  color: #1a1a2e;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.result-empty { text-align: center; padding: 120px 20px; }
+.result-empty h2 { font-family: 'Fraunces', serif; font-size: 28px; margin-bottom: 12px; }
+.result-empty p { color: #a8a5bd; margin-bottom: 28px; font-size: 15px; }
+
+/* --- 1. THE SUMMARY GRID --- */
+.result-summary { padding: 40px 20px 20px; text-align: center; }
+.result-summary h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 700; margin-bottom: 32px; }
+
+.summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #ECE9F7;
+  border-radius: 16px;
+  padding: 24px 28px;
+  min-width: 160px;
+  flex: 1;
+  box-shadow: 0 4px 20px rgba(45, 27, 105, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s, border-color 0.25s;
+}
+
+.card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(45, 27, 105, 0.08); }
+
+.card h3 {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #a8a5bd;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.card p { margin: 0; font-size: 32px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+/* Custom Metric Card Accents */
+.total-card p      { color: #38BDF8; }
+.score-card p      { color: #6E3FF3; }
+.correct-card p    { color: #10B981; }
+.incorrect-card p  { color: #EF4444; }
+.unanswered-card p { color: #94A3B8; }
+.percentage-card p { color: #EC4899; }
+
+
+/* --- 2. THE ANSWER REVIEW LIST --- */
+.result-details { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+.result-details h2 { font-family: 'Fraunces', serif; font-size: 24px; margin-bottom: 24px; }
+
+.review-list { display: flex; flex-direction: column; gap: 16px; }
+
+.review-item {
+  background-color: #FFFFFF;
+  border: 1.5px solid #ECE9F7;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 15px rgba(45, 27, 105, 0.02);
+  transition: background-color 0.25s, border-color 0.25s;
+}
+
+.review-question { font-weight: 600; font-size: 16px; margin-bottom: 16px; line-height: 1.5; }
+.q-number { font-family: 'JetBrains Mono', monospace; color: #6E3FF3; font-weight: 700; margin-right: 6px; }
+
+.review-answers { display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; }
+.review-answers p { margin: 0; }
+.ans-label { color: #64748B; font-weight: 500; }
+
+.correct-text    { color: #10B981; font-weight: 600; }
+.wrong-text      { color: #EF4444; font-weight: 600; }
+.unanswered-text { color: #94A3B8; font-style: italic; }
+
+
+/* --- 3. THE EXPLANATION CALLOUT BOX --- */
+.explanation-wrapper {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background-color: #F8F6FF;
+  border-left: 3.5px solid #6E3FF3;
+  border-radius: 0 12px 12px 0;
+  transition: background-color 0.25s;
+}
+
+.explanation-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6E3FF3;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.explanation-text { font-size: 13.5px; color: #2b2840; line-height: 1.6; margin: 0; }
+
+
+/* --- 4. RETURN BUTTON --- */
+.result-actions { display: flex; justify-content: center; padding: 20px 0 80px 0; }
+.back-btn {
+  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  color: #FFFFFF; border: none; padding: 16px 36px; border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 6px 20px -4px rgba(110, 63, 243, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.back-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -4px rgba(110, 63, 243, 0.65); }
+
+
+/* ==========================================================================
+   🌌 VOID MODE OVERRIDES (The Master Obsidian Inverter)
+   ========================================================================== */
+
+body.dark-mode .result-page { background-color: #0B0C1A !important; color: #FFFFFF !important; }
+
+body.dark-mode .card,
+body.dark-mode .review-item {
+  background-color: #131428 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .result-summary h1,
+body.dark-mode .result-details h2,
+body.dark-mode .review-question {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .card h3,
+body.dark-mode .ans-label { color: #94A3B8 !important; }
+
+/* Obsidian Explanation Box Adaptation */
+body.dark-mode .explanation-wrapper { background-color: rgba(110, 63, 243, 0.08) !important; border-left-color: #A882FF !important; }
+body.dark-mode .explanation-label   { color: #A882FF !important; }
+body.dark-mode .explanation-text    { color: #E2E8F0 !important; }
+
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .summary-cards { flex-direction: column; gap: 12px; }
+  .card { width: 100%; }
+}

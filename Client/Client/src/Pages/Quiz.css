@@ -1,0 +1,146 @@
+/* ==========================================================================
+   🌌 MASTER QUIZ STYLES (Armored with the Obsidian Steamroller)
+   ========================================================================== */
+
+.quiz-page {
+  font-family: 'Inter', sans-serif;
+  background-color: #FAFAFC;
+  min-height: 100vh;
+  color: #1a1a2e;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  padding-bottom: 80px;
+}
+
+/* --- MAIN LAYOUT GRID --- */
+.main-layout {
+  display: flex;
+  gap: 24px;
+  padding: 24px 40px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* --- LEFT: QUESTION CANVAS --- */
+.question-section {
+  flex: 3;
+  background-color: #FFFFFF;
+  border: 1.5px solid #ECE9F7;
+  border-radius: 18px;
+  padding: 36px 40px;
+  box-shadow: 0 4px 20px rgba(45, 27, 105, 0.02);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+}
+
+.q-meta-stripe { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.question-section h2 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; margin: 0; color: #1a1a2e; }
+
+.review-flag { background-color: #FEF3C7; color: #B45309; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 6px; }
+
+.question-box { margin-bottom: 32px; }
+.lang-hint { font-size: 11px; font-weight: 700; color: #6E3FF3; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px; }
+.hindi-hint { margin-top: 20px; color: #0284C7; }
+.q-prompt-text { font-size: 17px; line-height: 1.6; font-weight: 500; margin: 0; color: #1a1a2e; }
+
+/* Options */
+.options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
+
+.option-card {
+  display: flex; align-items: center; gap: 14px;
+  background-color: #FCFBFF; border: 1.5px solid #ECE9F7;
+  border-radius: 12px; padding: 16px 20px; cursor: pointer;
+  transition: all 0.15s ease; user-select: none; font-size: 15px; color: #2b2840;
+}
+
+.option-card:hover { background-color: #F5F2FF; border-color: #C7B9F8; }
+.selected-opt-card { background-color: #F0ECFF !important; border-color: #6E3FF3 !important; font-weight: 600; }
+.option-card input { width: 18px; height: 18px; accent-color: #6E3FF3; cursor: pointer; }
+
+/* Action Buttons */
+.button-group {
+  margin-top: auto; padding-top: 24px; border-top: 1.5px solid #ECE9F7;
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+}
+
+.button-group button {
+  border: none; padding: 13px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s ease; width: fit-content !important; flex: none !important;
+}
+
+.review-btn { background-color: #F4C842; color: #1a1a2e; }
+.clear-btn  { background-color: #E2436B; color: #FFFFFF; }
+.prev-btn   { background-color: #F1EFFA; color: #2D1B69; margin-left: auto; }
+.next-btn   { background-color: #6E3FF3; color: #FFFFFF; }
+.submit-btn { background: linear-gradient(135deg, #10B981, #059669); color: #FFFFFF; margin-left: 12px; }
+
+
+/* --- RIGHT: SIDE PANELS --- */
+.right-panel { flex: 1.2; display: flex; flex-direction: column; gap: 20px; min-width: 320px; max-width: 380px; }
+
+
+/* ==========================================================================
+   🚨 THE OBSIDIAN STEAMROLLER (Physically kills the white boxes in Dark Mode)
+   ========================================================================== */
+
+/* 1. Global Page Background */
+body.dark-mode .quiz-page {
+  background-color: #0B0C1A !important;
+  color: #E2E8F0 !important;
+}
+
+/* 2. Forcibly paint the 3 stubborn White Containers into deep space glass */
+body.dark-mode .question-section,
+body.dark-mode .candidate-panel,
+body.dark-mode .question-palette {
+  background-color: #131428 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+  color: #FFFFFF !important;
+}
+
+/* 3. Re-light all the typography inside those boxes to high-contrast white */
+body.dark-mode .question-section h2,
+body.dark-mode .q-prompt-text,
+body.dark-mode .candidate-panel h3,
+body.dark-mode .candidate-info h4,
+body.dark-mode .palette-header {
+  color: #FFFFFF !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Sub-text muted blue-grey */
+body.dark-mode .candidate-info p,
+body.dark-mode .status-list p {
+  color: #94A3B8 !important;
+}
+
+/* 4. Dark Mode Option Cards */
+body.dark-mode .option-card {
+  background-color: #080914 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #E2E8F0 !important;
+}
+
+body.dark-mode .option-card:hover {
+  background-color: rgba(110, 63, 243, 0.15) !important;
+  border-color: #6E3FF3 !important;
+}
+
+body.dark-mode .selected-opt-card {
+  background-color: #1E1B3A !important;
+  border-color: #A882FF !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .button-group {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+
+/* --- RESPONSIVE BREAKPOINT --- */
+@media (max-width: 1024px) {
+  .main-layout { flex-direction: column; }
+  .right-panel { max-width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .question-palette { grid-column: 1 / -1; }
+}

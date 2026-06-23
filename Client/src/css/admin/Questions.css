@@ -1,0 +1,708 @@
+/* Premium Notebook & Book-style Layout for Questions Bank */
+
+.questions-bank-view {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.books-sidebar-panel {
+  width: 320px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.books-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 720px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Custom Scrollbar for list */
+.books-list-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.books-list-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+.books-list-grid::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 100px;
+}
+
+.opened-book-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 📘 SPIRAL NOTEBOOK BOOK COVER (LEFT SIDEBAR) */
+.notebook-book-cover {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  height: 200px;
+  border-radius: 12px 18px 18px 12px;
+  padding: 20px 24px 20px 42px; /* space left for binding */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+  overflow: hidden;
+  text-align: left;
+}
+
+.notebook-book-cover:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+
+.notebook-book-cover.active {
+  outline: 3px solid var(--violet);
+  box-shadow: 0 12px 30px rgba(110, 63, 243, 0.25);
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Notebook Cover Colors */
+.notebook-book-cover.purple-cover {
+  background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+}
+.notebook-book-cover.green-cover {
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
+}
+.notebook-book-cover.blue-cover {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+.notebook-book-cover.orange-cover {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+/* Spiral binding effect */
+.notebook-book-cover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 26px;
+  background: linear-gradient(to right, 
+    rgba(0,0,0,0.2) 0%, 
+    rgba(255,255,255,0.15) 50%, 
+    rgba(0,0,0,0.3) 100%);
+  border-radius: 12px 0 0 12px;
+  border-right: 1.5px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Spiral rings */
+.notebook-book-cover::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 12px;
+  bottom: 12px;
+  width: 12px;
+  background-image: radial-gradient(circle, #f3f4f6 1.5px, transparent 2px),
+                    linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.5) 100%);
+  background-size: 12px 16px;
+  background-repeat: repeat-y;
+  opacity: 0.85;
+  border-radius: 4px;
+}
+
+.book-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.book-exam-label {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'Fraunces', serif;
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+
+.book-subject-label {
+  font-size: 12px;
+  opacity: 0.85;
+  font-weight: 500;
+  margin: 0;
+}
+
+.book-badge-row {
+  margin-top: 10px;
+}
+
+.book-count-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.22);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.book-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  opacity: 0.75;
+  font-weight: 600;
+}
+
+/* 📖 DUAL PAGE OPENED NOTEBOOK */
+.opened-book-container {
+  display: flex;
+  background: #fcfcfd;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.04);
+  min-height: 650px;
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid var(--border-color);
+}
+
+/* Central spine line representing notebook fold */
+.opened-book-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 32px;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, 
+    rgba(0,0,0,0.03) 0%, 
+    rgba(0,0,0,0.08) 40%, 
+    rgba(0,0,0,0.15) 50%, 
+    rgba(0,0,0,0.08) 60%, 
+    rgba(0,0,0,0.03) 100%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.book-page {
+  flex: 1;
+  padding: 40px 48px;
+  width: 50%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  max-height: 700px;
+  text-align: left;
+}
+
+/* Left Page specific styles */
+.book-page-left {
+  border-right: 1.5px solid var(--border-color);
+  padding-right: 52px;
+}
+
+/* Right Page specific styles */
+.book-page-right {
+  padding-left: 52px;
+}
+
+.book-header-section {
+  margin-bottom: 28px;
+}
+
+.book-header-title {
+  font-size: 26px;
+  font-weight: 800;
+  font-family: 'Fraunces', serif;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+}
+
+.book-header-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.book-header-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.book-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
+  margin-bottom: 16px;
+}
+
+/* 🏷️ SUBJECT ITEM CARD (LEFT PAGE) */
+.subject-item-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-color);
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.subject-item-card:hover {
+  background: var(--option-hover);
+  transform: translateX(6px);
+  border-color: var(--violet);
+}
+
+.subject-item-card.active {
+  background: rgba(110, 63, 243, 0.06);
+  border-color: var(--violet);
+  box-shadow: 0 4px 15px rgba(110, 63, 243, 0.08);
+}
+
+.subject-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.subject-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.subject-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subject-questions-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.subject-chevron {
+  font-size: 16px;
+  color: var(--text-muted);
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.subject-item-card:hover .subject-chevron {
+  color: var(--violet);
+  transform: translateX(2px);
+}
+
+/* 📝 RIGHT PAGE: QUESTIONS LIST VIEW */
+.right-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.right-page-back-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 18px;
+  font-family: 'Fraunces', serif;
+}
+
+.right-page-back-title:hover {
+  color: var(--violet);
+}
+
+.back-arrow-icon {
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+
+.right-page-back-title:hover .back-arrow-icon {
+  transform: translateX(-4px);
+}
+
+.right-page-count-badge {
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.book-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.book-question-row {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.book-question-info-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.book-q-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--violet);
+  background: rgba(110, 63, 243, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.book-q-text {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.book-q-ans-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 42px; /* aligns with question content */
+  font-size: 13px;
+}
+
+.book-q-ans-label {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.book-q-ans-value {
+  font-weight: 700;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+/* 📄 BOOK PAGINATION */
+.book-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.book-page-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.book-page-btn:hover:not(:disabled) {
+  border-color: var(--violet);
+  color: var(--violet);
+  background: rgba(110, 63, 243, 0.04);
+}
+
+.book-page-btn.active {
+  background: var(--violet);
+  color: white;
+  border-color: var(--violet);
+}
+
+.book-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Placeholder right page view when no subject selected */
+.book-right-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 15px;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+}
+
+.placeholder-emoji {
+  font-size: 48px;
+  animation: floatBook 3s ease-in-out infinite;
+}
+
+@keyframes floatBook {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Placeholder for entire book when no book is in list */
+.no-books-placeholder {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  padding: 80px 40px;
+  text-align: center;
+  color: var(--text-secondary);
+  width: 100%;
+}
+
+/* 🌗 DARK MODE ADAPTABILITY OVERRIDES */
+body.dark-mode .opened-book-container {
+  background: #14141F;
+}
+
+body.dark-mode .book-page-left {
+  border-right-color: #2b2b3d;
+}
+
+body.dark-mode .subject-item-card {
+  background: #1B1B29;
+}
+
+body.dark-mode .subject-item-card:hover {
+  background: #222235;
+}
+
+body.dark-mode .subject-item-card.active {
+  background: rgba(110, 63, 243, 0.1);
+}
+
+body.dark-mode .book-q-number {
+  background: rgba(110, 63, 243, 0.18);
+}
+
+/* ════════════════════════════════════════
+   NEW QUESTION CARD STYLES (bq-*)
+   Full options view with correct highlight
+   ════════════════════════════════════════ */
+
+.bq-card {
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  margin: 10px 16px 6px;
+  background: var(--bg-card);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+
+.bq-card:hover {
+  box-shadow: 0 4px 16px rgba(110, 63, 243, 0.08);
+}
+
+/* ── Header row (question text + collapse btn) ── */
+.bq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bq-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+}
+
+.bq-num {
+  min-width: 26px;
+  height: 26px;
+  background: rgba(110, 63, 243, 0.1);
+  color: #6E3FF3;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bq-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bq-eng {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.bq-hin {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.bq-collapse-btn {
+  background: var(--bg-input) !important;
+  color: var(--text-muted) !important;
+  border: 1.5px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+}
+
+.bq-collapse-btn:hover {
+  background: var(--border-color) !important;
+}
+
+/* ── Options list ── */
+.bq-options {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}
+
+.bq-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-input);
+  transition: all 0.15s ease;
+}
+
+.bq-option-correct {
+  border-color: #16A34A !important;
+  background: rgba(22, 163, 74, 0.08) !important;
+}
+
+.bq-opt-label {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--border-color);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bq-opt-label-correct {
+  background: #16A34A !important;
+  color: #ffffff !important;
+}
+
+.bq-opt-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  flex: 1;
+  font-weight: 500;
+}
+
+.bq-correct-tick {
+  font-size: 11px;
+  font-weight: 700;
+  color: #16A34A;
+  background: rgba(22, 163, 74, 0.12);
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Dark mode overrides ── */
+body.dark-mode .bq-card {
+  background: #1B1B29;
+  border-color: #2b2b3d;
+}
+
+body.dark-mode .bq-option {
+  background: #222235;
+  border-color: #2b2b3d;
+}
+
+body.dark-mode .bq-option-correct {
+  background: rgba(22, 163, 74, 0.12) !important;
+  border-color: #16A34A !important;
+}

@@ -1,185 +1,273 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-
-import QuizHeader from "../components/QuizHeader";
-import SubjectTabs from "../components/SubjectTabs";
-import CandidatePanel from "../components/CandidatePanel";
-import QuestionPalette from "../components/QuestionPalette";
-
-import "../css/Quiz.css";
-
-// Fallback safety payload if your Node backend is offline
-const fallbackQuestions = [
-  {
-    id: 1,
-    english: "What is the capital of India?",
-    hindi: "भारत की राजधानी क्या है?",
-    options: ["New Delhi", "Mumbai", "Kolkata", "Chennai"],
-    correctAnswer: "New Delhi",
-    explanation: "New Delhi was laid out to the south of the Old City and made the capital in 1911."
-  },
-  {
-    id: 2,
-    english: "Which planet is known as the Red Planet?",
-    hindi: "किस ग्रह को लाल ग्रह कहा जाता है?",
-    options: ["Venus", "Mars", "Jupiter", "Saturn"],
-    correctAnswer: "Mars",
-    explanation: "Mars appears red due to the iron oxide (rust) covering much of its surface."
-  }
-];
+import { useTheme } from "../context/ThemeContext";
 
 function Quiz() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toggleTheme } = useTheme();
 
-  // ─── 1. THE TITLE CATCHER (Fixes the stuck "Live Examination" text) ───
-  const rawState = location.state || {};
-  const resolvedTitle = 
-    rawState?.title || 
-    rawState?.subject || 
-    rawState?.examName || 
-    localStorage.getItem("lastExamTaken") || 
-    "BPSC - Quantitative Aptitude";
+  // 🪝 1. GRABS THE EXACT EXAM CLICKED IN 'StartTest.jsx'
+  const examSubject = location.state?.subject || localStorage.getItem("lastExamTaken") || "General Studies";
+  const quizId = location.state?.quizId;
+  const initialDurationMinutes = location.state?.duration || 30;
 
-  const quizId = rawState?.quizId || rawState?._id || null;
-  const initialDurationMinutes = rawState?.duration || 60;
+  // Immediately cache subject so Result page always knows what exam was taken
+  // (survives backend redirects, page refreshes, etc.)
+  if (location.state?.subject) {
+    localStorage.setItem("lastExamTaken", location.state.subject);
+  }
 
-  // Cache the exam title instantly so `/result` can read it later
-  useEffect(() => {
-    if (resolvedTitle && resolvedTitle !== "BPSC - Quantitative Aptitude") {
-      localStorage.setItem("lastExamTaken", resolvedTitle);
-    }
-  }, [resolvedTitle]);
+  // Grab logged-in user's name for the Profile Card
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const candidateName = storedUser.fullName || "Registered Aspirant";
 
   const [questions, setQuestions] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [timeLeft, setTimeLeft] = useState(initialDurationMinutes * 60);
-
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
 
-  // ─── 2. MONGODB SECURE PACKET RETRIEVAL ───
+  // ── Anti-Cheat State ──
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMsg, setWarningMsg] = useState("");
+  const [violations, setViolations] = useState(0);
+  const MAX_VIOLATIONS = 3;
+
+  // ── Enter fullscreen on quiz load ──
   useEffect(() => {
-    const fetchExamPacket = async () => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+
+    return () => {
+      // Exit fullscreen when leaving the quiz page
+      if (document.exitFullscreen && document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+    };
+  }, []);
+
+  // ── Fullscreen change listener ──
+  useEffect(() => {
+    const handleFSChange = () => {
+      const isFull = !!document.fullscreenElement;
+      setIsFullscreen(isFull);
+      if (!isFull && !pageLoading) {
+        // Student exited fullscreen
+        setViolations((v) => {
+          const newV = v + 1;
+          if (newV >= MAX_VIOLATIONS) {
+            setWarningMsg(`⚠️ Final Warning! Auto-submitting due to ${MAX_VIOLATIONS} violations.`);
+            setShowWarning(true);
+            setTimeout(() => submitQuiz(true), 3000);
+          } else {
+            setWarningMsg(`⚠️ You exited fullscreen! Violation ${newV}/${MAX_VIOLATIONS}. Return to fullscreen to continue.`);
+            setShowWarning(true);
+          }
+          return newV;
+        });
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFSChange);
+    document.addEventListener("webkitfullscreenchange", handleFSChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFSChange);
+      document.removeEventListener("webkitfullscreenchange", handleFSChange);
+    };
+  }, [pageLoading]);
+
+  // ── Tab switch / window blur listener ──
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden && !pageLoading) {
+        setViolations((v) => {
+          const newV = v + 1;
+          if (newV >= MAX_VIOLATIONS) {
+            setWarningMsg(`⚠️ Final Warning! Auto-submitting due to ${MAX_VIOLATIONS} tab-switch violations.`);
+            setShowWarning(true);
+            setTimeout(() => submitQuiz(true), 3000);
+          } else {
+            setWarningMsg(`⚠️ Tab switching detected! Violation ${newV}/${MAX_VIOLATIONS}. Stay on this tab!`);
+            setShowWarning(true);
+          }
+          return newV;
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [pageLoading]);
+
+  // ── Block right-click & keyboard shortcuts ──
+  useEffect(() => {
+    const blockRight = (e) => e.preventDefault();
+    const blockKeys = (e) => {
+      // Block: F11, Alt+Tab, Ctrl+T, Ctrl+N, Ctrl+W, Ctrl+Tab, PrintScreen
+      if (
+        e.key === "F11" ||
+        (e.altKey && e.key === "Tab") ||
+        (e.ctrlKey && ["t", "n", "w"].includes(e.key.toLowerCase())) ||
+        e.key === "PrintScreen"
+      ) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("contextmenu", blockRight);
+    document.addEventListener("keydown", blockKeys);
+    return () => {
+      document.removeEventListener("contextmenu", blockRight);
+      document.removeEventListener("keydown", blockKeys);
+    };
+  }, []);
+
+  const reEnterFullscreen = () => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    setShowWarning(false);
+  };
+
+  // 🌐 MONGO FETCH (Untouched - Your exact logic)
+  useEffect(() => {
+    const fetchLiveExam = async () => {
       if (!quizId) {
-        console.warn("No DB Quiz ID passed; mounting local high-performance fallback.");
-        setQuestions(fallbackQuestions);
-        setUserAnswers(new Array(fallbackQuestions.length).fill(undefined));
-        setPageLoading(false);
+        alert("No Exam ID detected! Redirecting back.");
+        navigate("/start-test");
         return;
       }
-
       try {
         const response = await axios.get(`http://localhost:5000/api/quizzes/${quizId}`);
-        const rawQ = response.data?.questions || fallbackQuestions;
-
-        // Ensure the explanation field is safely mapped into state
-        const mapped = rawQ.map((q, idx) => ({
+        const rawQuestions = response.data.questions || [];
+        const mappedQuestions = rawQuestions.map((q, idx) => ({
           id: idx + 1,
-          _id: q._id || idx,
-          english: q.questionEnglish || q.english || q.questionText || "",
+          _id: q._id,
+          english: q.questionEnglish || q.english || "",
           hindi: q.questionHindi || q.hindi || "",
           options: q.options || [],
-          correctAnswer: q.correctAnswer || "",
-          explanation: q.explanation || q.answerExplanation || "No official explanation provided."
+          correctAnswer: q.correctAnswer || ""
         }));
-
-        setQuestions(mapped);
-        setUserAnswers(new Array(mapped.length).fill(undefined));
+        setQuestions(mappedQuestions);
+        setUserAnswers(new Array(mappedQuestions.length).fill(undefined));
       } catch (err) {
-        console.error("Backend packet fetch failed, loading local safe copy:", err);
-        setQuestions(fallbackQuestions);
-        setUserAnswers(new Array(fallbackQuestions.length).fill(undefined));
+        console.error(err);
+        alert("Could not load exam packet from MongoDB.");
       } finally {
         setPageLoading(false);
       }
     };
+    fetchLiveExam();
+  }, [quizId, navigate]);
 
-    fetchExamPacket();
-  }, [quizId]);
-
-  // Timer Tick Engine
+  // Timer Tick
   useEffect(() => {
     if (pageLoading) return;
-    if (timeLeft <= 0) {
-      gradeAndSubmitTest(true);
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, pageLoading]);
+  }, [pageLoading]);
 
-  // Visited Tracker Sync
+  // Visited Tracker
   useEffect(() => {
-    setVisitedQuestions((prev) =>
-      prev.includes(currentQuestion) ? prev : [...prev, currentQuestion]
-    );
+    setVisitedQuestions((prev) => prev.includes(currentQuestion) ? prev : [...prev, currentQuestion]);
   }, [currentQuestion]);
 
-  const toggleReviewMark = () => {
-    setReviewQuestions((prev) =>
-      prev.includes(currentQuestion)
-        ? prev.filter((q) => q !== currentQuestion)
-        : [...prev, currentQuestion]
-    );
+  const markForReview = () => {
+    setReviewQuestions((prev) => prev.includes(currentQuestion) ? prev : [...prev, currentQuestion]);
   };
 
-  const clearCurrentSelection = () => {
+  const clearResponse = () => {
     setUserAnswers((prev) => {
-      const copy = [...prev];
-      copy[currentQuestion] = undefined;
-      return copy;
+      const updated = [...prev];
+      updated[currentQuestion] = undefined;
+      return updated;
     });
   };
 
-  // ─── 3. SECURE SUBMIT & AUTO-GRADER ───
-  const gradeAndSubmitTest = async (isTimeOut = false) => {
-    if (!isTimeOut && !window.confirm("Are you sure you want to submit your final answers?")) return;
-
-    let correct = 0;
-    let incorrect = 0;
-    let unanswered = 0;
-
-    questions.forEach((q, i) => {
-      const ans = userAnswers[i];
-      if (ans === undefined || ans === null) unanswered++;
-      else if (ans === q.correctAnswer) correct++;
-      else incorrect++;
-    });
-
-    const total = questions.length;
-    const score = correct * 1;
-    const percentage = ((correct / total) * 100).toFixed(2);
-
-    const payload = {
-      title: resolvedTitle,
-      score,
-      total,
-      correct,
-      incorrect,
-      unanswered,
-      percentage,
-      questions,
-      userAnswers
-    };
-
-    try {
-      await axios.post("http://localhost:5000/submit", payload);
-    } catch (e) {
-      console.log("Offline Client Submission Hook triggered safely.");
-    } finally {
-      navigate("/result", { state: payload });
+  const submitQuiz = async (forced = false) => {
+    if (!forced && !window.confirm("Are you sure you want to submit your exam?")) return;
+    // Exit fullscreen cleanly before navigating
+    if (document.exitFullscreen && document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => {});
     }
+    try {
+      const res = await fetch("http://localhost:5000/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userAnswers, questions }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const serverData = await res.json();
+      navigate("/result", { 
+        state: { 
+          ...serverData,
+          quizId,
+          title: examSubject,
+          subject: examSubject,
+          questions,
+          userAnswers
+        } 
+      });
+    } catch (err) {
+      // Offline fallback
+      let correct = 0, incorrect = 0, unanswered = 0;
+      questions.forEach((q, i) => {
+        const ans = userAnswers[i];
+        if (ans === undefined || ans === null) unanswered++;
+        else if (ans === q.correctAnswer) correct++;
+        else incorrect++;
+      });
+      const total = questions.length;
+      navigate("/result", {
+        state: {
+          quizId,
+          title: examSubject,
+          subject: examSubject,
+          score: correct,
+          total,
+          correct,
+          incorrect,
+          unanswered,
+          percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
+          questions,
+          userAnswers
+        }
+      });
+    }
+  };
+
+
+  // Helper to turn 1800 seconds into "00 : 30 : 00"
+  const formatTimeBox = (totalSecs) => {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    return `${h.toString().padStart(2, "0")} : ${m.toString().padStart(2, "0")} : ${s.toString().padStart(2, "0")}`;
+  };
+
+  // Helper to decide button colors in the Palette
+  const getPaletteStatus = (idx) => {
+    if (reviewQuestions.includes(idx)) return "review";
+    if (userAnswers[idx] !== undefined) return "answered";
+    if (visitedQuestions.includes(idx)) return "visited";
+    return "unvisited";
   };
 
   if (pageLoading) {
     return (
-      <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center", background: "#0B0C1A", color: "#fff", fontSize: "20px" }}>
-        ⏳ Securely decrypting examination packet...
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-page)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "40px 60px", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", textAlign: "center" }}>
+          <div style={{ fontSize: "40px", marginBottom: "12px", animation: "spin 1s infinite" }}>⏳</div>
+          <h3 style={{ margin: 0, color: "var(--text-primary)", fontFamily: "sans-serif" }}>Decrypting Exam Packet...</h3>
+          <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "6px" }}>Establishing secure handshake with MongoDB</p>
+        </div>
       </div>
     );
   }
@@ -187,101 +275,298 @@ function Quiz() {
   const current = questions[currentQuestion];
 
   return (
-    <div className="quiz-page">
-      {/* Passing the resolved title directly into the header */}
-      <QuizHeader title={resolvedTitle} />
-      <SubjectTabs />
+    <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh", paddingBottom: "60px", color: "var(--text-primary)", fontFamily: "'Inter', sans-serif", userSelect: "none" }}>
 
-      <div className="main-layout">
-        
-        {/* LEFT COLUMN: THE QUESTION CANVAS */}
-        <div className="question-section">
-          <div className="q-meta-stripe">
-            <h2>Question No. {currentQuestion + 1}</h2>
-            {reviewQuestions.includes(currentQuestion) && (
-              <span className="review-flag">🚩 Marked for Review</span>
-            )}
-          </div>
-
-          <div className="question-box" style={{ textAlign: "left" }}>
-            <p className="q-prompt-text" style={{ textAlign: "left" }}>{current?.english}</p>
-
-            {current?.hindi && (
-              <p className="q-prompt-text" style={{ textAlign: "left", marginTop: "20px" }}>{current?.hindi}</p>
-            )}
-          </div>
-
-          <div className="options">
-            {current?.options.map((optText, idx) => {
-              const isSelected = userAnswers[currentQuestion] === optText;
-              return (
-                <label key={idx} className={`option-card ${isSelected ? "selected-opt-card" : ""}`}>
-                  <input
-                    type="radio"
-                    name={`q-${currentQuestion}`}
-                    checked={isSelected}
-                    onChange={() => {
-                      setUserAnswers((prev) => {
-                        const copy = [...prev];
-                        copy[currentQuestion] = optText;
-                        return copy;
-                      });
-                    }}
-                  />
-                  <span>{optText}</span>
-                </label>
-              );
-            })}
-          </div>
-
-          <div className="button-group">
-            <button className="review-btn" onClick={toggleReviewMark}>
-              {reviewQuestions.includes(currentQuestion) ? "Unmark Review" : "Mark Review"}
-            </button>
-            <button className="clear-btn" onClick={clearCurrentSelection}>
-              Clear Response
-            </button>
-            
-            <button
-              className="prev-btn"
-              disabled={currentQuestion === 0}
-              onClick={() => setCurrentQuestion((prev) => prev - 1)}
-            >
-              Previous
-            </button>
-            <button
-              className="next-btn"
-              disabled={currentQuestion === questions.length - 1}
-              onClick={() => setCurrentQuestion((prev) => prev + 1)}
-            >
-              Next
-            </button>
-
-            {currentQuestion === questions.length - 1 && (
-              <button type="button" className="submit-btn" onClick={() => gradeAndSubmitTest(false)}>
-                Submit Test
+      {/* ════ ANTI-CHEAT WARNING OVERLAY ════ */}
+      {showWarning && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 99999,
+          background: "rgba(10,9,20,0.92)",
+          backdropFilter: "blur(12px)",
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#1c1b2e", border: "2px solid #DC2626",
+            borderRadius: "24px", padding: "48px 52px",
+            textAlign: "center", maxWidth: "460px", width: "90%",
+            boxShadow: "0 0 60px rgba(220,38,38,0.25)"
+          }}>
+            <div style={{ fontSize: "52px", marginBottom: "16px" }}>🚨</div>
+            <h2 style={{ color: "#F87171", margin: "0 0 12px", fontSize: "22px", fontWeight: "800" }}>
+              Integrity Violation!
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "15px", margin: "0 0 8px", lineHeight: 1.6 }}>
+              {warningMsg}
+            </p>
+            <p style={{ color: "#F4C842", fontSize: "13px", fontWeight: "600", margin: "0 0 28px" }}>
+              Violations: {violations} / {MAX_VIOLATIONS}
+            </p>
+            {violations < MAX_VIOLATIONS && (
+              <button
+                onClick={reEnterFullscreen}
+                style={{
+                  background: "linear-gradient(135deg,#3730A3,#6E3FF3)",
+                  color: "#fff", border: "none", borderRadius: "12px",
+                  padding: "14px 36px", fontSize: "15px", fontWeight: "700",
+                  cursor: "pointer", width: "auto"
+                }}
+              >
+                🔒 Return to Fullscreen
               </button>
             )}
           </div>
         </div>
+      )}
 
-        {/* RIGHT COLUMN: CANDIDATE INFO & PALETTE */}
-        <div className="right-panel">
-          <CandidatePanel timeLeft={timeLeft} examName={resolvedTitle} />
+      {/* ─── TOP HEADER ─── */}
+      <header style={{ backgroundColor: "var(--bg-header)", borderBottom: "1.5px solid var(--border-color)", marginBottom: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 36px", maxWidth: "1400px", margin: "0 auto" }}>
+
+          {/* LEFT: Brand only */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "linear-gradient(135deg, #2D1B69, #6E3FF3)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "18px" }}>🎓</div>
+            <h1 style={{ fontSize: "18px", fontWeight: "700", margin: 0, color: "var(--text-primary)" }}>Teaching Pariksha</h1>
+          </div>
+
+          {/* CENTER: Dynamic Subject Name */}
+          <div style={{ fontWeight: "700", fontSize: "15px", color: "#DC2626", letterSpacing: "0.5px", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#DC2626", display: "inline-block", animation: "pulse 1.5s infinite" }}></span>
+            {examSubject}
+          </div>
+
+          {/* RIGHT: Theme toggle + Instructions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
+              <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+              <div className="pill-thumb-slider"></div>
+            </div>
+            <button style={{ background: "#1E1B4B", color: "#FFF", border: "none", borderRadius: "10px", padding: "10px 20px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}>
+              Instructions
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Centering wrapper */}
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 36px" }}>
+
+        {/* ─── 2. DYNAMIC EXAM TITLE PILL ─── */}
+        <div style={{ marginBottom: "20px" }}>
+          <span style={{ backgroundColor: "#1E1B4B", color: "#FFF", fontWeight: "600", fontSize: "13px", padding: "8px 18px", borderRadius: "10px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+            <span>⊞</span> {examSubject}
+          </span>
+        </div>
+
+        {/* ─── 3. VIEWPORT GRID ─── */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "24px" }}>
+        
+        {/* LEFT: QUESTION & OPTIONS */}
+        <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "32px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "var(--card-shadow)" }}>
           
-          <QuestionPalette
-            questions={questions}
-            currentQuestion={currentQuestion}
-            setCurrentQuestion={setCurrentQuestion}
-            userAnswers={userAnswers}
-            reviewQuestions={reviewQuestions}
-            visitedQuestions={visitedQuestions}
-          />
+          <div>
+            {/* Question Number Bar */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <span style={{ backgroundColor: "var(--bg-page)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", fontWeight: "700", fontSize: "13px", padding: "8px 16px", borderRadius: "20px" }}>
+                Question No. {currentQuestion + 1} of {questions.length}
+              </span>
+            </div>
+
+            {/* English Question */}
+            {current?.english && (
+              <div style={{ marginBottom: current?.hindi ? "20px" : "30px", textAlign: "left" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: "700", lineHeight: "1.5", margin: 0, color: "var(--text-primary)", textAlign: "left" }}>{current.english}</h2>
+              </div>
+            )}
+
+            {/* Hindi Question */}
+            {current?.hindi && (
+              <div style={{ marginBottom: "30px", textAlign: "left" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: "600", lineHeight: "1.5", color: "var(--text-secondary)", margin: 0, textAlign: "left" }}>{current.hindi}</h2>
+              </div>
+            )}
+
+            {/* Options */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "40px" }}>
+              {current?.options.map((option) => {
+                const isSelected = userAnswers[currentQuestion] === option;
+                return (
+                  <div 
+                    key={option}
+                    onClick={() => {
+                      setUserAnswers((prev) => {
+                        const updated = [...prev];
+                        updated[currentQuestion] = option;
+                        return updated;
+                      });
+                    }}
+                    className={`option-card ${isSelected ? "selected-opt-card" : ""}`}
+                    style={{ 
+                      border: isSelected ? "2.5px solid var(--violet)" : "1.5px solid var(--border-color)", 
+                      backgroundColor: isSelected ? "var(--option-hover)" : "var(--bg-card)", 
+                      borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "16px", cursor: "pointer",
+                      fontWeight: "600", fontSize: "15px", transition: "all 0.15s ease",
+                      color: "var(--text-primary)"
+                    }}
+                  >
+                    <div style={{ 
+                      width: "20px", height: "20px", borderRadius: "50%", 
+                      border: isSelected ? "6px solid var(--violet)" : "2.5px solid var(--text-muted)", backgroundColor: "var(--bg-card)" 
+                    }} />
+                    <span>{option}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bottom Action Controls */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", borderTop: "1.5px solid var(--border-color)", paddingTop: "24px" }}>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button onClick={markForReview} style={{ background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+                Mark Review
+              </button>
+              <button onClick={clearResponse} style={{ background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+                Clear Response
+              </button>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button 
+                onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))} 
+                disabled={currentQuestion === 0}
+                style={{ 
+                  background: "#F1EFFA",
+                  color: "#2D1B69", 
+                  border: "1.5px solid #D8D3F0", 
+                  borderRadius: "10px", 
+                  padding: "12px 24px", 
+                  fontWeight: "700", 
+                  fontSize: "13px", 
+                  cursor: currentQuestion === 0 ? "not-allowed" : "pointer",
+                  opacity: currentQuestion === 0 ? 0.5 : 1,
+                  transition: "all 0.15s ease",
+                  width: "auto"
+                }}
+              >
+                Previous
+              </button>
+              <button 
+                onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))} 
+                disabled={currentQuestion === questions.length - 1}
+                style={{ 
+                  background: "#3730A3",
+                  color: "#FFFFFF", 
+                  border: "none", 
+                  borderRadius: "10px", 
+                  padding: "12px 32px", 
+                  fontWeight: "700", 
+                  fontSize: "13px", 
+                  cursor: currentQuestion === questions.length - 1 ? "not-allowed" : "pointer",
+                  opacity: currentQuestion === questions.length - 1 ? 0.5 : 1,
+                  transition: "all 0.15s ease",
+                  width: "auto"
+                }}
+              >
+                Next
+              </button>
+              {currentQuestion === questions.length - 1 && (
+                <button onClick={submitQuiz} style={{ background: "#16A34A", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 28px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+                  Submit Test
+                </button>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT PANEL: LIVE TELEMETRY */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          
+          {/* 1. Candidate Info */}
+          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
+              👤 Aspirant Identity
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(110, 63, 243, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold", color: "var(--violet)" }}>
+                {candidateName.charAt(0)}
+              </div>
+              <div style={{ overflow: "hidden" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 2px 0", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{candidateName}</h3>
+                <span style={{ fontSize: "12px", color: "var(--violet)", fontWeight: "600", display: "block", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
+                  {examSubject}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Clock */}
+          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "12px", display: "block", textAlign: "center" }}>
+              ⏱️ Time Remaining
+            </span>
+            <div style={{ textAlign: "center", padding: "8px 0 16px 0", borderBottom: "1.5px solid var(--border-color)", marginBottom: "16px" }}>
+              <div style={{ fontSize: "34px", fontWeight: "800", color: timeLeft < 300 ? "#DC2626" : "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
+                {formatTimeBox(timeLeft)}
+              </div>
+              <div style={{ display: "flex", justifyContent: "center", gap: "34px", color: "var(--text-muted)", fontSize: "10px", fontWeight: "700", marginTop: "4px" }}>
+                <span>HRS</span>
+                <span>MINS</span>
+                <span>SECS</span>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981" }} /> Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#C51414" }} /> Not Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--border-color)" }} /> Not Visited</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
+            </div>
+          </div>
+
+          {/* 3. Real-Time Palette Grid */}
+          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
+              🎨 Navigation Palette
+            </span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", maxHeight: "240px", overflowY: "auto", paddingRight: "4px" }}>
+              {questions.map((_, idx) => {
+                const status = getPaletteStatus(idx);
+                const isCurrent = currentQuestion === idx;
+
+                let bg = "var(--bg-card)";
+                let col = "var(--text-secondary)";
+                let bdr = "1.5px solid var(--border-color)";
+
+                if (status === "answered") { bg = "#10B981"; col = "#FFF"; bdr = "none"; }
+                else if (status === "review") { bg = "#F4C842"; col = "#FFF"; bdr = "none"; }
+                else if (status === "visited") { bg = "#C51414"; col = "#FFF"; bdr = "none"; }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentQuestion(idx)}
+                    style={{
+                      height: "40px", borderRadius: "8px", backgroundColor: bg, color: col, 
+                      border: isCurrent ? "2px solid var(--text-primary)" : bdr,
+                      fontWeight: "700", fontSize: "13px", cursor: "pointer",
+                      boxShadow: isCurrent ? "0 0 0 2px rgba(110, 63, 243, 0.2)" : "none"
+                    }}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
 
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default Quiz;

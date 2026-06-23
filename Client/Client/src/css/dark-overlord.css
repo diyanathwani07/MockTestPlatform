@@ -1,0 +1,72 @@
+/* ==========================================================================
+   🌌 THE OBSIDIAN OVERLORD (Absolute Specificity Global Dark Override)
+   ========================================================================== */
+
+body.dark-mode {
+  background-color: #070814 !important;
+  color: #F1F5F9 !important;
+  color-scheme: dark !important;
+}
+
+/* 1. Forcibly crush EVERY white panel on the platform into deep space navy */
+body.dark-mode .question-section,
+body.dark-mode .candidate-panel,
+body.dark-mode .question-palette,
+body.dark-mode .header,
+body.dark-mode .quiz-sub-stripe,
+body.dark-mode .option-card,
+body.dark-mode .stat-card,
+body.dark-mode .form-card,
+body.dark-mode .card,
+body.dark-mode .review-item,
+body.dark-mode .result-summary,
+body.dark-mode .result-details {
+  background-color: #131428 !important;
+  background: #131428 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  color: #FFFFFF !important;
+}
+
+/* 2. Force all standard typography inside those containers to turn pure White */
+body.dark-mode .question-section h2,
+body.dark-mode .question-section p,
+body.dark-mode .question-section span,
+body.dark-mode .candidate-panel h3,
+body.dark-mode .candidate-info h4,
+body.dark-mode .palette-header,
+body.dark-mode .header h1,
+body.dark-mode .header h2,
+body.dark-mode .quiz-sub-stripe span,
+body.dark-mode .option-card span,
+body.dark-mode .q-prompt-text {
+  color: #FFFFFF !important;
+}
+
+/* Muted secondary sub-text */
+body.dark-mode .candidate-info p,
+body.dark-mode .lang-hint,
+body.dark-mode .ans-label {
+  color: #94A3B8 !important;
+}
+
+/* 3. Option Cards specific Dark states */
+body.dark-mode .option-card {
+  background-color: #0A0B1E !important;
+  background: #0A0B1E !important;
+}
+body.dark-mode .option-card:hover {
+  background-color: #1A1B35 !important;
+  border-color: #6E3FF3 !important;
+}
+body.dark-mode .selected-opt-card,
+body.dark-mode .option-selected {
+  background-color: #1E1B3A !important;
+  background: #1E1B3A !important;
+  border-color: #A882FF !important;
+}
+
+/* 4. Protect specific colored buttons from being turned white */
+body.dark-mode .palette-btn.status-answered { background-color: #10B981 !important; color: #fff !important; border-color: transparent !important; }
+body.dark-mode .palette-btn.status-skipped  { background-color: #EF4444 !important; color: #fff !important; border-color: transparent !important; }
+body.dark-mode .palette-btn.status-review   { background-color: #F59E0B !important; color: #fff !important; border-color: transparent !important; }

@@ -4,6 +4,12 @@ const saveResult = async (req, res) => {
   try {
     const {
       userId,
+      quizId,
+      quizTitle,
+      subject,
+      examName,
+      reaction,
+      feedbackMessage,
       score,
       total,
       correct,
@@ -13,6 +19,12 @@ const saveResult = async (req, res) => {
 
     const result = await Result.create({
       userId,
+      quizId,
+      quizTitle,
+      subject,
+      examName,
+      reaction,
+      feedbackMessage,
       score,
       total,
       correct,

@@ -1,140 +1,311 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
-.start-page{
-    position:relative;
-    min-height:100vh;
-    background:#f7f5ff;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
+.start-page {
+    position: relative;
+    min-height: 100vh;
+    background: var(--bg-page);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
 /* Background */
-
-.top-left{
-    position:absolute;
-    top:-250px;
-    left:-250px;
-    width:650px;
-    height:650px;
-    background:linear-gradient(135deg,#7b3ff3,#4f22ff);
-    border-radius:120px;
-    transform:rotate(45deg);
+.top-left {
+    position: absolute;
+    top: -250px;
+    left: -250px;
+    width: 650px;
+    height: 650px;
+    background: linear-gradient(135deg, #7b3ff3, #4f22ff);
+    border-radius: 120px;
+    transform: rotate(45deg);
 }
 
-.bottom-right{
-    position:absolute;
-    bottom:-250px;
-    right:-250px;
-    width:650px;
-    height:650px;
-    background:linear-gradient(135deg,#9b7eff,#4a22d4);
-    border-radius:120px;
-    transform:rotate(45deg);
+.bottom-right {
+    position: absolute;
+    bottom: -250px;
+    right: -250px;
+    width: 650px;
+    height: 650px;
+    background: linear-gradient(135deg, #9b7eff, #4a22d4);
+    border-radius: 120px;
+    transform: rotate(45deg);
 }
 
-.big-circle{
-    position:absolute;
-    top:-120px;
-    right:-120px;
-    width:450px;
-    height:450px;
-    border:2px solid rgba(123,63,243,.15);
-    border-radius:50%;
+.big-circle {
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 450px;
+    height: 450px;
+    border: 2px solid rgba(123, 63, 243, .15);
+    border-radius: 50%;
 }
 
-.small-circle{
-    position:absolute;
-    bottom:100px;
-    left:100px;
-    width:60px;
-    height:60px;
-    border:3px solid rgba(123,63,243,.25);
-    border-radius:50%;
+.small-circle {
+    position: absolute;
+    bottom: 100px;
+    left: 100px;
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(123, 63, 243, .25);
+    border-radius: 50%;
 }
 
 /* Main Card */
-
-.start-card{
-    width:850px;
-    background:white;
-    border-radius:30px;
-    padding:50px;
-    box-shadow:0 20px 50px rgba(0,0,0,.08);
-    z-index:10;
+.start-card {
+    width: 850px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 30px;
+    padding: 50px;
+    box-shadow: var(--card-shadow);
+    z-index: 10;
 }
 
 /* Logo */
-
-.logo{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:15px;
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
 }
 
-.icon{
-    font-size:36px;
+.icon {
+    font-size: 36px;
 }
 
-.logo h1{
-    font-size:34px;
-    color:#111827;
+.logo h1 {
+    font-size: 34px;
+    color: var(--text-primary);
 }
 
 /* Heading */
-
-h2{
-    text-align:center;
-    margin:25px 0 40px;
-    font-size:52px;
-    color:#111827;
+h2 {
+    text-align: center;
+    margin: 25px 0 40px;
+    font-size: 52px;
+    color: var(--text-primary);
 }
 
 /* Table */
-
-.row{
-    display:flex;
-    padding:20px 0;
-    border-bottom:1px solid #ececec;
+.row {
+    display: flex;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.label{
-    width:180px;
-    font-weight:700;
-    color:#111827;
+.label {
+    width: 180px;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
-.value{
-    flex:1;
-    color:#6b7280;
-    line-height:1.8;
+.value {
+    flex: 1;
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+
+/* New Subject Highlight */
+.subject-highlight {
+    color: #6a11cb;
+    font-weight: 600;
 }
 
 /* Button */
-
-.start-btn{
-    width:100%;
-    margin-top:35px;
-    padding:18px;
-    border:none;
-    border-radius:15px;
-    background:linear-gradient(90deg,#6a11cb,#7b3ff3);
-    color:white;
-    font-size:20px;
-    font-weight:600;
-    cursor:pointer;
-    transition:.3s;
+.start-btn {
+    width: 100%;
+    margin-top: 35px;
+    padding: 18px;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(90deg, #6a11cb, #7b3ff3);
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s;
 }
 
-.start-btn:hover{
-    transform:translateY(-3px);
+.start-btn:hover {
+    transform: translateY(-3px);
+}
+
+/* ════════ COUNTDOWN OVERLAY ════════ */
+.countdown-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 9, 20, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.countdown-card {
+    background: var(--bg-card, #1c1b2e);
+    border: 1.5px solid rgba(110, 63, 243, 0.3);
+    border-radius: 28px;
+    padding: 48px 52px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(110, 63, 243, 0.15);
+    animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Circular Ring ── */
+.countdown-ring {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.countdown-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.countdown-track {
+    fill: none;
+    stroke: rgba(110, 63, 243, 0.15);
+    stroke-width: 6;
+}
+
+.countdown-progress {
+    fill: none;
+    stroke: #6E3FF3;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 276.46;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.countdown-number {
+    font-size: 52px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ── Text ── */
+.countdown-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.countdown-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0;
+    max-width: 260px;
+    line-height: 1.5;
+}
+
+/* ── Cancel Button ── */
+.countdown-cancel-btn {
+    margin-top: 8px;
+    background: transparent !important;
+    color: #F87171 !important;
+    border: 1.5px solid #F87171 !important;
+    border-radius: 12px !important;
+    padding: 11px 36px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    width: auto !important;
+    height: auto !important;
+    transition: all 0.2s ease !important;
+    letter-spacing: 0.3px !important;
+}
+
+.countdown-cancel-btn:hover {
+    background: #F87171 !important;
+    color: #fff !important;
+    transform: none !important;
+}
+
+/* Premium Dropdown Styling */
+.subject-dropdown {
+    width: 100%;
+    padding: 10px 15px;
+    border: 2px solid var(--border-input);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--violet);
+    font-weight: 600;
+    background-color: var(--bg-input);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.subject-dropdown:focus {
+    border-color: var(--violet);
+    box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
+}
+
+/* Locked subject display (when coming from Student Dashboard) */
+.subject-locked {
+    width: 100%;
+    padding: 10px 15px;
+    border: 2px solid var(--border-input);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--violet);
+    font-weight: 600;
+    background-color: var(--bg-input);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.subject-locked::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #16A34A;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
 }
