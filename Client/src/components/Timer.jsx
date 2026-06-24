@@ -1,20 +1,14 @@
 import React from "react";
 
 function Timer({ timeLeft }) {
-  const hours = Math.floor(timeLeft / 3600);
-  const minutes = Math.floor((timeLeft % 3600) / 60);
-  const seconds = timeLeft % 60;
+  const formatTime = (totalSecs) => {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    return `${h.toString().padStart(2, "0")} : ${m.toString().padStart(2, "0")} : ${s.toString().padStart(2, "0")}`;
+  };
 
-  return (
-    <div className="timer-box-panel">
-      <h3>Time Left</h3>
-      <div className="timer-display">
-        <div className="timer">
-          {String(hours).padStart(2, "0")} : {String(minutes).padStart(2, "0")} : {String(seconds).padStart(2, "0")}
-        </div>
-      </div>
-    </div>
-  );
+  return <div className="timer">⏱ {formatTime(timeLeft)}</div>;
 }
 
 export default Timer;

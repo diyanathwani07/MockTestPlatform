@@ -3,13 +3,11 @@ import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
-import "../css/admin/ManageQuizzes.css";
-import DateSelector from "./components/DateSelector";
+import "../css/admin/ResultsDashboard.css";
 
 function Results() {
   const [results, setResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -27,68 +25,272 @@ function Results() {
   }, []);
 
   const filteredResults = results.filter((r) => 
-    r.userId?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+    r.userId?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.quizTitle?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Derive Statistics
+  const totalAttempts = filteredResults.length;
+  let totalScoreSum = 0;
+  let highestPercentage = 0;
+  const uniqueStudents = new Set();
+  
+  let excellentCount = 0;
+  let goodCount = 0;
+  let averageCount = 0;
+  let poorCount = 0;
+
+  filteredResults.forEach(r => {
+    const percentage = r.total > 0 ? (r.score / r.total) * 100 : 0;
+    totalScoreSum += percentage;
+    if (percentage > highestPercentage) highestPercentage = percentage;
+    if (r.userId && r.userId._id) uniqueStudents.add(r.userId._id);
+    
+    if (percentage >= 80) excellentCount++;
+    else if (percentage >= 60) goodCount++;
+    else if (percentage >= 40) averageCount++;
+    else poorCount++;
+  });
+
+  const averageScore = totalAttempts > 0 ? (totalScoreSum / totalAttempts).toFixed(2) : "0.00";
+  const studentsAppeared = uniqueStudents.size;
+
+  // Sorting for top performers
+  const topPerformers = [...filteredResults].sort((a, b) => {
+    const pA = a.total > 0 ? (a.score / a.total) * 100 : 0;
+    const pB = b.total > 0 ? (b.score / b.total) * 100 : 0;
+    return pB - pA;
+  }).slice(0, 5);
+
+  // Group by Quiz
+  const quizStatsMap = {};
+  filteredResults.forEach(r => {
+    const qName = r.quizTitle || r.subject || "Untitled Quiz";
+    if (!quizStatsMap[qName]) {
+      quizStatsMap[qName] = { attempts: 0, scoreSum: 0, highest: 0, lowest: 100, passCount: 0 };
+    }
+    quizStatsMap[qName].attempts++;
+    const percentage = r.total > 0 ? (r.score / r.total) * 100 : 0;
+    quizStatsMap[qName].scoreSum += percentage;
+    if (percentage > quizStatsMap[qName].highest) quizStatsMap[qName].highest = percentage;
+    if (percentage < quizStatsMap[qName].lowest) quizStatsMap[qName].lowest = percentage;
+    if (percentage >= 40) quizStatsMap[qName].passCount++;
+  });
+
+  const quizStats = Object.keys(quizStatsMap).map(name => {
+    const data = quizStatsMap[name];
+    return {
+      name,
+      attempts: data.attempts,
+      avgScore: (data.scoreSum / data.attempts).toFixed(2),
+      highest: data.highest.toFixed(2),
+      lowest: data.lowest === 100 && data.attempts > 0 && data.highest === 0 ? 0 : data.lowest.toFixed(2),
+      passPercent: ((data.passCount / data.attempts) * 100).toFixed(2)
+    };
+  });
+
+  const getScoreBadgeClass = (pct) => {
+    if (pct >= 80) return "excellent";
+    if (pct >= 60) return "good";
+    if (pct >= 40) return "average";
+    return "poor";
+  };
 
   return (
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
         <AdminNavbar title="Results" />
-        <div className="admin-content">
-
-          {/* ROUNDED PILL SEARCH BAR */}
-          <div className="pill-search-container">
-            <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            
-            <input 
-              type="text" 
-              placeholder="Search candidate results by name..." 
-              className="pill-search-input"
-              onChange={(e) => setSearchTerm(e.target.value)}
-              value={searchTerm}
-            />
+        
+        <div className="results-dashboard">
+          
+          <div className="dashboard-header" style={{ justifyContent: "flex-end" }}>
+            <div className="header-actions">
+              <button className="btn-export">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export Report
+              </button>
+              <button className="btn-filter">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                Filter Results
+              </button>
+            </div>
           </div>
 
-          {/* TABLE CONTAINER */}
-          <div className="quiz-table-wrapper">
-            <table className="quiz-table">
-              <thead>
-                <tr>
-                  <th>Candidate</th>
-                  <th>Email</th>
-                  <th>Score</th>
-                  <th>Date Completed</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredResults.map((r) => (
-                  <tr key={r._id}>
-                    <td>
-                      {/* FIXED CIRCULAR AVATAR */}
-                      <div className="user-info-cell">
-                        <div className="user-avatar-circle">
-                          {r.userId?.fullName?.charAt(0).toUpperCase() || "?"}
-                        </div>
-                        <span className="user-name-text">{r.userId?.fullName || "Unknown User"}</span>
-                      </div>
-                    </td>
-                    <td>{r.userId?.email || "—"}</td>
-                    <td><span className="status-badge status-published" style={{fontWeight: 700}}>{r.score} / {r.total}</span></td>
-                    <td>{new Date(r.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                ))}
+          {/* STAT CARDS */}
+          <div className="stat-cards-grid">
+            <div className="stat-card">
+              <div className="stat-icon purple">👥</div>
+              <div className="stat-info">
+                <h4>Total Attempts</h4>
+                <h2>{totalAttempts.toLocaleString()}</h2>
+                <span className="trend positive">↑ Active</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon green">✅</div>
+              <div className="stat-info">
+                <h4>Average Score</h4>
+                <h2>{averageScore}%</h2>
+                <span className="trend positive">Overall</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon yellow">⭐</div>
+              <div className="stat-info">
+                <h4>Highest Score</h4>
+                <h2>{highestPercentage.toFixed(2)}%</h2>
+                <span className="trend positive">Top Performance</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon blue">👨‍🎓</div>
+              <div className="stat-info">
+                <h4>Students Appeared</h4>
+                <h2>{studentsAppeared.toLocaleString()}</h2>
+                <span className="trend positive">Unique Users</span>
+              </div>
+            </div>
+          </div>
 
-                {filteredResults.length === 0 && (
+          {/* FILTERS BAR */}
+          <div className="filters-bar">
+            <input 
+              className="filter-search"
+              placeholder="Search by user name, email or quiz..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ maxWidth: "250px" }}
+            />
+            <select className="filter-select"><option>All Quizzes</option></select>
+            <select className="filter-select"><option>All Subjects</option></select>
+            <select className="filter-select"><option>All Users</option></select>
+            <select className="filter-select"><option>All Status</option></select>
+            <button className="btn-reset" onClick={() => setSearchTerm("")}>↻ Reset</button>
+          </div>
+
+          {/* MAIN SECTIONS: Excluded Trend, Recent, Score Dist, Subject Results */}
+          <div className="dashboard-sections-grid">
+            
+            {/* PERFORMANCE SUMMARY */}
+            <div className="section-card">
+              <div className="section-header">
+                <h3>Performance Summary ⓘ</h3>
+              </div>
+              <div className="perf-grid">
+                <div className="perf-box excellent">
+                  <div className="perf-header">Excellent (80-100%)</div>
+                  <div className="perf-values">
+                    <h3>{excellentCount.toLocaleString()}</h3>
+                    <span>{totalAttempts > 0 ? ((excellentCount / totalAttempts) * 100).toFixed(1) : 0}%</span>
+                  </div>
+                </div>
+                <div className="perf-box good">
+                  <div className="perf-header">Good (60-79%)</div>
+                  <div className="perf-values">
+                    <h3>{goodCount.toLocaleString()}</h3>
+                    <span>{totalAttempts > 0 ? ((goodCount / totalAttempts) * 100).toFixed(1) : 0}%</span>
+                  </div>
+                </div>
+                <div className="perf-box average">
+                  <div className="perf-header">Average (40-59%)</div>
+                  <div className="perf-values">
+                    <h3>{averageCount.toLocaleString()}</h3>
+                    <span>{totalAttempts > 0 ? ((averageCount / totalAttempts) * 100).toFixed(1) : 0}%</span>
+                  </div>
+                </div>
+                <div className="perf-box poor">
+                  <div className="perf-header">Poor (0-39%)</div>
+                  <div className="perf-values">
+                    <h3>{poorCount.toLocaleString()}</h3>
+                    <span>{totalAttempts > 0 ? ((poorCount / totalAttempts) * 100).toFixed(1) : 0}%</span>
+                  </div>
+                </div>
+              </div>
+              <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px', marginBottom: 0}}>Performance is calculated based on average scores.</p>
+            </div>
+
+            {/* TOP PERFORMERS */}
+            <div className="section-card">
+              <div className="section-header">
+                <h3>Top Performers</h3>
+                <span className="view-all-link">View All Top Performers →</span>
+              </div>
+              <table className="data-table">
+                <thead>
                   <tr>
-                    <td colSpan={4} className="empty-row">No test records found matching your search.</td>
+                    <th>Rank</th>
+                    <th>Student</th>
+                    <th>Quiz</th>
+                    <th>Score</th>
+                    <th>Correct</th>
+                    <th>Date</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {topPerformers.map((p, idx) => {
+                    const pct = p.total > 0 ? (p.score / p.total) * 100 : 0;
+                    return (
+                      <tr key={p._id}>
+                        <td><strong>{idx + 1}</strong></td>
+                        <td>
+                          <div className="user-cell">
+                            <div className="avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
+                            <div>
+                              <h5>{p.userId?.fullName || "Unknown User"}</h5>
+                              <p>{p.userId?.email || "No Email"}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{p.quizTitle || p.subject || "Untitled"}</td>
+                        <td><span className={`score-badge ${getScoreBadgeClass(pct)}`}>{pct.toFixed(2)}%</span></td>
+                        <td>{p.score} / {p.total}</td>
+                        <td style={{color: "var(--text-secondary)", fontSize: "12px"}}>{new Date(p.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    );
+                  })}
+                  {topPerformers.length === 0 && (
+                    <tr><td colSpan="6" style={{textAlign:"center"}}>No performers found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* RESULTS BY QUIZ */}
+            <div className="section-card">
+              <div className="section-header">
+                <h3>Results by Quiz</h3>
+                <span className="view-all-link">View All Quiz Results →</span>
+              </div>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Quiz</th>
+                    <th>Total Attempts</th>
+                    <th>Average Score</th>
+                    <th>Highest Score</th>
+                    <th>Lowest Score</th>
+                    <th>Pass %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quizStats.map((q, idx) => (
+                    <tr key={idx}>
+                      <td><strong>{q.name}</strong></td>
+                      <td>{q.attempts}</td>
+                      <td><span className={`score-badge ${getScoreBadgeClass(q.avgScore)}`}>{q.avgScore}%</span></td>
+                      <td>{q.highest}%</td>
+                      <td>{q.lowest}%</td>
+                      <td>{q.passPercent}%</td>
+                    </tr>
+                  ))}
+                  {quizStats.length === 0 && (
+                    <tr><td colSpan="6" style={{textAlign:"center"}}>No quiz stats found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
           </div>
 
         </div>

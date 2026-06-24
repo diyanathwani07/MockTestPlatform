@@ -135,7 +135,7 @@ function Result() {
         <div className="result-details">
           <h2>Answer Review</h2>
 
-          <div className="review-list">
+          <div className="review-list" style={{ maxHeight: "600px", overflowY: "auto", paddingRight: "10px" }}>
             {questions.map((q, index) => {
               const userAns = userAnswers[index];
               const isCorrect = q.correctAnswer
@@ -178,6 +178,7 @@ function Result() {
               );
             })}
           </div>
+
         </div>
       )}
 

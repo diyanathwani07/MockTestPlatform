@@ -1,13 +1,11 @@
 import React from "react";
 
-// Accept the subject as a prop
 function SubjectTabs({ examSubject }) {
   return (
-    <div className="top-tabs-container">
-      <div className="active-subject-tab">
-        {/* Display the dynamically selected subject */}
+    <div className="quiz-sub-stripe" style={{ padding: "10px 20px", borderBottom: "1px solid var(--border-color)", backgroundColor: "var(--bg-card)" }}>
+      <span className="exam-subject-badge" style={{ fontWeight: "bold", color: "var(--violet)" }}>
         {examSubject}
-      </div>
+      </span>
     </div>
   );
 }

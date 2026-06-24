@@ -9,6 +9,8 @@ function Quiz() {
   const { toggleTheme } = useTheme();
 
   // 🪝 1. GRABS THE EXACT EXAM CLICKED IN 'StartTest.jsx'
+  const examName = location.state?.examName || location.state?.subject || "Live Examination";
+  const quizTitle = location.state?.quizTitle || "Mock Test";
   const examSubject = location.state?.subject || localStorage.getItem("lastExamTaken") || "General Studies";
   const quizId = location.state?.quizId;
   const initialDurationMinutes = location.state?.duration || 30;
@@ -31,6 +33,14 @@ function Quiz() {
   const [timeLeft, setTimeLeft] = useState(initialDurationMinutes * 60);
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
+
+  const [palettePage, setPalettePage] = useState(0);
+  const itemsPerPage = 20; // 20 questions per page (4 rows of 5)
+  
+  useEffect(() => {
+    const correctPage = Math.floor(currentQuestion / itemsPerPage);
+    setPalettePage(correctPage);
+  }, [currentQuestion, itemsPerPage]);
 
   // ── Anti-Cheat State ──
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -328,10 +338,10 @@ function Quiz() {
             <h1 style={{ fontSize: "18px", fontWeight: "700", margin: 0, color: "var(--text-primary)" }}>Teaching Pariksha</h1>
           </div>
 
-          {/* CENTER: Dynamic Subject Name */}
+          {/* CENTER: Dynamic Exam Name */}
           <div style={{ fontWeight: "700", fontSize: "15px", color: "#DC2626", letterSpacing: "0.5px", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#DC2626", display: "inline-block", animation: "pulse 1.5s infinite" }}></span>
-            {examSubject}
+            {examName}
           </div>
 
           {/* RIGHT: Theme toggle + Instructions */}
@@ -361,7 +371,7 @@ function Quiz() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "24px" }}>
         
         {/* LEFT: QUESTION & OPTIONS */}
-        <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "32px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "var(--card-shadow)" }}>
+        <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "32px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "var(--card-shadow)", alignSelf: "start" }}>
           
           <div>
             {/* Question Number Bar */}
@@ -530,8 +540,9 @@ function Quiz() {
             <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
               🎨 Navigation Palette
             </span>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", maxHeight: "240px", overflowY: "auto", paddingRight: "4px" }}>
-              {questions.map((_, idx) => {
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", paddingRight: "4px" }}>
+              {questions.slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage).map((_, i) => {
+                const idx = palettePage * itemsPerPage + i;
                 const status = getPaletteStatus(idx);
                 const isCurrent = currentQuestion === idx;
 
@@ -548,7 +559,7 @@ function Quiz() {
                     key={idx}
                     onClick={() => setCurrentQuestion(idx)}
                     style={{
-                      height: "40px", borderRadius: "8px", backgroundColor: bg, color: col, 
+                      height: "36px", borderRadius: "8px", backgroundColor: bg, color: col, 
                       border: isCurrent ? "2px solid var(--text-primary)" : bdr,
                       fontWeight: "700", fontSize: "13px", cursor: "pointer",
                       boxShadow: isCurrent ? "0 0 0 2px rgba(110, 63, 243, 0.2)" : "none"
@@ -559,6 +570,64 @@ function Quiz() {
                 );
               })}
             </div>
+            
+            {(() => {
+              const totalPages = Math.ceil(questions.length / itemsPerPage);
+              if (totalPages <= 1) return null;
+
+              let startPage = Math.max(0, palettePage - 2);
+              let endPage = Math.min(totalPages - 1, startPage + 4);
+              
+              if (endPage - startPage < 4) {
+                startPage = Math.max(0, endPage - 4);
+              }
+
+              const visiblePages = [];
+              for (let i = startPage; i <= endPage; i++) {
+                visiblePages.push(i);
+              }
+
+              return (
+                <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1.5px solid var(--border-color)", flexWrap: "wrap" }}>
+                  {/* Prev Button */}
+                  <button 
+                    onClick={() => setPalettePage(Math.max(0, palettePage - 1))}
+                    disabled={palettePage === 0}
+                    style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", cursor: palettePage === 0 ? "not-allowed" : "pointer", opacity: palettePage === 0 ? 0.5 : 1, fontWeight: "bold", color: "var(--text-secondary)", transition: "all 0.2s" }}
+                  >
+                    {"<"}
+                  </button>
+
+                  {/* Page Numbers */}
+                  {visiblePages.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPalettePage(p)}
+                      style={{
+                        width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", cursor: "pointer", transition: "all 0.2s",
+                        backgroundColor: palettePage === p ? "#3B82F6" : "var(--bg-card)",
+                        border: palettePage === p ? "none" : "1.5px solid var(--border-color)",
+                        color: palettePage === p ? "#fff" : "var(--text-primary)",
+                        fontWeight: "700",
+                        fontSize: "13px",
+                        boxShadow: palettePage === p ? "0 4px 10px rgba(59, 130, 246, 0.3)" : "none"
+                      }}
+                    >
+                      {p + 1}
+                    </button>
+                  ))}
+
+                  {/* Next Button */}
+                  <button 
+                    onClick={() => setPalettePage(Math.min(totalPages - 1, palettePage + 1))}
+                    disabled={palettePage === totalPages - 1}
+                    style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", cursor: palettePage === totalPages - 1 ? "not-allowed" : "pointer", opacity: palettePage === totalPages - 1 ? 0.5 : 1, fontWeight: "bold", color: "var(--text-secondary)", transition: "all 0.2s" }}
+                  >
+                    {">"}
+                  </button>
+                </div>
+              );
+            })()}
           </div>
 
         </div>

@@ -116,8 +116,9 @@ function ManageQuizzes() {
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--bg-page)", borderBottom: "1.5px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
-                    <th style={{ padding: "18px 28px", fontWeight: "700" }}>Title</th>
+                    <th style={{ padding: "18px 28px", fontWeight: "700" }}>Exam</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Subject</th>
+                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Title</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Duration</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Questions</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Status</th>
@@ -129,12 +130,16 @@ function ManageQuizzes() {
                     filteredQuizzes.map((quiz) => (
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "14px" }}>
                         
-                        <td style={{ padding: "18px 28px", fontWeight: "700", color: "var(--text-primary)" }}>
-                          {quiz.title}
+                        <td style={{ padding: "18px 28px", fontWeight: "700", color: "var(--violet)" }}>
+                          {quiz.examName || "—"}
                         </td>
                         
-                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "500" }}>
+                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600" }}>
                           {quiz.subject}
+                        </td>
+                        
+                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          {quiz.title}
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)" }}>
@@ -234,7 +239,7 @@ function ManageQuizzes() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" style={{ padding: "64px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: "15px" }}>
+                      <td colSpan="7" style={{ padding: "64px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: "15px" }}>
                         No examination modules match "{searchTerm}".
                       </td>
                     </tr>

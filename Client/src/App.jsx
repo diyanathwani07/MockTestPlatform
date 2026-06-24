@@ -109,8 +109,6 @@ function App() {
           }
         />
 
-        <Route path="/admin" element={<AdminDashboard />} />
-
         <Route
           path="/admin/edit-quiz/:id"
           element={

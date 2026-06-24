@@ -81,6 +81,7 @@ function StartTest() {
         subject: selectedQuiz.subject,
         quizId: selectedQuiz._id,
         quizTitle: selectedQuiz.title,
+        examName: selectedQuiz.examName,
         duration: selectedQuiz.duration,
       },
     });
