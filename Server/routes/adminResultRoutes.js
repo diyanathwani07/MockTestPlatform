@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect, adminOnly } = require("../middleware/adminMiddleware");
+const { protect } = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
 const Result = require("../models/Result");
 
 // GET all results (admin only) — populates user info
