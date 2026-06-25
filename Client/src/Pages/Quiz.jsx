@@ -166,14 +166,22 @@ function Quiz() {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`);
         const rawQuestions = response.data.questions || [];
-        const mappedQuestions = rawQuestions.map((q, idx) => ({
-          id: idx + 1,
-          _id: q._id,
-          english: q.questionEnglish || q.english || "",
-          hindi: q.questionHindi || q.hindi || "",
-          options: q.options || [],
-          correctAnswer: q.correctAnswer || ""
-        }));
+        const mappedQuestions = rawQuestions.map((q, idx) => {
+          let correctText = q.correctAnswer || "";
+          if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
+            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+            correctText = q.options[idxMap[correctText]] || correctText;
+          }
+
+          return {
+            id: idx + 1,
+            _id: q._id,
+            english: q.questionEnglish || q.english || "",
+            hindi: q.questionHindi || q.hindi || "",
+            options: q.options || [],
+            correctAnswer: correctText
+          };
+        });
 
         if (!location.state) {
             setExamName(response.data.examName || response.data.subject || "Live Examination");
