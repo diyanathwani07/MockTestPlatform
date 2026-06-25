@@ -407,7 +407,7 @@ function CreateQuiz() {
       console.log("Submitting payload...", payload);
 
       await axios.post(
-        "http://localhost:5000/api/quizzes",
+        `${import.meta.env.VITE_API_URL}/api/quizzes`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

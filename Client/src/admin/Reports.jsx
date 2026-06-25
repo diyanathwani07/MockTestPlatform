@@ -19,7 +19,7 @@ function Reports() {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/admin/results", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/results`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setResults(res.data);

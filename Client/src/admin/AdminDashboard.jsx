@@ -32,14 +32,14 @@ function AdminDashboard() {
 
         // Fetch basic stats
         const statsRes = await axios.get(
-          "http://localhost:5000/api/quizzes/stats/dashboard",
+          `${import.meta.env.VITE_API_URL}/api/quizzes/stats/dashboard`,
           { headers }
         );
         setStats(statsRes.data);
 
         // Fetch quizzes for detailed statuses
         const quizzesRes = await axios.get(
-          "http://localhost:5000/api/quizzes",
+          `${import.meta.env.VITE_API_URL}/api/quizzes`,
           { headers }
         );
         setQuizzes(quizzesRes.data);

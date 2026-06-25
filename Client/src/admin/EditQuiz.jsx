@@ -163,7 +163,7 @@ function EditQuiz() {
           console.warn("No ID parameter found in route!");
           return;
         }
-        const url = `http://localhost:5000/api/quizzes/${id}`;
+        const url = `${import.meta.env.VITE_API_URL}/api/quizzes/${id}`;
         console.log("Fetching quiz from:", url);
         const response = await axios.get(url);
         const dbQuiz = response.data;
@@ -539,7 +539,7 @@ function EditQuiz() {
         questions: cleanQuestions,
       };
 
-      await axios.put(`http://localhost:5000/api/quizzes/${id}`, payload, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

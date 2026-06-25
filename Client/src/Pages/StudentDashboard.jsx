@@ -20,7 +20,7 @@ function StudentDashboard() {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/quizzes?published=true");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
         setQuizzes(res.data);
       } catch (err) {
         console.error(err);

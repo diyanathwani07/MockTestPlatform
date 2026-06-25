@@ -153,7 +153,7 @@ function Quiz() {
         return;
       }
       try {
-        const response = await axios.get(`http://localhost:5000/api/quizzes/${quizId}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`);
         const rawQuestions = response.data.questions || [];
         const mappedQuestions = rawQuestions.map((q, idx) => ({
           id: idx + 1,
@@ -208,7 +208,7 @@ function Quiz() {
       await document.exitFullscreen().catch(() => {});
     }
     try {
-      const res = await fetch("http://localhost:5000/submit", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userAnswers, questions }),

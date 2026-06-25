@@ -50,7 +50,7 @@ function Result() {
         }
 
         const res = await axios.post(
-          "http://localhost:5000/api/results/save",
+          `${import.meta.env.VITE_API_URL}/api/results/save`,
           {
             userId: user.id,
             quizId: data?.quizId || null,

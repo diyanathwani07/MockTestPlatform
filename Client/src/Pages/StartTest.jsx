@@ -24,7 +24,7 @@ function StartTest() {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/quizzes?published=true");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
         const liveQuizzes = response.data;
         setQuizzes(liveQuizzes);
 

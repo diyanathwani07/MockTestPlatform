@@ -347,7 +347,7 @@ function Questions() {
   useEffect(() => {
     const fetchQuestionsAndGroup = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/quizzes");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes`);
         const grouped = {};
 
         res.data.forEach((quiz) => {

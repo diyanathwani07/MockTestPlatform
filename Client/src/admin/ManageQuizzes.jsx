@@ -13,7 +13,7 @@ function ManageQuizzes() {
 
   const fetchQuizzes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/quizzes");
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes`);
       setQuizzes(response.data);
     } catch (error) {
       console.error("Fetch Quizzes Error:", error);
@@ -35,7 +35,7 @@ function ManageQuizzes() {
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
         const token = localStorage.getItem("token");
-        await axios.delete(`http://localhost:5000/api/quizzes/${id}`, {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setQuizzes(quizzes.filter(q => q._id !== id));

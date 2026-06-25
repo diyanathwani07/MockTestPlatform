@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // Make sure your CSS file is imported here!
-import "../css/ForgotPassword.css"; 
+import "../css/Forgotpassword.css"; 
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const API_BASE = "http://localhost:5000/api/auth";
+  const API_BASE = `${import.meta.env.VITE_API_URL}/api/auth`;
 
   // STEP 1: Request OTP via real API
   const handleRequestOtp = async (e) => {
