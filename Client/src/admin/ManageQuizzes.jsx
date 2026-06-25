@@ -8,6 +8,7 @@ function ManageQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterDate, setFilterDate] = useState("");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const navigate = useNavigate();
 
@@ -26,10 +27,18 @@ function ManageQuizzes() {
     fetchQuizzes();
   }, []);
 
-  const filteredQuizzes = quizzes.filter(q => 
-    q.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    q.subject?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredQuizzes = quizzes.filter(q => {
+    const matchesSearch = q.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          q.subject?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesDate = true;
+    if (filterDate && q.createdAt) {
+      const qDate = new Date(q.createdAt).toISOString().split('T')[0];
+      matchesDate = qDate === filterDate;
+    }
+
+    return matchesSearch && matchesDate;
+  });
 
   const handleDelete = async (id, title) => {
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
@@ -78,30 +87,69 @@ function ManageQuizzes() {
               </span>
             </div>
 
-            {/* Sleek Rounded Search Bar (Smaller & Left Aligned) */}
-            <div style={{ 
-              display: "flex", alignItems: "center", gap: "10px", 
-              backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
-              borderRadius: "100px", padding: "8px 16px", width: "100%", maxWidth: "320px",
-              boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
-            }}>
-              <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
-              <input 
-                type="text" 
-                placeholder="Search quiz or subject..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
-              />
-              {searchTerm && (
-                <span 
-                  onClick={() => setSearchTerm("")}
-                  style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold" }}
-                  title="Clear search"
-                >
-                  ✕
-                </span>
-              )}
+            <div style={{ display: "flex", gap: "16px", width: "100%", maxWidth: "500px" }}>
+              {/* Sleek Rounded Search Bar */}
+              <div style={{ 
+                flex: 1,
+                display: "flex", alignItems: "center", gap: "10px", 
+                backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
+                borderRadius: "100px", padding: "8px 16px",
+                boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
+              }}>
+                <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
+                <input 
+                  type="text" 
+                  placeholder="Search quiz or subject..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
+                />
+                {searchTerm && (
+                  <span 
+                    onClick={() => setSearchTerm("")}
+                    style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold" }}
+                    title="Clear search"
+                  >
+                    ✕
+                  </span>
+                )}
+              </div>
+
+              {/* Date Filter */}
+              <div style={{ 
+                display: "flex", alignItems: "center", gap: "8px", 
+                backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
+                borderRadius: "100px", padding: "8px 16px",
+                position: "relative"
+              }}>
+                <span style={{ fontSize: "14px", color: "var(--text-secondary)", userSelect: "none" }}>📅</span>
+                <input 
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  style={{ 
+                    border: "none", 
+                    background: "transparent", 
+                    outline: "none", 
+                    boxShadow: "none",
+                    fontSize: "13px", 
+                    color: "var(--text-primary)", 
+                    fontWeight: "500", 
+                    fontFamily: "inherit", 
+                    paddingRight: filterDate ? "16px" : "0",
+                    WebkitAppearance: "none"
+                  }}
+                />
+                {filterDate && (
+                  <span 
+                    onClick={() => setFilterDate("")}
+                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold", background: "var(--bg-card)", paddingLeft: "4px" }}
+                    title="Clear date filter"
+                  >
+                    ✕
+                  </span>
+                )}
+              </div>
             </div>
 
           </div>
@@ -121,6 +169,7 @@ function ManageQuizzes() {
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Title</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Duration</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Questions</th>
+                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Date Created</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Status</th>
                     <th style={{ padding: "18px 28px", fontWeight: "700", textAlign: "right" }}>Actions</th>
                   </tr>
@@ -148,6 +197,10 @@ function ManageQuizzes() {
                         
                         <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)" }}>
                           {quiz.questions?.length || 0}
+                        </td>
+
+                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13px" }}>
+                          {new Date(quiz.createdAt).toLocaleDateString()}
                         </td>
                         
                         <td style={{ padding: "18px 24px" }}>
@@ -205,6 +258,14 @@ function ManageQuizzes() {
                                   zIndex: 100,
                                   textAlign: "left"
                                 }}>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                  >
+                                    👁️ Preview
+                                  </div>
                                   <div 
                                     onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-quiz/${quiz._id}`); }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}

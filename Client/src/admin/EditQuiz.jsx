@@ -46,6 +46,7 @@ function EditQuiz() {
   });
 
   const [presetSelected, setPresetSelected] = useState("Custom");
+  const [presets, setPresets] = useState([]);
   const [includeNegative, setIncludeNegative] = useState(false);
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledDateTime, setScheduledDateTime] = useState("");
@@ -188,11 +189,24 @@ function EditQuiz() {
         setDurationMin(durationVal > 0 ? String(minVal) : "");
         setDurationSec(durationVal > 0 ? String(secVal) : "");
 
+        let fetchedPresets = [];
+        try {
+          const presetRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/presets`);
+          fetchedPresets = presetRes.data;
+          setPresets(fetchedPresets);
+        } catch (err) {
+          console.error("Error fetching presets:", err);
+        }
+
         // Resolve Preset option on load
-        if (dbQuiz.examName === "JEE Main" && dbQuiz.duration == 180 && dbQuiz.marksPerQuestion == 4 && dbQuiz.negativeMarking == 1) {
-          setPresetSelected("JEE Main");
-        } else if (dbQuiz.examName === "NEET" && dbQuiz.duration == 200 && dbQuiz.marksPerQuestion == 4 && dbQuiz.negativeMarking == 1) {
-          setPresetSelected("NEET");
+        const matchedPreset = fetchedPresets.find(p => 
+          p.examName === dbQuiz.examName && 
+          p.duration == dbQuiz.duration && 
+          p.marksPerQuestion == dbQuiz.marksPerQuestion && 
+          p.negativeMarking == dbQuiz.negativeMarking
+        );
+        if (matchedPreset) {
+          setPresetSelected(matchedPreset._id);
         } else {
           setPresetSelected("Custom");
         }
@@ -286,32 +300,10 @@ function EditQuiz() {
   };
 
   const handlePresetChange = (e) => {
-    const presetName = e.target.value;
-    setPresetSelected(presetName);
+    const presetId = e.target.value;
+    setPresetSelected(presetId);
 
-    if (presetName === "JEE Main") {
-      setQuizMeta((prev) => ({
-        ...prev,
-        examName: "JEE Main",
-        duration: "180",
-        marksPerQuestion: 4,
-        negativeMarking: 1,
-      }));
-      setDurationMin("180");
-      setDurationSec("0");
-      setIncludeNegative(true);
-    } else if (presetName === "NEET") {
-      setQuizMeta((prev) => ({
-        ...prev,
-        examName: "NEET",
-        duration: "200",
-        marksPerQuestion: 4,
-        negativeMarking: 1,
-      }));
-      setDurationMin("200");
-      setDurationSec("0");
-      setIncludeNegative(true);
-    } else if (presetName === "Custom") {
+    if (presetId === "Custom") {
       setQuizMeta((prev) => ({
         ...prev,
         examName: "",
@@ -322,6 +314,57 @@ function EditQuiz() {
       setDurationMin("");
       setDurationSec("");
       setIncludeNegative(false);
+      return;
+    }
+
+    const selected = presets.find(p => p._id === presetId);
+    if (selected) {
+      setQuizMeta((prev) => ({
+        ...prev,
+        examName: selected.examName,
+        duration: selected.duration,
+        marksPerQuestion: selected.marksPerQuestion,
+        negativeMarking: selected.negativeMarking,
+      }));
+      const mins = Math.floor(selected.duration);
+      const secs = Math.round((selected.duration - mins) * 60);
+      setDurationMin(mins.toString());
+      setDurationSec(secs.toString());
+      setIncludeNegative(selected.negativeMarking > 0);
+    }
+  };
+
+  const handleSavePreset = async () => {
+    const presetName = prompt("Enter a name for this new Exam Template Preset:");
+    if (!presetName) return;
+
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/presets`, {
+        presetName,
+        examName: quizMeta.examName,
+        duration: quizMeta.duration || 60,
+        marksPerQuestion: quizMeta.marksPerQuestion,
+        negativeMarking: quizMeta.negativeMarking
+      });
+      setPresets([res.data, ...presets]);
+      setPresetSelected(res.data._id);
+      setMessage({ text: "Preset saved successfully!", type: "status-success" });
+    } catch (err) {
+      console.error(err);
+      setMessage({ text: "Failed to save preset.", type: "status-error" });
+    }
+  };
+
+  const handleDeletePreset = async (presetId) => {
+    if (!window.confirm("Are you sure you want to delete this preset?")) return;
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/presets/${presetId}`);
+      setPresets(presets.filter(p => p._id !== presetId));
+      if (presetSelected === presetId) setPresetSelected("Custom");
+      setMessage({ text: "Preset deleted.", type: "status-success" });
+    } catch (err) {
+      console.error(err);
+      setMessage({ text: "Failed to delete preset.", type: "status-error" });
     }
   };
 
@@ -577,9 +620,14 @@ function EditQuiz() {
                 <div className="quiz-two-column-layout">
                   {/* ── LEFT PANEL: QUIZ DETAILS & QUESTIONS ── */}
                   <div className="quiz-left-panel">
-                    {/* 1. Preset Selector Card */}
+                    {/* 1. Preset Selector */}
                     <div className="form-card compact-card">
-                      <h3 className="form-card-title">Exam Template Preset</h3>
+                      <h3 className="form-card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        Exam Template Preset
+                        {presetSelected !== "Custom" && (
+                          <button onClick={(e) => { e.preventDefault(); handleDeletePreset(presetSelected); }} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "14px", padding: 0 }} title="Delete Preset">🗑️</button>
+                        )}
+                      </h3>
                       <div className="form-field">
                         <select
                           value={presetSelected}
@@ -587,8 +635,11 @@ function EditQuiz() {
                           className="preset-select"
                         >
                           <option value="Custom">Custom Settings</option>
-                          <option value="JEE Main">JEE Main Preset (180m, +4/-1)</option>
-                          <option value="NEET">NEET Preset (200m, +4/-1)</option>
+                          {presets.map(p => (
+                            <option key={p._id} value={p._id}>
+                              {p.presetName} ({p.duration}m, +{p.marksPerQuestion}/-{p.negativeMarking})
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -601,9 +652,14 @@ function EditQuiz() {
                         style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: quizConfigCollapsed ? "none" : "1px solid var(--border-color)", paddingBottom: quizConfigCollapsed ? "0" : "10px" }}
                       >
                         <span>Quiz Configuration</span>
-                        <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal" }}>
-                          {quizConfigCollapsed ? "＋ Expand" : "－ Collapse"}
-                        </span>
+                        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                          <button onClick={(e) => { e.stopPropagation(); handleSavePreset(); }} className="dashboard-view-all-btn" style={{ padding: "4px 8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                            💾 Save as Preset
+                          </button>
+                          <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal" }}>
+                            {quizConfigCollapsed ? "＋ Expand" : "－ Collapse"}
+                          </span>
+                        </div>
                       </div>
                       
                       {!quizConfigCollapsed && (

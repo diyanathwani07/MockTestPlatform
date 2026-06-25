@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
@@ -22,6 +22,19 @@ function Result() {
   // Read subject from navigation state (set by Quiz.jsx), then localStorage, then fallback
   const examTitle = data?.subject || data?.title || localStorage.getItem("lastExamTaken") || "Examination";
 
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - 300) {
+        setVisibleCount((prevCount) => Math.min(prevCount + 10, questions.length));
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [questions.length]);
+
   const computedPercentage =
     percentage !== undefined && percentage !== null
       ? Number(percentage).toFixed(2)
@@ -34,6 +47,11 @@ function Result() {
     if (!data) return; // nothing to save if user landed here without quiz data
 
     console.log("Result Page Loaded");
+
+    if (data?.isPreview) {
+      console.log("PREVIEW MODE: Skipping result save.");
+      return;
+    }
 
     const saveResult = async () => {
       try {
@@ -95,6 +113,12 @@ function Result() {
     <div className="result-page">
       <QuizHeader title={examTitle} showInstructions={false} />
 
+      {data.isPreview && (
+        <div style={{ backgroundColor: "#FEF3C7", color: "#92400E", padding: "12px", textAlign: "center", fontWeight: "bold", borderBottom: "1px solid #FCD34D" }}>
+          ⚠️ Admin Preview Mode — This result was not saved to the database.
+        </div>
+      )}
+
       <div className="result-summary">
         <h1>Result</h1>
 
@@ -135,8 +159,8 @@ function Result() {
         <div className="result-details">
           <h2>Answer Review</h2>
 
-          <div className="review-list" style={{ maxHeight: "600px", overflowY: "auto", paddingRight: "10px" }}>
-            {questions.map((q, index) => {
+          <div className="review-list">
+            {questions.slice(0, visibleCount).map((q, index) => {
               const userAns = userAnswers[index];
               const isCorrect = q.correctAnswer
                 ? userAns === q.correctAnswer

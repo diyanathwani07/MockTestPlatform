@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -8,6 +9,10 @@ import "../css/admin/ResultsDashboard.css";
 function Results() {
   const [results, setResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [perfPage, setPerfPage] = useState(1);
+  const [quizPage, setQuizPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -24,10 +29,18 @@ function Results() {
     fetchResults();
   }, []);
 
-  const filteredResults = results.filter((r) => 
-    r.userId?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.quizTitle?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredResults = results.filter((r) => {
+    const matchesSearch = r.userId?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          r.quizTitle?.toLowerCase().includes(searchTerm.toLowerCase());
+                          
+    let matchesDate = true;
+    if (filterDate && r.createdAt) {
+      const rDate = new Date(r.createdAt).toISOString().split('T')[0];
+      matchesDate = rDate === filterDate;
+    }
+    
+    return matchesSearch && matchesDate;
+  });
 
   // Derive Statistics
   const totalAttempts = filteredResults.length;
@@ -56,11 +69,13 @@ function Results() {
   const studentsAppeared = uniqueStudents.size;
 
   // Sorting for top performers
-  const topPerformers = [...filteredResults].sort((a, b) => {
+  const allPerformers = [...filteredResults].sort((a, b) => {
     const pA = a.total > 0 ? (a.score / a.total) * 100 : 0;
     const pB = b.total > 0 ? (b.score / b.total) * 100 : 0;
     return pB - pA;
-  }).slice(0, 5);
+  });
+  const totalPerfPages = Math.max(1, Math.ceil(allPerformers.length / itemsPerPage));
+  const topPerformers = allPerformers.slice((perfPage - 1) * itemsPerPage, perfPage * itemsPerPage);
 
   // Group by Quiz
   const quizStatsMap = {};
@@ -77,7 +92,7 @@ function Results() {
     if (percentage >= 40) quizStatsMap[qName].passCount++;
   });
 
-  const quizStats = Object.keys(quizStatsMap).map(name => {
+  const allQuizStats = Object.keys(quizStatsMap).map(name => {
     const data = quizStatsMap[name];
     return {
       name,
@@ -88,6 +103,9 @@ function Results() {
       passPercent: ((data.passCount / data.attempts) * 100).toFixed(2)
     };
   });
+  
+  const totalQuizPages = Math.max(1, Math.ceil(allQuizStats.length / itemsPerPage));
+  const quizStats = allQuizStats.slice((quizPage - 1) * itemsPerPage, quizPage * itemsPerPage);
 
   const getScoreBadgeClass = (pct) => {
     if (pct >= 80) return "excellent";
@@ -110,15 +128,11 @@ function Results() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Export Report
               </button>
-              <button className="btn-filter">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                Filter Results
-              </button>
             </div>
           </div>
 
           {/* STAT CARDS */}
-          <div className="stat-cards-grid">
+          <div className="results-stat-cards-grid">
             <div className="stat-card">
               <div className="stat-icon purple">👥</div>
               <div className="stat-info">
@@ -160,13 +174,30 @@ function Results() {
               placeholder="Search by user name, email or quiz..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ maxWidth: "250px" }}
+              style={{ maxWidth: "250px", flexGrow: 0 }}
+            />
+            <input 
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              title="Filter by date"
+              style={{
+                padding: "10px 16px",
+                borderRadius: "8px",
+                border: "1.5px solid var(--border-color)",
+                background: "var(--bg-card)",
+                color: "var(--text-primary)",
+                fontSize: "14px",
+                outline: "none",
+                cursor: "pointer",
+                fontFamily: "inherit"
+              }}
             />
             <select className="filter-select"><option>All Quizzes</option></select>
             <select className="filter-select"><option>All Subjects</option></select>
             <select className="filter-select"><option>All Users</option></select>
             <select className="filter-select"><option>All Status</option></select>
-            <button className="btn-reset" onClick={() => setSearchTerm("")}>↻ Reset</button>
+            <button className="btn-reset" onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻ Reset</button>
           </div>
 
           {/* MAIN SECTIONS: Excluded Trend, Recent, Score Dist, Subject Results */}
@@ -210,11 +241,12 @@ function Results() {
               <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px', marginBottom: 0}}>Performance is calculated based on average scores.</p>
             </div>
 
-            {/* TOP PERFORMERS */}
-            <div className="section-card">
+            {/* TABLES SIDE BY SIDE */}
+            <div className="tables-grid">
+              {/* TOP PERFORMERS */}
+              <div className="section-card" style={{ overflowX: "auto" }}>
               <div className="section-header">
                 <h3>Top Performers</h3>
-                <span className="view-all-link">View All Top Performers →</span>
               </div>
               <table className="data-table">
                 <thead>
@@ -232,7 +264,7 @@ function Results() {
                     const pct = p.total > 0 ? (p.score / p.total) * 100 : 0;
                     return (
                       <tr key={p._id}>
-                        <td><strong>{idx + 1}</strong></td>
+                        <td><strong>{(perfPage - 1) * itemsPerPage + idx + 1}</strong></td>
                         <td>
                           <div className="user-cell">
                             <div className="avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
@@ -254,13 +286,22 @@ function Results() {
                   )}
                 </tbody>
               </table>
+              <div className="table-pagination-footer">
+                <div className="pagination-info">
+                  Showing {(perfPage - 1) * itemsPerPage + 1} to {Math.min(perfPage * itemsPerPage, allPerformers.length)} of {allPerformers.length} entries
+                </div>
+                <div className="pagination-controls">
+                  <button className="page-nav-btn" onClick={() => setPerfPage(Math.max(1, perfPage - 1))} disabled={perfPage === 1}>&lt;</button>
+                  <button className="page-nav-btn active-page">{perfPage}</button>
+                  <button className="page-nav-btn" onClick={() => setPerfPage(Math.min(totalPerfPages, perfPage + 1))} disabled={perfPage === totalPerfPages}>&gt;</button>
+                </div>
+              </div>
             </div>
 
             {/* RESULTS BY QUIZ */}
-            <div className="section-card">
+            <div className="section-card" style={{ overflowX: "auto" }}>
               <div className="section-header">
                 <h3>Results by Quiz</h3>
-                <span className="view-all-link">View All Quiz Results →</span>
               </div>
               <table className="data-table">
                 <thead>
@@ -289,6 +330,17 @@ function Results() {
                   )}
                 </tbody>
               </table>
+              <div className="table-pagination-footer">
+                <div className="pagination-info">
+                  Showing {(quizPage - 1) * itemsPerPage + 1} to {Math.min(quizPage * itemsPerPage, allQuizStats.length)} of {allQuizStats.length} entries
+                </div>
+                <div className="pagination-controls">
+                  <button className="page-nav-btn" onClick={() => setQuizPage(Math.max(1, quizPage - 1))} disabled={quizPage === 1}>&lt;</button>
+                  <button className="page-nav-btn active-page">{quizPage}</button>
+                  <button className="page-nav-btn" onClick={() => setQuizPage(Math.min(totalQuizPages, quizPage + 1))} disabled={quizPage === totalQuizPages}>&gt;</button>
+                </div>
+              </div>
+            </div>
             </div>
 
           </div>

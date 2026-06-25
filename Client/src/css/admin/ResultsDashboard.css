@@ -64,7 +64,7 @@
   background: #5B30D6;
 }
 
-.stat-cards-grid {
+.results-stat-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
@@ -176,6 +176,18 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1200px) {
+  .tables-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .section-card {

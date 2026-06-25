@@ -150,8 +150,8 @@ body.dark-mode .reports-analytics-table td {
 
 .stat-card-label {
   font-size: 11.5px;
-  color: #a8a5bd;
-  font-weight: 600;
+  color: #1a1a2e;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -329,6 +329,9 @@ body.dark-mode .reports-analytics-table td {
 @media (max-width: 1024px) {
   .dashboard-three-column-grid {
     grid-template-columns: 1fr;
+  }
+  .quiz-explorer-card {
+    grid-column: span 1 !important;
   }
 }
 

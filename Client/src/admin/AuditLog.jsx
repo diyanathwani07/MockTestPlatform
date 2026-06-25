@@ -7,6 +7,7 @@ function AuditLog() {
   const [logs, setLogs] = useState([]);
   const [search, setSearch] = useState("");
   const [moduleFilter, setModuleFilter] = useState("All Modules");
+  const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -25,7 +26,19 @@ function AuditLog() {
       log.performedBy?.toLowerCase().includes(search.toLowerCase()) ||
       log.details?.toLowerCase().includes(search.toLowerCase());
     const matchModule = moduleFilter === "All Modules" || log.module === moduleFilter;
-    return matchSearch && matchModule;
+    
+    let matchDate = true;
+    if (filterDate) {
+      const logDate = new Date(log.createdAt);
+      // Construct date exactly as YYYY-MM-DD to avoid timezone shifts
+      const selectedDate = new Date(filterDate + "T00:00:00");
+      
+      matchDate = logDate.getFullYear() === selectedDate.getFullYear() &&
+                  logDate.getMonth() === selectedDate.getMonth() &&
+                  logDate.getDate() === selectedDate.getDate();
+    }
+
+    return matchSearch && matchModule && matchDate;
   });
 
   return (
@@ -76,6 +89,44 @@ function AuditLog() {
               <option>Results</option>
               <option>Settings</option>
             </select>
+            
+            {/* ── Date Filter ── */}
+            <div style={{ 
+              display: "flex", alignItems: "center", gap: "8px", 
+              backgroundColor: "var(--bg-input)", border: "1.5px solid var(--border-color)", 
+              borderRadius: "10px", padding: "10.5px 16px",
+              position: "relative"
+            }}>
+              <span style={{ fontSize: "14px", color: "var(--text-secondary)", userSelect: "none" }}>📅</span>
+              <input 
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                style={{ 
+                  border: "none", 
+                  background: "transparent", 
+                  outline: "none", 
+                  boxShadow: "none",
+                  fontSize: "13px", 
+                  color: "var(--text-primary)", 
+                  fontWeight: "500", 
+                  fontFamily: "inherit", 
+                  paddingRight: filterDate ? "16px" : "0",
+                  WebkitAppearance: "none",
+                  cursor: "pointer"
+                }}
+              />
+              {filterDate && (
+                <span 
+                  onClick={() => setFilterDate("")}
+                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold", background: "var(--bg-input)", paddingLeft: "4px" }}
+                  title="Clear date filter"
+                >
+                  ✕
+                </span>
+              )}
+            </div>
+
             <button
               style={{
                 background: "#6E3FF3",
@@ -116,10 +167,11 @@ function AuditLog() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Date</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>User</th>
                   <th style={{ padding: "14px 24px", fontWeight: "700" }}>Action</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Performed By</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Details</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Target</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Date</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Time</th>
                   <th style={{ padding: "14px 24px", fontWeight: "700" }}>IP Address</th>
                 </tr>
               </thead>
@@ -127,7 +179,7 @@ function AuditLog() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       style={{
                         padding: "60px 24px",
                         textAlign: "center",
@@ -151,9 +203,7 @@ function AuditLog() {
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--option-hover)")}
                       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
-                      <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                        {new Date(log.createdAt).toLocaleString()}
-                      </td>
+                      <td style={{ padding: "14px 24px", fontWeight: "600" }}>{log.performedBy}</td>
                       <td style={{ padding: "14px 24px" }}>
                         <span
                           style={{
@@ -169,10 +219,15 @@ function AuditLog() {
                           {log.action}
                         </span>
                       </td>
-                      <td style={{ padding: "14px 24px", fontWeight: "600" }}>{log.performedBy}</td>
                       <td style={{ padding: "14px 24px", color: "var(--text-secondary)" }}>{log.details}</td>
+                      <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                        {new Date(log.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
+                      </td>
+                      <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                        {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
                       <td style={{ padding: "14px 24px", color: "var(--text-muted)", fontFamily: "monospace", fontSize: "12px" }}>
-                        {log.ipAddress}
+                        {log.ipAddress || "-"}
                       </td>
                     </tr>
                   ))

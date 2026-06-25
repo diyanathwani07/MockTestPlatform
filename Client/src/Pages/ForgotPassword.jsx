@@ -132,14 +132,28 @@ const ForgotPassword = () => {
       <div className="small-circle"></div>
 
       <div className="login-card">
-        <div className="logo-section">
-          <span style={{ fontSize: "20px" }}>🎓</span>
-          <h1>Teaching Pariksha</h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: "28px" }}>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+          }}>
+            <svg viewBox="0 0 100 100" width="46" height="46" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="12,48 50,10 90,10 90,48" fill="#9B66FF" />
+              <polygon points="52,50 90,50 52,88" fill="#FFCE31" />
+              <polygon points="20,61 48,61 48,86 10,96" fill="#FF5C5C" />
+            </svg>
+          </div>
+          <h1 style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: 0, letterSpacing: "-0.5px" }}>
+            Teaching Pariksha
+          </h1>
         </div>
 
-        <h2>Account Recovery</h2>
+        <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", textAlign: "center", marginBottom: "12px" }}>
+          Account Recovery
+        </h2>
 
-        <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "20px" }}>
+        <p style={{ fontSize: "14px", color: "var(--text-secondary)", textAlign: "center", marginBottom: "28px", lineHeight: "1.5", padding: "0 10px" }}>
           {step === 1 && "Enter your email address and we'll send you an OTP to reset your password."}
           {step === 2 && `Type the 6-digit OTP sent to ${email}`}
           {step === 3 && "Create a new secure password for your account."}

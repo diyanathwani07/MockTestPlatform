@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 
@@ -8,12 +8,17 @@ function Quiz() {
   const location = useLocation();
   const { toggleTheme } = useTheme();
 
+  const { quizId: paramQuizId } = useParams();
+  const [searchParams] = useSearchParams();
+
   // 🪝 1. GRABS THE EXACT EXAM CLICKED IN 'StartTest.jsx'
-  const examName = location.state?.examName || location.state?.subject || "Live Examination";
-  const quizTitle = location.state?.quizTitle || "Mock Test";
-  const examSubject = location.state?.subject || localStorage.getItem("lastExamTaken") || "General Studies";
-  const quizId = location.state?.quizId;
-  const initialDurationMinutes = location.state?.duration || 30;
+  const isPreview = searchParams.get("preview") === "true" && localStorage.getItem("role") === "admin";
+  const quizId = location.state?.quizId || paramQuizId;
+
+  const [examName, setExamName] = useState(location.state?.examName || location.state?.subject || "Live Examination");
+  const [quizTitle, setQuizTitle] = useState(location.state?.quizTitle || "Mock Test");
+  const [examSubject, setExamSubject] = useState(location.state?.subject || localStorage.getItem("lastExamTaken") || "General Studies");
+  const [initialDurationMinutes, setInitialDurationMinutes] = useState(location.state?.duration || 30);
 
   // Immediately cache subject so Result page always knows what exam was taken
   // (survives backend redirects, page refreshes, etc.)
@@ -51,6 +56,8 @@ function Quiz() {
 
   // ── Enter fullscreen on quiz load ──
   useEffect(() => {
+    if (isPreview) return; // Disable anti-cheat for preview
+
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen();
     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
@@ -66,6 +73,8 @@ function Quiz() {
 
   // ── Fullscreen change listener ──
   useEffect(() => {
+    if (isPreview) return;
+    
     const handleFSChange = () => {
       const isFull = !!document.fullscreenElement;
       setIsFullscreen(isFull);
@@ -95,6 +104,8 @@ function Quiz() {
 
   // ── Tab switch / window blur listener ──
   useEffect(() => {
+    if (isPreview) return;
+
     const handleVisibility = () => {
       if (document.hidden && !pageLoading) {
         setViolations((v) => {
@@ -163,6 +174,15 @@ function Quiz() {
           options: q.options || [],
           correctAnswer: q.correctAnswer || ""
         }));
+
+        if (!location.state) {
+            setExamName(response.data.examName || response.data.subject || "Live Examination");
+            setQuizTitle(response.data.title || "Mock Test");
+            setExamSubject(response.data.subject || "General Studies");
+            setInitialDurationMinutes(response.data.duration || 30);
+            setTimeLeft((response.data.duration || 30) * 60);
+        }
+
         setQuestions(mappedQuestions);
         setUserAnswers(new Array(mappedQuestions.length).fill(undefined));
       } catch (err) {
@@ -222,7 +242,8 @@ function Quiz() {
           title: examSubject,
           subject: examSubject,
           questions,
-          userAnswers
+          userAnswers,
+          isPreview
         } 
       });
     } catch (err) {
@@ -247,7 +268,8 @@ function Quiz() {
           unanswered,
           percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
           questions,
-          userAnswers
+          userAnswers,
+          isPreview
         }
       });
     }

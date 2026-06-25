@@ -23,6 +23,12 @@ function AdminDashboard() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [hoveredPoint, setHoveredPoint] = useState(null);
+
+  const [explorerPage, setExplorerPage] = useState(1);
+  const [explorerPath, setExplorerPath] = useState([]);
+  const [activityPage, setActivityPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -106,6 +112,51 @@ function AdminDashboard() {
 
   const activeUsersCount = stats.activeUsers || 856;
   const questionsAddedCount = stats.questionsAdded || 1289;
+
+  // Quiz Explorer Logic
+  const explorerData = {};
+  quizzes.forEach(q => {
+    const exam = q.examName || "Uncategorized";
+    const subj = q.subject || "No Subject";
+    if (!explorerData[exam]) explorerData[exam] = {};
+    if (!explorerData[exam][subj]) explorerData[exam][subj] = [];
+    explorerData[exam][subj].push(q);
+  });
+
+  let explorerView = "exams";
+  let explorerList = [];
+  
+  if (explorerPath.length === 0) {
+    explorerView = "exams";
+    explorerList = Object.keys(explorerData).map(exam => ({
+      name: exam,
+      count: Object.keys(explorerData[exam]).length,
+      totalQuizzes: Object.values(explorerData[exam]).reduce((acc, subj) => acc + subj.length, 0)
+    }));
+  } else if (explorerPath.length === 1) {
+    explorerView = "subjects";
+    const exam = explorerPath[0];
+    if (explorerData[exam]) {
+      explorerList = Object.keys(explorerData[exam]).map(subj => ({
+        name: subj,
+        count: explorerData[exam][subj].length
+      }));
+    }
+  } else if (explorerPath.length === 2) {
+    explorerView = "quizzes";
+    const exam = explorerPath[0];
+    const subj = explorerPath[1];
+    if (explorerData[exam] && explorerData[exam][subj]) {
+      explorerList = explorerData[exam][subj].map(q => ({
+        name: q.title,
+        status: q.status || (q.published ? "Published" : "Draft"),
+        date: new Date(q.createdAt).toLocaleDateString()
+      }));
+    }
+  }
+
+  const totalActivityPages = Math.max(1, Math.ceil(activities.length / itemsPerPage));
+  const currentActivities = activities.slice((activityPage - 1) * itemsPerPage, activityPage * itemsPerPage);
 
 
 
@@ -248,13 +299,13 @@ function AdminDashboard() {
 
               {/* Legends */}
               <div style={{ display: "flex", gap: "20px", marginBottom: "20px", fontSize: "12.5px", fontWeight: "600" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(110, 63, 243, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
-                  <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#6E3FF3" }}></span>
-                  <span style={{ color: "#6E3FF3" }}>Quizzes Created</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(255, 99, 132, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
+                  <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#FF6384" }}></span>
+                  <span style={{ color: "#FF6384" }}>Quizzes Created</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
-                  <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }}></span>
-                  <span style={{ color: "#10B981" }}>Attempts</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(255, 159, 64, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
+                  <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#FF9F40" }}></span>
+                  <span style={{ color: "#FF9F40" }}>Attempts</span>
                 </div>
               </div>
 
@@ -264,7 +315,6 @@ function AdminDashboard() {
                   const width = 1000;
                   const height = 250;
 
-                  // Find max value in dataset to scale Y axis dynamically (minimum top range of 10)
                   const maxVal = Math.max(10, ...chartDataList.map(d => Math.max(d.quizzesCreated, d.attempts)));
                   
                   let dynamicMax = 10;
@@ -279,15 +329,12 @@ function AdminDashboard() {
                   else dynamicMax = Math.ceil(maxVal / 500) * 500;
 
                   const getScaledY = (val) => {
-                    // Y goes from 30 (for dynamicMax) to 200 (for 0)
                     const scaled = 200 - (val / dynamicMax) * 170;
                     return Math.max(30, Math.min(200, scaled));
                   };
 
                   const formatYLabel = (val) => {
-                    if (val >= 1000) {
-                      return (val / 1000).toFixed(val % 1000 === 0 ? 0 : 1) + "K";
-                    }
+                    if (val >= 1000) return (val / 1000).toFixed(val % 1000 === 0 ? 0 : 1) + "K";
                     return Math.round(val).toString();
                   };
 
@@ -295,8 +342,8 @@ function AdminDashboard() {
                   const endX = width - 40;
                   const stepX = (endX - startX) / (chartDataList.length - 1);
 
-                  const pointsQuizzes = chartDataList.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.quizzesCreated) }));
-                  const pointsAttempts = chartDataList.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.attempts) }));
+                  const pointsQuizzes = chartDataList.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.quizzesCreated), val: d.quizzesCreated, label: d.label, dataset: "Quizzes Created", color: "#FF6384" }));
+                  const pointsAttempts = chartDataList.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.attempts), val: d.attempts, label: d.label, dataset: "Attempts", color: "#FF9F40" }));
 
                   const getSmoothPath = (pts) => {
                     if (pts.length === 0) return "";
@@ -305,71 +352,98 @@ function AdminDashboard() {
                     for (let i = 0; i < pts.length - 1; i++) {
                       const curr = pts[i];
                       const next = pts[i + 1];
-                      const cp1x = curr.x + cpOffset;
-                      const cp1y = curr.y;
-                      const cp2x = next.x - cpOffset;
-                      const cp2y = next.y;
-                      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${next.x},${next.y}`;
+                      d += ` C ${curr.x + cpOffset},${curr.y} ${next.x - cpOffset},${next.y} ${next.x},${next.y}`;
                     }
                     return d;
                   };
 
                   const pathQuizzesStroke = getSmoothPath(pointsQuizzes);
-                  const pathQuizzesFill = pointsQuizzes.length > 0 ? `${pathQuizzesStroke} L ${pointsQuizzes[pointsQuizzes.length - 1].x},200 L ${pointsQuizzes[0].x},200 Z` : "";
-
                   const pathAttemptsStroke = getSmoothPath(pointsAttempts);
-                  const pathAttemptsFill = pointsAttempts.length > 0 ? `${pathAttemptsStroke} L ${pointsAttempts[pointsAttempts.length - 1].x},200 L ${pointsAttempts[0].x},200 Z` : "";
 
                   return (
-                    <svg viewBox="0 0 1000 250" style={{ width: "100%", height: "auto", overflow: "visible" }}>
-                      <defs>
-                        <linearGradient id="gradient-quizzes" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#6E3FF3" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#6E3FF3" stopOpacity="0" />
-                        </linearGradient>
-                        <linearGradient id="gradient-attempts" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
+                    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+                      <svg viewBox="0 0 1000 250" style={{ width: "100%", height: "auto", overflow: "visible" }}>
+                        {/* Gridlines */}
+                        <line x1={startX} y1="30" x2={endX} y2="30" stroke="var(--border-color)" strokeWidth="1" />
+                        <line x1={startX} y1="72.5" x2={endX} y2="72.5" stroke="var(--border-color)" strokeWidth="1" />
+                        <line x1={startX} y1="115" x2={endX} y2="115" stroke="var(--border-color)" strokeWidth="1" />
+                        <line x1={startX} y1="157.5" x2={endX} y2="157.5" stroke="var(--border-color)" strokeWidth="1" />
+                        <line x1={startX} y1="200" x2={endX} y2="200" stroke="var(--border-color)" strokeWidth="1" />
+                        
+                        {/* Y Axis */}
+                        <text x="45" y="34" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax)}</text>
+                        <text x="45" y="76.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.75)}</text>
+                        <text x="45" y="119" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.5)}</text>
+                        <text x="45" y="161.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.25)}</text>
+                        <text x="45" y="204" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">0</text>
 
-                      {/* Gridlines */}
-                      <line x1={startX} y1="30" x2={endX} y2="30" stroke="var(--border-color)" strokeWidth="1" />
-                      <line x1={startX} y1="72.5" x2={endX} y2="72.5" stroke="var(--border-color)" strokeWidth="1" />
-                      <line x1={startX} y1="115" x2={endX} y2="115" stroke="var(--border-color)" strokeWidth="1" />
-                      <line x1={startX} y1="157.5" x2={endX} y2="157.5" stroke="var(--border-color)" strokeWidth="1" />
-                      <line x1={startX} y1="200" x2={endX} y2="200" stroke="var(--border-color)" strokeWidth="1" />
-                      
-                      {/* Y Axis */}
-                      <text x="45" y="34" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax)}</text>
-                      <text x="45" y="76.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.75)}</text>
-                      <text x="45" y="119" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.5)}</text>
-                      <text x="45" y="161.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.25)}</text>
-                      <text x="45" y="204" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">0</text>
+                        {/* Quizzes Created Path */}
+                        <path d={pathQuizzesStroke} fill="none" stroke="#FF6384" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
-                      {/* Quizzes Created Filled Area & Path */}
-                      <path d={pathQuizzesFill} fill="url(#gradient-quizzes)" />
-                      <path d={pathQuizzesStroke} fill="none" stroke="#6E3FF3" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                        {/* Attempts Path */}
+                        <path d={pathAttemptsStroke} fill="none" stroke="#FF9F40" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
-                      {/* Quizzes Created Data Dots */}
-                      {pointsQuizzes.map((pt, i) => (
-                        <circle key={`q-${i}`} cx={pt.x} cy={pt.y} r="4.5" fill="#ffffff" stroke="#6E3FF3" strokeWidth="3" />
-                      ))}
+                        {/* Hover Overlay Targets (Invisible) */}
+                        {pointsQuizzes.concat(pointsAttempts).map((pt, i) => (
+                          <g 
+                            key={`target-${i}`}
+                            onMouseEnter={() => setHoveredPoint(pt)}
+                            onMouseLeave={() => setHoveredPoint(null)}
+                            style={{ cursor: "crosshair" }}
+                          >
+                            <circle cx={pt.x} cy={pt.y} r="15" fill="transparent" />
+                            <circle 
+                              cx={pt.x} cy={pt.y} r="5" 
+                              fill={hoveredPoint && hoveredPoint.x === pt.x && hoveredPoint.y === pt.y ? pt.color : "#ffffff"} 
+                              stroke={pt.color} strokeWidth="3" 
+                              style={{ transition: "all 0.15s" }}
+                            />
+                          </g>
+                        ))}
 
-                      {/* Attempts Filled Area & Path */}
-                      <path d={pathAttemptsFill} fill="url(#gradient-attempts)" />
-                      <path d={pathAttemptsStroke} fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                        {/* X Axis Labels */}
+                        {chartDataList.map((d, i) => (
+                          <text key={`x-${i}`} x={startX + i * stepX} y="225" fill="var(--text-muted)" fontSize="11" textAnchor="middle" fontWeight="500">{d.label}</text>
+                        ))}
+                      </svg>
 
-                      {/* Attempts Data Dots */}
-                      {pointsAttempts.map((pt, i) => (
-                        <circle key={`a-${i}`} cx={pt.x} cy={pt.y} r="4.5" fill="#ffffff" stroke="#10B981" strokeWidth="3" />
-                      ))}
-
-                      {/* X Axis Labels */}
-                      {chartDataList.map((d, i) => (
-                        <text key={`x-${i}`} x={startX + i * stepX} y="225" fill="var(--text-muted)" fontSize="11" textAnchor="middle" fontWeight="500">{d.label}</text>
-                      ))}
-                    </svg>
+                      {/* Tooltip Overlay */}
+                      {hoveredPoint && (
+                        <div style={{
+                          position: "absolute",
+                          left: `${(hoveredPoint.x / 1000) * 100}%`,
+                          top: `${(hoveredPoint.y / 250) * 100}%`,
+                          transform: "translate(-50%, -120%)",
+                          background: "rgba(0, 0, 0, 0.8)",
+                          color: "#fff",
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          pointerEvents: "none",
+                          whiteSpace: "nowrap",
+                          zIndex: 10,
+                          boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                        }}>
+                          <div style={{ fontWeight: "700", marginBottom: "4px", fontSize: "11px", color: "#ccc" }}>{hoveredPoint.label}</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "600" }}>
+                            <span style={{ display: "inline-block", width: "10px", height: "10px", background: hoveredPoint.color, borderRadius: "2px" }}></span>
+                            {hoveredPoint.dataset}: {formatNumber(hoveredPoint.val)}
+                          </div>
+                          {/* Triangle pointer */}
+                          <div style={{
+                            position: "absolute",
+                            bottom: "-4px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            width: "0",
+                            height: "0",
+                            borderLeft: "5px solid transparent",
+                            borderRight: "5px solid transparent",
+                            borderTop: "5px solid rgba(0, 0, 0, 0.8)"
+                          }} />
+                        </div>
+                      )}
+                    </div>
                   );
                 })()}
               </div>
@@ -492,48 +566,107 @@ function AdminDashboard() {
             </div>
           </div>
 
-          {/* 3. BOTTOM THREE-COLUMN GRID: SUBJECTS, QUIZZES, ACTIVITY */}
+          {/* 3. BOTTOM THREE-COLUMN GRID: EXPLORER, ACTIVITY */}
           <div className="dashboard-three-column-grid">
-            {/* Top Subjects */}
-            <div className="form-card" style={{ margin: 0, padding: "20px" }}>
-              <div className="dashboard-card-title-row">
-                <h3 className="dashboard-card-title">Top Subjects</h3>
-                <button type="button" className="dashboard-view-all-btn">View All</button>
+            {/* Quiz Explorer (Spans 2 columns) */}
+            <div className="form-card quiz-explorer-card" style={{ margin: 0, padding: "24px", gridColumn: "span 2", display: "flex", flexDirection: "column" }}>
+              <div className="dashboard-card-title-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "16px", marginBottom: "20px" }}>
+                <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px" }}>
+                  <span 
+                    style={{ cursor: "pointer", color: explorerPath.length === 0 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }} 
+                    onClick={() => { setExplorerPath([]); setExplorerPage(1); }}
+                    onMouseOver={(e) => { if(explorerPath.length > 0) e.target.style.color = "var(--text-primary)"; }}
+                    onMouseOut={(e) => { if(explorerPath.length > 0) e.target.style.color = "var(--text-secondary)"; }}
+                  >
+                    Exams
+                  </span>
+                  {explorerPath.length > 0 && (
+                    <>
+                      <span style={{ color: "var(--text-muted)" }}>/</span>
+                      <span 
+                        style={{ cursor: "pointer", color: explorerPath.length === 1 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }} 
+                        onClick={() => { setExplorerPath([explorerPath[0]]); setExplorerPage(1); }}
+                        onMouseOver={(e) => { if(explorerPath.length > 1) e.target.style.color = "var(--text-primary)"; }}
+                        onMouseOut={(e) => { if(explorerPath.length > 1) e.target.style.color = "var(--text-secondary)"; }}
+                      >
+                        {explorerPath[0]}
+                      </span>
+                    </>
+                  )}
+                  {explorerPath.length > 1 && (
+                    <>
+                      <span style={{ color: "var(--text-muted)" }}>/</span>
+                      <span style={{ color: "var(--text-primary)" }}>{explorerPath[1]}</span>
+                    </>
+                  )}
+                </h3>
+                
+                <div className="pagination-controls" style={{ transform: "scale(0.85)", transformOrigin: "right" }}>
+                  <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1}>&lt;</button>
+                  <button className="page-nav-btn active-page">{explorerPage}</button>
+                  <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))}>&gt;</button>
+                </div>
               </div>
-              <div className="subject-progress-list">
-                {topSubjectsList.map((subject, index) => {
-                  const progressColor = ["#6E3FF3", "#10B981", "#F59E0B", "#2563EB", "#94A3B8"][index % 5];
-                  return (
-                    <div key={index} className="subject-item">
-                      <div className="subject-item-header">
-                        <span style={{ fontWeight: "600", color: "var(--text-primary)" }}>{subject.name}</span>
-                        <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>
-                          {formatNumber(subject.count)} ({subject.percentage}%)
-                        </span>
+
+              <div className="explorer-list" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px", minHeight: "300px" }}>
+                {explorerList.slice((explorerPage - 1) * itemsPerPage, explorerPage * itemsPerPage).map((item, idx) => (
+                  <div key={idx} className="explorer-item" onClick={() => {
+                    if (explorerView === "exams") {
+                      setExplorerPath([item.name]);
+                      setExplorerPage(1);
+                    } else if (explorerView === "subjects") {
+                      setExplorerPath([explorerPath[0], item.name]);
+                      setExplorerPage(1);
+                    }
+                  }} style={{ 
+                    padding: "16px 20px", 
+                    borderRadius: "10px", 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "center",
+                    cursor: explorerView === "quizzes" ? "default" : "pointer",
+                    border: "1px solid var(--border-color)",
+                    background: "var(--bg-card)",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseOver={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "var(--border-input)"; } }}
+                  onMouseOut={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "#6E3FF3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>
+                        {explorerView === "exams" ? "🎓" : explorerView === "subjects" ? "📚" : "📄"}
                       </div>
-                      <div className="subject-progress-bar-bg">
-                        <div className="subject-progress-bar-fill" style={{ width: `${subject.percentage}%`, background: progressColor }}></div>
+                      <div>
+                        <p style={{ margin: 0, fontWeight: "600", color: "var(--text-primary)", fontSize: "14.5px" }}>{item.name}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
+                          {explorerView === "exams" ? `${item.count} Subjects • ${item.totalQuizzes} Quizzes` : 
+                           explorerView === "subjects" ? `${item.count} Quizzes` : 
+                           `Created: ${item.date}`}
+                        </p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Top Quizzes */}
-            <div className="form-card" style={{ margin: 0, padding: "20px" }}>
-              <div className="dashboard-card-title-row">
-                <h3 className="dashboard-card-title">Top Quizzes</h3>
-                <button type="button" className="dashboard-view-all-btn">View All</button>
-              </div>
-              <div className="top-quizzes-list">
-                {topQuizzesList.map((quiz, index) => (
-                  <div key={index} className="top-quiz-item">
-                    <span className="top-quiz-rank">{index + 1}</span>
-                    <span className="top-quiz-name">{quiz.name}</span>
-                    <span className="top-quiz-count">{formatNumber(quiz.attempts)} Attempts</span>
+                    {explorerView !== "quizzes" && (
+                      <div style={{ color: "var(--text-muted)", fontSize: "16px" }}>➔</div>
+                    )}
+                    {explorerView === "quizzes" && (
+                      <span style={{ 
+                        fontSize: "12px", 
+                        padding: "6px 12px", 
+                        borderRadius: "8px", 
+                        background: item.status === "Published" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)", 
+                        color: item.status === "Published" ? "#10B981" : "#F59E0B",
+                        fontWeight: "700" 
+                      }}>
+                        {item.status}
+                      </span>
+                    )}
                   </div>
                 ))}
+                {explorerList.length === 0 && (
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "14px" }}>
+                    No data found for this selection.
+                  </div>
+                )}
               </div>
             </div>
 
@@ -541,10 +674,14 @@ function AdminDashboard() {
             <div className="form-card" style={{ margin: 0, padding: "20px" }}>
               <div className="dashboard-card-title-row">
                 <h3 className="dashboard-card-title">Recent Activity</h3>
-                <button type="button" className="dashboard-view-all-btn">View All</button>
+                <div className="pagination-controls" style={{ transform: "scale(0.85)", transformOrigin: "right" }}>
+                  <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1}>&lt;</button>
+                  <button className="page-nav-btn active-page">{activityPage}</button>
+                  <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages}>&gt;</button>
+                </div>
               </div>
               <div className="recent-activities-list">
-                {activities.map((act, i) => (
+                {currentActivities.map((act, i) => (
                   <div key={i} className="activity-item">
                     <div className="activity-icon-badge" style={{ background: act.bg, color: act.color }}>
                       {act.icon}

@@ -46,18 +46,25 @@ function StartTest() {
   // Countdown tick effect
   useEffect(() => {
     if (countdown === null) return;
-
+    
     if (countdown === 0) {
-      // Time's up — navigate to quiz
       navigateToQuiz();
       return;
     }
 
-    timerRef.current = setTimeout(() => {
-      setCountdown((c) => c - 1);
+    const timer = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(timer);
+          // Navigate immediately to avoid rendering '0' for a whole second
+          setTimeout(() => navigateToQuiz(), 0);
+          return 0;
+        }
+        return c - 1;
+      });
     }, 1000);
 
-    return () => clearTimeout(timerRef.current);
+    return () => clearInterval(timer);
   }, [countdown]);
 
   const handleDropdownChange = (e) => {
@@ -67,12 +74,36 @@ function StartTest() {
 
   const handleStart = () => {
     if (!selectedQuiz) return alert("Please select a quiz first!");
+    
+    // Request Fullscreen immediately upon user interaction
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn("Could not enable fullscreen mode:", err);
+      });
+    }
+    
+    // Log the start action
+    if (localStorage.getItem("role") !== "admin") {
+      axios.post(`${import.meta.env.VITE_API_URL}/api/audit-logs`, {
+        action: "START_QUIZ",
+        target: selectedQuiz.title,
+        module: "Quiz"
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      }).catch(err => console.error("Audit log failed", err));
+    }
+
     setCountdown(5); // Start the 5-second countdown
   };
 
   const handleCancel = () => {
     clearTimeout(timerRef.current);
     setCountdown(null); // Reset — stay on page
+    
+    // Exit fullscreen if they cancel
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(err => console.warn(err));
+    }
   };
 
   const navigateToQuiz = () => {

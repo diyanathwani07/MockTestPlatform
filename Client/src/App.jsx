@@ -68,6 +68,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/quiz/:quizId"
+          element={
+            <ProtectedRoute>
+              <Quiz />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/result"

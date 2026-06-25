@@ -80,12 +80,21 @@ function Register() {
       {/* Register Card */}
       <div className="register-card">
 
-        <div className="logo-section">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png"
-            alt="logo"
-          />
-          <h1>Teaching Pariksha</h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: "28px" }}>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+          }}>
+            <svg viewBox="0 0 100 100" width="46" height="46" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="12,48 50,10 90,10 90,48" fill="#9B66FF" />
+              <polygon points="52,50 90,50 52,88" fill="#FFCE31" />
+              <polygon points="20,61 48,61 48,86 10,96" fill="#FF5C5C" />
+            </svg>
+          </div>
+          <h1 style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: 0, letterSpacing: "-0.5px" }}>
+            Teaching Pariksha
+          </h1>
         </div>
 
         <h2>Create Account</h2>
