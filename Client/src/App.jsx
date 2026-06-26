@@ -8,7 +8,6 @@ import AdminDashboard from "./admin/AdminDashboard";
 import CreateQuiz from "./admin/CreateQuiz";
 import EditQuiz from "./admin/EditQuiz";
 import ManageQuizzes from "./admin/ManageQuizzes";
-import Subjects from "./admin/Subjects";
 import AdminQuestions from "./admin/Questions";
 import AdminUsers from "./admin/Users";
 import AdminResults from "./admin/Results";
@@ -131,15 +130,6 @@ function App() {
           element={
             <AdminRoute>
               <ManageQuizzes />
-            </AdminRoute>
-          }
-        />
-
-        <Route
-          path="/admin/subjects"
-          element={
-            <AdminRoute>
-              <Subjects />
             </AdminRoute>
           }
         />

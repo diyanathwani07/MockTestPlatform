@@ -13,7 +13,6 @@ function AdminSidebar() {
         <NavLink to="/admin/dashboard" className="sidebar-link">📊 Dashboard</NavLink>
         <NavLink to="/admin/create-quiz" className="sidebar-link">✏️ Create Quiz</NavLink>
         <NavLink to="/admin/manage-quizzes" className="sidebar-link">📋 Manage Quizzes</NavLink>
-        <NavLink to="/admin/subjects" className="sidebar-link">📚 Subjects</NavLink>
         <NavLink to="/admin/questions" className="sidebar-link">❓ Questions</NavLink>
         <NavLink to="/admin/users" className="sidebar-link">👥 Users</NavLink>
         <NavLink to="/admin/results" className="sidebar-link">🏆 Results</NavLink>
