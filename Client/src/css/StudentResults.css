@@ -1,6 +1,6 @@
 .sr-container {
   padding: 32px 40px;
-  background-color: var(--bg-main, #FAFAFC);
+  background-color: var(--bg-page, #FAFAFC);
   min-height: 100vh;
   color: var(--text-primary, #1E1B4B);
   font-family: 'Inter', system-ui, sans-serif;
@@ -11,6 +11,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 32px;
+  max-width: 1000px;
 }
 
 .sr-header-text h1 {
@@ -86,6 +87,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  max-width: 1000px;
 }
 
 .sr-result-card {
