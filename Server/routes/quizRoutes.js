@@ -21,7 +21,7 @@ router.get("/", getQuizzes);
 router.get("/:id", getQuizById);
 
 // Admin-only write operations
-router.post("/", createQuiz);
+router.post("/", protect, adminOnly, createQuiz);
 router.put("/:id", protect, adminOnly, updateQuiz);
 
 router.delete("/:id", protect, adminOnly, deleteQuiz);

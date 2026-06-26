@@ -1,6 +1,7 @@
 const Quiz = require("../models/Quiz");
 const User = require("../models/User");
 const Result = require("../models/Result");
+const logAction = require("../utils/logger");
 
 // CREATE a new quiz
 const createQuiz = async (req, res) => {
@@ -37,6 +38,8 @@ const createQuiz = async (req, res) => {
       scheduledDate,
       createdBy: req.user?._id,
     });
+
+    await logAction("CREATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
 
     res.status(201).json(quiz);
   } catch (error) {
@@ -82,13 +85,20 @@ const getQuizById = async (req, res) => {
 // UPDATE a quiz
 const updateQuiz = async (req, res) => {
   try {
+    const originalQuiz = await Quiz.findById(req.params.id);
+    if (!originalQuiz) {
+      return res.status(404).json({ message: "Quiz not found." });
+    }
+
     const quiz = await Quiz.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
 
-    if (!quiz) {
-      return res.status(404).json({ message: "Quiz not found." });
+    if (quiz.published && !originalQuiz.published) {
+      await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+    } else if (quiz.status === "Published" && originalQuiz.status !== "Published") {
+      await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     }
 
     res.json(quiz);
