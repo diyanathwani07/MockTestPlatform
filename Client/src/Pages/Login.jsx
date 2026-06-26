@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import Logo from "../components/Logo";
+import { Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import "../css/Login.css";
 
@@ -48,7 +49,7 @@ return (
   <div className="login-page">
     <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
       <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-        <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+        <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
         <div className="pill-thumb-slider"></div>
       </div>
     </div>
@@ -58,21 +59,8 @@ return (
     <div className="small-circle"></div>
 
     <div className="login-card">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: "28px" }}>
-        <div style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          justifyContent: "center", 
-        }}>
-          <svg viewBox="0 0 100 100" width="46" height="46" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="12,48 50,10 90,10 90,48" fill="#9B66FF" />
-            <polygon points="52,50 90,50 52,88" fill="#FFCE31" />
-            <polygon points="20,61 48,61 48,86 10,96" fill="#FF5C5C" />
-          </svg>
-        </div>
-        <h1 style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: 0, letterSpacing: "-0.5px" }}>
-          Teaching Pariksha
-        </h1>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
+        <Logo size="large" />
       </div>
 
       <h2>Welcome Back</h2>

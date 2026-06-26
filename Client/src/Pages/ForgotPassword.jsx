@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import Logo from "../components/Logo";
 // Make sure your CSS file is imported here!
 import "../css/Forgotpassword.css"; 
 
@@ -132,21 +133,8 @@ const ForgotPassword = () => {
       <div className="small-circle"></div>
 
       <div className="login-card">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: "28px" }}>
-          <div style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-          }}>
-            <svg viewBox="0 0 100 100" width="46" height="46" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="12,48 50,10 90,10 90,48" fill="#9B66FF" />
-              <polygon points="52,50 90,50 52,88" fill="#FFCE31" />
-              <polygon points="20,61 48,61 48,86 10,96" fill="#FF5C5C" />
-            </svg>
-          </div>
-          <h1 style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: 0, letterSpacing: "-0.5px" }}>
-            Teaching Pariksha
-          </h1>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
+          <Logo size="large" />
         </div>
 
         <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", textAlign: "center", marginBottom: "12px" }}>

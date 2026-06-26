@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
+import { Sun, Moon, Bell, User, LogOut } from "lucide-react";
 import "../../css/admin/AdminLayout.css";
 
 function AdminNavbar({ title }) {
@@ -27,20 +28,26 @@ function AdminNavbar({ title }) {
         
         {/* 3D Sun/Moon Theme Toggle */}
         <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-          <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
           <div className="pill-thumb-slider"></div>
         </div>
 
         {/* Notification Bell */}
-        <button className="nav-bell-btn" title="Notifications">🔔</button>
+        <button className="nav-bell-btn" title="Notifications">
+          <Bell size={20} />
+        </button>
 
         {/* Profile */}
         <div className="profile-dropdown-wrapper">
           <div className="avatar-neon-trigger" onClick={() => setProfileOpen(!profileOpen)}>DN</div>
           {profileOpen && (
             <div className="profile-floating-menu">
-              <div className="drop-link" onClick={() => navigate("/admin/profile")}>👤 My Profile</div>
-              <div className="drop-link" onClick={() => { localStorage.clear(); navigate("/"); }}>🚪 Log Out</div>
+              <div className="drop-link" onClick={() => navigate("/admin/profile")}>
+                <User size={16} style={{ marginRight: '8px' }} /> My Profile
+              </div>
+              <div className="drop-link" onClick={() => { localStorage.clear(); navigate("/"); }}>
+                <LogOut size={16} style={{ marginRight: '8px' }} /> Log Out
+              </div>
             </div>
           )}
         </div>

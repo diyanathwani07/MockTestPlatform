@@ -204,17 +204,24 @@ function ManageQuizzes() {
                         </td>
                         
                         <td style={{ padding: "18px 24px" }}>
-                          <span style={{
-                            backgroundColor: 
-                              quiz.status === "Published" ? "#E4F8F0" : 
-                              quiz.status === "Scheduled" ? "#EFF6FF" : "#F1F5F9",
-                            color: 
-                              quiz.status === "Published" ? "#10B981" : 
-                              quiz.status === "Scheduled" ? "#3B82F6" : "#475569",
-                            padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: "700", display: "inline-block"
-                          }}>
-                            {quiz.status || "Draft"}
-                          </span>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                            <span style={{
+                              backgroundColor: 
+                                quiz.status === "Published" ? "#E4F8F0" : 
+                                quiz.status === "Scheduled" ? "#EFF6FF" : "#F1F5F9",
+                              color: 
+                                quiz.status === "Published" ? "#10B981" : 
+                                quiz.status === "Scheduled" ? "#3B82F6" : "#475569",
+                              padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: "700", display: "inline-block", width: "max-content"
+                            }}>
+                              {quiz.status || "Draft"}
+                            </span>
+                            {quiz.status === "Scheduled" && quiz.scheduledDate && (
+                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                                {new Date(quiz.scheduledDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible" }}>

@@ -22,6 +22,10 @@ import AdminProfile from "./admin/components/AdminProfile"; // <── Re-routed
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import StudentDashboard from "./Pages/StudentDashboard";
+import MyExams from "./Pages/MyExams";
+import StudentProfile from "./Pages/StudentProfile";
+import StudentResults from "./Pages/StudentResults";
+import Leaderboard from "./Pages/Leaderboard";
 import StartTest from "./Pages/StartTest";
 import Quiz from "./Pages/Quiz";
 import Result from "./Pages/Result";
@@ -39,6 +43,42 @@ function App() {
           element={
             <ProtectedRoute>
               <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/dashboard/exams"
+          element={
+            <ProtectedRoute>
+              <MyExams />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/profile"
+          element={
+            <ProtectedRoute>
+              <StudentProfile />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/dashboard/results"
+          element={
+            <ProtectedRoute>
+              <StudentResults />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/leaderboard"
+          element={
+            <ProtectedRoute>
+              <Leaderboard />
             </ProtectedRoute>
           }
         />

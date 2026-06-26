@@ -9,6 +9,7 @@ function Users() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -42,12 +43,7 @@ function Users() {
 
         <div className="admin-content">
           
-          {/* 1. BREADCRUMBS */}
-          <div className="page-breadcrumbs">
-            <span className="crumb-inactive">Dashboard</span>
-            <span className="crumb-separator">&gt;</span>
-            <span className="crumb-active">Users</span>
-          </div>
+          {/* 1. BREADCRUMBS (Removed per request) */ }
 
           {/* 2. COMMAND BAR (Search LEFT, Add Button RIGHT) */}
           <div className="manage-command-bar">
@@ -93,7 +89,14 @@ function Users() {
                       
                       {/* Avatar + Stacked Name & Date */}
                       <td>
-                        <div className="user-info-cell">
+                        <div 
+                          className="user-info-cell" 
+                          onClick={() => setSelectedUser(u)} 
+                          style={{ cursor: "pointer", transition: "opacity 0.2s" }}
+                          onMouseOver={(e) => e.currentTarget.style.opacity = "0.8"}
+                          onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
+                          title="Click to view details"
+                        >
                           <div className="user-avatar-circle">
                             {u.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"}
                           </div>
@@ -158,6 +161,56 @@ function Users() {
 
         </div>
       </div>
+
+      {/* USER DETAILS MODAL */}
+      {selectedUser && (
+        <div className="modal-overlay" onClick={() => setSelectedUser(null)} style={{ display: 'flex', alignItems: 'center', justifyItems: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1000, justifyContent: 'center' }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '16px', width: '400px', maxWidth: '90%', border: '1px solid var(--border-color)', position: 'relative' }}>
+            <button 
+              onClick={() => setSelectedUser(null)} 
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '18px' }}
+            >
+              ✕
+            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+              <div className="user-avatar-circle" style={{ width: '80px', height: '80px', fontSize: '28px' }}>
+                {selectedUser.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"}
+              </div>
+              <h2 style={{ margin: 0, fontSize: '22px', color: 'var(--text-primary)' }}>{selectedUser.fullName}</h2>
+              <span className={`role-outline-badge ${selectedUser.role === 'user' ? 'role-user' : 'role-admin'}`} style={{ alignSelf: 'center' }}>
+                {selectedUser.role || "User"}
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Address</span>
+                <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{selectedUser.email}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>User ID</span>
+                <span style={{ color: 'var(--text-primary)', fontSize: '15px', fontFamily: 'monospace' }}>{selectedUser._id}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Joined Date</span>
+                <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>
+                  {selectedUser.createdAt 
+                    ? new Date(selectedUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : "12 May 2024"}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</span>
+                <div className="status-active-cell" style={{ alignSelf: 'flex-start', marginTop: '4px' }}>
+                  <span className="status-dot"></span>
+                  <span>Active</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
+import { Users, CheckCircle, Star, GraduationCap } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ResultsDashboard.css";
 
@@ -122,7 +123,40 @@ function Results() {
         
         <div className="results-dashboard">
           
-          <div className="dashboard-header" style={{ justifyContent: "flex-end" }}>
+          <div className="dashboard-header" style={{ justifyContent: "space-between", alignItems: "center" }}>
+            {/* FILTERS BAR */}
+            <div className="filters-bar" style={{ margin: 0 }}>
+              <input 
+                className="filter-search"
+                placeholder="Search by user name, email or quiz..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ maxWidth: "250px", flexGrow: 0 }}
+              />
+              <input 
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                title="Filter by date"
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "1.5px solid var(--border-color)",
+                  background: "var(--bg-card)",
+                  color: "var(--text-primary)",
+                  fontSize: "14px",
+                  outline: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit"
+                }}
+              />
+              <select className="filter-select"><option>All Quizzes</option></select>
+              <select className="filter-select"><option>All Subjects</option></select>
+              <select className="filter-select"><option>All Users</option></select>
+              <select className="filter-select"><option>All Status</option></select>
+              <button className="btn-reset" onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻ Reset</button>
+            </div>
+
             <div className="header-actions">
               <button className="btn-export">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -134,7 +168,9 @@ function Results() {
           {/* STAT CARDS */}
           <div className="results-stat-cards-grid">
             <div className="stat-card">
-              <div className="stat-icon purple">👥</div>
+              <div className="stat-icon purple" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={24} />
+              </div>
               <div className="stat-info">
                 <h4>Total Attempts</h4>
                 <h2>{totalAttempts.toLocaleString()}</h2>
@@ -142,7 +178,9 @@ function Results() {
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon green">✅</div>
+              <div className="stat-icon green" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle size={24} />
+              </div>
               <div className="stat-info">
                 <h4>Average Score</h4>
                 <h2>{averageScore}%</h2>
@@ -150,7 +188,9 @@ function Results() {
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon yellow">⭐</div>
+              <div className="stat-icon yellow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Star size={24} />
+              </div>
               <div className="stat-info">
                 <h4>Highest Score</h4>
                 <h2>{highestPercentage.toFixed(2)}%</h2>
@@ -158,46 +198,15 @@ function Results() {
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon blue">👨‍🎓</div>
+              <div className="stat-icon blue" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <GraduationCap size={24} />
+              </div>
               <div className="stat-info">
                 <h4>Students Appeared</h4>
                 <h2>{studentsAppeared.toLocaleString()}</h2>
                 <span className="trend positive">Unique Users</span>
               </div>
             </div>
-          </div>
-
-          {/* FILTERS BAR */}
-          <div className="filters-bar">
-            <input 
-              className="filter-search"
-              placeholder="Search by user name, email or quiz..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ maxWidth: "250px", flexGrow: 0 }}
-            />
-            <input 
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              title="Filter by date"
-              style={{
-                padding: "10px 16px",
-                borderRadius: "8px",
-                border: "1.5px solid var(--border-color)",
-                background: "var(--bg-card)",
-                color: "var(--text-primary)",
-                fontSize: "14px",
-                outline: "none",
-                cursor: "pointer",
-                fontFamily: "inherit"
-              }}
-            />
-            <select className="filter-select"><option>All Quizzes</option></select>
-            <select className="filter-select"><option>All Subjects</option></select>
-            <select className="filter-select"><option>All Users</option></select>
-            <select className="filter-select"><option>All Status</option></select>
-            <button className="btn-reset" onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻ Reset</button>
           </div>
 
           {/* MAIN SECTIONS: Excluded Trend, Recent, Score Dist, Subject Results */}

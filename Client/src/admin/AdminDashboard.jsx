@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
+import { Users, ClipboardList, HelpCircle, Trophy, TrendingUp } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -173,7 +174,9 @@ function AdminDashboard() {
           <div className="stat-cards-grid">
             {/* Card 1: Users */}
             <div className="stat-card accent-violet">
-              <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "#6E3FF3" }}>👥</div>
+              <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "#6E3FF3", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={24} />
+              </div>
               <div>
                 <p className="stat-card-label">Total Users</p>
                 <p className="stat-card-value">{loading ? "—" : formatNumber(usersCount)}</p>
@@ -195,7 +198,9 @@ function AdminDashboard() {
 
             {/* Card 2: Quizzes */}
             <div className="stat-card accent-green">
-              <div className="stat-card-icon" style={{ background: "rgba(16, 185, 129, 0.08)", color: "#10B981" }}>📋</div>
+              <div className="stat-card-icon" style={{ background: "rgba(16, 185, 129, 0.08)", color: "#10B981", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ClipboardList size={24} />
+              </div>
               <div>
                 <p className="stat-card-label">Total Quizzes</p>
                 <p className="stat-card-value">{loading ? "—" : formatNumber(quizzesCount)}</p>
@@ -217,7 +222,9 @@ function AdminDashboard() {
 
             {/* Card 3: Questions */}
             <div className="stat-card accent-gold">
-              <div className="stat-card-icon" style={{ background: "rgba(245, 158, 11, 0.08)", color: "#F59E0B" }}>❓</div>
+              <div className="stat-card-icon" style={{ background: "rgba(245, 158, 11, 0.08)", color: "#F59E0B", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <HelpCircle size={24} />
+              </div>
               <div>
                 <p className="stat-card-label">Total Questions</p>
                 <p className="stat-card-value">{loading ? "—" : formatNumber(questionsCount)}</p>
@@ -239,7 +246,9 @@ function AdminDashboard() {
 
             {/* Card 4: Attempts */}
             <div className="stat-card accent-navy">
-              <div className="stat-card-icon" style={{ background: "rgba(37, 99, 235, 0.08)", color: "#2563EB" }}>🏆</div>
+              <div className="stat-card-icon" style={{ background: "rgba(37, 99, 235, 0.08)", color: "#2563EB", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Trophy size={24} />
+              </div>
               <div>
                 <p className="stat-card-label">Total Attempts</p>
                 <p className="stat-card-value">{loading ? "—" : formatNumber(attemptsCount)}</p>
@@ -261,7 +270,9 @@ function AdminDashboard() {
 
             {/* Card 5: Average Score */}
             <div className="stat-card accent-pink">
-              <div className="stat-card-icon" style={{ background: "rgba(236, 72, 153, 0.08)", color: "#EC4899" }}>📈</div>
+              <div className="stat-card-icon" style={{ background: "rgba(236, 72, 153, 0.08)", color: "#EC4899", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <TrendingUp size={24} />
+              </div>
               <div>
                 <p className="stat-card-label">Average Score</p>
                 <p className="stat-card-value">{loading ? "—" : averageScoreCount}</p>

@@ -1,8 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 
-function QuizHeader({ title = "", showInstructions = true }) {
+function QuizHeader({ title = "", showInstructions = true, onInstructionsClick }) {
   const navigate = useNavigate();
   const { toggleTheme } = useTheme();
 
@@ -19,12 +21,7 @@ function QuizHeader({ title = "", showInstructions = true }) {
     >
       {/* LEFT: Brand only */}
       <div style={{ display: "flex", alignItems: "center", gap: "10px", zIndex: 1 }}>
-        <div style={{ width: "34px", height: "34px", borderRadius: "8px", background: "linear-gradient(135deg, #2D1B69, #6E3FF3)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>
-          🎓
-        </div>
-        <span style={{ fontSize: "17px", fontWeight: "700", color: "var(--text-primary)", whiteSpace: "nowrap" }}>
-          Teaching Pariksha
-        </span>
+        <Logo />
       </div>
 
       {/* CENTER: Absolutely centered subject title */}
@@ -53,12 +50,12 @@ function QuizHeader({ title = "", showInstructions = true }) {
       {/* RIGHT: Theme toggle + optional Instructions */}
       <div style={{ display: "flex", alignItems: "center", gap: "14px", zIndex: 1 }}>
         <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-          <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
           <div className="pill-thumb-slider"></div>
         </div>
         {showInstructions && (
           <button
-            onClick={() => navigate("/start-test")}
+            onClick={() => onInstructionsClick ? onInstructionsClick() : navigate("/start-test")}
             style={{
               background: "#1E1B4B",
               color: "white",

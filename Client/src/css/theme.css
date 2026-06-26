@@ -9,12 +9,20 @@
   --bg-card:        #ffffff;
   --bg-input:       #FCFBFF;
   --bg-header:      #ffffff;
-  --bg-sidebar:     #1a1a2e;
+  --bg-sidebar:     #ffffff;
+  --hero-bg:        linear-gradient(135deg, #F8F5FF 0%, #F4EFFF 100%);
+  --icon-bg:        #F3E8FF;
+  --icon-color:     #6E3FF3;
 
   /* Text */
   --text-primary:   #1a1a2e;
   --text-secondary: #4a4760;
   --text-muted:     #a8a5bd;
+
+  /* Sidebar Links */
+  --sidebar-active-bg: #F3E8FF;
+  --sidebar-active-text: #6E3FF3;
+  --sidebar-hover-bg: #F9FAFB;
 
   /* Borders */
   --border-color:   #ECE9F7;
@@ -34,6 +42,11 @@
   /* Option cards */
   --option-bg:      #FCFBFF;
   --option-hover:   #F5F2FF;
+
+  /* Scrollbar */
+  --scrollbar-bg:   #FAFAFC;
+  --scrollbar-thumb: #D1D1DB;
+  --scrollbar-thumb-hover: #A0A0AD;
 }
 
 [data-theme="dark"], body.dark-mode {
@@ -43,11 +56,19 @@
   --bg-input:       #252438;
   --bg-header:      #15141f;
   --bg-sidebar:     #0f0e17;
+  --hero-bg:        linear-gradient(135deg, #1E1B4B 0%, #2D1B69 100%);
+  --icon-bg:        #4F22C5;
+  --icon-color:     #ffffff;
 
   /* Text */
   --text-primary:   #f0eeff;
   --text-secondary: #c4bfe8;
   --text-muted:     #6b6880;
+
+  /* Sidebar Links */
+  --sidebar-active-bg: #4F22C5;
+  --sidebar-active-text: #ffffff;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
 
   /* Borders */
   --border-color:   #2e2c45;
@@ -60,6 +81,33 @@
   /* Option cards */
   --option-bg:      #1c1b2e;
   --option-hover:   #252438;
+
+  /* Scrollbar */
+  --scrollbar-bg:   #0f0e17;
+  --scrollbar-thumb: #2d2b45;
+  --scrollbar-thumb-hover: #4a476a;
+}
+
+/* ============================================
+   GLOBAL SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* ============================================

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
+import Logo from "../components/Logo";
 import "../css/StartTest.css";
 
 function StartTest() {
@@ -129,7 +131,7 @@ function StartTest() {
       {/* ── Theme Toggle ── */}
       <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
         <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-          <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
           <div className="pill-thumb-slider"></div>
         </div>
       </div>
@@ -175,9 +177,8 @@ function StartTest() {
 
       {/* ════════ MAIN CARD ════════ */}
       <div className="start-card">
-        <div className="logo">
-          <span className="icon">📝</span>
-          <h1>Teaching Pariksha</h1>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
+          <Logo size="large" />
         </div>
 
         <h2>Test Instructions</h2>

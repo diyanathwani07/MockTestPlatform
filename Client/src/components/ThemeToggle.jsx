@@ -1,5 +1,6 @@
 import React from "react";
 import { useTheme } from "../context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 import "../css/ThemeToggle.css";
 
 function ThemeToggle() {
@@ -12,7 +13,7 @@ function ThemeToggle() {
       title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
       aria-label="Toggle dark mode"
     >
-      {isDark ? "☀️" : "🌙"}
+      {isDark ? <Sun size={20} /> : <Moon size={20} />}
     </button>
   );
 }

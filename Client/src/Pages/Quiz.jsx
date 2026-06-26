@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
+import { Sun, Moon, X } from "lucide-react";
+import Logo from "../components/Logo";
 
 function Quiz() {
   const navigate = useNavigate();
@@ -38,6 +40,7 @@ function Quiz() {
   const [timeLeft, setTimeLeft] = useState(initialDurationMinutes * 60);
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
 
   const [palettePage, setPalettePage] = useState(0);
   const itemsPerPage = 20; // 20 questions per page (4 rows of 5)
@@ -363,9 +366,8 @@ function Quiz() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 36px", maxWidth: "1400px", margin: "0 auto" }}>
 
           {/* LEFT: Brand only */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "linear-gradient(135deg, #2D1B69, #6E3FF3)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "18px" }}>🎓</div>
-            <h1 style={{ fontSize: "18px", fontWeight: "700", margin: 0, color: "var(--text-primary)" }}>Teaching Pariksha</h1>
+          <div style={{ display: "flex", alignItems: "center", zIndex: 1 }}>
+            <Logo />
           </div>
 
           {/* CENTER: Dynamic Exam Name */}
@@ -377,10 +379,13 @@ function Quiz() {
           {/* RIGHT: Theme toggle + Instructions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-              <div className="pill-track-icons"><span>☀️</span><span>🌙</span></div>
+              <div className="pill-track-icons"><span><Sun size={14}/></span><span><Moon size={14}/></span></div>
               <div className="pill-thumb-slider"></div>
             </div>
-            <button style={{ background: "#1E1B4B", color: "#FFF", border: "none", borderRadius: "10px", padding: "10px 20px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}>
+            <button 
+              onClick={() => setShowInstructionsModal(true)}
+              style={{ background: "#1E1B4B", color: "#FFF", border: "none", borderRadius: "10px", padding: "10px 20px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
+            >
               Instructions
             </button>
           </div>
@@ -664,6 +669,60 @@ function Quiz() {
 
       </div>
     </div>
+    
+    {/* ── INSTRUCTIONS MODAL ── */}
+    {showInstructionsModal && (
+      <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.7)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ backgroundColor: "var(--bg-card)", color: "var(--text-primary)", width: "600px", maxWidth: "90%", borderRadius: "16px", padding: "32px", position: "relative", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)", border: "1.5px solid var(--border-color)" }}>
+          <button 
+            onClick={() => setShowInstructionsModal(false)}
+            style={{ position: "absolute", top: "20px", right: "20px", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+          >
+            <X size={24} />
+          </button>
+          <h2 style={{ margin: "0 0 24px 0", fontSize: "22px", borderBottom: "1px solid var(--border-color)", paddingBottom: "16px" }}>Test Instructions</h2>
+          
+          <div style={{ maxHeight: "60vh", overflowY: "auto", fontSize: "14px", lineHeight: "1.6" }}>
+            <p><strong>1. General Guidelines:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "16px" }}>
+              <li>Ensure you have a stable internet connection.</li>
+              <li>Do not refresh the page or press the back button during the test.</li>
+              <li>The test will automatically submit when the timer runs out.</li>
+            </ul>
+            
+            <p><strong>2. Navigation:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "16px" }}>
+              <li>Use the <strong>Next</strong> and <strong>Previous</strong> buttons to move between questions.</li>
+              <li>Use the <strong>Question Palette</strong> on the right to jump to specific questions.</li>
+            </ul>
+            
+            <p><strong>3. Marking System:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "16px" }}>
+              <li><span style={{ color: "#16A34A", fontWeight: "bold" }}>Answered:</span> Questions you have saved an answer for.</li>
+              <li><span style={{ color: "#DC2626", fontWeight: "bold" }}>Not Answered:</span> Questions you visited but didn't answer.</li>
+              <li><span style={{ color: "#F59E0B", fontWeight: "bold" }}>Review:</span> Questions you marked to look at again later.</li>
+              <li><span style={{ color: "var(--text-muted)", fontWeight: "bold" }}>Not Visited:</span> Questions you haven't seen yet.</li>
+            </ul>
+            
+            <p><strong>4. Anti-Cheat:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "0" }}>
+              <li>Exiting full-screen mode will trigger a warning.</li>
+              <li>Multiple violations may lead to automatic submission of your test.</li>
+            </ul>
+          </div>
+          
+          <div style={{ marginTop: "24px", textAlign: "right" }}>
+            <button 
+              onClick={() => setShowInstructionsModal(false)}
+              style={{ background: "#6E3FF3", color: "white", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", border: "none", cursor: "pointer" }}
+            >
+              Understood, Resume Test
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
   </div>
 );
 }
