@@ -617,64 +617,64 @@
 }
 
 /* ── DARK MODE OVERRIDES ── */
-[data-theme='dark'] .tk-content-wrapper { background: var(--bg-page); }
-[data-theme='dark'] .tk-header h2,
-[data-theme='dark'] .tk-stat-value,
-[data-theme='dark'] .tk-name,
-[data-theme='dark'] .tk-subject-title,
-[data-theme='dark'] .tk-id,
-[data-theme='dark'] .tk-date,
-[data-theme='dark'] .modal-header h3,
-[data-theme='dark'] .meta-value,
-[data-theme='dark'] .ticket-title { color: var(--text-primary); }
+.dark-mode .tk-content-wrapper { background: var(--bg-page); }
+.dark-mode .tk-header h2,
+.dark-mode .tk-stat-value,
+.dark-mode .tk-name,
+.dark-mode .tk-subject-title,
+.dark-mode .tk-id,
+.dark-mode .tk-date,
+.dark-mode .modal-header h3,
+.dark-mode .meta-value,
+.dark-mode .ticket-title { color: var(--text-primary); }
 
-[data-theme='dark'] .tk-header p,
-[data-theme='dark'] .tk-stat-label,
-[data-theme='dark'] .tk-email,
-[data-theme='dark'] .tk-subject-desc,
-[data-theme='dark'] .tk-time,
-[data-theme='dark'] .meta-sub,
-[data-theme='dark'] .ticket-message { color: var(--text-secondary); }
+.dark-mode .tk-header p,
+.dark-mode .tk-stat-label,
+.dark-mode .tk-email,
+.dark-mode .tk-subject-desc,
+.dark-mode .tk-time,
+.dark-mode .meta-sub,
+.dark-mode .ticket-message { color: var(--text-secondary); }
 
-[data-theme='dark'] .tk-stat-desc,
-[data-theme='dark'] .tk-filter-group label,
-[data-theme='dark'] .meta-label,
-[data-theme='dark'] .tk-empty-state { color: var(--text-muted); }
+.dark-mode .tk-stat-desc,
+.dark-mode .tk-filter-group label,
+.dark-mode .meta-label,
+.dark-mode .tk-empty-state { color: var(--text-muted); }
 
-[data-theme='dark'] .tk-stat-card,
-[data-theme='dark'] .tk-table-container,
-[data-theme='dark'] .tk-table th,
-[data-theme='dark'] .ticket-modal,
-[data-theme='dark'] .modal-header,
-[data-theme='dark'] .ticket-message-box,
-[data-theme='dark'] .msg-icon { background: var(--bg-card); border-color: var(--border-color); }
+.dark-mode .tk-stat-card,
+.dark-mode .tk-table-container,
+.dark-mode .tk-table th,
+.dark-mode .ticket-modal,
+.dark-mode .modal-header,
+.dark-mode .ticket-message-box,
+.dark-mode .msg-icon { background: var(--bg-card); border-color: var(--border-color); }
 
-[data-theme='dark'] .tk-table td,
-[data-theme='dark'] .tk-toolbar,
-[data-theme='dark'] .tk-pagination,
-[data-theme='dark'] .modal-header,
-[data-theme='dark'] .ticket-actions { border-color: var(--border-color); }
+.dark-mode .tk-table td,
+.dark-mode .tk-toolbar,
+.dark-mode .tk-pagination,
+.dark-mode .modal-header,
+.dark-mode .ticket-actions { border-color: var(--border-color); }
 
-[data-theme='dark'] .tk-search,
-[data-theme='dark'] .tk-filter-group select,
-[data-theme='dark'] .tk-date-range,
-[data-theme='dark'] .ticket-meta { background: var(--bg-input); border-color: var(--border-input); color: var(--text-primary); }
+.dark-mode .tk-search,
+.dark-mode .tk-filter-group select,
+.dark-mode .tk-date-range,
+.dark-mode .ticket-meta { background: var(--bg-input); border-color: var(--border-input); color: var(--text-primary); }
 
-[data-theme='dark'] .tk-search input,
-[data-theme='dark'] .tk-date-range input,
-[data-theme='dark'] .tk-filter-group select { color: var(--text-primary); }
+.dark-mode .tk-search input,
+.dark-mode .tk-date-range input,
+.dark-mode .tk-filter-group select { color: var(--text-primary); }
 
-[data-theme='dark'] .tk-icon-btn,
-[data-theme='dark'] .tk-page-btn,
-[data-theme='dark'] .close-btn { border-color: var(--border-input); color: var(--text-secondary); }
+.dark-mode .tk-icon-btn,
+.dark-mode .tk-page-btn,
+.dark-mode .close-btn { border-color: var(--border-input); color: var(--text-secondary); }
 
-[data-theme='dark'] .tk-table tr:hover { background: var(--bg-input); }
+.dark-mode .tk-table tr:hover { background: var(--bg-input); }
 
-[data-theme='dark'] .status-btn { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-color); }
-[data-theme='dark'] .status-btn:hover { background: var(--bg-input); }
+.dark-mode .status-btn { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-color); }
+.dark-mode .status-btn:hover { background: var(--bg-input); }
 
 /* Keep the colored backgrounds for active status buttons in dark mode too */
-[data-theme='dark'] .status-btn.active.open { background: rgba(180, 83, 9, 0.2); color: #FBBF24; border-color: transparent; }
-[data-theme='dark'] .status-btn.active.in-progress { background: rgba(29, 78, 216, 0.2); color: #60A5FA; border-color: transparent; }
-[data-theme='dark'] .status-btn.active.resolved { background: rgba(4, 120, 87, 0.2); color: #34D399; border-color: transparent; }
+.dark-mode .status-btn.active.open { background: rgba(180, 83, 9, 0.2); color: #FBBF24; border-color: transparent; }
+.dark-mode .status-btn.active.in-progress { background: rgba(29, 78, 216, 0.2); color: #60A5FA; border-color: transparent; }
+.dark-mode .status-btn.active.resolved { background: rgba(4, 120, 87, 0.2); color: #34D399; border-color: transparent; }
 
