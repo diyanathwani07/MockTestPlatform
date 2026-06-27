@@ -140,9 +140,10 @@ function MyExams() {
                         </div>
                         <button className="sp-btn-save" style={{ padding: "8px 16px" }}>Start Exam</button>
                       </div>
+                    </div>
                       
-                      {isSelected && (
-                        <div className="sd-subjects-panel me-inline-panel">
+                    {isSelected && (
+                      <div className="sd-subjects-panel me-inline-panel">
                           <div className="sd-subjects-header">
                     <span className="sd-subjects-title">
                       {selectedExam} — Choose a Subject
