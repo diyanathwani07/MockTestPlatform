@@ -246,17 +246,21 @@ function Quiz() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const serverData = await res.json();
-      navigate("/result", { 
-        state: { 
-          ...serverData,
-          quizId,
-          title: examSubject,
-          subject: examSubject,
-          questions,
-          userAnswers,
-          isPreview
-        } 
-      });
+      // Set the back button destination to /dashboard/results
+      navigate("/dashboard/results", { replace: true });
+      setTimeout(() => {
+        navigate("/result", { 
+          state: { 
+            ...serverData,
+            quizId,
+            title: examSubject,
+            subject: examSubject,
+            questions,
+            userAnswers,
+            isPreview
+          } 
+        });
+      }, 0);
     } catch (err) {
       // Offline fallback
       let correct = 0, incorrect = 0, unanswered = 0;
@@ -267,22 +271,26 @@ function Quiz() {
         else incorrect++;
       });
       const total = questions.length;
-      navigate("/result", {
-        state: {
-          quizId,
-          title: examSubject,
-          subject: examSubject,
-          score: correct,
-          total,
-          correct,
-          incorrect,
-          unanswered,
-          percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
-          questions,
-          userAnswers,
-          isPreview
-        }
-      });
+      // Set the back button destination to /dashboard/results
+      navigate("/dashboard/results", { replace: true });
+      setTimeout(() => {
+        navigate("/result", {
+          state: {
+            quizId,
+            title: examSubject,
+            subject: examSubject,
+            score: correct,
+            total,
+            correct,
+            incorrect,
+            unanswered,
+            percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
+            questions,
+            userAnswers,
+            isPreview
+          }
+        });
+      }, 0);
     }
   };
 
