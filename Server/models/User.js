@@ -30,6 +30,18 @@ const userSchema = new mongoose.Schema(
     state: {
       type: String,
     },
+    dateOfBirth: {
+      type: String,
+    },
+    gender: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
+    location: {
+      type: String,
+    },
     role: {
       type: String,
       enum: ["user", "admin"],

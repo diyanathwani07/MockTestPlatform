@@ -174,4 +174,44 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
+// PROTECT MIDDLEWARE
+const { protect } = require("../middleware/authMiddleware");
+
+// UPDATE PROFILE
+router.put("/profile", protect, async (req, res) => {
+  try {
+    const { fullName, phone, dateOfBirth, gender, location, bio } = req.body;
+    
+    // req.user is set by the protect middleware
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.fullName = fullName || user.fullName;
+    user.phone = phone || user.phone;
+    user.dateOfBirth = dateOfBirth || user.dateOfBirth;
+    user.gender = gender || user.gender;
+    user.location = location || user.location;
+    user.bio = bio || user.bio;
+
+    const updatedUser = await user.save();
+    
+    res.json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      role: updatedUser.role,
+      dateOfBirth: updatedUser.dateOfBirth,
+      gender: updatedUser.gender,
+      location: updatedUser.location,
+      bio: updatedUser.bio,
+    });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ message: "Failed to update profile." });
+  }
+});
+
 module.exports = router;
