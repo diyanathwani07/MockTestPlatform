@@ -615,3 +615,66 @@
   color: #1D4ED8;
   border-color: #DBEAFE;
 }
+
+/* ── DARK MODE OVERRIDES ── */
+[data-theme='dark'] .tk-content-wrapper { background: var(--bg-page); }
+[data-theme='dark'] .tk-header h2,
+[data-theme='dark'] .tk-stat-value,
+[data-theme='dark'] .tk-name,
+[data-theme='dark'] .tk-subject-title,
+[data-theme='dark'] .tk-id,
+[data-theme='dark'] .tk-date,
+[data-theme='dark'] .modal-header h3,
+[data-theme='dark'] .meta-value,
+[data-theme='dark'] .ticket-title { color: var(--text-primary); }
+
+[data-theme='dark'] .tk-header p,
+[data-theme='dark'] .tk-stat-label,
+[data-theme='dark'] .tk-email,
+[data-theme='dark'] .tk-subject-desc,
+[data-theme='dark'] .tk-time,
+[data-theme='dark'] .meta-sub,
+[data-theme='dark'] .ticket-message { color: var(--text-secondary); }
+
+[data-theme='dark'] .tk-stat-desc,
+[data-theme='dark'] .tk-filter-group label,
+[data-theme='dark'] .meta-label,
+[data-theme='dark'] .tk-empty-state { color: var(--text-muted); }
+
+[data-theme='dark'] .tk-stat-card,
+[data-theme='dark'] .tk-table-container,
+[data-theme='dark'] .tk-table th,
+[data-theme='dark'] .ticket-modal,
+[data-theme='dark'] .modal-header,
+[data-theme='dark'] .ticket-message-box,
+[data-theme='dark'] .msg-icon { background: var(--bg-card); border-color: var(--border-color); }
+
+[data-theme='dark'] .tk-table td,
+[data-theme='dark'] .tk-toolbar,
+[data-theme='dark'] .tk-pagination,
+[data-theme='dark'] .modal-header,
+[data-theme='dark'] .ticket-actions { border-color: var(--border-color); }
+
+[data-theme='dark'] .tk-search,
+[data-theme='dark'] .tk-filter-group select,
+[data-theme='dark'] .tk-date-range,
+[data-theme='dark'] .ticket-meta { background: var(--bg-input); border-color: var(--border-input); color: var(--text-primary); }
+
+[data-theme='dark'] .tk-search input,
+[data-theme='dark'] .tk-date-range input,
+[data-theme='dark'] .tk-filter-group select { color: var(--text-primary); }
+
+[data-theme='dark'] .tk-icon-btn,
+[data-theme='dark'] .tk-page-btn,
+[data-theme='dark'] .close-btn { border-color: var(--border-input); color: var(--text-secondary); }
+
+[data-theme='dark'] .tk-table tr:hover { background: var(--bg-input); }
+
+[data-theme='dark'] .status-btn { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-color); }
+[data-theme='dark'] .status-btn:hover { background: var(--bg-input); }
+
+/* Keep the colored backgrounds for active status buttons in dark mode too */
+[data-theme='dark'] .status-btn.active.open { background: rgba(180, 83, 9, 0.2); color: #FBBF24; border-color: transparent; }
+[data-theme='dark'] .status-btn.active.in-progress { background: rgba(29, 78, 216, 0.2); color: #60A5FA; border-color: transparent; }
+[data-theme='dark'] .status-btn.active.resolved { background: rgba(4, 120, 87, 0.2); color: #34D399; border-color: transparent; }
+
