@@ -83,9 +83,8 @@ function MyExams() {
               </div>
 
               <div className="me-section-title">AVAILABLE EXAMS</div>
-              <div className="me-split-layout">
-                <div className={`me-exam-grid ${selectedExam ? "me-grid-compact" : ""}`}>
-                  {examNames.map((examName) => {
+              <div className={`me-exam-container ${selectedExam ? "me-has-selection" : ""}`}>
+                {examNames.map((examName) => {
                   const group = examGroups[examName];
                   const count = group.length;
                   const totalMins = group.reduce((sum, q) => sum + (Number(q.duration) || 0), 0);
@@ -93,11 +92,11 @@ function MyExams() {
                   const isSelected = selectedExam === examName;
                   
                   return (
-                    <div
-                      key={examName}
-                      className={`me-exam-card ${isSelected ? "me-exam-active" : ""}`}
-                      onClick={() => setSelectedExam(isSelected ? null : examName)}
-                    >
+                    <div className="me-exam-row-wrapper" key={examName}>
+                      <div
+                        className={`me-exam-card ${isSelected ? "me-exam-active" : ""}`}
+                        onClick={() => setSelectedExam(isSelected ? null : examName)}
+                      >
                       {/* TOP ROW */}
                       <div className="me-card-top">
                         <div className="me-card-left">
@@ -141,14 +140,10 @@ function MyExams() {
                         </div>
                         <button className="sp-btn-save" style={{ padding: "8px 16px" }}>Start Exam</button>
                       </div>
-                    </div>
-                  );
-                })}
-                </div>
-
-                {selectedExam && (
-                  <div className="sd-subjects-panel me-side-panel">
-                    <div className="sd-subjects-header">
+                      
+                      {isSelected && (
+                        <div className="sd-subjects-panel me-inline-panel">
+                          <div className="sd-subjects-header">
                     <span className="sd-subjects-title">
                       {selectedExam} — Choose a Subject
                     </span>
@@ -188,9 +183,12 @@ function MyExams() {
                         </div>
                       );
                     })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })}
               </div>
             </>
           )}

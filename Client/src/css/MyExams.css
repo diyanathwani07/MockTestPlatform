@@ -28,32 +28,47 @@
   margin-bottom: 16px;
 }
 
-.me-split-layout {
+.me-exam-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.me-exam-container.me-has-selection {
+  display: flex;
+  flex-direction: column;
+}
+
+.me-exam-row-wrapper {
   display: flex;
   gap: 24px;
   align-items: flex-start;
 }
 
-.me-exam-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 40px;
-  flex: 1;
-  transition: all 0.3s ease;
+.me-exam-container:not(.me-has-selection) .me-exam-row-wrapper {
+  display: block;
 }
 
-.me-exam-grid.me-grid-compact {
-  grid-template-columns: 1fr;
-  flex: 0 0 400px;
+.me-exam-container:not(.me-has-selection) .me-exam-card {
+  height: 100%;
+}
+
+.me-exam-container.me-has-selection .me-exam-card {
+  width: 400px;
+  flex-shrink: 0;
 }
 
 /* ── EXAM CARD ── */
-.sd-subjects-panel.me-side-panel {
+.sd-subjects-panel.me-inline-panel {
   flex: 1;
   margin-top: 0;
-  position: sticky;
-  top: 24px;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .me-exam-card {
