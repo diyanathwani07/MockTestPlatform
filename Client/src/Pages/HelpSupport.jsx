@@ -50,7 +50,12 @@ function HelpSupport() {
       setTimeout(() => setSuccessMsg(""), 5000);
     } catch (err) {
       console.error(err);
-      alert("Failed to submit ticket. Please try again.");
+      const errorMsg = err.response?.data?.message || "Failed to submit ticket. Please try again.";
+      if (err.response?.status === 401) {
+        alert("Your session has expired. Please log in again.");
+      } else {
+        alert(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
