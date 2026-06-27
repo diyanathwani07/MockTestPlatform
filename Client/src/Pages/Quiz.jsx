@@ -160,6 +160,12 @@ function Quiz() {
 
   // 🌐 MONGO FETCH (Untouched - Your exact logic)
   useEffect(() => {
+    // 🛡️ SECURITY GUARD: Block back-button reentry after submission!
+    if (quizId && sessionStorage.getItem(`submitted_${quizId}`)) {
+      navigate("/dashboard/results", { replace: true });
+      return;
+    }
+
     const fetchLiveExam = async () => {
       if (!quizId) {
         alert("No Exam ID detected! Redirecting back.");
@@ -246,21 +252,22 @@ function Quiz() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const serverData = await res.json();
-      // Set the back button destination to /dashboard/results
-      navigate("/dashboard/results", { replace: true });
-      setTimeout(() => {
-        navigate("/result", { 
-          state: { 
-            ...serverData,
-            quizId,
-            title: examSubject,
-            subject: examSubject,
-            questions,
-            userAnswers,
-            isPreview
-          } 
-        });
-      }, 0);
+      
+      // Mark as submitted in session storage to block back-button access
+      sessionStorage.setItem(`submitted_${quizId}`, "true");
+      
+      navigate("/result", { 
+        replace: true,
+        state: { 
+          ...serverData,
+          quizId,
+          title: examSubject,
+          subject: examSubject,
+          questions,
+          userAnswers,
+          isPreview
+        } 
+      });
     } catch (err) {
       // Offline fallback
       let correct = 0, incorrect = 0, unanswered = 0;
@@ -271,26 +278,27 @@ function Quiz() {
         else incorrect++;
       });
       const total = questions.length;
-      // Set the back button destination to /dashboard/results
-      navigate("/dashboard/results", { replace: true });
-      setTimeout(() => {
-        navigate("/result", {
-          state: {
-            quizId,
-            title: examSubject,
-            subject: examSubject,
-            score: correct,
-            total,
-            correct,
-            incorrect,
-            unanswered,
-            percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
-            questions,
-            userAnswers,
-            isPreview
-          }
-        });
-      }, 0);
+      
+      // Mark as submitted in session storage to block back-button access
+      sessionStorage.setItem(`submitted_${quizId}`, "true");
+      
+      navigate("/result", {
+        replace: true,
+        state: {
+          quizId,
+          title: examSubject,
+          subject: examSubject,
+          score: correct,
+          total,
+          correct,
+          incorrect,
+          unanswered,
+          percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
+          questions,
+          userAnswers,
+          isPreview
+        }
+      });
     }
   };
 
