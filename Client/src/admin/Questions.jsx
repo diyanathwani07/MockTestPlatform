@@ -62,272 +62,32 @@ const exportToJSON = (subject) => {
 };
 
 // ── Single Question Card ──
-function QuestionCard({ q, idx, globalNo, forceCollapse }) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    setCollapsed(forceCollapse);
-  }, [forceCollapse]);
-
+function QuestionCard({ q, idx, globalNo }) {
   const options = q.options || [];
   const correct = q.correctAnswer; // e.g. "A", "B", "C", "D"
 
   return (
-    <div 
-      className="bq-card" 
-      key={q.questionId || idx}
-      style={{
-        backgroundColor: "var(--bg-card)",
-        border: "1.5px solid var(--border-color)",
-        borderRadius: "12px",
-        margin: "12px 16px 14px",
-        overflow: "hidden",
-        boxShadow: "var(--card-shadow)",
-        display: "block",
-        height: "auto",
-        minHeight: "fit-content",
-        transition: "box-shadow 0.15s ease"
-      }}
-    >
-      {/* ── Question Header (always visible) ── */}
-      <div 
-        className="bq-header" 
-        onClick={() => setCollapsed((c) => !c)}
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: "14px",
-          padding: "16px 20px",
-          cursor: "pointer",
-          userSelect: "none"
-        }}
-      >
-        <div className="bq-header-left" style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1 }}>
-          <span 
-            className="bq-num"
-            style={{
-              minWidth: "28px",
-              height: "28px",
-              backgroundColor: "rgba(110, 63, 243, 0.1)",
-              color: "#6E3FF3",
-              borderRadius: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "12px",
-              fontWeight: "800",
-              flexShrink: 0,
-              marginTop: "2px"
-            }}
-          >
-            {globalNo}
-          </span>
-          <div className="bq-texts" style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, textAlign: "left" }}>
-            <p 
-              className="bq-eng"
-              style={{
-                fontSize: "14.5px",
-                fontWeight: "600",
-                color: "var(--text-primary)",
-                margin: 0,
-                lineHeight: "1.5"
-              }}
-            >
-              {q.questionEnglish}
-            </p>
-            {q.questionHindi && (
-              <p 
-                className="bq-hin"
-                style={{
-                  fontSize: "13.5px",
-                  fontWeight: "500",
-                  color: "var(--text-secondary)",
-                  margin: 0,
-                  lineHeight: "1.5",
-                  marginTop: "2px"
-                }}
-              >
-                {q.questionHindi}
-              </p>
-            )}
-          </div>
+    <div className="qb-qcard" key={q.questionId || idx}>
+      <div className="qb-qcard-header">
+        <div className="qb-qnum">{globalNo}</div>
+        <div className="qb-qtext-box">
+          <p className="qb-qtext-eng">{q.questionEnglish}</p>
+          {q.questionHindi && <p className="qb-qtext-hin">{q.questionHindi}</p>}
         </div>
-        <button
-          className="bq-collapse-btn"
-          title={collapsed ? "Expand" : "Collapse"}
-          onClick={(e) => { e.stopPropagation(); setCollapsed((c) => !c); }}
-          style={{
-            backgroundColor: "var(--bg-input)",
-            color: "var(--text-secondary)",
-            border: "1.5px solid var(--border-color)",
-            borderRadius: "6px",
-            width: "28px",
-            height: "28px",
-            minWidth: "28px",
-            padding: 0,
-            fontSize: "14px",
-            fontWeight: "700",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            lineHeight: 1
-          }}
-        >
-          {collapsed ? "＋" : "－"}
-        </button>
+        <div className="qb-qbadge">MCQ</div>
       </div>
-
-      {/* ── Options + Correct highlight (collapsible) ── */}
-      {!collapsed && (
-        <div 
-          className="bq-options"
-          style={{
-            padding: "0 20px 16px 20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            borderTop: "1px solid var(--border-color)",
-            paddingTop: "12px"
-          }}
-        >
-          {options.length > 0 ? (
-            options.map((opt, i) => {
-              const label = optionLabel(i);
-              const isCorrect = correct === label;
-              const optText = typeof opt === "object" ? (opt.text || opt.value || JSON.stringify(opt)) : opt;
-              return (
-                <div
-                  key={i}
-                  className={`bq-option ${isCorrect ? "bq-option-correct" : ""}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "10px 14px",
-                    borderRadius: "8px",
-                    border: isCorrect ? "1.5px solid #16A34A" : "1.5px solid var(--border-color)",
-                    backgroundColor: isCorrect ? "rgba(22, 163, 74, 0.08)" : "var(--bg-input)",
-                    transition: "all 0.15s ease",
-                    textAlign: "left"
-                  }}
-                >
-                  <span 
-                    className={`bq-opt-label ${isCorrect ? "bq-opt-label-correct" : ""}`}
-                    style={{
-                      minWidth: "24px",
-                      height: "24px",
-                      borderRadius: "6px",
-                      backgroundColor: isCorrect ? "#16A34A" : "var(--border-color)",
-                      color: isCorrect ? "#ffffff" : "var(--text-secondary)",
-                      fontSize: "11px",
-                      fontWeight: "800",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0
-                    }}
-                  >
-                    {label}
-                  </span>
-                  <span 
-                    className="bq-opt-text"
-                    style={{
-                      fontSize: "13.5px",
-                      color: "var(--text-primary)",
-                      flex: 1,
-                      fontWeight: "500",
-                      textAlign: "left"
-                    }}
-                  >
-                    {optText}
-                  </span>
-                  {isCorrect && (
-                    <span 
-                      className="bq-correct-tick"
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: "700",
-                        color: "#16A34A",
-                        backgroundColor: "rgba(22, 163, 74, 0.12)",
-                        padding: "3px 9px",
-                        borderRadius: "20px",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0
-                      }}
-                    >
-                      ✓ Correct
-                    </span>
-                  )}
-                </div>
-              );
-            })
-          ) : (
-            // Fallback — if options aren't stored as array, just show correct answer
-            <div 
-              className="bq-option bq-option-correct"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "10px 14px",
-                borderRadius: "8px",
-                border: "1.5px solid #16A34A",
-                backgroundColor: "rgba(22, 163, 74, 0.08)",
-                textAlign: "left"
-              }}
-            >
-              <span 
-                className="bq-opt-label bq-opt-label-correct"
-                style={{
-                  minWidth: "24px",
-                  height: "24px",
-                  borderRadius: "6px",
-                  backgroundColor: "#16A34A",
-                  color: "#ffffff",
-                  fontSize: "11px",
-                  fontWeight: "800",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0
-                }}
-              >
-                {correct}
-              </span>
-              <span 
-                className="bq-opt-text"
-                style={{
-                  fontSize: "13.5px",
-                  color: "var(--text-primary)",
-                  flex: 1,
-                  fontWeight: "500",
-                  textAlign: "left"
-                }}
-              >
-                Correct Answer
-              </span>
-              <span 
-                className="bq-correct-tick"
-                style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  color: "#16A34A",
-                  backgroundColor: "rgba(22, 163, 74, 0.12)",
-                  padding: "3px 9px",
-                  borderRadius: "20px",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0
-                }}
-              >
-                ✓ Correct
-              </span>
+      <div className="qb-options-grid">
+        {options.map((opt, oIdx) => {
+          const letter = optionLabel(oIdx);
+          const isCorrect = String(correct).trim().toUpperCase() === letter;
+          return (
+            <div key={oIdx} className={`qb-opt ${isCorrect ? "correct" : ""}`}>
+              <div className="qb-opt-letter">{letter}</div>
+              <span className="qb-opt-text">{opt.text || opt}</span>
             </div>
-          )}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -439,7 +199,7 @@ function Questions() {
       <AdminSidebar />
       <div className="admin-main">
         <AdminNavbar title="Questions Bank" />
-        <div className="admin-content" style={{ padding: "32px", minHeight: 0 }}>
+        <div className="admin-content" style={{ padding: "24px", minHeight: 0 }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: "80px", color: "var(--text-secondary)", fontSize: "16px" }}>
               ⏳ Loading Questions database...
@@ -453,225 +213,210 @@ function Questions() {
           ) : (
             <div className="questions-bank-view">
 
-              {/* ── LEFT: BOOKS ── */}
-              <div className="books-sidebar-panel">
-                <div style={{ marginBottom: "16px" }}>
-                  <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>
-                    My Quizzes (Books)
-                  </h3>
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "600" }}>
-                    Click on any book to view questions
-                  </span>
+              <div className="qb-left-col">
+                <div className="qb-left-header">
+                  <h3>My Quizzes</h3>
+                  <p>Click on any quiz to view questions</p>
                 </div>
-                <div className="books-list-grid">
+                <div className="qb-books-list">
                   {books.map((book) => {
                     const isActive = selectedBook?.id === book.id;
-                    const dateText = book.status === "Published" ? `Published ${formatDate(book.publishedDate)}` : "Draft (Not Published)";
+                    const dateText = book.status === "Published" ? `Published on ${formatDate(book.publishedDate)}` : "Draft (Not Published)";
+                    const firstLetter = book.title.charAt(0).toUpperCase();
                     return (
                       <div
                         key={book.id}
-                        className={`notebook-book-cover ${book.color}-cover ${isActive ? "active" : ""}`}
+                        className={`qb-book-card ${isActive ? "active" : ""}`}
                         onClick={() => handleSelectBook(book)}
                       >
-                        <div className="book-title-section">
-                          <h4 className="book-exam-label">{book.title}</h4>
-                          <span className="book-subject-label">{book.description}</span>
+                        <div className="qb-book-icon">{firstLetter}</div>
+                        <div className="qb-book-info">
+                          <h4>{book.title}</h4>
+                          <p>{book.description}</p>
+                          <span className="qb-book-badge">{book.totalQuestions} Questions</span>
+                          <div className="qb-book-date">{dateText}</div>
                         </div>
-                        <div className="book-badge-row">
-                          <span className="book-count-badge">{book.totalQuestions} Questions</span>
-                        </div>
-                        <div className="book-footer-row"><span>{dateText}</span></div>
                       </div>
                     );
                   })}
                 </div>
               </div>
 
-              {/* ── RIGHT: OPENED BOOK ── */}
-              <div className="opened-book-panel">
-                {selectedBook && (
-                  <div className="opened-book-container">
-
-                    {/* LEFT PAGE: TABLE OF CONTENTS */}
-                    <div className="book-page book-page-left">
-                      <div className="book-header-section">
-                        <h2 className="book-header-title">{selectedBook.title}</h2>
-                        <h4 className="book-header-subtitle">{selectedBook.description}</h4>
-                        <div className="book-header-meta">
-                          {selectedBook.status === "Published" ? "Published" : "Draft"} | Total Questions: {selectedBook.totalQuestions}
+              {/* ── MIDDLE: EXAM DETAILS / SUBJECTS ── */}
+              <div className="qb-middle-col">
+                {selectedBook ? (
+                  <>
+                    <div className="qb-middle-header">
+                      <div className="qb-middle-icon">{selectedBook.title.charAt(0).toUpperCase()}</div>
+                      <div className="qb-middle-info">
+                        <h2>
+                          {selectedBook.title}
+                          {selectedBook.status === "Published" && <span className="qb-status-badge">Published</span>}
+                        </h2>
+                        <h4>{selectedBook.description}</h4>
+                        <div className="qb-middle-meta">
+                          {selectedBook.status === "Published" ? `Published on ${formatDate(selectedBook.publishedDate)}` : "Draft"} • Total Questions: {selectedBook.totalQuestions}
                         </div>
                       </div>
-                      <h3 className="book-section-title">Subjects in this Quiz</h3>
-                      <div className="subjects-toc-list">
+                      <div style={{ cursor: "pointer", color: "var(--text-muted)" }}>⋮</div>
+                    </div>
+
+                    <div className="qb-subjects-section">
+                      <div className="qb-subjects-header">
+                        <div>
+                          <h3>Subjects in this Quiz</h3>
+                          <p>Click a subject to view its questions</p>
+                        </div>
+                        <span className="qb-total-subs">Total Subjects: {selectedBook.subjects.length}</span>
+                      </div>
+                      <div className="qb-subjects-list">
                         {selectedBook.subjects.map((sub, i) => {
                           const isActive = selectedSubject?.subjectName === sub.subjectName;
                           const meta = getSubjectMeta(sub.subjectName);
                           return (
                             <div
                               key={i}
-                              className={`subject-item-card ${isActive ? "active" : ""}`}
+                              className={`qb-subject-card ${isActive ? "active" : ""}`}
                               onClick={() => handleSelectSubject(sub)}
                             >
-                              <div className="subject-icon-wrapper" style={{ backgroundColor: meta.color, color: meta.textColor }}>
+                              <div className="qb-sub-icon" style={{ backgroundColor: meta.color, color: meta.textColor }}>
                                 {meta.emoji}
                               </div>
-                              <div className="subject-info">
-                                <h4 className="subject-title">{sub.subjectName}</h4>
-                                <p className="subject-questions-count">{sub.questionsCount} Questions</p>
+                              <div className="qb-sub-info">
+                                <h5>{sub.subjectName}</h5>
+                                <p>{selectedBook.title} - {sub.subjectName}</p>
                               </div>
-                              <span className="subject-chevron">›</span>
+                              <span className="qb-sub-count">{sub.questionsCount}</span>
+                              <span style={{ color: "var(--text-muted)" }}>›</span>
                             </div>
                           );
                         })}
                       </div>
                     </div>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                    Select a book to view details
+                  </div>
+                )}
+              </div>
 
-                    {/* RIGHT PAGE: QUESTIONS */}
-                    <div className="book-page book-page-right" style={{ display: "flex", flexDirection: "column" }}>
-                      {selectedSubject ? (
-                        <>
-                          {/* ── Page Header ── */}
-                          <div className="right-page-header">
-                            <div className="right-page-back-title" onClick={() => setSelectedSubject(null)}>
-                              <span className="back-arrow-icon">←</span>
-                              <span>{selectedSubject.subjectName}</span>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <span className="right-page-count-badge">{selectedSubject.questionsCount} Questions</span>
-
-                              {/* ── EXPORT BUTTON ── */}
-                              <div style={{ position: "relative" }}>
-                                <button
-                                  onClick={() => setShowExportMenu((v) => !v)}
-                                  style={{
-                                    background: "#16A34A", color: "#fff",
-                                    border: "none", borderRadius: "8px",
-                                    padding: "6px 14px", fontSize: "12px", fontWeight: "700",
-                                    cursor: "pointer", display: "flex", alignItems: "center", gap: "5px",
-                                    width: "auto",
-                                  }}
-                                  title="Export questions for this subject"
-                                >
-                                  ↗ Export
-                                </button>
-                                {showExportMenu && (
-                                  <div style={{
-                                    position: "absolute", top: "110%", right: 0,
-                                    background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
-                                    borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                                    zIndex: 999, minWidth: "150px", overflow: "hidden",
-                                  }}>
-                                    <button
-                                      onClick={() => { exportToCSV(selectedSubject); setShowExportMenu(false); }}
-                                      style={{
-                                        display: "block", width: "100%", padding: "11px 16px",
-                                        textAlign: "left", background: "none", border: "none",
-                                        color: "var(--text-primary)", fontSize: "13px", fontWeight: "600",
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      📊 Export as CSV
-                                    </button>
-                                    <button
-                                      onClick={() => { exportToJSON(selectedSubject); setShowExportMenu(false); }}
-                                      style={{
-                                        display: "block", width: "100%", padding: "11px 16px",
-                                        textAlign: "left", background: "none", border: "none",
-                                        color: "var(--text-primary)", fontSize: "13px", fontWeight: "600",
-                                        cursor: "pointer", borderTop: "1px solid var(--border-color)",
-                                      }}
-                                    >
-                                      📋 Export as JSON
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* ── COLLAPSE ALL ── */}
+              {/* ── RIGHT: QUESTIONS LIST ── */}
+              <div className="qb-right-col">
+                {selectedSubject ? (
+                  <>
+                    <div className="qb-right-header">
+                      <div className="qb-right-top">
+                        <div className="qb-right-title">
+                          <button className="qb-back-btn" onClick={() => setSelectedSubject(null)}>←</button>
+                          <div>
+                            <h2>{selectedSubject.subjectName}</h2>
+                            <p>{selectedSubject.questionsCount} Questions</p>
+                          </div>
+                        </div>
+                        <div className="qb-right-actions">
+                          <button className="qb-btn-export" onClick={() => setShowExportMenu(!showExportMenu)}>
+                            ↓ Export
+                          </button>
+                          <button className="qb-btn-filter">
+                            <span style={{ fontSize: "16px" }}>⚲</span>
+                          </button>
+                          {showExportMenu && (
+                            <div style={{
+                              position: "absolute", top: "100%", right: "40px",
+                              background: "var(--bg-card)", border: "1px solid var(--border-color)",
+                              borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                              zIndex: 10, marginTop: "8px", minWidth: "140px"
+                            }}>
                               <button
-                                onClick={() => setAllCollapsed((v) => !v)}
+                                onClick={() => { exportToCSV(selectedSubject); setShowExportMenu(false); }}
                                 style={{
-                                  background: "var(--bg-input)", color: "var(--text-secondary)",
-                                  border: "1.5px solid var(--border-color)", borderRadius: "8px",
-                                  padding: "6px 12px", fontSize: "12px", fontWeight: "600",
-                                  cursor: "pointer", width: "auto",
+                                  display: "block", width: "100%", padding: "10px 16px",
+                                  textAlign: "left", background: "none", border: "none", borderBottom: "1px solid var(--border-color)",
+                                  color: "var(--text-primary)", fontSize: "13px", cursor: "pointer",
                                 }}
-                                title={allCollapsed ? "Expand all questions" : "Collapse all questions"}
                               >
-                                {allCollapsed ? "＋ Expand All" : "－ Collapse All"}
+                                Export CSV
+                              </button>
+                              <button
+                                onClick={() => { exportToJSON(selectedSubject); setShowExportMenu(false); }}
+                                style={{
+                                  display: "block", width: "100%", padding: "10px 16px",
+                                  textAlign: "left", background: "none", border: "none",
+                                  color: "var(--text-primary)", fontSize: "13px", cursor: "pointer",
+                                }}
+                              >
+                                Export JSON
                               </button>
                             </div>
-                          </div>
-
-                          {/* ── Search ── */}
-                          <div style={{ padding: "10px 20px 4px" }}>
-                            <input
-                              placeholder="🔍 Search questions..."
-                              value={searchQuery}
-                              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                              style={{
-                                width: "100%", padding: "8px 14px",
-                                border: "1.5px solid var(--border-color)",
-                                borderRadius: "8px", background: "var(--bg-input)",
-                                color: "var(--text-primary)", fontSize: "13px",
-                                outline: "none", fontFamily: "inherit",
-                              }}
-                            />
-                          </div>
-
-                          {/* ── Question Cards ── */}
-                          <div className="book-questions-list" style={{ flex: 1, overflowY: "auto" }}>
-                            {paginated.length > 0 ? (
-                              paginated.map((q, idx) => (
-                                <QuestionCard
-                                  key={q.questionId || idx}
-                                  q={q}
-                                  idx={idx}
-                                  globalNo={(currentPage - 1) * questionsPerPage + idx + 1}
-                                  forceCollapse={allCollapsed}
-                                />
-                              ))
-                            ) : (
-                              <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-                                {searchQuery ? "No questions match your search." : "No questions found in this section."}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* ── Pagination ── */}
-                          {totalPages > 1 && (
-                            <div className="book-pagination">
-                              <button className="book-page-btn" onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>&lt;</button>
-                              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                                // Show pages around current page
-                                let page = i + 1;
-                                if (totalPages > 7) {
-                                  const start = Math.max(1, currentPage - 3);
-                                  page = start + i;
-                                  if (page > totalPages) return null;
-                                }
-                                return (
-                                  <button
-                                    key={page}
-                                    className={`book-page-btn ${currentPage === page ? "active" : ""}`}
-                                    onClick={() => setCurrentPage(page)}
-                                  >
-                                    {page}
-                                  </button>
-                                );
-                              })}
-                              <button className="book-page-btn" onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>&gt;</button>
-                            </div>
                           )}
-                        </>
+                        </div>
+                      </div>
+                      
+                      <div className="qb-right-searchbar">
+                        <div className="qb-search-input">
+                          <span style={{position: "absolute", left: "12px", top: "10px"}}>🔍</span>
+                          <input 
+                            placeholder="Search questions..." 
+                            value={searchQuery}
+                            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                          />
+                        </div>
+                        <select className="qb-type-select">
+                          <option>All Types</option>
+                          <option>MCQ</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="qb-questions-list">
+                      {paginated.length > 0 ? (
+                        paginated.map((q, idx) => (
+                          <QuestionCard
+                            key={q.questionId || idx}
+                            q={q}
+                            idx={idx}
+                            globalNo={(currentPage - 1) * questionsPerPage + idx + 1}
+                          />
+                        ))
                       ) : (
-                        <div className="book-right-placeholder">
-                          <span className="placeholder-emoji">📖</span>
-                          <p>👈 Select a subject on the left to view questions.</p>
+                        <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                          {searchQuery ? "No questions match your search." : "No questions found."}
                         </div>
                       )}
                     </div>
 
+                    {totalPages > 1 && (
+                      <div className="qb-pagination">
+                        <button className="qb-page-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>&lt;</button>
+                        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                          let page = i + 1;
+                          if (totalPages > 5) {
+                            const start = Math.max(1, currentPage - 2);
+                            page = start + i;
+                            if (page > totalPages) return null;
+                          }
+                          return (
+                            <button
+                              key={page}
+                              className={`qb-page-btn ${currentPage === page ? "active" : ""}`}
+                              onClick={() => setCurrentPage(page)}
+                            >
+                              {page}
+                            </button>
+                          );
+                        })}
+                        {totalPages > 5 && currentPage < totalPages - 2 && <span style={{ color: 'var(--text-muted)' }}>...</span>}
+                        {totalPages > 5 && currentPage < totalPages - 2 && (
+                          <button className="qb-page-btn" onClick={() => setCurrentPage(totalPages)}>{totalPages}</button>
+                        )}
+                        <button className="qb-page-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>&gt;</button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                    Select a subject to view questions
                   </div>
                 )}
               </div>

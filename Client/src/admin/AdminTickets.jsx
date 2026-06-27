@@ -236,9 +236,6 @@ function AdminTickets() {
                             <button className="tk-icon-btn" onClick={() => setSelectedTicket(ticket)}>
                               <Eye size={16} />
                             </button>
-                            <button className="tk-icon-btn">
-                              <div className="dots-icon">...</div>
-                            </button>
                           </div>
                         </td>
                       </tr>

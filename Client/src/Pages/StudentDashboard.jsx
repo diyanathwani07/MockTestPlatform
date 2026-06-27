@@ -54,9 +54,9 @@ function StudentDashboard() {
   const bestScore = bestResult ? Math.round(bestResult.percentage || 0) : 0;
   const bestScoreExam = bestResult ? (bestResult.quizTitle || bestResult.subject || "N/A") : "No attempts yet";
 
-  const upcomingQuizzes = quizzes.filter(q => q.status === "Scheduled" && new Date(q.scheduledDate) > new Date());
-  const upcomingCount = upcomingQuizzes.length;
-  const recentUpcoming = [...upcomingQuizzes].sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).slice(0, 3);
+  const availableQuizzes = quizzes;
+  const availableCount = availableQuizzes.length;
+  const recentAvailable = [...availableQuizzes].reverse().slice(0, 3);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -146,8 +146,8 @@ function StudentDashboard() {
               <Calendar size={24} />
             </div>
             <div className="sd-stat-info">
-              <h3>{upcomingCount}</h3>
-              <p>Upcoming Mocks</p>
+              <h3>{availableCount}</h3>
+              <p>Available Mocks</p>
             </div>
           </div>
         </div>
@@ -189,19 +189,19 @@ function StudentDashboard() {
           {/* RIGHT: UPCOMING MOCKS */}
           <div className="sd-upcoming-section">
             <div className="sd-section-header">
-              <h2>Upcoming Mocks</h2>
+              <h2>Available Mocks</h2>
               <span className="sd-view-all" onClick={() => navigate("/dashboard/exams")}>View All</span>
             </div>
             
             <div className="sd-upcoming-list">
-              {recentUpcoming.length === 0 ? (
+              {recentAvailable.length === 0 ? (
                 <div className="sd-empty-upcoming">
                   <Calendar size={32} color="var(--border-input)" />
-                  <p>No scheduled mocks right now.</p>
+                  <p>No available mocks right now.</p>
                 </div>
               ) : (
-                recentUpcoming.map(quiz => {
-                  const d = new Date(quiz.scheduledDate);
+                recentAvailable.map(quiz => {
+                  const d = new Date(quiz.createdAt || new Date());
                   return (
                     <div key={quiz._id} className="sd-upcoming-item" onClick={() => navigate("/dashboard/exams")}>
                       <div className="sd-upcoming-date">
