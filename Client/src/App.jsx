@@ -13,6 +13,7 @@ import AdminUsers from "./admin/Users";
 import AdminResults from "./admin/Results";
 import Reports from "./admin/Reports";
 import Settings from "./admin/Settings";
+import AdminTickets from "./admin/AdminTickets";
 
 
 // ─── 🎯 FORENSICALLY CORRECTED PATHS ───
@@ -26,6 +27,7 @@ import MyExams from "./Pages/MyExams";
 import StudentProfile from "./Pages/StudentProfile";
 import StudentResults from "./Pages/StudentResults";
 import Leaderboard from "./Pages/Leaderboard";
+import HelpSupport from "./Pages/HelpSupport";
 import StartTest from "./Pages/StartTest";
 import Quiz from "./Pages/Quiz";
 import Result from "./Pages/Result";
@@ -52,6 +54,15 @@ function App() {
           element={
             <ProtectedRoute>
               <MyExams />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/dashboard/help"
+          element={
+            <ProtectedRoute>
+              <HelpSupport />
             </ProtectedRoute>
           }
         />
@@ -225,6 +236,15 @@ function App() {
           element={
             <AdminRoute>
               <AuditLog />
+            </AdminRoute>
+          }
+        />
+        
+        <Route
+          path="/admin/tickets"
+          element={
+            <AdminRoute>
+              <AdminTickets />
             </AdminRoute>
           }
         />

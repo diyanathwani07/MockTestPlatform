@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, User, LogOut, Sun, Moon } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
 
@@ -35,6 +35,10 @@ function StudentSidebar() {
         <NavLink to="/dashboard/leaderboard" className="sidebar-link">
           <Trophy size={20} />
           <span>Leaderboard</span>
+        </NavLink>
+        <NavLink to="/dashboard/help" className="sidebar-link">
+          <LifeBuoy size={20} />
+          <span>Help & Support</span>
         </NavLink>
       </nav>
     </aside>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy, LineChart, FileText } from 'lucide-react';
+import { LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy, LineChart, FileText, LifeBuoy } from 'lucide-react';
 import Logo from '../../components/Logo';
 
 function AdminSidebar() {
@@ -44,6 +44,11 @@ function AdminSidebar() {
         <NavLink to="/admin/audit-log" className="sidebar-link">
           <FileText size={20} />
           <span>Audit Log</span>
+        </NavLink>
+        
+        <NavLink to="/admin/tickets" className="sidebar-link">
+          <LifeBuoy size={20} />
+          <span>Support Tickets</span>
         </NavLink>
       </nav>
 
