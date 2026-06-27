@@ -166,7 +166,9 @@ function EditQuiz() {
         }
         const url = `${import.meta.env.VITE_API_URL}/api/quizzes/${id}`;
         console.log("Fetching quiz from:", url);
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
         const dbQuiz = response.data;
         console.log("Fetch successful. Database Quiz data:", dbQuiz);
 

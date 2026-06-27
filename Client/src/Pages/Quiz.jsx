@@ -173,7 +173,9 @@ function Quiz() {
         return;
       }
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
         const rawQuestions = response.data.questions || [];
         const mappedQuestions = rawQuestions.map((q, idx) => {
           let correctText = q.correctAnswer || "";
@@ -204,7 +206,13 @@ function Quiz() {
         setUserAnswers(new Array(mappedQuestions.length).fill(undefined));
       } catch (err) {
         console.error(err);
-        alert("Could not load exam packet from MongoDB.");
+        if (err.response && err.response.status === 403) {
+          alert("You have already submitted this exam! You cannot take it again.");
+          navigate("/dashboard/results", { replace: true });
+        } else {
+          alert("Could not load exam packet from MongoDB.");
+          navigate("/start-test");
+        }
       } finally {
         setPageLoading(false);
       }
