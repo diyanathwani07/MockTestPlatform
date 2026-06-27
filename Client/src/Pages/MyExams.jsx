@@ -83,8 +83,9 @@ function MyExams() {
               </div>
 
               <div className="me-section-title">AVAILABLE EXAMS</div>
-              <div className="me-exam-grid">
-                {examNames.map((examName) => {
+              <div className="me-split-layout">
+                <div className={`me-exam-grid ${selectedExam ? "me-grid-compact" : ""}`}>
+                  {examNames.map((examName) => {
                   const group = examGroups[examName];
                   const count = group.length;
                   const totalMins = group.reduce((sum, q) => sum + (Number(q.duration) || 0), 0);
@@ -143,11 +144,11 @@ function MyExams() {
                     </div>
                   );
                 })}
-              </div>
+                </div>
 
-              {selectedExam && (
-                <div className="sd-subjects-panel">
-                  <div className="sd-subjects-header">
+                {selectedExam && (
+                  <div className="sd-subjects-panel me-side-panel">
+                    <div className="sd-subjects-header">
                     <span className="sd-subjects-title">
                       {selectedExam} — Choose a Subject
                     </span>
@@ -187,9 +188,10 @@ function MyExams() {
                         </div>
                       );
                     })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </>
           )}
         </div>

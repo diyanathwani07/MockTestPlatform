@@ -28,14 +28,34 @@
   margin-bottom: 16px;
 }
 
+.me-split-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
 .me-exam-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-bottom: 40px;
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.me-exam-grid.me-grid-compact {
+  grid-template-columns: 1fr;
+  flex: 0 0 400px;
 }
 
 /* ── EXAM CARD ── */
+.sd-subjects-panel.me-side-panel {
+  flex: 1;
+  margin-top: 0;
+  position: sticky;
+  top: 24px;
+}
+
 .me-exam-card {
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-color, #ECE9F7);
