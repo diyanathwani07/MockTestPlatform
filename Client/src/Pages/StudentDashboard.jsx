@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import StudentSidebar from "../components/StudentSidebar";
+import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css";
 
 function StudentDashboard() {
@@ -45,7 +46,7 @@ function StudentDashboard() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
-
+        <StudentNavbar title="Dashboard" />
 
       {/* ── HERO WELCOME ── */}
       <div className="sd-hero">

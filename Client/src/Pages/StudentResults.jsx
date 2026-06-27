@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FileText, Calendar, ChevronDown, ChevronRight } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
+import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse layout styles
 import "../css/StudentResults.css";
 
@@ -34,8 +35,7 @@ function StudentResults() {
 
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown Date";
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-GB', options); // e.g., 12 May 2025
+    return new Date(dateString).toLocaleDateString('en-GB').replace(/\//g, '-'); // e.g., 12-05-2025
   };
 
   const uniqueSubjects = Array.from(new Set(results.map(r => r.subject || r.quizTitle || r.examName || "Mock Test")));
@@ -47,6 +47,7 @@ function StudentResults() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
+        <StudentNavbar title="Results" />
         <div className="sr-container">
           <div className="sr-header-area">
         <div className="sr-header-text">

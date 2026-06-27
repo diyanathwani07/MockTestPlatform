@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { User, Mail, Phone, Calendar, MapPin, Edit3 } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
+import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse layout styles
 import "../css/StudentProfile.css"; // Specific profile styles
 
@@ -75,13 +76,11 @@ function StudentProfile() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
+        <StudentNavbar title="Profile" />
         <div className="sd-profile-container">
           
-          {/* ── BREADCRUMBS ── */}
-          <div className="sp-header">
-            <div className="sp-breadcrumbs">
-              <Link to="/dashboard">Dashboard</Link> &gt; <span>Profile</span>
-            </div>
+          {/* ── HEADER & FLIP CARD ── */}
+          <div className="sp-header" style={{ marginTop: '0' }}>
             <div className={`sp-flip-container ${isEditing ? "flipped" : ""}`}>
               <div className="sp-flip-inner">
                 

@@ -99,7 +99,7 @@ function AdminProfile() {
                           <span className="sp-info-label">Account Created</span>
                           <span className="sp-info-colon">:</span>
                           <span className="sp-info-value">
-                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }) : "Not Available"}
+                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-') : "Not Available"}
                           </span>
                         </div>
                       </div>

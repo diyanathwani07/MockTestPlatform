@@ -81,8 +81,8 @@ function Users() {
                 {filteredUsers.map((u) => {
                   const isUser = u.role === "user";
                   const dateStr = u.createdAt 
-                    ? new Date(u.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                    : "12 May 2024";
+                    ? new Date(u.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')
+                    : "12-05-2024";
 
                   return (
                     <tr key={u._id}>
@@ -188,15 +188,15 @@ function Users() {
                 <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{selectedUser.email}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>User ID</span>
-                <span style={{ color: 'var(--text-primary)', fontSize: '15px', fontFamily: 'monospace' }}>{selectedUser._id}</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Phone No</span>
+                <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{selectedUser.phone || "Not provided"}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Joined Date</span>
                 <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>
                   {selectedUser.createdAt 
-                    ? new Date(selectedUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                    : "12 May 2024"}
+                    ? new Date(selectedUser.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-') + ", " + new Date(selectedUser.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                    : "12-05-2024"}
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

@@ -200,7 +200,7 @@ function ManageQuizzes() {
                         </td>
 
                         <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13px" }}>
-                          {new Date(quiz.createdAt).toLocaleDateString()}
+                          {new Date(quiz.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}
                         </td>
                         
                         <td style={{ padding: "18px 24px" }}>
@@ -218,7 +218,7 @@ function ManageQuizzes() {
                             </span>
                             {quiz.status === "Scheduled" && quiz.scheduledDate && (
                               <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
-                                {new Date(quiz.scheduledDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             )}
                           </div>

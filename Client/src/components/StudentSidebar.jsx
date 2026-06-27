@@ -15,12 +15,8 @@ function StudentSidebar() {
 
   return (
     <aside className="student-sidebar">
-      <div className="sidebar-logo" style={{ justifyContent: "space-between", padding: "0 16px" }}>
+      <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}>
         <Logo />
-        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme" style={{ margin: 0, transform: "scale(0.8)" }}>
-          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
-          <div className="pill-thumb-slider"></div>
-        </div>
       </div>
 
       <nav className="sidebar-nav">
@@ -40,18 +36,7 @@ function StudentSidebar() {
           <Trophy size={20} />
           <span>Leaderboard</span>
         </NavLink>
-        <NavLink to="/dashboard/profile" className="sidebar-link">
-          <User size={20} />
-          <span>Profile</span>
-        </NavLink>
       </nav>
-
-      <div className="sidebar-bottom">
-        <button className="sidebar-logout" onClick={handleLogout}>
-          <LogOut size={18} />
-          <span>Logout</span>
-        </button>
-      </div>
     </aside>
   );
 }

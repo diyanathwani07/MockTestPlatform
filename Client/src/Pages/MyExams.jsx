@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
+import StudentNavbar from "../components/StudentNavbar";
 import { BookOpen, Clock, HelpCircle, ChevronRight } from "lucide-react";
 import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
 import "../css/MyExams.css"; // New specific styles
@@ -61,6 +62,7 @@ function MyExams() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
+        <StudentNavbar title="My Exams" />
         <div className="sd-content">
           {loading ? (
             <div className="sd-loading">
@@ -75,11 +77,7 @@ function MyExams() {
             </div>
           ) : (
             <>
-              <div className="sd-header">
-                <div className="sd-breadcrumbs">
-                  <Link to="/dashboard">Dashboard</Link> &gt; <span>My Exams</span>
-                </div>
-              </div>
+
               <div className="me-page-header">
                 <h1 className="me-page-title">My Exams</h1>
               </div>

@@ -50,7 +50,7 @@ function DocxParser({ onQuestionsLoaded }) {
       }
 
       setParsedCount(questions.length);
-      setStatus(`✅ Successfully parsed ${questions.length} question(s)!`);
+      setStatus(""); // Removed success message per user request
       onQuestionsLoaded(questions);
     } catch (error) {
       console.error("DocxParser Error:", error);

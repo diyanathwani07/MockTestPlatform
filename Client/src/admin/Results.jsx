@@ -286,7 +286,7 @@ function Results() {
                         <td>{p.quizTitle || p.subject || "Untitled"}</td>
                         <td><span className={`score-badge ${getScoreBadgeClass(pct)}`}>{pct.toFixed(2)}%</span></td>
                         <td>{p.score} / {p.total}</td>
-                        <td style={{color: "var(--text-secondary)", fontSize: "12px"}}>{new Date(p.createdAt).toLocaleDateString()}</td>
+                        <td style={{color: "var(--text-secondary)", fontSize: "12px"}}>{new Date(p.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}</td>
                       </tr>
                     );
                   })}

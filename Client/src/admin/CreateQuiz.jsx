@@ -1233,7 +1233,7 @@ function CreateQuiz() {
                 <span className="status-dot" style={{ backgroundColor: isScheduled ? "var(--gold)" : "var(--text-muted)" }}></span>
                 <span style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-secondary)" }}>
                   {isScheduled 
-                    ? `Status: Scheduled for ${scheduledDateTime ? new Date(scheduledDateTime).toLocaleString() : "..."}`
+                    ? `Status: Scheduled for ${scheduledDateTime ? new Date(scheduledDateTime).toLocaleDateString('en-GB').replace(/\//g, '-') + ', ' + new Date(scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "..."}`
                     : "Status: Ready (Draft / Publish)"
                   }
                 </span>

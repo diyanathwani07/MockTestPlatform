@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
-import { Info, BookOpen, FileText, Calendar, Search, ChevronDown, ChevronRight, Trophy, Users, CheckCircle, Percent } from "lucide-react";
+import StudentNavbar from "../components/StudentNavbar";
+import { Info, BookOpen, FileText, Calendar, Search, ChevronDown, ChevronRight, Trophy, Users, CheckCircle, Percent, User } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/Leaderboard.css";
 
@@ -61,6 +62,7 @@ function Leaderboard() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
+        <StudentNavbar title="Leaderboard" />
         <div className="lb-container">
           
           {/* Header */}
@@ -173,7 +175,9 @@ function Leaderboard() {
                   <div className={`lb-podium-spot lb-spot-${spot.rank}`} key={spot.rank} style={{ order: spot.rank === 1 ? 2 : spot.rank === 2 ? 1 : 3 }}>
                     {spot.rank === 1 && <Trophy className="lb-crown" size={24} fill="currentColor" />}
                     <div className="lb-podium-avatar">
-                      <img src={spot.avatar} alt={spot.name} />
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-input)' }}>
+                        <User size={32} color="var(--text-muted)" />
+                      </div>
                     </div>
                     <div className={`lb-badge ${spot.rank === 1 ? 'gold' : spot.rank === 2 ? 'silver' : 'bronze'}`}>
                       {spot.rank}
@@ -201,7 +205,9 @@ function Leaderboard() {
                     <tr key={row.rank}>
                       <td className="rank">{row.rank}</td>
                       <td className="student">
-                        <img src={row.avatar} alt={row.name} />
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <User size={18} color="var(--text-muted)" />
+                        </div>
                         <span className={row.isYou ? 'you' : ''}>{row.name} {row.isYou && "(You)"}</span>
                       </td>
                       <td className="score">{row.score}</td>

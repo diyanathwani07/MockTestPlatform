@@ -151,7 +151,7 @@ function AdminDashboard() {
       explorerList = explorerData[exam][subj].map(q => ({
         name: q.title,
         status: q.status || (q.published ? "Published" : "Draft"),
-        date: new Date(q.createdAt).toLocaleDateString()
+        date: new Date(q.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')
       }));
     }
   }

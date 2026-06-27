@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
+import { BarChart3, TrendingUp, CheckSquare, XSquare, User, FileText, BookOpen } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -45,10 +46,10 @@ function Reports() {
   const failCount = results.length - passCount;
 
   const cards = [
-    { label: "Total Attempts", value: results.length, icon: "📊", accent: "violet" },
-    { label: "Average Score", value: `${avgPercentage}%`, icon: "📈", accent: "gold" },
-    { label: "Passed (≥40%)", value: passCount, icon: "✅", accent: "green" },
-    { label: "Failed (<40%)", value: failCount, icon: "❌", accent: "navy" },
+    { label: "TOTAL ATTEMPTS", value: results.length, icon: <BarChart3 size={24} />, accent: "violet" },
+    { label: "AVERAGE SCORE", value: `${avgPercentage}%`, icon: <TrendingUp size={24} />, accent: "gold" },
+    { label: "PASSED (≥40%)", value: passCount, icon: <CheckSquare size={24} />, accent: "green" },
+    { label: "FAILED (<40%)", value: failCount, icon: <XSquare size={24} />, accent: "navy" },
   ];
 
   // ── MULTI-FILTER MATCHING LOGIC ──
@@ -94,7 +95,7 @@ function Reports() {
           <div className="reports-filter-bar">
             
             <div className="report-search-pill">
-              <span>👤</span>
+              <span className="search-icon-wrapper"><User size={16} /></span>
               <input
                 type="text"
                 placeholder="Filter by Candidate Name..."
@@ -104,7 +105,7 @@ function Reports() {
             </div>
 
             <div className="report-search-pill">
-              <span>📄</span>
+              <span className="search-icon-wrapper"><FileText size={16} /></span>
               <input
                 type="text"
                 placeholder="Filter by Quiz Title..."
@@ -114,7 +115,7 @@ function Reports() {
             </div>
 
             <div className="report-search-pill">
-              <span>📚</span>
+              <span className="search-icon-wrapper"><BookOpen size={16} /></span>
               <input
                 type="text"
                 placeholder="Filter by Subject..."
@@ -122,7 +123,6 @@ function Reports() {
                 onChange={(e) => setSearchSubject(e.target.value)}
               />
             </div>
-
           </div>
 
           {/* 4. NEW: CANDIDATE DRILL-DOWN TABLE */}
@@ -170,7 +170,7 @@ function Reports() {
                       </td>
 
                       <td style={{ color: "#a8a5bd", fontSize: "13px" }}>
-                        {new Date(r.createdAt).toLocaleDateString()}
+                        {new Date(r.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}
                       </td>
 
                     </tr>

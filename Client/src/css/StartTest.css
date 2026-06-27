@@ -214,7 +214,7 @@ h2 {
 .countdown-number {
     font-size: 52px;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--text-primary);
     line-height: 1;
     position: relative;
     z-index: 1;
@@ -225,13 +225,13 @@ h2 {
 .countdown-title {
     font-size: 22px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .countdown-subtitle {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--text-secondary);
     margin: 0;
     max-width: 260px;
     line-height: 1.5;
