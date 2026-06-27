@@ -148,7 +148,6 @@ function StudentDashboard() {
             <div className="sd-stat-info">
               <h3>{upcomingCount}</h3>
               <p>Upcoming Mocks</p>
-              <span className="sd-stat-meta blue-text">View schedule →</span>
             </div>
           </div>
         </div>
