@@ -75,6 +75,15 @@ const getQuizById = async (req, res) => {
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found." });
     }
+
+    // SECURITY: Prevent users from re-entering a submitted quiz
+    if (req.user && req.user.role === 'user') {
+      const existingResult = await Result.findOne({ userId: req.user._id, quizId: quiz._id });
+      if (existingResult) {
+        return res.status(403).json({ success: false, message: "Quiz already attempted." });
+      }
+    }
+
     res.json(quiz);
   } catch (error) {
     console.error("Get Quiz Error:", error);

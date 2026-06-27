@@ -18,7 +18,7 @@ router.get("/stats/dashboard", protect, adminOnly, getDashboardStats);
 
 // Public/general quiz listing (used by both admin panel and student quiz pages)
 router.get("/", getQuizzes);
-router.get("/:id", getQuizById);
+router.get("/:id", protect, getQuizById);
 
 // Admin-only write operations
 router.post("/", protect, adminOnly, createQuiz);
