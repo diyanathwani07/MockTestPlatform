@@ -148,7 +148,6 @@ function HelpSupport() {
                     <select name="category" value={ticket.category} onChange={handleChange}>
                       <option value="" disabled>Select a category</option>
                       <option value="Technical Issue">Technical Issue</option>
-                      <option value="Billing">Billing & Payments</option>
                       <option value="Account">Account Access</option>
                       <option value="Exam Related">Exam Related</option>
                       <option value="Other">Other</option>
