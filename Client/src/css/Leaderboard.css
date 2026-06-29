@@ -2,6 +2,9 @@
   padding: 32px 40px;
   background-color: var(--bg-page, #FAFAFC);
   min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
   color: var(--text-primary, #1E1B4B);
   font-family: 'Inter', system-ui, sans-serif;
 }
