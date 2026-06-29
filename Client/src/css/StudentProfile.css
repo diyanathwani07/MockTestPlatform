@@ -395,3 +395,57 @@
 .sp-btn-save:hover {
   background: #5b21b6;
 }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .sp-about-grid {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sd-profile-container {
+    padding: 24px 20px;
+  }
+  
+  .sp-hero-card {
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .sp-hero-left {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .sp-edit-profile-btn {
+    margin: 0 auto;
+  }
+  
+  .sp-hero-right {
+    align-items: center;
+    width: 100%;
+  }
+  
+  .sp-about-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sp-bio-column {
+    padding-left: 0;
+    border-left: none;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color, #ECE9F7);
+  }
+  
+  .sp-fields-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sp-modal-content {
+    width: 95%;
+    padding: 24px 20px;
+  }
+}

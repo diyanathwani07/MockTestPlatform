@@ -455,3 +455,44 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .hs-hero {
+    padding: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hs-hero {
+    padding: 30px 20px;
+  }
+  
+  .hs-hero-illustrations {
+    display: none;
+  }
+  
+  .hs-form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .hs-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .hs-ticket-section {
+    padding: 20px;
+  }
+  
+  .hs-submit-btn {
+    width: 100%;
+  }
+  
+  .hs-attachment-box {
+    min-height: 120px;
+    padding: 20px;
+  }
+}

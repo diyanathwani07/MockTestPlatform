@@ -55,7 +55,8 @@
 }
 
 .me-exam-container.me-has-selection .me-exam-card {
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   flex-shrink: 0;
 }
 
@@ -67,8 +68,32 @@
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(20px); }
+  from  { opacity: 0.92; transform: translateX(20px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .me-exam-container {
+    grid-template-columns: 1fr;
+  }
+  .me-exam-row-wrapper {
+    flex-direction: column;
+  }
+  .me-exam-container.me-has-selection .me-exam-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .me-card-top, .me-card-middle, .me-card-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .me-btn-start {
+    width: 100%;
+  }
 }
 
 .me-exam-card {

@@ -275,3 +275,46 @@
   background-color: #8B5CF6;
   color: white;
 }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .sr-card-stats {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sr-container {
+    padding: 24px 20px;
+  }
+  
+  .sr-header-area {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .sr-result-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .sr-card-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .sr-stat-divider {
+    display: none;
+  }
+  
+  .sr-card-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .sr-view-details-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

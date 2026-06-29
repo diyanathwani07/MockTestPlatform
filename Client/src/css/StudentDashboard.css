@@ -29,6 +29,7 @@
   flex-direction: column;
   height: 100%;
   flex-shrink: 0;
+  z-index: 50;
 }
 
 .sidebar-logo {
@@ -211,9 +212,9 @@
   opacity: 0.08;
   background: white;
 }
-.sd-hero-circle.c1 { width: 220px; height: 220px; right: -60px; top: -60px; }
-.sd-hero-circle.c2 { width: 140px; height: 140px; right: 80px;  top: 20px; }
-.sd-hero-circle.c3 { width: 80px;  height: 80px;  right: 30px;  bottom: -20px; }
+.sd-hero-circle.c1 { width: clamp(140px, 20vw, 220px); height: clamp(140px, 20vw, 220px); right: -10vw; top: -10vw; }
+.sd-hero-circle.c2 { width: clamp(80px, 15vw, 140px); height: clamp(80px, 15vw, 140px); right: 8vw;  top: 2vw; }
+.sd-hero-circle.c3 { width: clamp(50px, 10vw, 80px);  height: clamp(50px, 10vw, 80px);  right: 3vw;  bottom: -2vw; }
 
 /* New Hero Subtitle & Illustration */
 .sd-hero-subtitle {
@@ -538,7 +539,7 @@
 
 /* ── CONTENT AREA ── */
 .sd-content {
-  max-width: 1200px;
+  width: 100%;
   margin: 0;
   padding: 40px 40px 60px;
 }
@@ -805,12 +806,73 @@
 }
 
 /* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .sd-exam-grid { grid-template-columns: repeat(2, 1fr); }
+  .sd-subjects-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 768px) {
+  .sd-layout {
+    flex-direction: column;
+  }
+  
+  .student-sidebar {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border-color);
+    padding: 10px;
+    justify-content: space-around;
+  }
+  
+  .sidebar-logo {
+    display: none;
+  }
+  
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 0;
+    gap: 5px;
+    width: 100%;
+    justify-content: space-around;
+  }
+  
+  .sidebar-link {
+    flex-direction: column;
+    padding: 8px;
+    font-size: 11px;
+    gap: 4px;
+    flex: 1;
+    text-align: center;
+  }
+  
+  .sidebar-link span {
+    display: none; /* Optionally hide text on very small screens, or keep it */
+  }
+  
+  .sd-main-content {
+    margin-bottom: 70px; /* Space for bottom nav */
+  }
+
   .sd-navbar { padding: 0 20px; }
-  .sd-hero   { padding: 32px 20px; }
+  .sd-hero   { padding: 32px 20px; flex-direction: column; align-items: flex-start; }
   .sd-hero-name { font-size: 26px; }
+  .sd-hero-illustration { display: none; }
+  
   .sd-content { padding: 24px 20px 40px; }
   .sd-exam-grid { grid-template-columns: 1fr; }
   .sd-subjects-grid { grid-template-columns: 1fr; }
   .sd-user-info { display: none; }
+  
+  .sd-section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+@media (max-width: 480px) {
+  .sd-stat-card { padding: 16px; }
+  .sd-exam-card { padding: 16px; }
+  .sd-subject-card { padding: 16px; }
 }
