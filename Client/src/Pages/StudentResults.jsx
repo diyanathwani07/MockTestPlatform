@@ -123,10 +123,30 @@ function StudentResults() {
               </div>
 
               {/* Right Section: Action */}
-              <div className="sr-card-right">
+              <div className="sr-card-right" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <button className="sr-view-details-btn">
                   View Details <ChevronRight size={16} />
                 </button>
+                {result.quizId && (
+                  <button 
+                    className="sr-view-details-btn" 
+                    style={{ backgroundColor: "#F3F4F6", color: "#6E3FF3", border: "1px solid #E2E8F0" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/start-test", {
+                        state: {
+                          preSelectedQuizId: result.quizId,
+                          subject: result.subject || result.quizTitle || result.examName,
+                          quizId: result.quizId,
+                          quizTitle: result.quizTitle,
+                          duration: 30,
+                        },
+                      });
+                    }}
+                  >
+                    Reattempt
+                  </button>
+                )}
               </div>
             </div>
           ))

@@ -4,6 +4,7 @@ import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import { Sun, Moon, X } from "lucide-react";
 import Logo from "../components/Logo";
+import Result from "./Result";
 
 function Quiz() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ function Quiz() {
 
   const { quizId: paramQuizId } = useParams();
   const [searchParams] = useSearchParams();
+  const [inlineResultData, setInlineResultData] = useState(null);
 
   // 🪝 1. GRABS THE EXACT EXAM CLICKED IN 'StartTest.jsx'
   const isPreview = searchParams.get("preview") === "true" && localStorage.getItem("role") === "admin";
@@ -252,6 +254,9 @@ function Quiz() {
     if (document.exitFullscreen && document.fullscreenElement) {
       await document.exitFullscreen().catch(() => {});
     }
+
+    const timeTaken = (initialDurationMinutes * 60) - timeLeft;
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/submit`, {
         method: "POST",
@@ -264,17 +269,16 @@ function Quiz() {
       // Mark as submitted in session storage to block back-button access
       sessionStorage.setItem(`submitted_${quizId}`, "true");
       
-      navigate("/result", { 
-        replace: true,
-        state: { 
-          ...serverData,
-          quizId,
-          title: examSubject,
-          subject: examSubject,
-          questions,
-          userAnswers,
-          isPreview
-        } 
+      setInlineResultData({
+        ...serverData,
+        quizId,
+        title: examSubject,
+        subject: examSubject,
+        questions,
+        userAnswers,
+        isPreview,
+        timeTaken,
+        duration: initialDurationMinutes
       });
     } catch (err) {
       // Offline fallback
@@ -290,22 +294,21 @@ function Quiz() {
       // Mark as submitted in session storage to block back-button access
       sessionStorage.setItem(`submitted_${quizId}`, "true");
       
-      navigate("/result", {
-        replace: true,
-        state: {
-          quizId,
-          title: examSubject,
-          subject: examSubject,
-          score: correct,
-          total,
-          correct,
-          incorrect,
-          unanswered,
-          percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
-          questions,
-          userAnswers,
-          isPreview
-        }
+      setInlineResultData({
+        quizId,
+        title: examSubject,
+        subject: examSubject,
+        score: correct,
+        total,
+        correct,
+        incorrect,
+        unanswered,
+        percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
+        questions,
+        userAnswers,
+        isPreview,
+        timeTaken,
+        duration: initialDurationMinutes
       });
     }
   };
@@ -747,6 +750,11 @@ function Quiz() {
       </div>
     )}
 
+    {inlineResultData && (
+      <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 10000 }}>
+         <Result inlineData={inlineResultData} />
+      </div>
+    )}
   </div>
 );
 }

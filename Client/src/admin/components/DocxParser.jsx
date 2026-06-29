@@ -80,7 +80,8 @@ function DocxParser({ onQuestionsLoaded }) {
               "B. English Option / हिंदी विकल्प\n" +
               "C. English Option / हिंदी विकल्प\n" +
               "D. English Option / हिंदी विकल्प\n" +
-              "Ans: A\n\n" +
+              "Ans: A\n" +
+              "Exp: Explanation here (optional)\n\n" +
               "💡 Use a slash (/) to split English and Hindi options."
             );
           }}
@@ -161,6 +162,7 @@ function parseQuestionsFromText(text) {
     // Extract raw options and look for answer line keys
     const optionsArray = [];
     let answerLine = "";
+    let explanationLine = "";
     let i = optionStartIndex;
 
     while (i < lines.length) {
@@ -186,6 +188,8 @@ function parseQuestionsFromText(text) {
         });
       } else if (/^Ans[\.\:\s]/i.test(line)) {
         answerLine = line;
+      } else if (/^Exp[\.\:\s]/i.test(line) || /^Explanation[\.\:\s]/i.test(line)) {
+        explanationLine = line.replace(/^(Exp|Explanation)[\.\:\s]+/i, "").trim();
       }
       i++;
     }
@@ -217,6 +221,7 @@ function parseQuestionsFromText(text) {
       questionHindi: hindiLine,
       options: optionsArray,
       correctAnswer: correctAnswer,
+      explanation: explanationLine,
     });
   }
 

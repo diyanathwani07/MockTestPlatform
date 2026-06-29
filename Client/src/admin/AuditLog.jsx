@@ -12,14 +12,43 @@ function AuditLog() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/audit-logs`);
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/audit-logs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setLogs(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch audit logs:", err);
       }
     };
     fetchLogs();
   }, []);
+
+  const exportToCSV = () => {
+    if (filtered.length === 0) {
+      alert("No logs available to export.");
+      return;
+    }
+
+    const headers = ["User", "Action", "Target", "Date", "Time", "IP Address"];
+    const rows = filtered.map(log => [
+      `"${log.performedBy || ''}"`,
+      `"${log.action || ''}"`,
+      `"${(log.details || '').replace(/"/g, '""')}"`,
+      `"${new Date(log.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}"`,
+      `"${new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}"`,
+      `"${log.ipAddress || '-'}"`
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `audit_logs_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const filtered = logs.filter((log) => {
     const matchSearch = log.action?.toLowerCase().includes(search.toLowerCase()) ||
@@ -128,6 +157,7 @@ function AuditLog() {
             </div>
 
             <button
+              onClick={exportToCSV}
               style={{
                 background: "#6E3FF3",
                 color: "#FFF",

@@ -12,6 +12,7 @@ const emptyQuestion = () => ({
   questionHindi: "",
   options: ["", "", "", ""],
   correctAnswer: "",
+  explanation: "",
   correctOptionIndex: -1,
 });
 
@@ -960,6 +961,17 @@ function EditQuiz() {
                                             </div>
                                           );
                                         })}
+                                      </div>
+
+                                      <div className="form-field full-width" style={{ marginTop: "14px" }}>
+                                        <textarea
+                                          value={q.explanation || ""}
+                                          onChange={(e) =>
+                                            handleQuestionChange(qIndex, "explanation", e.target.value)
+                                          }
+                                          rows={2}
+                                          placeholder="Answer Explanation (Optional)..."
+                                        />
                                       </div>
                                     </div>
                                   )}

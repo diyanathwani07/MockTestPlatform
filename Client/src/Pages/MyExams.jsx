@@ -12,19 +12,28 @@ function MyExams() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedExam, setSelectedExam] = useState(null);
+  const [attemptedQuizzes, setAttemptedQuizzes] = useState([]);
 
   useEffect(() => {
-    const fetchQuizzes = async () => {
+    const fetchData = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
         setQuizzes(res.data);
+        
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
+          const attemptedIds = resultsRes.data.map(r => r.quizId).filter(Boolean);
+          setAttemptedQuizzes(attemptedIds);
+        }
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchQuizzes();
+    fetchData();
   }, []);
 
   const examGroups = quizzes.reduce((acc, quiz) => {
@@ -178,9 +187,23 @@ function MyExams() {
                             <span>⏱ {quiz.duration} mins</span>
                             <span>❓ {quiz.questionCount || quiz.questions?.length || "—"} Qs</span>
                           </div>
-                          <button className="sd-start-btn">
-                            Start Quiz
-                          </button>
+                          
+                          <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+                            <button 
+                              className="sd-start-btn" 
+                              style={{ flex: 1, padding: "8px 0" }}
+                            >
+                              Start Quiz
+                            </button>
+                            {attemptedQuizzes.includes(quiz._id) && (
+                              <button 
+                                className="sd-start-btn" 
+                                style={{ flex: 1, backgroundColor: "#E0E7FF", color: "#3730A3", border: "1px solid #3730A3", padding: "8px 0" }}
+                              >
+                                Reattempt
+                              </button>
+                            )}
+                          </div>
                         </div>
                       );
                     })}

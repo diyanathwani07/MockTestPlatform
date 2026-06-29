@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy, LineChart, FileText, LifeBuoy, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy, LineChart, FileText, LifeBuoy, Menu, X, Bot } from 'lucide-react';
 import Logo from '../../components/Logo';
+import AdminChatbot from './AdminChatbot';
 
 function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,6 +65,8 @@ function AdminSidebar() {
             <LifeBuoy size={20} />
             <span>Support Tickets</span>
           </NavLink>
+          
+          <AdminChatbot />
         </nav>
       </aside>
     </>
