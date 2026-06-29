@@ -4,12 +4,12 @@ import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
 
-function Result({ inlineData }) {
+function Result() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // data is sent via navigate("/result", { state: data }) from Quiz.jsx, OR passed as a prop
-  const data = inlineData || location.state;
+  // data is sent via navigate("/result", { state: data }) from Quiz.jsx
+  const data = location.state;
 
   const score = data?.score ?? 0;
   const total = data?.total ?? 0;
