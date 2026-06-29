@@ -254,9 +254,6 @@ function Result() {
           <div className="result-details" style={{ marginTop: "40px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h2>Answer Review</h2>
-              <button className="rm-btn-solid" style={{ padding: "10px 20px", fontSize: "14px" }} onClick={() => setShowAnswers(false)}>
-                ← Back to Summary
-              </button>
             </div>
 
             <div className="review-list">
@@ -310,7 +307,14 @@ function Result() {
               })}
             </div>
             
-            <div className="result-actions" style={{ marginTop: "40px", paddingBottom: "60px", textAlign: "center" }}>
+            <div className="result-actions" style={{ marginTop: "40px", paddingBottom: "60px", display: "flex", justifyContent: "center", gap: "16px" }}>
+              <button 
+                className="rm-btn-outline" 
+                style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
+                onClick={() => setShowAnswers(false)}
+              >
+                ← Back to Summary
+              </button>
               <button 
                 className="rm-btn-solid" 
                 style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}

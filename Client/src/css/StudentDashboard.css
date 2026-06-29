@@ -168,6 +168,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .sd-hero-content {
@@ -807,9 +808,60 @@
 }
 
 /* ── RESPONSIVE ── */
+.mobile-sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  background: var(--bg-sidebar, #12101E);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  backdrop-filter: blur(4px);
+}
+
 @media (max-width: 1024px) {
   .sd-exam-grid { grid-template-columns: repeat(2, 1fr); }
   .sd-subjects-grid { grid-template-columns: repeat(2, 1fr); }
+  
+  .student-sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 95;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  
+  .student-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .mobile-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .sidebar-overlay {
+    display: block;
+  }
+  
+  .sd-navbar {
+    padding-left: 70px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -817,47 +869,7 @@
     flex-direction: column;
   }
   
-  .student-sidebar {
-    width: 100%;
-    height: auto;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    flex-direction: row;
-    border-right: none;
-    border-top: 1px solid var(--border-color);
-    padding: 10px;
-    justify-content: space-around;
-  }
-  
-  .sidebar-logo {
-    display: none;
-  }
-  
-  .sidebar-nav {
-    flex-direction: row;
-    padding: 0;
-    gap: 5px;
-    width: 100%;
-    justify-content: space-around;
-  }
-  
-  .sidebar-link {
-    flex-direction: column;
-    padding: 8px;
-    font-size: 11px;
-    gap: 4px;
-    flex: 1;
-    text-align: center;
-  }
-  
-  .sidebar-link span {
-    display: none; /* Optionally hide text on very small screens, or keep it */
-  }
-  
-  .sd-main-content {
-    margin-bottom: 70px; /* Space for bottom nav */
-  }
+
 
   .sd-navbar { padding: 0 20px; }
   .sd-hero   { padding: 32px 20px; flex-direction: column; align-items: flex-start; }
