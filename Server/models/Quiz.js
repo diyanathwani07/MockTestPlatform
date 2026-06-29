@@ -21,6 +21,10 @@ const questionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  explanation: {
+    type: String,
+    default: "",
+  },
 });
 
 const quizSchema = new mongoose.Schema(

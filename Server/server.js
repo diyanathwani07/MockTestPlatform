@@ -19,6 +19,9 @@ const app = express();
 const PORT = 5000;
 const dns = require("dns");
 
+// Trust proxy to properly capture real IP addresses behind load balancers/reverse proxies (e.g., AWS, Heroku, Nginx)
+app.set("trust proxy", true);
+
 // Change DNS
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
