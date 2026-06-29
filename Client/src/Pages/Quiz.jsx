@@ -160,11 +160,7 @@ function Quiz() {
 
   // 🌐 MONGO FETCH (Untouched - Your exact logic)
   useEffect(() => {
-    // 🛡️ SECURITY GUARD: Block back-button reentry after submission!
-    if (quizId && sessionStorage.getItem(`submitted_${quizId}`)) {
-      navigate("/dashboard/results", { replace: true });
-      return;
-    }
+    // Allow re-entry for reattempts, removing the sessionStorage block
 
     const fetchLiveExam = async () => {
       if (!quizId) {
@@ -264,8 +260,7 @@ function Quiz() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const serverData = await res.json();
       
-      // Mark as submitted in session storage to block back-button access
-      sessionStorage.setItem(`submitted_${quizId}`, "true");
+
       
       navigate("/result", { 
         replace: true,
@@ -292,8 +287,7 @@ function Quiz() {
       });
       const total = questions.length;
       
-      // Mark as submitted in session storage to block back-button access
-      sessionStorage.setItem(`submitted_${quizId}`, "true");
+
       
       navigate("/result", {
         replace: true,
