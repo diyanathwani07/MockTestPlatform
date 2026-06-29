@@ -3,6 +3,7 @@ import axios from "axios";
 import { Search, Send, Image as ImageIcon, MessageCircle, Headphones, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
 import "../css/HelpSupport.css";
 
 function HelpSupport() {
@@ -10,6 +11,14 @@ function HelpSupport() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
+
+  // Chatbot States
+  const [messages, setMessages] = useState([
+    { sender: "bot", text: "Hi there! 👋 I'm your AI Support Assistant. How can I help you today?" }
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [showTicketForm, setShowTicketForm] = useState(false);
 
   const faqs = [
     { question: "How do I start a mock test?", answer: "Navigate to the 'My Exams' tab on the sidebar. You will see a list of all available mock tests. Click the 'Start Test' button on any available exam to begin." },
@@ -24,6 +33,64 @@ function HelpSupport() {
     } else {
       setOpenFaq(index);
     }
+  };
+
+  const handleChatSubmit = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMessage = chatInput.trim();
+    setMessages(prev => [...prev, { sender: "user", text: userMessage }]);
+    setChatInput("");
+    setIsTyping(true);
+
+    // Simulate AI thinking and keyword matching
+    setTimeout(() => {
+      const lowerQuery = userMessage.toLowerCase();
+      let response = "";
+      let foundMatch = false;
+
+      // Basic keyword matching logic against FAQs
+      if (lowerQuery.includes("start") || lowerQuery.includes("begin") || (lowerQuery.includes("test") && !lowerQuery.includes("multiple") && !lowerQuery.includes("disconnect"))) {
+        response = "To start a mock test, navigate to the 'My Exams' tab on the sidebar and click 'Start Test' on any available exam.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("save") || lowerQuery.includes("mark for review") || lowerQuery.includes("difference")) {
+        response = "'Save & Next' submits your chosen answer and moves you to the next question. 'Mark for Review' flags the question so you can easily return to it later from the Question Palette.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("multiple") || lowerQuery.includes("again") || lowerQuery.includes("re-attempt") || lowerQuery.includes("twice")) {
+        response = "Currently, each mock test can only be attempted once to simulate a real exam environment.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("disconnect") || lowerQuery.includes("internet") || lowerQuery.includes("drop") || lowerQuery.includes("offline")) {
+        response = "Your progress is continuously synced. If you disconnect, try refreshing the page or logging back in. If the timer hasn't expired, you can resume the test from where you left off.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("past") || lowerQuery.includes("scores") || lowerQuery.includes("performance") || (lowerQuery.includes("see") && lowerQuery.includes("result"))) {
+        response = "You can view all your past performances by navigating to the 'Results' tab in the sidebar. Click on 'View Details' for any specific exam to see a comprehensive breakdown.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("calculate") || lowerQuery.includes("negative marking") || (lowerQuery.includes("how is") && lowerQuery.includes("score"))) {
+        response = "Your results are calculated based on total correct answers minus any negative marking. Unattempted questions do not affect your score.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("leaderboard") || lowerQuery.includes("rank")) {
+        response = "The Leaderboard ranks students based on their highest scores in recent mock tests. If two students have the same score, the one who completed the test in less time is ranked higher.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("password") || lowerQuery.includes("reset") || lowerQuery.includes("login")) {
+        response = "You can reset your password by clicking 'Forgot Password' on the login screen, or via your Profile if you are logged in.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("profile") || lowerQuery.includes("update") || lowerQuery.includes("name") || lowerQuery.includes("photo")) {
+        response = "Go to the 'Profile' section from the top right menu or sidebar. Here you can update your personal information, contact details, and profile picture.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("not loading") || lowerQuery.includes("stuck") || lowerQuery.includes("blank")) {
+        response = "Try clearing your browser cache or opening the platform in an Incognito/Private window. If the issue persists, please submit a support ticket using the button below.";
+        foundMatch = true;
+      } else if (lowerQuery.includes("hello") || lowerQuery.includes("hi ") || lowerQuery.includes("hey")) {
+        response = "Hello! How can I assist you with your exam prep today?";
+        foundMatch = true;
+      } else {
+        response = "I'm sorry, I couldn't find an exact answer to that in my knowledge base. Would you like to submit a support ticket?";
+      }
+
+      setMessages(prev => [...prev, { sender: "bot", text: response, offerTicket: !foundMatch }]);
+      setIsTyping(false);
+    }, 1500);
   };
 
   const handleChange = (e) => {
@@ -125,12 +192,63 @@ function HelpSupport() {
             </div>
           </div>
 
-          {/* TICKET FORM SECTION */}
-          <div className="hs-ticket-section">
-            <div className="hs-ticket-header">
-              <h2>Submit a Support Ticket</h2>
-              <p>Describe your issue and we'll get back to you.</p>
+          {/* AI CHATBOT SECTION */}
+          <div className="hs-chat-section">
+            <div className="hs-chat-header">
+              <div className="hs-chat-bot-info">
+                <div className="hs-chat-avatar">
+                  <MessageCircle size={20} />
+                </div>
+                <div>
+                  <h3>AI Support Assistant</h3>
+                  <p>Ask me anything about the platform</p>
+                </div>
+              </div>
             </div>
+            
+            <div className="hs-chat-messages">
+              {messages.map((msg, idx) => (
+                <div key={idx} className={`hs-chat-bubble-wrapper ${msg.sender}`}>
+                  <div className={`hs-chat-bubble ${msg.sender}`}>
+                    {msg.text}
+                  </div>
+                  {msg.offerTicket && !showTicketForm && (
+                    <button className="hs-chat-ticket-btn" onClick={() => setShowTicketForm(true)}>
+                      Submit a Ticket
+                    </button>
+                  )}
+                </div>
+              ))}
+              {isTyping && (
+                <div className="hs-chat-bubble-wrapper bot">
+                  <div className="hs-chat-bubble bot typing">
+                    <span></span><span></span><span></span>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <form onSubmit={handleChatSubmit} className="hs-chat-input-area">
+              <input 
+                type="text" 
+                placeholder="Type your question here..." 
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                disabled={isTyping}
+              />
+              <button type="submit" disabled={isTyping || !chatInput.trim()}>
+                <Send size={18} />
+              </button>
+            </form>
+          </div>
+
+          {/* TICKET FORM SECTION */}
+          {showTicketForm ? (
+            <div className="hs-ticket-section slide-down">
+              <div className="hs-ticket-header">
+                <h2>Submit a Support Ticket</h2>
+                <p>Describe your issue and we'll get back to you.</p>
+              </div>
             
             {successMsg && <div className="hs-success-msg">{successMsg}</div>}
 
@@ -192,6 +310,12 @@ function HelpSupport() {
 
             </form>
           </div>
+          ) : (
+            <div className="hs-ticket-reveal">
+              <p>Still can't find what you're looking for?</p>
+              <button onClick={() => setShowTicketForm(true)}>Open Support Ticket</button>
+            </div>
+          )}
 
         </div>
       </div>
