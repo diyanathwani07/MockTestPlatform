@@ -23,8 +23,10 @@
   position:absolute;
   top:-200px;
   left:-150px;
-  width:600px;
-  height:600px;
+  width:40vw;
+  min-width:300px;
+  height:40vw;
+  min-height:300px;
   background:linear-gradient(135deg,#6a11cb,#7b3ff3);
   border-radius:100px;
   transform:rotate(45deg);
@@ -36,8 +38,10 @@
   position:absolute;
   bottom:-200px;
   right:-150px;
-  width:600px;
-  height:600px;
+  width:40vw;
+  min-width:300px;
+  height:40vw;
+  min-height:300px;
   background:linear-gradient(135deg,#7b3ff3,#3d1fc7);
   border-radius:100px;
   transform:rotate(45deg);
@@ -48,8 +52,10 @@
   position:absolute;
   top:-150px;
   right:-150px;
-  width:450px;
-  height:450px;
+  width:30vw;
+  min-width:250px;
+  height:30vw;
+  min-height:250px;
   border:2px solid rgba(123,63,243,.15);
   border-radius:50%;
 }
@@ -57,8 +63,8 @@
 /* Small Circle */
 .small-circle{
   position:absolute;
-  bottom:80px;
-  left:80px;
+  bottom:8vw;
+  left:8vw;
   width:60px;
   height:60px;
   border:3px solid rgba(123,63,243,.3);
@@ -68,10 +74,12 @@
 /* Card */
 .register-card{
   position:relative;
-  width:650px;
+  width:100%;
+  max-width:750px;
   background:var(--bg-card);
   border:1.5px solid var(--border-color);
-  padding:50px;
+  padding:clamp(30px, 5vw, 50px);
+  margin:20px;
   border-radius:30px;
   box-shadow:var(--card-shadow);
   z-index:10;
@@ -99,7 +107,7 @@
 .register-card h2{
   text-align:center;
   margin-top:20px;
-  font-size:55px;
+  font-size:clamp(35px, 5vw, 55px);
   color:var(--text-primary);
 }
 
@@ -107,6 +115,16 @@
   text-align:center;
   color:var(--text-secondary);
   margin-bottom:30px;
+}
+
+/* Form Grid */
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0 20px;
+}
+.full-width{
+  grid-column:1 / -1;
 }
 
 /* Input Box */
@@ -177,4 +195,37 @@
 .register span{
   color:var(--violet);
   font-weight:600;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .top-left {
+    top:-100px;
+    left:-100px;
+  }
+  
+  .bottom-right {
+    bottom:-100px;
+    right:-100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-section h1 {
+    font-size: 32px;
+  }
+  
+  .register-card button {
+    font-size: 18px;
+    height: 50px;
+  }
+  
+  .input-box input {
+    height: 50px;
+  }
 }

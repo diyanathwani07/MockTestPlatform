@@ -22,8 +22,10 @@
     position: absolute;
     top: -250px;
     left: -250px;
-    width: 650px;
-    height: 650px;
+    width: 40vw;
+    min-width: 300px;
+    height: 40vw;
+    min-height: 300px;
     background: linear-gradient(135deg, #7b3ff3, #4f22ff);
     border-radius: 120px;
     transform: rotate(45deg);
@@ -33,8 +35,10 @@
     position: absolute;
     bottom: -250px;
     right: -250px;
-    width: 650px;
-    height: 650px;
+    width: 40vw;
+    min-width: 300px;
+    height: 40vw;
+    min-height: 300px;
     background: linear-gradient(135deg, #9b7eff, #4a22d4);
     border-radius: 120px;
     transform: rotate(45deg);
@@ -44,16 +48,18 @@
     position: absolute;
     top: -120px;
     right: -120px;
-    width: 450px;
-    height: 450px;
+    width: 30vw;
+    min-width: 250px;
+    height: 30vw;
+    min-height: 250px;
     border: 2px solid rgba(123, 63, 243, .15);
     border-radius: 50%;
 }
 
 .small-circle {
     position: absolute;
-    bottom: 100px;
-    left: 100px;
+    bottom: 8vw;
+    left: 8vw;
     width: 60px;
     height: 60px;
     border: 3px solid rgba(123, 63, 243, .25);
@@ -62,11 +68,13 @@
 
 /* Main Card */
 .start-card {
-    width: 850px;
+    width: 100%;
+    max-width: 850px;
+    margin: 20px;
     background: var(--bg-card);
     border: 1.5px solid var(--border-color);
     border-radius: 30px;
-    padding: 50px;
+    padding: clamp(30px, 5vw, 50px);
     box-shadow: var(--card-shadow);
     z-index: 10;
 }
@@ -92,7 +100,7 @@
 h2 {
     text-align: center;
     margin: 25px 0 40px;
-    font-size: 52px;
+    font-size: clamp(32px, 5vw, 52px);
     color: var(--text-primary);
 }
 
@@ -235,6 +243,36 @@ h2 {
     margin: 0;
     max-width: 260px;
     line-height: 1.5;
+}
+.loader-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+        gap: 8px;
+        padding: 15px 0;
+    }
+    
+    .label {
+        width: 100%;
+        margin-bottom: 4px;
+    }
+    
+    .top-left {
+        top: -100px;
+        left: -100px;
+    }
+    
+    .bottom-right {
+        bottom: -100px;
+        right: -100px;
+    }
 }
 
 /* ── Cancel Button ── */
