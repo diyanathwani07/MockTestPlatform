@@ -678,3 +678,65 @@
 .dark-mode .status-btn.active.in-progress { background: rgba(29, 78, 216, 0.2); color: #60A5FA; border-color: transparent; }
 .dark-mode .status-btn.active.resolved { background: rgba(4, 120, 87, 0.2); color: #34D399; border-color: transparent; }
 
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .tk-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .tk-content-wrapper {
+    padding: 20px 16px;
+  }
+  
+  .tk-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tk-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .tk-search {
+    width: 100%;
+  }
+  
+  .tk-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .tk-date-range {
+    margin-top: 0;
+  }
+  
+  .tk-new-ticket-btn {
+    margin-top: 0;
+    justify-content: center;
+  }
+  
+  .tk-table-container {
+    overflow-x: auto;
+  }
+  
+  .tk-table {
+    min-width: 800px;
+  }
+  
+  .ticket-modal {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .ticket-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .status-buttons {
+    flex-direction: column;
+  }
+}
+

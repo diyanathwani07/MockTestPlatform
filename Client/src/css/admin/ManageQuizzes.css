@@ -233,3 +233,16 @@ input[type="text"] {
   .quiz-table { min-width: 700px; }
 }
 
+@media (max-width: 768px) {
+  .manage-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .search-input, 
+  input[type="text"] {
+    max-width: 100%;
+  }
+}
+
