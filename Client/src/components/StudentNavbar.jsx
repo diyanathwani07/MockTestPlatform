@@ -7,6 +7,7 @@ import "../css/admin/AdminLayout.css"; // Reuse admin navbar styles
 function StudentNavbar({ title }) {
   const { toggleTheme } = useTheme(); 
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -41,13 +42,25 @@ function StudentNavbar({ title }) {
         </div>
 
         {/* Notification Bell */}
-        <button className="nav-bell-btn" title="Notifications">
-          <Bell size={20} />
-        </button>
+        <div className="profile-dropdown-wrapper">
+          <button 
+            className="nav-bell-btn" 
+            title="Notifications" 
+            onClick={() => { setNotifOpen(!notifOpen); setProfileOpen(false); }}
+          >
+            <Bell size={20} />
+          </button>
+          {notifOpen && (
+            <div className="profile-floating-menu" style={{ width: "240px", textAlign: "center", padding: "30px 10px", color: "var(--text-muted)", fontSize: "14px", fontWeight: "500", right: "-10px" }}>
+              <Bell size={32} style={{ opacity: 0.2, marginBottom: "10px" }} />
+              <div>No new notifications</div>
+            </div>
+          )}
+        </div>
 
         {/* Profile */}
         <div className="profile-dropdown-wrapper">
-          <div className="avatar-neon-trigger" onClick={() => setProfileOpen(!profileOpen)}>{initials}</div>
+          <div className="avatar-neon-trigger" onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}>{initials}</div>
           {profileOpen && (
             <div className="profile-floating-menu">
               <div className="drop-link" onClick={() => navigate("/dashboard/profile")}>
