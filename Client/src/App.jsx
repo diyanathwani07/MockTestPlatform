@@ -26,6 +26,7 @@ import StudentDashboard from "./Pages/StudentDashboard";
 import MyExams from "./Pages/MyExams";
 import StudentProfile from "./Pages/StudentProfile";
 import StudentResults from "./Pages/StudentResults";
+import SubjectResults from "./Pages/SubjectResults";
 import Leaderboard from "./Pages/Leaderboard";
 import HelpSupport from "./Pages/HelpSupport";
 import StartTest from "./Pages/StartTest";
@@ -81,6 +82,15 @@ function App() {
           element={
             <ProtectedRoute>
               <StudentResults />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/results/:subject"
+          element={
+            <ProtectedRoute>
+              <SubjectResults />
             </ProtectedRoute>
           }
         />

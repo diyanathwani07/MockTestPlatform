@@ -90,8 +90,9 @@ function StudentResults() {
                   return (
                     <div className="me-exam-row-wrapper" key={examName}>
                       <div
-                        className={`me-exam-card ${isSelected ? "me-exam-active" : ""}`}
-                        onClick={() => setSelectedExam(isSelected ? null : examName)}
+                        className={`me-exam-card`}
+                        onClick={() => navigate(`/dashboard/results/${encodeURIComponent(examName)}`, { state: { group } })}
+                        style={{ cursor: "pointer" }}
                       >
                         <div className="me-card-top">
                           <div className="me-card-left">
@@ -101,7 +102,7 @@ function StudentResults() {
                             <div className="me-exam-name">{examName}</div>
                           </div>
                           <div className="me-chevron">
-                            <ChevronRight size={20} style={{ transform: isSelected ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                            <ChevronRight size={20} />
                           </div>
                         </div>
 
@@ -118,69 +119,6 @@ function StudentResults() {
                           </div>
                         </div>
                       </div>
-
-                      {isSelected && (
-                        <div className="sd-subjects-panel me-inline-panel" style={{ padding: "0 0 24px 0", background: "transparent", border: "none", boxShadow: "none", display: "flex", flexDirection: "column", gap: "16px", marginTop: 0 }}>
-                          {group.map((result) => (
-                            <div className="sr-result-card" key={result._id} style={{ margin: 0, width: "100%", maxWidth: "100%" }}>
-                              <div className="sr-card-left">
-                                <div className="sr-icon-box">
-                                  <FileText size={24} className="sr-file-icon" />
-                                </div>
-                                <div className="sr-info">
-                                  <h2>{result.quizTitle || result.subject || result.examName || "Mock Test"}</h2>
-                                  <p>Attempted on {formatDate(result.createdAt)}</p>
-                                  <span className="sr-badge-completed">Completed</span>
-                                </div>
-                              </div>
-                              <div className="sr-card-stats">
-                                <div className="sr-stat-group">
-                                  <span className="sr-stat-label">Score</span>
-                                  <span className="sr-stat-value sr-val-score">{result.score} / {result.total}</span>
-                                  <span className="sr-stat-sub">{result.percentage ? result.percentage : ((result.score / (result.total || 1)) * 100).toFixed(0)}%</span>
-                                </div>
-                                <div className="sr-stat-divider"></div>
-                                <div className="sr-stat-group">
-                                  <span className="sr-stat-label">Accuracy</span>
-                                  <span className="sr-stat-value sr-val-accuracy">
-                                    {result.total > 0 ? Math.round((result.correct / (result.correct + result.incorrect || 1)) * 100) || 0 : 0}%
-                                  </span>
-                                </div>
-                                <div className="sr-stat-divider"></div>
-                                <div className="sr-stat-group">
-                                  <span className="sr-stat-label">Rank</span>
-                                  <span className="sr-stat-value sr-val-rank">#{Math.floor(Math.random() * 50) + 1}</span>
-                                </div>
-                              </div>
-                              <div className="sr-card-right" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                                <button className="sr-view-details-btn">
-                                  View Details <ChevronRight size={16} />
-                                </button>
-                                {result.quizId && (
-                                  <button 
-                                    className="sr-view-details-btn" 
-                                    style={{ backgroundColor: "#F3F4F6", color: "#6E3FF3", border: "1px solid #E2E8F0" }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate("/start-test", {
-                                        state: {
-                                          preSelectedQuizId: result.quizId,
-                                          subject: result.subject || result.quizTitle || result.examName,
-                                          quizId: result.quizId,
-                                          quizTitle: result.quizTitle,
-                                          duration: 30,
-                                        },
-                                      });
-                                    }}
-                                  >
-                                    Reattempt
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   );
                 })}

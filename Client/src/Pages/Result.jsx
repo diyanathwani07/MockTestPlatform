@@ -10,7 +10,50 @@ function Result() {
   const navigate = useNavigate();
 
   // data is sent via navigate("/result", { state: data }) from Quiz.jsx
-  const data = location.state;
+  const [data, setData] = useState(() => {
+    let initialData = location.state;
+    if (!initialData) {
+      const stored = localStorage.getItem("lastQuizResult");
+      if (stored) {
+        try {
+          initialData = JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse cached result data", e);
+        }
+      }
+    }
+    return initialData;
+  });
+
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : { name: "User" };
+  const [loadingLatest, setLoadingLatest] = useState(!data);
+
+  useEffect(() => {
+    if (data) {
+      localStorage.setItem("lastQuizResult", JSON.stringify(data));
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (!data && user?.id) {
+      const fetchLatest = async () => {
+        try {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
+          if (res.data && res.data.length > 0) {
+            setData(res.data[0]);
+          }
+        } catch (err) {
+          console.error("Failed to fetch latest result", err);
+        } finally {
+          setLoadingLatest(false);
+        }
+      };
+      fetchLatest();
+    } else {
+      setLoadingLatest(false);
+    }
+  }, []);
 
   const score = data?.score ?? 0;
   const total = data?.total ?? 0;
@@ -95,6 +138,18 @@ function Result() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (loadingLatest) {
+    return (
+      <div className="result-page">
+        <QuizHeader title={examTitle} showInstructions={false} />
+        <div className="result-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+          <div className="sd-spinner"></div>
+          <p style={{ marginTop: '16px', color: 'var(--text-secondary)', fontWeight: 500 }}>Fetching your latest result...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!data) {
     return (
       <div className="result-page">
@@ -111,7 +166,6 @@ function Result() {
   }
 
   const [showAnswers, setShowAnswers] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user")) || { name: "User" };
   const timeTakenSecs = data?.timeTaken || 0;
   
   const formatTime = (seconds) => {

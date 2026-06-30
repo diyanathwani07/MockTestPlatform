@@ -18,7 +18,7 @@ function StudentNavbar({ title }) {
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13.5px", fontWeight: "500", color: "var(--text-secondary)" }}>
+      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "20px", fontWeight: "600", color: "var(--text-secondary)" }}>
         <span 
           onClick={() => navigate("/dashboard")}
           style={{ cursor: "pointer", transition: "color 0.15s" }}

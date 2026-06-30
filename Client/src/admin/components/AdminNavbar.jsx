@@ -12,7 +12,7 @@ function AdminNavbar({ title }) {
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13.5px", fontWeight: "500", color: "var(--text-secondary)", flexWrap: "wrap" }}>
+      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "18px", fontWeight: "600", color: "var(--text-secondary)", flexWrap: "wrap" }}>
         <span 
           onClick={() => navigate("/admin/dashboard")}
           style={{ cursor: "pointer", transition: "color 0.15s" }}
