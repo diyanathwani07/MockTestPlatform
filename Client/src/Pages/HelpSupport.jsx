@@ -134,8 +134,8 @@ function HelpSupport() {
       <div className="sd-main-content">
         <StudentNavbar title="Help & Support" />
 
-        <div className="sd-content">
-          
+        <div className="sd-content" style={{ paddingTop: '20px' }}>
+          <div className="hs-page-container">
           {/* HERO SECTION */}
           <div className="hs-hero">
             <div className="hs-hero-content">
@@ -316,7 +316,7 @@ function HelpSupport() {
               <button onClick={() => setShowTicketForm(true)}>Open Support Ticket</button>
             </div>
           )}
-
+          </div>
         </div>
       </div>
     </div>

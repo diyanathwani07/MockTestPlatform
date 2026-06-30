@@ -125,13 +125,13 @@ function Results() {
           
           <div className="dashboard-header" style={{ justifyContent: "space-between", alignItems: "center" }}>
             {/* FILTERS BAR */}
-            <div className="filters-bar" style={{ margin: 0 }}>
+            <div className="filters-bar" style={{ margin: 0, overflowX: "auto", flexWrap: "nowrap", paddingBottom: "8px" }}>
               <input 
                 className="filter-search"
                 placeholder="Search by user name, email or quiz..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ maxWidth: "250px", flexGrow: 0 }}
+                style={{ maxWidth: "250px", minWidth: "200px", flexShrink: 0 }}
               />
               <input 
                 type="date"
@@ -147,14 +147,15 @@ function Results() {
                   fontSize: "14px",
                   outline: "none",
                   cursor: "pointer",
-                  fontFamily: "inherit"
+                  fontFamily: "inherit",
+                  flexShrink: 0
                 }}
               />
-              <select className="filter-select"><option>All Quizzes</option></select>
-              <select className="filter-select"><option>All Subjects</option></select>
-              <select className="filter-select"><option>All Users</option></select>
-              <select className="filter-select"><option>All Status</option></select>
-              <button className="btn-reset" onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻ Reset</button>
+              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Quizzes</option></select>
+              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Subjects</option></select>
+              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Users</option></select>
+              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Status</option></select>
+              <button className="btn-reset" style={{ flexShrink: 0 }} onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻ Reset</button>
             </div>
 
             <div className="header-actions">

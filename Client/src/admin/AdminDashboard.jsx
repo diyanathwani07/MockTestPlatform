@@ -296,7 +296,7 @@ function AdminDashboard() {
           </div>
 
           {/* 2. MIDDLE TWO-COLUMN GRID: CHART & METRICS */}
-          <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: "24px", marginTop: "24px" }}>
+          <div className="dashboard-middle-grid">
             {/* Overview Line Chart */}
             <div className="form-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column" }}>
               <div className="dashboard-card-title-row">
@@ -543,7 +543,7 @@ function AdminDashboard() {
               {/* Quiz Status Mini Grid */}
               <div className="form-card" style={{ margin: 0, padding: "20px" }}>
                 <h3 className="dashboard-card-title" style={{ marginBottom: "16px" }}>Quiz Status</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+                <div className="dashboard-status-grid">
                   <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
                     <span style={{ fontSize: "16px", background: "rgba(16, 185, 129, 0.1)", color: "#10B981", padding: "6px", borderRadius: "8px" }}>📖</span>
                     <div>

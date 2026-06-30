@@ -79,7 +79,7 @@ function AuditLog() {
         <div className="admin-content" style={{ padding: "32px" }}>
 
           {/* ── Filters Row ── */}
-          <div style={{ display: "flex", gap: "14px", marginBottom: "24px", alignItems: "center" }}>
+          <div className="filters-row-scrollable" style={{ display: "flex", gap: "14px", marginBottom: "24px", alignItems: "center", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px" }}>
             <input
               placeholder="Search by action, user or details..."
               value={search}
@@ -91,7 +91,7 @@ function AuditLog() {
                 backgroundColor: "var(--bg-input)",
                 color: "var(--text-primary)",
                 fontSize: "13px",
-                flex: 2,
+                flex: "1 0 250px",
                 outline: "none",
                 fontFamily: "inherit",
               }}
@@ -106,7 +106,7 @@ function AuditLog() {
                 backgroundColor: "var(--bg-input)",
                 color: "var(--text-primary)",
                 fontSize: "13px",
-                flex: 1,
+                flex: "0 0 150px",
                 outline: "none",
                 fontFamily: "inherit",
                 cursor: "pointer",
@@ -124,7 +124,7 @@ function AuditLog() {
               display: "flex", alignItems: "center", gap: "8px", 
               backgroundColor: "var(--bg-input)", border: "1.5px solid var(--border-color)", 
               borderRadius: "10px", padding: "10.5px 16px",
-              position: "relative"
+              position: "relative", flex: "0 0 auto"
             }}>
               <span style={{ fontSize: "14px", color: "var(--text-secondary)", userSelect: "none" }}>📅</span>
               <input 
@@ -181,7 +181,7 @@ function AuditLog() {
               backgroundColor: "var(--bg-card)",
               borderRadius: "16px",
               border: "1.5px solid var(--border-color)",
-              overflow: "hidden",
+              overflowX: "auto",
               boxShadow: "var(--card-shadow)",
             }}
           >
@@ -233,8 +233,8 @@ function AuditLog() {
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--option-hover)")}
                       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
-                      <td style={{ padding: "14px 24px", fontWeight: "600" }}>{log.performedBy}</td>
-                      <td style={{ padding: "14px 24px" }}>
+                      <td style={{ padding: "14px 24px", fontWeight: "600", whiteSpace: "nowrap" }}>{log.performedBy}</td>
+                      <td style={{ padding: "14px 24px", whiteSpace: "nowrap" }}>
                         <span
                           style={{
                             padding: "4px 12px",
@@ -249,7 +249,7 @@ function AuditLog() {
                           {log.action}
                         </span>
                       </td>
-                      <td style={{ padding: "14px 24px", color: "var(--text-secondary)" }}>{log.details}</td>
+                      <td style={{ padding: "14px 24px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{log.details}</td>
                       <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                         {new Date(log.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
                       </td>

@@ -2,6 +2,11 @@
    HELP & SUPPORT PAGE
    ============================================ */
 
+.hs-page-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
 .hs-hero {
   position: relative;
   background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);

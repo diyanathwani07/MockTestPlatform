@@ -47,12 +47,8 @@ function QuizHeader({ title = "", showInstructions = true, onInstructionsClick }
         </div>
       )}
 
-      {/* RIGHT: Theme toggle + optional Instructions */}
+      {/* RIGHT: Optional Instructions */}
       <div style={{ display: "flex", alignItems: "center", gap: "14px", zIndex: 1 }}>
-        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
-          <div className="pill-thumb-slider"></div>
-        </div>
         {showInstructions && (
           <button
             onClick={() => onInstructionsClick ? onInstructionsClick() : navigate("/start-test")}

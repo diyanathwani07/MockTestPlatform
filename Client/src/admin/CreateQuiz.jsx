@@ -517,7 +517,7 @@ function CreateQuiz() {
                   <div 
                     className="form-card-title" 
                     onClick={() => setQuizConfigCollapsed(!quizConfigCollapsed)}
-                    style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: quizConfigCollapsed ? "none" : "1px solid var(--border-color)", paddingBottom: quizConfigCollapsed ? "0" : "10px" }}
+                    style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", borderBottom: quizConfigCollapsed ? "none" : "1px solid var(--border-color)", paddingBottom: quizConfigCollapsed ? "0" : "10px" }}
                   >
                     <span>Quiz Configuration</span>
                     <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -581,7 +581,7 @@ function CreateQuiz() {
 
                       <div className="form-field">
                         <label>Duration</label>
-                        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
                             <input
                               type="number"

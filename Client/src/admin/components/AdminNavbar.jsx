@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { Sun, Moon, Bell, User, LogOut } from "lucide-react";
+import ThemeToggle from "../../components/ThemeToggle";
 import "../../css/admin/AdminLayout.css";
 
 function AdminNavbar({ title }) {
@@ -26,11 +27,8 @@ function AdminNavbar({ title }) {
 
       <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "20px" }}>
         
-        {/* 3D Sun/Moon Theme Toggle */}
-        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
-          <div className="pill-thumb-slider"></div>
-        </div>
+        {/* Theme Toggle Button */}
+        <ThemeToggle />
 
         {/* Notification Bell */}
         <button className="nav-bell-btn" title="Notifications">

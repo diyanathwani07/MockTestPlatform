@@ -72,7 +72,7 @@ function MyExams() {
       <StudentSidebar />
       <div className="sd-main-content">
         <StudentNavbar title="My Exams" />
-        <div className="sd-content">
+        <div className="sd-content" style={{ paddingTop: '20px' }}>
           {loading ? (
             <div className="sd-loading">
               <div className="sd-spinner"></div>

@@ -3,7 +3,7 @@
    ============================================ */
 
 .me-page-header {
-  margin-bottom: 32px;
+  margin-bottom: 12px;
 }
 
 .me-page-title {
@@ -25,12 +25,12 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-muted, #94A3B8);
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .me-exam-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
 }
@@ -75,7 +75,7 @@
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {
   .me-exam-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .me-exam-row-wrapper {
     flex-direction: column;

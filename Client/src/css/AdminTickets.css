@@ -37,10 +37,10 @@
 .tk-stat-card {
   background: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid #F3F4F6;
 }
@@ -691,7 +691,8 @@
   }
   
   .tk-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   
   .tk-toolbar {

@@ -85,11 +85,6 @@ function AdminTickets() {
         <AdminNavbar title="Support Tickets" />
         
         <div className="tk-content-wrapper">
-          <div className="tk-header">
-            <div>
-              <h2>Support Tickets</h2>
-            </div>
-          </div>
 
           {/* STAT CARDS */}
           <div className="tk-stats-grid">

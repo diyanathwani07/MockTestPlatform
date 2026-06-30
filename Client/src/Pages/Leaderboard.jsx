@@ -12,6 +12,7 @@ function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [selectedExam, setSelectedExam] = useState("All Exams");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const currentUserStr = localStorage.getItem("user");
   const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
@@ -48,14 +49,19 @@ function Leaderboard() {
   if (podiumRaw[0]) podiumData.push({ rank: 1, name: podiumRaw[0].userId?.fullName || podiumRaw[0].userId?.name || "User", score: `${podiumRaw[0].score} / ${podiumRaw[0].total}`, avatar: podiumRaw[0].userId?.avatar || "https://i.pravatar.cc/150?img=11" });
   if (podiumRaw[2]) podiumData.push({ rank: 3, name: podiumRaw[2].userId?.fullName || podiumRaw[2].userId?.name || "User", score: `${podiumRaw[2].score} / ${podiumRaw[2].total}`, avatar: podiumRaw[2].userId?.avatar || "https://i.pravatar.cc/150?img=12" });
 
-  const tableData = filteredResults.slice(3).map((r, idx) => ({
-    rank: idx + 4,
+  const ITEMS_PER_PAGE = 30;
+  const studentsForTable = filteredResults.slice(3);
+  const totalPages = Math.ceil(studentsForTable.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  const tableData = studentsForTable.slice(startIndex, startIndex + ITEMS_PER_PAGE).map((r, idx) => ({
+    rank: startIndex + idx + 4,
     name: r.userId?.fullName || r.userId?.name || "User",
     isYou: r.userId && (r.userId._id === currentUser?.id || r.userId === currentUser?.id),
     score: `${r.score} / ${r.total}`,
     accuracy: `${Math.round((r.correct / (r.correct + r.incorrect || 1)) * 100) || 0}%`,
     percentile: `${r.percentage || Math.round((r.score / r.total) * 100)}%`,
-    avatar: r.userId?.avatar || `https://i.pravatar.cc/150?img=${idx + 15}`
+    avatar: r.userId?.avatar || `https://i.pravatar.cc/150?img=${(startIndex + idx) % 50 + 15}`
   }));
 
   return (
@@ -65,35 +71,35 @@ function Leaderboard() {
         <StudentNavbar title="Leaderboard" />
         <div className="lb-container">
           
-          {/* Header */}
-          <div className="lb-header">
+          {/* Header & Filters Combined */}
+          <div className="lb-header" style={{ marginBottom: "20px", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
             <div className="lb-title-area">
               <h1>Leaderboard</h1>
               <p>Compete with other learners and see where you stand.</p>
             </div>
-            <div className="lb-info-pill">
-              <Info className="lb-info-icon" size={16} />
-              Leaderboard updates every 10 minutes.
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="lb-filters">
-            <select className="lb-filter-select" value={selectedExam} onChange={e => setSelectedExam(e.target.value)}>
-              <option value="All Exams">All Exams</option>
-              {uniqueExams.map((exam, i) => (
-                <option key={i} value={exam}>{exam}</option>
-              ))}
-            </select>
             
-            <div className="lb-search">
-              <Search className="lb-icon" size={16} />
-              <input 
-                type="text" 
-                placeholder="Search students" 
-                value={searchTerm} 
-                onChange={e => setSearchTerm(e.target.value)} 
-              />
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap", marginLeft: "auto" }}>
+              <div className="lb-info-pill" style={{ margin: 0 }}>
+                <Info className="lb-info-icon" size={16} />
+                Updates every 10 mins.
+              </div>
+              
+              <select className="lb-filter-select" style={{ margin: 0 }} value={selectedExam} onChange={e => { setSelectedExam(e.target.value); setCurrentPage(1); }}>
+                <option value="All Exams">All Exams</option>
+                {uniqueExams.map((exam, i) => (
+                  <option key={i} value={exam}>{exam}</option>
+                ))}
+              </select>
+              
+              <div className="lb-search" style={{ margin: 0 }}>
+                <Search className="lb-icon" size={16} />
+                <input 
+                  type="text" 
+                  placeholder="Search students" 
+                  value={searchTerm} 
+                  onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                />
+              </div>
             </div>
           </div>
 
@@ -190,7 +196,8 @@ function Leaderboard() {
               </div>
 
               {/* Table */}
-              <table className="lb-table">
+              <div className="lb-table-wrapper">
+                <table className="lb-table">
                 <thead>
                   <tr>
                     <th>Rank</th>
@@ -216,11 +223,28 @@ function Leaderboard() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-
-              <div className="lb-view-more">
-                <button>View More <ChevronDown size={14} /></button>
+                </table>
               </div>
+
+              {totalPages > 1 && (
+                <div className="lb-pagination" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px" }}>
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #E4E4E7", background: currentPage === 1 ? "#F4F4F5" : "white", cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ fontSize: "14px", color: "#71717A", fontWeight: "500" }}>Page {currentPage} of {totalPages}</span>
+                  <button 
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #E4E4E7", background: currentPage === totalPages ? "#F4F4F5" : "white", cursor: currentPage === totalPages ? "not-allowed" : "pointer" }}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
 
             </div>
           </div>

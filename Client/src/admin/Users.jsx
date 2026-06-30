@@ -66,7 +66,7 @@ function Users() {
           </div>
 
           {/* 3. USER DATA TABLE CARD */}
-          <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column', overflowX: 'auto' }}>
             <table className="quiz-table">
               <thead>
                 <tr>
@@ -88,7 +88,7 @@ function Users() {
                     <tr key={u._id}>
                       
                       {/* Avatar + Stacked Name & Date */}
-                      <td>
+                      <td style={{ whiteSpace: "nowrap" }}>
                         <div 
                           className="user-info-cell" 
                           onClick={() => setSelectedUser(u)} 
@@ -109,7 +109,7 @@ function Users() {
                         </div>
                       </td>
 
-                      <td className="user-email-text">{u.email}</td>
+                      <td className="user-email-text" style={{ whiteSpace: "nowrap" }}>{u.email}</td>
 
                       {/* Outlined Role Badges */}
                       <td>

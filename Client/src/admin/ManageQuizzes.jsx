@@ -87,7 +87,7 @@ function ManageQuizzes() {
               </span>
             </div>
 
-            <div style={{ display: "flex", gap: "16px", width: "100%", maxWidth: "500px" }}>
+            <div style={{ display: "flex", gap: "16px", width: "100%", maxWidth: "600px", flexWrap: "wrap" }}>
               {/* Sleek Rounded Search Bar */}
               <div style={{ 
                 flex: 1,
@@ -179,31 +179,31 @@ function ManageQuizzes() {
                     filteredQuizzes.map((quiz) => (
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "14px" }}>
                         
-                        <td style={{ padding: "18px 28px", fontWeight: "700", color: "var(--violet)" }}>
+                        <td style={{ padding: "18px 28px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
                           {quiz.examName || "—"}
                         </td>
                         
-                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", whiteSpace: "nowrap" }}>
                           {quiz.subject}
                         </td>
                         
-                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)" }}>
+                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)", whiteSpace: "nowrap" }}>
                           {quiz.title}
                         </td>
                         
-                        <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)" }}>
+                        <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                           {quiz.duration} min
                         </td>
                         
-                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)" }}>
+                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
                           {quiz.questions?.length || 0}
                         </td>
 
-                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13px" }}>
+                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13px", whiteSpace: "nowrap" }}>
                           {new Date(quiz.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}
                         </td>
                         
-                        <td style={{ padding: "18px 24px" }}>
+                        <td style={{ padding: "18px 24px", whiteSpace: "nowrap" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                             <span style={{
                               backgroundColor: 
@@ -216,7 +216,7 @@ function ManageQuizzes() {
                             }}>
                               {quiz.status || "Draft"}
                             </span>
-                            {quiz.status === "Scheduled" && quiz.scheduledDate && (
+                            {quiz.scheduledDate && (
                               <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
                                 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
@@ -224,7 +224,7 @@ function ManageQuizzes() {
                           </div>
                         </td>
 
-                        <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible" }}>
+                        <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
                             <button 
                               onClick={() => setActiveDropdown(activeDropdown === quiz._id ? null : quiz._id)}

@@ -92,9 +92,9 @@ function Reports() {
 
 
           {/* 3. 3-WAY LIVE COMMAND BAR (Zero button bloat) */}
-          <div className="reports-filter-bar">
+          <div className="reports-filter-bar" style={{ display: "flex", overflowX: "auto", flexWrap: "nowrap", gap: "12px", paddingBottom: "8px" }}>
             
-            <div className="report-search-pill">
+            <div className="report-search-pill" style={{ flexShrink: 0, minWidth: "220px" }}>
               <span className="search-icon-wrapper"><User size={16} /></span>
               <input
                 type="text"
@@ -104,7 +104,7 @@ function Reports() {
               />
             </div>
 
-            <div className="report-search-pill">
+            <div className="report-search-pill" style={{ flexShrink: 0, minWidth: "220px" }}>
               <span className="search-icon-wrapper"><FileText size={16} /></span>
               <input
                 type="text"
@@ -114,7 +114,7 @@ function Reports() {
               />
             </div>
 
-            <div className="report-search-pill">
+            <div className="report-search-pill" style={{ flexShrink: 0, minWidth: "220px" }}>
               <span className="search-icon-wrapper"><BookOpen size={16} /></span>
               <input
                 type="text"
@@ -126,7 +126,7 @@ function Reports() {
           </div>
 
           {/* 4. NEW: CANDIDATE DRILL-DOWN TABLE */}
-          <div className="reports-table-wrapper">
+          <div className="reports-table-wrapper" style={{ overflowX: "auto" }}>
             <table className="reports-analytics-table">
               <thead>
                 <tr>
@@ -146,7 +146,7 @@ function Reports() {
                   return (
                     <tr key={r._id}>
                       
-                      <td>
+                      <td style={{ whiteSpace: "nowrap" }}>
                         <div className="rep-user-cell">
                           <div className="rep-avatar">
                             {r.userId?.fullName?.charAt(0).toUpperCase() || "?"}
@@ -158,18 +158,18 @@ function Reports() {
                         </div>
                       </td>
 
-                      <td style={{ fontWeight: 600, color: "#1a1a2e" }}>{r.quizId?.title || "Untitled Quiz"}</td>
-                      <td>{r.quizId?.subject || "General"}</td>
-                      <td style={{ fontWeight: 700 }}>{r.score} / {r.total}</td>
-                      <td style={{ fontWeight: 600 }}>{Number(r.percentage || 0).toFixed(1)}%</td>
+                      <td style={{ fontWeight: 600, color: "#1a1a2e", whiteSpace: "nowrap" }}>{r.quizId?.title || "Untitled Quiz"}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>{r.quizId?.subject || "General"}</td>
+                      <td style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{r.score} / {r.total}</td>
+                      <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{Number(r.percentage || 0).toFixed(1)}%</td>
                       
-                      <td>
+                      <td style={{ whiteSpace: "nowrap" }}>
                         <span className={`rep-badge ${isPass ? "rep-pass" : "rep-fail"}`}>
                           {isPass ? "Passed" : "Failed"}
                         </span>
                       </td>
 
-                      <td style={{ color: "#a8a5bd", fontSize: "13px" }}>
+                      <td style={{ color: "#a8a5bd", fontSize: "13px", whiteSpace: "nowrap" }}>
                         {new Date(r.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}
                       </td>
 

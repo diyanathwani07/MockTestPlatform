@@ -186,7 +186,8 @@ function Quiz() {
             english: q.questionEnglish || q.english || "",
             hindi: q.questionHindi || q.hindi || "",
             options: q.options || [],
-            correctAnswer: correctText
+            correctAnswer: correctText,
+            explanation: q.explanation || q.solution || ""
           };
         });
 
