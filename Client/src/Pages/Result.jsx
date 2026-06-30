@@ -14,7 +14,7 @@ function Result() {
     let initialData = location.state;
     if (!initialData) {
       const stored = localStorage.getItem("lastQuizResult");
-      if (stored) {
+      if (stored && stored !== "undefined") {
         try {
           initialData = JSON.parse(stored);
         } catch (e) {
@@ -25,8 +25,15 @@ function Result() {
     return initialData;
   });
 
-  const userString = localStorage.getItem("user");
-  const user = userString ? JSON.parse(userString) : { name: "User" };
+  let user = { name: "User" };
+  try {
+    const userString = localStorage.getItem("user");
+    if (userString && userString !== "undefined") {
+      user = JSON.parse(userString);
+    }
+  } catch (e) {
+    console.error("Failed to parse user from localStorage", e);
+  }
   const [loadingLatest, setLoadingLatest] = useState(!data);
 
   useEffect(() => {
