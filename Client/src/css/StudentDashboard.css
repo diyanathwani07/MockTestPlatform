@@ -14,7 +14,9 @@
 .sd-layout {
   display: flex;
   height: 100vh;
+  width: 100vw;
   overflow: hidden;
+  overflow-x: hidden;
   background: var(--bg-page);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
@@ -870,6 +872,7 @@
   }
   
   .sd-navbar { padding: 0 20px; }
+  .admin-navbar { padding-left: 60px !important; }
   .sd-hero   { padding: 24px 20px 32px; flex-direction: column; align-items: flex-start; }
   .sd-hero-name { font-size: 26px; }
   .sd-hero-illustration { display: none; }

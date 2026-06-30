@@ -163,6 +163,14 @@ body.dark-mode .reports-analytics-table td {
   font-weight: 700;
   color: #1a1a2e;
 }
+.stat-card-trend {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 100%;
+}
+.stat-card-sparkline {
+  max-width: 100%;
+}
 
 @media (max-width: 1400px) {
   .stat-cards-grid { grid-template-columns: repeat(5, 1fr); }
@@ -176,7 +184,7 @@ body.dark-mode .reports-analytics-table td {
   .stat-cards-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .stat-cards-grid { 
     grid-template-columns: repeat(2, 1fr); 
     gap: 12px;
@@ -186,6 +194,8 @@ body.dark-mode .reports-analytics-table td {
     align-items: flex-start;
     padding: 14px;
     gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .stat-card-label {
     font-size: 10px;
@@ -250,7 +260,8 @@ body.dark-mode .reports-analytics-table td {
   background: #ffffff;
   border: 1px solid #ECE9F7;
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  width: 100%;
   box-shadow: 0 4px 20px rgba(45, 27, 105, 0.02);
 }
 
@@ -361,6 +372,11 @@ body.dark-mode .reports-analytics-table td {
 @media (max-width: 1024px) {
   .dashboard-middle-grid {
     grid-template-columns: 1fr;
+  }
+  .form-card {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .dashboard-three-column-grid {
     grid-template-columns: 1fr;

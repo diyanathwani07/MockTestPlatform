@@ -147,7 +147,7 @@ function MyExams() {
                           <span>Difficulty</span>
                           <span className="me-badge">Medium</span>
                         </div>
-                        <button className="sp-btn-save" style={{ padding: "8px 16px" }}>Start Exam</button>
+                        <button className="sp-btn-save" style={{ padding: "8px 16px", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}>Start Exam</button>
                       </div>
                     </div>
                       
@@ -191,7 +191,7 @@ function MyExams() {
                           <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
                             <button 
                               className="sd-start-btn" 
-                              style={{ flex: 1, padding: "8px 0" }}
+                              style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
                             >
                               Start Quiz
                             </button>

@@ -66,8 +66,9 @@ function Users() {
           </div>
 
           {/* 3. USER DATA TABLE CARD */}
-          <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column', overflowX: 'auto' }}>
-            <table className="quiz-table">
+          <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="quiz-table">
               <thead>
                 <tr>
                   <th>User</th>
@@ -144,6 +145,7 @@ function Users() {
                 )}
               </tbody>
             </table>
+            </div>
 
             {/* 4. PAGINATION FOOTER */}
             <div className="table-pagination-footer">

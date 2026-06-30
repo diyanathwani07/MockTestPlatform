@@ -345,3 +345,65 @@
 .score-badge.good { color: #3B82F6; }
 .score-badge.average { color: #F59E0B; }
 .score-badge.poor { color: #EF4444; }
+
+/* ==========================================================================
+   RESPONSIVE DESIGN & ACCESSIBILITY UPGRADES
+   ========================================================================== */
+
+/* Improved Touch Targets (min-height: 44px) */
+.btn-export, .btn-filter, .btn-reset, 
+.filter-search, .filter-select {
+  min-height: 44px;
+}
+
+/* Tablet Layout */
+@media (max-width: 1024px) {
+  .results-stat-cards-grid,
+  .perf-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile Layout */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    flex-direction: row;
+  }
+  
+  .btn-export, .btn-filter {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .results-stat-cards-grid,
+  .perf-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-search, .filter-select {
+    width: 100%;
+  }
+  
+  .data-table-container {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .data-table {
+    min-width: 600px;
+  }
+}

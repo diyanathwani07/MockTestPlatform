@@ -12,6 +12,11 @@
   width: 100%;
 }
 
+.quiz-two-column-layout img {
+  max-width: 100%;
+  height: auto;
+}
+
 @media (max-width: 900px) {
   .quiz-two-column-layout {
     grid-template-columns: 1fr;
@@ -54,9 +59,23 @@
 
 /* Form fields layout */
 .details-vertical-fields {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+  width: 100%;
+}
+.details-vertical-fields .form-field:nth-child(4) {
+  grid-column: 1 / -1;
+}
+@media (max-width: 1024px) {
+  .details-vertical-fields {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .details-vertical-fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-field {
@@ -167,6 +186,8 @@
   padding: 20px;
   margin-bottom: 16px;
   transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .question-block-enhanced:hover {
@@ -205,6 +226,8 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s;
+  min-height: 44px;
+  justify-content: center;
 }
 
 .remove-btn-compact:hover {
@@ -225,7 +248,7 @@
   gap: 12px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .options-grid-enhanced {
     grid-template-columns: 1fr;
   }
@@ -240,6 +263,8 @@
   padding: 6px 10px;
   gap: 8px;
   transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .option-input-card-enhanced:hover {
@@ -307,6 +332,7 @@
   transition: all 0.15s;
   text-align: center;
   margin-top: 10px;
+  min-height: 44px;
 }
 
 .add-question-btn:hover {
@@ -325,11 +351,18 @@
   width: 100%;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .quiz-bottom-actions-row {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
+  }
+  .action-buttons-group {
+    width: 100%;
+    flex-direction: column;
+  }
+  .btn-save-draft, .btn-submit-publish {
+    width: 100%;
   }
 }
 
@@ -360,6 +393,7 @@
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s;
+  min-height: 44px;
 }
 
 .btn-save-draft:hover {
@@ -378,6 +412,7 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(110, 63, 243, 0.25);
   transition: all 0.15s;
+  min-height: 44px;
 }
 
 .btn-submit-publish:hover {

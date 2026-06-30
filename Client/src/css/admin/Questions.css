@@ -660,3 +660,42 @@ body.dark-mode .qb-right-header,
 body.dark-mode .qb-pagination {
   border-color: #2b2b3d;
 }
+
+/* ── RESPONSIVE DESIGN FOR QUESTIONS BANK ── */
+@media (max-width: 1024px) {
+  .questions-bank-view {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+  
+  .qb-left-col,
+  .qb-middle-col,
+  .qb-right-col {
+    width: 100%;
+    height: auto;
+    flex-shrink: 1;
+  }
+
+  .qb-books-list,
+  .qb-subjects-list,
+  .qb-questions-list {
+    height: auto;
+    max-height: 400px; /* Optional cap so it doesn't span infinitely before scrolling */
+  }
+}
+
+@media (max-width: 768px) {
+  .qb-options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qb-page-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .qb-book-card {
+    min-height: 44px;
+  }
+}

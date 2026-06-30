@@ -62,14 +62,13 @@ function ManageQuizzes() {
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar title="Manage Quizzes" />
 
-        <div className="admin-content" style={{ padding: "32px", flex: 1, textAlign: "left" }}>
+        <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
 
           {/* ─── APEX COMMAND BAR ─── */}
-          <div className="armored-admin-card" style={{ 
+          <div className="armored-admin-card manage-command-bar-card" style={{ 
             backgroundColor: "var(--bg-card)", 
             border: "1.5px solid var(--border-color)", 
             borderRadius: "16px", 
-            padding: "24px 32px", 
             marginBottom: "28px", 
             boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
             display: "flex",

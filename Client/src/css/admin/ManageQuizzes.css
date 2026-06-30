@@ -229,7 +229,7 @@ input[type="text"] {
 }
 
 @media (max-width: 900px) {
-  .quiz-table-wrapper { overflow-x: auto; }
+  .quiz-table-wrapper { overflow-x: auto; width: 100%; }
   .quiz-table { min-width: 700px; }
 }
 

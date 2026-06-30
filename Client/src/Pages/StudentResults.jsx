@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FileText, Calendar, ChevronDown, ChevronRight, CheckCircle, Target, Award } from "lucide-react";
+import { FileText, Calendar, ChevronDown, ChevronRight, CheckCircle, Target, Award, Trophy } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; 
@@ -96,7 +96,7 @@ function StudentResults() {
                         <div className="me-card-top">
                           <div className="me-card-left">
                             <div className="me-icon-wrapper" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10B981" }}>
-                              🏆
+                              <Trophy size={20} />
                             </div>
                             <div className="me-exam-name">{examName}</div>
                           </div>

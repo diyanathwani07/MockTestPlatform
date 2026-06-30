@@ -20,7 +20,7 @@ const Logo = ({ size = "normal" }) => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: current.gap, userSelect: 'none' }}>
-      <img src="/logo.svg" alt="Teaching Pariksha Logo" style={{ height: current.imgHeight, width: 'auto' }} />
+      <img src="/logo.svg" alt="Logo" style={{ height: current.imgHeight, width: 'auto', display: 'block' }} />
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: '1.1' }}>
         <span style={{ 
           color: '#8b5cf6', 

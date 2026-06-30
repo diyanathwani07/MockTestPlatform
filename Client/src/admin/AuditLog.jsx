@@ -71,12 +71,12 @@ function AuditLog() {
   });
 
   return (
-    <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--bg-page)" }}>
+    <div className="admin-layout">
       <AdminSidebar />
-      <div className="admin-main" style={{ flex: 1, backgroundColor: "var(--bg-page)" }}>
+      <div className="admin-main">
         <AdminNavbar title="Audit Log" />
 
-        <div className="admin-content" style={{ padding: "32px" }}>
+        <div className="admin-content">
 
           {/* ── Filters Row ── */}
           <div className="filters-row-scrollable" style={{ display: "flex", gap: "14px", marginBottom: "24px", alignItems: "center", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px" }}>
@@ -182,6 +182,8 @@ function AuditLog() {
               borderRadius: "16px",
               border: "1.5px solid var(--border-color)",
               overflowX: "auto",
+              WebkitOverflowScrolling: "touch",
+              width: "100%",
               boxShadow: "var(--card-shadow)",
             }}
           >
@@ -197,12 +199,12 @@ function AuditLog() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>User</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Action</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Target</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Date</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>Time</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700" }}>IP Address</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "20%" }}>User</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "15%" }}>Action</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "35%" }}>Target</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "10%" }}>Date</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "10%" }}>Time</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "10%" }}>IP Address</th>
                 </tr>
               </thead>
               <tbody>
@@ -249,7 +251,7 @@ function AuditLog() {
                           {log.action}
                         </span>
                       </td>
-                      <td style={{ padding: "14px 24px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{log.details}</td>
+                      <td style={{ padding: "14px 24px", color: "var(--text-secondary)", whiteSpace: "normal", wordBreak: "break-word", lineHeight: "1.5" }}>{log.details}</td>
                       <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                         {new Date(log.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
                       </td>
