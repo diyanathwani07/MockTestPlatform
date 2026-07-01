@@ -613,10 +613,20 @@ function Quiz() {
           </div>
 
           {/* 3. Real-Time Palette Grid */}
+          {showPaletteMobile && <div className="palette-overlay" onClick={() => setShowPaletteMobile(false)}></div>}
           <div className={`question-palette ${!showPaletteMobile ? "mobile-hidden" : ""}`} style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
-            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
-              🎨 Navigation Palette
-            </span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
+                🎨 Navigation Palette
+              </span>
+              <button 
+                className="mobile-palette-close" 
+                onClick={() => setShowPaletteMobile(false)}
+                style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", paddingRight: "4px" }}>
               {questions.slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage).map((_, i) => {
                 const idx = palettePage * itemsPerPage + i;
