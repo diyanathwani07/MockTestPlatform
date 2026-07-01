@@ -617,7 +617,7 @@ body {
   .quiz-right-panel > div:nth-child(2) {
     order: 1; /* Move Timer to the top */
     position: sticky;
-    top: 70px; /* Stick below header */
+    top: 0; /* Changed from 70px to 0 so there is no gap */
     z-index: 50;
     padding: 10px 16px !important;
   }
