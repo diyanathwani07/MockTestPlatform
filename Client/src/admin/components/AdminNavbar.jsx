@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
-import { Sun, Moon, Bell, User, LogOut } from "lucide-react";
+import { usePreview } from "../../context/PreviewContext";
+import { Sun, Moon, Bell, User, LogOut, Eye } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import "../../css/admin/AdminLayout.css";
 
 function AdminNavbar({ title }) {
   const { toggleTheme } = useTheme(); 
+  const { setPreviewMode } = usePreview();
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -42,6 +44,12 @@ function AdminNavbar({ title }) {
             <div className="profile-floating-menu">
               <div className="drop-link" onClick={() => navigate("/admin/profile")}>
                 <User size={16} style={{ marginRight: '8px' }} /> My Profile
+              </div>
+              <div className="drop-link" onClick={() => {
+                setPreviewMode(true);
+                navigate("/dashboard");
+              }}>
+                <Eye size={16} style={{ marginRight: '8px' }} /> View as Student
               </div>
               <div className="drop-link" onClick={() => { localStorage.clear(); navigate("/"); }}>
                 <LogOut size={16} style={{ marginRight: '8px' }} /> Log Out

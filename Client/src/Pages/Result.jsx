@@ -353,8 +353,8 @@ function Result() {
                 borderRadius: "50%",
                 backgroundColor: "#ffffff",
                 boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-                border: "1px solid var(--border-color)",
-                color: "var(--text-primary)",
+                border: "1px solid #d1d5db",
+                color: "#000000",
                 cursor: "pointer",
                 transition: "all 0.2s",
               }}
@@ -376,9 +376,9 @@ function Result() {
               padding: "24px 70px 20px",
               backgroundColor: "#EAEBF3",
               marginBottom: "24px",
-              margin: "-20px -16px 24px -16px"
+              margin: "-20px -16px 24px -16px",
             }}>
-              <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", margin: 0, lineHeight: "1.3", color: "var(--text-primary)", textAlign: "center" }}>Answer Review - {examTitle}</h2>
+              <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", margin: 0, lineHeight: "1.3", color: "#000000", textAlign: "center" }}>Answer Review - {examTitle}</h2>
             </div>
 
             <div className="review-list">

@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
-import { BookOpen, Clock, HelpCircle, ChevronRight } from "lucide-react";
+import { BookOpen, Clock, HelpCircle, ChevronRight, FileText, Star } from "lucide-react";
 import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
 import "../css/MyExams.css"; // New specific styles
 
@@ -109,8 +109,9 @@ function MyExams() {
                       {/* TOP ROW */}
                       <div className="me-card-top">
                         <div className="me-card-left">
-                          <div className="me-icon-wrapper">
-                            📄<span className="me-icon-pen" style={{ fontSize: "14px", bottom: "10px", right: "8px" }}>⭐</span>
+                          <div className="me-icon-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--violet)', width: '48px', height: '48px', borderRadius: '12px', color: '#fff' }}>
+                            <FileText size={24} />
+                            <Star size={12} fill="#F4C842" color="#F4C842" style={{ position: 'absolute', bottom: '8px', right: '8px' }} />
                           </div>
                           <div className="me-exam-name">{examName}</div>
                         </div>
@@ -189,18 +190,19 @@ function MyExams() {
                           </div>
                           
                           <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-                            <button 
-                              className="sd-start-btn" 
-                              style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                            >
-                              Start Quiz
-                            </button>
-                            {attemptedQuizzes.includes(quiz._id) && (
+                            {attemptedQuizzes.includes(quiz._id) ? (
                               <button 
                                 className="sd-start-btn" 
-                                style={{ flex: 1, backgroundColor: "#E0E7FF", color: "#3730A3", border: "1px solid #3730A3", padding: "8px 0" }}
+                                style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
                               >
                                 Reattempt
+                              </button>
+                            ) : (
+                              <button 
+                                className="sd-start-btn" 
+                                style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                              >
+                                Start Quiz
                               </button>
                             )}
                           </div>

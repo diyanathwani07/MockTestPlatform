@@ -505,3 +505,193 @@ body {
   .button-group { flex-direction: column; width: 100%; }
   .button-group button { width: 100%; margin-bottom: 8px; }
 }
+
+/* ================= RESPONSIVE LAYOUT CLASSES (Refactored from inline) ================= */
+.quiz-header-wrapper {
+  background-color: var(--bg-header);
+  border-bottom: 1.5px solid var(--border-color);
+  margin-bottom: 24px;
+}
+
+.quiz-header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 36px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.quiz-main-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 36px;
+}
+
+.quiz-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+
+.quiz-question-card {
+  background-color: var(--bg-card);
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--card-shadow);
+  align-self: start;
+}
+
+.quiz-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1.5px solid var(--border-color);
+  padding-top: 24px;
+}
+
+.quiz-action-left, .quiz-action-right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.quiz-right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 90px;
+  height: max-content;
+}
+
+/* Hide mobile palette toggle on desktop */
+.mobile-palette-toggle {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .quiz-main-grid {
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .quiz-main-grid {
+    grid-template-columns: 1fr;
+  }
+  /* Header Adjustments */
+  .quiz-header-inner {
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+  }
+  
+  .quiz-main-wrapper {
+    padding: 0 16px;
+  }
+  
+  .quiz-main-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Magic Reordering on Mobile */
+  .quiz-right-panel {
+    display: contents;
+  }
+  
+  .quiz-right-panel > div:nth-child(1) {
+    display: none; /* Hide Candidate Profile to save space */
+  }
+  
+  .quiz-right-panel > div:nth-child(2) {
+    order: 1; /* Move Timer to the top */
+    position: sticky;
+    top: 70px; /* Stick below header */
+    z-index: 50;
+    padding: 10px 16px !important;
+  }
+  
+  .quiz-timer-title, .quiz-timer-labels, .quiz-timer-legend {
+    display: none !important; /* Hide verbose timer details on mobile */
+  }
+  
+  .quiz-timer-clock {
+    border-bottom: none !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .quiz-timer-time {
+    font-size: 24px !important;
+  }
+  
+  /* Make Palette Toggle button visible on mobile */
+  .mobile-palette-toggle {
+    display: block !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Palette Container */
+  .quiz-right-panel > div:nth-child(3) {
+    order: 3; /* Keep Palette at the bottom */
+  }
+  
+  .question-palette.mobile-hidden {
+    display: none !important;
+  }
+  
+  /* Question Card Adjustments */
+  .quiz-question-card {
+    padding: 20px;
+    order: 2;
+  }
+  
+  /* Buttons Adjustments */
+  .quiz-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .quiz-action-left, .quiz-action-right {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .quiz-action-right button:nth-child(3) {
+    grid-column: 1 / span 2;
+  }
+  
+  .quiz-action-left button, .quiz-action-right button {
+    width: 100%;
+    min-height: 44px; /* Accessible touch target */
+  }
+  
+  /* Ensure Option Cards have proper spacing */
+  .option-card {
+    padding: 14px 16px;
+  }
+  
+  /* Question Text Overflow Protection */
+  h2 {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  }
+}

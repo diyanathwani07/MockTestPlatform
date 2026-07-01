@@ -12,6 +12,8 @@ const registerUser = async (req, res) => {
   password,
   district,
   state,
+  role,
+  adminSecretKey,
 } = req.body;
 
     // Check existing user
@@ -22,6 +24,18 @@ const registerUser = async (req, res) => {
         success: false,
         message: "User already exists",
       });
+    }
+
+    // Determine Role and Validate Admin Key
+    let finalRole = "user";
+    if (role === "admin") {
+      if (adminSecretKey !== process.env.ADMIN_SECRET_KEY) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Admin Registration Key",
+        });
+      }
+      finalRole = "admin";
     }
 
     // Hash password
@@ -35,6 +49,7 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
       district,
       state,
+      role: finalRole,
     });
 
     res.status(201).json({
@@ -46,6 +61,7 @@ const registerUser = async (req, res) => {
         email: user.email,
         district: user.district,
         state: user.state,
+        role: user.role,
       },
     });
   } catch (error) {

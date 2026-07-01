@@ -3,10 +3,12 @@ import axios from "axios";
 import { Search, Send, Image as ImageIcon, MessageCircle, Headphones, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import { usePreview } from "../context/PreviewContext";
 import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
 import "../css/HelpSupport.css";
 
 function HelpSupport() {
+  const { previewMode } = usePreview();
   const [ticket, setTicket] = useState({ subject: "", category: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -302,8 +304,14 @@ function HelpSupport() {
               </div>
 
               <div className="hs-form-actions">
-                <button type="submit" disabled={loading} className="hs-submit-btn">
-                  {loading ? "Submitting..." : "Submit Ticket"} 
+                <button 
+                  type="submit" 
+                  disabled={loading || previewMode} 
+                  className="hs-submit-btn"
+                  title={previewMode ? "Ticket submission is disabled in Preview Mode" : ""}
+                  style={{ opacity: previewMode ? 0.6 : 1, cursor: previewMode ? "not-allowed" : "pointer" }}
+                >
+                  {previewMode ? "Preview Mode (Disabled)" : (loading ? "Submitting..." : "Submit Ticket")} 
                   <Send size={16} />
                 </button>
               </div>

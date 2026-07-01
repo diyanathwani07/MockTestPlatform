@@ -13,6 +13,7 @@ function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAdminKey, setShowAdminKey] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -22,6 +23,8 @@ function Register() {
     confirmPassword: "",
     district: "",
     state: "",
+    registerAs: "Student",
+    adminSecretKey: "",
   });
 
   const handleChange = (e) => {
@@ -49,6 +52,8 @@ function Register() {
     password: formData.password,
     district: formData.district,
     state: formData.state,
+    role: formData.registerAs === "Admin" ? "admin" : "user",
+    adminSecretKey: formData.registerAs === "Admin" ? formData.adminSecretKey : undefined,
   }
 );
 
@@ -97,6 +102,51 @@ function Register() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
+            <div className="input-box full-width">
+              <label>Register As</label>
+              <select
+                name="registerAs"
+                value={formData.registerAs}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  padding: "12px 16px",
+                  borderRadius: "10px",
+                  border: "1px solid var(--border-color)",
+                  background: "transparent",
+                  color: "var(--text-primary)",
+                  fontSize: "14px",
+                  outline: "none",
+                }}
+              >
+                <option value="Student" style={{ color: "#000" }}>Student</option>
+                <option value="Admin" style={{ color: "#000" }}>Admin</option>
+              </select>
+            </div>
+
+            {formData.registerAs === "Admin" && (
+              <div className="input-box full-width">
+                <label>Admin Registration Key</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showAdminKey ? "text" : "password"}
+                    name="adminSecretKey"
+                    placeholder="Enter Admin Secret Key"
+                    value={formData.adminSecretKey}
+                    onChange={handleChange}
+                    required
+                    style={{ paddingRight: "50px" }}
+                  />
+                  <div 
+                    style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "var(--text-secondary)", display: "flex" }}
+                    onClick={() => setShowAdminKey(!showAdminKey)}
+                  >
+                    {showAdminKey ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="input-box">
               <label>Full Name</label>
               <input

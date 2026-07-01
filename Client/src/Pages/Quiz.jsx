@@ -2,13 +2,16 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
+import { usePreview } from "../context/PreviewContext";
 import { Sun, Moon, X } from "lucide-react";
 import Logo from "../components/Logo";
+import "../css/Quiz.css";
 
 function Quiz() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleTheme } = useTheme();
+  const { previewMode } = usePreview();
 
   const { quizId: paramQuizId } = useParams();
   const [searchParams] = useSearchParams();
@@ -41,6 +44,7 @@ function Quiz() {
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [showPaletteMobile, setShowPaletteMobile] = useState(false);
 
   const [palettePage, setPalettePage] = useState(0);
   const itemsPerPage = 20; // 20 questions per page (4 rows of 5)
@@ -388,8 +392,8 @@ function Quiz() {
       )}
 
       {/* ─── TOP HEADER ─── */}
-      <header style={{ backgroundColor: "var(--bg-header)", borderBottom: "1.5px solid var(--border-color)", marginBottom: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 36px", maxWidth: "1400px", margin: "0 auto" }}>
+      <header className="quiz-header-wrapper">
+        <div className="quiz-header-inner">
 
           {/* LEFT: Brand only */}
           <div style={{ display: "flex", alignItems: "center", zIndex: 1 }}>
@@ -419,7 +423,7 @@ function Quiz() {
       </header>
 
       {/* Centering wrapper */}
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 36px" }}>
+      <div className="quiz-main-wrapper">
 
         {/* ─── 2. DYNAMIC EXAM TITLE PILL ─── */}
         <div style={{ marginBottom: "20px" }}>
@@ -429,10 +433,10 @@ function Quiz() {
         </div>
 
         {/* ─── 3. VIEWPORT GRID ─── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "24px" }}>
+        <div className="quiz-main-grid">
         
         {/* LEFT: QUESTION & OPTIONS */}
-        <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "32px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "var(--card-shadow)", alignSelf: "start" }}>
+        <div className="quiz-question-card">
           
           <div>
             {/* Question Number Bar */}
@@ -491,17 +495,17 @@ function Quiz() {
           </div>
 
           {/* Bottom Action Controls */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", borderTop: "1.5px solid var(--border-color)", paddingTop: "24px" }}>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button onClick={markForReview} style={{ background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+          <div className="quiz-action-bar">
+            <div className="quiz-action-left">
+              <button onClick={markForReview} style={{ background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
                 Mark Review
               </button>
-              <button onClick={clearResponse} style={{ background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
+              <button onClick={clearResponse} style={{ background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
                 Clear Response
               </button>
             </div>
 
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div className="quiz-action-right">
               <button 
                 onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))} 
                 disabled={currentQuestion === 0}
@@ -515,8 +519,7 @@ function Quiz() {
                   fontSize: "13px", 
                   cursor: currentQuestion === 0 ? "not-allowed" : "pointer",
                   opacity: currentQuestion === 0 ? 0.5 : 1,
-                  transition: "all 0.15s ease",
-                  width: "auto"
+                  transition: "all 0.15s ease"
                 }}
               >
                 Previous
@@ -534,15 +537,19 @@ function Quiz() {
                   fontSize: "13px", 
                   cursor: currentQuestion === questions.length - 1 ? "not-allowed" : "pointer",
                   opacity: currentQuestion === questions.length - 1 ? 0.5 : 1,
-                  transition: "all 0.15s ease",
-                  width: "auto"
+                  transition: "all 0.15s ease"
                 }}
               >
                 Next
               </button>
               {currentQuestion === questions.length - 1 && (
-                <button onClick={submitQuiz} style={{ background: "#16A34A", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 28px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease", width: "auto" }}>
-                  Submit Test
+                <button 
+                  onClick={submitQuiz} 
+                  disabled={previewMode}
+                  title={previewMode ? "Submitting disabled in Preview Mode" : ""}
+                  style={{ background: previewMode ? "#6b7280" : "#16A34A", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 28px", fontWeight: "700", fontSize: "13px", cursor: previewMode ? "not-allowed" : "pointer", transition: "all 0.15s ease" }}
+                >
+                  {previewMode ? "Preview Mode" : "Submit Test"}
                 </button>
               )}
             </div>
@@ -551,7 +558,7 @@ function Quiz() {
         </div>
 
         {/* RIGHT PANEL: LIVE TELEMETRY */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div className="quiz-right-panel">
           
           {/* 1. Candidate Info */}
           <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
@@ -572,15 +579,15 @@ function Quiz() {
           </div>
 
           {/* 2. Clock */}
-          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
-            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "12px", display: "block", textAlign: "center" }}>
+          <div className="quiz-timer-container" style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span className="quiz-timer-title" style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "12px", display: "block", textAlign: "center" }}>
               ⏱️ Time Remaining
             </span>
-            <div style={{ textAlign: "center", padding: "8px 0 16px 0", borderBottom: "1.5px solid var(--border-color)", marginBottom: "16px" }}>
-              <div style={{ fontSize: "34px", fontWeight: "800", color: timeLeft < 300 ? "#DC2626" : "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
+            <div className="quiz-timer-clock" style={{ textAlign: "center", padding: "8px 0 16px 0", borderBottom: "1.5px solid var(--border-color)", marginBottom: "16px" }}>
+              <div className="quiz-timer-time" style={{ fontSize: "34px", fontWeight: "800", color: timeLeft < 300 ? "#DC2626" : "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
                 {formatTimeBox(timeLeft)}
               </div>
-              <div style={{ display: "flex", justifyContent: "center", gap: "34px", color: "var(--text-muted)", fontSize: "10px", fontWeight: "700", marginTop: "4px" }}>
+              <div className="quiz-timer-labels" style={{ display: "flex", justifyContent: "center", gap: "34px", color: "var(--text-muted)", fontSize: "10px", fontWeight: "700", marginTop: "4px" }}>
                 <span>HRS</span>
                 <span>MINS</span>
                 <span>SECS</span>
@@ -588,16 +595,25 @@ function Quiz() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)" }}>
+            <div className="quiz-timer-legend" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981" }} /> Answered</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#C51414" }} /> Not Answered</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--border-color)" }} /> Not Visited</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
             </div>
+            
+            {/* Mobile View Palette Button */}
+            <button 
+              className="mobile-palette-toggle"
+              onClick={() => setShowPaletteMobile(!showPaletteMobile)}
+              style={{ marginTop: "16px", width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
+            >
+              {showPaletteMobile ? "Hide Question Palette" : "View Question Palette"}
+            </button>
           </div>
 
           {/* 3. Real-Time Palette Grid */}
-          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+          <div className={`question-palette ${!showPaletteMobile ? "mobile-hidden" : ""}`} style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
             <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
               🎨 Navigation Palette
             </span>

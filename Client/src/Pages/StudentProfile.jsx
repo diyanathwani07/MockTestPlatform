@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { User, Mail, Phone, Calendar, MapPin, Edit3 } from "lucide-react";
+import { usePreview } from "../context/PreviewContext";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse layout styles
@@ -9,6 +10,7 @@ import "../css/StudentProfile.css"; // Specific profile styles
 
 function StudentProfile() {
   const [user, setUser] = useState({});
+  const { previewMode } = usePreview();
   const [initials, setInitials] = useState("");
   const [studentId, setStudentId] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -54,6 +56,7 @@ function StudentProfile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (previewMode) return;
     setIsSaving(true);
     try {
       const token = localStorage.getItem("token");
@@ -91,16 +94,20 @@ function StudentProfile() {
                     <div className="sp-hero-left">
                       <div className="sp-avatar-container">
                         <div className="sp-avatar">{initials}</div>
-                        <button className="sp-avatar-edit" onClick={() => setIsEditing(true)}>
-                          <Edit3 size={12} />
-                        </button>
+                        {!previewMode && (
+                          <button className="sp-avatar-edit" onClick={() => setIsEditing(true)}>
+                            <Edit3 size={12} />
+                          </button>
+                        )}
                       </div>
                       <div className="sp-user-info">
                         <h2 className="sp-name">{user.fullName || user.name || "Student Name"}</h2>
                         <p className="sp-email">{user.email || "student@example.com"}</p>
-                        <button className="sp-edit-profile-btn" onClick={() => setIsEditing(true)}>
-                          <Edit3 size={14} /> Edit Profile
-                        </button>
+                        {!previewMode && (
+                          <button className="sp-edit-profile-btn" onClick={() => setIsEditing(true)}>
+                            <Edit3 size={14} /> Edit Profile
+                          </button>
+                        )}
                       </div>
                     </div>
                     
@@ -209,8 +216,14 @@ function StudentProfile() {
                     
                     <div className="sp-form-actions">
                       <button type="button" className="sp-btn-cancel" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</button>
-                      <button type="submit" className="sp-btn-save" disabled={isSaving}>
-                        {isSaving ? "Saving..." : "Save Changes"}
+                      <button 
+                        type="submit" 
+                        className="sp-btn-save" 
+                        disabled={isSaving || previewMode}
+                        title={previewMode ? "Profile editing is disabled in Preview Mode" : ""}
+                        style={{ opacity: previewMode ? 0.6 : 1, cursor: previewMode ? "not-allowed" : "pointer" }}
+                      >
+                        {previewMode ? "Preview Mode (Disabled)" : (isSaving ? "Saving..." : "Save Changes")}
                       </button>
                     </div>
                   </form>

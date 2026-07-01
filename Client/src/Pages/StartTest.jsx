@@ -4,12 +4,14 @@ import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import { Sun, Moon } from "lucide-react";
 import Logo from "../components/Logo";
+import { usePreview } from "../context/PreviewContext";
 import "../css/StartTest.css";
 
 function StartTest() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleTheme } = useTheme();
+  const { previewMode } = usePreview();
 
   const [quizzes, setQuizzes] = useState([]);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -259,9 +261,10 @@ function StartTest() {
         <button
           className="start-btn"
           onClick={handleStart}
-          disabled={loading || !selectedQuiz || countdown !== null}
+          disabled={loading || !selectedQuiz || countdown !== null || previewMode}
+          title={previewMode ? "This action is disabled in Student Preview Mode." : ""}
         >
-          {loading ? "Connecting..." : "Start Test"}
+          {previewMode ? "Disabled in Preview Mode" : (loading ? "Connecting..." : "Start Test")}
         </button>
       </div>
     </div>

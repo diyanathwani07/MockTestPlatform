@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PreviewBanner from "./components/PreviewBanner";
 import ForgotPassword from "./Pages/ForgotPassword";
 import AdminRoute from "./components/AdminRoute";
 
@@ -36,6 +37,7 @@ import Result from "./Pages/Result";
 function App() {
   return (
     <BrowserRouter>
+      <PreviewBanner />
       <Routes>
 
         <Route path="/" element={<Login />} />
