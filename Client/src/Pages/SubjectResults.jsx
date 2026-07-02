@@ -43,14 +43,17 @@ function SubjectResults() {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
+    const datePart = date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
+    });
+    const timePart = date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true
     });
+    return `${datePart} | Time: ${timePart}`;
   };
 
   const filteredGroup = selectedDate
