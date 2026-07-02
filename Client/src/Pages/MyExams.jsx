@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
-import { BookOpen, Clock, HelpCircle, ChevronRight, FileText, Star } from "lucide-react";
+import { BookOpen, Clock, HelpCircle, ChevronRight, FileCheck } from "lucide-react";
 import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
 import "../css/MyExams.css"; // New specific styles
 
@@ -109,9 +109,8 @@ function MyExams() {
                       {/* TOP ROW */}
                       <div className="me-card-top">
                         <div className="me-card-left">
-                          <div className="me-icon-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--violet)', width: '48px', height: '48px', borderRadius: '12px', color: '#fff' }}>
-                            <FileText size={24} />
-                            <Star size={12} fill="#F4C842" color="#F4C842" style={{ position: 'absolute', bottom: '8px', right: '8px' }} />
+                          <div className="me-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--violet)', width: '48px', height: '48px', borderRadius: '12px', color: '#fff' }}>
+                            <FileCheck size={24} />
                           </div>
                           <div className="me-exam-name">{examName}</div>
                         </div>

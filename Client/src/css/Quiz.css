@@ -572,7 +572,7 @@ body {
 }
 
 /* Hide mobile palette elements on desktop */
-.mobile-palette-toggle, .mobile-palette-close, .palette-overlay {
+.mobile-palette-toggle, .mobile-palette-close, .palette-overlay, .mobile-text {
   display: none;
 }
 
@@ -590,9 +590,29 @@ body {
   /* Header Adjustments */
   .quiz-header-inner {
     padding: 12px 16px;
-    flex-direction: column;
-    gap: 12px;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  
+  .quiz-header-exam-name {
+    display: none !important;
+  }
+  
+  .desktop-text {
+    display: none !important;
+  }
+  
+  .mobile-text {
+    display: inline !important;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: serif;
+  }
+  
+  .quiz-instructions-btn {
+    padding: 8px 14px !important;
+    border-radius: 50% !important;
   }
   
   .quiz-main-wrapper {
@@ -616,9 +636,6 @@ body {
   
   .quiz-right-panel > div:nth-child(2) {
     order: 1; /* Move Timer to the top */
-    position: sticky;
-    top: 0; /* Changed from 70px to 0 so there is no gap */
-    z-index: 50;
     padding: 10px 16px !important;
   }
   

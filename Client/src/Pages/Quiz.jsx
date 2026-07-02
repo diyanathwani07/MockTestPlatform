@@ -5,6 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import { usePreview } from "../context/PreviewContext";
 import { Sun, Moon, X } from "lucide-react";
 import Logo from "../components/Logo";
+import ThemeToggle from "../components/ThemeToggle";
 import "../css/Quiz.css";
 
 function Quiz() {
@@ -401,22 +402,21 @@ function Quiz() {
           </div>
 
           {/* CENTER: Dynamic Exam Name */}
-          <div style={{ fontWeight: "700", fontSize: "15px", color: "#DC2626", letterSpacing: "0.5px", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="quiz-header-exam-name" style={{ fontWeight: "700", fontSize: "15px", color: "#DC2626", letterSpacing: "0.5px", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#DC2626", display: "inline-block", animation: "pulse 1.5s infinite" }}></span>
             {examName}
           </div>
 
           {/* RIGHT: Theme toggle + Instructions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-              <div className="pill-track-icons"><span><Sun size={14}/></span><span><Moon size={14}/></span></div>
-              <div className="pill-thumb-slider"></div>
-            </div>
+            <ThemeToggle />
             <button 
+              className="quiz-instructions-btn"
               onClick={() => setShowInstructionsModal(true)}
               style={{ background: "#1E1B4B", color: "#FFF", border: "none", borderRadius: "10px", padding: "10px 20px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
             >
-              Instructions
+              <span className="desktop-text">Instructions</span>
+              <span className="mobile-text">i</span>
             </button>
           </div>
         </div>
