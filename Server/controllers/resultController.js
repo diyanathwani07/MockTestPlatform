@@ -1,4 +1,5 @@
 const Result = require("../models/Result");
+const crypto = require("crypto");
 
 const saveResult = async (req, res) => {
   try {
@@ -15,7 +16,10 @@ const saveResult = async (req, res) => {
       correct,
       incorrect,
       percentage,
+      timeTaken,
     } = req.body;
+
+    const shareId = crypto.randomBytes(4).toString("hex");
 
     const result = await Result.create({
       userId,
@@ -30,6 +34,9 @@ const saveResult = async (req, res) => {
       correct,
       incorrect,
       percentage,
+      timeTaken: timeTaken || 0,
+      shareId,
+      isPublic: true,
     });
 
     res.status(201).json({
@@ -69,4 +76,37 @@ const getLeaderboard = async (req, res) => {
   }
 };
 
-module.exports = { saveResult, getUserResults, getLeaderboard };
+const getSharedResult = async (req, res) => {
+  try {
+    const { shareId } = req.params;
+    const result = await Result.findOne({ shareId })
+      .populate("userId", "fullName name");
+      
+    if (!result) {
+      return res.status(404).json({ message: "Result not found" });
+    }
+
+    if (!result.isPublic) {
+      return res.status(403).json({ message: "This result is private." });
+    }
+
+    const safeResult = {
+      quizTitle: result.quizTitle || result.examName || "Quiz",
+      subject: result.subject,
+      score: result.score,
+      percentage: result.percentage,
+      correct: result.correct,
+      incorrect: result.incorrect,
+      timeTaken: result.timeTaken,
+      createdAt: result.createdAt,
+      studentName: result.userId ? (result.userId.name || result.userId.fullName) : "Student",
+    };
+
+    res.status(200).json(safeResult);
+  } catch (error) {
+    console.error("GET SHARED RESULT ERROR", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { saveResult, getUserResults, getLeaderboard, getSharedResult };

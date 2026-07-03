@@ -582,7 +582,43 @@ body {
   }
 }
 
+/* Desktop Timer Layout */
+.structured-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.timer-block {
+  display: flex;
+  align-items: center;
+}
+.timer-lbl {
+  display: none;
+}
+.timer-colon {
+  margin: 0 4px;
+}
+
+/* Mobile Footer (Hidden on Desktop) */
+.mobile-quiz-footer {
+  display: none;
+}
+
+/* Timer Visibility Toggles */
+.mobile-timer-only {
+  display: none !important;
+}
+.desktop-timer-only {
+  display: flex !important;
+}
+
 @media (max-width: 768px) {
+  .mobile-timer-only {
+    display: flex !important;
+  }
+  .desktop-timer-only {
+    display: none !important;
+  }
   .quiz-main-grid {
     grid-template-columns: 1fr;
   }
@@ -723,5 +759,199 @@ body {
   
   .palette-grid {
     grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  }
+  
+  /* --- NEW MOBILE UI OVERHAUL --- */
+  
+  /* Header adjustments */
+  .quiz-header-exam-name {
+    display: none !important;
+  }
+  
+  .quiz-top-bar {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  
+  .quiz-timers-wrapper {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .quiz-horizontal-timer {
+    width: 100%;
+    background-color: #111115 !important;
+    border: 1px solid #1f1f24 !important;
+    border-radius: 12px;
+  }
+  
+  .structured-timer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .timer-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .timer-val {
+    font-size: 22px;
+    font-weight: 800;
+  }
+  
+  .timer-lbl {
+    font-size: 10px;
+    color: #a1a1aa;
+    font-weight: 600;
+  }
+  
+  .timer-colon {
+    font-size: 22px;
+    font-weight: 800;
+    margin-top: -16px;
+  }
+  
+  /* Question Header */
+  .quiz-question-header {
+    margin-bottom: 24px !important;
+  }
+  
+  .quiz-question-pill {
+    background-color: #1e1b4b !important;
+    color: #c084fc !important;
+    border: none !important;
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+    border-radius: 24px !important;
+  }
+  
+  .quiz-mobile-bookmark-btn {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Options */
+  .option-card {
+    background-color: transparent !important;
+    border: 1.5px solid #27272a !important;
+    border-radius: 12px !important;
+  }
+  
+  .option-card.selected-opt-card {
+    border: 1.5px solid #6d28d9 !important;
+    background-color: #1e1b4b !important;
+  }
+  
+  /* Action Buttons */
+  .quiz-btn-review {
+    background: transparent !important;
+    border: 1.5px solid #F4C842 !important;
+    color: #F4C842 !important;
+  }
+  
+  .quiz-btn-clear {
+    background: transparent !important;
+    border: 1.5px solid #C51414 !important;
+    color: #C51414 !important;
+  }
+  
+  .quiz-btn-previous {
+    background: #3f3f46 !important;
+    border: none !important;
+    color: #FFF !important;
+  }
+  
+  .quiz-btn-next {
+    background: #6d28d9 !important;
+  }
+  
+  /* Mobile Sticky Footer */
+  .quiz-main-wrapper {
+    padding-bottom: 120px; /* Space for footer */
+  }
+  
+  .mobile-quiz-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #09090b;
+    border-top: 1px solid #27272a;
+    padding: 16px 24px;
+    z-index: 900;
+  }
+  
+  .mobile-footer-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  .footer-q-count {
+    color: #f4f4f5;
+  }
+  
+  .footer-progress-text {
+    color: #a855f7;
+  }
+  
+  .mobile-progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: #27272a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .mobile-progress-fill {
+    height: 100%;
+    background-color: #6d28d9;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  
+  .mobile-fab-palette {
+    position: absolute;
+    left: 50%;
+    top: -24px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .fab-icon-container {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #2e1065;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    border: 2px solid #6d28d9;
+  }
+  
+  .fab-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #c084fc;
+    margin-top: 2px;
   }
 }

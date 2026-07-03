@@ -75,6 +75,16 @@ function Result() {
 
   const [visibleCount, setVisibleCount] = useState(10);
 
+  const computedPercentage =
+    percentage !== undefined && percentage !== null
+      ? Number(percentage).toFixed(2)
+      : total
+      ? ((score / total) * 100).toFixed(2)
+      : "0.00";
+
+  const timeTakenSecs = data?.timeTaken || 0;
+  const [shareId, setShareId] = useState(data?.shareId || null);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - 300) {
@@ -85,13 +95,6 @@ function Result() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [questions.length]);
-
-  const computedPercentage =
-    percentage !== undefined && percentage !== null
-      ? Number(percentage).toFixed(2)
-      : total
-      ? ((score / total) * 100).toFixed(2)
-      : "0.00";
 
   // Save result to MongoDB whenever this page loads with valid data
   useEffect(() => {
@@ -130,11 +133,19 @@ function Result() {
             correct,
             incorrect,
             percentage: Number(computedPercentage),
+            timeTaken: timeTakenSecs,
           }
         );
 
         console.log("Result Saved");
         console.log(res.data);
+        if (res.data && res.data.result && res.data.result.shareId) {
+          setShareId(res.data.result.shareId);
+          // Update local data cache so on refresh we still have shareId
+          const newData = { ...data, shareId: res.data.result.shareId };
+          setData(newData);
+          localStorage.setItem("lastQuizResult", JSON.stringify(newData));
+        }
       } catch (error) {
         console.log("SAVE ERROR");
         console.log(error);
@@ -173,7 +184,6 @@ function Result() {
   }
 
   const [showAnswers, setShowAnswers] = useState(false);
-  const timeTakenSecs = data?.timeTaken || 0;
   
   const formatTime = (seconds) => {
     if (!seconds) return "0m 0s";
@@ -303,31 +313,35 @@ function Result() {
             {/* Social Share */}
             <div className="rm-social-share">
               <p>Share Your Result</p>
-              <div className="rm-social-icons">
-                <button title="Share on WhatsApp" onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`I scored ${score}/${total} on the ${examTitle} test! Can you beat my score?`)}`, '_blank')}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#25D366" }}>
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                  </svg>
-                </button>
-                <button title="Share on Facebook" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#1877F2" }}>
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                  </svg>
-                </button>
-                <button title="Share on Instagram" onClick={() => { navigator.clipboard.writeText(`I scored ${score}/${total} on the ${examTitle} test!`); alert("Result text copied! Open Instagram to share it."); }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#E1306C" }}>
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                  </svg>
-                </button>
-                <button title="Copy Link" onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copied to clipboard!"); }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#6B7280" }}>
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                  </svg>
-                </button>
-              </div>
+              {shareId ? (
+                <div className="rm-social-icons">
+                  <button title="Share on WhatsApp" onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`I scored ${score}/${total} on the ${examTitle} test! Can you beat my score? Check it out here: ${window.location.origin}/share-result/${shareId}`)}`, '_blank')}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#25D366" }}>
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                  </button>
+                  <button title="Share on Facebook" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/share-result/${shareId}`)}`, '_blank')}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#1877F2" }}>
+                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                    </svg>
+                  </button>
+                  <button title="Share on Instagram" onClick={() => { navigator.clipboard.writeText(`I scored ${score}/${total} on the ${examTitle} test! Link: ${window.location.origin}/share-result/${shareId}`); alert("Result text and link copied! Open Instagram to share it."); }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#E1306C" }}>
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                  </button>
+                  <button title="Copy Link" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/share-result/${shareId}`); alert("Link copied to clipboard!"); }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#6B7280" }}>
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Generating share link...</p>
+              )}
             </div>
           </div>
         </div>

@@ -63,6 +63,22 @@ const resultSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
+    timeTaken: {
+      type: Number,
+      default: 0,
+    },
+
+    shareId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    isPublic: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

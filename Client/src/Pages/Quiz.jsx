@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams, useSearchParams } from "react-rout
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import { usePreview } from "../context/PreviewContext";
-import { Sun, Moon, X } from "lucide-react";
+import { Sun, Moon, X, Clock, Bookmark, Trash2, ArrowLeft, ArrowRight, LayoutGrid, Info } from "lucide-react";
 import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
 import "../css/Quiz.css";
@@ -359,12 +359,30 @@ function Quiz() {
   };
 
 
-  // Helper to turn 1800 seconds into "00 : 30 : 00"
-  const formatTimeBox = (totalSecs) => {
+  // Helper to turn 1800 seconds into structured timer JSX
+  const formatTimeBox = (totalSecs, overrideColor) => {
     const h = Math.floor(totalSecs / 3600);
     const m = Math.floor((totalSecs % 3600) / 60);
     const s = totalSecs % 60;
-    return `${h.toString().padStart(2, "0")} : ${m.toString().padStart(2, "0")} : ${s.toString().padStart(2, "0")}`;
+    
+    return (
+      <div className="structured-timer">
+        <div className="timer-block">
+          <span className="timer-val" style={{ color: overrideColor || "#EF4444" }}>{h.toString().padStart(2, "0")}</span>
+          <span className="timer-lbl">HR</span>
+        </div>
+        <span className="timer-colon" style={{ color: overrideColor || "#EF4444" }}>:</span>
+        <div className="timer-block">
+          <span className="timer-val" style={{ color: overrideColor || "#EF4444" }}>{m.toString().padStart(2, "0")}</span>
+          <span className="timer-lbl">MIN</span>
+        </div>
+        <span className="timer-colon" style={{ color: overrideColor || "#EF4444" }}>:</span>
+        <div className="timer-block">
+          <span className="timer-val" style={{ color: overrideColor || "#EF4444" }}>{s.toString().padStart(2, "0")}</span>
+          <span className="timer-lbl">SEC</span>
+        </div>
+      </div>
+    );
   };
 
   // Helper to decide button colors in the Palette
@@ -454,10 +472,9 @@ function Quiz() {
             <button 
               className="quiz-instructions-btn"
               onClick={() => setShowInstructionsModal(true)}
-              style={{ background: "#1E1B4B", color: "#FFF", border: "none", borderRadius: "10px", padding: "10px 20px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
+              style={{ background: "#4C1D95", color: "#FFF", border: "none", borderRadius: "50%", width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
             >
-              <span className="desktop-text">Instructions</span>
-              <span className="mobile-text">i</span>
+              <Info size={20} />
             </button>
           </div>
         </div>
@@ -469,36 +486,34 @@ function Quiz() {
         {/* ─── 2. DYNAMIC EXAM TITLE PILL & TIMER BAR ─── */}
         <div className="quiz-top-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
           
-          <span style={{ backgroundColor: "#1E1B4B", color: "#FFF", fontWeight: "600", fontSize: "13px", padding: "8px 18px", borderRadius: "10px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
-            <span>⊞</span> {examSubject}
+          <span className="quiz-subject-pill" style={{ backgroundColor: "#2E1065", color: "#FFF", fontWeight: "700", fontSize: "13px", padding: "10px 18px", borderRadius: "8px", display: "inline-flex", alignItems: "center", gap: "10px", textTransform: "uppercase" }}>
+            <LayoutGrid size={16} /> {examSubject}
           </span>
 
-          {/* Compact Horizontal Clock(s) */}
-          <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
-            <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "8px 16px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
-              <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                ⏱️ Total Quiz Time:
-              </span>
-              <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px", whiteSpace: "nowrap" }}>
+          {/* Compact Horizontal Clock(s) - MOBILE ONLY */}
+          <div className="quiz-timers-wrapper mobile-timer-only" style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap", width: "100%" }}>
+            <div className="quiz-horizontal-timer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Clock size={18} color="var(--text-secondary)" />
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                  Total Quiz Time
+                </span>
+              </div>
+              <div className="timer-render-container" style={{ display: "flex", gap: "8px" }}>
                 {formatTimeBox(timeLeft)}
               </div>
             </div>
 
             {enablePerQuestionTimer && (
-              <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "8px 16px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                  ⏳ Question Timer:
-                </span>
-                <div style={{ 
-                  fontSize: "18px", 
-                  fontWeight: "800", 
-                  color: questionTimeLeft <= 5 ? "#EF4444" : "var(--violet)", 
-                  fontFamily: "'JetBrains Mono', monospace", 
-                  letterSpacing: "1px", 
-                  whiteSpace: "nowrap",
-                  animation: questionTimeLeft <= 5 ? "pulse 1s infinite" : "none" 
-                }}>
-                  {formatTimeBox(questionTimeLeft)}
+              <div className="quiz-horizontal-timer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <Clock size={18} color="var(--text-secondary)" />
+                  <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                    Question Time
+                  </span>
+                </div>
+                <div className="timer-render-container" style={{ display: "flex", gap: "8px", animation: questionTimeLeft <= 5 ? "pulse 1s infinite" : "none" }}>
+                  {formatTimeBox(questionTimeLeft, questionTimeLeft <= 5 ? "#EF4444" : null)}
                 </div>
               </div>
             )}
@@ -514,10 +529,17 @@ function Quiz() {
             
             <div>
             {/* Question Number Bar */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-              <span style={{ backgroundColor: "var(--bg-page)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", fontWeight: "700", fontSize: "13px", padding: "8px 16px", borderRadius: "20px" }}>
-                Question No. {currentQuestion + 1} of {questions.length}
+            <div className="quiz-question-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <span className="quiz-question-pill" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", fontWeight: "700", fontSize: "13px", padding: "8px 16px", borderRadius: "20px" }}>
+                Question {currentQuestion + 1} of {questions.length}
               </span>
+              <div 
+                className="quiz-mobile-bookmark-btn" 
+                onClick={markForReview}
+                style={{ cursor: "pointer", color: reviewQuestions.includes(currentQuestion) ? "#F4C842" : "var(--text-muted)" }}
+              >
+                <Bookmark size={24} fill={reviewQuestions.includes(currentQuestion) ? "#F4C842" : "none"} />
+              </div>
             </div>
 
             {/* English Question */}
@@ -571,19 +593,21 @@ function Quiz() {
           {/* Bottom Action Controls */}
           <div className="quiz-action-bar">
             <div className="quiz-action-left">
-              <button onClick={markForReview} style={{ background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
-                Mark Review
+              <button className="quiz-btn-review" onClick={markForReview} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
+                <Bookmark size={18} /> Mark Review
               </button>
-              <button onClick={clearResponse} style={{ background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
-                Clear Response
+              <button className="quiz-btn-clear" onClick={clearResponse} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
+                <Trash2 size={18} /> Clear Response
               </button>
             </div>
 
             <div className="quiz-action-right">
               <button 
+                className="quiz-btn-previous"
                 onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))} 
                 disabled={currentQuestion === 0 || lockPreviousQuestions}
                 style={{ 
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
                   background: "#F1EFFA",
                   color: "#2D1B69", 
                   border: "1.5px solid #D8D3F0", 
@@ -596,12 +620,14 @@ function Quiz() {
                   transition: "all 0.15s ease"
                 }}
               >
-                Previous
+                <ArrowLeft size={18} /> Previous
               </button>
               <button 
+                className="quiz-btn-next"
                 onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))} 
                 disabled={currentQuestion === questions.length - 1}
                 style={{ 
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
                   background: "#3730A3",
                   color: "#FFFFFF", 
                   border: "none", 
@@ -614,14 +640,15 @@ function Quiz() {
                   transition: "all 0.15s ease"
                 }}
               >
-                Next
+                Next <ArrowRight size={18} />
               </button>
               {currentQuestion === questions.length - 1 && (
                 <button 
+                  className="quiz-btn-submit"
                   onClick={submitQuiz} 
                   disabled={previewMode}
                   title={previewMode ? "Submitting disabled in Preview Mode" : ""}
-                  style={{ background: previewMode ? "#6b7280" : "#16A34A", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 28px", fontWeight: "700", fontSize: "13px", cursor: previewMode ? "not-allowed" : "pointer", transition: "all 0.15s ease" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", background: previewMode ? "#6b7280" : "#16A34A", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 28px", fontWeight: "700", fontSize: "13px", cursor: previewMode ? "not-allowed" : "pointer", transition: "all 0.15s ease" }}
                 >
                   {previewMode ? "Preview Mode" : "Submit Test"}
                 </button>
@@ -634,15 +661,33 @@ function Quiz() {
         {/* RIGHT PANEL: LIVE TELEMETRY */}
         <div className="quiz-right-panel">
           
-          {/* Mobile View Palette Button (Only visible on mobile via CSS usually, or floats) */}
-          <div className="mobile-palette-toggle-wrapper">
-            <button 
-              className="mobile-palette-toggle"
-              onClick={() => setShowPaletteMobile(!showPaletteMobile)}
-              style={{ marginBottom: "16px", width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
-            >
-              {showPaletteMobile ? "Hide Question Palette" : "View Question Palette"}
-            </button>
+          {/* 1. Desktop Timer Block */}
+          <div className="quiz-timers-wrapper desktop-timer-only" style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px", width: "100%" }}>
+            <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Clock size={18} color="var(--text-secondary)" />
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                  Total Quiz Time
+                </span>
+              </div>
+              <div className="timer-render-container" style={{ display: "flex", gap: "8px" }}>
+                {formatTimeBox(timeLeft)}
+              </div>
+            </div>
+
+            {enablePerQuestionTimer && (
+              <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <Clock size={18} color="var(--text-secondary)" />
+                  <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                    Question Time
+                  </span>
+                </div>
+                <div className="timer-render-container" style={{ display: "flex", gap: "8px", animation: questionTimeLeft <= 5 ? "pulse 1s infinite" : "none" }}>
+                  {formatTimeBox(questionTimeLeft, questionTimeLeft <= 5 ? "#EF4444" : null)}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 2. Candidate Info */}
@@ -787,6 +832,27 @@ function Quiz() {
         </div>
 
       </div>
+
+      {/* ─── MOBILE STICKY FOOTER ─── */}
+      <div className="mobile-quiz-footer">
+        <div className="mobile-progress-bar-container">
+          <div 
+            className="mobile-progress-fill" 
+            style={{ width: `${((currentQuestion) / questions.length) * 100}%` }}
+          ></div>
+        </div>
+        
+        <button 
+          className="mobile-fab-palette"
+          onClick={() => setShowPaletteMobile(!showPaletteMobile)}
+        >
+          <div className="fab-icon-container">
+            <LayoutGrid size={24} />
+          </div>
+          <span className="fab-label">Question Palette</span>
+        </button>
+      </div>
+
     </div>
     
     {/* ── INSTRUCTIONS MODAL ── */}

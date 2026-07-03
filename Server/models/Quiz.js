@@ -61,7 +61,20 @@ const quizSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    // --- NEW FIELDS ADDED HERE ---
+    // --- NEW FEATURE FIELDS ---
+    enablePerQuestionTimer: {
+      type: Boolean,
+      default: false,
+    },
+    timePerQuestion: {
+      type: Number,
+      default: 0, // in seconds
+    },
+    lockPreviousQuestions: {
+      type: Boolean,
+      default: false,
+    },
+    // -----------------------------
     status: { 
       type: String, 
       default: 'Draft' 

@@ -33,6 +33,7 @@ import HelpSupport from "./Pages/HelpSupport";
 import StartTest from "./Pages/StartTest";
 import Quiz from "./Pages/Quiz";
 import Result from "./Pages/Result";
+import SharedResult from "./Pages/SharedResult";
 
 function App() {
   return (
@@ -147,6 +148,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/share-result/:shareId" element={<SharedResult />} />
 
         {/* ================= ADMIN ROUTES ================= */}
 

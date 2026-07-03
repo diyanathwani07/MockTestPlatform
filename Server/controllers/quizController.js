@@ -18,6 +18,9 @@ const createQuiz = async (req, res) => {
       questions,
       status,
       scheduledDate,
+      enablePerQuestionTimer,
+      timePerQuestion,
+      lockPreviousQuestions,
     } = req.body;
 
     if (!title || !subject || !duration) {
@@ -36,6 +39,9 @@ const createQuiz = async (req, res) => {
       questions,
       status,
       scheduledDate,
+      enablePerQuestionTimer,
+      timePerQuestion,
+      lockPreviousQuestions,
       createdBy: req.user?._id,
     });
 
