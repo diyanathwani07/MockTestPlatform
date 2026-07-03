@@ -44,6 +44,9 @@ function EditQuiz() {
     published: false,
     status: "Draft",
     scheduledDate: null,
+    enablePerQuestionTimer: false,
+    timePerQuestion: 30,
+    lockPreviousQuestions: false,
   });
 
   const [presetSelected, setPresetSelected] = useState("Custom");
@@ -184,6 +187,9 @@ function EditQuiz() {
           published: dbQuiz.published || false,
           status: dbQuiz.status || "Draft",
           scheduledDate: dbQuiz.scheduledDate || null,
+          enablePerQuestionTimer: dbQuiz.enablePerQuestionTimer || false,
+          timePerQuestion: dbQuiz.timePerQuestion || 30,
+          lockPreviousQuestions: dbQuiz.lockPreviousQuestions || false,
         });
 
         const durationVal = dbQuiz.duration || 0;
@@ -788,6 +794,50 @@ function EditQuiz() {
                               </div>
                             )}
                           </div>
+
+                          {/* NEW FEATURES: Per Question Timer and Lock Previous Questions */}
+                          <div className="form-field toggle-negative-field">
+                            <label className="checkbox-toggle-label">
+                              <input
+                                type="checkbox"
+                                checked={quizMeta.enablePerQuestionTimer}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setQuizMeta(prev => ({ ...prev, enablePerQuestionTimer: checked }));
+                                }}
+                              />
+                              <span>Enable Per Question Timer</span>
+                            </label>
+                            
+                            {quizMeta.enablePerQuestionTimer && (
+                              <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
+                                <label style={{ fontSize: "10.5px" }}>Time Per Question (Seconds)</label>
+                                <input
+                                  type="number"
+                                  name="timePerQuestion"
+                                  value={quizMeta.timePerQuestion}
+                                  onChange={handleMetaChange}
+                                  min="1"
+                                  step="1"
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="form-field toggle-negative-field">
+                            <label className="checkbox-toggle-label">
+                              <input
+                                type="checkbox"
+                                checked={quizMeta.lockPreviousQuestions}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setQuizMeta(prev => ({ ...prev, lockPreviousQuestions: checked }));
+                                }}
+                              />
+                              <span>Lock Previous Questions</span>
+                            </label>
+                          </div>
+                          
                         </div>
                       )}
                     </div>

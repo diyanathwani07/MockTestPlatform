@@ -42,6 +42,13 @@ function Quiz() {
   const [userAnswers, setUserAnswers] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [timeLeft, setTimeLeft] = useState(initialDurationMinutes * 60);
+
+  // New Feature States
+  const [enablePerQuestionTimer, setEnablePerQuestionTimer] = useState(false);
+  const [timePerQuestion, setTimePerQuestion] = useState(0);
+  const [lockPreviousQuestions, setLockPreviousQuestions] = useState(false);
+  const [questionTimeLeft, setQuestionTimeLeft] = useState(0);
+
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
@@ -202,6 +209,18 @@ function Quiz() {
             setExamSubject(response.data.subject || "General Studies");
             setInitialDurationMinutes(response.data.duration || 30);
             setTimeLeft((response.data.duration || 30) * 60);
+
+            // Set new feature states
+            const perQuestionTimerEnabled = response.data.enablePerQuestionTimer || false;
+            const timePerQ = response.data.timePerQuestion || 30;
+            
+            setEnablePerQuestionTimer(perQuestionTimerEnabled);
+            setTimePerQuestion(timePerQ);
+            setLockPreviousQuestions(response.data.lockPreviousQuestions || false);
+            
+            if (perQuestionTimerEnabled) {
+              setQuestionTimeLeft(timePerQ);
+            }
         }
 
         setQuestions(mappedQuestions);
@@ -227,9 +246,31 @@ function Quiz() {
     if (pageLoading) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      if (enablePerQuestionTimer) {
+        setQuestionTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      }
     }, 1000);
     return () => clearInterval(timer);
-  }, [pageLoading]);
+  }, [pageLoading, enablePerQuestionTimer]);
+
+  // Reset Question Timer on Question Change
+  useEffect(() => {
+    if (enablePerQuestionTimer && timePerQuestion > 0) {
+      setQuestionTimeLeft(timePerQuestion);
+    }
+  }, [currentQuestion, enablePerQuestionTimer, timePerQuestion]);
+
+  // Auto-advance / Auto-submit when Question Timer hits 0
+  useEffect(() => {
+    if (enablePerQuestionTimer && questionTimeLeft === 0 && !pageLoading) {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion((prev) => prev + 1);
+      } else {
+        // Delay to prevent double submissions if already submitting
+        setTimeout(() => submitQuiz(true), 100);
+      }
+    }
+  }, [questionTimeLeft, enablePerQuestionTimer, pageLoading, currentQuestion, questions.length]);
 
   // Visited Tracker
   useEffect(() => {
@@ -425,11 +466,44 @@ function Quiz() {
       {/* Centering wrapper */}
       <div className="quiz-main-wrapper">
 
-        {/* ─── 2. DYNAMIC EXAM TITLE PILL ─── */}
-        <div style={{ marginBottom: "20px" }}>
+        {/* ─── 2. DYNAMIC EXAM TITLE PILL & TIMER BAR ─── */}
+        <div className="quiz-top-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+          
           <span style={{ backgroundColor: "#1E1B4B", color: "#FFF", fontWeight: "600", fontSize: "13px", padding: "8px 18px", borderRadius: "10px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
             <span>⊞</span> {examSubject}
           </span>
+
+          {/* Compact Horizontal Clock(s) */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+            <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "8px 16px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                ⏱️ Total Quiz Time:
+              </span>
+              <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px", whiteSpace: "nowrap" }}>
+                {formatTimeBox(timeLeft)}
+              </div>
+            </div>
+
+            {enablePerQuestionTimer && (
+              <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "8px 16px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                  ⏳ Question Timer:
+                </span>
+                <div style={{ 
+                  fontSize: "18px", 
+                  fontWeight: "800", 
+                  color: questionTimeLeft <= 5 ? "#EF4444" : "var(--violet)", 
+                  fontFamily: "'JetBrains Mono', monospace", 
+                  letterSpacing: "1px", 
+                  whiteSpace: "nowrap",
+                  animation: questionTimeLeft <= 5 ? "pulse 1s infinite" : "none" 
+                }}>
+                  {formatTimeBox(questionTimeLeft)}
+                </div>
+              </div>
+            )}
+          </div>
+          
         </div>
 
         {/* ─── 3. VIEWPORT GRID ─── */}
@@ -437,8 +511,8 @@ function Quiz() {
         
         {/* LEFT: QUESTION & OPTIONS */}
         <div className="quiz-question-card">
-          
-          <div>
+            
+            <div>
             {/* Question Number Bar */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
               <span style={{ backgroundColor: "var(--bg-page)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", fontWeight: "700", fontSize: "13px", padding: "8px 16px", borderRadius: "20px" }}>
@@ -508,7 +582,7 @@ function Quiz() {
             <div className="quiz-action-right">
               <button 
                 onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))} 
-                disabled={currentQuestion === 0}
+                disabled={currentQuestion === 0 || lockPreviousQuestions}
                 style={{ 
                   background: "#F1EFFA",
                   color: "#2D1B69", 
@@ -517,8 +591,8 @@ function Quiz() {
                   padding: "12px 24px", 
                   fontWeight: "700", 
                   fontSize: "13px", 
-                  cursor: currentQuestion === 0 ? "not-allowed" : "pointer",
-                  opacity: currentQuestion === 0 ? 0.5 : 1,
+                  cursor: (currentQuestion === 0 || lockPreviousQuestions) ? "not-allowed" : "pointer",
+                  opacity: (currentQuestion === 0 || lockPreviousQuestions) ? 0.5 : 1,
                   transition: "all 0.15s ease"
                 }}
               >
@@ -560,27 +634,12 @@ function Quiz() {
         {/* RIGHT PANEL: LIVE TELEMETRY */}
         <div className="quiz-right-panel">
           
-          {/* 1. Clock (Timer) */}
-          <div className="quiz-timer-container" style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
-            <span className="quiz-timer-title" style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "12px", display: "block", textAlign: "center" }}>
-              ⏱️ Time Remaining
-            </span>
-            <div className="quiz-timer-clock" style={{ textAlign: "center", padding: "8px 0 16px 0", borderBottom: "1.5px solid var(--border-color)", marginBottom: "16px" }}>
-              <div className="quiz-timer-time" style={{ fontSize: "34px", fontWeight: "800", color: timeLeft < 300 ? "#DC2626" : "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
-                {formatTimeBox(timeLeft)}
-              </div>
-              <div className="quiz-timer-labels" style={{ display: "flex", justifyContent: "center", gap: "34px", color: "var(--text-muted)", fontSize: "10px", fontWeight: "700", marginTop: "4px" }}>
-                <span>HRS</span>
-                <span>MINS</span>
-                <span>SECS</span>
-              </div>
-            </div>
-            
-            {/* Mobile View Palette Button */}
+          {/* Mobile View Palette Button (Only visible on mobile via CSS usually, or floats) */}
+          <div className="mobile-palette-toggle-wrapper">
             <button 
               className="mobile-palette-toggle"
               onClick={() => setShowPaletteMobile(!showPaletteMobile)}
-              style={{ marginTop: "16px", width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
+              style={{ marginBottom: "16px", width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
             >
               {showPaletteMobile ? "Hide Question Palette" : "View Question Palette"}
             </button>
@@ -642,14 +701,21 @@ function Quiz() {
                 else if (status === "review") { bg = "#F4C842"; col = "#FFF"; bdr = "none"; }
                 else if (status === "visited") { bg = "#C51414"; col = "#FFF"; bdr = "none"; }
 
+                const isLocked = lockPreviousQuestions && idx < currentQuestion;
+
                 return (
                   <button
                     key={idx}
-                    onClick={() => setCurrentQuestion(idx)}
+                    onClick={() => {
+                      if (!isLocked) setCurrentQuestion(idx);
+                    }}
+                    disabled={isLocked}
                     style={{
                       height: "36px", borderRadius: "8px", backgroundColor: bg, color: col, 
                       border: isCurrent ? "2px solid var(--text-primary)" : bdr,
-                      fontWeight: "700", fontSize: "13px", cursor: "pointer",
+                      fontWeight: "700", fontSize: "13px", 
+                      cursor: isLocked ? "not-allowed" : "pointer",
+                      opacity: isLocked ? 0.5 : 1,
                       boxShadow: isCurrent ? "0 0 0 2px rgba(110, 63, 243, 0.2)" : "none"
                     }}
                   >

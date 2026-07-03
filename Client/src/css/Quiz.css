@@ -543,7 +543,6 @@ body {
   flex-direction: column;
   justify-content: space-between;
   box-shadow: var(--card-shadow);
-  align-self: start;
 }
 
 .quiz-action-bar {
@@ -572,7 +571,7 @@ body {
 }
 
 /* Hide mobile palette elements on desktop */
-.mobile-palette-toggle, .mobile-palette-close, .palette-overlay, .mobile-text {
+.mobile-palette-toggle-wrapper, .mobile-palette-close, .palette-overlay, .mobile-text {
   display: none;
 }
 
@@ -634,25 +633,16 @@ body {
     display: none; /* Hide Candidate Profile to save space */
   }
   
-  .quiz-right-panel > div:nth-child(1) {
-    padding: 10px 16px !important;
-  }
-  
-  .quiz-timer-title, .quiz-timer-labels, .quiz-timer-legend {
-    display: none !important; /* Hide verbose timer details on mobile */
-  }
-  
-  .quiz-timer-clock {
-    border-bottom: none !important;
-    padding: 0 !important;
-    margin-bottom: 0 !important;
-  }
-  
-  .quiz-timer-time {
-    font-size: 24px !important;
+  /* Horizontal timer styling on mobile */
+  .quiz-horizontal-timer {
+    width: 100%;
+    justify-content: space-between;
   }
   
   /* Make Palette Toggle button visible on mobile */
+  .mobile-palette-toggle-wrapper {
+    display: block !important;
+  }
   .mobile-palette-toggle {
     display: block !important;
     margin-top: 0 !important;
