@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../context/ThemeContext";
-import { Sun, Moon, Bell, User, LogOut } from "lucide-react";
+import { Sun, Moon, Bell, User, LogOut, Shield } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { usePreview } from "../context/PreviewContext";
 import "../css/admin/AdminLayout.css"; // Reuse admin navbar styles
 
 function StudentNavbar({ title }) {
@@ -10,6 +11,7 @@ function StudentNavbar({ title }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
+  const { previewMode, setPreviewMode } = usePreview();
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const candidateName = storedUser.fullName || storedUser.name || "Student";
@@ -78,6 +80,16 @@ function StudentNavbar({ title }) {
               <div className="drop-link" onClick={() => navigate("/dashboard/profile")}>
                 <User size={16} style={{ marginRight: '8px' }} /> My Profile
               </div>
+              
+              {previewMode && (
+                <div className="drop-link" onClick={() => { 
+                  setPreviewMode(false);
+                  navigate("/admin/dashboard"); 
+                }}>
+                  <Shield size={16} style={{ marginRight: '8px', color: '#10B981' }} /> Return to Admin
+                </div>
+              )}
+
               <div className="drop-link" onClick={() => { 
                 if (window.confirm("Are you sure you want to log out?")) {
                   localStorage.clear(); 

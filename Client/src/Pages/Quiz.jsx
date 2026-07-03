@@ -560,7 +560,33 @@ function Quiz() {
         {/* RIGHT PANEL: LIVE TELEMETRY */}
         <div className="quiz-right-panel">
           
-          {/* 1. Candidate Info */}
+          {/* 1. Clock (Timer) */}
+          <div className="quiz-timer-container" style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span className="quiz-timer-title" style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "12px", display: "block", textAlign: "center" }}>
+              ⏱️ Time Remaining
+            </span>
+            <div className="quiz-timer-clock" style={{ textAlign: "center", padding: "8px 0 16px 0", borderBottom: "1.5px solid var(--border-color)", marginBottom: "16px" }}>
+              <div className="quiz-timer-time" style={{ fontSize: "34px", fontWeight: "800", color: timeLeft < 300 ? "#DC2626" : "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
+                {formatTimeBox(timeLeft)}
+              </div>
+              <div className="quiz-timer-labels" style={{ display: "flex", justifyContent: "center", gap: "34px", color: "var(--text-muted)", fontSize: "10px", fontWeight: "700", marginTop: "4px" }}>
+                <span>HRS</span>
+                <span>MINS</span>
+                <span>SECS</span>
+              </div>
+            </div>
+            
+            {/* Mobile View Palette Button */}
+            <button 
+              className="mobile-palette-toggle"
+              onClick={() => setShowPaletteMobile(!showPaletteMobile)}
+              style={{ marginTop: "16px", width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
+            >
+              {showPaletteMobile ? "Hide Question Palette" : "View Question Palette"}
+            </button>
+          </div>
+
+          {/* 2. Candidate Info */}
           <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
             <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
               👤 Aspirant Identity
@@ -578,40 +604,6 @@ function Quiz() {
             </div>
           </div>
 
-          {/* 2. Clock */}
-          <div className="quiz-timer-container" style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
-            <span className="quiz-timer-title" style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "12px", display: "block", textAlign: "center" }}>
-              ⏱️ Time Remaining
-            </span>
-            <div className="quiz-timer-clock" style={{ textAlign: "center", padding: "8px 0 16px 0", borderBottom: "1.5px solid var(--border-color)", marginBottom: "16px" }}>
-              <div className="quiz-timer-time" style={{ fontSize: "34px", fontWeight: "800", color: timeLeft < 300 ? "#DC2626" : "var(--violet)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
-                {formatTimeBox(timeLeft)}
-              </div>
-              <div className="quiz-timer-labels" style={{ display: "flex", justifyContent: "center", gap: "34px", color: "var(--text-muted)", fontSize: "10px", fontWeight: "700", marginTop: "4px" }}>
-                <span>HRS</span>
-                <span>MINS</span>
-                <span>SECS</span>
-              </div>
-            </div>
-
-            {/* Legend */}
-            <div className="quiz-timer-legend" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981" }} /> Answered</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#C51414" }} /> Not Answered</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--border-color)" }} /> Not Visited</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
-            </div>
-            
-            {/* Mobile View Palette Button */}
-            <button 
-              className="mobile-palette-toggle"
-              onClick={() => setShowPaletteMobile(!showPaletteMobile)}
-              style={{ marginTop: "16px", width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
-            >
-              {showPaletteMobile ? "Hide Question Palette" : "View Question Palette"}
-            </button>
-          </div>
-
           {/* 3. Real-Time Palette Grid */}
           {showPaletteMobile && <div className="palette-overlay" onClick={() => setShowPaletteMobile(false)}></div>}
           <div className={`question-palette ${!showPaletteMobile ? "mobile-hidden" : ""}`} style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
@@ -627,6 +619,15 @@ function Quiz() {
                 <X size={20} />
               </button>
             </div>
+            
+            {/* Legend inside Palette */}
+            <div className="quiz-timer-legend" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "16px", paddingBottom: "16px", borderBottom: "1.5px solid var(--border-color)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981" }} /> Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#C51414" }} /> Not Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--border-color)" }} /> Not Visited</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
+            </div>
+
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", paddingRight: "4px" }}>
               {questions.slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage).map((_, i) => {
                 const idx = palettePage * itemsPerPage + i;

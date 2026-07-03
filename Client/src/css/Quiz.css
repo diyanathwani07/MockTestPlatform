@@ -630,12 +630,11 @@ body {
     display: contents;
   }
   
-  .quiz-right-panel > div:nth-child(1) {
+  .quiz-right-panel > div:nth-child(2) {
     display: none; /* Hide Candidate Profile to save space */
   }
   
-  .quiz-right-panel > div:nth-child(2) {
-    order: 1; /* Move Timer to the top */
+  .quiz-right-panel > div:nth-child(1) {
     padding: 10px 16px !important;
   }
   
