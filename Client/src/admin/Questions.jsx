@@ -4,6 +4,7 @@ import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/Questions.css";
+import "../css/Practice.css";
 
 // ── Helpers ──
 const getSubjectMeta = (subjectName) => {
@@ -231,22 +232,51 @@ function Questions() {
                     <h2>Select a Quiz</h2>
                     <p>Choose a quiz to view its subjects and questions.</p>
                   </div>
-                  <div className="qb-quizzes-grid">
-                    {books.map((book) => {
+                  <div className="practice-grid">
+                    {books.map((book, index) => {
                       const dateText = book.status === "Published" ? `Published on ${formatDate(book.publishedDate)}` : "Draft (Not Published)";
-                      const firstLetter = book.title.charAt(0).toUpperCase();
+                      const subjectColors = [
+                        { bg: "#EDE9FE", text: "#5B21B6", dot: "#7C3AED" },
+                        { bg: "#DCFCE7", text: "#166534", dot: "#16A34A" },
+                        { bg: "#FEF9C3", text: "#854D0E", dot: "#D97706" },
+                        { bg: "#FFE4E6", text: "#9F1239", dot: "#E11D48" },
+                        { bg: "#DBEAFE", text: "#1E40AF", dot: "#2563EB" },
+                        { bg: "#FCE7F3", text: "#9D174D", dot: "#DB2777" },
+                        { bg: "#F0FDF4", text: "#14532D", dot: "#15803D" },
+                      ];
+                      const color = subjectColors[index % subjectColors.length];
+
                       return (
                         <div
                           key={book.id}
-                          className="qb-book-card"
+                          className="practice-card"
                           onClick={() => handleSelectBook(book)}
+                          style={{ cursor: "pointer" }}
                         >
-                          <div className="qb-book-icon">{firstLetter}</div>
-                          <div className="qb-book-info">
-                            <h4>{book.title}</h4>
-                            <p>{book.description}</p>
-                            <span className="qb-book-badge">{book.totalQuestions} Questions</span>
-                            <div className="qb-book-date">{dateText}</div>
+                          <div className="practice-card-header">
+                            <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
+                              <span className="dot" style={{ backgroundColor: color.dot }}></span>
+                              {book.status === "Published" ? "Published" : "Draft"}
+                            </div>
+                            <div className="practice-difficulty">
+                              Collection
+                            </div>
+                          </div>
+                          
+                          <h3 className="practice-quiz-title">{book.title}</h3>
+                          <p className="practice-quiz-desc">
+                            {book.description || "Quiz collection containing multiple subjects."}
+                          </p>
+
+                          <div className="practice-meta-grid" style={{ marginBottom: "0" }}>
+                            <div className="meta-item">
+                              <HelpCircle size={14} />
+                              <span>{book.totalQuestions} Questions</span>
+                            </div>
+                            <div className="meta-item">
+                              <Clock size={14} />
+                              <span>{dateText}</span>
+                            </div>
                           </div>
                         </div>
                       );
