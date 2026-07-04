@@ -47,10 +47,7 @@ function PracticeDashboard() {
         <StudentNavbar title="Practice Tests" />
         <div className="sd-content" style={{ paddingTop: '20px' }}>
           
-          <div className="practice-header-section">
-            <h1 className="practice-title">Practice Tests</h1>
-            <p className="practice-subtitle">Master your subjects with instant feedback and detailed explanations.</p>
-          </div>
+
 
           {loading ? (
             <div className="sd-loading">
