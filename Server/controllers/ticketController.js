@@ -32,6 +32,19 @@ const createTicket = async (req, res) => {
   }
 };
 
+// @desc    Get user's support tickets
+// @route   GET /api/tickets/my-tickets
+// @access  Private (User/Student)
+const getMyTickets = async (req, res) => {
+  try {
+    const tickets = await Ticket.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    res.json(tickets);
+  } catch (error) {
+    console.error("Get My Tickets Error:", error);
+    res.status(500).json({ message: "Failed to fetch tickets." });
+  }
+};
+
 // @desc    Get all support tickets (Admin)
 // @route   GET /api/tickets
 // @access  Private (Admin)
@@ -82,6 +95,7 @@ const updateTicketStatus = async (req, res) => {
 
 module.exports = {
   createTicket,
+  getMyTickets,
   getAllTickets,
   updateTicketStatus,
 };

@@ -35,6 +35,11 @@ import Quiz from "./Pages/Quiz";
 import Result from "./Pages/Result";
 import SharedResult from "./Pages/SharedResult";
 
+// Practice Test Module
+import PracticeDashboard from "./Pages/PracticeDashboard";
+import PracticeTest from "./Pages/PracticeTest";
+import PracticeResult from "./Pages/PracticeResult";
+
 function App() {
   return (
     <BrowserRouter>
@@ -58,6 +63,15 @@ function App() {
           element={
             <ProtectedRoute>
               <MyExams />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/dashboard/practice"
+          element={
+            <ProtectedRoute>
+              <PracticeDashboard />
             </ProtectedRoute>
           }
         />
@@ -136,6 +150,24 @@ function App() {
           element={
             <ProtectedRoute>
               <Quiz />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/practice/:quizId"
+          element={
+            <ProtectedRoute>
+              <PracticeTest />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/practice-result"
+          element={
+            <ProtectedRoute>
+              <PracticeResult />
             </ProtectedRoute>
           }
         />

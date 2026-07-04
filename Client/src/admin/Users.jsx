@@ -10,6 +10,7 @@ function Users() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [quizzesAttempted, setQuizzesAttempted] = useState(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -27,6 +28,20 @@ function Users() {
     };
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (selectedUser) {
+      setQuizzesAttempted("Loading...");
+      axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedUser._id}`)
+        .then(res => setQuizzesAttempted(res.data.length))
+        .catch(err => {
+          console.error("Error fetching quizzes attempted:", err);
+          setQuizzesAttempted("Error");
+        });
+    } else {
+      setQuizzesAttempted(null);
+    }
+  }, [selectedUser]);
 
   const filteredUsers = users.filter((u) => 
     u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,7 +144,7 @@ function Users() {
 
                       {/* Clean 3-Dot Action Icon */}
                       <td style={{ textAlign: 'center' }}>
-                        <button className="action-dots-btn" title="Options">
+                        <button className="action-dots-btn" title="Options" onClick={() => setSelectedUser(u)}>
                           ⋮
                         </button>
                       </td>
@@ -185,6 +200,10 @@ function Users() {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quizzes Attempted</span>
+                <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{quizzesAttempted !== null ? quizzesAttempted : "Loading..."}</span>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Address</span>
                 <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{selectedUser.email}</span>

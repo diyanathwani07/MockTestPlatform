@@ -48,6 +48,7 @@ function Quiz() {
   const [timePerQuestion, setTimePerQuestion] = useState(0);
   const [lockPreviousQuestions, setLockPreviousQuestions] = useState(false);
   const [questionTimeLeft, setQuestionTimeLeft] = useState(0);
+  const [showTimerTooltip, setShowTimerTooltip] = useState(false);
 
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
@@ -209,18 +210,18 @@ function Quiz() {
             setExamSubject(response.data.subject || "General Studies");
             setInitialDurationMinutes(response.data.duration || 30);
             setTimeLeft((response.data.duration || 30) * 60);
+        }
 
-            // Set new feature states
-            const perQuestionTimerEnabled = response.data.enablePerQuestionTimer || false;
-            const timePerQ = response.data.timePerQuestion || 30;
-            
-            setEnablePerQuestionTimer(perQuestionTimerEnabled);
-            setTimePerQuestion(timePerQ);
-            setLockPreviousQuestions(response.data.lockPreviousQuestions || false);
-            
-            if (perQuestionTimerEnabled) {
-              setQuestionTimeLeft(timePerQ);
-            }
+        // Always set these new feature states from the database
+        const perQuestionTimerEnabled = response.data.enablePerQuestionTimer || false;
+        const timePerQ = response.data.timePerQuestion || 30;
+        
+        setEnablePerQuestionTimer(perQuestionTimerEnabled);
+        setTimePerQuestion(timePerQ);
+        setLockPreviousQuestions(response.data.lockPreviousQuestions || false);
+        
+        if (perQuestionTimerEnabled) {
+          setQuestionTimeLeft(timePerQ);
         }
 
         setQuestions(mappedQuestions);
@@ -263,14 +264,17 @@ function Quiz() {
   // Auto-advance / Auto-submit when Question Timer hits 0
   useEffect(() => {
     if (enablePerQuestionTimer && questionTimeLeft === 0 && !pageLoading) {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion((prev) => prev + 1);
-      } else {
-        // Delay to prevent double submissions if already submitting
+      setCurrentQuestion((prev) => {
+        if (prev < questions.length - 1) {
+          return prev + 1;
+        }
+        // If it's the last question, submit the quiz
         setTimeout(() => submitQuiz(true), 100);
-      }
+        return prev;
+      });
     }
-  }, [questionTimeLeft, enablePerQuestionTimer, pageLoading, currentQuestion, questions.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionTimeLeft, enablePerQuestionTimer, pageLoading, questions.length]);
 
   // Visited Tracker
   useEffect(() => {
@@ -503,20 +507,6 @@ function Quiz() {
                 {formatTimeBox(timeLeft)}
               </div>
             </div>
-
-            {enablePerQuestionTimer && (
-              <div className="quiz-horizontal-timer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Clock size={18} color="var(--text-secondary)" />
-                  <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                    Question Time
-                  </span>
-                </div>
-                <div className="timer-render-container" style={{ display: "flex", gap: "8px", animation: questionTimeLeft <= 5 ? "pulse 1s infinite" : "none" }}>
-                  {formatTimeBox(questionTimeLeft, questionTimeLeft <= 5 ? "#EF4444" : null)}
-                </div>
-              </div>
-            )}
           </div>
           
         </div>
@@ -533,13 +523,48 @@ function Quiz() {
               <span className="quiz-question-pill" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", fontWeight: "700", fontSize: "13px", padding: "8px 16px", borderRadius: "20px" }}>
                 Question {currentQuestion + 1} of {questions.length}
               </span>
-              <div 
-                className="quiz-mobile-bookmark-btn" 
-                onClick={markForReview}
-                style={{ cursor: "pointer", color: reviewQuestions.includes(currentQuestion) ? "#F4C842" : "var(--text-muted)" }}
-              >
-                <Bookmark size={24} fill={reviewQuestions.includes(currentQuestion) ? "#F4C842" : "none"} />
-              </div>
+              {enablePerQuestionTimer ? (
+                <div 
+                  style={{ position: "relative", width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                  onClick={() => setShowTimerTooltip(!showTimerTooltip)}
+                >
+                  <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: "rotate(-90deg)" }}>
+                    <circle cx="20" cy="20" r="16" fill="none" stroke="var(--border-color)" strokeWidth="4" />
+                    <circle 
+                      cx="20" cy="20" r="16" fill="none" stroke={questionTimeLeft <= 5 ? "#EF4444" : "#10B981"} 
+                      strokeWidth="4" 
+                      strokeDasharray="100.53" 
+                      strokeDashoffset={100.53 - (questionTimeLeft / (timePerQuestion || 30)) * 100.53}
+                      style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s ease" }}
+                    />
+                  </svg>
+                  <span style={{ position: "absolute", fontSize: "13px", fontWeight: "700", color: questionTimeLeft <= 5 ? "#EF4444" : "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>
+                    {questionTimeLeft}
+                  </span>
+                  
+                  {/* Tooltip Popup */}
+                  {showTimerTooltip && (
+                    <div style={{
+                      position: "absolute", top: "50px", right: "0", width: "240px",
+                      backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)",
+                      padding: "14px", borderRadius: "10px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                      zIndex: 1000, textAlign: "left"
+                    }}>
+                      <div style={{ fontSize: "13px", color: "var(--text-primary)", lineHeight: "1.5", fontWeight: "500" }}>
+                        You have <strong style={{ color: "#EF4444" }}>{timePerQuestion} seconds</strong> for this question. After the timer runs out, you cannot attempt it!
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div 
+                  className="quiz-mobile-bookmark-btn" 
+                  onClick={markForReview}
+                  style={{ cursor: "pointer", color: reviewQuestions.includes(currentQuestion) ? "#F4C842" : "var(--text-muted)" }}
+                >
+                  <Bookmark size={24} fill={reviewQuestions.includes(currentQuestion) ? "#F4C842" : "none"} />
+                </div>
+              )}
             </div>
 
             {/* English Question */}
@@ -674,20 +699,6 @@ function Quiz() {
                 {formatTimeBox(timeLeft)}
               </div>
             </div>
-
-            {enablePerQuestionTimer && (
-              <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Clock size={18} color="var(--text-secondary)" />
-                  <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                    Question Time
-                  </span>
-                </div>
-                <div className="timer-render-container" style={{ display: "flex", gap: "8px", animation: questionTimeLeft <= 5 ? "pulse 1s infinite" : "none" }}>
-                  {formatTimeBox(questionTimeLeft, questionTimeLeft <= 5 ? "#EF4444" : null)}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* 2. Candidate Info */}

@@ -5,13 +5,12 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { BookOpen, Clock, HelpCircle, ChevronRight, FileCheck } from "lucide-react";
 import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
-import "../css/MyExams.css"; // New specific styles
+import "../css/Practice.css"; // Reuse modern grid styles
 
 function MyExams() {
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedExam, setSelectedExam] = useState(null);
   const [attemptedQuizzes, setAttemptedQuizzes] = useState([]);
 
   useEffect(() => {
@@ -36,14 +35,7 @@ function MyExams() {
     fetchData();
   }, []);
 
-  const examGroups = quizzes.reduce((acc, quiz) => {
-    const examName = quiz.examGroup || quiz.exam || quiz.title || "General";
-    if (!acc[examName]) acc[examName] = [];
-    acc[examName].push(quiz);
-    return acc;
-  }, {});
 
-  const examNames = Object.keys(examGroups);
 
   const handleSubjectClick = (quiz) => {
     navigate("/start-test", {
@@ -78,7 +70,7 @@ function MyExams() {
               <div className="sd-spinner"></div>
               <p>Loading available exams...</p>
             </div>
-          ) : examNames.length === 0 ? (
+          ) : quizzes.length === 0 ? (
             <div className="sd-empty">
               <div className="sd-empty-icon">📭</div>
               <h3>No Exams Published Yet</h3>
@@ -91,126 +83,47 @@ function MyExams() {
                 <h1 className="me-page-title">My Exams</h1>
               </div>
 
-              <div className="me-section-title">AVAILABLE EXAMS</div>
-              <div className={`me-exam-container ${selectedExam ? "me-has-selection" : ""}`}>
-                {examNames.map((examName) => {
-                  const group = examGroups[examName];
-                  const count = group.length;
-                  const totalMins = group.reduce((sum, q) => sum + (Number(q.duration) || 0), 0);
-                  const totalQs = group.reduce((sum, q) => sum + (Number(q.questionCount) || q.questions?.length || 0), 0);
-                  const isSelected = selectedExam === examName;
+              <div className="practice-grid">
+                {quizzes.map((quiz, index) => {
+                  const color = subjectColors[index % subjectColors.length];
+                  const questionCount = quiz.questionCount || quiz.questions?.length || 0;
+                  const isAttempted = attemptedQuizzes.includes(quiz._id);
                   
                   return (
-                    <div className="me-exam-row-wrapper" key={examName}>
-                      <div
-                        className={`me-exam-card ${isSelected ? "me-exam-active" : ""}`}
-                        onClick={() => setSelectedExam(isSelected ? null : examName)}
-                      >
-                      {/* TOP ROW */}
-                      <div className="me-card-top">
-                        <div className="me-card-left">
-                          <div className="me-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--violet)', width: '48px', height: '48px', borderRadius: '12px', color: '#fff' }}>
-                            <FileCheck size={24} />
-                          </div>
-                          <div className="me-exam-name">{examName}</div>
+                    <div key={quiz._id} className="practice-card">
+                      <div className="practice-card-header">
+                        <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
+                          <span className="dot" style={{ backgroundColor: color.dot }}></span>
+                          {quiz.subject || "General"}
                         </div>
-                        <div className="me-chevron">
-                          <ChevronRight size={20} />
+                        <div className="practice-difficulty">
+                          {quiz.difficulty || "Medium"}
                         </div>
                       </div>
-
-                      {/* DIVIDER */}
-                      <div className="me-divider"></div>
-
-                      {/* MIDDLE ROW */}
-                      <div className="me-card-middle">
-                        <div className="me-stat">
-                          <BookOpen className="me-stat-icon" size={16} />
-                          <span>{count} Subject{count !== 1 ? "s" : ""}</span>
-                        </div>
-                        <div className="me-stat">
-                          <Clock className="me-stat-icon" size={16} />
-                          <span>{totalMins} Min</span>
-                        </div>
-                        <div className="me-stat">
-                          <HelpCircle className="me-stat-icon" size={16} />
-                          <span>{totalQs} Questions</span>
-                        </div>
-                      </div>
-
-                      {/* DIVIDER */}
-                      <div className="me-divider"></div>
-
-                      {/* BOTTOM ROW */}
-                      <div className="me-card-bottom">
-                        <div className="me-difficulty-container">
-                          <span>Difficulty</span>
-                          <span className="me-badge">Medium</span>
-                        </div>
-                        <button className="sp-btn-save" style={{ padding: "8px 16px", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}>Start Exam</button>
-                      </div>
-                    </div>
                       
-                    {isSelected && (
-                      <div className="sd-subjects-panel me-inline-panel">
-                          <div className="sd-subjects-header">
-                    <span className="sd-subjects-title">
-                      {selectedExam} — Choose a Subject
-                    </span>
-                    <span className="sd-subjects-count">
-                      {examGroups[selectedExam].length} available
-                    </span>
-                  </div>
-                  <div className="sd-subjects-grid">
-                    {examGroups[selectedExam].map((quiz, idx) => {
-                      const color = subjectColors[idx % subjectColors.length];
-                      return (
-                        <div
-                          key={quiz._id}
-                          className="sd-subject-card"
-                          onClick={() => handleSubjectClick(quiz)}
-                        >
-                          <div className="sd-subject-top">
-                            <div
-                              className="sd-subject-dot"
-                              style={{ backgroundColor: color.dot }}
-                            ></div>
-                            <span
-                              className="sd-subject-badge"
-                              style={{ backgroundColor: color.bg, color: color.text }}
-                            >
-                              {quiz.subject}
-                            </span>
-                          </div>
-                          <div className="sd-subject-name">{quiz.title}</div>
-                          <div className="sd-subject-meta">
-                            <span>⏱ {quiz.duration} mins</span>
-                            <span>❓ {quiz.questionCount || quiz.questions?.length || "—"} Qs</span>
-                          </div>
-                          
-                          <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-                            {attemptedQuizzes.includes(quiz._id) ? (
-                              <button 
-                                className="sd-start-btn" 
-                                style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                              >
-                                Reattempt
-                              </button>
-                            ) : (
-                              <button 
-                                className="sd-start-btn" 
-                                style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                              >
-                                Start Quiz
-                              </button>
-                            )}
-                          </div>
+                      <h3 className="practice-quiz-title">{quiz.title || quiz.examGroup}</h3>
+                      <p className="practice-quiz-desc">
+                        Full mock exam to test your preparation.
+                      </p>
+
+                      <div className="practice-meta-grid">
+                        <div className="meta-item">
+                          <HelpCircle size={14} />
+                          <span>{questionCount} Questions</span>
                         </div>
-                      );
-                    })}
-                          </div>
+                        <div className="meta-item">
+                          <Clock size={14} />
+                          <span>{quiz.duration} mins</span>
                         </div>
-                      )}
+                      </div>
+
+                      <button 
+                        className="practice-start-btn"
+                        onClick={() => handleSubjectClick(quiz)}
+                      >
+                        <BookOpen size={16} />
+                        {isAttempted ? "Reattempt Exam" : "Start Exam"}
+                      </button>
                     </div>
                   );
                 })}

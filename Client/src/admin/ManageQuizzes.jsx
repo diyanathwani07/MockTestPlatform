@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
+import { Eye, Edit2, Calendar, Trash2 } from "lucide-react";
 
 function ManageQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -203,7 +204,7 @@ function ManageQuizzes() {
                         </td>
                         
                         <td style={{ padding: "18px 24px", whiteSpace: "nowrap" }}>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                             <span style={{
                               backgroundColor: 
                                 quiz.status === "Published" ? "#E4F8F0" : 
@@ -266,35 +267,35 @@ function ManageQuizzes() {
                                 }}>
                                   <div 
                                     onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                     onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                   >
-                                    👁️ Preview
+                                    <Eye size={15} /> Preview
                                   </div>
                                   <div 
                                     onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-quiz/${quiz._id}`); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                     onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                   >
-                                    ✏️ Edit
+                                    <Edit2 size={15} /> Edit
                                   </div>
                                   <div 
                                     onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-quiz/${quiz._id}`); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                     onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                   >
-                                    📅 Schedule
+                                    <Calendar size={15} /> Schedule
                                   </div>
                                   <div 
                                     onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)" }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
                                     onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                   >
-                                    🗑️ Delete
+                                    <Trash2 size={15} /> Delete
                                   </div>
                                 </div>
                               </>

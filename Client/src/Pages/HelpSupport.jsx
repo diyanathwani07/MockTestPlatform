@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Search, Send, Image as ImageIcon, MessageCircle, Headphones, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { Search, Send, Image as ImageIcon, MessageCircle, Headphones, ChevronDown, ChevronUp, ArrowRight, Eye, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { usePreview } from "../context/PreviewContext";
-import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
+import "../css/StudentDashboard.css";
 import "../css/HelpSupport.css";
 
 function HelpSupport() {
@@ -14,6 +14,19 @@ function HelpSupport() {
   const [successMsg, setSuccessMsg] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
 
+  const [activeTab, setActiveTab] = useState("Help Center");
+  const [myTickets, setMyTickets] = useState([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 5;
+
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    const datePart = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    const timePart = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+    return `${datePart}, ${timePart}`;
+  };
+
   // Chatbot States
   const [messages, setMessages] = useState([
     { sender: "bot", text: "Hi there! 👋 I'm your AI Support Assistant. How can I help you today?" }
@@ -21,6 +34,11 @@ function HelpSupport() {
   const [chatInput, setChatInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showTicketForm, setShowTicketForm] = useState(false);
+  const chatEndRef = React.useRef(null);
+
+  React.useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
 
   const faqs = [
     { question: "How do I start a mock test?", answer: "Navigate to the 'My Exams' tab on the sidebar. You will see a list of all available mock tests. Click the 'Start Test' button on any available exam to begin." },
@@ -37,62 +55,60 @@ function HelpSupport() {
     }
   };
 
-  const handleChatSubmit = (e) => {
+  const fetchMyTickets = async () => {
+    try {
+      setLoadingTickets(true);
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tickets/my-tickets`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMyTickets(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (activeTab === "My Tickets") {
+      fetchMyTickets();
+    }
+  }, [activeTab]);
+
+  const handleChatSubmit = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
     const userMessage = chatInput.trim();
-    setMessages(prev => [...prev, { sender: "user", text: userMessage }]);
+    const newMessages = [...messages, { sender: "user", text: userMessage }];
+    setMessages(newMessages);
     setChatInput("");
     setIsTyping(true);
 
-    // Simulate AI thinking and keyword matching
-    setTimeout(() => {
-      const lowerQuery = userMessage.toLowerCase();
-      let response = "";
-      let foundMatch = false;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/chat`,
+        { messages: newMessages },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      // Basic keyword matching logic against FAQs
-      if (lowerQuery.includes("start") || lowerQuery.includes("begin") || (lowerQuery.includes("test") && !lowerQuery.includes("multiple") && !lowerQuery.includes("disconnect"))) {
-        response = "To start a mock test, navigate to the 'My Exams' tab on the sidebar and click 'Start Test' on any available exam.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("save") || lowerQuery.includes("mark for review") || lowerQuery.includes("difference")) {
-        response = "'Save & Next' submits your chosen answer and moves you to the next question. 'Mark for Review' flags the question so you can easily return to it later from the Question Palette.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("multiple") || lowerQuery.includes("again") || lowerQuery.includes("re-attempt") || lowerQuery.includes("twice")) {
-        response = "Currently, each mock test can only be attempted once to simulate a real exam environment.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("disconnect") || lowerQuery.includes("internet") || lowerQuery.includes("drop") || lowerQuery.includes("offline")) {
-        response = "Your progress is continuously synced. If you disconnect, try refreshing the page or logging back in. If the timer hasn't expired, you can resume the test from where you left off.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("past") || lowerQuery.includes("scores") || lowerQuery.includes("performance") || (lowerQuery.includes("see") && lowerQuery.includes("result"))) {
-        response = "You can view all your past performances by navigating to the 'Results' tab in the sidebar. Click on 'View Details' for any specific exam to see a comprehensive breakdown.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("calculate") || lowerQuery.includes("negative marking") || (lowerQuery.includes("how is") && lowerQuery.includes("score"))) {
-        response = "Your results are calculated based on total correct answers minus any negative marking. Unattempted questions do not affect your score.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("leaderboard") || lowerQuery.includes("rank")) {
-        response = "The Leaderboard ranks students based on their highest scores in recent mock tests. If two students have the same score, the one who completed the test in less time is ranked higher.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("password") || lowerQuery.includes("reset") || lowerQuery.includes("login")) {
-        response = "You can reset your password by clicking 'Forgot Password' on the login screen, or via your Profile if you are logged in.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("profile") || lowerQuery.includes("update") || lowerQuery.includes("name") || lowerQuery.includes("photo")) {
-        response = "Go to the 'Profile' section from the top right menu or sidebar. Here you can update your personal information, contact details, and profile picture.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("not loading") || lowerQuery.includes("stuck") || lowerQuery.includes("blank")) {
-        response = "Try clearing your browser cache or opening the platform in an Incognito/Private window. If the issue persists, please submit a support ticket using the button below.";
-        foundMatch = true;
-      } else if (lowerQuery.includes("hello") || lowerQuery.includes("hi ") || lowerQuery.includes("hey")) {
-        response = "Hello! How can I assist you with your exam prep today?";
-        foundMatch = true;
-      } else {
-        response = "I'm sorry, I couldn't find an exact answer to that in my knowledge base. Would you like to submit a support ticket?";
+      if (res.data.success) {
+        setMessages(prev => [
+          ...prev, 
+          { sender: "bot", text: res.data.data.text, offerTicket: res.data.data.offerTicket }
+        ]);
       }
-
-      setMessages(prev => [...prev, { sender: "bot", text: response, offerTicket: !foundMatch }]);
+    } catch (error) {
+      console.error("Chat API Error:", error);
+      setMessages(prev => [
+        ...prev, 
+        { sender: "bot", text: "I'm having trouble connecting to my brain right now. Would you like to submit a support ticket?", offerTicket: true }
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleChange = (e) => {
@@ -117,6 +133,9 @@ function HelpSupport() {
       setSuccessMsg("Your support ticket has been submitted successfully!");
       setTicket({ subject: "", category: "", message: "" });
       setTimeout(() => setSuccessMsg(""), 5000);
+      setShowTicketForm(false);
+      setActiveTab("My Tickets");
+      fetchMyTickets();
     } catch (err) {
       console.error(err);
       const errorMsg = err.response?.data?.message || "Failed to submit ticket. Please try again.";
@@ -129,6 +148,79 @@ function HelpSupport() {
       setLoading(false);
     }
   };
+
+  const ticketFormJSX = showTicketForm ? (
+    <div className="hs-ticket-section slide-down" style={{ marginTop: '20px', marginBottom: '20px' }}>
+      <div className="hs-ticket-header">
+        <h2>Submit a Support Ticket</h2>
+        <p>Describe your issue and we'll get back to you.</p>
+      </div>
+    
+      {successMsg && <div className="hs-success-msg">{successMsg}</div>}
+
+      <form onSubmit={handleSubmit} className="hs-form-grid">
+        <div className="hs-form-left">
+          <div className="hs-form-row">
+            <div className="hs-form-group">
+              <label>Subject <span>*</span></label>
+              <input 
+                type="text" 
+                name="subject" 
+                placeholder="Briefly describe your issue" 
+                value={ticket.subject}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="hs-form-group">
+              <label>Category <span>*</span></label>
+              <select name="category" value={ticket.category} onChange={handleChange}>
+                <option value="" disabled>Select a category</option>
+                <option value="Technical Issue">Technical Issue</option>
+                <option value="Account">Account Access</option>
+                <option value="Exam Related">Exam Related</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="hs-form-group">
+            <label>Message <span>*</span></label>
+            <textarea 
+              name="message" 
+              placeholder="Please provide as much detail as possible..."
+              rows="6"
+              value={ticket.message}
+              onChange={handleChange}
+            ></textarea>
+          </div>
+        </div>
+
+        <div className="hs-form-right">
+          <div className="hs-attachment-box">
+            <div className="hs-attachment-icon-wrapper">
+              <ImageIcon size={24} />
+            </div>
+            <p className="hs-attach-title">Attach Screenshot (Optional)</p>
+            <p className="hs-attach-desc">PNG, JPG up to 5MB</p>
+            <input type="file" className="hs-file-input" accept="image/png, image/jpeg" />
+          </div>
+        </div>
+
+        <div className="hs-form-actions">
+          <button 
+            type="submit" 
+            disabled={loading || previewMode} 
+            className="hs-submit-btn"
+            title={previewMode ? "Ticket submission is disabled in Preview Mode" : ""}
+            style={{ opacity: previewMode ? 0.6 : 1, cursor: previewMode ? "not-allowed" : "pointer" }}
+          >
+            {previewMode ? "Preview Mode (Disabled)" : (loading ? "Submitting..." : "Submit Ticket")} 
+            <Send size={16} />
+          </button>
+        </div>
+      </form>
+    </div>
+  ) : null;
 
   return (
     <div className="sd-layout">
@@ -143,11 +235,6 @@ function HelpSupport() {
             <div className="hs-hero-content">
               <h1>How can we help you?</h1>
               <p>Find answers to common questions or reach out to our support team.</p>
-              
-              <div className="hs-search-bar">
-                <Search className="hs-search-icon" size={20} />
-                <input type="text" placeholder="Search for help articles..." />
-              </div>
             </div>
 
             <div className="hs-hero-illustrations">
@@ -166,11 +253,119 @@ function HelpSupport() {
             </div>
           </div>
 
-          {/* FAQ SECTION */}
+          {/* TABS NAVIGATION */}
+          <div className="hs-tabs">
+            <button className={`hs-tab-btn ${activeTab === 'Help Center' ? 'active' : ''}`} onClick={() => setActiveTab('Help Center')}>Help Center</button>
+            <button className={`hs-tab-btn ${activeTab === 'My Tickets' ? 'active' : ''}`} onClick={() => setActiveTab('My Tickets')}>My Tickets</button>
+          </div>
+
+          {activeTab === "My Tickets" && (
+            <div className="hs-tickets-section">
+              <div className="hs-tickets-header">
+                <div>
+                  <h2>My Support Tickets</h2>
+                  <p>Track the status of your raised support tickets</p>
+                </div>
+                <button className="hs-new-ticket-btn" onClick={() => setShowTicketForm(!showTicketForm)}>
+                  <Plus size={16} /> {showTicketForm ? 'Close Form' : 'Create New Ticket'}
+                </button>
+              </div>
+              
+              {ticketFormJSX}
+
+              {loadingTickets ? (
+                <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>Loading tickets...</div>
+              ) : myTickets.length === 0 ? (
+                <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>You haven't raised any support tickets yet.</div>
+              ) : (
+                <>
+                  <div className="hs-tickets-table-container">
+                    <table className="hs-tickets-table">
+                      <thead>
+                        <tr>
+                          <th>Ticket ID</th>
+                          <th>Subject</th>
+                          <th>Status</th>
+                          <th>Last Update</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {myTickets.slice((currentPage - 1) * ticketsPerPage, currentPage * ticketsPerPage).map(tkt => {
+                          const statusClass = tkt.status.toLowerCase().replace(" ", "-");
+                          return (
+                            <tr key={tkt._id}>
+                              <td className="hs-ticket-id">TKT-{tkt._id.substring(tkt._id.length - 8).toUpperCase()}</td>
+                              <td className="hs-ticket-subject">{tkt.subject}</td>
+                              <td>
+                                <div className={`hs-status-badge ${statusClass}`}>
+                                  <div className="hs-status-dot"></div>
+                                  {tkt.status}
+                                </div>
+                              </td>
+                              <td>{formatDate(tkt.updatedAt || tkt.createdAt)}</td>
+                              <td>
+                                <button className="hs-ticket-action" title="View Details">
+                                  <Eye size={16} />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {myTickets.length > ticketsPerPage && (
+                    <div className="hs-pagination">
+                      <button 
+                        className="hs-page-btn" 
+                        disabled={currentPage === 1} 
+                        onClick={() => setCurrentPage(prev => prev - 1)}
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <button className="hs-page-btn active">{currentPage}</button>
+                      <button 
+                        className="hs-page-btn" 
+                        disabled={currentPage * ticketsPerPage >= myTickets.length} 
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Status Legend */}
+              <div className="hs-status-legend">
+                <div className="hs-legend-item">
+                  <div className="hs-legend-header"><div className="hs-status-dot" style={{background: '#3B82F6'}}></div> Open</div>
+                  <p className="hs-legend-desc">Your ticket has been received</p>
+                </div>
+                <div className="hs-legend-item">
+                  <div className="hs-legend-header"><div className="hs-status-dot" style={{background: '#F59E0B'}}></div> In Progress</div>
+                  <p className="hs-legend-desc">Our team is working on it</p>
+                </div>
+                <div className="hs-legend-item">
+                  <div className="hs-legend-header"><div className="hs-status-dot" style={{background: '#10B981'}}></div> Resolved</div>
+                  <p className="hs-legend-desc">Your issue has been resolved</p>
+                </div>
+                <div className="hs-legend-item">
+                  <div className="hs-legend-header"><div className="hs-status-dot" style={{background: '#6B7280'}}></div> Closed</div>
+                  <p className="hs-legend-desc">Ticket is closed</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "Help Center" && (
+            <>
+              {/* FAQ SECTION */}
           <div className="hs-faq-section">
             <div className="hs-faq-header">
               <h2>Frequently Asked Questions</h2>
-              <span className="hs-view-all">View All <ArrowRight size={14} /></span>
             </div>
             
             <div className="hs-faq-list">
@@ -228,6 +423,7 @@ function HelpSupport() {
                   </div>
                 </div>
               )}
+              <div ref={chatEndRef} />
             </div>
             
             <form onSubmit={handleChatSubmit} className="hs-chat-input-area">
@@ -243,87 +439,10 @@ function HelpSupport() {
               </button>
             </form>
           </div>
-
-          {/* TICKET FORM SECTION */}
-          {showTicketForm ? (
-            <div className="hs-ticket-section slide-down">
-              <div className="hs-ticket-header">
-                <h2>Submit a Support Ticket</h2>
-                <p>Describe your issue and we'll get back to you.</p>
-              </div>
-            
-            {successMsg && <div className="hs-success-msg">{successMsg}</div>}
-
-            <form onSubmit={handleSubmit} className="hs-form-grid">
-              
-              <div className="hs-form-left">
-                <div className="hs-form-row">
-                  <div className="hs-form-group">
-                    <label>Subject <span>*</span></label>
-                    <input 
-                      type="text" 
-                      name="subject" 
-                      placeholder="Briefly describe your issue" 
-                      value={ticket.subject}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="hs-form-group">
-                    <label>Category <span>*</span></label>
-                    <select name="category" value={ticket.category} onChange={handleChange}>
-                      <option value="" disabled>Select a category</option>
-                      <option value="Technical Issue">Technical Issue</option>
-                      <option value="Account">Account Access</option>
-                      <option value="Exam Related">Exam Related</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="hs-form-group">
-                  <label>Message <span>*</span></label>
-                  <textarea 
-                    name="message" 
-                    placeholder="Please provide as much detail as possible..."
-                    rows="6"
-                    value={ticket.message}
-                    onChange={handleChange}
-                  ></textarea>
-                </div>
-              </div>
-
-              <div className="hs-form-right">
-                <div className="hs-attachment-box">
-                  <div className="hs-attachment-icon-wrapper">
-                    <ImageIcon size={24} />
-                  </div>
-                  <p className="hs-attach-title">Attach Screenshot (Optional)</p>
-                  <p className="hs-attach-desc">PNG, JPG up to 5MB</p>
-                  <input type="file" className="hs-file-input" accept="image/png, image/jpeg" />
-                </div>
-              </div>
-
-              <div className="hs-form-actions">
-                <button 
-                  type="submit" 
-                  disabled={loading || previewMode} 
-                  className="hs-submit-btn"
-                  title={previewMode ? "Ticket submission is disabled in Preview Mode" : ""}
-                  style={{ opacity: previewMode ? 0.6 : 1, cursor: previewMode ? "not-allowed" : "pointer" }}
-                >
-                  {previewMode ? "Preview Mode (Disabled)" : (loading ? "Submitting..." : "Submit Ticket")} 
-                  <Send size={16} />
-                </button>
-              </div>
-
-            </form>
-          </div>
-          ) : (
-            <div className="hs-ticket-reveal">
-              <p>Still can't find what you're looking for?</p>
-              <button onClick={() => setShowTicketForm(true)}>Open Support Ticket</button>
-            </div>
+          {ticketFormJSX}
+          </>
           )}
+
           </div>
         </div>
       </div>

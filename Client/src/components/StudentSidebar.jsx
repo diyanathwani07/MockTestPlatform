@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
 
@@ -41,6 +41,10 @@ function StudentSidebar() {
         <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
           <FileText size={20} />
           <span>My Exams</span>
+        </NavLink>
+        <NavLink to="/dashboard/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <BookOpen size={20} />
+          <span>Practice Tests</span>
         </NavLink>
         <NavLink to="/dashboard/results" className="sidebar-link" onClick={() => setIsOpen(false)}>
           <LineChart size={20} />
