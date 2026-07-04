@@ -79,8 +79,8 @@ function MyExams() {
           ) : (
             <>
 
-              <div className="me-page-header">
-                <h1 className="me-page-title">My Exams</h1>
+              <div className="practice-header-section">
+                <h1 className="practice-title">My Exams</h1>
               </div>
 
               <div className="practice-grid">
