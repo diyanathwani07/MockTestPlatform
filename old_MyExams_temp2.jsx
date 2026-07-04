@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
@@ -6,7 +6,6 @@ import StudentNavbar from "../components/StudentNavbar";
 import { BookOpen, Clock, HelpCircle, ChevronRight, FileCheck } from "lucide-react";
 import "../css/StudentDashboard.css"; // Reuse dashboard layout styles
 import "../css/MyExams.css"; // New specific styles
-import "../css/Practice.css";
 
 function MyExams() {
   const navigate = useNavigate();
@@ -88,8 +87,8 @@ function MyExams() {
           ) : (
             <>
 
-              <div className="practice-header-section">
-                <h1 className="practice-title">My Exams</h1>
+              <div className="me-page-header">
+                <h1 className="me-page-title">My Exams</h1>
               </div>
 
               <div className="me-section-title">AVAILABLE EXAMS</div>
@@ -162,61 +161,47 @@ function MyExams() {
                       {examGroups[selectedExam].length} available
                     </span>
                   </div>
-                  <div className="practice-grid">
+                  <div className="sd-subjects-grid">
                     {examGroups[selectedExam].map((quiz, idx) => {
                       const color = subjectColors[idx % subjectColors.length];
                       return (
                         <div
                           key={quiz._id}
-                          className="practice-card"
+                          className="sd-subject-card"
+                          onClick={() => handleSubjectClick(quiz)}
                         >
-                          <div className="practice-card-header">
+                          <div className="sd-subject-top">
                             <div
-                              className="practice-subject-badge"
+                              className="sd-subject-dot"
+                              style={{ backgroundColor: color.dot }}
+                            ></div>
+                            <span
+                              className="sd-subject-badge"
                               style={{ backgroundColor: color.bg, color: color.text }}
                             >
-                              <span className="dot" style={{ backgroundColor: color.dot }}></span>
-                              {quiz.subject || "General"}
-                            </div>
-                            <div className="practice-difficulty">
-                              {quiz.difficulty || "Medium"}
-                            </div>
+                              {quiz.subject}
+                            </span>
                           </div>
-                          
-                          <h3 className="practice-quiz-title">{quiz.title}</h3>
-                          <p className="practice-quiz-desc">
-                            Full mock exam to test your preparation.
-                          </p>
-
-                          <div className="practice-meta-grid">
-                            <div className="meta-item">
-                              <HelpCircle size={14} />
-                              <span>{quiz.questionCount || quiz.questions?.length || 0} Questions</span>
-                            </div>
-                            <div className="meta-item">
-                              <Clock size={14} />
-                              <span>{quiz.duration} mins</span>
-                            </div>
+                          <div className="sd-subject-name">{quiz.title}</div>
+                          <div className="sd-subject-meta">
+                            <span>ΓÅ▒ {quiz.duration} mins</span>
+                            <span>Γ¥ô {quiz.questionCount || quiz.questions?.length || "ΓÇö"} Qs</span>
                           </div>
                           
                           <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
                             {attemptedQuizzes.includes(quiz._id) ? (
                               <button 
-                                className="practice-start-btn" 
-                                style={{ flex: 1 }}
-                                onClick={() => handleSubjectClick(quiz)}
+                                className="sd-start-btn" 
+                                style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
                               >
-                                <BookOpen size={16} />
-                                Reattempt Exam
+                                Reattempt
                               </button>
                             ) : (
                               <button 
-                                className="practice-start-btn" 
-                                style={{ flex: 1 }}
-                                onClick={() => handleSubjectClick(quiz)}
+                                className="sd-start-btn" 
+                                style={{ flex: 1, padding: "8px 0", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
                               >
-                                <BookOpen size={16} />
-                                Start Exam
+                                Start Quiz
                               </button>
                             )}
                           </div>
