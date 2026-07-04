@@ -5,8 +5,7 @@ import { FileText, Calendar, ChevronDown, ChevronRight, CheckCircle, Target, Awa
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; 
-import "../css/MyExams.css";
-import "../css/StudentResults.css";
+import "../css/Practice.css";
 
 function StudentResults() {
   const [results, setResults] = useState([]);
@@ -73,49 +72,58 @@ function StudentResults() {
             <>
 
 
-              <div className="me-section-title">ATTEMPTED EXAMS</div>
-              <div className={`me-exam-container ${selectedExam ? "me-has-selection" : ""}`}>
-                {examNames.map((examName) => {
+              <div className="practice-grid">
+                {examNames.map((examName, index) => {
                   const group = examGroups[examName];
                   const count = group.length;
-                  const isSelected = selectedExam === examName;
                   
                   // Compute some stats for the card
                   const avgScore = group.reduce((sum, r) => sum + (r.percentage || ((r.score / (r.total || 1)) * 100)), 0) / count;
                   const avgAccuracy = group.reduce((sum, r) => sum + (r.total > 0 ? ((r.correct || 0) / ((r.correct || 0) + (r.incorrect || 0) || 1)) * 100 : 0), 0) / count;
                   
+                  const subjectColors = [
+                    { bg: "#EDE9FE", text: "#5B21B6", dot: "#7C3AED" },
+                    { bg: "#DCFCE7", text: "#166534", dot: "#16A34A" },
+                    { bg: "#FEF9C3", text: "#854D0E", dot: "#D97706" },
+                    { bg: "#FFE4E6", text: "#9F1239", dot: "#E11D48" },
+                    { bg: "#DBEAFE", text: "#1E40AF", dot: "#2563EB" },
+                    { bg: "#FCE7F3", text: "#9D174D", dot: "#DB2777" },
+                    { bg: "#F0FDF4", text: "#14532D", dot: "#15803D" },
+                  ];
+                  const color = subjectColors[index % subjectColors.length];
+                  
                   return (
-                    <div className="me-exam-row-wrapper" key={examName}>
-                      <div
-                        className={`me-exam-card`}
-                        onClick={() => navigate(`/dashboard/results/${encodeURIComponent(examName)}`, { state: { group } })}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <div className="me-card-top">
-                          <div className="me-card-left">
-                            <div className="me-icon-wrapper" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10B981" }}>
-                              <Trophy size={20} />
-                            </div>
-                            <div className="me-exam-name">{examName}</div>
-                          </div>
-                          <div className="me-chevron">
-                            <ChevronRight size={20} />
-                          </div>
-                        </div>
-
-                        <div className="me-divider"></div>
-
-                        <div className="me-card-middle">
-                          <div className="me-stat">
-                            <CheckCircle className="me-stat-icon" size={16} />
-                            <span>{count} Attempt{count !== 1 ? "s" : ""}</span>
-                          </div>
-                          <div className="me-stat">
-                            <Target className="me-stat-icon" size={16} />
-                            <span>Avg {avgScore.toFixed(0)}%</span>
-                          </div>
+                    <div key={examName} className="practice-card">
+                      <div className="practice-card-header">
+                        <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
+                          <span className="dot" style={{ backgroundColor: color.dot }}></span>
+                          Performance History
                         </div>
                       </div>
+                      
+                      <h3 className="practice-quiz-title">{examName}</h3>
+                      <p className="practice-quiz-desc">
+                        Review your historical performance and analytics for this test.
+                      </p>
+
+                      <div className="practice-meta-grid">
+                        <div className="meta-item">
+                          <CheckCircle size={14} />
+                          <span>{count} Attempt{count !== 1 ? "s" : ""}</span>
+                        </div>
+                        <div className="meta-item">
+                          <Target size={14} />
+                          <span>Avg Score: {avgScore.toFixed(0)}%</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        className="practice-start-btn"
+                        onClick={() => navigate(`/dashboard/results/${encodeURIComponent(examName)}`, { state: { group } })}
+                      >
+                        <FileText size={16} />
+                        View Details
+                      </button>
                     </div>
                   );
                 })}
