@@ -71,10 +71,7 @@ function StudentResults() {
             </div>
           ) : (
             <>
-              <div className="me-page-header">
-                <h1 className="me-page-title">Results</h1>
-                <p className="me-page-subtitle">Track your performance and improvement over time.</p>
-              </div>
+
 
               <div className="me-section-title">ATTEMPTED EXAMS</div>
               <div className={`me-exam-container ${selectedExam ? "me-has-selection" : ""}`}>
