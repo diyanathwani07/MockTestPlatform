@@ -5,15 +5,15 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
-import { X, User, ShieldCheck, Clock, Activity, Phone } from 'lucide-react';
+import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2 } from 'lucide-react';
 
 function Users() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   
-  // Dropdown & Modal State
-  const [dropdownOpen, setDropdownOpen] = useState(null);
+  // Drawer & Modal State
+  const [actionDrawerOpen, setActionDrawerOpen] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'profile', 'edit', 'performance', 'history', 'tickets', 'suspend', 'role', 'reset', 'delete'
   const [selectedUser, setSelectedUser] = useState(null);
   
@@ -42,11 +42,8 @@ function Users() {
     fetchUsers();
   }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = () => setDropdownOpen(null);
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    fetchUsers();
   }, []);
 
   // Fetch quizzes attempted for profile modal
@@ -202,37 +199,12 @@ function Users() {
                             title="Options" 
                             onClick={(e) => {
                               e.stopPropagation();
-                              setDropdownOpen(dropdownOpen === u._id ? null : u._id);
+                              setSelectedUser(u);
+                              setActionDrawerOpen(true);
                             }}
                           >
                             ⋮
                           </button>
-                          
-                          {dropdownOpen === u._id && (
-                            <div className="action-dropdown-menu" onClick={e => e.stopPropagation()}>
-                              <div className="dropdown-section-title">👁️ User Information</div>
-                              <button className="dropdown-item" onClick={() => openModal('profile', u)}>View Profile</button>
-                              <button className="dropdown-item" onClick={() => openModal('edit', u)}>Edit User</button>
-                              
-                              <div className="dropdown-divider"></div>
-                              <div className="dropdown-section-title">📊 Performance</div>
-                              <button className="dropdown-item" onClick={() => { showToast('Exam history module in development', 'info'); setDropdownOpen(null); }}>View Exam History</button>
-                              <button className="dropdown-item" onClick={() => { showToast('Performance dashboard in development', 'info'); setDropdownOpen(null); }}>View Performance</button>
-                              <button className="dropdown-item" onClick={() => { showToast('Support tickets module in development', 'info'); setDropdownOpen(null); }}>View Support Tickets</button>
-                              
-                              <div className="dropdown-divider"></div>
-                              <div className="dropdown-section-title">⚙️ Account Management</div>
-                              <button className="dropdown-item" onClick={() => openModal('role', u)}>Change Role</button>
-                              <button className="dropdown-item" onClick={() => openModal('suspend', u)}>
-                                {isActive ? 'Suspend User' : 'Activate User'}
-                              </button>
-                              <button className="dropdown-item" onClick={() => openModal('reset', u)}>Reset Password</button>
-                              
-                              <div className="dropdown-divider"></div>
-                              <div className="dropdown-section-title">⚠️ Dangerous Actions</div>
-                              <button className="dropdown-item danger" onClick={() => openModal('delete', u)}>Delete User</button>
-                            </div>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -271,9 +243,75 @@ function Users() {
       )}
 
       {/* MODALS */}
-      {activeModal && (
-        <div className="modal-overlay" onClick={closeModal}>
+      {(activeModal || actionDrawerOpen) && (
+        <div className="modal-overlay" onClick={() => { closeModal(); setActionDrawerOpen(false); }}>
           
+          {/* ACTIONS DRAWER */}
+          {actionDrawerOpen && selectedUser && (
+            <div className="ticket-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Actions: {selectedUser.fullName}</h3>
+                <button className="close-btn" onClick={() => setActionDrawerOpen(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body" style={{ padding: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Eye size={14} /> USER INFORMATION
+                  </div>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('profile', selectedUser); }}>
+                    <User size={16} /> View Profile
+                  </button>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('edit', selectedUser); }}>
+                    <Edit size={16} /> Edit User
+                  </button>
+                  
+                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
+                  
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BarChart2 size={14} /> PERFORMANCE
+                  </div>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { showToast('Exam history module in development', 'info'); setActionDrawerOpen(false); }}>
+                    <History size={16} /> View Exam History
+                  </button>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { showToast('Performance dashboard in development', 'info'); setActionDrawerOpen(false); }}>
+                    <Activity size={16} /> View Performance
+                  </button>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { showToast('Support tickets module in development', 'info'); setActionDrawerOpen(false); }}>
+                    <Ticket size={16} /> View Support Tickets
+                  </button>
+                  
+                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
+                  
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Settings size={14} /> ACCOUNT MANAGEMENT
+                  </div>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('role', selectedUser); }}>
+                    <ShieldCheck size={16} /> Change Role
+                  </button>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('suspend', selectedUser); }}>
+                    {(selectedUser.status || 'Active') === 'Active' ? <><UserMinus size={16} /> Suspend User</> : <><UserCheck size={16} /> Activate User</>}
+                  </button>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('reset', selectedUser); }}>
+                    <Key size={16} /> Reset Password
+                  </button>
+                  
+                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
+                  
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <AlertTriangle size={14} /> DANGEROUS ACTIONS
+                  </div>
+                  <button className="dropdown-item danger" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', color: '#ef4444' }} onClick={() => { setActionDrawerOpen(false); openModal('delete', selectedUser); }}>
+                    <Trash2 size={16} /> Delete User
+                  </button>
+                  
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* PROFILE MODAL */}
           {activeModal === 'profile' && (
             <div className="ticket-modal" onClick={(e) => e.stopPropagation()}>
@@ -353,11 +391,15 @@ function Users() {
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Full Name</label>
-                  <input type="text" value={editForm.fullName} onChange={e => setEditForm({...editForm, fullName: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }} />
+                  <div style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-page)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}>
+                    {editForm.fullName}
+                  </div>
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Email Address</label>
-                  <input type="email" value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }} />
+                  <div style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-page)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}>
+                    {editForm.email}
+                  </div>
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Role</label>
