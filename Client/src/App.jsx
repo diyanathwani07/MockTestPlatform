@@ -7,7 +7,7 @@ import AdminRoute from "./components/AdminRoute";
 
 
 import AdminDashboard from "./admin/AdminDashboard";
-import CreateQuiz from "./admin/CreateQuiz";
+import CreateQuiz from "./admin/CreateQuizMulti";
 import EditQuiz from "./admin/EditQuiz";
 import ManageQuizzes from "./admin/ManageQuizzes";
 import AdminQuestions from "./admin/Questions";
@@ -33,7 +33,7 @@ import SubjectResults from "./Pages/SubjectResults";
 import Leaderboard from "./Pages/Leaderboard";
 import HelpSupport from "./Pages/HelpSupport";
 import StartTest from "./Pages/StartTest";
-import Quiz from "./Pages/Quiz";
+import Quiz from "./Pages/QuizMulti";
 import Result from "./Pages/Result";
 import SharedResult from "./Pages/SharedResult";
 

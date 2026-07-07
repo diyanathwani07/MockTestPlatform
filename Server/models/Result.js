@@ -79,6 +79,28 @@ const resultSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    // --- NEW MULTI-SECTION ANALYTICS ---
+    sectionResults: [
+      {
+        sectionId: { type: mongoose.Schema.Types.ObjectId },
+        sectionTitle: String,
+        score: Number,
+        totalQuestions: Number,
+        correct: Number,
+        incorrect: Number,
+        timeTaken: Number,
+        accuracy: Number,
+        type: String // standard or coding
+      }
+    ],
+
+    difficultyBreakdown: {
+      easy: { correct: { type: Number, default: 0 }, total: { type: Number, default: 0 } },
+      medium: { correct: { type: Number, default: 0 }, total: { type: Number, default: 0 } },
+      hard: { correct: { type: Number, default: 0 }, total: { type: Number, default: 0 } }
+    },
+    // -----------------------------------
   },
   {
     timestamps: true,

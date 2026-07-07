@@ -21,6 +21,7 @@ const createQuiz = async (req, res) => {
       enablePerQuestionTimer,
       timePerQuestion,
       lockPreviousQuestions,
+      sections,
     } = req.body;
 
     if (!title || !subject || !duration) {
@@ -42,6 +43,7 @@ const createQuiz = async (req, res) => {
       enablePerQuestionTimer,
       timePerQuestion,
       lockPreviousQuestions,
+      sections,
       createdBy: req.user?._id,
     });
 
@@ -138,10 +140,20 @@ const getDashboardStats = async (req, res) => {
     const totalQuizzes = await Quiz.countDocuments();
 
     const quizzes = await Quiz.find().select("questions published status createdAt updatedAt title subject");
-    const totalQuestions = quizzes.reduce(
-      (sum, quiz) => sum + (quiz.questions?.length || 0),
-      0
-    );
+    const totalQuestions = quizzes.reduce((sum, quiz) => {
+      let qCount = quiz.questions?.length || 0;
+      if (quiz.sections && quiz.sections.length > 0) {
+        quiz.sections.forEach(sec => {
+          qCount += (sec.questions?.length || 0);
+          if (sec.subsections) {
+             qCount += (sec.subsections.easy?.length || 0);
+             qCount += (sec.subsections.medium?.length || 0);
+             qCount += (sec.subsections.hard?.length || 0);
+          }
+        });
+      }
+      return sum + qCount;
+    }, 0);
 
     let totalAttempts = 0;
     let averageScore = 0;

@@ -235,9 +235,45 @@ function StartTest() {
           <div className="row">
             <div className="label">Duration</div>
             <div className="value">
-              {selectedQuiz ? `${selectedQuiz.duration} Minutes` : "60 Minutes"}
+              {selectedQuiz ? `${selectedQuiz.duration / 60} Minutes` : "60 Minutes"}
             </div>
           </div>
+
+          {selectedQuiz?.sections?.length > 0 && (
+            <div className="row">
+              <div className="label">Sections</div>
+              <div className="value">
+                <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "8px", fontSize: "12px", border: "1px solid var(--border-color)" }}>
+                  <thead style={{ background: "rgba(255,255,255,0.05)", textAlign: "left" }}>
+                    <tr>
+                      <th style={{ padding: "8px", borderBottom: "1px solid var(--border-color)" }}>Section</th>
+                      <th style={{ padding: "8px", borderBottom: "1px solid var(--border-color)" }}>Questions</th>
+                      <th style={{ padding: "8px", borderBottom: "1px solid var(--border-color)" }}>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedQuiz.sections.map((sec, i) => {
+                       let qCount = sec.questions?.length || 0;
+                       if (sec.type === 'coding' && sec.subsections) {
+                          qCount += (sec.subsections.easy?.length || 0);
+                          qCount += (sec.subsections.medium?.length || 0);
+                          qCount += (sec.subsections.hard?.length || 0);
+                       }
+                       return (
+                        <tr key={i}>
+                          <td style={{ padding: "8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{sec.title}</td>
+                          <td style={{ padding: "8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{qCount}</td>
+                          <td style={{ padding: "8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                            {sec.duration ? `${sec.duration / 60} Min` : 'Global'}
+                          </td>
+                        </tr>
+                       );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="row">
             <div className="label">Do's</div>

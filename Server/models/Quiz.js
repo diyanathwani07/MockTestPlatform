@@ -27,6 +27,53 @@ const questionSchema = new mongoose.Schema({
   },
 });
 
+const sectionSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    default: "",
+  },
+  type: {
+    type: String,
+    enum: ["standard", "coding"],
+    default: "standard"
+  },
+  duration: {
+    type: Number,
+    default: 0, // 0 means use global timer, otherwise section timer in seconds
+  },
+  marksPerQuestion: {
+    type: Number,
+    default: 1,
+  },
+  negativeMarking: {
+    type: Number,
+    default: 0,
+  },
+  questionLimit: {
+    type: Number,
+    default: 0, // 0 means show all
+  },
+  randomizeOptions: {
+    type: Boolean,
+    default: false,
+  },
+  questions: {
+    type: [questionSchema], // For standard sections
+    default: [],
+  },
+  subsections: {
+    // For coding sections (Easy, Medium, Hard)
+    easy: { type: [questionSchema], default: [] },
+    medium: { type: [questionSchema], default: [] },
+    hard: { type: [questionSchema], default: [] }
+  }
+});
+
 const quizSchema = new mongoose.Schema(
   {
     title: {
@@ -88,6 +135,11 @@ const quizSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    sections: {
+      type: [sectionSchema],
+      default: [],
+    },
+    // Keep legacy questions array for backward compatibility
     questions: {
       type: [questionSchema],
       default: [],
