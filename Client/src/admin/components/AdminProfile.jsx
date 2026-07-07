@@ -8,6 +8,7 @@ function AdminProfile() {
   const [user, setUser] = useState(null);
   const [initials, setInitials] = useState("");
   const [adminId, setAdminId] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -38,7 +39,7 @@ function AdminProfile() {
         <div className="admin-content sd-profile-container" style={{ padding: "32px", maxWidth: "1000px" }}>
           
           <div className="sp-flip-container">
-            <div className="sp-flip-inner">
+            <div className={`sp-flip-inner ${isEditing ? "flipped" : ""}`}>
               
               <div className="sp-flip-front">
                 {/* ── TOP HERO CARD ── */}
@@ -53,7 +54,7 @@ function AdminProfile() {
                     <div className="sp-user-info">
                       <h2 className="sp-name">{user.fullName || user.name || "Administrator"}</h2>
                       <p className="sp-email">{user.email || "admin@example.com"}</p>
-                      <button className="sp-edit-profile-btn">
+                      <button className="sp-edit-profile-btn" onClick={() => setIsEditing(true)}>
                         <Edit3 size={14} /> Edit Profile
                       </button>
                     </div>
@@ -115,6 +116,31 @@ function AdminProfile() {
                   </div>
                 </div>
               </div>
+
+              {/* ── BACK SIDE (EDIT FORM) ── */}
+              <div className="sp-flip-back">
+                <div className="sp-edit-header">
+                  <h3>Edit Administrator Profile</h3>
+                  <p>Update your system credentials and information.</p>
+                </div>
+                
+                <form className="sp-edit-form">
+                  <div className="sp-form-group">
+                    <label>Full Name</label>
+                    <input type="text" defaultValue={user.fullName || user.name || "Administrator"} />
+                  </div>
+                  <div className="sp-form-group">
+                    <label>Email Address</label>
+                    <input type="email" defaultValue={user.email || "admin@example.com"} />
+                  </div>
+                  
+                  <div className="sp-form-actions">
+                    <button type="button" className="sp-cancel-btn" onClick={() => setIsEditing(false)}>Cancel</button>
+                    <button type="button" className="sp-save-btn" onClick={() => setIsEditing(false)}>Save Changes</button>
+                  </div>
+                </form>
+              </div>
+
             </div>
           </div>
         </div>
