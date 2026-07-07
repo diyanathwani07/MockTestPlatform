@@ -185,7 +185,7 @@ ${JSON.stringify(batch.map(q => ({
     }
 
     await quiz.save();
-    res.json({ message: \`Successfully generated AI explanations for \${updatedCount} questions.\`, quiz });
+    res.json({ message: `Successfully generated AI explanations for ${updatedCount} questions.`, quiz });
     
   } catch (error) {
     console.error("AI Generation Error:", error);
