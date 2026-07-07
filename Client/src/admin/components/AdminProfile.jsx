@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
-import { User, Mail, Shield, Calendar, Edit3 } from "lucide-react";
+import { User, Mail, Shield, Calendar, Edit3, Phone, MapPin } from "lucide-react";
 import "../../css/StudentProfile.css"; // Reuse the beautiful styling from StudentProfile
 
 function AdminProfile() {
@@ -114,27 +114,39 @@ function AdminProfile() {
                           <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
                           <span className="sp-info-label">Full Name</span>
                           <span className="sp-info-colon">:</span>
-                          <span className="sp-info-value">{user.fullName || user.name || "N/A"}</span>
+                          <span className="sp-info-value">{user.fullName || user.name || "Administrator"}</span>
                         </div>
                         <div className="sp-info-item">
                           <div className="sp-icon-wrapper"><Mail className="sp-info-icon" size={16} /></div>
                           <span className="sp-info-label">Email Address</span>
                           <span className="sp-info-colon">:</span>
-                          <span className="sp-info-value">{user.email || "N/A"}</span>
+                          <span className="sp-info-value">{user.email || "admin@example.com"}</span>
                         </div>
                         <div className="sp-info-item">
-                          <div className="sp-icon-wrapper"><Shield className="sp-info-icon" size={16} /></div>
-                          <span className="sp-info-label">Clearance</span>
+                          <div className="sp-icon-wrapper"><Phone className="sp-info-icon" size={16} /></div>
+                          <span className="sp-info-label">Phone Number</span>
                           <span className="sp-info-colon">:</span>
-                          <span className="sp-info-value">{user.role === 'admin' ? "Full Administrator Access" : "Standard"}</span>
+                          <span className="sp-info-value">{user.phone || "Not Provided"}</span>
                         </div>
                         <div className="sp-info-item">
                           <div className="sp-icon-wrapper"><Calendar className="sp-info-icon" size={16} /></div>
-                          <span className="sp-info-label">Account Created</span>
+                          <span className="sp-info-label">Date of Birth</span>
                           <span className="sp-info-colon">:</span>
                           <span className="sp-info-value">
-                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-') : "Not Available"}
+                            {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString('en-GB').replace(/\//g, '-') : "Not Provided"}
                           </span>
+                        </div>
+                        <div className="sp-info-item">
+                          <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
+                          <span className="sp-info-label">Gender</span>
+                          <span className="sp-info-colon">:</span>
+                          <span className="sp-info-value">{user.gender || "Not Provided"}</span>
+                        </div>
+                        <div className="sp-info-item">
+                          <div className="sp-icon-wrapper"><MapPin className="sp-info-icon" size={16} /></div>
+                          <span className="sp-info-label">Location</span>
+                          <span className="sp-info-colon">:</span>
+                          <span className="sp-info-value">{user.location || "Not Provided"}</span>
                         </div>
                       </div>
                     </div>
