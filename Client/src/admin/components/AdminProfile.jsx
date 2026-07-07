@@ -119,24 +119,23 @@ function AdminProfile() {
 
               {/* ── BACK SIDE (EDIT FORM) ── */}
               <div className="sp-flip-back">
-                <div className="sp-edit-header">
-                  <h3>Edit Administrator Profile</h3>
-                  <p>Update your system credentials and information.</p>
-                </div>
+                <h2 className="sp-edit-title">Edit Administrator Profile</h2>
                 
-                <form className="sp-edit-form">
-                  <div className="sp-form-group">
-                    <label>Full Name</label>
-                    <input type="text" defaultValue={user.fullName || user.name || "Administrator"} />
-                  </div>
-                  <div className="sp-form-group">
-                    <label>Email Address</label>
-                    <input type="email" defaultValue={user.email || "admin@example.com"} />
+                <form>
+                  <div className="sp-form-grid">
+                    <div className="sp-form-group">
+                      <label>Full Name</label>
+                      <input type="text" defaultValue={user.fullName || user.name || "Administrator"} />
+                    </div>
+                    <div className="sp-form-group">
+                      <label>Email Address</label>
+                      <input type="email" defaultValue={user.email || "admin@example.com"} />
+                    </div>
                   </div>
                   
                   <div className="sp-form-actions">
-                    <button type="button" className="sp-cancel-btn" onClick={() => setIsEditing(false)}>Cancel</button>
-                    <button type="button" className="sp-save-btn" onClick={() => setIsEditing(false)}>Save Changes</button>
+                    <button type="button" className="sp-btn-cancel" onClick={() => setIsEditing(false)}>Cancel</button>
+                    <button type="button" className="sp-btn-save" onClick={() => setIsEditing(false)}>Save Changes</button>
                   </div>
                 </form>
               </div>
