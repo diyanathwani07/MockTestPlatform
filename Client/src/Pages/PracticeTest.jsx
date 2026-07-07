@@ -311,10 +311,8 @@ function PracticeTest() {
                 ) : 'Select an Answer'}
               </button>
           </div>
-
         </div>
-      </div>
-      
+
       {/* 🤖 AI TUTOR MODAL */}
       {showAiTutor && (
         <div className="ai-tutor-overlay animate-fade-in" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
