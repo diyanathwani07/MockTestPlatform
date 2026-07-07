@@ -49,7 +49,7 @@ function Users() {
 
   // Fetch quizzes attempted for profile modal
   useEffect(() => {
-    if (activeModal === 'profile' && selectedUser) {
+    if ((activeModal === 'profile_popup' || activeModal === 'profile_drawer') && selectedUser) {
       setQuizzesAttempted("Loading...");
       axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedUser._id}`)
         .then(res => setQuizzesAttempted(res.data.length))
@@ -160,7 +160,7 @@ function Users() {
                       <td style={{ whiteSpace: "nowrap" }}>
                         <div 
                           className="user-info-cell" 
-                          onClick={() => openModal('profile', u)} 
+                          onClick={() => openModal('profile_popup', u)} 
                           style={{ cursor: "pointer", transition: "opacity 0.2s" }}
                           onMouseOver={(e) => e.currentTarget.style.opacity = "0.8"}
                           onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
@@ -245,7 +245,7 @@ function Users() {
 
       {/* MODALS */}
       {(activeModal || actionDrawerOpen) && (
-        <div className="modal-overlay" style={activeModal === 'profile' ? { justifyContent: 'center' } : {}} onClick={() => { closeModal(); setActionDrawerOpen(false); }}>
+        <div className="modal-overlay" style={activeModal === 'profile_popup' ? { justifyContent: 'center' } : {}} onClick={() => { closeModal(); setActionDrawerOpen(false); }}>
           
           {/* ACTIONS DRAWER */}
           {actionDrawerOpen && selectedUser && (
@@ -262,7 +262,7 @@ function Users() {
                   <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Eye size={14} /> USER INFORMATION
                   </div>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('profile', selectedUser); }}>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('profile_drawer', selectedUser); }}>
                     <User size={16} /> View Profile
                   </button>
                   {currentUserRole === 'superadmin' && (
@@ -320,8 +320,8 @@ function Users() {
           )}
 
           {/* PROFILE MODAL */}
-          {activeModal === 'profile' && selectedUser && (
-            <div className="ticket-modal center-modal" onClick={(e) => e.stopPropagation()}>
+          {(activeModal === 'profile_popup' || activeModal === 'profile_drawer') && selectedUser && (
+            <div className={`ticket-modal ${activeModal === 'profile_popup' ? 'center-modal' : ''}`} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>User Profile</h3>
                 <button className="close-btn" onClick={closeModal}>
