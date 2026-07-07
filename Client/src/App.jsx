@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PreviewBanner from "./components/PreviewBanner";
 import ForgotPassword from "./Pages/ForgotPassword";
@@ -40,9 +41,22 @@ import PracticeDashboard from "./Pages/PracticeDashboard";
 import PracticeTest from "./Pages/PracticeTest";
 import PracticeResult from "./Pages/PracticeResult";
 
+function TitleUpdater() {
+  const location = useLocation();
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) {
+      document.title = "Admin";
+    } else {
+      document.title = "Student";
+    }
+  }, [location]);
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <TitleUpdater />
       <PreviewBanner />
       <Routes>
 
