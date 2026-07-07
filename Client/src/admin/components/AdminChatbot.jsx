@@ -68,9 +68,10 @@ const AdminChatbot = () => {
       }
     } catch (error) {
       console.error("Admin Chat API Error:", error);
+      const errMsg = error.response?.data?.error || error.message || "Unknown error";
       setMessages(prev => [
         ...prev, 
-        { sender: "bot", text: "I'm having trouble connecting to my brain right now." }
+        { sender: "bot", text: `I'm having trouble connecting to my brain right now. Error: ${errMsg}` }
       ]);
     } finally {
       setIsTyping(false);

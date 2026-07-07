@@ -102,7 +102,7 @@ const chatSupport = async (req, res) => {
     });
   } catch (error) {
     console.error("Chat API Error:", error);
-    res.status(500).json({ success: false, message: "Failed to generate AI response." });
+    res.status(500).json({ success: false, message: "Failed to generate AI response.", error: error.message, stack: error.stack });
   }
 };
 
