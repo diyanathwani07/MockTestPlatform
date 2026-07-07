@@ -9,8 +9,8 @@ const {
   createAuditLog,
 } = require("../controllers/auditLogController");
 
-// Superadmin fetches all logs
-router.get("/", protect, superAdminOnly, getAuditLogs);
+// Admin fetches all logs
+router.get("/", protect, adminOnly, getAuditLogs);
 
 // Students (or any authenticated user) post start logs
 router.post("/", protect, createAuditLog);

@@ -56,13 +56,10 @@ function AdminSidebar() {
             <LineChart size={20} />
             <span>Reports</span>
           </NavLink>
-          
-          {currentUserRole === 'superadmin' && (
-            <NavLink to="/admin/audit-log" className="sidebar-link" onClick={() => setIsOpen(false)}>
-              <FileText size={20} />
-              <span>Audit Log</span>
-            </NavLink>
-          )}
+          <NavLink to="/admin/audit-log" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <FileText size={20} />
+            <span>Audit Log</span>
+          </NavLink>
           
           <NavLink to="/admin/tickets" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <LifeBuoy size={20} />
