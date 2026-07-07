@@ -21,6 +21,7 @@ import AdminTickets from "./admin/AdminTickets";
 // ─── 🎯 FORENSICALLY CORRECTED PATHS ───
 import AuditLog from "./admin/AuditLog"; // <── (Requires src/admin/AuditLog.jsx to exist!)
 import AdminProfile from "./admin/components/AdminProfile"; // <── Re-routed into 'components'
+import PracticeQuizzes from "./admin/PracticeQuizzes";
 
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
@@ -242,6 +243,15 @@ function App() {
           element={
             <AdminRoute>
               <ManageQuizzes />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/practice"
+          element={
+            <AdminRoute>
+              <PracticeQuizzes />
             </AdminRoute>
           }
         />

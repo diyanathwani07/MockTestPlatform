@@ -15,7 +15,10 @@ function PracticeDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/practice`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setQuizzes(res.data);
       } catch (err) {
         console.error(err);

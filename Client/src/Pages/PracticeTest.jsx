@@ -28,7 +28,10 @@ function PracticeTest() {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`);
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/practice/${quizId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setQuiz(res.data);
         setQuestions(res.data.questions || []);
       } catch (err) {
@@ -177,10 +180,23 @@ function PracticeTest() {
                     </button>
 
                     {/* Show explanation instantly for wrong selected answer */}
-                    {isSelected && !isCorrectOption && (
-                      <div className="practice-inline-exp danger">
-                        <AlertCircle size={16} />
-                        <p>This is not the correct answer. Give it another try!</p>
+                    {isSelected && !isCorrectOption && currentQuestion.explanations?.incorrect && currentQuestion.explanations.incorrect[opt] && (
+                      <div className="practice-inline-exp danger" style={{ marginTop: "12px", padding: "12px", backgroundColor: "rgba(255,68,68,0.05)", borderLeft: "3px solid #ff4444", borderRadius: "0 8px 8px 0" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", color: "#ff4444", fontWeight: "500" }}>
+                          <AlertCircle size={16} /> Incorrect
+                        </div>
+                        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                          {currentQuestion.explanations.incorrect[opt]}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Show explanation for WRONG options when correct answer is found (so user can learn about all options) */}
+                    {isCorrectSelected && !isCorrectOption && currentQuestion.explanations?.incorrect && currentQuestion.explanations.incorrect[opt] && (
+                      <div className="practice-inline-exp" style={{ marginTop: "12px", padding: "12px", backgroundColor: "rgba(255,255,255,0.03)", borderLeft: "3px solid rgba(255,255,255,0.2)", borderRadius: "0 8px 8px 0" }}>
+                        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                          {currentQuestion.explanations.incorrect[opt]}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -189,13 +205,23 @@ function PracticeTest() {
             </div>
 
             {/* Show full explanation when correct answer is found */}
-            {isCorrectSelected && currentQuestion.explanation && (
-              <div className="practice-full-exp">
-                <h4><CheckCircle size={18} /> Detailed Explanation</h4>
-                <p>{currentQuestion.explanation}</p>
-                <div className="exp-note">
-                  <em>Note: Detailed AI explanations for each specific option will be integrated in a future update.</em>
-                </div>
+            {isCorrectSelected && currentQuestion.explanations?.correct && (
+              <div className="practice-full-exp" style={{ marginTop: "24px", padding: "20px", backgroundColor: "rgba(74, 222, 128, 0.05)", border: "1px solid rgba(74, 222, 128, 0.2)", borderRadius: "12px" }}>
+                <h4 style={{ display: "flex", alignItems: "center", gap: "8px", color: "#4ade80", margin: "0 0 12px 0", fontSize: "18px" }}>
+                  <CheckCircle size={20} /> Correct Answer Explanation
+                </h4>
+                <p style={{ color: "var(--text-main)", lineHeight: "1.6", marginBottom: "16px" }}>
+                  {currentQuestion.explanations.correct}
+                </p>
+                
+                {currentQuestion.explanations.conceptSummary && (
+                  <div style={{ padding: "16px", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "8px", borderLeft: "3px solid var(--primary-color)" }}>
+                    <h5 style={{ margin: "0 0 8px 0", color: "var(--primary-color)", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px" }}>Concept Summary</h5>
+                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.5" }}>
+                      {currentQuestion.explanations.conceptSummary}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

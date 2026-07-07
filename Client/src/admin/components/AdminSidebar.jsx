@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy, LineChart, FileText, LifeBuoy, Menu, X, Bot } from 'lucide-react';
+import { LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy, LineChart, FileText, LifeBuoy, Menu, X, Bot, BookOpen } from 'lucide-react';
 import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
 
@@ -39,6 +39,10 @@ function AdminSidebar() {
           <NavLink to="/admin/manage-quizzes" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <ClipboardList size={20} />
             <span>Manage Quizzes</span>
+          </NavLink>
+          <NavLink to="/admin/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <BookOpen size={20} />
+            <span>Practice Modules</span>
           </NavLink>
           <NavLink to="/admin/questions" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <HelpCircle size={20} />
