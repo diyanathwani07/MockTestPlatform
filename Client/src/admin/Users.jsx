@@ -272,11 +272,11 @@ function Users() {
 
       {/* MODALS */}
       {activeModal && (
-        <div className="modal-overlay" onClick={closeModal} style={{ display: 'flex', alignItems: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1000, justifyContent: 'center' }}>
+        <div className="modal-overlay" onClick={closeModal}>
           
           {/* PROFILE MODAL */}
           {activeModal === 'profile' && (
-            <div className="ticket-modal" onClick={(e) => e.stopPropagation()} style={{ animation: 'dropdownFade 0.3s ease', maxWidth: '500px', width: '100%' }}>
+            <div className="ticket-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>User Profile</h3>
                 <button className="close-btn" onClick={closeModal}>
@@ -343,10 +343,12 @@ function Users() {
 
           {/* EDIT MODAL */}
           {activeModal === 'edit' && (
-            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '16px', width: '450px', maxWidth: '90%', border: '1px solid var(--border-color)', animation: 'dropdownFade 0.3s ease' }}>
+            <div className="ticket-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Edit User</h3>
-                <button onClick={closeModal} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                <button className="close-btn" onClick={closeModal}>
+                  <X size={20} />
+                </button>
               </div>
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -372,7 +374,7 @@ function Users() {
                   </select>
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button className="btn-primary" onClick={() => handleAction('', 'PUT', editForm, 'User updated successfully')} disabled={actionLoading}>{actionLoading ? 'Saving...' : 'Save Changes'}</button>
               </div>
@@ -381,14 +383,17 @@ function Users() {
 
           {/* ROLE MODAL */}
           {activeModal === 'role' && (
-            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '16px', width: '400px', maxWidth: '90%', border: '1px solid var(--border-color)', animation: 'dropdownFade 0.3s ease' }}>
+            <div className="ticket-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Change Role</h3>
+                <button className="close-btn" onClick={closeModal}>
+                  <X size={20} />
+                </button>
               </div>
               <div className="modal-body">
                 Are you sure you want to change <strong>{selectedUser.fullName}'s</strong> role to <strong>{selectedUser.role === 'admin' ? 'User' : 'Admin'}</strong>?
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button className="btn-primary" onClick={() => handleAction('/role', 'PUT', { role: selectedUser.role === 'admin' ? 'user' : 'admin' }, 'Role updated successfully')} disabled={actionLoading}>{actionLoading ? 'Updating...' : 'Confirm Change'}</button>
               </div>
@@ -397,16 +402,19 @@ function Users() {
 
           {/* SUSPEND MODAL */}
           {activeModal === 'suspend' && (
-            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '16px', width: '400px', maxWidth: '90%', border: '1px solid var(--border-color)', animation: 'dropdownFade 0.3s ease' }}>
+            <div className="ticket-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>{(selectedUser.status || 'Active') === 'Active' ? 'Suspend User' : 'Activate User'}</h3>
+                <button className="close-btn" onClick={closeModal}>
+                  <X size={20} />
+                </button>
               </div>
               <div className="modal-body">
                 {(selectedUser.status || 'Active') === 'Active' 
                   ? <span>Are you sure you want to suspend <strong>{selectedUser.fullName}</strong>? They will not be able to log in.</span>
                   : <span>Are you sure you want to activate <strong>{selectedUser.fullName}</strong>? They will regain access to their account.</span>}
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button className="btn-primary" style={{ background: (selectedUser.status || 'Active') === 'Active' ? '#ef4444' : 'var(--green)' }} onClick={() => handleAction('/status', 'PUT', { status: (selectedUser.status || 'Active') === 'Active' ? 'Suspended' : 'Active' }, 'Status updated successfully')} disabled={actionLoading}>
                   {actionLoading ? 'Processing...' : ((selectedUser.status || 'Active') === 'Active' ? 'Suspend' : 'Activate')}
@@ -417,14 +425,17 @@ function Users() {
 
           {/* RESET PASSWORD MODAL */}
           {activeModal === 'reset' && (
-            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '16px', width: '400px', maxWidth: '90%', border: '1px solid var(--border-color)', animation: 'dropdownFade 0.3s ease' }}>
+            <div className="ticket-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Reset Password</h3>
+                <button className="close-btn" onClick={closeModal}>
+                  <X size={20} />
+                </button>
               </div>
               <div className="modal-body">
                 Are you sure you want to send a password reset email to <strong>{selectedUser.email}</strong>? Their current password will be overwritten with a temporary one.
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button className="btn-primary" onClick={() => handleAction('/reset-password', 'POST', {}, 'Password reset email sent')} disabled={actionLoading}>{actionLoading ? 'Sending...' : 'Send Reset Email'}</button>
               </div>
@@ -433,14 +444,17 @@ function Users() {
 
           {/* DELETE MODAL */}
           {activeModal === 'delete' && (
-            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '16px', width: '400px', maxWidth: '90%', border: '1px solid var(--border-color)', animation: 'dropdownFade 0.3s ease' }}>
+            <div className="ticket-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Delete User</h3>
+                <button className="close-btn" onClick={closeModal}>
+                  <X size={20} />
+                </button>
               </div>
               <div className="modal-body">
                 Are you absolutely sure you want to permanently delete <strong>{selectedUser.fullName}</strong>? This action cannot be undone and will erase all their data and history.
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button className="btn-danger" onClick={() => handleAction('', 'DELETE', {}, 'User deleted successfully')} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete User'}</button>
               </div>
