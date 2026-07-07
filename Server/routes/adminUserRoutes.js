@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { protect } = require("../middleware/authMiddleware");
-const { adminOnly } = require("../middleware/adminMiddleware");
+const { adminOnly, superAdminOnly } = require("../middleware/adminMiddleware");
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
 
@@ -29,8 +29,8 @@ router.get("/", protect, adminOnly, async (req, res) => {
   }
 });
 
-// DELETE a user (admin only)
-router.delete("/:id", protect, adminOnly, async (req, res) => {
+// DELETE a user (superadmin only)
+router.delete("/:id", protect, superAdminOnly, async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
@@ -43,8 +43,8 @@ router.delete("/:id", protect, adminOnly, async (req, res) => {
   }
 });
 
-// UPDATE user (admin only)
-router.put("/:id", protect, adminOnly, async (req, res) => {
+// UPDATE user (superadmin only)
+router.put("/:id", protect, superAdminOnly, async (req, res) => {
   try {
     const { fullName, email, role, status } = req.body;
     const user = await User.findById(req.params.id);
@@ -66,8 +66,8 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
   }
 });
 
-// UPDATE user status (admin only)
-router.put("/:id/status", protect, adminOnly, async (req, res) => {
+// UPDATE user status (superadmin only)
+router.put("/:id/status", protect, superAdminOnly, async (req, res) => {
   try {
     const { status } = req.body;
     const user = await User.findById(req.params.id);
@@ -85,8 +85,8 @@ router.put("/:id/status", protect, adminOnly, async (req, res) => {
   }
 });
 
-// UPDATE user role (admin only)
-router.put("/:id/role", protect, adminOnly, async (req, res) => {
+// UPDATE user role (superadmin only)
+router.put("/:id/role", protect, superAdminOnly, async (req, res) => {
   try {
     const { role } = req.body;
     const user = await User.findById(req.params.id);
@@ -104,8 +104,8 @@ router.put("/:id/role", protect, adminOnly, async (req, res) => {
   }
 });
 
-// SEND password reset email (admin only)
-router.post("/:id/reset-password", protect, adminOnly, async (req, res) => {
+// SEND password reset email (superadmin only)
+router.post("/:id/reset-password", protect, superAdminOnly, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     

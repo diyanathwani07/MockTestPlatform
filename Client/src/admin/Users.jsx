@@ -22,6 +22,7 @@ function Users() {
   const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "" });
   const [toast, setToast] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const currentUserRole = localStorage.getItem("role");
 
   const fetchUsers = async () => {
     try {
@@ -264,9 +265,11 @@ function Users() {
                   <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('profile', selectedUser); }}>
                     <User size={16} /> View Profile
                   </button>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('edit', selectedUser); }}>
-                    <Edit size={16} /> Edit User
-                  </button>
+                  {currentUserRole === 'superadmin' && (
+                    <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('edit', selectedUser); }}>
+                      <Edit size={16} /> Edit User
+                    </button>
+                  )}
                   
                   <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
                   
@@ -283,29 +286,33 @@ function Users() {
                     <Ticket size={16} /> View Support Tickets
                   </button>
                   
-                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
-                  
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Settings size={14} /> ACCOUNT MANAGEMENT
-                  </div>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('role', selectedUser); }}>
-                    <ShieldCheck size={16} /> Change Role
-                  </button>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('suspend', selectedUser); }}>
-                    {(selectedUser.status || 'Active') === 'Active' ? <><UserMinus size={16} /> Suspend User</> : <><UserCheck size={16} /> Activate User</>}
-                  </button>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('reset', selectedUser); }}>
-                    <Key size={16} /> Reset Password
-                  </button>
-                  
-                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
-                  
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <AlertTriangle size={14} /> DANGEROUS ACTIONS
-                  </div>
-                  <button className="dropdown-item danger" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', color: '#ef4444' }} onClick={() => { setActionDrawerOpen(false); openModal('delete', selectedUser); }}>
-                    <Trash2 size={16} /> Delete User
-                  </button>
+                  {currentUserRole === 'superadmin' && (
+                    <>
+                      <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
+                      
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Settings size={14} /> ACCOUNT MANAGEMENT
+                      </div>
+                      <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('role', selectedUser); }}>
+                        <ShieldCheck size={16} /> Change Role
+                      </button>
+                      <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('suspend', selectedUser); }}>
+                        {(selectedUser.status || 'Active') === 'Active' ? <><UserMinus size={16} /> Suspend User</> : <><UserCheck size={16} /> Activate User</>}
+                      </button>
+                      <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('reset', selectedUser); }}>
+                        <Key size={16} /> Reset Password
+                      </button>
+                      
+                      <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
+                      
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <AlertTriangle size={14} /> DANGEROUS ACTIONS
+                      </div>
+                      <button className="dropdown-item danger" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', color: '#ef4444' }} onClick={() => { setActionDrawerOpen(false); openModal('delete', selectedUser); }}>
+                        <Trash2 size={16} /> Delete User
+                      </button>
+                    </>
+                  )}
                   
                 </div>
               </div>
@@ -406,6 +413,7 @@ function Users() {
                   <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
+                    <option value="superadmin">Super Admin</option>
                   </select>
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -432,12 +440,21 @@ function Users() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="modal-body">
-                Are you sure you want to change <strong>{selectedUser.fullName}'s</strong> role to <strong>{selectedUser.role === 'admin' ? 'User' : 'Admin'}</strong>?
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <p>Select a new role for <strong>{selectedUser.fullName}</strong>:</p>
+                <select 
+                  value={selectedUser.role || 'user'} 
+                  onChange={(e) => setSelectedUser({...selectedUser, role: e.target.value})} 
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="superadmin">Super Admin</option>
+                </select>
               </div>
               <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
-                <button className="btn-primary" onClick={() => handleAction('/role', 'PUT', { role: selectedUser.role === 'admin' ? 'user' : 'admin' }, 'Role updated successfully')} disabled={actionLoading}>{actionLoading ? 'Updating...' : 'Confirm Change'}</button>
+                <button className="btn-primary" onClick={() => handleAction('/role', 'PUT', { role: selectedUser.role }, 'Role updated successfully')} disabled={actionLoading}>{actionLoading ? 'Updating...' : 'Confirm Change'}</button>
               </div>
             </div>
           )}

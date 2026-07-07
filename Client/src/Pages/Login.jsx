@@ -32,7 +32,7 @@ const handleSubmit = async (e) => {
     localStorage.setItem("user", JSON.stringify(res.data.user));
     localStorage.setItem("role", res.data.user.role);
 
-    if (res.data.user.role === "admin") {
+    if (res.data.user.role === "admin" || res.data.user.role === "superadmin") {
       navigate("/admin");
     } else {
       navigate("/dashboard");
