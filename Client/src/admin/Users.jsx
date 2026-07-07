@@ -399,13 +399,13 @@ function Users() {
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Full Name</label>
                   <div style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)', opacity: 0.6, cursor: 'not-allowed', minHeight: '40px', display: 'flex', alignItems: 'center' }}>
-                    {editForm.fullName || "N/A"}
+                    {selectedUser?.fullName || "N/A"}
                   </div>
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Email Address</label>
                   <div style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)', opacity: 0.6, cursor: 'not-allowed', minHeight: '40px', display: 'flex', alignItems: 'center' }}>
-                    {editForm.email || "N/A"}
+                    {selectedUser?.email || "N/A"}
                   </div>
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
