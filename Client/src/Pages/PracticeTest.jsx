@@ -110,30 +110,22 @@ function PracticeTest() {
 
   if (loading) {
     return (
-      <div className="sd-layout">
-        <StudentSidebar />
-        <div className="sd-main-content">
-          <StudentNavbar title="Practice Test" />
-          <div className="sd-loading" style={{ marginTop: "100px" }}>
+      <div className="practice-fullscreen-layout" style={{ minHeight: "100vh", backgroundColor: "var(--bg-main)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="sd-loading">
             <div className="sd-spinner"></div>
             <p>Loading your practice module...</p>
           </div>
-        </div>
       </div>
     );
   }
 
   if (!questions.length) {
     return (
-      <div className="sd-layout">
-        <StudentSidebar />
-        <div className="sd-main-content">
-          <StudentNavbar title="Practice Test" />
-          <div className="sd-empty" style={{ marginTop: "100px" }}>
+      <div className="practice-fullscreen-layout" style={{ minHeight: "100vh", backgroundColor: "var(--bg-main)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="sd-empty">
             <h3>No questions found.</h3>
             <button className="practice-btn-primary" onClick={() => navigate("/dashboard/practice")}>Go Back</button>
           </div>
-        </div>
       </div>
     );
   }
@@ -141,11 +133,8 @@ function PracticeTest() {
   const progressPercentage = ((currentIndex) / questions.length) * 100;
 
   return (
-    <div className="sd-layout">
-      <StudentSidebar />
-      <div className="sd-main-content">
-        <StudentNavbar title={quiz.title || "Practice Test"} />
-        <div className="practice-test-container">
+    <div className="practice-fullscreen-layout" style={{ minHeight: "100vh", backgroundColor: "var(--bg-main)", padding: "40px 20px" }}>
+        <div className="practice-test-container" style={{ maxWidth: "900px", margin: "0 auto" }}>
           
           <div className="practice-header">
             <button className="practice-back-btn" onClick={() => navigate("/dashboard/practice")}>
