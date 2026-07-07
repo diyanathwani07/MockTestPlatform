@@ -1039,7 +1039,7 @@ function EditQuiz() {
                   </div>
 
                   {/* ── RIGHT PANEL: PUBLICATION & TOOLS ── */}
-                  <div className="quiz-right-panel">
+                  <div className="admin-quiz-right-panel">
                     {/* 4. Docx Parser Card */}
                     <div className="form-card compact-card">
                       <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
