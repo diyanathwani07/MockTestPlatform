@@ -6,9 +6,9 @@ const connectDB = require('./config/db');
 
 async function seed() {
   await connectDB();
-  const admin = await User.findOne({ role: 'admin' });
+  const admin = await User.findOne();
   if (!admin) {
-    console.log("No admin found to attach to quiz");
+    console.log("No users found to attach to quiz");
     process.exit(1);
   }
 

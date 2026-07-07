@@ -164,7 +164,7 @@ function AdminProfile() {
 
               {/* ── BACK SIDE (EDIT FORM) ── */}
               <div className="sp-flip-back">
-                <h2 className="sp-edit-title">Edit Administrator Profile</h2>
+                <h2 className="sp-edit-title">Edit Profile</h2>
                 
                 <form onSubmit={handleSave}>
                   <div className="sp-form-grid">
