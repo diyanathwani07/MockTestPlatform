@@ -22,8 +22,21 @@ function PracticeTest() {
     firstTryCorrect: 0,
     multipleTries: 0,
     totalWrongAttempts: 0,
+    totalAttemptsAll: 0, // Track total attempts across all questions
     startTime: Date.now()
   });
+
+  const [questionTime, setQuestionTime] = useState(0);
+  const [showAiTutor, setShowAiTutor] = useState(false);
+
+  // Timer Effect
+  useEffect(() => {
+    if (loading || !questions.length || isCorrectSelected) return;
+    const timer = setInterval(() => {
+      setQuestionTime(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [loading, questions.length, isCorrectSelected, currentIndex]);
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -61,8 +74,13 @@ function PracticeTest() {
         ...prev,
         firstTryCorrect: prev.firstTryCorrect + (wrongCount === 0 ? 1 : 0),
         multipleTries: prev.multipleTries + (wrongCount > 0 ? 1 : 0),
-        totalWrongAttempts: prev.totalWrongAttempts + wrongCount
+        totalWrongAttempts: prev.totalWrongAttempts + wrongCount,
+        totalAttemptsAll: prev.totalAttemptsAll + Object.keys(newSelected).length
       }));
+    } else {
+      // It's a wrong answer, we can increment total attempts immediately
+      // Actually we update totalAttemptsAll when correct is selected above to be safe, 
+      // but let's just track it dynamically in render or keep a global counter.
     }
   };
 
@@ -71,6 +89,8 @@ function PracticeTest() {
       setCurrentIndex(currentIndex + 1);
       setSelectedOptions({});
       setIsCorrectSelected(false);
+      setQuestionTime(0);
+      setShowAiTutor(false);
     } else {
       // Finish
       const timeSpent = Math.floor((Date.now() - stats.startTime) / 1000);
@@ -131,9 +151,12 @@ function PracticeTest() {
             <button className="practice-back-btn" onClick={() => navigate("/dashboard/practice")}>
               <ArrowLeft size={20} />
             </button>
-            <div className="practice-progress-wrapper">
-              <div className="practice-progress-text">
-                Question {currentIndex + 1} of {questions.length}
+            <div className="practice-progress-wrapper" style={{ flex: 1 }}>
+              <div className="practice-progress-text" style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>Question {currentIndex + 1} of {questions.length}</span>
+                <span style={{ color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
+                  ⏱ {Math.floor(questionTime / 60).toString().padStart(2, '0')}:{(questionTime % 60).toString().padStart(2, '0')}
+                </span>
               </div>
               <div className="practice-progress-bar">
                 <div className="practice-progress-fill" style={{ width: `${progressPercentage}%` }}></div>
@@ -154,6 +177,22 @@ function PracticeTest() {
             <div className="status-item">
               <span className="status-label">Correct on Attempt</span>
               <span className="status-value">{isCorrectSelected ? Object.keys(selectedOptions).length : "-"}</span>
+            </div>
+            <div className="status-item" style={{ borderLeft: "1px solid rgba(255,255,255,0.05)", paddingLeft: "16px" }}>
+              <span className="status-label">Avg. Attempts</span>
+              <span className="status-value">
+                {currentIndex > 0 || isCorrectSelected 
+                  ? ((stats.totalAttemptsAll + (isCorrectSelected ? 0 : Object.keys(selectedOptions).length)) / (currentIndex + (isCorrectSelected ? 1 : 0))).toFixed(1)
+                  : "-"}
+              </span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Accuracy</span>
+              <span className="status-value">
+                {currentIndex > 0 || isCorrectSelected
+                  ? Math.round(((currentIndex + (isCorrectSelected ? 1 : 0)) / (stats.totalAttemptsAll + (isCorrectSelected ? 0 : Object.keys(selectedOptions).length))) * 100) + "%"
+                  : "-"}
+              </span>
             </div>
           </div>
 
@@ -241,29 +280,77 @@ function PracticeTest() {
                   </div>
                 )}
                 
+                {/* 🚀 Did You Know? */}
+                <div className="did-you-know-card animate-fade-in" style={{ padding: "16px", backgroundColor: "rgba(255, 255, 255, 0.03)", borderRadius: "8px", marginTop: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <h5 style={{ margin: "0 0 8px 0", color: "#FBBF24", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      🚀 Did You Know?
+                    </h5>
+                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.6" }}>
+                      {currentQuestion.explanations?.didYouKnow || "AI-generated fun facts will appear here to keep learning engaging and memorable!"}
+                    </p>
+                </div>
+
                 <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
-                  <button className="ai-explain-btn" onClick={() => alert("AI Explanation integration coming soon!")}>
-                    ✨ Explain with AI
+                  <button className="ai-explain-btn" onClick={() => setShowAiTutor(true)}>
+                    ✨ Ask AI Tutor
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="practice-footer">
+          <div className="practice-footer" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+              {isCorrectSelected && (
+                <div className="success-banner animate-fade-in" style={{ textAlign: "center" }}>
+                  <h3 style={{ margin: "0 0 4px 0", color: "#4ade80", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                    🎉 Excellent!
+                  </h3>
+                  <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
+                    You understood this concept. Ready for the next challenge?
+                  </p>
+                </div>
+              )}
+              
               <button 
                 className={`practice-next-btn ${isCorrectSelected ? 'active' : ''}`}
                 onClick={handleNext}
                 disabled={!isCorrectSelected}
+                style={{ minWidth: "200px", padding: "14px 24px", fontSize: "16px" }}
               >
                 {isCorrectSelected ? (
                   currentIndex === questions.length - 1 ? 'Finish Practice' : 'Continue Learning →'
-                ) : 'Next Question'}
+                ) : 'Select an Answer'}
               </button>
           </div>
 
         </div>
       </div>
+      
+      {/* 🤖 AI TUTOR MODAL */}
+      {showAiTutor && (
+        <div className="ai-tutor-overlay animate-fade-in" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="ai-tutor-modal animate-slide-up" style={{ background: "var(--bg-main)", border: "1px solid rgba(108, 93, 211, 0.3)", borderRadius: "16px", padding: "32px", maxWidth: "500px", width: "90%", position: "relative", boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }}>
+            <button 
+              onClick={() => setShowAiTutor(false)}
+              style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+            >
+              <XCircle size={24} />
+            </button>
+            <h3 style={{ margin: "0 0 16px 0", color: "var(--primary-color)", display: "flex", alignItems: "center", gap: "8px" }}>
+              🤖 AI Tutor
+            </h3>
+            <div style={{ backgroundColor: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", minHeight: "150px" }}>
+              <p style={{ color: "var(--text-main)", lineHeight: "1.6", margin: "0 0 12px 0" }}>
+                Think of JavaScript like a calculator. It only knows one number box called Number. 
+                Whether you write 5, 5.5 or 100.25, they are all stored inside the same Number box.
+              </p>
+              <p style={{ color: "var(--text-muted)", fontStyle: "italic", margin: 0, fontSize: "13px" }}>
+                (Note: This is a simulated UI placeholder. Future updates will stream real-time generative AI tutoring based on your exact mistakes!)
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

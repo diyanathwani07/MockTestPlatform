@@ -24,7 +24,8 @@ const practiceQuestionSchema = new mongoose.Schema({
   explanations: {
     correct: { type: String, default: "" }, // explanation for the correct answer
     incorrect: { type: Map, of: String, default: {} }, // option text -> explanation for that incorrect option
-    conceptSummary: { type: String, default: "" } // general concept summary
+    conceptSummary: { type: String, default: "" }, // general concept summary
+    didYouKnow: { type: String, default: "" } // interesting facts
   },
   aiGenerated: { 
     type: Boolean, 
