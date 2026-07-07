@@ -5,6 +5,8 @@ import StudentNavbar from "../components/StudentNavbar";
 import { FileText, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
 import axios from "axios";
 import "../css/StudentDashboard.css";
+import "../css/StudentResults.css";
+import "../css/Practice.css";
 
 function SubjectResults() {
   const { subject } = useParams();
@@ -65,13 +67,13 @@ function SubjectResults() {
     : group;
 
   return (
-    <div className="admin-layout" style={{ display: "flex", width: "100%", height: "100vh", backgroundColor: "var(--bg-page)" }}>
+    <div className="sd-layout">
       <StudentSidebar />
-      <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
+      <div className="sd-main-content">
         <StudentNavbar title={`${decodedSubject} Results`} />
 
-        <div className="admin-content" style={{ flex: 1, overflowY: "auto", padding: "24px", position: "relative" }}>
-          <div className="manage-command-bar-card" style={{ marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+        <div className="sd-content" style={{ paddingTop: '20px' }}>
+          <div className="practice-header-section" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "32px" }}>
             
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <button 
@@ -85,9 +87,9 @@ function SubjectResults() {
                 <ArrowLeft size={20} />
               </button>
               <div>
-                <h2 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
+                <h1 className="practice-title" style={{ margin: "0 0 4px 0" }}>
                   {decodedSubject} Attempts
-                </h2>
+                </h1>
                 <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0 }}>
                   Review all your test attempts for this subject.
                 </p>
