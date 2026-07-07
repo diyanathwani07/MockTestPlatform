@@ -38,8 +38,8 @@ function AdminProfile() {
         
         <div className="admin-content sd-profile-container" style={{ padding: "32px", maxWidth: "1000px" }}>
           
-          <div className="sp-flip-container">
-            <div className={`sp-flip-inner ${isEditing ? "flipped" : ""}`}>
+          <div className={`sp-flip-container ${isEditing ? "flipped" : ""}`}>
+            <div className="sp-flip-inner">
               
               <div className="sp-flip-front">
                 {/* ── TOP HERO CARD ── */}
