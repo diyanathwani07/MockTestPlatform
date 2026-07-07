@@ -245,7 +245,7 @@ function Users() {
 
       {/* MODALS */}
       {(activeModal || actionDrawerOpen) && (
-        <div className="modal-overlay" onClick={() => { closeModal(); setActionDrawerOpen(false); }}>
+        <div className="modal-overlay" style={activeModal === 'profile' ? { justifyContent: 'center' } : {}} onClick={() => { closeModal(); setActionDrawerOpen(false); }}>
           
           {/* ACTIONS DRAWER */}
           {actionDrawerOpen && selectedUser && (
@@ -320,8 +320,8 @@ function Users() {
           )}
 
           {/* PROFILE MODAL */}
-          {activeModal === 'profile' && (
-            <div className="ticket-modal" onClick={(e) => e.stopPropagation()}>
+          {activeModal === 'profile' && selectedUser && (
+            <div className="ticket-modal center-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>User Profile</h3>
                 <button className="close-btn" onClick={closeModal}>
