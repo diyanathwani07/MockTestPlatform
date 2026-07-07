@@ -124,22 +124,22 @@ router.post("/:id/reset-password", protect, adminOnly, async (req, res) => {
     await user.save();
     
     await transporter.sendMail({
-      from: \`Teaching Pariksha <\${process.env.SMTP_EMAIL}>\`,
+      from: `Teaching Pariksha <${process.env.SMTP_EMAIL}>`,
       to: user.email,
       subject: "Teaching Pariksha - Account Password Reset",
-      html: \`
+      html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
           <div style="background: white; border-radius: 12px; padding: 32px; text-align: center;">
             <h2 style="color: #1e293b; margin-bottom: 8px;">🎓 Teaching Pariksha</h2>
             <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Your password has been reset by an administrator.</p>
             <div style="background: #f1f5f9; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
               <p style="color: #64748b; font-size: 12px; margin-bottom: 8px;">Your Temporary Password</p>
-              <h2 style="color: #6E3FF3; font-size: 24px; letter-spacing: 2px; margin: 0;">\${tempPassword}</h2>
+              <h2 style="color: #6E3FF3; font-size: 24px; letter-spacing: 2px; margin: 0;">${tempPassword}</h2>
             </div>
             <p style="color: #94a3b8; font-size: 12px;">Please log in with this password and change it immediately from your profile.</p>
           </div>
         </div>
-      \`,
+      `,
     });
 
     res.json({ message: "Password reset email sent to the user." });
