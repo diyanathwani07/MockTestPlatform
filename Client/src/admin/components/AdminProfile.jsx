@@ -69,9 +69,10 @@ function AdminProfile() {
       <div className="admin-main" style={{ flex: 1, backgroundColor: "var(--bg-main)" }}>
         <AdminNavbar title="Admin Profile" />
         
-        <div className="admin-content sd-profile-container" style={{ padding: "32px", maxWidth: "1000px" }}>
+        <div className="sd-profile-container" style={{ padding: "32px", maxWidth: "1200px", margin: "0 auto" }}>
           
-          <div className={`sp-flip-container ${isEditing ? "flipped" : ""}`}>
+          <div className="sp-header" style={{ marginTop: '0' }}>
+            <div className={`sp-flip-container ${isEditing ? "flipped" : ""}`}>
             <div className="sp-flip-inner">
               
               <div className="sp-flip-front">
