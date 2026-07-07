@@ -8,7 +8,8 @@ const {
   deletePracticeQuiz,
   generateAIExplanations
 } = require("../controllers/practiceController");
-const { protect, adminOnly } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
 
 router.get("/", protect, getPracticeQuizzes);
 router.get("/:id", protect, getPracticeQuizById);
