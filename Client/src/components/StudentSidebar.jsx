@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, BrainCircuit } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
+import StudentChatbot from "./StudentChatbot";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,6 +60,7 @@ function StudentSidebar() {
           <span>Help & Support</span>
         </NavLink>
       </nav>
+      <StudentChatbot />
     </aside>
     </>
   );

@@ -7,7 +7,8 @@ import AdminRoute from "./components/AdminRoute";
 
 
 import AdminDashboard from "./admin/AdminDashboard";
-import CreateQuiz from "./admin/CreateQuizMulti";
+import CreateQuizSingle from "./admin/CreateQuiz";
+import CreateQuizMulti from "./admin/CreateQuizMulti";
 import EditQuiz from "./admin/EditQuiz";
 import ManageQuizzes from "./admin/ManageQuizzes";
 import AdminQuestions from "./admin/Questions";
@@ -224,7 +225,15 @@ function App() {
           path="/admin/create-quiz"
           element={
             <AdminRoute>
-              <CreateQuiz />
+              <CreateQuizSingle />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/create-quiz-multi"
+          element={
+            <AdminRoute>
+              <CreateQuizMulti />
             </AdminRoute>
           }
         />

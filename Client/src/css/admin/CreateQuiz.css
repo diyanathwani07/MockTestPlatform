@@ -12,6 +12,37 @@
   width: 100%;
 }
 
+.create-quiz-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   FORCE UNIFORM INPUT STYLING (Overriding AdminLayout.css !important bugs)
+   ========================================================================== */
+body.dark-mode .form-card input.force-quiz-input,
+body.dark-mode .form-field input.force-quiz-input,
+body.dark-mode .question-block input.force-quiz-input,
+input.force-quiz-input {
+  background-color: var(--bg-input) !important;
+  border: 1.5px solid var(--border-input) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  color: var(--text-primary) !important;
+  font-size: 13.5px !important;
+  outline: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.dark-mode .form-card input.force-quiz-input:focus,
+body.dark-mode .form-field input.force-quiz-input:focus,
+input.force-quiz-input:focus {
+  border-color: var(--violet) !important;
+  background-color: var(--bg-card) !important;
+  box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.12) !important;
+}
+
 .quiz-two-column-layout img {
   max-width: 100%;
   height: auto;

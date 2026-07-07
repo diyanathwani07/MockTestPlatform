@@ -12,7 +12,7 @@ const chatSupport = async (req, res) => {
       return res.status(400).json({ success: false, message: "Messages array is required." });
     }
 
-    const isAdmin = req.user && req.user.role === "admin";
+    const isAdmin = req.user && ["admin", "superadmin"].includes(req.user.role);
 
     // 1. Define a strict System Prompt based on role
     let systemInstruction = "";

@@ -62,9 +62,9 @@ function DocxParser({ onQuestionsLoaded }) {
   };
 
   return (
-    <div className="docx-parser-compact" style={{ padding: "10px 14px", border: "1.5px dashed var(--border-input)", borderRadius: "10px", backgroundColor: "var(--bg-input)", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}>
+    <div className="docx-parser-compact" style={{ padding: "10px 14px", border: "1.5px solid var(--border-color)", borderRadius: "10px", backgroundColor: "var(--bg-input)", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)" }}>📄 Import Qs (.docx)</span>
+        <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>📄 Import Qs (.docx)</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <a
@@ -88,7 +88,7 @@ function DocxParser({ onQuestionsLoaded }) {
         >
           Guide
         </a>
-        <label className="docx-upload-label" style={{ cursor: "pointer" }}>
+        <label className="docx-upload-label" style={{ cursor: "pointer", margin: 0 }}>
           <input
             type="file"
             accept=".docx"
@@ -100,16 +100,16 @@ function DocxParser({ onQuestionsLoaded }) {
             display: "flex", 
             alignItems: "center", 
             gap: "6px", 
-            padding: "6px 12px", 
-            border: "1.5px solid var(--violet)", 
-            borderRadius: "6px", 
-            backgroundColor: "rgba(110, 63, 243, 0.08)",
-            color: "var(--violet)",
-            fontSize: "11.5px",
+            padding: "8px 16px", 
+            borderRadius: "8px", 
+            backgroundColor: "var(--primary-color, #6E3FF3)",
+            color: "#fff",
+            fontSize: "12px",
             fontWeight: "700",
-            transition: "all 0.2s"
+            transition: "all 0.2s",
+            boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
           }}>
-            <span>{parsing ? "Wait..." : "📤 Import"}</span>
+            <span>{parsing ? "Parsing..." : "📥 Import"}</span>
           </div>
         </label>
       </div>

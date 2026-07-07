@@ -199,11 +199,29 @@ function CreateQuizMulti() {
   return (
     <div className="admin-layout">
       <AdminSidebar />
-      <div className="admin-main-content">
+      <div className="admin-main">
         <AdminNavbar title="Create Multi-Section Assessment" />
         
-        <div className="create-quiz-container animate-fade-in" style={{ padding: "24px" }}>
+        <div className="admin-content">
+          <div className="create-quiz-container animate-fade-in" style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
           
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
+              <div style={{ display: "flex", background: "var(--bg-input)", padding: "4px", borderRadius: "12px", border: "1.5px solid var(--border-input)" }}>
+                 <button 
+                   onClick={() => navigate('/admin/create-quiz')} 
+                   style={{ padding: "8px 24px", borderRadius: "8px", background: "transparent", color: "var(--text-muted)", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                 >
+                   Single Quiz
+                 </button>
+                 <button 
+                   onClick={() => navigate('/admin/create-quiz-multi')} 
+                   style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--primary-color, #6E3FF3)", color: "#fff", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                 >
+                   Multi-Section
+                 </button>
+              </div>
+            </div>
+
           {message.text && (
             <div className={`message-banner ${message.type === 'error' ? 'error' : 'success'}`} style={{ marginBottom: "20px", padding: "12px", borderRadius: "8px", background: message.type === 'error' ? '#fecaca' : '#bbf7d0', color: message.type === 'error' ? '#991b1b' : '#166534' }}>
               {message.text}
@@ -211,128 +229,201 @@ function CreateQuizMulti() {
           )}
 
           <div style={{ display: "flex", gap: "24px" }}>
-             {/* LEFT SIDEBAR: Sections List */}
-             <div style={{ width: "250px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-                <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "16px" }}>Sections</h3>
+             <div style={{ width: "350px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "20px" }}>
                 
-                {sections.map((sec, i) => (
-                   <div 
-                     key={sec.id}
-                     style={{
-                        padding: "12px",
-                        borderRadius: "8px",
-                        background: activeSectionId === sec.id ? "var(--primary-color)" : "var(--bg-input)",
-                        color: activeSectionId === sec.id ? "#fff" : "var(--text-main)",
-                        border: "1px solid var(--border-input)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px"
-                     }}
-                   >
-                     <div 
-                       onClick={() => setActiveSectionId(sec.id)}
-                       style={{ display: "flex", justifyContent: "space-between", cursor: "pointer" }}
-                     >
-                       <span style={{ fontWeight: 600 }}>{sec.title || `Section ${i+1}`}</span>
-                       <span style={{ fontSize: "12px", opacity: 0.8 }}>{sec.type}</span>
-                     </div>
-                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                        {i > 0 && (
-                          <button onClick={() => moveSection(i, 'up')} style={{ background: "transparent", border: "none", cursor: "pointer", color: "inherit" }}>↑</button>
-                        )}
-                        {i < sections.length - 1 && (
-                          <button onClick={() => moveSection(i, 'down')} style={{ background: "transparent", border: "none", cursor: "pointer", color: "inherit" }}>↓</button>
-                        )}
-                     </div>
-                   </div>
-                ))}
+                {/* LEFT SIDEBAR: Sections List */}
+                <div className="form-card" style={{ padding: "20px", marginBottom: 0 }}>
+                  <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)", fontSize: "16px" }}>Sections</h3>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {sections.map((sec, i) => (
+                      <div 
+                        key={sec.id}
+                        style={{
+                            padding: "12px",
+                            borderRadius: "8px",
+                            background: activeSectionId === sec.id ? "var(--primary-color)" : "var(--bg-input)",
+                            color: activeSectionId === sec.id ? "#fff" : "var(--text-main)",
+                            border: "1px solid var(--border-input)",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "8px"
+                        }}
+                      >
+                        <div 
+                          onClick={() => setActiveSectionId(sec.id)}
+                          style={{ display: "flex", justifyContent: "space-between", cursor: "pointer" }}
+                        >
+                          <span style={{ fontWeight: 600 }}>{sec.title || `Section ${i+1}`}</span>
+                          <span style={{ fontSize: "12px", opacity: 0.8 }}>{sec.type}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                            {i > 0 && (
+                              <button onClick={() => moveSection(i, 'up')} style={{ background: "transparent", border: "none", cursor: "pointer", color: "inherit" }}>↑</button>
+                            )}
+                            {i < sections.length - 1 && (
+                              <button onClick={() => moveSection(i, 'down')} style={{ background: "transparent", border: "none", cursor: "pointer", color: "inherit" }}>↓</button>
+                            )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
-                <button 
-                  onClick={handleAddSection}
-                  style={{ padding: "10px", background: "transparent", border: "1px dashed var(--primary-color)", color: "var(--primary-color)", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
-                >
-                  + Add Section
-                </button>
-
-                <hr style={{ borderColor: "var(--border-input)", margin: "16px 0" }} />
-                
-                <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "16px" }}>Global Settings</h3>
-                <input type="text" name="title" value={quizMeta.title} onChange={handleMetaChange} placeholder="Assessment Title" className="admin-input" />
-                <input type="text" name="subject" value={quizMeta.subject} onChange={handleMetaChange} placeholder="Subject Category" className="admin-input" />
-                <input type="text" name="examName" value={quizMeta.examName} onChange={handleMetaChange} placeholder="Exam Name (e.g. TCS NQT)" className="admin-input" />
-                <input type="text" name="description" value={quizMeta.description} onChange={handleMetaChange} placeholder="Description" className="admin-input" />
-                
-                <label style={{ color: "var(--text-muted)", fontSize: "12px" }}>Global Duration (Optional)</label>
-                <div style={{ display: "flex", gap: "8px" }}>
-                   <input type="number" name="durationMin" value={quizMeta.durationMin} onChange={handleMetaChange} placeholder="Min" className="admin-input" />
-                   <input type="number" name="durationSec" value={quizMeta.durationSec} onChange={handleMetaChange} placeholder="Sec" className="admin-input" />
+                  <button 
+                    onClick={handleAddSection}
+                    style={{ marginTop: "16px", padding: "10px", width: "100%", background: "transparent", border: "1.5px dashed var(--primary-color)", color: "var(--primary-color)", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
+                  >
+                    + Add Section
+                  </button>
                 </div>
                 
-                <button 
-                  onClick={() => handleSave(false)} 
-                  disabled={loading}
-                  style={{ padding: "12px", background: "var(--bg-input)", color: "var(--text-main)", border: "1px solid var(--border-input)", borderRadius: "8px", cursor: "pointer", marginTop: "20px" }}
-                >
-                  Save as Draft
-                </button>
-                <button 
-                  onClick={() => handleSave(true)} 
-                  disabled={loading}
-                  style={{ padding: "12px", background: "var(--primary-color)", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", marginTop: "8px" }}
-                >
-                  Publish Assessment
-                </button>
+                {/* LEFT SIDEBAR: Global Settings */}
+                <div className="form-card" style={{ padding: "20px", marginBottom: 0 }}>
+                  <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)", fontSize: "16px" }}>Global Settings</h3>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div className="form-field">
+                      <label>Assessment Title</label>
+                      <input type="text" name="title" value={quizMeta.title} onChange={handleMetaChange} placeholder="e.g. TCS NQT 2026" className="force-quiz-input" />
+                    </div>
+                    <div className="form-field">
+                      <label>Subject Category</label>
+                      <input type="text" name="subject" value={quizMeta.subject} onChange={handleMetaChange} placeholder="e.g. Aptitude" className="force-quiz-input" />
+                    </div>
+                    <div className="form-field">
+                      <label>Exam Name</label>
+                      <input type="text" name="examName" value={quizMeta.examName} onChange={handleMetaChange} placeholder="e.g. TCS NQT" className="force-quiz-input" />
+                    </div>
+                    <div className="form-field">
+                      <label>Description (Optional)</label>
+                      <input type="text" name="description" value={quizMeta.description} onChange={handleMetaChange} placeholder="Brief info..." className="force-quiz-input" />
+                    </div>
+                  
+                    <div className="form-field">
+                      <label>Global Duration (Optional)</label>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                         <input 
+                           type="number" 
+                           name="durationMin" 
+                           value={quizMeta.durationMin} 
+                           onChange={handleMetaChange} 
+                           placeholder="Min" 
+                           className="force-quiz-input"
+                         />
+                         <input 
+                           type="number" 
+                           name="durationSec" 
+                           value={quizMeta.durationSec} 
+                           onChange={handleMetaChange} 
+                           placeholder="Sec" 
+                           className="force-quiz-input"
+                         />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
+                    <button 
+                      onClick={() => handleSave(false)} 
+                      disabled={loading}
+                      style={{ padding: "12px", background: "var(--bg-input)", color: "var(--text-main)", border: "1px solid var(--border-input)", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      Save as Draft
+                    </button>
+                    <button 
+                      onClick={() => handleSave(true)} 
+                      disabled={loading}
+                      className="btn-primary"
+                      style={{ padding: "12px", borderRadius: "8px", cursor: "pointer", width: "100%", justifyContent: "center" }}
+                    >
+                      Publish Assessment
+                    </button>
+                  </div>
+                </div>
              </div>
 
              {/* MAIN AREA: Active Section Editor */}
              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "24px" }}>
                 {/* Section Config */}
                 <div className="form-card" style={{ padding: "20px", background: "var(--bg-card)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-                   <h3 style={{ margin: "0 0 16px 0", color: "var(--primary-color)" }}>Section Configuration</h3>
+                   <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)" }}>Section Configuration</h3>
                    
                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                      <div>
+                      <div className="form-field">
                          <label>Section Title</label>
-                         <input type="text" name="title" value={activeSection.title} onChange={handleSectionMetaChange} className="admin-input" />
+                         <input type="text" name="title" value={activeSection.title} onChange={handleSectionMetaChange} className="force-quiz-input" />
                       </div>
-                      <div>
+                      <div className="form-field">
                          <label>Section Type</label>
-                         <select name="type" value={activeSection.type} onChange={handleSectionMetaChange} className="admin-input">
+                         <select name="type" value={activeSection.type} onChange={handleSectionMetaChange} className="force-quiz-input">
                             <option value="standard">Standard (MCQ)</option>
                             <option value="coding">Coding (Multi-Difficulty)</option>
                          </select>
                       </div>
                    </div>
-
+                   
                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginTop: "16px" }}>
-                      <div>
+                      <div className="form-field">
                          <label>Marks Per Question</label>
-                         <input type="number" name="marksPerQuestion" value={activeSection.marksPerQuestion} onChange={handleSectionMetaChange} className="admin-input" />
+                         <input 
+                           type="number" 
+                           name="marksPerQuestion" 
+                           value={activeSection.marksPerQuestion} 
+                           onChange={handleSectionMetaChange} 
+                           className="force-quiz-input"
+                         />
                       </div>
-                      <div>
+                      <div className="form-field">
                          <label>Negative Marking</label>
-                         <input type="number" name="negativeMarking" value={activeSection.negativeMarking} onChange={handleSectionMetaChange} className="admin-input" />
+                         <input 
+                           type="number" 
+                           name="negativeMarking" 
+                           value={activeSection.negativeMarking} 
+                           onChange={handleSectionMetaChange} 
+                           className="force-quiz-input"
+                         />
                       </div>
-                      <div>
+                      <div className="form-field">
                          <label>Question Limit (0=All)</label>
-                         <input type="number" name="questionLimit" value={activeSection.questionLimit} onChange={handleSectionMetaChange} className="admin-input" />
+                         <input 
+                           type="number" 
+                           name="questionLimit" 
+                           value={activeSection.questionLimit} 
+                           onChange={handleSectionMetaChange} 
+                           className="force-quiz-input"
+                         />
                       </div>
-                      <div>
+                   </div>
+
+                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
+                      <div className="form-field">
                          <label>Duration (Minutes)</label>
-                         <input type="number" name="durationMin" value={activeSection.durationMin} onChange={handleSectionMetaChange} className="admin-input" />
+                         <input 
+                           type="number" 
+                           name="durationMin" 
+                           value={activeSection.durationMin} 
+                           onChange={handleSectionMetaChange} 
+                           className="force-quiz-input"
+                         />
                       </div>
-                      <div>
+                      <div className="form-field">
                          <label>Duration (Seconds)</label>
-                         <input type="number" name="durationSec" value={activeSection.durationSec} onChange={handleSectionMetaChange} className="admin-input" />
+                         <input 
+                           type="number" 
+                           name="durationSec" 
+                           value={activeSection.durationSec} 
+                           onChange={handleSectionMetaChange} 
+                           className="force-quiz-input"
+                         />
                       </div>
                    </div>
                 </div>
 
                 {/* Section Questions */}
                 <div className="form-card" style={{ padding: "20px", background: "var(--bg-card)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "16px" }}>
                       <h3 style={{ margin: 0, color: "var(--text-main)" }}>Questions</h3>
-                      <div style={{ width: "300px" }}>
+                      <div style={{ width: "350px", flexShrink: 0 }}>
                          <DocxParser onQuestionsLoaded={handleDocxImport} />
                       </div>
                    </div>
@@ -430,6 +521,7 @@ function CreateQuizMulti() {
                 </div>
 
              </div>
+          </div>
           </div>
         </div>
       </div>

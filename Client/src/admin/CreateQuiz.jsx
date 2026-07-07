@@ -482,6 +482,24 @@ function CreateQuiz() {
 
         <div className="admin-content">
           <div className="create-quiz-page">
+            
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
+              <div style={{ display: "flex", background: "var(--bg-input)", padding: "4px", borderRadius: "12px", border: "1.5px solid var(--border-input)" }}>
+                 <button 
+                   onClick={() => navigate('/admin/create-quiz')} 
+                   style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--primary-color, #6E3FF3)", color: "#fff", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                 >
+                   Single Quiz
+                 </button>
+                 <button 
+                   onClick={() => navigate('/admin/create-quiz-multi')} 
+                   style={{ padding: "8px 24px", borderRadius: "8px", background: "transparent", color: "var(--text-muted)", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                 >
+                   Multi-Section
+                 </button>
+              </div>
+            </div>
+
             {message.text && (
               <p className={`admin-status-message ${message.type}`}>
                 {message.text}
