@@ -8,6 +8,7 @@ function AuditLog() {
   const [search, setSearch] = useState("");
   const [moduleFilter, setModuleFilter] = useState("All Modules");
   const [filterDate, setFilterDate] = useState("");
+  const [viewMode, setViewMode] = useState("Admin Actions"); // 'All Activity' or 'Admin Actions'
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -67,7 +68,15 @@ function AuditLog() {
                   logDate.getDate() === selectedDate.getDate();
     }
 
-    return matchSearch && matchModule && matchDate;
+    let matchMode = true;
+    if (viewMode === "Admin Actions") {
+      // START_QUIZ is the main student noise
+      matchMode = log.action !== "START_QUIZ";
+    } else if (viewMode === "Student Actions") {
+      matchMode = log.action === "START_QUIZ";
+    }
+
+    return matchSearch && matchModule && matchDate && matchMode;
   });
 
   return (
@@ -79,7 +88,7 @@ function AuditLog() {
         <div className="admin-content">
 
           {/* ── Filters Row ── */}
-          <div className="filters-row-scrollable" style={{ display: "flex", gap: "14px", marginBottom: "24px", alignItems: "center", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px" }}>
+          <div className="filters-row-scrollable" style={{ display: "flex", gap: "14px", marginBottom: "24px", alignItems: "center", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px", justifyContent: "flex-start" }}>
             <input
               placeholder="Search by action, user or details..."
               value={search}
@@ -91,7 +100,8 @@ function AuditLog() {
                 backgroundColor: "var(--bg-input)",
                 color: "var(--text-primary)",
                 fontSize: "13px",
-                flex: "1 0 250px",
+                width: "250px", // compact search
+                flexShrink: 0,
                 outline: "none",
                 fontFamily: "inherit",
               }}
@@ -106,7 +116,8 @@ function AuditLog() {
                 backgroundColor: "var(--bg-input)",
                 color: "var(--text-primary)",
                 fontSize: "13px",
-                flex: "0 0 150px",
+                width: "150px",
+                flexShrink: 0,
                 outline: "none",
                 fontFamily: "inherit",
                 cursor: "pointer",
@@ -117,6 +128,29 @@ function AuditLog() {
               <option>Users</option>
               <option>Results</option>
               <option>Settings</option>
+            </select>
+            
+            <select
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value)}
+              style={{
+                padding: "11px 16px",
+                borderRadius: "10px",
+                border: "1.5px solid var(--border-color)",
+                backgroundColor: "var(--bg-input)",
+                color: "var(--text-primary)",
+                fontSize: "13px",
+                width: "160px",
+                flexShrink: 0,
+                outline: "none",
+                fontFamily: "inherit",
+                cursor: "pointer",
+                fontWeight: "600"
+              }}
+            >
+              <option>Admin Actions</option>
+              <option>Student Actions</option>
+              <option>All Activity</option>
             </select>
             
             {/* ── Date Filter ── */}

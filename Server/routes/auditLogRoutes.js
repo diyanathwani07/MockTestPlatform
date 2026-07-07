@@ -2,15 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const { protect } = require("../middleware/authMiddleware");
-const { adminOnly } = require("../middleware/adminMiddleware");
+const { adminOnly, superAdminOnly } = require("../middleware/adminMiddleware");
 
 const {
   getAuditLogs,
   createAuditLog,
 } = require("../controllers/auditLogController");
 
-// Admin fetches all logs
-router.get("/", protect, adminOnly, getAuditLogs);
+// Superadmin fetches all logs
+router.get("/", protect, superAdminOnly, getAuditLogs);
 
 // Students (or any authenticated user) post start logs
 router.post("/", protect, createAuditLog);

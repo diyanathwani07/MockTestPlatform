@@ -6,6 +6,7 @@ import AdminChatbot from './AdminChatbot';
 
 function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const currentUserRole = localStorage.getItem("role");
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -56,10 +57,12 @@ function AdminSidebar() {
             <span>Reports</span>
           </NavLink>
           
-          <NavLink to="/admin/audit-log" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <FileText size={20} />
-            <span>Audit Log</span>
-          </NavLink>
+          {currentUserRole === 'superadmin' && (
+            <NavLink to="/admin/audit-log" className="sidebar-link" onClick={() => setIsOpen(false)}>
+              <FileText size={20} />
+              <span>Audit Log</span>
+            </NavLink>
+          )}
           
           <NavLink to="/admin/tickets" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <LifeBuoy size={20} />
