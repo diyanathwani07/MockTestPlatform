@@ -141,7 +141,23 @@ function PracticeTest() {
             </div>
           </div>
 
-          <div className="practice-question-card">
+          {/* ── LEARNING STATUS PANEL ── */}
+          <div className="practice-learning-status">
+            <div className="status-item">
+              <span className="status-label">Attempts</span>
+              <span className="status-value">{Object.keys(selectedOptions).length}</span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Wrong Attempts</span>
+              <span className="status-value">{Object.keys(selectedOptions).length - (isCorrectSelected ? 1 : 0)}</span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Correct on Attempt</span>
+              <span className="status-value">{isCorrectSelected ? Object.keys(selectedOptions).length : "-"}</span>
+            </div>
+          </div>
+
+          <div className="practice-question-card animate-fade-in">
             <div className="practice-q-text">
               <span className="q-num">Q{currentIndex + 1}.</span>
               <div className="q-content">
@@ -206,7 +222,7 @@ function PracticeTest() {
 
             {/* Show full explanation when correct answer is found */}
             {isCorrectSelected && currentQuestion.explanations?.correct && (
-              <div className="practice-full-exp" style={{ marginTop: "24px", padding: "20px", backgroundColor: "rgba(74, 222, 128, 0.05)", border: "1px solid rgba(74, 222, 128, 0.2)", borderRadius: "12px" }}>
+              <div className="practice-full-exp animate-slide-up" style={{ marginTop: "24px", padding: "20px", backgroundColor: "rgba(74, 222, 128, 0.05)", border: "1px solid rgba(74, 222, 128, 0.2)", borderRadius: "12px" }}>
                 <h4 style={{ display: "flex", alignItems: "center", gap: "8px", color: "#4ade80", margin: "0 0 12px 0", fontSize: "18px" }}>
                   <CheckCircle size={20} /> Correct Answer Explanation
                 </h4>
@@ -215,26 +231,35 @@ function PracticeTest() {
                 </p>
                 
                 {currentQuestion.explanations.conceptSummary && (
-                  <div style={{ padding: "16px", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "8px", borderLeft: "3px solid var(--primary-color)" }}>
-                    <h5 style={{ margin: "0 0 8px 0", color: "var(--primary-color)", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px" }}>Concept Summary</h5>
-                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.5" }}>
+                  <div className="concept-summary-card animate-fade-in" style={{ padding: "16px", backgroundColor: "rgba(108, 93, 211, 0.1)", borderRadius: "8px", borderLeft: "4px solid var(--primary-color)" }}>
+                    <h5 style={{ margin: "0 0 8px 0", color: "var(--primary-color)", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      💡 Concept Summary
+                    </h5>
+                    <p style={{ margin: 0, color: "var(--text-main)", fontSize: "14px", lineHeight: "1.6" }}>
                       {currentQuestion.explanations.conceptSummary}
                     </p>
                   </div>
                 )}
+                
+                <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
+                  <button className="ai-explain-btn" onClick={() => alert("AI Explanation integration coming soon!")}>
+                    ✨ Explain with AI
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
           <div className="practice-footer">
-             <button 
+              <button 
                 className={`practice-next-btn ${isCorrectSelected ? 'active' : ''}`}
                 onClick={handleNext}
                 disabled={!isCorrectSelected}
-             >
-                {currentIndex === questions.length - 1 ? 'Finish Practice' : 'Next Question'}
-                <ChevronRight size={20} />
-             </button>
+              >
+                {isCorrectSelected ? (
+                  currentIndex === questions.length - 1 ? 'Finish Practice' : 'Continue Learning →'
+                ) : 'Next Question'}
+              </button>
           </div>
 
         </div>
