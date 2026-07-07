@@ -4,6 +4,8 @@ import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
+import "../css/AdminTickets.css";
+import { X, User, ShieldCheck, Clock, Activity, Phone } from 'lucide-react';
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -274,44 +276,66 @@ function Users() {
           
           {/* PROFILE MODAL */}
           {activeModal === 'profile' && (
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '16px', width: '400px', maxWidth: '90%', border: '1px solid var(--border-color)', position: 'relative', animation: 'dropdownFade 0.3s ease' }}>
-              <button onClick={closeModal} style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '18px' }}>✕</button>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <div className="user-avatar-circle" style={{ width: '80px', height: '80px', fontSize: '28px' }}>
-                  {selectedUser.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"}
-                </div>
-                <h2 style={{ margin: 0, fontSize: '22px', color: 'var(--text-primary)' }}>{selectedUser.fullName}</h2>
-                <span className={`role-outline-badge ${selectedUser.role === 'user' ? 'role-user' : 'role-admin'}`}>
-                  {selectedUser.role || "User"}
-                </span>
+            <div className="ticket-modal" onClick={(e) => e.stopPropagation()} style={{ animation: 'dropdownFade 0.3s ease', maxWidth: '500px', width: '100%' }}>
+              <div className="modal-header">
+                <h3>User Profile</h3>
+                <button className="close-btn" onClick={closeModal}>
+                  <X size={20} />
+                </button>
               </div>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Mock Tests Attempted</span>
-                  <span style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>{quizzesAttempted !== null ? quizzesAttempted : "Loading..."}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Address</span>
-                  <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{selectedUser.email}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Phone No</span>
-                  <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{selectedUser.phone || "Not provided"}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Joined Date</span>
-                  <span style={{ color: 'var(--text-primary)', fontSize: '15px' }}>
-                    {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-') + ", " + new Date(selectedUser.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "N/A"}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</span>
-                  <div className="status-active-cell" style={{ alignSelf: 'flex-start', marginTop: '4px', color: selectedUser.status === 'Suspended' ? '#ef4444' : '' }}>
-                    <span className="status-dot" style={{ backgroundColor: selectedUser.status === 'Suspended' ? '#ef4444' : '', boxShadow: selectedUser.status === 'Suspended' ? '0 0 8px rgba(239,68,68,0.5)' : '' }}></span>
-                    <span>{selectedUser.status || 'Active'}</span>
+              <div className="modal-body">
+                <div className="ticket-meta">
+                  
+                  <div className="meta-item">
+                    <User size={16} style={{ marginTop: '2px' }} />
+                    <div>
+                      <p className="meta-label">User Details</p>
+                      <p className="meta-value">{selectedUser.fullName || "Unknown"}</p>
+                      <p className="meta-sub">{selectedUser.email}</p>
+                    </div>
                   </div>
+                  
+                  <div className="meta-item">
+                    <ShieldCheck size={16} style={{ marginTop: '2px' }} />
+                    <div>
+                      <p className="meta-label">Role & Status</p>
+                      <p className="meta-value" style={{ textTransform: 'capitalize' }}>
+                        {selectedUser.role || "User"} 
+                        <span style={{ margin: '0 8px', color: 'var(--text-muted)' }}>|</span> 
+                        <span style={{ color: selectedUser.status === 'Suspended' ? '#ef4444' : 'var(--green)' }}>
+                          {selectedUser.status || 'Active'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="meta-item">
+                    <Activity size={16} style={{ marginTop: '2px' }} />
+                    <div>
+                      <p className="meta-label">Mock Tests Attempted</p>
+                      <p className="meta-value">{quizzesAttempted !== null ? quizzesAttempted : "Loading..."}</p>
+                    </div>
+                  </div>
+
+                  <div className="meta-item">
+                    <Clock size={16} style={{ marginTop: '2px' }} />
+                    <div>
+                      <p className="meta-label">Joined On</p>
+                      <p className="meta-value">
+                        {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="meta-item">
+                    <Phone size={16} style={{ marginTop: '2px' }} />
+                    <div>
+                      <p className="meta-label">Phone No</p>
+                      <p className="meta-value">{selectedUser.phone || "Not provided"}</p>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
