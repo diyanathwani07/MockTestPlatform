@@ -9,6 +9,15 @@ function AdminProfile() {
   const [initials, setInitials] = useState("");
   const [adminId, setAdminId] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    dateOfBirth: "",
+    gender: "",
+    location: "",
+    bio: ""
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -25,8 +34,32 @@ function AdminProfile() {
       } else {
         setAdminId("ADM2026001");
       }
+      
+      setFormData({
+        fullName: u.fullName || u.name || "Administrator",
+        phone: u.phone || "",
+        dateOfBirth: u.dateOfBirth ? u.dateOfBirth.split('T')[0] : "",
+        gender: u.gender || "",
+        location: u.location || "",
+        bio: u.bio || ""
+      });
     }
   }, []);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    // Simulate save delay
+    setTimeout(() => {
+      setUser({ ...user, ...formData });
+      setIsEditing(false);
+      setIsSaving(false);
+    }, 800);
+  };
 
   if (!user) return <div style={{padding: '40px', textAlign: 'center'}}>Loading...</div>;
 
@@ -108,9 +141,9 @@ function AdminProfile() {
 
                     {/* Right Column: Bio */}
                     <div className="sp-bio-column">
-                      <h4 className="sp-section-subtitle">System Role</h4>
+                      <h4 className="sp-section-subtitle">Bio</h4>
                       <p className="sp-bio-text">
-                        System Administrator responsible for managing platform content, user accounts, and test operations. Full read/write access to the database and analytics.
+                        {user.bio || "System Administrator responsible for managing platform content, user accounts, and test operations. Full read/write access to the database and analytics."}
                       </p>
                     </div>
                   </div>
@@ -121,21 +154,43 @@ function AdminProfile() {
               <div className="sp-flip-back">
                 <h2 className="sp-edit-title">Edit Administrator Profile</h2>
                 
-                <form>
+                <form onSubmit={handleSave}>
                   <div className="sp-form-grid">
                     <div className="sp-form-group">
                       <label>Full Name</label>
-                      <input type="text" defaultValue={user.fullName || user.name || "Administrator"} />
+                      <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Administrator" required />
                     </div>
                     <div className="sp-form-group">
-                      <label>Email Address</label>
-                      <input type="email" defaultValue={user.email || "admin@example.com"} />
+                      <label>Email Address (Read Only)</label>
+                      <input type="email" defaultValue={user.email || "admin@example.com"} disabled style={{opacity: 0.7, cursor: 'not-allowed'}} />
+                    </div>
+                    <div className="sp-form-group">
+                      <label>Phone Number</label>
+                      <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 98765 43210" />
+                    </div>
+                    <div className="sp-form-group">
+                      <label>Date of Birth</label>
+                      <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
+                    </div>
+                    <div className="sp-form-group">
+                      <label>Gender</label>
+                      <input type="text" name="gender" value={formData.gender} onChange={handleChange} placeholder="Male / Female / Other" />
+                    </div>
+                    <div className="sp-form-group">
+                      <label>Location (City, State)</label>
+                      <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Nagpur, Maharashtra" />
+                    </div>
+                    <div className="sp-form-group full-width">
+                      <label>Bio</label>
+                      <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="System Administrator..."></textarea>
                     </div>
                   </div>
                   
                   <div className="sp-form-actions">
-                    <button type="button" className="sp-btn-cancel" onClick={() => setIsEditing(false)}>Cancel</button>
-                    <button type="button" className="sp-btn-save" onClick={() => setIsEditing(false)}>Save Changes</button>
+                    <button type="button" className="sp-btn-cancel" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</button>
+                    <button type="submit" className="sp-btn-save" disabled={isSaving}>
+                      {isSaving ? "Saving..." : "Save Changes"}
+                    </button>
                   </div>
                 </form>
               </div>
