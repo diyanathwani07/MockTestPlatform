@@ -322,9 +322,32 @@ function Users() {
           {/* PROFILE MODAL */}
           {(activeModal === 'profile_popup' || activeModal === 'profile_drawer') && selectedUser && (
             <div className={`ticket-modal ${activeModal === 'profile_popup' ? 'center-modal' : ''}`} onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>User Profile</h3>
-                <button className="close-btn" onClick={closeModal}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                {activeModal === 'profile_drawer' && (
+                  <button 
+                    className="close-btn" 
+                    onClick={() => {
+                      setActiveModal(null);
+                      setActionDrawerOpen(true);
+                    }}
+                    style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center", 
+                      background: "transparent", 
+                      border: "1px solid var(--border-color)", 
+                      borderRadius: "8px", 
+                      padding: "6px", 
+                      cursor: "pointer",
+                      color: "var(--text-secondary)"
+                    }}
+                    title="Back to Actions"
+                  >
+                    <ArrowLeft size={18} />
+                  </button>
+                )}
+                <h3 style={{ margin: 0 }}>User Profile</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
                   <X size={20} />
                 </button>
               </div>
@@ -455,9 +478,30 @@ function Users() {
           {/* ROLE MODAL */}
           {activeModal === 'role' && (
             <div className="ticket-modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Change Role</h3>
-                <button className="close-btn" onClick={closeModal}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Change Role</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
                   <X size={20} />
                 </button>
               </div>
@@ -483,9 +527,30 @@ function Users() {
           {/* SUSPEND MODAL */}
           {activeModal === 'suspend' && (
             <div className="ticket-modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>{(selectedUser.status || 'Active') === 'Active' ? 'Suspend User' : 'Activate User'}</h3>
-                <button className="close-btn" onClick={closeModal}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>{(selectedUser.status || 'Active') === 'Active' ? 'Suspend User' : 'Activate User'}</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
                   <X size={20} />
                 </button>
               </div>
@@ -506,9 +571,30 @@ function Users() {
           {/* RESET PASSWORD MODAL */}
           {activeModal === 'reset' && (
             <div className="ticket-modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Reset Password</h3>
-                <button className="close-btn" onClick={closeModal}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Reset Password</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
                   <X size={20} />
                 </button>
               </div>
@@ -525,9 +611,30 @@ function Users() {
           {/* DELETE MODAL */}
           {activeModal === 'delete' && (
             <div className="ticket-modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Delete User</h3>
-                <button className="close-btn" onClick={closeModal}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Delete User</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
                   <X size={20} />
                 </button>
               </div>
