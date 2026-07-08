@@ -12,11 +12,17 @@ const createTicket = async (req, res) => {
       return res.status(400).json({ message: "Please provide all required fields." });
     }
 
+    let attachmentPath = "";
+    if (req.file) {
+      attachmentPath = `/uploads/${req.file.filename}`;
+    }
+
     const ticket = await Ticket.create({
       userId: req.user._id,
       subject,
       category,
       message,
+      attachment: attachmentPath,
     });
 
     await logAction("CREATE_TICKET", req.user.fullName || "User", `Ticket: ${subject}`, "Support", req.ip);
@@ -93,9 +99,62 @@ const updateTicketStatus = async (req, res) => {
   }
 };
 
+// @desc    Reply to a ticket (Admin or Student)
+// @route   POST /api/tickets/:id/reply
+// @access  Private
+const replyToTicket = async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ message: "Reply message cannot be empty." });
+    }
+
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found." });
+    }
+
+    // Determine sender type (Admin vs Student)
+    const senderType = req.user.role === "admin" || req.user.role === "superadmin" ? "Admin" : "Student";
+    
+    let attachmentPath = "";
+    if (req.file) {
+      attachmentPath = `/uploads/${req.file.filename}`;
+    }
+
+    // Add reply
+    ticket.replies.push({
+      senderType,
+      senderId: req.user._id,
+      message,
+      attachment: attachmentPath,
+    });
+
+    // Optionally update ticket status to In Progress if Admin replies to an Open ticket
+    if (senderType === "Admin" && ticket.status === "Open") {
+      ticket.status = "In Progress";
+    }
+
+    await ticket.save();
+
+    await logAction("TICKET_REPLY", req.user.fullName || "User", `Replied to ticket: ${ticket.subject}`, "Support", req.ip);
+
+    res.status(201).json({
+      success: true,
+      message: "Reply added successfully.",
+      ticket, // Returns updated ticket with new replies array
+    });
+  } catch (error) {
+    console.error("Reply to Ticket Error:", error);
+    res.status(500).json({ message: "Failed to add reply." });
+  }
+};
+
 module.exports = {
   createTicket,
   getMyTickets,
   getAllTickets,
   updateTicketStatus,
+  replyToTicket,
 };

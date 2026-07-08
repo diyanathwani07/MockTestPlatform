@@ -21,9 +21,39 @@ const ticketSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Open", "In Progress", "Resolved"],
+      enum: ["Open", "In Progress", "Resolved", "Closed"],
       default: "Open",
     },
+    attachment: {
+      type: String,
+      default: "",
+    },
+    replies: [
+      {
+        senderType: {
+          type: String,
+          enum: ["Admin", "Student"],
+          required: true,
+        },
+        senderId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User", 
+          required: false, 
+        },
+        message: {
+          type: String,
+          required: true,
+        },
+        attachment: {
+          type: String,
+          default: "",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

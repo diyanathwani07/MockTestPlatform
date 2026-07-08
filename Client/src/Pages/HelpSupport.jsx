@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Search, Send, Image as ImageIcon, MessageCircle, Headphones, ChevronDown, ChevronUp, ArrowRight, Eye, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Send, Image as ImageIcon, MessageCircle, Headphones, ChevronDown, ChevronUp, ArrowRight, Eye, Plus, ChevronLeft, ChevronRight, User } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { usePreview } from "../context/PreviewContext";
@@ -13,12 +13,18 @@ function HelpSupport() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
+  const [ticketFile, setTicketFile] = useState(null);
+  const [replyFile, setReplyFile] = useState(null);
 
   const [activeTab, setActiveTab] = useState("Help Center");
   const [myTickets, setMyTickets] = useState([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ticketsPerPage = 5;
+
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [replying, setReplying] = useState(false);
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
@@ -64,7 +70,12 @@ function HelpSupport() {
       });
       setMyTickets(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("fetchMyTickets Error:", err);
+      if (err.response?.status === 401) {
+        alert("Your session has expired. Please log out and log in again.");
+      } else {
+        alert("Failed to fetch tickets: " + (err.response?.data?.message || err.message));
+      }
     } finally {
       setLoadingTickets(false);
     }
@@ -111,6 +122,47 @@ function HelpSupport() {
     }
   };
 
+  const handleReplySubmit = async (e) => {
+    e.preventDefault();
+    if (!replyMessage.trim() || !selectedTicket) return;
+    setReplying(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      
+      const formData = new FormData();
+      formData.append("message", replyMessage);
+      if (replyFile) {
+        formData.append("attachment", replyFile);
+      }
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/reply`,
+        formData,
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data" 
+          } 
+        }
+      );
+      
+      const updatedTicket = res.data.ticket;
+      setMyTickets(myTickets.map(t => 
+        t._id === updatedTicket._id ? updatedTicket : t
+      ));
+      setSelectedTicket(updatedTicket);
+      setReplyMessage("");
+      setReplyFile(null);
+      
+    } catch (err) {
+      console.error("Error sending reply:", err);
+      alert("Failed to send reply.");
+    } finally {
+      setReplying(false);
+    }
+  };
+
   const handleChange = (e) => {
     setTicket({ ...ticket, [e.target.name]: e.target.value });
   };
@@ -125,13 +177,28 @@ function HelpSupport() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      
+      const formData = new FormData();
+      formData.append("subject", ticket.subject);
+      formData.append("category", ticket.category);
+      formData.append("message", ticket.message);
+      if (ticketFile) {
+        formData.append("attachment", ticketFile);
+      }
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/tickets`,
-        ticket,
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData,
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data" 
+          } 
+        }
       );
       setSuccessMsg("Your support ticket has been submitted successfully!");
       setTicket({ subject: "", category: "", message: "" });
+      setTicketFile(null);
       setTimeout(() => setSuccessMsg(""), 5000);
       setShowTicketForm(false);
       setActiveTab("My Tickets");
@@ -201,8 +268,8 @@ function HelpSupport() {
               <ImageIcon size={24} />
             </div>
             <p className="hs-attach-title">Attach Screenshot (Optional)</p>
-            <p className="hs-attach-desc">PNG, JPG up to 5MB</p>
-            <input type="file" className="hs-file-input" accept="image/png, image/jpeg" />
+            <p className="hs-attach-desc">{ticketFile ? ticketFile.name : "PNG, JPG up to 5MB"}</p>
+            <input type="file" className="hs-file-input" accept="image/png, image/jpeg" onChange={(e) => setTicketFile(e.target.files[0])} />
           </div>
         </div>
 
@@ -305,7 +372,7 @@ function HelpSupport() {
                               </td>
                               <td>{formatDate(tkt.updatedAt || tkt.createdAt)}</td>
                               <td>
-                                <button className="hs-ticket-action" title="View Details">
+                                <button className="hs-ticket-action" title="View Details" onClick={() => setSelectedTicket(tkt)}>
                                   <Eye size={16} />
                                 </button>
                               </td>
@@ -446,6 +513,161 @@ function HelpSupport() {
           </div>
         </div>
       </div>
+
+      {/* TICKET DETAILS MODAL */}
+      {selectedTicket && (
+        <div className="modal-overlay" onClick={() => setSelectedTicket(null)} style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div className="ticket-modal" onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", width: "100%", maxWidth: "600px", borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "90vh" }}>
+            <div className="modal-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-card)" }}>
+              <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "18px" }}>Ticket Details</h3>
+              <button onClick={() => setSelectedTicket(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
+                ✕
+              </button>
+            </div>
+            
+            <div className="modal-body" style={{ padding: "24px", overflowY: "auto", flex: 1 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
+                <div>
+                  <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "12px" }}>Category</p>
+                  <p style={{ margin: 0, color: "var(--text-main)", fontWeight: 600 }}>{selectedTicket.category}</p>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "12px" }}>Status</p>
+                  <span className={`hs-status-badge ${selectedTicket.status.toLowerCase().replace(" ", "-")}`}>
+                    <div className="hs-status-dot"></div>
+                    {selectedTicket.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="ticket-content">
+                <h4 style={{ margin: "0 0 16px 0", color: "var(--text-main)", fontSize: "16px" }}>{selectedTicket.subject}</h4>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "8px" }}>
+                  <div style={{ background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", padding: "8px", borderRadius: "8px", marginTop: "4px" }}>
+                    <User size={20} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 600, margin: "0 0 4px 0", color: "var(--text-main)", fontSize: "14px" }}>You</p>
+                    <p style={{ margin: 0, color: "var(--text-primary)", fontSize: "14px", lineHeight: "1.5" }}>{selectedTicket.message}</p>
+                    {selectedTicket.attachment && (
+                      <div style={{ marginTop: "12px" }}>
+                        <img src={`${import.meta.env.VITE_API_URL}${selectedTicket.attachment}`} alt="Attachment" style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px", border: "1px solid var(--border-color)" }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* THREADED REPLIES */}
+              {selectedTicket.replies && selectedTicket.replies.length > 0 && (
+                <div className="ticket-replies" style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <h5 style={{ margin: 0, color: "var(--text-secondary)", fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px" }}>Conversation History</h5>
+                  {selectedTicket.replies.map((reply, idx) => {
+                    const isStudent = reply.senderType === 'Student';
+                    return (
+                      <div key={idx} style={{ 
+                        display: "flex", 
+                        alignItems: "flex-start", 
+                        gap: "12px",
+                        flexDirection: isStudent ? "row" : "row-reverse"
+                      }}>
+                        <div style={{ 
+                          background: isStudent ? "rgba(110, 63, 243, 0.1)" : "rgba(16, 185, 129, 0.1)", 
+                          color: isStudent ? "#6E3FF3" : "#10B981", 
+                          padding: "8px", 
+                          borderRadius: "8px", 
+                          marginTop: "4px" 
+                        }}>
+                          {isStudent ? <User size={20} /> : <Headphones size={20} />}
+                        </div>
+                        <div style={{ 
+                          flex: 1, 
+                          background: isStudent ? "rgba(110, 63, 243, 0.03)" : "rgba(16, 185, 129, 0.05)", 
+                          padding: "12px 16px",
+                          borderRadius: "12px",
+                          border: `1px solid ${isStudent ? "rgba(110, 63, 243, 0.1)" : "rgba(16, 185, 129, 0.2)"}`,
+                          textAlign: isStudent ? "left" : "right"
+                        }}>
+                          <p style={{ fontWeight: 600, margin: "0 0 6px 0", color: isStudent ? "#6E3FF3" : "#10B981", fontSize: "13px" }}>
+                            {isStudent ? "You" : "Admin Support"}
+                            <span style={{ fontWeight: "normal", color: "var(--text-muted)", fontSize: "11px", marginLeft: "8px", marginRight: "8px" }}>
+                              {new Date(reply.createdAt).toLocaleString()}
+                            </span>
+                          </p>
+                          <p style={{ margin: 0, color: "var(--text-primary)", fontSize: "14px", lineHeight: "1.5" }}>{reply.message}</p>
+                          {reply.attachment && (
+                            <div style={{ marginTop: "12px", textAlign: isStudent ? "left" : "right" }}>
+                              <img src={`${import.meta.env.VITE_API_URL}${reply.attachment}`} alt="Attachment" style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px", border: "1px solid var(--border-color)" }} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              {/* REPLY INPUT */}
+              {selectedTicket.status !== 'Closed' && (
+                <form onSubmit={handleReplySubmit} style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <textarea
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    placeholder="Type your reply to admin here..."
+                    style={{
+                      width: "100%",
+                      minHeight: "100px",
+                      padding: "16px",
+                      borderRadius: "12px",
+                      border: "1px solid var(--border-color)",
+                      background: "var(--bg-input)",
+                      color: "var(--text-primary)",
+                      fontFamily: "inherit",
+                      resize: "vertical",
+                      outline: "none",
+                      boxSizing: "border-box"
+                    }}
+                  />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ position: "relative" }}>
+                      <input 
+                        type="file" 
+                        accept="image/png, image/jpeg" 
+                        id="reply-attachment"
+                        style={{ display: "none" }}
+                        onChange={(e) => setReplyFile(e.target.files[0])}
+                      />
+                      <label htmlFor="reply-attachment" style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "var(--text-muted)", fontSize: "14px" }}>
+                        <ImageIcon size={20} />
+                        {replyFile ? replyFile.name : "Attach Image"}
+                      </label>
+                    </div>
+                    <button 
+                      type="submit" 
+                      disabled={replying || (!replyMessage.trim() && !replyFile)}
+                      style={{
+                        padding: "10px 24px",
+                        background: "var(--primary-color)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        cursor: replying || (!replyMessage.trim() && !replyFile) ? "not-allowed" : "pointer",
+                        opacity: replying || (!replyMessage.trim() && !replyFile) ? 0.6 : 1,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px"
+                      }}
+                    >
+                      {replying ? "Sending..." : "Send Reply"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,6 +20,7 @@ const resultRoutes = require("./routes/resultRoutes");
 const app = express();
 const PORT = 5000;
 const dns = require("dns");
+const path = require("path");
 
 // Trust proxy to properly capture real IP addresses behind load balancers/reverse proxies (e.g., AWS, Heroku, Nginx)
 app.set("trust proxy", true);
@@ -33,6 +34,7 @@ connectDB();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Home Route
 app.get("/", (req, res) => {
