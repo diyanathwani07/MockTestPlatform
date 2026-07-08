@@ -529,3 +529,9 @@ body.dark-mode .review-list .review-item,
   color: #1E293B !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
 }
+
+/* Specificity overrides to force dark text color onsticky review header */
+body.dark-mode .result-details h2,
+.result-details h2 {
+  color: #1A1C23 !important;
+}
