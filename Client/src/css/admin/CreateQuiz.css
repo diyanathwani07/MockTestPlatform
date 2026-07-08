@@ -20,6 +20,16 @@
 /* ==========================================================================
    FORCE UNIFORM INPUT STYLING (Overriding AdminLayout.css !important bugs)
    ========================================================================== */
+/* Hide number input spinners to prevent text overlap */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 body.dark-mode .form-card input.force-quiz-input,
 body.dark-mode .form-field input.force-quiz-input,
 body.dark-mode .question-block input.force-quiz-input,

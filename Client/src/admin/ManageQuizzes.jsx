@@ -274,7 +274,14 @@ function ManageQuizzes() {
                                     <Eye size={15} /> Preview
                                   </div>
                                   <div 
-                                    onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-quiz/${quiz._id}`); }}
+                                    onClick={() => { 
+                                      setActiveDropdown(null); 
+                                      if (quiz.sections && quiz.sections.length > 0) {
+                                        navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                      } else {
+                                        navigate(`/admin/edit-quiz/${quiz._id}`); 
+                                      }
+                                    }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                     onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
@@ -282,7 +289,14 @@ function ManageQuizzes() {
                                     <Edit2 size={15} /> Edit
                                   </div>
                                   <div 
-                                    onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-quiz/${quiz._id}`); }}
+                                    onClick={() => { 
+                                      setActiveDropdown(null); 
+                                      if (quiz.sections && quiz.sections.length > 0) {
+                                        navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                      } else {
+                                        navigate(`/admin/edit-quiz/${quiz._id}`); 
+                                      }
+                                    }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                     onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}

@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams, useSearchParams } from "react-rout
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import { usePreview } from "../context/PreviewContext";
-import { Sun, Moon, Clock, Bookmark, ArrowLeft, ArrowRight, LayoutGrid, CheckCircle, Trash2 } from "lucide-react";
+import { Sun, Moon, Clock, Bookmark, ArrowLeft, ArrowRight, LayoutGrid, CheckCircle, Trash2, Info, X } from "lucide-react";
 import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
 import "../css/Quiz.css";
@@ -53,6 +53,14 @@ function QuizMulti() {
   const MAX_VIOLATIONS = 3;
 
   const [showPaletteMobile, setShowPaletteMobile] = useState(false);
+  // UI States imported from legacy Quiz.jsx
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [palettePage, setPalettePage] = useState(0);
+  const itemsPerPage = 25;
+  const lockPreviousQuestions = false;
+  const enablePerQuestionTimer = false;
+  const questionTimeLeft = 0;
+  const [showTimerTooltip, setShowTimerTooltip] = useState(false);
 
   useEffect(() => {
     if (location.state?.subject) {
@@ -63,7 +71,9 @@ function QuizMulti() {
 
   const fetchQuizData = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
       const data = response.data;
       setExamName(data.examName || data.subject);
       setQuizTitle(data.title);
@@ -84,7 +94,7 @@ function QuizMulti() {
       }
 
       // Flatten coding subsections if necessary for UI render ease
-      const normalizedSections = loadedSections.map(sec => {
+      let normalizedSections = loadedSections.map(sec => {
          let qs = sec.questions || [];
          if (sec.type === 'coding' && sec.subsections) {
             qs = [
@@ -103,19 +113,35 @@ function QuizMulti() {
          return { ...sec, flatQuestions: qs };
       });
 
+      // Auto-divide total duration equally among sections if sections don't have their own duration
+      // NOTE: data.duration is stored in SECONDS in the DB (CreateQuizMulti saves as min*60+sec)
+      const totalDurationSecs = data.duration || 0;
+      const sectionCount = normalizedSections.length;
+      
+      if (sectionCount > 1 && totalDurationSecs > 0) {
+         const perSectionSecs = Math.floor(totalDurationSecs / sectionCount);
+         normalizedSections = normalizedSections.map(sec => ({
+            ...sec,
+            duration: sec.duration > 0 ? sec.duration : perSectionSecs
+         }));
+      }
+
       setSections(normalizedSections);
       
       if (normalizedSections.length > 0) {
          setCurrentQuestions(normalizedSections[0].flatQuestions);
-         if (normalizedSections[0].duration > 0) {
-            setSectionTimeLeft(normalizedSections[0].duration);
+         const firstDuration = normalizedSections[0].duration;
+         if (firstDuration > 0) {
+            setSectionTimeLeft(firstDuration);
+         } else if (totalDurationSecs > 0) {
+            setSectionTimeLeft(totalDurationSecs);
          } else {
             setSectionTimeLeft(null);
          }
       }
       
       if (data.duration) {
-         setGlobalTimeLeft(data.duration * 60);
+         setGlobalTimeLeft(totalDurationSecs);
       }
       
       setPageLoading(false);
@@ -190,6 +216,13 @@ function QuizMulti() {
       }
     };
   }, [pageLoading]);
+
+  const reEnterFullscreen = () => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    setShowWarning(false);
+  };
 
   // Timers
   useEffect(() => {
@@ -431,159 +464,561 @@ function QuizMulti() {
     return "status-unvisited";
   };
 
+
+
+  
+  const formatTimeBox = (secs) => {
+    if (secs === null || isNaN(secs)) return null;
+    const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return (
+      <>
+        <div style={{ backgroundColor: "var(--bg-page)", padding: "6px 10px", borderRadius: "8px", border: "1px solid var(--border-color)", color: "var(--text-primary)", fontWeight: "700" }}>{h}</div>
+        <span style={{ fontWeight: "bold", color: "var(--text-muted)", alignSelf: "center" }}>:</span>
+        <div style={{ backgroundColor: "var(--bg-page)", padding: "6px 10px", borderRadius: "8px", border: "1px solid var(--border-color)", color: "var(--text-primary)", fontWeight: "700" }}>{m}</div>
+        <span style={{ fontWeight: "bold", color: "var(--text-muted)", alignSelf: "center" }}>:</span>
+        <div style={{ backgroundColor: "var(--bg-page)", padding: "6px 10px", borderRadius: "8px", border: "1px solid var(--border-color)", color: "var(--text-primary)", fontWeight: "700" }}>{s}</div>
+      </>
+    );
+  };
+  
+  const getPaletteStatus = (idx) => {
+    const secId = currentSection?._id;
+    if (!secId) return "unvisited";
+    const isAnswered = !!userAnswers[secId]?.[idx];
+    const isMarked = (reviewQuestions[secId] || []).includes(idx);
+    const isVisited = (visitedQuestions[secId] || []).includes(idx);
+
+    if (isAnswered && isMarked) return "review";
+    if (isAnswered) return "answered";
+    if (isMarked) return "review";
+    if (isVisited) return "visited";
+    return "unvisited";
+  };
+  
+  // End UI states
+  const current = currentQuestions[currentQuestionIndex];
+
   return (
-    <div className="quiz-fullscreen-wrapper">
+    <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh", paddingBottom: "60px", color: "var(--text-primary)", fontFamily: "'Inter', sans-serif", userSelect: "none" }}>
+
+      {/* ════ ANTI-CHEAT WARNING OVERLAY ════ */}
       {showWarning && (
-        <div className="anti-cheat-overlay">
-          <div className="anti-cheat-modal">
-            <h2 style={{ color: "#ef4444", marginBottom: "12px" }}>Security Alert</h2>
-            <p>{warningMsg}</p>
-            <button className="quiz-btn-primary" onClick={() => setShowWarning(false)}>Acknowledge & Continue</button>
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 99999,
+          background: "rgba(10,9,20,0.92)",
+          backdropFilter: "blur(12px)",
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#1c1b2e", border: "2px solid #DC2626",
+            borderRadius: "24px", padding: "48px 52px",
+            textAlign: "center", maxWidth: "460px", width: "90%",
+            boxShadow: "0 0 60px rgba(220,38,38,0.25)"
+          }}>
+            <div style={{ fontSize: "52px", marginBottom: "16px" }}>🚨</div>
+            <h2 style={{ color: "#F87171", margin: "0 0 12px", fontSize: "22px", fontWeight: "800" }}>
+              Integrity Violation!
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "15px", margin: "0 0 8px", lineHeight: 1.6 }}>
+              {warningMsg}
+            </p>
+            <p style={{ color: "#F4C842", fontSize: "13px", fontWeight: "600", margin: "0 0 28px" }}>
+              Violations: {violations} / {MAX_VIOLATIONS}
+            </p>
+            {violations < MAX_VIOLATIONS && (
+              <button
+                onClick={reEnterFullscreen}
+                style={{
+                  background: "linear-gradient(135deg,#3730A3,#6E3FF3)",
+                  color: "#fff", border: "none", borderRadius: "12px",
+                  padding: "14px 36px", fontSize: "15px", fontWeight: "700",
+                  cursor: "pointer", width: "auto"
+                }}
+              >
+                🔒 Return to Fullscreen
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* 🟢 TOP NAVBAR */}
-      <header className="quiz-header">
-        <div className="quiz-header-left">
-          <Logo size="small" />
-          <div className="exam-titles hidden-mobile">
-            <h2>{examName}</h2>
-            <p>{quizTitle}</p>
-          </div>
-        </div>
-        
-        {/* Central Section Indicators */}
-        <div className="quiz-section-tabs" style={{ display: "flex", gap: "8px", overflowX: "auto" }}>
-          {sections.map((sec, idx) => (
-             <div key={idx} style={{ padding: "8px 16px", borderRadius: "8px", background: idx === currentSectionIndex ? "var(--primary-color)" : "var(--bg-input)", color: idx === currentSectionIndex ? "#fff" : "var(--text-muted)", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px", opacity: idx < currentSectionIndex ? 0.5 : 1 }}>
-                <span className="section-tab-title">{sec.title}</span>
-                {idx === currentSectionIndex && sectionTimeLeft !== null && (
-                   <span className="section-tab-timer" style={{ background: "rgba(0,0,0,0.2)", padding: "2px 6px", borderRadius: "4px" }}>{formatTime(sectionTimeLeft)}</span>
-                )}
-             </div>
-          ))}
-        </div>
+      {/* ─── TOP HEADER ─── */}
+      <header className="quiz-header-wrapper">
+        <div className="quiz-header-inner">
 
-        <div className="quiz-header-right">
-          <ThemeToggle />
-          <div className="candidate-profile hidden-mobile">
-            <div className="candidate-avatar">{candidateName.charAt(0)}</div>
-            <span>{candidateName}</span>
+          {/* LEFT: Brand only */}
+          <div style={{ display: "flex", alignItems: "center", zIndex: 1 }}>
+            <Logo />
           </div>
-          <div className="global-timer-box" style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "bold" }}>
-             <Clock size={16} /> Global: {formatTime(globalTimeLeft)}
+
+          {/* CENTER: Dynamic Exam Name */}
+          <div className="quiz-header-exam-name" style={{ fontWeight: "700", fontSize: "15px", color: "#DC2626", letterSpacing: "0.5px", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#DC2626", display: "inline-block", animation: "pulse 1.5s infinite" }}></span>
+            {examName}
+          </div>
+
+          {/* RIGHT: Theme toggle + Instructions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <ThemeToggle />
+            <button 
+              className="quiz-instructions-btn"
+              onClick={() => setShowInstructionsModal(true)}
+              style={{ background: "#4C1D95", color: "#FFF", border: "none", borderRadius: "50%", width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+            >
+              <Info size={20} />
+            </button>
           </div>
         </div>
       </header>
 
-      {/* 🟢 MAIN CONTENT */}
-      <div className="quiz-main-layout">
-        <div className="quiz-left-panel">
-          
-          {/* Section Info Bar */}
-          <div className="quiz-question-header" style={{ display: "flex", justifyContent: "space-between" }}>
-             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-               <h3 style={{ margin: 0, color: "var(--primary-color)" }}>Question {currentQuestionIndex + 1}</h3>
-               {currentSection.type === 'coding' && activeQ?.difficulty && (
-                  <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "12px", background: "rgba(108, 93, 211, 0.1)", color: "var(--primary-color)", fontWeight: "bold", textTransform: "capitalize" }}>
-                     {activeQ.difficulty}
-                  </span>
-               )}
-             </div>
-             
-             <div style={{ display: "flex", gap: "12px", fontSize: "14px" }}>
-                <span style={{ color: "#4ade80", fontWeight: "600" }}>+{currentSection.marksPerQuestion || 1} Marks</span>
-                <span style={{ color: "#f87171", fontWeight: "600" }}>-{currentSection.negativeMarking || 0} Negative</span>
-             </div>
-          </div>
+      {/* Centering wrapper */}
+      <div className="quiz-main-wrapper">
 
-          <div className="quiz-question-body">
-            <div className="question-text-english">{activeQ?.questionEnglish}</div>
-            {activeQ?.questionHindi && <div className="question-text-hindi">{activeQ.questionHindi}</div>}
+        {/* ─── 2. DYNAMIC EXAM TITLE PILL & TIMER BAR ─── */}
+        <div className="quiz-top-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+          
+          <span className="quiz-subject-pill" style={{ backgroundColor: "#2E1065", color: "#FFF", fontWeight: "700", fontSize: "13px", padding: "10px 18px", borderRadius: "8px", display: "inline-flex", alignItems: "center", gap: "10px", textTransform: "uppercase" }}>
+            <LayoutGrid size={16} /> {examSubject}
+          </span>
+          {/* Section Tabs in Timer Line */}
+          {sections.length > 1 && (
+             <div className="quiz-section-tabs" style={{ display: "flex", gap: "8px", overflowX: "auto", flex: 1, margin: "0 10px" }}>
+               {sections.map((sec, idx) => (
+                  <div key={idx} style={{ padding: "8px 16px", borderRadius: "8px", background: idx === currentSectionIndex ? "var(--violet)" : "var(--bg-input)", color: idx === currentSectionIndex ? "#fff" : "var(--text-muted)", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px", opacity: idx < currentSectionIndex ? 0.5 : 1 }}>
+                     <span className="section-tab-title">{sec.title}</span>
+                  </div>
+               ))}
+             </div>
+          )}
+
+
+          {/* Compact Horizontal Clock(s) - MOBILE ONLY */}
+          <div className="quiz-timers-wrapper mobile-timer-only" style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap", width: "100%" }}>
+            <div className="quiz-horizontal-timer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Clock size={18} color="var(--text-secondary)" />
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                  Timer
+                </span>
+              </div>
+              <div className="timer-render-container" style={{ display: "flex", gap: "8px" }}>
+                {formatTimeBox(sectionTimeLeft !== null ? sectionTimeLeft : globalTimeLeft)}
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+        {/* ─── 3. VIEWPORT GRID ─── */}
+        <div className="quiz-main-grid">
+        
+        {/* LEFT: QUESTION & OPTIONS */}
+        <div className="quiz-question-card">
             
-            <div className="options-container">
-              {activeQ?.options.map((opt, i) => (
+            <div>
+            {/* Question Number Bar */}
+            <div className="quiz-question-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <span className="quiz-question-pill" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", fontWeight: "700", fontSize: "13px", padding: "8px 16px", borderRadius: "20px" }}>
+                Question {currentQuestionIndex + 1} of {currentQuestions.length}
+              </span>
+              {enablePerQuestionTimer ? (
                 <div 
-                  key={i} 
-                  className={`option-row ${userAnswers[currentSection._id]?.[currentQuestionIndex] === opt ? 'selected' : ''}`}
-                  onClick={() => handleOptionSelect(opt)}
+                  style={{ position: "relative", width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                  onClick={() => setShowTimerTooltip(!showTimerTooltip)}
                 >
-                  <div className="option-circle">{String.fromCharCode(65 + i)}</div>
-                  <div className="option-text">{opt}</div>
+                  <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: "rotate(-90deg)" }}>
+                    <circle cx="20" cy="20" r="16" fill="none" stroke="var(--border-color)" strokeWidth="4" />
+                    <circle 
+                      cx="20" cy="20" r="16" fill="none" stroke={questionTimeLeft <= 5 ? "#EF4444" : "#10B981"} 
+                      strokeWidth="4" 
+                      strokeDasharray="100.53" 
+                      strokeDashoffset={100.53 - (questionTimeLeft / (timePerQuestion || 30)) * 100.53}
+                      style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s ease" }}
+                    />
+                  </svg>
+                  <span style={{ position: "absolute", fontSize: "13px", fontWeight: "700", color: questionTimeLeft <= 5 ? "#EF4444" : "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>
+                    {questionTimeLeft}
+                  </span>
+                  
+                  {/* Tooltip Popup */}
+                  {showTimerTooltip && (
+                    <div style={{
+                      position: "absolute", top: "50px", right: "0", width: "240px",
+                      backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)",
+                      padding: "14px", borderRadius: "10px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                      zIndex: 1000, textAlign: "left"
+                    }}>
+                      <div style={{ fontSize: "13px", color: "var(--text-primary)", lineHeight: "1.5", fontWeight: "500" }}>
+                        You have <strong style={{ color: "#EF4444" }}>{timePerQuestion} seconds</strong> for this question. After the timer runs out, you cannot attempt it!
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))}
+              ) : (
+                <div 
+                  className="quiz-mobile-bookmark-btn" 
+                  onClick={toggleReview}
+                  style={{ cursor: "pointer", color: (reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "var(--text-muted)" }}
+                >
+                  <Bookmark size={24} fill={(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "none"} />
+                </div>
+              )}
+            </div>
+
+            {/* English Question */}
+            {(current?.english || current?.questionEnglish) && (
+              <div style={{ marginBottom: current?.hindi ? "20px" : "30px", textAlign: "left" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: "700", lineHeight: "1.5", margin: 0, color: "var(--text-primary)", textAlign: "left" }}>{current?.english || current?.questionEnglish}</h2>
+              </div>
+            )}
+
+            {/* Hindi Question */}
+            {(current?.hindi || current?.questionHindi) && (
+              <div style={{ marginBottom: "30px", textAlign: "left" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: "600", lineHeight: "1.5", color: "var(--text-secondary)", margin: 0, textAlign: "left" }}>{current?.hindi || current?.questionHindi}</h2>
+              </div>
+            )}
+
+            {/* Options */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "40px" }}>
+              {(current?.options || []).map((option) => {
+                const isSelected = userAnswers[currentSection?._id]?.[currentQuestionIndex] === option;
+                return (
+                  <div 
+                    key={option}
+                    onClick={() => handleOptionSelect(option)}
+                    className={`option-card ${isSelected ? "selected-opt-card" : ""}`}
+                    style={{ 
+                      border: isSelected ? "2.5px solid var(--violet)" : "1.5px solid var(--border-color)", 
+                      backgroundColor: isSelected ? "var(--option-hover)" : "var(--bg-card)", 
+                      borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "16px", cursor: "pointer",
+                      fontWeight: "600", fontSize: "15px", transition: "all 0.15s ease",
+                      color: "var(--text-primary)"
+                    }}
+                  >
+                    <div style={{ 
+                      width: "20px", height: "20px", borderRadius: "50%", 
+                      border: isSelected ? "6px solid var(--violet)" : "2.5px solid var(--text-muted)", backgroundColor: "var(--bg-card)" 
+                    }} />
+                    <span>{option}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <div className="quiz-action-footer">
-            <div className="footer-left-actions">
-              <button className="quiz-btn-secondary" onClick={toggleReview}>
-                <Bookmark size={16} /> 
-                {reviewQuestions[currentSection._id]?.includes(currentQuestionIndex) ? "Unmark Review" : "Mark for Review"}
+          {/* Bottom Action Controls */}
+          <div className="quiz-action-bar">
+            <div className="quiz-action-left">
+              <button className="quiz-btn-review" onClick={toggleReview} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
+                <Bookmark size={18} /> Mark Review
               </button>
-              <button className="quiz-btn-danger" onClick={clearResponse}>
-                <Trash2 size={16} /> Clear Response
+              <button className="quiz-btn-clear" onClick={clearResponse} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
+                <Trash2 size={18} /> Clear Response
+              </button>
+            </div>
+
+            <div className="quiz-action-right">
+              <button 
+                className="quiz-btn-previous"
+                onClick={() => navigateToQuestion(Math.max(currentQuestionIndex - 1, 0))} 
+                disabled={currentQuestionIndex === 0 || lockPreviousQuestions}
+                style={{ 
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  background: "#F1EFFA",
+                  color: "#2D1B69", 
+                  border: "1.5px solid #D8D3F0", 
+                  borderRadius: "10px", 
+                  padding: "12px 24px", 
+                  fontWeight: "700", 
+                  fontSize: "13px", 
+                  cursor: (currentQuestionIndex === 0 || lockPreviousQuestions) ? "not-allowed" : "pointer",
+                  opacity: (currentQuestionIndex === 0 || lockPreviousQuestions) ? 0.5 : 1,
+                  transition: "all 0.15s ease"
+                }}
+              >
+                <ArrowLeft size={18} /> Previous
+              </button>
+              {currentQuestionIndex < currentQuestions.length - 1 ? (
+                <button 
+                  className="quiz-btn-next"
+                  onClick={() => navigateToQuestion(currentQuestionIndex + 1)} 
+                  style={{ 
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                    background: "#3730A3",
+                    color: "#FFFFFF", 
+                    border: "none", 
+                    borderRadius: "10px", 
+                    padding: "12px 32px", 
+                    fontWeight: "700", 
+                    fontSize: "13px", 
+                    cursor: "pointer",
+                    transition: "all 0.15s ease"
+                  }}
+                >
+                  Next <ArrowRight size={18} />
+                </button>
+              ) : (
+                <button 
+                  className="quiz-btn-submit"
+                  onClick={() => {
+                     if (currentSectionIndex < sections.length - 1) {
+                        handleNextSection();
+                     } else {
+                        submitQuiz();
+                     }
+                  }} 
+                  disabled={isPreview}
+                  title={isPreview ? "Submitting disabled in Preview Mode" : ""}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", background: isPreview ? "#6b7280" : "#16A34A", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 28px", fontWeight: "700", fontSize: "13px", cursor: isPreview ? "not-allowed" : "pointer", transition: "all 0.15s ease" }}
+                >
+                  {isPreview ? "Preview Mode" : (currentSectionIndex < sections.length - 1 ? "Submit Section & Proceed" : "Submit Test")}
+                </button>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT PANEL: LIVE TELEMETRY */}
+        <div className="quiz-right-panel">
+          
+          {/* 1. Desktop Timer Block */}
+          <div className="quiz-timers-wrapper desktop-timer-only" style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px", width: "100%" }}>
+            <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Clock size={18} color="var(--text-secondary)" />
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                  Timer
+                </span>
+              </div>
+              <div className="timer-render-container" style={{ display: "flex", gap: "8px" }}>
+                {formatTimeBox(sectionTimeLeft !== null ? sectionTimeLeft : globalTimeLeft)}
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Candidate Info */}
+          <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "16px", display: "block" }}>
+              👤 Aspirant Identity
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ width: "46px", height: "46px", borderRadius: "50%", backgroundColor: "rgba(110, 63, 243, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold", color: "var(--violet)" }}>
+                {candidateName.charAt(0)}
+              </div>
+              <div style={{ overflow: "hidden" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 2px 0", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{candidateName}</h3>
+                <span style={{ fontSize: "12px", color: "var(--violet)", fontWeight: "600", display: "block", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
+                  {examSubject}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Real-Time Palette Grid */}
+          {showPaletteMobile && <div className="palette-overlay" onClick={() => setShowPaletteMobile(false)}></div>}
+          <div className={`question-palette ${!showPaletteMobile ? "mobile-hidden" : ""}`} style={{ backgroundColor: "var(--bg-card)", borderRadius: "16px", border: "1.5px solid var(--border-color)", padding: "20px", boxShadow: "var(--card-shadow)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
+                🎨 Navigation Palette
+              </span>
+              <button 
+                className="mobile-palette-close" 
+                onClick={() => setShowPaletteMobile(false)}
+                style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer" }}
+              >
+                <X size={20} />
               </button>
             </div>
             
-            <div className="footer-right-actions">
-              {currentQuestionIndex > 0 && (
-                 <button className="quiz-btn-nav" onClick={() => navigateToQuestion(currentQuestionIndex - 1)}>
-                   <ArrowLeft size={16} /> Previous
-                 </button>
-              )}
-              {currentQuestionIndex < currentQuestions.length - 1 ? (
-                 <button className="quiz-btn-nav primary-nav" onClick={() => navigateToQuestion(currentQuestionIndex + 1)}>
-                   Save & Next <ArrowRight size={16} />
-                 </button>
-              ) : (
-                 <button className="quiz-btn-nav primary-nav" onClick={handleNextSection}>
-                   {currentSectionIndex < sections.length - 1 ? "Submit Section & Proceed" : "Submit Assessment"}
-                 </button>
-              )}
+            {/* Legend inside Palette */}
+            <div className="quiz-timer-legend" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "16px", paddingBottom: "16px", borderBottom: "1.5px solid var(--border-color)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981" }} /> Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#C51414" }} /> Not Answered</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--border-color)" }} /> Not Visited</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
             </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", paddingRight: "4px" }}>
+              {currentQuestions.slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage).map((_, i) => {
+                const idx = palettePage * itemsPerPage + i;
+                const status = getPaletteStatus(idx);
+                const isCurrent = currentQuestionIndex === idx;
+
+                let bg = "var(--bg-card)";
+                let col = "var(--text-secondary)";
+                let bdr = "1.5px solid var(--border-color)";
+
+                if (status === "answered") { bg = "#10B981"; col = "#FFF"; bdr = "none"; }
+                else if (status === "review") { bg = "#F4C842"; col = "#FFF"; bdr = "none"; }
+                else if (status === "visited") { bg = "#C51414"; col = "#FFF"; bdr = "none"; }
+
+                const isLocked = lockPreviousQuestions && idx < currentQuestionIndex;
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      if (!isLocked) setCurrentQuestion(idx);
+                    }}
+                    disabled={isLocked}
+                    style={{
+                      height: "36px", borderRadius: "8px", backgroundColor: bg, color: col, 
+                      border: isCurrent ? "2px solid var(--text-primary)" : bdr,
+                      fontWeight: "700", fontSize: "13px", 
+                      cursor: isLocked ? "not-allowed" : "pointer",
+                      opacity: isLocked ? 0.5 : 1,
+                      boxShadow: isCurrent ? "0 0 0 2px rgba(110, 63, 243, 0.2)" : "none"
+                    }}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
+            
+            {(() => {
+              const totalPages = Math.ceil(currentQuestions.length / itemsPerPage);
+              if (totalPages <= 1) return null;
+
+              let startPage = Math.max(0, palettePage - 2);
+              let endPage = Math.min(totalPages - 1, startPage + 4);
+              
+              if (endPage - startPage < 4) {
+                startPage = Math.max(0, endPage - 4);
+              }
+
+              const visiblePages = [];
+              for (let i = startPage; i <= endPage; i++) {
+                visiblePages.push(i);
+              }
+
+              return (
+                <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1.5px solid var(--border-color)", flexWrap: "wrap" }}>
+                  {/* Prev Button */}
+                  <button 
+                    onClick={() => setPalettePage(Math.max(0, palettePage - 1))}
+                    disabled={palettePage === 0}
+                    style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", cursor: palettePage === 0 ? "not-allowed" : "pointer", opacity: palettePage === 0 ? 0.5 : 1, fontWeight: "bold", color: "var(--text-secondary)", transition: "all 0.2s" }}
+                  >
+                    {"<"}
+                  </button>
+
+                  {/* Page Numbers */}
+                  {visiblePages.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPalettePage(p)}
+                      style={{
+                        width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", cursor: "pointer", transition: "all 0.2s",
+                        backgroundColor: palettePage === p ? "#3B82F6" : "var(--bg-card)",
+                        border: palettePage === p ? "none" : "1.5px solid var(--border-color)",
+                        color: palettePage === p ? "#fff" : "var(--text-primary)",
+                        fontWeight: "700",
+                        fontSize: "13px",
+                        boxShadow: palettePage === p ? "0 4px 10px rgba(59, 130, 246, 0.3)" : "none"
+                      }}
+                    >
+                      {p + 1}
+                    </button>
+                  ))}
+
+                  {/* Next Button */}
+                  <button 
+                    onClick={() => setPalettePage(Math.min(totalPages - 1, palettePage + 1))}
+                    disabled={palettePage === totalPages - 1}
+                    style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", cursor: palettePage === totalPages - 1 ? "not-allowed" : "pointer", opacity: palettePage === totalPages - 1 ? 0.5 : 1, fontWeight: "bold", color: "var(--text-secondary)", transition: "all 0.2s" }}
+                  >
+                    {">"}
+                  </button>
+                </div>
+              );
+            })()}
           </div>
+
         </div>
 
-        {/* 🟢 RIGHT PALETTE */}
-        <div className={`quiz-right-panel ${showPaletteMobile ? 'mobile-visible' : ''}`}>
-          <div className="palette-header">
-            <h4>Question Palette</h4>
-            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{currentSection.title}</span>
-          </div>
-          
-          <div className="palette-grid">
-            {currentQuestions.map((_, i) => (
-              <button
-                key={i}
-                className={`palette-btn ${getQuestionStatus(i)} ${currentQuestionIndex === i ? 'active' : ''}`}
-                onClick={() => navigateToQuestion(i)}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-          
-          <div className="palette-legend">
-            <div className="legend-item"><span className="legend-box status-answered"></span> Answered</div>
-            <div className="legend-item"><span className="legend-box status-marked"></span> Marked</div>
-            <div className="legend-item"><span className="legend-box status-unvisited"></span> Not Visited</div>
-            <div className="legend-item"><span className="legend-box status-visited"></span> Not Answered</div>
-          </div>
-
-          <button className="submit-exam-btn" onClick={() => submitQuiz()}>
-            <CheckCircle size={20} /> Submit Assessment
-          </button>
-        </div>
       </div>
-      
-      <button className="mobile-palette-toggle" onClick={() => setShowPaletteMobile(!showPaletteMobile)}>
-        <LayoutGrid size={24} />
-      </button>
+
+      {/* ─── MOBILE STICKY FOOTER ─── */}
+      <div className="mobile-quiz-footer">
+        <div className="mobile-progress-bar-container">
+          <div 
+            className="mobile-progress-fill" 
+            style={{ width: `${((currentQuestionIndex) / currentQuestions.length) * 100}%` }}
+          ></div>
+        </div>
+        
+        <button 
+          className="mobile-fab-palette"
+          onClick={() => setShowPaletteMobile(!showPaletteMobile)}
+        >
+          <div className="fab-icon-container">
+            <LayoutGrid size={24} />
+          </div>
+          <span className="fab-label">Question Palette</span>
+        </button>
+      </div>
 
     </div>
-  );
-}
+    
+    {/* ── INSTRUCTIONS MODAL ── */}
+    {showInstructionsModal && (
+      <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.7)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ backgroundColor: "var(--bg-card)", color: "var(--text-primary)", width: "600px", maxWidth: "90%", borderRadius: "16px", padding: "32px", position: "relative", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)", border: "1.5px solid var(--border-color)" }}>
+          <button 
+            onClick={() => setShowInstructionsModal(false)}
+            style={{ position: "absolute", top: "20px", right: "20px", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+          >
+            <X size={24} />
+          </button>
+          <h2 style={{ margin: "0 0 24px 0", fontSize: "22px", borderBottom: "1px solid var(--border-color)", paddingBottom: "16px" }}>Test Instructions</h2>
+          
+          <div style={{ maxHeight: "60vh", overflowY: "auto", fontSize: "14px", lineHeight: "1.6" }}>
+            <p><strong>1. General Guidelines:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "16px" }}>
+              <li>Ensure you have a stable internet connection.</li>
+              <li>Do not refresh the page or press the back button during the test.</li>
+              <li>The test will automatically submit when the timer runs out.</li>
+            </ul>
+            
+            <p><strong>2. Navigation:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "16px" }}>
+              <li>Use the <strong>Next</strong> and <strong>Previous</strong> buttons to move between questions.</li>
+              <li>Use the <strong>Question Palette</strong> on the right to jump to specific questions.</li>
+            </ul>
+            
+            <p><strong>3. Marking System:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "16px" }}>
+              <li><span style={{ color: "#16A34A", fontWeight: "bold" }}>Answered:</span> Questions you have saved an answer for.</li>
+              <li><span style={{ color: "#DC2626", fontWeight: "bold" }}>Not Answered:</span> Questions you visited but didn't answer.</li>
+              <li><span style={{ color: "#F59E0B", fontWeight: "bold" }}>Review:</span> Questions you marked to look at again later.</li>
+              <li><span style={{ color: "var(--text-muted)", fontWeight: "bold" }}>Not Visited:</span> Questions you haven't seen yet.</li>
+            </ul>
+            
+            <p><strong>4. Anti-Cheat:</strong></p>
+            <ul style={{ paddingLeft: "20px", marginBottom: "0" }}>
+              <li>Exiting full-screen mode will trigger a warning.</li>
+              <li>Multiple violations may lead to automatic submission of your test.</li>
+            </ul>
+          </div>
+          
+          <div style={{ marginTop: "24px", textAlign: "right" }}>
+            <button 
+              onClick={() => setShowInstructionsModal(false)}
+              style={{ background: "#6E3FF3", color: "white", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", border: "none", cursor: "pointer" }}
+            >
+              Understood, Resume Test
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
+  </div>
+)
+}
 export default QuizMulti;

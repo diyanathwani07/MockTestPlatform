@@ -6,7 +6,7 @@ import { Sun, Moon, Bell, User, LogOut, Eye } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import "../../css/admin/AdminLayout.css";
 
-function AdminNavbar({ title }) {
+function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard" }) {
   const { toggleTheme } = useTheme(); 
   const { setPreviewMode } = usePreview();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -16,12 +16,12 @@ function AdminNavbar({ title }) {
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "18px", fontWeight: "600", color: "var(--text-secondary)", flexWrap: "wrap" }}>
         <span 
-          onClick={() => navigate("/admin/dashboard")}
+          onClick={() => navigate(parentLink)}
           style={{ cursor: "pointer", transition: "color 0.15s" }}
           onMouseEnter={(e) => e.target.style.color = "var(--violet)"}
           onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}
         >
-          Dashboard
+          {parentText}
         </span>
         <span style={{ color: "var(--text-muted)" }}>&gt;</span>
         <span style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "normal", wordBreak: "break-word" }}>{title}</span>

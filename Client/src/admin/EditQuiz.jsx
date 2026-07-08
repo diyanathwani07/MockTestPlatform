@@ -619,7 +619,11 @@ function EditQuiz() {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title="Edit Quiz" />
+        <AdminNavbar 
+          title="Edit Quiz"
+          parentText="Manage Quizzes"
+          parentLink="/admin/manage-quizzes"
+        />
 
         <div className="admin-content">
           <div className="create-quiz-page">

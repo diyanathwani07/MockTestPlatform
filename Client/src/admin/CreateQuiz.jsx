@@ -247,7 +247,10 @@ function CreateQuiz() {
     let flatQuestions = [];
     if (parsedSections && parsedSections.length > 0) {
       parsedSections.forEach(sec => {
-        if (sec.questions) flatQuestions = flatQuestions.concat(sec.questions);
+        if (sec.questions) {
+          const qsWithSection = sec.questions.map(q => ({ ...q, sectionName: sec.sectionTitle }));
+          flatQuestions = flatQuestions.concat(qsWithSection);
+        }
       });
     }
 
@@ -284,6 +287,8 @@ function CreateQuiz() {
         options: optionsMapped,
         correctOptionIndex: correctIdx,
         correctAnswer: correctText,
+        explanation: q.explanation || "",
+        sectionName: q.sectionName // Pass it down
       };
     });
 
@@ -771,12 +776,25 @@ function CreateQuiz() {
 
                   {!questionsCollapsed && (
                     <>
-                      <div className="questions-scrollable-container">
+                      <div className="questions-scrollable-container" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", alignItems: "start" }}>
                         {questions.map((q, qIndex) => {
                           const isExpanded = !!expandedQuestions[qIndex];
+                          const isFirstInSection = qIndex === 0 || questions[qIndex - 1].sectionName !== q.sectionName;
+                          const hasSection = q.sectionName && q.sectionName !== "Default";
+
                           return (
-                            <div className="question-block-enhanced" key={qIndex}>
-                              {/* Question Block Header */}
+                            <React.Fragment key={qIndex}>
+                              {hasSection && isFirstInSection && (
+                                <div style={{ margin: "24px 0 12px 0", fontSize: "14px", fontWeight: "bold", color: "var(--violet)", display: "flex", alignItems: "center", gap: "12px", gridColumn: "1 / -1" }}>
+                                  <span style={{ height: "1px", flex: 1, backgroundColor: "var(--border-color)" }}></span>
+                                  <span style={{ padding: "4px 12px", borderRadius: "12px", backgroundColor: "rgba(110, 63, 243, 0.1)", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                                    {q.sectionName.toUpperCase()}
+                                  </span>
+                                  <span style={{ height: "1px", flex: 1, backgroundColor: "var(--border-color)" }}></span>
+                                </div>
+                              )}
+                              <div className="question-block-enhanced" style={{ gridColumn: isExpanded ? "1 / -1" : "auto", minWidth: 0 }}>
+                                {/* Question Block Header */}
                               <div 
                                 className="question-block-header"
                                 onClick={() => toggleQuestionExpand(qIndex)}
@@ -913,6 +931,7 @@ function CreateQuiz() {
                                 </div>
                               )}
                             </div>
+                            </React.Fragment>
                           );
                         })}
                       </div>

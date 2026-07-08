@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
@@ -37,6 +37,7 @@ const defaultSection = (index) => ({
 
 function CreateQuizMulti() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const [quizMeta, setQuizMeta] = useState({
     examName: "",
@@ -59,6 +60,57 @@ function CreateQuizMulti() {
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+
+  useEffect(() => {
+    if (id) {
+      const fetchQuiz = async () => {
+        setLoading(true);
+        try {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+          });
+          const dbQuiz = res.data;
+          
+          const durationMins = Math.floor((dbQuiz.duration || 0) / 60);
+          const durationSecs = (dbQuiz.duration || 0) % 60;
+
+          setQuizMeta({
+            examName: dbQuiz.examName || "",
+            subject: dbQuiz.subject || "",
+            title: dbQuiz.title || "",
+            description: dbQuiz.description || "",
+            durationMin: durationMins > 0 ? String(durationMins) : "",
+            durationSec: durationSecs > 0 ? String(durationSecs) : "",
+            published: dbQuiz.published || false,
+            status: dbQuiz.status || "Draft",
+            enablePerQuestionTimer: dbQuiz.enablePerQuestionTimer || false,
+            timePerQuestion: dbQuiz.timePerQuestion || 30,
+            lockPreviousQuestions: dbQuiz.lockPreviousQuestions || false,
+          });
+
+          if (dbQuiz.sections && dbQuiz.sections.length > 0) {
+            const parsedSections = dbQuiz.sections.map(sec => {
+              const secDurationMins = Math.floor((sec.duration || 0) / 60);
+              const secDurationSecs = (sec.duration || 0) % 60;
+              return {
+                ...sec,
+                id: sec._id || Date.now().toString() + Math.random(),
+                durationMin: secDurationMins > 0 ? String(secDurationMins) : "",
+                durationSec: secDurationSecs > 0 ? String(secDurationSecs) : "",
+              };
+            });
+            setSections(parsedSections);
+            setActiveSectionId(parsedSections[0].id);
+          }
+        } catch (err) {
+          console.error("Error fetching quiz for edit", err);
+          setMessage({ text: "Failed to load quiz data.", type: "error" });
+        }
+        setLoading(false);
+      };
+      fetchQuiz();
+    }
+  }, [id]);
   
   // Handlers for Meta
   const handleMetaChange = (e) => setQuizMeta({ ...quizMeta, [e.target.name]: e.target.value });
@@ -153,13 +205,51 @@ function CreateQuizMulti() {
     setExpandedQuestions({ ...expandedQuestions, [qIndex]: !expandedQuestions[qIndex] });
   };
 
+  const mapParsedQuestions = (questions) => {
+    return questions.map((q) => {
+      let correctIdx = -1;
+      if (q.correctAnswer === "A") correctIdx = 0;
+      else if (q.correctAnswer === "B") correctIdx = 1;
+      else if (q.correctAnswer === "C") correctIdx = 2;
+      else if (q.correctAnswer === "D") correctIdx = 3;
+
+      const optionsMapped = q.options.map(opt => {
+        if (typeof opt === "object") {
+          if (opt.english && opt.hindi) {
+            return `${opt.english} / ${opt.hindi}`;
+          }
+          return opt.english || opt.hindi || "";
+        }
+        return String(opt).trim();
+      });
+
+      let correctText = "";
+      if (correctIdx !== -1) {
+        correctText = optionsMapped[correctIdx] || "";
+      } else {
+        correctIdx = optionsMapped.indexOf(q.correctAnswer);
+        correctText = q.correctAnswer;
+      }
+
+      return {
+        questionEnglish: q.questionEnglish,
+        questionHindi: q.questionHindi,
+        options: optionsMapped,
+        correctOptionIndex: correctIdx,
+        correctAnswer: correctText,
+        explanation: q.explanation || "",
+      };
+    });
+  };
+
   // Import Docx
   const handleDocxImport = (parsedSections) => {
     if (!parsedSections || parsedSections.length === 0) return;
 
     if (parsedSections.length === 1 && parsedSections[0].sectionTitle === "Default") {
-      setActiveQuestions([...getActiveQuestions(), ...parsedSections[0].questions]);
-      setMessage({ text: `Imported ${parsedSections[0].questions.length} questions into the active section.`, type: "success" });
+      const mappedQs = mapParsedQuestions(parsedSections[0].questions);
+      setActiveQuestions([...getActiveQuestions(), ...mappedQs]);
+      setMessage({ text: `Imported ${mappedQs.length} questions into the active section.`, type: "success" });
       return;
     }
 
@@ -169,27 +259,28 @@ function CreateQuizMulti() {
     const isFreshSection = newSections.length === 1 && newSections[0].questions.length === 1 && newSections[0].questions[0].questionEnglish === "";
 
     parsedSections.forEach((parsedSec, index) => {
-      totalImported += parsedSec.questions.length;
+      const mappedQs = mapParsedQuestions(parsedSec.questions);
+      totalImported += mappedQs.length;
 
       if (index === 0 && parsedSec.sectionTitle === "Default") {
         const activeSecIndex = newSections.findIndex(s => s.id === activeSectionId);
         if (activeSecIndex !== -1) {
           const currentQs = newSections[activeSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
-          newSections[activeSecIndex].questions = [...currentQs, ...parsedSec.questions];
+          newSections[activeSecIndex].questions = [...currentQs, ...mappedQs];
         }
       } else {
         const existingSecIndex = newSections.findIndex(s => s.title.toLowerCase() === parsedSec.sectionTitle.toLowerCase());
         
         if (existingSecIndex !== -1) {
           const currentQs = newSections[existingSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
-          newSections[existingSecIndex].questions = [...currentQs, ...parsedSec.questions];
+          newSections[existingSecIndex].questions = [...currentQs, ...mappedQs];
         } else if (isFreshSection && index === 0) {
            newSections[0].title = parsedSec.sectionTitle;
-           newSections[0].questions = parsedSec.questions;
+           newSections[0].questions = mappedQs;
         } else {
           const newSec = defaultSection(newSections.length);
           newSec.title = parsedSec.sectionTitle;
-          newSec.questions = parsedSec.questions;
+          newSec.questions = mappedQs;
           newSections.push(newSec);
         }
       }
@@ -205,6 +296,12 @@ function CreateQuizMulti() {
     setLoading(true);
     setMessage({ text: "", type: "" });
     try {
+       if (!quizMeta.title || !quizMeta.title.trim() || !quizMeta.subject || !quizMeta.subject.trim()) {
+         setMessage({ text: "Please provide an Assessment Title and Subject Category before saving.", type: "error" });
+         setLoading(false);
+         return;
+       }
+
        // calculate global duration if empty
        const globalDuration = (parseInt(quizMeta.durationMin || 0) * 60) + parseInt(quizMeta.durationSec || 0);
        
@@ -224,9 +321,15 @@ function CreateQuizMulti() {
          questions: [] // legacy
        };
 
-       await axios.post(`${import.meta.env.VITE_API_URL}/api/quizzes`, payload, {
-         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-       });
+       if (id) {
+         await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, payload, {
+           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+         });
+       } else {
+         await axios.post(`${import.meta.env.VITE_API_URL}/api/quizzes`, payload, {
+           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+         });
+       }
 
        setMessage({ text: "Quiz saved successfully!", type: "success" });
        setTimeout(() => navigate("/admin/manage-quizzes"), 1500);
@@ -240,28 +343,33 @@ function CreateQuizMulti() {
   return (
     <div className="admin-layout">
       <AdminSidebar />
-      <div className="admin-main">
-        <AdminNavbar title="Create Multi-Section Assessment" />
+      <div className="admin-main" style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", height: "100vh", overflowY: "auto", overflowX: "hidden" }}>
+        <AdminNavbar 
+          title={id ? "Edit Multi-Section Assessment" : "Create Multi-Section Assessment"} 
+          parentText={id ? "Manage Quizzes" : "Dashboard"}
+          parentLink={id ? "/admin/manage-quizzes" : "/admin/dashboard"}
+        />
         
-        <div className="admin-content">
+        <div className="admin-content create-quiz-page">
           <div className="create-quiz-container animate-fade-in" style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
           
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
-              <div style={{ display: "flex", background: "var(--bg-input)", padding: "4px", borderRadius: "12px", border: "1.5px solid var(--border-input)" }}>
-                 <button 
-                   onClick={() => navigate('/admin/create-quiz')} 
-                   style={{ padding: "8px 24px", borderRadius: "8px", background: "transparent", color: "var(--text-muted)", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
-                 >
-                   Single Quiz
-                 </button>
-                 <button 
-                   onClick={() => navigate('/admin/create-quiz-multi')} 
-                   style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--primary-color, #6E3FF3)", color: "#fff", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
-                 >
-                   Multi-Section
-                 </button>
+            {!id && (
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
+                <div style={{ display: "flex", background: "var(--bg-input)", padding: "4px", borderRadius: "12px", border: "1.5px solid var(--border-input)" }}>
+                   <button 
+                     onClick={() => navigate('/admin/create-quiz')} 
+                     style={{ padding: "8px 24px", borderRadius: "8px", background: "transparent", color: "var(--text-muted)", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                   >
+                     Single Quiz
+                   </button>
+                   <button 
+                     style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--violet)", color: "white", fontWeight: "600", border: "none", boxShadow: "0 2px 8px rgba(110, 63, 243, 0.25)" }}
+                   >
+                     Multi-Section
+                   </button>
+                </div>
               </div>
-            </div>
+            )}
 
           {message.text && (
             <div className={`message-banner ${message.type === 'error' ? 'error' : 'success'}`} style={{ marginBottom: "20px", padding: "12px", borderRadius: "8px", background: message.type === 'error' ? '#fecaca' : '#bbf7d0', color: message.type === 'error' ? '#991b1b' : '#166534' }}>
@@ -384,12 +492,12 @@ function CreateQuizMulti() {
              </div>
 
              {/* MAIN AREA: Active Section Editor */}
-             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "24px" }}>
+             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "24px", minWidth: 0, overflowX: "auto", paddingBottom: "24px" }}>
                 {/* Section Config */}
                 <div className="form-card" style={{ padding: "20px", background: "var(--bg-card)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                    <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)" }}>Section Configuration</h3>
                    
-                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
                       <div className="form-field">
                          <label>Section Title</label>
                          <input type="text" name="title" value={activeSection.title} onChange={handleSectionMetaChange} className="force-quiz-input" />
@@ -403,7 +511,7 @@ function CreateQuizMulti() {
                       </div>
                    </div>
                    
-                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginTop: "16px" }}>
+                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginTop: "16px" }}>
                       <div className="form-field">
                          <label>Marks Per Question</label>
                          <input 
@@ -436,7 +544,7 @@ function CreateQuizMulti() {
                       </div>
                    </div>
 
-                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
+                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginTop: "16px" }}>
                       <div className="form-field">
                          <label>Duration (Minutes)</label>
                          <input 
@@ -492,63 +600,161 @@ function CreateQuizMulti() {
                       </div>
                    )}
 
-                   <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", alignItems: "start" }}>
                       {getActiveQuestions().map((q, qIndex) => {
                          const isExpanded = !!expandedQuestions[qIndex];
                          return (
-                            <div key={qIndex} style={{ border: "1px solid var(--border-input)", borderRadius: "8px", overflow: "hidden" }}>
-                               <div 
-                                 onClick={() => toggleQuestionExpand(qIndex)}
-                                 style={{ padding: "12px 16px", background: "var(--bg-input)", cursor: "pointer", display: "flex", justifyContent: "space-between" }}
-                               >
-                                  <span style={{ fontWeight: 600, color: "var(--text-main)" }}>Question {qIndex + 1}</span>
-                                  <div style={{ display: "flex", gap: "12px" }}>
-                                    <button onClick={(e) => { e.stopPropagation(); removeQuestion(qIndex); }} style={{ color: "red", background: "none", border: "none", cursor: "pointer" }}>Delete</button>
-                                    <span style={{ color: "var(--text-muted)" }}>{isExpanded ? "▲" : "▼"}</span>
+                            <React.Fragment key={qIndex}>
+                              {/* Section Banner */}
+                              {qIndex === 0 && (
+                                <div style={{ margin: "10px 0 20px 0", fontSize: "14px", fontWeight: "bold", color: "var(--violet)", display: "flex", alignItems: "center", gap: "12px", gridColumn: "1 / -1" }}>
+                                  <span style={{ height: "1px", flex: 1, backgroundColor: "var(--border-color)" }}></span>
+                                  <span style={{ padding: "4px 12px", borderRadius: "12px", backgroundColor: "rgba(110, 63, 243, 0.1)", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                                    SECTION: {activeSection.title.toUpperCase()}
+                                  </span>
+                                  <span style={{ height: "1px", flex: 1, backgroundColor: "var(--border-color)" }}></span>
+                                </div>
+                              )}
+                              <div className="question-block-enhanced" key={qIndex} style={{ gridColumn: isExpanded ? "1 / -1" : "auto", minWidth: 0 }}>
+                                {/* Question Block Header */}
+                                <div 
+                                  className="question-block-header"
+                                  onClick={() => toggleQuestionExpand(qIndex)}
+                                  style={{ cursor: "pointer", userSelect: "none" }}
+                                >
+                                  <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
+                                    <span className="question-number">Question {qIndex + 1}</span>
+                                    {!isExpanded && q.questionEnglish && (
+                                      <span 
+                                        style={{ 
+                                          fontSize: "12px", 
+                                          color: "var(--text-muted)", 
+                                          whiteSpace: "nowrap", 
+                                          overflow: "hidden", 
+                                          textOverflow: "ellipsis",
+                                          fontWeight: "500",
+                                          flex: 1,
+                                          minWidth: 0,
+                                          display: "block"
+                                        }}
+                                      >
+                                        {q.questionEnglish}
+                                      </span>
+                                    )}
                                   </div>
-                               </div>
-
-                               {isExpanded && (
-                                  <div style={{ padding: "16px", background: "var(--bg-main)" }}>
-                                     <label>Question text (English)</label>
-                                     <textarea 
-                                       value={q.questionEnglish}
-                                       onChange={(e) => handleQuestionChange(qIndex, 'questionEnglish', e.target.value)}
-                                       className="admin-input" 
-                                       style={{ minHeight: "80px", marginBottom: "12px" }}
-                                     />
-
-                                     <label>Options (Select correct one)</label>
-                                     <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-                                        {q.options.map((opt, oIndex) => (
-                                           <div key={oIndex} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                              <input 
-                                                type="radio" 
-                                                name={`correct-${activeSectionId}-${activeDifficulty}-${qIndex}`} 
-                                                checked={q.correctOptionIndex === oIndex}
-                                                onChange={() => setCorrectOption(qIndex, oIndex)}
-                                              />
-                                              <input 
-                                                type="text"
-                                                value={opt}
-                                                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                                                className="admin-input"
-                                                placeholder={`Option ${oIndex + 1}`}
-                                              />
-                                           </div>
-                                        ))}
-                                     </div>
-                                     
-                                     <label>Explanation (Optional)</label>
-                                     <textarea 
-                                       value={q.explanation}
-                                       onChange={(e) => handleQuestionChange(qIndex, 'explanation', e.target.value)}
-                                       className="admin-input" 
-                                       style={{ minHeight: "60px" }}
-                                     />
+                                  
+                                  <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      type="button"
+                                      className="remove-btn-compact"
+                                      onClick={() => removeQuestion(qIndex)}
+                                      title="Delete Question"
+                                    >
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                      </svg>
+                                      <span>Delete</span>
+                                    </button>
+                                    <span style={{ fontSize: "12px", color: "var(--text-muted)", padding: "0 2px" }}>
+                                      {isExpanded ? "▲" : "▼"}
+                                    </span>
                                   </div>
-                               )}
+                                </div>
+
+                                {/* Collapsible Question Inputs */}
+                                {isExpanded && (
+                                  <div className="question-inputs-fields" style={{ marginTop: "14px" }}>
+                                    <div className="form-field full-width">
+                                      <textarea
+                                        value={q.questionEnglish}
+                                      onChange={(e) =>
+                                        handleQuestionChange(qIndex, "questionEnglish", e.target.value)
+                                      }
+                                      rows={2}
+                                      placeholder="Enter question in English..."
+                                    />
+                                  </div>
+
+                                  <div className="form-field full-width">
+                                    <textarea
+                                      value={q.questionHindi || ""}
+                                      onChange={(e) =>
+                                        handleQuestionChange(qIndex, "questionHindi", e.target.value)
+                                      }
+                                      rows={2}
+                                      placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..."
+                                    />
+                                  </div>
+
+                                  <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", display: "block" }}>
+                                    Options (Select correct answer using checkmark ✓ on the right)
+                                  </label>
+                                  
+                                  <div className="options-grid-enhanced">
+                                    {["A", "B", "C", "D"].map((label, optIndex) => {
+                                      const isCorrect = q.correctOptionIndex === optIndex;
+                                      return (
+                                        <div 
+                                          className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`}
+                                          key={label}
+                                        >
+                                          <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
+                                            {label}
+                                          </div>
+                                          <input
+                                            type="text"
+                                            value={q.options[optIndex] || ""}
+                                            onChange={(e) =>
+                                              handleOptionChange(qIndex, optIndex, e.target.value)
+                                            }
+                                            placeholder="English Option / हिंदी विकल्प"
+                                            className="option-text-field"
+                                          />
+                                          <div 
+                                            className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
+                                            onClick={() => setCorrectOption(qIndex, optIndex)}
+                                            title="Mark as correct answer"
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "center",
+                                              width: "22px",
+                                              height: "22px",
+                                              borderRadius: "50%",
+                                              border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
+                                              backgroundColor: isCorrect ? "#10B981" : "transparent",
+                                              color: isCorrect ? "#ffffff" : "transparent",
+                                              cursor: "pointer",
+                                              fontSize: "12px",
+                                              fontWeight: "bold",
+                                              transition: "all 0.15s ease",
+                                              userSelect: "none",
+                                              flexShrink: 0
+                                            }}
+                                          >
+                                            ✓
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+
+                                  <div className="form-field full-width" style={{ marginTop: "16px" }}>
+                                    <textarea
+                                      value={q.explanation || ""}
+                                      onChange={(e) =>
+                                        handleQuestionChange(qIndex, "explanation", e.target.value)
+                                      }
+                                      rows={2}
+                                      placeholder="Answer Explanation (Optional)..."
+                                      style={{ backgroundColor: "var(--bg-input)" }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
+                            </React.Fragment>
                          );
                       })}
 

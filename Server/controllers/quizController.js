@@ -24,7 +24,7 @@ const createQuiz = async (req, res) => {
       sections,
     } = req.body;
 
-    if (!title || !subject || !duration) {
+    if (!title || !subject || duration === undefined || duration === null) {
       return res.status(400).json({ message: "Title, subject, and duration are required." });
     }
 
@@ -101,9 +101,24 @@ const updateQuiz = async (req, res) => {
       return res.status(404).json({ message: "Quiz not found." });
     }
 
-    const quiz = await Quiz.findByIdAndUpdate(req.params.id, req.body, {
+    const updateData = { ...req.body };
+
+    // For multi-section quizzes, clear out the legacy top-level questions array
+    // to avoid validation errors on empty question objects
+    if (updateData.sections && updateData.sections.length > 0) {
+      updateData.questions = [];
+    }
+
+    // Strip any empty/invalid questions from the top-level questions array
+    if (updateData.questions) {
+      updateData.questions = updateData.questions.filter(
+        (q) => q.questionEnglish && q.questionEnglish.trim() !== "" && q.correctAnswer && q.correctAnswer.trim() !== ""
+      );
+    }
+
+    const quiz = await Quiz.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
-      runValidators: true,
+      runValidators: false,
     });
 
     if (quiz.published && !originalQuiz.published) {
