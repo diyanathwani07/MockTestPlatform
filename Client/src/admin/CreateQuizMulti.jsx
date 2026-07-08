@@ -154,9 +154,50 @@ function CreateQuizMulti() {
   };
 
   // Import Docx
-  const handleDocxImport = (parsedQs) => {
-    setActiveQuestions([...getActiveQuestions(), ...parsedQs]);
-    setMessage({ text: `Imported ${parsedQs.length} questions into the active section.`, type: "success" });
+  const handleDocxImport = (parsedSections) => {
+    if (!parsedSections || parsedSections.length === 0) return;
+
+    if (parsedSections.length === 1 && parsedSections[0].sectionTitle === "Default") {
+      setActiveQuestions([...getActiveQuestions(), ...parsedSections[0].questions]);
+      setMessage({ text: `Imported ${parsedSections[0].questions.length} questions into the active section.`, type: "success" });
+      return;
+    }
+
+    const newSections = [...sections];
+    let totalImported = 0;
+    
+    const isFreshSection = newSections.length === 1 && newSections[0].questions.length === 1 && newSections[0].questions[0].questionEnglish === "";
+
+    parsedSections.forEach((parsedSec, index) => {
+      totalImported += parsedSec.questions.length;
+
+      if (index === 0 && parsedSec.sectionTitle === "Default") {
+        const activeSecIndex = newSections.findIndex(s => s.id === activeSectionId);
+        if (activeSecIndex !== -1) {
+          const currentQs = newSections[activeSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
+          newSections[activeSecIndex].questions = [...currentQs, ...parsedSec.questions];
+        }
+      } else {
+        const existingSecIndex = newSections.findIndex(s => s.title.toLowerCase() === parsedSec.sectionTitle.toLowerCase());
+        
+        if (existingSecIndex !== -1) {
+          const currentQs = newSections[existingSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
+          newSections[existingSecIndex].questions = [...currentQs, ...parsedSec.questions];
+        } else if (isFreshSection && index === 0) {
+           newSections[0].title = parsedSec.sectionTitle;
+           newSections[0].questions = parsedSec.questions;
+        } else {
+          const newSec = defaultSection(newSections.length);
+          newSec.title = parsedSec.sectionTitle;
+          newSec.questions = parsedSec.questions;
+          newSections.push(newSec);
+        }
+      }
+    });
+
+    setSections(newSections);
+    setActiveSectionId(newSections[newSections.length - 1].id);
+    setMessage({ text: `Imported ${totalImported} questions across ${parsedSections.length} section(s).`, type: "success" });
   };
 
   // Save

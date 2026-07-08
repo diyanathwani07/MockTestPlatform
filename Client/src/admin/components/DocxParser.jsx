@@ -74,6 +74,7 @@ function DocxParser({ onQuestionsLoaded }) {
             e.preventDefault();
             alert(
               "Word Document Format Rules:\n\n" +
+              "Section: General Knowledge (optional)\n" +
               "Q1. Your question here?\n" +
               "H. हिंदी में प्रश्न (optional)\n" +
               "A. English Option / हिंदी विकल्प\n" +
@@ -82,7 +83,8 @@ function DocxParser({ onQuestionsLoaded }) {
               "D. English Option / हिंदी विकल्प\n" +
               "Ans: A\n" +
               "Exp: Explanation here (optional)\n\n" +
-              "💡 Use a slash (/) to split English and Hindi options."
+              "💡 Use a slash (/) to split English and Hindi options.\n" +
+              "💡 Use 'Section: Name' to automatically split questions into different sections!"
             );
           }}
         >
@@ -134,98 +136,109 @@ function DocxParser({ onQuestionsLoaded }) {
  * Parses raw extracted text into structured bilingual option objects.
  */
 function parseQuestionsFromText(text) {
-  const questions = [];
+  const sections = [];
 
-  // Split by question markers: Q1. Q2. etc. Lookbehinds ensure formatting safety
-  const questionBlocks = text.split(/\n(?=Q\d+[\.\)])/i).filter(Boolean);
+  // Split by section markers (e.g., "Section: Aptitude", "Section 1")
+  const sectionChunks = text.split(/\n(?=Section\s*[:\-]?\s*)/i).filter(Boolean);
 
-  for (const block of questionBlocks) {
-    const lines = block
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
+  for (const chunk of sectionChunks) {
+    let sectionTitle = "Default";
+    let chunkText = chunk.trim();
 
-    if (lines.length < 6) continue;
-
-    // Extract Question English
-    const questionEnglishRaw = lines[0].replace(/^Q\d+[\.\)]\s*/i, "").trim();
-
-    // Check for optional Hindi line tracker
-    let hindiLine = "";
-    let optionStartIndex = 1;
-
-    if (/^H[\.\:]/i.test(lines[1])) {
-      hindiLine = lines[1].replace(/^H[\.\:]\s*/i, "").trim();
-      optionStartIndex = 2;
+    const sectionMatch = chunkText.match(/^Section\s*[:\-]?\s*(.+)/i);
+    if (sectionMatch) {
+      sectionTitle = sectionMatch[1].trim();
+      chunkText = chunkText.replace(/^Section\s*[:\-]?\s*(.+)/i, "").trim();
     }
 
-    // Extract raw options and look for answer line keys
-    const optionsArray = [];
-    let answerLine = "";
-    let explanationLine = "";
-    let i = optionStartIndex;
+    const questions = [];
+    const questionBlocks = chunkText.split(/\n(?=Q\d+[\.\)])/i).filter(Boolean);
 
-    while (i < lines.length) {
-      const line = lines[i];
+    for (const block of questionBlocks) {
+      const lines = block
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
 
-      if (/^[A-D][\.\)]\s+/i.test(line)) {
-        // Strip the letter assignment prefix ("A. ", "B) ")
-        const textWithoutLetter = line.replace(/^[A-D][\.\)]\s+/i, "").trim();
-        
-        // Split option string into English & Hindi segments using your slash format separator
-        let englishPart = textWithoutLetter;
-        let hindiPart = "";
+      if (lines.length < 6) continue;
 
-        if (textWithoutLetter.includes("/")) {
-          const splitParts = textWithoutLetter.split("/");
-          englishPart = splitParts[0].trim();
-          hindiPart = splitParts[1].trim();
+      const questionEnglishRaw = lines[0].replace(/^Q\d+[\.\)]\s*/i, "").trim();
+
+      let hindiLine = "";
+      let optionStartIndex = 1;
+
+      if (/^H[\.\:]/i.test(lines[1])) {
+        hindiLine = lines[1].replace(/^H[\.\:]\s*/i, "").trim();
+        optionStartIndex = 2;
+      }
+
+      const optionsArray = [];
+      let answerLine = "";
+      let explanationLine = "";
+      let i = optionStartIndex;
+
+      while (i < lines.length) {
+        const line = lines[i];
+
+        if (/^[A-D][\.\)]\s+/i.test(line)) {
+          const textWithoutLetter = line.replace(/^[A-D][\.\)]\s+/i, "").trim();
+          let englishPart = textWithoutLetter;
+          let hindiPart = "";
+
+          if (textWithoutLetter.includes("/")) {
+            const splitParts = textWithoutLetter.split("/");
+            englishPart = splitParts[0].trim();
+            hindiPart = splitParts[1].trim();
+          }
+
+          optionsArray.push({
+            english: englishPart,
+            hindi: hindiPart
+          });
+        } else if (/^Ans[\.\:\s]/i.test(line)) {
+          answerLine = line;
+        } else if (/^Exp[\.\:\s]/i.test(line) || /^Explanation[\.\:\s]/i.test(line)) {
+          explanationLine = line.replace(/^(Exp|Explanation)[\.\:\s]+/i, "").trim();
         }
-
-        optionsArray.push({
-          english: englishPart,
-          hindi: hindiPart
-        });
-      } else if (/^Ans[\.\:\s]/i.test(line)) {
-        answerLine = line;
-      } else if (/^Exp[\.\:\s]/i.test(line) || /^Explanation[\.\:\s]/i.test(line)) {
-        explanationLine = line.replace(/^(Exp|Explanation)[\.\:\s]+/i, "").trim();
+        i++;
       }
-      i++;
-    }
 
-    if (optionsArray.length !== 4 || !answerLine) continue;
+      if (optionsArray.length !== 4 || !answerLine) continue;
 
-    // Parse Answer line value
-    const answerRaw = answerLine.replace(/^Ans[\.\:\s]+/i, "").trim();
-    let correctAnswer = "";
+      const answerRaw = answerLine.replace(/^Ans[\.\:\s]+/i, "").trim();
+      let correctAnswer = "";
 
-    // Normalize answer into a standardized option letter tag selector ("A", "B", "C", "D")
-    if (/^[A-D]$/i.test(answerRaw)) {
-      correctAnswer = answerRaw.toUpperCase();
-    } else {
-      // If the file provides full raw text string instead of letters, map matches back to the target letter
-      const targetIndex = optionsArray.findIndex(
-        (opt) => opt.english.toLowerCase() === answerRaw.toLowerCase()
-      );
-      if (targetIndex !== -1) {
-        correctAnswer = ["A", "B", "C", "D"][targetIndex];
+      if (/^[A-D]$/i.test(answerRaw)) {
+        correctAnswer = answerRaw.toUpperCase();
       } else {
-        // Default fallback selection if string parsing mismatches occur
-        correctAnswer = "A";
+        const targetIndex = optionsArray.findIndex(
+          (opt) => opt.english.toLowerCase() === answerRaw.toLowerCase()
+        );
+        if (targetIndex !== -1) {
+          correctAnswer = ["A", "B", "C", "D"][targetIndex];
+        } else {
+          correctAnswer = "A";
+        }
       }
+
+      questions.push({
+        questionEnglish: questionEnglishRaw,
+        questionHindi: hindiLine,
+        options: optionsArray,
+        correctAnswer: correctAnswer,
+        explanation: explanationLine,
+      });
     }
 
-    questions.push({
-      questionEnglish: questionEnglishRaw,
-      questionHindi: hindiLine,
-      options: optionsArray,
-      correctAnswer: correctAnswer,
-      explanation: explanationLine,
-    });
+    if (questions.length > 0) {
+      sections.push({
+        sectionTitle,
+        questions
+      });
+    }
   }
 
-  return questions;
+  return sections;
 }
 
 export default DocxParser;
