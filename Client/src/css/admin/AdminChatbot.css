@@ -3,10 +3,10 @@
    ============================================ */
 
 .admin-chatbot-container {
-  position: relative;
-  margin-top: auto;
-  width: 100%;
-  display: block;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
 }
 
 /* Floating Action Button */
@@ -36,9 +36,9 @@
 
 /* Chat Window */
 .acb-window {
-  position: fixed;
-  bottom: 30px;
-  left: 280px; /* Position it just to the right of the sidebar */
+  position: absolute;
+  bottom: 70px; /* Above the fab */
+  right: 0;
   width: 350px;
   height: 500px;
   z-index: 9999;

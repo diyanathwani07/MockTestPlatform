@@ -84,7 +84,7 @@ const StudentChatbot = () => {
   return (
     <div className="admin-chatbot-container">
       {/* Circular Sidebar Button */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0', marginTop: 'auto' }}>
+      <div>
         <button 
           className={`acb-fab ${isOpen ? "open" : ""}`} 
           onClick={() => setIsOpen(!isOpen)}
