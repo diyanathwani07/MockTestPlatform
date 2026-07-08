@@ -219,8 +219,8 @@ function QuizMulti() {
 
   const reEnterFullscreen = () => {
     const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen().catch(()=>{});
     setShowWarning(false);
   };
 
