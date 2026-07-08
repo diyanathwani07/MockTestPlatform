@@ -78,8 +78,8 @@ function Result() {
   const incorrect = data?.incorrect ?? 0;
   const unanswered = data?.unanswered ?? 0;
   const percentage = data?.percentage;
-  const questions = data?.questions ?? [];
-  const userAnswers = data?.userAnswers ?? [];
+  const [questions, setQuestions] = useState([]);
+  const [userAnswers, setUserAnswers] = useState([]);
   // Read subject from navigation state (set by Quiz.jsx), then localStorage, then fallback
   const examTitle = data?.subject || data?.title || localStorage.getItem("lastExamTaken") || "Examination";
 
@@ -95,6 +95,48 @@ function Result() {
       : "0.00";
 
   const timeTakenSecs = data?.timeTaken || 0;
+
+  useEffect(() => {
+    if (data) {
+      if (data.questions && data.questions.length > 0) {
+        setQuestions(data.questions);
+        setUserAnswers(data.userAnswers || []);
+      } else if (data.quizId) {
+        const fetchQuizQuestions = async () => {
+          try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${data.quizId}`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            const quizData = res.data;
+            let loadedSections = quizData.sections || [];
+            if (loadedSections.length === 0 && quizData.questions && quizData.questions.length > 0) {
+               loadedSections = [{
+                  questions: quizData.questions
+               }];
+            }
+            const normalizedSections = loadedSections.map(sec => {
+               let qs = sec.questions || [];
+               if (sec.type === 'coding' && sec.subsections) {
+                  qs = [
+                    ...(sec.subsections.easy || []),
+                    ...(sec.subsections.medium || []),
+                    ...(sec.subsections.hard || []),
+                  ];
+               }
+               return { ...sec, flatQuestions: qs };
+            });
+            const flatQs = normalizedSections.flatMap(sec => sec.flatQuestions);
+            setQuestions(flatQs);
+            setUserAnswers(data.userAnswers || []);
+          } catch (err) {
+            console.error("Failed to fetch fallback quiz questions", err);
+          }
+        };
+        fetchQuizQuestions();
+      }
+    }
+  }, [data]);
 
   useEffect(() => {
     const handleScroll = () => {
