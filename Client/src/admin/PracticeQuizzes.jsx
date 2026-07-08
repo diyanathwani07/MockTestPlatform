@@ -76,7 +76,7 @@ function PracticeQuizzes() {
   return (
     <div className="admin-layout" style={{ display: "flex", minHeight: "100vh" }}>
       <AdminSidebar />
-      <div className="admin-main" style={{ flex: 1, backgroundColor: "var(--bg-main)" }}>
+      <div className="admin-main" style={{ flex: 1, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar title="Manage Practice Quizzes" />
         
         <div className="admin-content" style={{ padding: "32px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -96,9 +96,9 @@ function PracticeQuizzes() {
                 style={{
                   padding: "10px 16px",
                   borderRadius: "8px",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  backgroundColor: "rgba(0, 0, 0, 0.2)",
-                  color: "white",
+                  border: "1px solid var(--border-color)",
+                  backgroundColor: "var(--bg-input)",
+                  color: "var(--text-primary)",
                   width: "250px"
                 }}
               />
@@ -126,9 +126,10 @@ function PracticeQuizzes() {
           </div>
 
           <div style={{ 
-            backgroundColor: "rgba(30, 30, 40, 0.7)", 
+            backgroundColor: "var(--bg-card)", 
             borderRadius: "16px", 
-            border: "1px solid rgba(255, 255, 255, 0.05)",
+            border: "1px solid var(--border-color)",
+            boxShadow: "var(--card-shadow)",
             overflow: "hidden" 
           }}>
             {loading ? (
@@ -143,8 +144,8 @@ function PracticeQuizzes() {
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ 
-                    borderBottom: "1px solid rgba(255,255,255,0.1)", 
-                    backgroundColor: "rgba(0,0,0,0.2)" 
+                    borderBottom: "1px solid var(--border-color)", 
+                    backgroundColor: "var(--bg-input)" 
                   }}>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Title</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Subject</th>
@@ -157,8 +158,8 @@ function PracticeQuizzes() {
                   {filteredQuizzes.map((quiz) => {
                     const aiProgress = calculateAiProgress(quiz);
                     return (
-                      <tr key={quiz._id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                        <td style={{ padding: "16px", color: "white" }}>
+                      <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
+                        <td style={{ padding: "16px", color: "var(--text-primary)" }}>
                           <div style={{ fontWeight: "500" }}>{quiz.title}</div>
                           <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
                             Created: {new Date(quiz.createdAt).toLocaleDateString()}
@@ -167,7 +168,8 @@ function PracticeQuizzes() {
                         <td style={{ padding: "16px", color: "var(--text-main)" }}>
                           <span style={{ 
                             padding: "4px 10px", 
-                            backgroundColor: "rgba(255,255,255,0.1)", 
+                            backgroundColor: "var(--bg-input)", 
+                            border: "1px solid var(--border-color)",
                             borderRadius: "20px",
                             fontSize: "13px"
                           }}>
@@ -182,7 +184,7 @@ function PracticeQuizzes() {
                             <div style={{ 
                               width: "100px", 
                               height: "8px", 
-                              backgroundColor: "rgba(255,255,255,0.1)", 
+                              backgroundColor: "var(--border-color)", 
                               borderRadius: "4px",
                               overflow: "hidden"
                             }}>
