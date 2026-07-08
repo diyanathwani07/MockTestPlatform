@@ -481,21 +481,42 @@
 }
 
 /* Specificity overrides to prevent global admin dark-mode table styles from leaking into the result page */
+body.dark-mode .rm-section-analytics,
+.rm-section-analytics {
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+}
+
+body.dark-mode .rm-section-analytics h3,
+.rm-section-analytics h3 {
+  color: #1E293B !important;
+}
+
+body.dark-mode .rm-section-analytics table thead,
+.rm-section-analytics table thead {
+  background-color: rgba(110, 63, 243, 0.05) !important;
+}
+
 body.dark-mode .rm-section-analytics table tbody tr,
 body.dark-mode .rm-section-analytics table tbody tr:nth-child(even),
-body.dark-mode .rm-section-analytics table tbody tr:nth-child(odd) {
+body.dark-mode .rm-section-analytics table tbody tr:nth-child(odd),
+.rm-section-analytics table tbody tr,
+.rm-section-analytics table tbody tr:nth-child(even),
+.rm-section-analytics table tbody tr:nth-child(odd) {
   background-color: transparent !important;
-  color: var(--text-primary) !important;
+  color: #1E293B !important;
 }
 
-body.dark-mode .rm-section-analytics table td {
+body.dark-mode .rm-section-analytics table td,
+.rm-section-analytics table td {
   background-color: transparent !important;
-  color: var(--text-secondary) !important;
-  border-bottom: 1px solid var(--border-color) !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #E2E8F0 !important;
 }
 
-body.dark-mode .rm-section-analytics table th {
-  background-color: rgba(110, 63, 243, 0.08) !important;
-  color: var(--text-primary) !important;
-  border-bottom: 2px solid var(--border-color) !important;
+body.dark-mode .rm-section-analytics table th,
+.rm-section-analytics table th {
+  background-color: transparent !important;
+  color: #64748B !important;
+  border-bottom: 2px solid #E2E8F0 !important;
 }

@@ -311,31 +311,31 @@ function Result() {
 
             {/* Section Analytics */}
             {data?.sectionResults && data.sectionResults.length > 0 && (
-              <div className="rm-section-analytics" style={{ marginTop: "24px", background: "var(--bg-input)", borderRadius: "12px", padding: "16px", border: "1px solid var(--border-color)" }}>
-                <h3 style={{ marginBottom: "16px", fontSize: "16px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div className="rm-section-analytics" style={{ marginTop: "24px", background: "#F8FAFC", borderRadius: "12px", padding: "16px", border: "1px solid #E2E8F0" }}>
+                <h3 style={{ marginBottom: "16px", fontSize: "16px", color: "#1E293B", display: "flex", alignItems: "center", gap: "8px" }}>
                   <LayoutGrid size={18} /> Section Performance
                 </h3>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px", textAlign: "left" }}>
-                    <thead style={{ background: "rgba(110, 63, 243, 0.08)" }}>
+                    <thead style={{ background: "rgba(110, 63, 243, 0.05)" }}>
                       <tr>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Section</th>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Score</th>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Accuracy</th>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Time Spent</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid #E2E8F0", color: "#64748B" }}>Section</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid #E2E8F0", color: "#64748B" }}>Score</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid #E2E8F0", color: "#64748B" }}>Accuracy</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid #E2E8F0", color: "#64748B" }}>Time Spent</th>
                       </tr>
                     </thead>
                     <tbody>
                       {data.sectionResults.map((sec, i) => (
-                        <tr key={i} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                          <td style={{ padding: "12px", fontWeight: "600", color: "var(--text-primary)" }}>{sec.sectionTitle}</td>
-                          <td style={{ padding: "12px", color: "var(--text-secondary)" }}>{sec.score} / {sec.totalQuestions} Qs</td>
+                        <tr key={i} style={{ borderBottom: "1px solid #E2E8F0" }}>
+                          <td style={{ padding: "12px", fontWeight: "600", color: "#1E293B" }}>{sec.sectionTitle}</td>
+                          <td style={{ padding: "12px", color: "#475569" }}>{sec.score} / {sec.totalQuestions} Qs</td>
                           <td style={{ padding: "12px" }}>
                              <span style={{ color: sec.accuracy >= 50 ? "#166534" : "#991b1b", background: sec.accuracy >= 50 ? "#dcfce7" : "#fee2e2", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: "bold" }}>
                                 {sec.accuracy.toFixed(1)}%
                              </span>
                           </td>
-                          <td style={{ padding: "12px", color: "var(--text-secondary)" }}>{formatTime(sec.timeTaken)}</td>
+                          <td style={{ padding: "12px", color: "#475569" }}>{formatTime(sec.timeTaken)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -344,12 +344,12 @@ function Result() {
 
                 {data.difficultyBreakdown && (data.difficultyBreakdown.easy.total > 0 || data.difficultyBreakdown.medium.total > 0 || data.difficultyBreakdown.hard.total > 0) && (
                   <div style={{ marginTop: "24px" }}>
-                    <h3 style={{ marginBottom: "16px", fontSize: "14px", color: "var(--text-primary)" }}>Coding Difficulty Breakdown</h3>
+                    <h3 style={{ marginBottom: "16px", fontSize: "14px", color: "#1E293B" }}>Coding Difficulty Breakdown</h3>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
                       {["easy", "medium", "hard"].map(diff => (
-                        <div key={diff} style={{ background: "var(--bg-card)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", textAlign: "center" }}>
-                          <h4 style={{ textTransform: "capitalize", margin: "0 0 8px 0", fontSize: "13px", color: "var(--text-muted)" }}>{diff}</h4>
-                          <div style={{ fontSize: "16px", fontWeight: "bold", color: "var(--violet)" }}>
+                        <div key={diff} style={{ background: "#ffffff", padding: "12px", borderRadius: "8px", border: "1px solid #E2E8F0", textAlign: "center" }}>
+                          <h4 style={{ textTransform: "capitalize", margin: "0 0 8px 0", fontSize: "13px", color: "#64748B" }}>{diff}</h4>
+                          <div style={{ fontSize: "16px", fontWeight: "bold", color: "#6E3FF3" }}>
                             {data.difficultyBreakdown[diff].correct} / {data.difficultyBreakdown[diff].total}
                           </div>
                         </div>
