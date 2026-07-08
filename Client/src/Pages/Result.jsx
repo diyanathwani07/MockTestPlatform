@@ -509,10 +509,10 @@ function Result() {
                 return (
                   <div className="review-item" key={q.id || index}>
                     <div className="review-question" style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                      <span className="q-number" style={{ minWidth: "30px", fontWeight: "700", color: "var(--violet)" }}>Q{index + 1}.</span>
+                      <span className="q-number" style={{ minWidth: "30px", fontWeight: "700", color: "#6E3FF3" }}>Q{index + 1}.</span>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px", fontSize: "16px", lineHeight: "1.5" }}>{q.english}</div>
-                        {q.hindi && <div style={{ fontWeight: "500", color: "var(--text-secondary)", marginBottom: "12px", fontSize: "15px", lineHeight: "1.5" }}>{q.hindi}</div>}
+                        <div style={{ fontWeight: "600", color: "#1E293B", marginBottom: "6px", fontSize: "16px", lineHeight: "1.5" }}>{q.english || q.questionEnglish}</div>
+                        {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: "#475569", marginBottom: "12px", fontSize: "15px", lineHeight: "1.5" }}>{q.hindi || q.questionHindi}</div>}
                       </div>
                     </div>
 
@@ -521,9 +521,9 @@ function Result() {
                         const isSelected = userAns === opt;
                         const isCorrectOpt = q.correctAnswer === opt;
                         
-                        let optBg = "var(--card-bg)";
-                        let optBorder = "1px solid var(--border-color)";
-                        let optColor = "var(--text-primary)";
+                        let optBg = "#ffffff";
+                        let optBorder = "1px solid #E2E8F0";
+                        let optColor = "#1E293B";
                         let optWeight = "500";
                         
                         if (isCorrectOpt) {
@@ -555,9 +555,9 @@ function Result() {
                               width: "26px", 
                               height: "26px", 
                               borderRadius: "50%", 
-                              backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected && !isCorrectOpt ? "#ef4444" : "var(--bg-page)"),
-                              color: isCorrectOpt || (isSelected && !isCorrectOpt) ? "#fff" : "var(--text-muted)",
-                              border: isCorrectOpt || (isSelected && !isCorrectOpt) ? "none" : "1px solid var(--border-color)",
+                              backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected && !isCorrectOpt ? "#ef4444" : "#F1F5F9"),
+                              color: isCorrectOpt || (isSelected && !isCorrectOpt) ? "#fff" : "#64748B",
+                              border: isCorrectOpt || (isSelected && !isCorrectOpt) ? "none" : "1px solid #E2E8F0",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -571,33 +571,33 @@ function Result() {
                           </div>
                         );
                       }) : (
-                        <div style={{ color: "var(--text-muted)", fontStyle: "italic", fontSize: "14px" }}>No options available.</div>
+                        <div style={{ color: "#94A3B8", fontStyle: "italic", fontSize: "14px" }}>No options available.</div>
                       )}
                     </div>
 
                     <div className="review-answers" style={{ marginTop: "16px" }}>
                       <div style={{ marginBottom: "16px", fontSize: "14.5px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-                        <strong>Your Answer: </strong>
+                        <strong style={{ color: "#1E293B" }}>Your Answer: </strong>
                         <span
                           className={
-                            userAns === undefined
+                            userAns === undefined || userAns === null
                               ? "unanswered-text"
                               : isCorrect === false
                               ? "wrong-text"
                               : "correct-text"
                           }
-                          style={{ padding: "4px 10px", borderRadius: "6px", backgroundColor: "var(--bg-page)", border: "1px solid var(--border-color)", fontWeight: "600", whiteSpace: "nowrap" }}
+                          style={{ padding: "4px 10px", borderRadius: "6px", backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", fontWeight: "600", whiteSpace: "nowrap" }}
                         >
-                          {userAns !== undefined ? userAns : "Not Answered"}
+                          {(userAns !== undefined && userAns !== null) ? userAns : "Not Answered"}
                         </span>
                       </div>
                       
                       {q.explanation && (
-                        <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: "var(--bg-sidebar)", borderLeft: "4px solid var(--violet)", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                          <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--violet)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: "#F8FAFC", borderLeft: "4px solid #6E3FF3", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                          <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
                             <span>💡</span> Explanation
                           </p>
-                          <p style={{ margin: 0, fontSize: "14.5px", color: "var(--text-secondary)", lineHeight: "1.6" }}>{q.explanation}</p>
+                          <p style={{ margin: 0, fontSize: "14.5px", color: "#475569", lineHeight: "1.6" }}>{q.explanation}</p>
                         </div>
                       )}
                     </div>

@@ -520,3 +520,12 @@ body.dark-mode .rm-section-analytics table th,
   color: #64748B !important;
   border-bottom: 2px solid #E2E8F0 !important;
 }
+
+/* Specificity overrides to force light-mode on review-item card list */
+body.dark-mode .review-list .review-item,
+.review-list .review-item {
+  background-color: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E293B !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+}
