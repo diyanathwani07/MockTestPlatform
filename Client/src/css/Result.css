@@ -479,3 +479,23 @@
     flex-direction: column;
   }
 }
+
+/* Specificity overrides to prevent global admin dark-mode table styles from leaking into the result page */
+body.dark-mode .rm-section-analytics table tbody tr,
+body.dark-mode .rm-section-analytics table tbody tr:nth-child(even),
+body.dark-mode .rm-section-analytics table tbody tr:nth-child(odd) {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+body.dark-mode .rm-section-analytics table td {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+body.dark-mode .rm-section-analytics table th {
+  background-color: rgba(110, 63, 243, 0.08) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 2px solid var(--border-color) !important;
+}

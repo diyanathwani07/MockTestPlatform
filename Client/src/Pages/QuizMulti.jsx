@@ -859,7 +859,7 @@ function QuizMulti() {
                   <button
                     key={idx}
                     onClick={() => {
-                      if (!isLocked) setCurrentQuestion(idx);
+                      if (!isLocked) navigateToQuestion(idx);
                     }}
                     disabled={isLocked}
                     style={{

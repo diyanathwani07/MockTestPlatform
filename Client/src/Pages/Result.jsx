@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
-import { Trophy, FileText, CalendarDays, Clock, HelpCircle, Target, XCircle, Timer, TrendingUp, Medal, ArrowLeft } from "lucide-react";
+import { Trophy, FileText, CalendarDays, Clock, HelpCircle, Target, XCircle, Timer, TrendingUp, Medal, ArrowLeft, LayoutGrid } from "lucide-react";
 
 function Result() {
   const location = useLocation();
@@ -311,24 +311,24 @@ function Result() {
 
             {/* Section Analytics */}
             {data?.sectionResults && data.sectionResults.length > 0 && (
-              <div className="rm-section-analytics" style={{ marginTop: "24px", background: "rgba(255,255,255,0.5)", borderRadius: "12px", padding: "16px", border: "1px solid var(--border-color)" }}>
+              <div className="rm-section-analytics" style={{ marginTop: "24px", background: "var(--bg-input)", borderRadius: "12px", padding: "16px", border: "1px solid var(--border-color)" }}>
                 <h3 style={{ marginBottom: "16px", fontSize: "16px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>
                   <LayoutGrid size={18} /> Section Performance
                 </h3>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px", textAlign: "left" }}>
-                    <thead style={{ background: "var(--bg-main)" }}>
+                    <thead style={{ background: "rgba(110, 63, 243, 0.08)" }}>
                       <tr>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)" }}>Section</th>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)" }}>Score</th>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)" }}>Accuracy</th>
-                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)" }}>Time Spent</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Section</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Score</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Accuracy</th>
+                        <th style={{ padding: "12px", borderBottom: "2px solid var(--border-color)", color: "var(--text-primary)" }}>Time Spent</th>
                       </tr>
                     </thead>
                     <tbody>
                       {data.sectionResults.map((sec, i) => (
                         <tr key={i} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                          <td style={{ padding: "12px", fontWeight: "600", color: "var(--text-main)" }}>{sec.sectionTitle}</td>
+                          <td style={{ padding: "12px", fontWeight: "600", color: "var(--text-primary)" }}>{sec.sectionTitle}</td>
                           <td style={{ padding: "12px", color: "var(--text-secondary)" }}>{sec.score} / {sec.totalQuestions} Qs</td>
                           <td style={{ padding: "12px" }}>
                              <span style={{ color: sec.accuracy >= 50 ? "#166534" : "#991b1b", background: sec.accuracy >= 50 ? "#dcfce7" : "#fee2e2", padding: "4px 8px", borderRadius: "12px", fontSize: "12px", fontWeight: "bold" }}>
@@ -347,9 +347,9 @@ function Result() {
                     <h3 style={{ marginBottom: "16px", fontSize: "14px", color: "var(--text-primary)" }}>Coding Difficulty Breakdown</h3>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
                       {["easy", "medium", "hard"].map(diff => (
-                        <div key={diff} style={{ background: "var(--bg-main)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", textAlign: "center" }}>
+                        <div key={diff} style={{ background: "var(--bg-card)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", textAlign: "center" }}>
                           <h4 style={{ textTransform: "capitalize", margin: "0 0 8px 0", fontSize: "13px", color: "var(--text-muted)" }}>{diff}</h4>
-                          <div style={{ fontSize: "16px", fontWeight: "bold", color: "var(--primary-color)" }}>
+                          <div style={{ fontSize: "16px", fontWeight: "bold", color: "var(--violet)" }}>
                             {data.difficultyBreakdown[diff].correct} / {data.difficultyBreakdown[diff].total}
                           </div>
                         </div>
