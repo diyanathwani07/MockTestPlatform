@@ -192,11 +192,24 @@ function ManageQuizzes() {
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
-                          {quiz.duration} min
+                          {quiz.sections && quiz.sections.length > 0 ? quiz.duration / 60 : quiz.duration} min
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
-                          {quiz.questions?.length || 0}
+                          {(() => {
+                            if (quiz.sections && quiz.sections.length > 0) {
+                              return quiz.sections.reduce((sum, sec) => {
+                                let count = sec.questions?.length || 0;
+                                if (sec.type === 'coding' && sec.subsections) {
+                                  count += (sec.subsections.easy?.length || 0) +
+                                           (sec.subsections.medium?.length || 0) +
+                                           (sec.subsections.hard?.length || 0);
+                                }
+                                return sum + count;
+                              }, 0);
+                            }
+                            return quiz.questions?.length || 0;
+                          })()}
                         </td>
 
                         <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13px", whiteSpace: "nowrap" }}>
