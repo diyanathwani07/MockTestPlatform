@@ -83,7 +83,7 @@ const resultSchema = new mongoose.Schema(
     // --- NEW MULTI-SECTION ANALYTICS ---
     sectionResults: [
       {
-        sectionId: { type: mongoose.Schema.Types.ObjectId },
+        sectionId: { type: String },
         sectionTitle: String,
         score: Number,
         totalQuestions: Number,
