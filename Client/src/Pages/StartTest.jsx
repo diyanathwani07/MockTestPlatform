@@ -235,7 +235,7 @@ function StartTest() {
           <div className="row">
             <div className="label">Duration</div>
             <div className="value">
-              {selectedQuiz ? `${selectedQuiz.duration / 60} Minutes` : "60 Minutes"}
+              {selectedQuiz ? `${selectedQuiz.sections && selectedQuiz.sections.length > 0 ? selectedQuiz.duration / 60 : selectedQuiz.duration} Minutes` : "60 Minutes"}
             </div>
           </div>
 

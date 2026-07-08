@@ -84,6 +84,8 @@ function Result() {
   const examTitle = data?.subject || data?.title || localStorage.getItem("lastExamTaken") || "Examination";
 
   const [visibleCount, setVisibleCount] = useState(10);
+  const [shareId, setShareId] = useState(data?.shareId || null);
+  const [showAnswers, setShowAnswers] = useState(false);
 
   const computedPercentage =
     percentage !== undefined && percentage !== null
@@ -93,7 +95,6 @@ function Result() {
       : "0.00";
 
   const timeTakenSecs = data?.timeTaken || 0;
-  const [shareId, setShareId] = useState(data?.shareId || null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -193,8 +194,6 @@ function Result() {
     );
   }
 
-  const [showAnswers, setShowAnswers] = useState(false);
-  
   const formatTime = (seconds) => {
     if (!seconds) return "0m 0s";
     const m = Math.floor(seconds / 60);

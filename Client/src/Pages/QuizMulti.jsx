@@ -114,8 +114,9 @@ function QuizMulti() {
       });
 
       // Auto-divide total duration equally among sections if sections don't have their own duration
-      // NOTE: data.duration is stored in SECONDS in the DB (CreateQuizMulti saves as min*60+sec)
-      const totalDurationSecs = data.duration || 0;
+      // NOTE: data.duration is stored in SECONDS in the DB for multi-section, and MINUTES for legacy/flat
+      const isMulti = data.sections && data.sections.length > 0;
+      const totalDurationSecs = isMulti ? (data.duration || 0) : (data.duration || 0) * 60;
       const sectionCount = normalizedSections.length;
       
       if (sectionCount > 1 && totalDurationSecs > 0) {
