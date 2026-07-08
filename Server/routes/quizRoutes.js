@@ -11,6 +11,7 @@ const {
   updateQuiz,
   deleteQuiz,
   getDashboardStats,
+  exportSectionAsQuiz,
 } = require("../controllers/quizController");
 
 // Dashboard stats — admin only
@@ -22,6 +23,7 @@ router.get("/:id", protect, getQuizById);
 
 // Admin-only write operations
 router.post("/", protect, adminOnly, createQuiz);
+router.post("/export-section", protect, adminOnly, exportSectionAsQuiz);
 router.put("/:id", protect, adminOnly, updateQuiz);
 
 router.delete("/:id", protect, adminOnly, deleteQuiz);

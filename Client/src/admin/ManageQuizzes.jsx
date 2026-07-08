@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Eye, Edit2, Calendar, Trash2 } from "lucide-react";
+import { Eye, Edit2, Calendar, Trash2, Copy } from "lucide-react";
 
 function ManageQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -11,6 +11,7 @@ function ManageQuizzes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [selectedExportQuiz, setSelectedExportQuiz] = useState(null);
   const navigate = useNavigate();
 
   const fetchQuizzes = async () => {
@@ -316,6 +317,16 @@ function ManageQuizzes() {
                                   >
                                     <Calendar size={15} /> Schedule
                                   </div>
+                                  {quiz.sections && quiz.sections.length > 0 && (
+                                    <div 
+                                      onClick={() => { setActiveDropdown(null); setSelectedExportQuiz(quiz); }}
+                                      style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                      onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                    >
+                                      <Copy size={15} /> Export Section
+                                    </div>
+                                  )}
                                   <div 
                                     onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
@@ -343,6 +354,116 @@ function ManageQuizzes() {
               </table>
             )}
           </div>
+
+          {/* Export Section Modal */}
+          {selectedExportQuiz && (
+            <div style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000
+            }}>
+              <div style={{
+                backgroundColor: "var(--bg-card)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "16px",
+                padding: "24px",
+                width: "90%",
+                maxWidth: "500px",
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)"
+              }}>
+                <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: "700", color: "var(--text-primary)" }}>Export Section as Standalone Quiz</h3>
+                <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
+                  Select a section from <strong>{selectedExportQuiz.title}</strong> to export as a new standalone, draft quiz.
+                </p>
+                
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "250px", overflowY: "auto", marginBottom: "24px" }}>
+                  {selectedExportQuiz.sections.map((sec) => (
+                    <div key={sec._id} style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "12px 16px",
+                      backgroundColor: "var(--bg-sidebar)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "10px",
+                      gap: "12px"
+                    }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", textAlign: "left" }}>
+                        <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>{sec.title}</span>
+                        <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "capitalize" }}>
+                          {sec.type} Section • {
+                            sec.type === 'coding' && sec.subsections ? (
+                              ((sec.subsections.easy?.length || 0) + (sec.subsections.medium?.length || 0) + (sec.subsections.hard?.length || 0))
+                            ) : (
+                              sec.questions?.length || 0
+                            )
+                          } Questions
+                        </span>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const token = localStorage.getItem("token");
+                            await axios.post(
+                              `${import.meta.env.VITE_API_URL}/api/quizzes/export-section`,
+                              { quizId: selectedExportQuiz._id, sectionId: sec._id },
+                              { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+                            );
+                            alert(`Successfully exported "${sec.title}" as standalone quiz.`);
+                            setSelectedExportQuiz(null);
+                            fetchQuizzes();
+                          } catch (err) {
+                            console.error(err);
+                            alert(err.response?.data?.message || "Failed to export section.");
+                          }
+                        }}
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: "8px",
+                          backgroundColor: "var(--violet)",
+                          color: "#fff",
+                          border: "none",
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                          transition: "opacity 0.2s"
+                        }}
+                        onMouseEnter={(e) => e.target.style.opacity = "0.9"}
+                        onMouseLeave={(e) => e.target.style.opacity = "1"}
+                      >
+                        Export
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => setSelectedExportQuiz(null)}
+                    style={{
+                      padding: "10px 20px",
+                      borderRadius: "10px",
+                      backgroundColor: "transparent",
+                      border: "1.5px solid var(--border-color)",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

@@ -474,6 +474,81 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const exportSectionAsQuiz = async (req, res) => {
+  try {
+    const { quizId, sectionId } = req.body;
+
+    if (!quizId || !sectionId) {
+      return res.status(400).json({ message: "quizId and sectionId are required." });
+    }
+
+    const parentQuiz = await Quiz.findById(quizId);
+    if (!parentQuiz) {
+      return res.status(404).json({ message: "Quiz not found." });
+    }
+
+    const section = parentQuiz.sections.find(s => s._id.toString() === sectionId);
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
+    }
+
+    // Extract questions
+    let flatQs = [];
+    if (section.type === "coding") {
+      flatQs = [
+        ...(section.subsections?.easy || []),
+        ...(section.subsections?.medium || []),
+        ...(section.subsections?.hard || []),
+      ];
+    } else {
+      flatQs = section.questions || [];
+    }
+
+    // Convert seconds to minutes for standalone quiz duration
+    let durationMins = 0;
+    if (section.duration) {
+      durationMins = Math.floor(section.duration / 60);
+    } else {
+      durationMins = Math.floor((parentQuiz.duration || 0) / 60);
+    }
+    if (durationMins <= 0) durationMins = 30; // default fallback
+
+    const newQuizTitle = `${parentQuiz.title} - ${section.title}`;
+
+    const newQuiz = await Quiz.create({
+      title: newQuizTitle,
+      subject: parentQuiz.subject,
+      examName: parentQuiz.examName,
+      description: section.description || `Standalone version of section "${section.title}" from "${parentQuiz.title}".`,
+      duration: durationMins,
+      marksPerQuestion: section.marksPerQuestion || parentQuiz.marksPerQuestion || 1,
+      negativeMarking: section.negativeMarking || parentQuiz.negativeMarking || 0,
+      published: false,
+      status: "Draft",
+      questions: flatQs.map(q => ({
+        questionEnglish: q.questionEnglish,
+        questionHindi: q.questionHindi,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation
+      })),
+      sections: [],
+      createdBy: req.user?._id,
+    });
+
+    await logAction("EXPORT_SECTION_AS_QUIZ", req.user?.fullName || "Admin", newQuiz.title, "Quiz", req.ip);
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully exported section "${section.title}" as standalone quiz.`,
+      quiz: newQuiz
+    });
+  } catch (error) {
+    console.error("Export Section Error:", error);
+    res.status(500).json({ message: "Failed to export section as standalone quiz." });
+  }
+};
+
 module.exports = {
   createQuiz,
   getQuizzes,
@@ -481,4 +556,5 @@ module.exports = {
   updateQuiz,
   deleteQuiz,
   getDashboardStats,
+  exportSectionAsQuiz,
 };
