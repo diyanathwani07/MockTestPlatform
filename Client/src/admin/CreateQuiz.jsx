@@ -243,9 +243,16 @@ function CreateQuiz() {
     }
   };
 
-  const handleQuestionsLoaded = (parsedQuestions) => {
+  const handleQuestionsLoaded = (parsedSections) => {
+    let flatQuestions = [];
+    if (parsedSections && parsedSections.length > 0) {
+      parsedSections.forEach(sec => {
+        if (sec.questions) flatQuestions = flatQuestions.concat(sec.questions);
+      });
+    }
+
     // Map parsed questions to fit our inline-option layout
-    const mapped = parsedQuestions.map((q) => {
+    const mapped = flatQuestions.map((q) => {
       let correctIdx = -1;
       if (q.correctAnswer === "A") correctIdx = 0;
       else if (q.correctAnswer === "B") correctIdx = 1;
