@@ -101,6 +101,14 @@ const resultSchema = new mongoose.Schema(
       hard: { correct: { type: Number, default: 0 }, total: { type: Number, default: 0 } }
     },
     // -----------------------------------
+    questions: {
+      type: Array,
+      default: [],
+    },
+    userAnswers: {
+      type: Array,
+      default: [],
+    },
   },
   {
     timestamps: true,

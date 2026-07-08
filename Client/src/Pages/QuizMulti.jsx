@@ -421,7 +421,11 @@ function QuizMulti() {
         percentage: accuratePercentage,
         timeTaken: totalTimeSpent,
         sectionResults,
-        difficultyBreakdown
+        difficultyBreakdown,
+        questions: sections.flatMap(sec => sec.flatQuestions),
+        userAnswers: sections.flatMap(sec =>
+          sec.flatQuestions.map((q, i) => userAnswers[sec._id]?.[i] ?? null)
+        )
       };
 
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/results/save`, payload, {

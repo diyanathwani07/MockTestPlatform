@@ -145,6 +145,8 @@ function Result() {
             incorrect,
             percentage: Number(computedPercentage),
             timeTaken: timeTakenSecs,
+            questions: data?.questions || [],
+            userAnswers: data?.userAnswers || [],
           }
         );
 

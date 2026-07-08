@@ -18,7 +18,9 @@ const saveResult = async (req, res) => {
       percentage,
       timeTaken,
       sectionResults,
-      difficultyBreakdown
+      difficultyBreakdown,
+      questions,
+      userAnswers
     } = req.body;
 
     const shareId = crypto.randomBytes(4).toString("hex");
@@ -44,7 +46,9 @@ const saveResult = async (req, res) => {
         easy: { correct: 0, total: 0 },
         medium: { correct: 0, total: 0 },
         hard: { correct: 0, total: 0 }
-      }
+      },
+      questions: questions || [],
+      userAnswers: userAnswers || []
     });
 
     res.status(201).json({
