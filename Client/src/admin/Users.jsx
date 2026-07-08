@@ -392,7 +392,10 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => setActiveModal('view')} 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }} 
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -404,7 +407,7 @@ function Users() {
                     cursor: "pointer",
                     color: "var(--text-secondary)"
                   }}
-                  title="Back to View"
+                  title="Back to Actions"
                 >
                   <ArrowLeft size={18} />
                 </button>
