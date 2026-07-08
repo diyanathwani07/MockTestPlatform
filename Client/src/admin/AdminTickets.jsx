@@ -418,7 +418,8 @@ function AdminTickets() {
                 )}
                 
                 {/* REPLY INPUT */}
-                <form onSubmit={handleReplySubmit} style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                {['Open', 'In Progress'].includes(selectedTicket.status) && (
+                  <form onSubmit={handleReplySubmit} style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
                   <textarea
                     value={replyMessage}
                     onChange={(e) => setReplyMessage(e.target.value)}
@@ -472,6 +473,7 @@ function AdminTickets() {
                     </button>
                   </div>
                 </form>
+                )}
               </div>
 
               <div className="ticket-actions">

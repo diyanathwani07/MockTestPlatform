@@ -608,7 +608,7 @@ function HelpSupport() {
               )}
               
               {/* REPLY INPUT */}
-              {selectedTicket.status !== 'Closed' && (
+              {['Open', 'In Progress'].includes(selectedTicket.status) && (
                 <form onSubmit={handleReplySubmit} style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
                   <textarea
                     value={replyMessage}
