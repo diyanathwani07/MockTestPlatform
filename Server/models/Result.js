@@ -91,7 +91,7 @@ const resultSchema = new mongoose.Schema(
         incorrect: Number,
         timeTaken: Number,
         accuracy: Number,
-        type: String // standard or coding
+        type: { type: String } // standard or coding
       }
     ],
 

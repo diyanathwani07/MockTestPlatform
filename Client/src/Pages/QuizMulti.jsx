@@ -333,10 +333,6 @@ function QuizMulti() {
   };
 
   const submitQuiz = async (force = false) => {
-    if (!force && !window.confirm("Are you sure you want to submit the assessment? You won't be able to change answers later.")) {
-      return;
-    }
-    
     if (isPreview) {
       alert("Preview complete. You can close this tab.");
       window.close();
