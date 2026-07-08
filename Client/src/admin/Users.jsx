@@ -5,7 +5,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
-import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2 } from 'lucide-react';
+import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft } from 'lucide-react';
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -389,9 +389,27 @@ function Users() {
           {/* EDIT MODAL */}
           {activeModal === 'edit' && (
             <div className="ticket-modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Edit User</h3>
-                <button className="close-btn" onClick={closeModal}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => setActiveModal('view')} 
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to View"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Edit User</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
                   <X size={20} />
                 </button>
               </div>
