@@ -117,4 +117,18 @@ const getSharedResult = async (req, res) => {
   }
 };
 
-module.exports = { saveResult, getUserResults, getLeaderboard, getSharedResult };
+const getResultByShareId = async (req, res) => {
+  try {
+    const { shareId } = req.params;
+    const result = await Result.findOne({ shareId }).populate("userId", "fullName name email");
+    if (!result) {
+      return res.status(404).json({ message: "Result not found" });
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("GET RESULT BY SHARE ID ERROR", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { saveResult, getUserResults, getLeaderboard, getSharedResult, getResultByShareId };

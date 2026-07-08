@@ -197,6 +197,15 @@ function App() {
           }
         />
 
+        <Route
+          path="/student/result/:shareId"
+          element={
+            <ProtectedRoute>
+              <Result />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/share-result/:shareId" element={<SharedResult />} />
 
         {/* ================= ADMIN ROUTES ================= */}

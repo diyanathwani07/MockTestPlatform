@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
@@ -8,11 +8,12 @@ import { Trophy, FileText, CalendarDays, Clock, HelpCircle, Target, XCircle, Tim
 function Result() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { shareId: routeShareId } = useParams();
 
   // data is sent via navigate("/result", { state: data }) from Quiz.jsx
   const [data, setData] = useState(() => {
     let initialData = location.state;
-    if (!initialData) {
+    if (!initialData && !routeShareId) {
       const stored = localStorage.getItem("lastQuizResult");
       if (stored && stored !== "undefined") {
         try {
@@ -34,7 +35,7 @@ function Result() {
   } catch (e) {
     console.error("Failed to parse user from localStorage", e);
   }
-  const [loadingLatest, setLoadingLatest] = useState(!data);
+  const [loadingLatest, setLoadingLatest] = useState(!data || (routeShareId && data.shareId !== routeShareId));
 
   useEffect(() => {
     if (data) {
@@ -43,24 +44,33 @@ function Result() {
   }, [data]);
 
   useEffect(() => {
-    if (!data && user?.id) {
-      const fetchLatest = async () => {
+    const needsFetch = !data || (routeShareId && data.shareId !== routeShareId);
+
+    if (needsFetch) {
+      setLoadingLatest(true);
+      const fetchResultData = async () => {
         try {
-          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
-          if (res.data && res.data.length > 0) {
-            setData(res.data[0]);
+          let res;
+          if (routeShareId) {
+            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/by-share/${routeShareId}`);
+            setData(res.data);
+          } else if (user?.id) {
+            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
+            if (res.data && res.data.length > 0) {
+              setData(res.data[0]);
+            }
           }
         } catch (err) {
-          console.error("Failed to fetch latest result", err);
+          console.error("Failed to fetch result data", err);
         } finally {
           setLoadingLatest(false);
         }
       };
-      fetchLatest();
+      fetchResultData();
     } else {
       setLoadingLatest(false);
     }
-  }, []);
+  }, [routeShareId, user?.id]);
 
   const score = data?.score ?? 0;
   const total = data?.total ?? 0;
