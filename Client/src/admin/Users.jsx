@@ -242,7 +242,7 @@ function Users() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((u) => {
+                {filteredUsers.map((u, index) => {
                   const isUser = u.role === "user";
                   const isActive = (u.status || 'Active') === 'Active';
                   const dateStr = u.createdAt 
@@ -322,25 +322,27 @@ function Users() {
                               ⋮
                             </button>
 
-                            {activeDropdown === u._id && (
-                              <>
-                                <div 
-                                  onClick={() => setActiveDropdown(null)}
-                                  style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
-                                />
-                                <div style={{ 
-                                  position: "absolute", 
-                                  right: 0, 
-                                  top: "28px", 
-                                  backgroundColor: "var(--bg-card)", 
-                                  border: "1.5px solid var(--border-color)", 
-                                  borderRadius: "10px", 
-                                  padding: "6px 0", 
-                                  minWidth: "170px", 
-                                  boxShadow: "0 8px 24px rgba(0,0,0,0.18)", 
-                                  zIndex: 100,
-                                  textAlign: "left"
-                                }}>
+                            {activeDropdown === u._id && (() => {
+                               const openUpwards = index >= filteredUsers.length - 2;
+                               return (
+                                 <>
+                                   <div 
+                                     onClick={() => setActiveDropdown(null)}
+                                     style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
+                                   />
+                                   <div style={{ 
+                                     position: "absolute", 
+                                     right: 0, 
+                                     ...(openUpwards ? { bottom: "28px" } : { top: "28px" }),
+                                     backgroundColor: "var(--bg-card)", 
+                                     border: "1.5px solid var(--border-color)", 
+                                     borderRadius: "10px", 
+                                     padding: "6px 0", 
+                                     minWidth: "170px", 
+                                     boxShadow: "0 8px 24px rgba(0,0,0,0.18)", 
+                                     zIndex: 100,
+                                     textAlign: "left"
+                                   }}>
                                   <div 
                                     onClick={() => { setActiveDropdown(null); openModal('profile_drawer', u); }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
@@ -413,7 +415,8 @@ function Users() {
                                   )}
                                 </div>
                               </>
-                            )}
+                            );
+                          })()}
                           </div>
                         )}
                       </td>
