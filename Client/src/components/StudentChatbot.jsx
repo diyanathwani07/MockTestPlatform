@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Bot, Send, X } from "lucide-react";
 import "../css/admin/AdminChatbot.css"; // Reuse the same CSS since layout is identical
+import useDraggable from "../hooks/useDraggable";
 
 const StudentChatbot = () => {
   const [isOpen, setIsOpen] = useState(() => {
@@ -27,6 +28,7 @@ const StudentChatbot = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const { position, wasDragged, handlers } = useDraggable(30, 30);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,14 +83,21 @@ const StudentChatbot = () => {
     }
   };
 
+  const handleFabClick = () => {
+    if (wasDragged.current) return;
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <div className="admin-chatbot-container">
+    <div className="admin-chatbot-container" style={{ bottom: position.bottom, right: position.right }}>
       {/* Circular Sidebar Button */}
       <div>
         <button 
           className={`acb-fab ${isOpen ? "open" : ""}`} 
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleFabClick}
           title="AI Student Assistant"
+          {...handlers}
+          style={{ touchAction: 'none' }}
         >
           {isOpen ? <X size={24} /> : <Bot size={24} />}
         </button>

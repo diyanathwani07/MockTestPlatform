@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Bot, Send, X, MessageSquare } from "lucide-react";
 import "../../css/admin/AdminChatbot.css";
+import useDraggable from "../../hooks/useDraggable";
 
 const AdminChatbot = () => {
   const [isOpen, setIsOpen] = useState(() => {
@@ -28,6 +29,7 @@ const AdminChatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
+  const { position, wasDragged, handlers } = useDraggable(30, 30);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -78,14 +80,21 @@ const AdminChatbot = () => {
     }
   };
 
+  const handleFabClick = () => {
+    if (wasDragged.current) return;
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <div className="admin-chatbot-container">
+    <div className="admin-chatbot-container" style={{ bottom: position.bottom, right: position.right }}>
       {/* Circular Sidebar Button */}
       <div>
         <button 
           className={`acb-fab ${isOpen ? "open" : ""}`} 
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleFabClick}
           title="AI Assistant"
+          {...handlers}
+          style={{ touchAction: 'none' }}
         >
           {isOpen ? <X size={24} /> : <Bot size={24} />}
         </button>
