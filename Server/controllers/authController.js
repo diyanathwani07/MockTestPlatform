@@ -17,9 +17,13 @@ const registerUser = async (req, res) => {
 } = req.body;
 
     // Check existing user
-    const userExists = await User.findOne({ email });
-
     if (userExists) {
+      if (userExists.isDeleted) {
+        return res.status(400).json({
+          success: false,
+          message: "This account has been deleted. Please contact support to restore it.",
+        });
+      }
       return res.status(400).json({
         success: false,
         message: "User already exists",
@@ -79,10 +83,10 @@ const loginUser = async (req, res) => {
     // Find user
     const user = await User.findOne({ email });
 
-    if (!user) {
+    if (!user || user.isDeleted) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Email",
+        message: user?.isDeleted ? "This account has been deleted. Please contact support." : "Invalid Email",
       });
     }
 

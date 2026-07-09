@@ -11,6 +11,7 @@ function Users() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [viewTab, setViewTab] = useState("active"); // "active" or "archived"
   
   // Drawer & Modal State
   const [actionDrawerOpen, setActionDrawerOpen] = useState(false);
@@ -27,7 +28,8 @@ function Users() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
+      const endpoint = viewTab === "active" ? "" : "/deleted";
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users${endpoint}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
@@ -41,11 +43,24 @@ function Users() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [viewTab]);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const handleRestoreUser = async (userId) => {
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}/restore`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      showToast("User restored successfully");
+      fetchUsers();
+    } catch (error) {
+      console.error("Restore User Error:", error);
+      showToast("Failed to restore user", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const [attemptsData, setAttemptsData] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -154,8 +169,8 @@ function Users() {
         <AdminNavbar title="Manage Users" />
 
         <div className="admin-content">
-          <div className="manage-command-bar">
-            <div className="pill-search-container" style={{ marginBottom: 0 }}>
+          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+            <div className="pill-search-container" style={{ marginBottom: 0, flex: 1, maxWidth: '400px' }}>
               <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -168,6 +183,43 @@ function Users() {
                 value={searchTerm}
               />
             </div>
+
+            {currentUserRole === 'superadmin' && (
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(255, 255, 255, 0.05)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <button 
+                  onClick={() => { setViewTab('active'); setLoading(true); }}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: viewTab === 'active' ? '#6E3FF3' : 'transparent',
+                    color: '#FFFFFF',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Active Users
+                </button>
+                <button 
+                  onClick={() => { setViewTab('archived'); setLoading(true); }}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: viewTab === 'archived' ? '#6E3FF3' : 'transparent',
+                    color: '#FFFFFF',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Archived Users
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -229,19 +281,41 @@ function Users() {
                       </td>
 
                       <td style={{ textAlign: 'center' }}>
-                        <div className="action-dropdown-container">
+                        {viewTab === 'archived' ? (
                           <button 
-                            className="action-dots-btn" 
-                            title="Options" 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedUser(u);
-                              setActionDrawerOpen(true);
+                            className="btn-primary" 
+                            style={{ 
+                              padding: '6px 12px', 
+                              borderRadius: '6px', 
+                              fontSize: '12.5px', 
+                              background: '#22c55e', 
+                              border: 'none', 
+                              cursor: 'pointer',
+                              color: '#FFFFFF',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontWeight: '600'
                             }}
+                            onClick={() => handleRestoreUser(u._id)}
                           >
-                            ⋮
+                            <UserCheck size={14} /> Restore
                           </button>
-                        </div>
+                        ) : (
+                          <div className="action-dropdown-container">
+                            <button 
+                              className="action-dots-btn" 
+                              title="Options" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(u);
+                                setActionDrawerOpen(true);
+                              }}
+                            >
+                              ⋮
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );

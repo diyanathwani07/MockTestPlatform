@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
 // GET all users (admin only)
 router.get("/", protect, adminOnly, async (req, res) => {
   try {
-    const users = await User.find().select("-password").sort({ createdAt: -1 });
+    const users = await User.find({ isDeleted: { $ne: true } }).select("-password").sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
     console.error("Get Users Error:", error);
@@ -32,10 +32,12 @@ router.get("/", protect, adminOnly, async (req, res) => {
 // DELETE a user (superadmin only)
 router.delete("/:id", protect, superAdminOnly, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+    user.isDeleted = true;
+    await user.save();
     res.json({ message: "User deleted successfully." });
   } catch (error) {
     console.error("Delete User Error:", error);
@@ -146,6 +148,33 @@ router.post("/:id/reset-password", protect, superAdminOnly, async (req, res) => 
   } catch (error) {
     console.error("Send Reset Email Error:", error);
     res.status(500).json({ message: "Failed to send reset email." });
+  }
+});
+
+// GET all deleted users (superadmin only)
+router.get("/deleted", protect, superAdminOnly, async (req, res) => {
+  try {
+    const users = await User.find({ isDeleted: true }).select("-password").sort({ updatedAt: -1 });
+    res.json(users);
+  } catch (error) {
+    console.error("Get Deleted Users Error:", error);
+    res.status(500).json({ message: "Failed to fetch deleted users." });
+  }
+});
+
+// RESTORE a deleted user (superadmin only)
+router.put("/:id/restore", protect, superAdminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    user.isDeleted = false;
+    await user.save();
+    res.json({ message: "User restored successfully.", user });
+  } catch (error) {
+    console.error("Restore User Error:", error);
+    res.status(500).json({ message: "Failed to restore user." });
   }
 });
 
