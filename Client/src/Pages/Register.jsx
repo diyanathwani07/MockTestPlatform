@@ -126,6 +126,7 @@ function Register() {
         coneSpread={25}
         animated={true}
         colors={['#7B3FF3', '#00D2FF', '#EC4899']}
+        alwaysGlow={true}
       >
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
           <Logo size="large" />

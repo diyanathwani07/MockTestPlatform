@@ -1,3 +1,9 @@
+@property --cursor-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 .border-glow-card {
   --edge-proximity: 0;
   --cursor-angle: 45deg;
@@ -16,6 +22,16 @@
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.border-glow-card.permanent-glow {
+  --edge-proximity: 100;
+  animation: spinGlowAngle 8s linear infinite;
+}
+
+@keyframes spinGlowAngle {
+  from { --cursor-angle: 0deg; }
+  to { --cursor-angle: 360deg; }
+}
+
 .border-glow-card::before,
 .border-glow-card::after,
 .border-glow-card > .edge-light {
@@ -27,9 +43,9 @@
   z-index: -1;
 }
 
-.border-glow-card:not(:hover):not(.sweep-active)::before,
-.border-glow-card:not(:hover):not(.sweep-active)::after,
-.border-glow-card:not(:hover):not(.sweep-active) > .edge-light {
+.border-glow-card:not(:hover):not(.sweep-active):not(.permanent-glow)::before,
+.border-glow-card:not(:hover):not(.sweep-active):not(.permanent-glow)::after,
+.border-glow-card:not(:hover):not(.sweep-active):not(.permanent-glow) > .edge-light {
   opacity: 0;
   transition: opacity 0.75s ease-in-out;
 }

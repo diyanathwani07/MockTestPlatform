@@ -62,6 +62,7 @@ const BorderGlow = ({
   animated = false,
   colors = ['#7B3FF3', '#00D2FF', '#EC4899'],
   fillOpacity = 0.5,
+  alwaysGlow = false,
 }) => {
   const cardRef = useRef(null);
 
@@ -148,7 +149,7 @@ const BorderGlow = ({
     <div
       ref={cardRef}
       onPointerMove={handlePointerMove}
-      className={`border-glow-card ${className}`}
+      className={`border-glow-card ${alwaysGlow ? 'permanent-glow' : ''} ${className}`}
       style={{ ...styleObj, ...style }}
     >
       <span className="edge-light" />

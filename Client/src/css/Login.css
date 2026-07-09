@@ -226,25 +226,31 @@
 .input-box input {
   width: 100%;
   height: 52px;
-  background-color: rgba(255, 255, 255, 0.8) !important;
-  border: 1.5px solid rgba(123, 63, 243, 0.15) !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid rgba(110, 63, 243, 0.3) !important;
   color: #0f172a !important;
   border-radius: 12px;
   padding: 0 18px;
   font-size: 15px;
   outline: none;
-  transition: all .2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(110, 63, 243, 0.03);
 }
 
 .input-box input::placeholder {
   color: #94a3b8;
-  opacity: 0.8;
+  opacity: 0.85;
+}
+
+.input-box input:hover {
+  border-color: rgba(110, 63, 243, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(110, 63, 243, 0.06);
 }
 
 .input-box input:focus {
   border-color: #7b3ff3 !important;
   background-color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(123, 63, 243, 0.12);
+  box-shadow: 0 0 0 4px rgba(123, 63, 243, 0.15);
 }
 
 /* Autofill overrides for Light Mode */
@@ -437,15 +443,20 @@ body.dark-mode .label-icon-circle {
 }
 
 body.dark-mode .input-box input {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
+}
+
+body.dark-mode .input-box input:hover {
+  border-color: rgba(110, 63, 243, 0.45) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 body.dark-mode .input-box input:focus {
   border-color: #7b3ff3 !important;
-  background-color: rgba(255, 255, 255, 0.07) !important;
-  box-shadow: 0 0 15px rgba(123, 63, 243, 0.25);
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 0 0 4px rgba(123, 63, 243, 0.3);
 }
 
 /* Autofill overrides for Dark Mode */
