@@ -136,6 +136,13 @@ function Users() {
     setSelectedUser(null);
   };
 
+  const handleBackToPanel = () => {
+    setActiveModal(null);
+    if (selectedUser) {
+      setActiveDropdown(selectedUser._id);
+    }
+  };
+
   const handleAction = async (endpoint, method = 'PUT', payload = {}, successMsg) => {
     setActionLoading(true);
     try {
@@ -456,10 +463,7 @@ function Users() {
                 {activeModal === 'profile_drawer' && (
                   <button 
                     className="close-btn" 
-                    onClick={() => {
-                      setActiveModal(null);
-                      closeModal();
-                    }}
+                    onClick={handleBackToPanel}
                     style={{ 
                       display: "flex", 
                       alignItems: "center", 
@@ -545,10 +549,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }} 
+                  onClick={handleBackToPanel} 
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -611,10 +612,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }}
+                  onClick={handleBackToPanel}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -660,10 +658,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }}
+                  onClick={handleBackToPanel}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -704,10 +699,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }}
+                  onClick={handleBackToPanel}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -744,10 +736,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }}
+                  onClick={handleBackToPanel}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -784,10 +773,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }}
+                  onClick={handleBackToPanel}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -885,10 +871,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }}
+                  onClick={handleBackToPanel}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -995,10 +978,7 @@ function Users() {
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button 
                   className="close-btn" 
-                  onClick={() => {
-                    setActiveModal(null);
-                    closeModal();
-                  }}
+                  onClick={handleBackToPanel}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
