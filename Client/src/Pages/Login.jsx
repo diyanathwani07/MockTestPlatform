@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
-import { Eye, EyeOff, Sun, Moon } from "lucide-react";
+import { Eye, EyeOff, Sun, Moon, Mail, Lock, LogIn, Shield } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import "../css/Login.css";
 
@@ -47,29 +47,64 @@ const handleSubmit = async (e) => {
 
 return (
   <div className="login-page">
+    {/* SVG Gradients definition */}
+    <svg style={{ width: 0, height: 0, position: 'absolute' }}>
+      <defs>
+        <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#00D2FF" />
+          <stop offset="100%" stopColor="#0066FF" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="purple-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#7B3FF3" />
+          <stop offset="100%" stopColor="#7B3FF3" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+    </svg>
+
     <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
       <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
         <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
         <div className="pill-thumb-slider"></div>
       </div>
     </div>
-    <div className="top-left"></div>
-    <div className="bottom-right"></div>
-    <div className="big-circle"></div>
-    <div className="small-circle"></div>
 
-    <div className="login-card">
+    {/* Decorative Background Elements */}
+    <div className="top-left-glow"></div>
+    <div className="bottom-right-glow"></div>
+    <div className="grid-pattern-left"></div>
+    <div className="grid-pattern-right"></div>
+    <div className="glow-dot glow-dot-1"></div>
+    <div className="glow-dot glow-dot-2"></div>
+
+    {/* Responsive Inline SVG Waves matching mockup */}
+    <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path d="M 0,0 C 50,0 60,30 30,70 C 10,95 0,100 0,100 Z" fill="url(#blue-grad)" opacity="0.15" />
+      <path d="M 0,0 C 50,0 60,30 30,70" fill="none" stroke="#00D2FF" strokeWidth="0.5" />
+    </svg>
+
+    <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path d="M 100,100 C 50,100 40,70 70,30 C 90,5 100,0 100,0 Z" fill="url(#purple-grad)" opacity="0.15" />
+      <path d="M 100,100 C 50,100 40,70 70,30" fill="none" stroke="#7B3FF3" strokeWidth="0.5" />
+    </svg>
+
+    <div className="login-card animate-fade-in">
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
         <Logo size="large" />
       </div>
 
-      <h2>Welcome Back</h2>
+      <h2 className="login-title">Welcome Back</h2>
+      <div className="title-underline"></div>
 
-      <p>Login to continue your preparation</p>
+      <p className="subtitle">Login to continue your preparation</p>
 
       <form onSubmit={handleSubmit}>
         <div className="input-box">
-          <label>Email Address</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="label-icon-circle">
+              <Mail size={12} />
+            </span>
+            Email Address
+          </label>
           <input
             type="email"
             placeholder="Enter your email"
@@ -80,7 +115,12 @@ return (
         </div>
 
         <div className="input-box">
-          <label>Password</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="label-icon-circle">
+              <Lock size={12} />
+            </span>
+            Password
+          </label>
           <div className="password-wrapper">
             <input
               type={showPassword ? "text" : "password"}
@@ -102,14 +142,28 @@ return (
           <Link to="/forgot-password">Forgot Password?</Link>
         </p>
 
-        <button type="submit">Login</button>
+        <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          <LogIn size={18} style={{ position: 'absolute', left: '24px' }} />
+          <span>Login</span>
+        </button>
       </form>
+
+      <div className="or-divider">
+        <div className="divider-line"></div>
+        <span>OR</span>
+        <div className="divider-line"></div>
+      </div>
 
       <div className="register-link">
         New here?
         <Link to="/register">
           <span> Create Account</span>
         </Link>
+      </div>
+
+      <div className="secure-footer">
+        <Shield size={16} />
+        <span>Your data is secure with us</span>
       </div>
     </div>
   </div>
