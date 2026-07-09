@@ -260,8 +260,12 @@ function Users() {
                           onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
                           title="Click to view details"
                         >
-                          <div className="user-avatar-circle">
-                            {u.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"}
+                          <div className="user-avatar-circle" style={{ overflow: 'hidden' }}>
+                            {u.avatar ? (
+                              <img src={u.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={u.fullName} />
+                            ) : (
+                              u.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"
+                            )}
                           </div>
                           <div>
                             <div className="user-name-text">{u.fullName}</div>
