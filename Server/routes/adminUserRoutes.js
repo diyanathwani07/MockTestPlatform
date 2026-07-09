@@ -4,6 +4,7 @@ const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly, superAdminOnly } = require("../middleware/adminMiddleware");
 const User = require("../models/User");
+const logAction = require("../utils/logger");
 const nodemailer = require("nodemailer");
 
 // Configure nodemailer transporter
@@ -38,6 +39,7 @@ router.delete("/:id", protect, superAdminOnly, async (req, res) => {
     }
     user.isDeleted = true;
     await user.save();
+    await logAction("DELETE_USER", req.user?.fullName || "Admin", `Soft-deleted user: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
     res.json({ message: "User deleted successfully." });
   } catch (error) {
     console.error("Delete User Error:", error);
@@ -61,6 +63,7 @@ router.put("/:id", protect, superAdminOnly, async (req, res) => {
     user.status = status || user.status;
     
     await user.save();
+    await logAction("UPDATE_USER", req.user?.fullName || "Admin", `Updated user details: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
     res.json({ message: "User updated successfully.", user });
   } catch (error) {
     console.error("Update User Error:", error);
@@ -80,6 +83,7 @@ router.put("/:id/status", protect, superAdminOnly, async (req, res) => {
     
     user.status = status;
     await user.save();
+    await logAction("UPDATE_USER_STATUS", req.user?.fullName || "Admin", `Changed status to ${status} for user: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
     res.json({ message: `User status updated to ${status}.` });
   } catch (error) {
     console.error("Update User Status Error:", error);
@@ -99,6 +103,7 @@ router.put("/:id/role", protect, superAdminOnly, async (req, res) => {
     
     user.role = role;
     await user.save();
+    await logAction("UPDATE_USER_ROLE", req.user?.fullName || "Admin", `Changed role to ${role} for user: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
     res.json({ message: `User role updated to ${role}.` });
   } catch (error) {
     console.error("Update User Role Error:", error);
@@ -144,6 +149,7 @@ router.post("/:id/reset-password", protect, superAdminOnly, async (req, res) => 
       `,
     });
 
+    await logAction("RESET_USER_PASSWORD", req.user?.fullName || "Admin", `Triggered password reset for user: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
     res.json({ message: "Password reset email sent to the user." });
   } catch (error) {
     console.error("Send Reset Email Error:", error);
@@ -171,6 +177,7 @@ router.put("/:id/restore", protect, superAdminOnly, async (req, res) => {
     }
     user.isDeleted = false;
     await user.save();
+    await logAction("RESTORE_USER", req.user?.fullName || "Admin", `Restored user: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
     res.json({ message: "User restored successfully.", user });
   } catch (error) {
     console.error("Restore User Error:", error);

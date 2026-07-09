@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const logAction = require("../utils/logger");
 
 // Register User
 const registerUser = async (req, res) => {
@@ -68,6 +69,7 @@ const registerUser = async (req, res) => {
         role: user.role,
       },
     });
+    await logAction("REGISTER_USER", user.fullName, `User registered account: ${user.email}`, "Auth", req.ip);
   } catch (error) {
     res.status(500).json({
       success: false,

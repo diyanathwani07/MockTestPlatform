@@ -125,6 +125,8 @@ const updateQuiz = async (req, res) => {
       await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     } else if (quiz.status === "Published" && originalQuiz.status !== "Published") {
       await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+    } else {
+      await logAction("UPDATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     }
 
     res.json(quiz);
@@ -141,6 +143,7 @@ const deleteQuiz = async (req, res) => {
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found." });
     }
+    await logAction("DELETE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     res.json({ message: "Quiz deleted successfully." });
   } catch (error) {
     console.error("Delete Quiz Error:", error);
