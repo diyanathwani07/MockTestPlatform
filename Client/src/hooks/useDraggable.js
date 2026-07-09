@@ -6,7 +6,16 @@ import { useState, useRef, useCallback, useEffect } from 'react';
  * Distinguishes between a click (< 5px movement) and a drag.
  */
 const useDraggable = (initialBottom = 30, initialRight = 30) => {
-  const [position, setPosition] = useState({ bottom: initialBottom, right: initialRight });
+  const [position, setPosition] = useState(() => {
+    try {
+      const saved = localStorage.getItem("chatbot_position");
+      if (saved) return JSON.parse(saved);
+    } catch (error) {
+      console.error("Failed to load chatbot position:", error);
+    }
+    return { bottom: initialBottom, right: initialRight };
+  });
+  
   const isDragging = useRef(false);
   const wasDragged = useRef(false);
   const startPos = useRef({ x: 0, y: 0 });
@@ -32,7 +41,13 @@ const useDraggable = (initialBottom = 30, initialRight = 30) => {
     const newRight = Math.max(0, Math.min(window.innerWidth - 70, startOffset.current.right - dx));
     const newBottom = Math.max(0, Math.min(window.innerHeight - 70, startOffset.current.bottom + dy * -1));
 
-    setPosition({ bottom: newBottom, right: newRight });
+    const updatedPos = { bottom: newBottom, right: newRight };
+    setPosition(updatedPos);
+    try {
+      localStorage.setItem("chatbot_position", JSON.stringify(updatedPos));
+    } catch (error) {
+      console.error("Failed to save chatbot position:", error);
+    }
   }, []);
 
   const handlePointerUp = useCallback((e) => {
