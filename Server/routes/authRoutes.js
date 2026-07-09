@@ -196,7 +196,7 @@ const { protect } = require("../middleware/authMiddleware");
 // UPDATE PROFILE
 router.put("/profile", protect, async (req, res) => {
   try {
-    const { fullName, phone, dateOfBirth, gender, location, bio } = req.body;
+    const { fullName, phone, dateOfBirth, gender, location, bio, avatar } = req.body;
     
     // req.user is set by the protect middleware
     const user = await User.findById(req.user._id);
@@ -210,6 +210,9 @@ router.put("/profile", protect, async (req, res) => {
     user.gender = gender || user.gender;
     user.location = location || user.location;
     user.bio = bio || user.bio;
+    if (avatar !== undefined) {
+      user.avatar = avatar;
+    }
 
     const updatedUser = await user.save();
     
@@ -223,6 +226,7 @@ router.put("/profile", protect, async (req, res) => {
       gender: updatedUser.gender,
       location: updatedUser.location,
       bio: updatedUser.bio,
+      avatar: updatedUser.avatar,
     });
   } catch (error) {
     console.error("Update Profile Error:", error);

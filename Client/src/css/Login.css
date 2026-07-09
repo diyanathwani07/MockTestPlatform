@@ -7,28 +7,35 @@
   font-family: 'Poppins', sans-serif;
 }
 
+:root {
+  --card-bg: rgba(255, 255, 255, 0.95);
+}
+
+/* Default Light Mode Styling */
 .login-page {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background: #060813 !important; /* Force dark background */
+  background: #f8fafc !important; /* Premium light mode background */
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: 'Poppins', sans-serif;
+  transition: background 0.3s ease;
 }
 
-/* Background Glow Blobs */
+/* Background Glow Blobs (Light Mode) */
 .top-left-glow {
   position: absolute;
   top: -15%;
   left: -15%;
   width: 60vw;
   height: 60vw;
-  background: radial-gradient(circle, rgba(0, 210, 255, 0.12) 0%, rgba(0, 210, 255, 0) 70%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0) 70%);
   z-index: 1;
   pointer-events: none;
+  transition: all 0.3s ease;
 }
 
 .bottom-right-glow {
@@ -37,19 +44,20 @@
   right: -15%;
   width: 60vw;
   height: 60vw;
-  background: radial-gradient(circle, rgba(123, 63, 243, 0.15) 0%, rgba(123, 63, 243, 0) 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0) 70%);
   z-index: 1;
   pointer-events: none;
+  transition: all 0.3s ease;
 }
 
-/* Background Dot Grids */
+/* Background Dot Grids (Light Mode) */
 .grid-pattern-left {
   position: absolute;
   left: 6%;
   bottom: 20%;
   width: 120px;
   height: 180px;
-  background-image: radial-gradient(rgba(123, 63, 243, 0.18) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(rgba(123, 63, 243, 0.06) 1.5px, transparent 1.5px);
   background-size: 20px 20px;
   z-index: 1;
   pointer-events: none;
@@ -61,20 +69,20 @@
   top: 20%;
   width: 120px;
   height: 180px;
-  background-image: radial-gradient(rgba(123, 63, 243, 0.18) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(rgba(123, 63, 243, 0.06) 1.5px, transparent 1.5px);
   background-size: 20px 20px;
   z-index: 1;
   pointer-events: none;
 }
 
-/* Glowing Particle Dots */
+/* Glowing Particle Dots (Light Mode) */
 .glow-dot {
   position: absolute;
   width: 8px;
   height: 8px;
   background: #7b3ff3;
   border-radius: 50%;
-  box-shadow: 0 0 16px 6px rgba(123, 63, 243, 0.8);
+  box-shadow: 0 0 12px 4px rgba(123, 63, 243, 0.3);
   z-index: 2;
   pointer-events: none;
   animation: floatDot 5s ease-in-out infinite;
@@ -102,39 +110,55 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 35vw;
-  height: 100%;
+  width: 25vw;
+  min-width: 260px;
+  height: 60vh;
   z-index: 1;
   pointer-events: none;
+}
+
+.bg-wave-left path {
+  filter: drop-shadow(0 0 12px rgba(0, 210, 255, 0.5));
 }
 
 .bg-wave-right {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 35vw;
-  height: 100%;
+  width: 25vw;
+  min-width: 260px;
+  height: 60vh;
   z-index: 1;
   pointer-events: none;
 }
 
-/* Glassmorphism Card with Gradient Border */
+.bg-wave-right path {
+  filter: drop-shadow(0 0 12px rgba(123, 63, 243, 0.5));
+}
+
+/* Glassmorphism Card (Light Mode) */
 .login-card {
   position: relative;
   width: 100%;
-  max-width: 480px;
-  background: rgba(10, 14, 29, 0.7) !important;
+  max-width: 500px;
+  background: var(--card-bg) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1.5px solid transparent;
-  background-image: linear-gradient(rgba(10, 14, 29, 0.95), rgba(10, 14, 29, 0.95)), linear-gradient(135deg, #00d2ff, #7b3ff3);
+  background-image: linear-gradient(var(--card-bg), var(--card-bg)), linear-gradient(135deg, #00d2ff, #7b3ff3);
   background-origin: border-box;
   background-clip: padding-box, border-box;
   padding: 40px clamp(20px, 6vw, 45px);
   margin: 20px;
   border-radius: 28px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(109, 40, 217, 0.16), 0 0 25px rgba(59, 130, 246, 0.04);
   z-index: 10;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 35px 60px -12px rgba(109, 40, 217, 0.26), 0 0 35px rgba(59, 130, 246, 0.08);
 }
 
 /* Micro-animations */
@@ -152,7 +176,7 @@
   text-align: center;
   margin-top: 16px !important;
   font-size: 32px;
-  color: #ffffff !important;
+  color: #0f172a !important; /* Dark text for light mode */
   font-weight: 700;
 }
 
@@ -166,14 +190,14 @@
 
 .login-card p.subtitle {
   text-align: center;
-  color: #94a3b8 !important;
+  color: #475569 !important;
   margin-top: 14px;
   margin-bottom: 32px;
   font-size: 14.5px;
   font-weight: 400;
 }
 
-/* Input Fields & Labels */
+/* Input Fields & Labels (Light Mode) */
 .input-box {
   margin-bottom: 24px;
 }
@@ -184,8 +208,8 @@
   gap: 8px;
   margin-bottom: 10px;
   font-weight: 600;
-  font-size: 13.5px;
-  color: #e2e8f0 !important;
+  font-size: 14.5px;
+  color: #334155 !important;
 }
 
 .label-icon-circle {
@@ -194,17 +218,17 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border: 1px solid rgba(123, 63, 243, 0.4);
+  border: 1px solid rgba(123, 63, 243, 0.25);
   border-radius: 50%;
-  color: #9d7cff;
+  color: #7b3ff3;
 }
 
 .input-box input {
   width: 100%;
   height: 52px;
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border: 1.5px solid rgba(123, 63, 243, 0.15) !important;
+  color: #0f172a !important;
   border-radius: 12px;
   padding: 0 18px;
   font-size: 15px;
@@ -212,10 +236,25 @@
   transition: all .2s;
 }
 
+.input-box input::placeholder {
+  color: #94a3b8;
+  opacity: 0.8;
+}
+
 .input-box input:focus {
   border-color: #7b3ff3 !important;
-  background-color: rgba(255, 255, 255, 0.07) !important;
-  box-shadow: 0 0 15px rgba(123, 63, 243, 0.25);
+  background-color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(123, 63, 243, 0.12);
+}
+
+/* Autofill overrides for Light Mode */
+.input-box input:-webkit-autofill,
+.input-box input:-webkit-autofill:hover,
+.input-box input:-webkit-autofill:focus,
+.input-box input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.95) inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Password eye toggle */
@@ -236,17 +275,17 @@
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #94a3b8;
+  color: #64748b;
   display: flex;
   align-items: center;
   transition: color 0.2s;
 }
 
 .toggle-eye:hover {
-  color: #00d2ff;
+  color: #7b3ff3;
 }
 
-/* Links */
+/* Links (Light Mode) */
 .forgot-password {
   text-align: right;
   margin-top: -12px;
@@ -254,7 +293,7 @@
 }
 
 .forgot-password a {
-  color: #9d7cff !important;
+  color: #7b3ff3 !important;
   text-decoration: none;
   font-size: 13.5px;
   font-weight: 500;
@@ -262,7 +301,7 @@
 }
 
 .forgot-password a:hover {
-  color: #00d2ff !important;
+  color: #00b0ff !important;
 }
 
 /* Login Button */
@@ -281,7 +320,7 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(110, 63, 243, 0.45);
+  box-shadow: 0 8px 24px rgba(110, 63, 243, 0.35);
 }
 
 /* OR Divider */
@@ -299,18 +338,18 @@ button[type="submit"]:hover {
 .divider-line {
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(123, 63, 243, 0.12);
 }
 
 /* Register link */
 .register-link {
   text-align: center;
-  color: #94a3b8 !important;
+  color: #64748b !important;
   font-size: 13.5px;
 }
 
 .register-link span {
-  color: #9d7cff !important;
+  color: #7b3ff3 !important;
   font-weight: 600;
   text-decoration: none !important;
   margin-left: 4px;
@@ -318,7 +357,7 @@ button[type="submit"]:hover {
 }
 
 .register-link span:hover {
-  color: #00d2ff !important;
+  color: #00b0ff !important;
   text-decoration: underline !important;
 }
 
@@ -334,6 +373,132 @@ button[type="submit"]:hover {
 }
 
 .secure-footer svg {
+  color: #7b3ff3;
+}
+
+/* ==========================================================================
+   DARK MODE OVERRIDES (Applied dynamically when body has class .dark-mode)
+   ========================================================================== */
+
+body.dark-mode {
+  --card-bg: rgba(10, 14, 29, 0.95) !important;
+}
+
+body.dark-mode .login-page {
+  background: #060813 !important;
+}
+
+body.dark-mode .top-left-glow {
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.12) 0%, rgba(0, 210, 255, 0) 70%);
+}
+
+body.dark-mode .bottom-right-glow {
+  background: radial-gradient(circle, rgba(123, 63, 243, 0.15) 0%, rgba(123, 63, 243, 0) 70%);
+}
+
+body.dark-mode .grid-pattern-left {
+  background-image: radial-gradient(rgba(123, 63, 243, 0.18) 1.5px, transparent 1.5px);
+}
+
+body.dark-mode .grid-pattern-right {
+  background-image: radial-gradient(rgba(123, 63, 243, 0.18) 1.5px, transparent 1.5px);
+}
+
+body.dark-mode .glow-dot {
+  box-shadow: 0 0 16px 6px rgba(123, 63, 243, 0.8);
+}
+
+body.dark-mode .login-card {
+  background: var(--card-bg) !important;
+  background-image: linear-gradient(var(--card-bg), var(--card-bg)), linear-gradient(135deg, #00d2ff, #7b3ff3);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 45px rgba(123, 63, 243, 0.16);
+}
+
+body.dark-mode .login-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 35px 75px rgba(0, 0, 0, 0.8), 0 0 55px rgba(123, 63, 243, 0.28);
+}
+
+body.dark-mode .login-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .login-card p.subtitle {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .input-box label {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .label-icon-circle {
+  border-color: rgba(123, 63, 243, 0.4);
+  color: #9d7cff;
+}
+
+body.dark-mode .input-box input {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .input-box input:focus {
+  border-color: #7b3ff3 !important;
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 0 15px rgba(123, 63, 243, 0.25);
+}
+
+/* Autofill overrides for Dark Mode */
+body.dark-mode .input-box input:-webkit-autofill,
+body.dark-mode .input-box input:-webkit-autofill:hover,
+body.dark-mode .input-box input:-webkit-autofill:focus,
+body.dark-mode .input-box input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(10, 14, 29, 0.95) inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+body.dark-mode .toggle-eye {
+  color: #94a3b8;
+}
+
+body.dark-mode .toggle-eye:hover {
+  color: #00d2ff;
+}
+
+body.dark-mode .forgot-password a {
+  color: #9d7cff !important;
+}
+
+body.dark-mode .forgot-password a:hover {
+  color: #00d2ff !important;
+}
+
+body.dark-mode button[type="submit"]:hover {
+  box-shadow: 0 8px 24px rgba(110, 63, 243, 0.45);
+}
+
+body.dark-mode .divider-line {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .register-link {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .register-link span {
+  color: #9d7cff !important;
+}
+
+body.dark-mode .register-link span:hover {
+  color: #00d2ff !important;
+}
+
+body.dark-mode .secure-footer {
+  color: #64748b;
+}
+
+body.dark-mode .secure-footer svg {
   color: #9d7cff;
 }
 

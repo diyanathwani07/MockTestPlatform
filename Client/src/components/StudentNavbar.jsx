@@ -74,7 +74,17 @@ function StudentNavbar({ title }) {
 
         {/* Profile */}
         <div className="profile-dropdown-wrapper">
-          <div className="avatar-neon-trigger" onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}>{initials}</div>
+          <div 
+            className="avatar-neon-trigger" 
+            onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+            style={{ overflow: 'hidden', padding: 0 }}
+          >
+            {storedUser.avatar ? (
+              <img src={storedUser.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+            ) : (
+              initials
+            )}
+          </div>
           {profileOpen && (
             <div className="profile-floating-menu">
               <div className="drop-link" onClick={() => navigate("/dashboard/profile")}>

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "../components/Logo";
-// Make sure your CSS file is imported here!
+import { Sun, Moon, Mail, Key, Lock, ArrowLeft } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
+import BorderGlow from "../components/BorderGlow";
 import "../css/Forgotpassword.css"; 
 
 const ForgotPassword = () => {
@@ -124,30 +126,77 @@ const ForgotPassword = () => {
     }
   };
 
+  const { toggleTheme } = useTheme();
+
   return (
     <div className="login-page">
-      {/* Background Blobs */}
-      <div className="top-left"></div>
-      <div className="bottom-right"></div>
-      <div className="big-circle"></div>
-      <div className="small-circle"></div>
+      {/* SVG Gradients definition */}
+      <svg style={{ width: 0, height: 0, position: 'absolute' }}>
+        <defs>
+          <linearGradient id="left-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00D2FF" />
+            <stop offset="50%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#7B3FF3" />
+          </linearGradient>
+          <linearGradient id="right-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#3B82F6" />
+            <stop offset="50%" stopColor="#7B3FF3" />
+            <stop offset="100%" stopColor="#EC4899" />
+          </linearGradient>
+        </defs>
+      </svg>
 
-      <div className="login-card">
+      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
+          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
+          <div className="pill-thumb-slider"></div>
+        </div>
+      </div>
+
+      {/* Decorative Background Elements */}
+      <div className="top-left-glow"></div>
+      <div className="bottom-right-glow"></div>
+      <div className="grid-pattern-left"></div>
+      <div className="grid-pattern-right"></div>
+      <div className="glow-dot glow-dot-1"></div>
+      <div className="glow-dot glow-dot-2"></div>
+
+      {/* Responsive Inline SVG Waves matching mockup */}
+      <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M 0,0 C 35,0 45,28 32,55 C 20,80 5,88 0,88 Z" fill="url(#left-3d-grad)" opacity="0.95" />
+        <path d="M 0,10 C 35,25 38,50 18,75 C 10,85 0,90 0,90" fill="none" stroke="#00D2FF" strokeWidth="1.25" />
+      </svg>
+
+      <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M 100,100 C 65,100 55,72 68,45 C 80,20 95,12 100,12 Z" fill="url(#right-3d-grad)" opacity="0.95" />
+        <path d="M 100,90 C 65,75 62,50 82,25 C 90,15 100,10 100,10" fill="none" stroke="#7B3FF3" strokeWidth="1.25" />
+      </svg>
+
+      <BorderGlow
+        className="login-card animate-fade-in"
+        edgeSensitivity={30}
+        glowColor="260 85 70"
+        borderRadius={28}
+        glowRadius={40}
+        glowIntensity={1.2}
+        coneSpread={25}
+        animated={true}
+        colors={['#7B3FF3', '#00D2FF', '#EC4899']}
+      >
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
           <Logo size="large" />
         </div>
 
-        <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", textAlign: "center", marginBottom: "12px" }}>
-          Account Recovery
-        </h2>
+        <h2 className="login-title">Account Recovery</h2>
+        <div className="title-underline"></div>
 
-        <p style={{ fontSize: "14px", color: "var(--text-secondary)", textAlign: "center", marginBottom: "28px", lineHeight: "1.5", padding: "0 10px" }}>
+        <p className="subtitle">
           {step === 1 && "Enter your email address and we'll send you an OTP to reset your password."}
           {step === 2 && `Type the 6-digit OTP sent to ${email}`}
           {step === 3 && "Create a new secure password for your account."}
         </p>
 
-        {/* ─── YOUR STEP INDICATOR WIRING ─── */}
+        {/* ─── STEP INDICATOR ─── */}
         <div className="step-indicator">
           <div className={`step-dot ${step >= 1 ? "active" : ""}`}>1</div>
           <div className={`step-line ${step >= 2 ? "active" : ""}`}></div>
@@ -156,9 +205,9 @@ const ForgotPassword = () => {
           <div className={`step-dot ${step >= 3 ? "active" : ""}`}>3</div>
         </div>
 
-        {/* ─── YOUR STATUS MESSAGE WIRING ─── */}
+        {/* ─── STATUS MESSAGE WIRING ─── */}
         {statusMessage && (
-          <div className="status-message" style={isError ? { color: "#ef4444", background: "#fef2f2" } : {}}>
+          <div className="status-message" style={isError ? { color: "#ef4444", background: "#fef2f2", borderColor: "#fecaca" } : {}}>
             🔒 {statusMessage}
           </div>
         )}
@@ -167,7 +216,12 @@ const ForgotPassword = () => {
         {step === 1 && (
           <form onSubmit={handleRequestOtp}>
             <div className="input-box">
-              <label htmlFor="email">Email Address</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Mail size={12} />
+                </span>
+                Email Address
+              </label>
               <input 
                 type="email" 
                 id="email" 
@@ -177,7 +231,6 @@ const ForgotPassword = () => {
                 required 
               />
             </div>
-            {/* Uses your disabled CSS state automatically */}
             <button type="submit" disabled={isLoading || !email}>
               {isLoading ? "Sending OTP..." : "Send OTP"}
             </button>
@@ -188,7 +241,12 @@ const ForgotPassword = () => {
         {step === 2 && (
           <form onSubmit={handleVerifyOtp}>
             <div className="input-box" style={{ textAlign: "center" }}>
-              <label htmlFor="otp">6-Digit Security OTP</label>
+              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '14px' }}>
+                <span className="label-icon-circle">
+                  <Key size={12} />
+                </span>
+                6-Digit Security OTP
+              </label>
               <input 
                 type="text" 
                 id="otp" 
@@ -196,7 +254,7 @@ const ForgotPassword = () => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="• • • • • •" 
-                style={{ fontSize: "20px", letterSpacing: "6px", textAlign: "center", fontWeight: "bold", color: "#6E3FF3" }}
+                style={{ fontSize: "20px", letterSpacing: "6px", textAlign: "center", fontWeight: "bold", color: "#6E3FF3", width: "100%", height: "52px" }}
                 required 
               />
             </div>
@@ -204,7 +262,6 @@ const ForgotPassword = () => {
               {isLoading ? "Verifying..." : "Verify OTP"}
             </button>
 
-            {/* ─── YOUR RESEND LINK WIRING ─── */}
             <div className="resend-link">
               Didn't receive the email? <span onClick={handleRequestOtp}>Resend Code</span>
             </div>
@@ -215,7 +272,12 @@ const ForgotPassword = () => {
         {step === 3 && (
           <form onSubmit={handleSavePassword}>
             <div className="input-box">
-              <label htmlFor="new-pwd">New Password</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Lock size={12} />
+                </span>
+                New Password
+              </label>
               <input 
                 type="password" 
                 id="new-pwd" 
@@ -231,11 +293,13 @@ const ForgotPassword = () => {
           </form>
         )}
 
-        <div style={{ marginTop: "24px", fontSize: "13px", fontWeight: "600" }}>
-          <Link to="/login" style={{ color: "#64748B", textDecoration: "none" }}>← Return to Portal Login</Link>
+        <div style={{ marginTop: "24px", fontSize: "13.5px", fontWeight: "600", textAlign: "center" }} className="return-login">
+          <Link to="/login" style={{ textDecoration: "none", display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <ArrowLeft size={16} /> Return to Portal Login
+          </Link>
         </div>
 
-      </div>
+      </BorderGlow>
     </div>
   );
 };

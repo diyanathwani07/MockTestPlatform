@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { Eye, EyeOff, Sun, Moon, Mail, Lock, LogIn, Shield } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
+import BorderGlow from "../components/BorderGlow";
 import "../css/Login.css";
 
 function Login() {
@@ -50,13 +51,15 @@ return (
     {/* SVG Gradients definition */}
     <svg style={{ width: 0, height: 0, position: 'absolute' }}>
       <defs>
-        <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="left-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#00D2FF" />
-          <stop offset="100%" stopColor="#0066FF" stopOpacity="0" />
+          <stop offset="50%" stopColor="#3B82F6" />
+          <stop offset="100%" stopColor="#7B3FF3" />
         </linearGradient>
-        <linearGradient id="purple-grad" x1="100%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#7B3FF3" />
-          <stop offset="100%" stopColor="#7B3FF3" stopOpacity="0" />
+        <linearGradient id="right-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#3B82F6" />
+          <stop offset="50%" stopColor="#7B3FF3" />
+          <stop offset="100%" stopColor="#EC4899" />
         </linearGradient>
       </defs>
     </svg>
@@ -78,16 +81,26 @@ return (
 
     {/* Responsive Inline SVG Waves matching mockup */}
     <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M 0,0 C 40,0 45,30 20,60 C 5,80 15,95 0,100 Z" fill="url(#blue-grad)" opacity="0.12" />
-      <path d="M 0,0 C 40,0 45,30 20,60 C 5,80 15,95 0,100" fill="none" stroke="#00D2FF" strokeWidth="0.75" />
+      <path d="M 0,0 C 35,0 45,28 32,55 C 20,80 5,88 0,88 Z" fill="url(#left-3d-grad)" opacity="0.95" />
+      <path d="M 0,10 C 35,25 38,50 18,75 C 10,85 0,90 0,90" fill="none" stroke="#00D2FF" strokeWidth="1.25" />
     </svg>
 
     <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M 100,0 C 85,15 80,40 90,65 C 95,80 75,90 100,100 Z" fill="url(#purple-grad)" opacity="0.12" />
-      <path d="M 100,0 C 85,15 80,40 90,65 C 95,80 75,90 100,100" fill="none" stroke="#7B3FF3" strokeWidth="0.75" />
+      <path d="M 100,100 C 65,100 55,72 68,45 C 80,20 95,12 100,12 Z" fill="url(#right-3d-grad)" opacity="0.95" />
+      <path d="M 100,90 C 65,75 62,50 82,25 C 90,15 100,10 100,10" fill="none" stroke="#7B3FF3" strokeWidth="1.25" />
     </svg>
 
-    <div className="login-card animate-fade-in">
+    <BorderGlow
+      className="login-card animate-fade-in"
+      edgeSensitivity={30}
+      glowColor="260 85 70"
+      borderRadius={28}
+      glowRadius={40}
+      glowIntensity={1.2}
+      coneSpread={25}
+      animated={true}
+      colors={['#7B3FF3', '#00D2FF', '#EC4899']}
+    >
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
         <Logo size="large" />
       </div>
@@ -160,12 +173,7 @@ return (
           <span> Create Account</span>
         </Link>
       </div>
-
-      <div className="secure-footer">
-        <Shield size={16} />
-        <span>Your data is secure with us</span>
-      </div>
-    </div>
+    </BorderGlow>
   </div>
 );
 }

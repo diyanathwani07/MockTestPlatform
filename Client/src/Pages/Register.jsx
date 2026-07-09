@@ -3,7 +3,9 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useTheme } from "../context/ThemeContext";
-import { Sun, Moon, Eye, EyeOff } from "lucide-react";
+import { Sun, Moon, Eye, EyeOff, User, Phone, Mail, Lock, MapPin, Map, ArrowRight } from "lucide-react";
+import BorderGlow from "../components/BorderGlow";
+import "../css/Login.css";
 import "../css/Register.css";
 
 
@@ -70,7 +72,23 @@ function Register() {
   };
 
   return (
-    <div className="register-page">
+    <div className="login-page">
+      {/* SVG Gradients definition */}
+      <svg style={{ width: 0, height: 0, position: 'absolute' }}>
+        <defs>
+          <linearGradient id="left-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00D2FF" />
+            <stop offset="50%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#7B3FF3" />
+          </linearGradient>
+          <linearGradient id="right-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#3B82F6" />
+            <stop offset="50%" stopColor="#7B3FF3" />
+            <stop offset="100%" stopColor="#EC4899" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
         <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
           <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
@@ -78,20 +96,43 @@ function Register() {
         </div>
       </div>
 
-      {/* Background Shapes */}
-      <div className="top-left"></div>
-      <div className="bottom-right"></div>
-      <div className="big-circle"></div>
-      <div className="small-circle"></div>
+      {/* Decorative Background Elements */}
+      <div className="top-left-glow"></div>
+      <div className="bottom-right-glow"></div>
+      <div className="grid-pattern-left"></div>
+      <div className="grid-pattern-right"></div>
+      <div className="glow-dot glow-dot-1"></div>
+      <div className="glow-dot glow-dot-2"></div>
 
-      {/* Register Card */}
-      <div className="register-card">
+      {/* Responsive Inline SVG Waves matching mockup */}
+      <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M 0,0 C 35,0 45,28 32,55 C 20,80 5,88 0,88 Z" fill="url(#left-3d-grad)" opacity="0.95" />
+        <path d="M 0,10 C 35,25 38,50 18,75 C 10,85 0,90 0,90" fill="none" stroke="#00D2FF" strokeWidth="1.25" />
+      </svg>
 
+      <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M 100,100 C 65,100 55,72 68,45 C 80,20 95,12 100,12 Z" fill="url(#right-3d-grad)" opacity="0.95" />
+        <path d="M 100,90 C 65,75 62,50 82,25 C 90,15 100,10 100,10" fill="none" stroke="#7B3FF3" strokeWidth="1.25" />
+      </svg>
+
+      <BorderGlow
+        className="login-card animate-fade-in"
+        style={{ maxWidth: '680px' }}
+        edgeSensitivity={30}
+        glowColor="260 85 70"
+        borderRadius={28}
+        glowRadius={40}
+        glowIntensity={1.2}
+        coneSpread={25}
+        animated={true}
+        colors={['#7B3FF3', '#00D2FF', '#EC4899']}
+      >
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
           <Logo size="large" />
         </div>
 
-        <h2>Create Account</h2>
+        <h2 className="login-title">Create Account</h2>
+        <div className="title-underline"></div>
 
         <p className="subtitle">
           Register to start your preparation
@@ -101,7 +142,12 @@ function Register() {
           <div className="form-grid">
 
             <div className="input-box">
-              <label>Full Name</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <User size={12} />
+                </span>
+                Full Name
+              </label>
               <input
                 type="text"
                 name="fullName"
@@ -113,7 +159,12 @@ function Register() {
             </div>
 
             <div className="input-box">
-              <label>Phone Number</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Phone size={12} />
+                </span>
+                Phone Number
+              </label>
               <input
                 type="tel"
                 name="phone"
@@ -125,7 +176,12 @@ function Register() {
             </div>
 
             <div className="input-box full-width">
-              <label>Email Address</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Mail size={12} />
+                </span>
+                Email Address
+              </label>
               <input
                 type="email"
                 name="email"
@@ -137,8 +193,13 @@ function Register() {
             </div>
 
             <div className="input-box">
-              <label>Password</label>
-              <div style={{ position: "relative" }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Lock size={12} />
+                </span>
+                Password
+              </label>
+              <div className="password-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -146,20 +207,24 @@ function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  style={{ paddingRight: "50px" }}
                 />
-                <div 
-                  style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "var(--text-secondary)", display: "flex" }}
+                <span 
+                  className="toggle-eye"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </div>
+                </span>
               </div>
             </div>
 
             <div className="input-box">
-              <label>Confirm Password</label>
-              <div style={{ position: "relative" }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Lock size={12} />
+                </span>
+                Confirm Password
+              </label>
+              <div className="password-wrapper">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
@@ -167,19 +232,23 @@ function Register() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  style={{ paddingRight: "50px" }}
                 />
-                <div 
-                  style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "var(--text-secondary)", display: "flex" }}
+                <span 
+                  className="toggle-eye"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </div>
+                </span>
               </div>
             </div>
 
             <div className="input-box">
-              <label>District</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <MapPin size={12} />
+                </span>
+                District
+              </label>
               <input
                 type="text"
                 name="district"
@@ -191,7 +260,12 @@ function Register() {
             </div>
 
             <div className="input-box">
-              <label>State</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Map size={12} />
+                </span>
+                State
+              </label>
               <input
                 type="text"
                 name="state"
@@ -202,28 +276,27 @@ function Register() {
               />
             </div>
 
-            <div className="terms-box full-width">
-              <input type="checkbox" id="terms" required />
-              <label htmlFor="terms">
+            <div className="terms-box full-width" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+              <input type="checkbox" id="terms" required style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+              <label htmlFor="terms" style={{ fontSize: '14px', cursor: 'pointer', userSelect: 'none' }}>
                 I agree to the Terms & Conditions
               </label>
             </div>
           </div>
 
-          <button type="submit">
-            Create Account
+          <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px' }}>
+            <ArrowRight size={18} style={{ position: 'absolute', left: '24px' }} />
+            <span>Create Account</span>
           </button>
-
         </form>
 
-        <div className="register">
+        <div className="register-link" style={{ marginTop: '24px' }}>
           Already have an account?
           <Link to="/">
             <span> Login</span>
           </Link>
         </div>
-
-      </div>
+      </BorderGlow>
     </div>
   );
 }

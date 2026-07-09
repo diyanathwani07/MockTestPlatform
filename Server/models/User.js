@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema(
     location: {
       type: String,
     },
+    avatar: {
+      type: String,
+      default: "",
+    },
     role: {
       type: String,
       enum: ["user", "admin", "superadmin"],
@@ -56,6 +60,36 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    practiceStreak: {
+      type: Number,
+      default: 0,
+    },
+    longestStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastPracticeDate: {
+      type: Date,
+    },
+    totalXp: {
+      type: Number,
+      default: 0,
+    },
+    bookmarkedQuestions: [
+      {
+        quizId: { type: mongoose.Schema.Types.ObjectId, ref: "PracticeQuiz" },
+        questionId: { type: String, required: true },
+        questionEnglish: { type: String, required: true },
+        questionHindi: { type: String },
+        options: { type: [String], required: true },
+        correctAnswer: { type: String, required: true },
+        explanations: {
+          correct: { type: String },
+          incorrect: { type: Map, of: String },
+          conceptSummary: { type: String }
+        }
+      }
+    ],
   },
   {
     timestamps: true,

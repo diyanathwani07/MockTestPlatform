@@ -7,6 +7,7 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse layout styles
 import "../css/StudentProfile.css"; // Specific profile styles
+import AvatarPickerModal from "../components/AvatarPickerModal";
 
 function StudentProfile() {
   const [user, setUser] = useState({});
@@ -15,6 +16,26 @@ function StudentProfile() {
   const [studentId, setStudentId] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const handleSelectAvatar = async (avatarUrlOrBase64) => {
+    if (previewMode) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+        ...formData,
+        avatar: avatarUrlOrBase64
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      localStorage.setItem("user", JSON.stringify(res.data));
+      setUser(res.data);
+      setShowAvatarPicker(false);
+    } catch (error) {
+      console.error("Error saving avatar", error);
+      alert("Failed to update avatar.");
+    }
+  };
 
   // Form State
   const [formData, setFormData] = useState({
@@ -93,9 +114,15 @@ function StudentProfile() {
                   <div className="sp-hero-card">
                     <div className="sp-hero-left">
                       <div className="sp-avatar-container">
-                        <div className="sp-avatar">{initials}</div>
+                        <div className="sp-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                          {user.avatar ? (
+                            <img src={user.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+                          ) : (
+                            initials
+                          )}
+                        </div>
                         {!previewMode && (
-                          <button className="sp-avatar-edit" onClick={() => setIsEditing(true)}>
+                          <button className="sp-avatar-edit" onClick={() => setShowAvatarPicker(true)}>
                             <Edit3 size={12} />
                           </button>
                         )}
@@ -234,6 +261,11 @@ function StudentProfile() {
           </div>
         </div>
       </div>
+      <AvatarPickerModal 
+        isOpen={showAvatarPicker} 
+        onClose={() => setShowAvatarPicker(false)} 
+        onSelect={handleSelectAvatar} 
+      />
     </div>
   );
 }

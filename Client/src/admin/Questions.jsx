@@ -6,6 +6,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/Questions.css";
 import "../css/Practice.css";
+import Folder from "../components/Folder";
 
 // ── Helpers ──
 const getSubjectMeta = (subjectName) => {
@@ -106,6 +107,15 @@ function Questions() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const questionsPerPage = 15; // More per page since we now show options
   const [currentPage, setCurrentPage] = useState(1);
+  const [openingBookId, setOpeningBookId] = useState(null);
+
+  const handleCardClick = (book) => {
+    setOpeningBookId(book.id);
+    setTimeout(() => {
+      handleSelectBook(book);
+      setOpeningBookId(null);
+    }, 750);
+  };
 
   useEffect(() => {
     const fetchQuestionsAndGroup = async () => {
@@ -250,8 +260,8 @@ function Questions() {
                       return (
                         <div
                           key={book.id}
-                          className="practice-card"
-                          onClick={() => handleSelectBook(book)}
+                          className={`practice-card ${openingBookId === book.id ? 'opening' : ''}`}
+                          onClick={() => handleCardClick(book)}
                           style={{ cursor: "pointer" }}
                         >
                           <div className="practice-card-header">
@@ -262,6 +272,19 @@ function Questions() {
                             <div className="practice-difficulty">
                               Collection
                             </div>
+                          </div>
+                          
+                          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0 15px 0' }}>
+                            <Folder 
+                              color={color.dot} 
+                              size={1.1} 
+                              open={openingBookId === book.id}
+                              items={[
+                                <div key={1} style={{ padding: '2px', fontSize: '8.5px', color: '#1e293b', fontWeight: '800', textAlign: 'center' }}>📄 Quiz</div>,
+                                <div key={2} style={{ padding: '2px', fontSize: '8.5px', color: '#1e293b', fontWeight: '800', textAlign: 'center' }}>📝 {book.totalQuestions} Qs</div>,
+                                <div key={3} style={{ padding: '2px', fontSize: '8.5px', color: '#1e293b', fontWeight: '800', textAlign: 'center' }}>✨ Tests</div>
+                              ]}
+                            />
                           </div>
                           
                           <h3 className="practice-quiz-title">{book.title}</h3>

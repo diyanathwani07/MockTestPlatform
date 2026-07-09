@@ -39,7 +39,24 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
 
         {/* Profile */}
         <div className="profile-dropdown-wrapper">
-          <div className="avatar-neon-trigger" onClick={() => setProfileOpen(!profileOpen)}>DN</div>
+          {(() => {
+            const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+            const adminName = storedUser.fullName || storedUser.name || "Admin";
+            const initials = adminName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "AD";
+            return (
+              <div 
+                className="avatar-neon-trigger" 
+                onClick={() => setProfileOpen(!profileOpen)}
+                style={{ overflow: 'hidden', padding: 0 }}
+              >
+                {storedUser.avatar ? (
+                  <img src={storedUser.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+                ) : (
+                  initials
+                )}
+              </div>
+            );
+          })()}
           {profileOpen && (
             <div className="profile-floating-menu">
               <div className="drop-link" onClick={() => navigate("/admin/profile")}>

@@ -7,6 +7,14 @@
   animation: fadeIn 0.3s ease;
 }
 
+.practice-card.opening {
+  transform: translateY(-8px) scale(1.02);
+  border-color: #8B5CF6;
+  box-shadow: 0 16px 32px rgba(139, 92, 246, 0.15);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .questions-bank-view::-webkit-scrollbar { width: 6px; }
 .questions-bank-view::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 6px; }
 

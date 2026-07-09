@@ -3,6 +3,7 @@ import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
 import { User, Mail, Shield, Calendar, Edit3, Phone, MapPin } from "lucide-react";
 import "../../css/StudentProfile.css"; // Reuse the beautiful styling from StudentProfile
+import AvatarPickerModal from "../../components/AvatarPickerModal";
 
 function AdminProfile() {
   const [user, setUser] = useState(null);
@@ -10,6 +11,15 @@ function AdminProfile() {
   const [adminId, setAdminId] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const handleSelectAvatar = (avatarUrlOrBase64) => {
+    const updatedUser = { ...user, avatar: avatarUrlOrBase64 };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    setShowAvatarPicker(false);
+  };
+
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -80,8 +90,14 @@ function AdminProfile() {
                 <div className="sp-hero-card">
                   <div className="sp-hero-left">
                     <div className="sp-avatar-container">
-                      <div className="sp-avatar">{initials}</div>
-                      <button className="sp-avatar-edit">
+                      <div className="sp-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                        {user.avatar ? (
+                          <img src={user.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+                        ) : (
+                          initials
+                        )}
+                      </div>
+                      <button className="sp-avatar-edit" onClick={() => setShowAvatarPicker(true)}>
                         <Edit3 size={14} />
                       </button>
                     </div>
@@ -211,10 +227,15 @@ function AdminProfile() {
             </div>
           </div>
         </div>
+        <AvatarPickerModal 
+          isOpen={showAvatarPicker} 
+          onClose={() => setShowAvatarPicker(false)} 
+          onSelect={handleSelectAvatar} 
+        />
       </div>
     </div>
-    </div>
-  );
+  </div>
+);
 }
 
 export default AdminProfile;
