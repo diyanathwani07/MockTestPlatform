@@ -14,7 +14,7 @@ function Users() {
   const [viewTab, setViewTab] = useState("active"); // "active" or "archived"
   
   // Drawer & Modal State
-  const [actionDrawerOpen, setActionDrawerOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeModal, setActiveModal] = useState(null); // 'profile', 'edit', 'performance', 'history', 'tickets', 'suspend', 'role', 'reset', 'delete'
   const [selectedUser, setSelectedUser] = useState(null);
   
@@ -302,18 +302,111 @@ function Users() {
                             <UserCheck size={14} /> Restore
                           </button>
                         ) : (
-                          <div className="action-dropdown-container">
+                          <div className="action-dropdown-container" style={{ position: 'relative' }}>
                             <button 
                               className="action-dots-btn" 
                               title="Options" 
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedUser(u);
-                                setActionDrawerOpen(true);
+                                setActiveDropdown(activeDropdown === u._id ? null : u._id);
                               }}
                             >
                               ⋮
                             </button>
+
+                            {activeDropdown === u._id && (
+                              <>
+                                <div 
+                                  onClick={() => setActiveDropdown(null)}
+                                  style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
+                                />
+                                <div style={{ 
+                                  position: "absolute", 
+                                  right: 0, 
+                                  top: "28px", 
+                                  backgroundColor: "var(--bg-card)", 
+                                  border: "1.5px solid var(--border-color)", 
+                                  borderRadius: "10px", 
+                                  padding: "6px 0", 
+                                  minWidth: "170px", 
+                                  boxShadow: "0 8px 24px rgba(0,0,0,0.18)", 
+                                  zIndex: 100,
+                                  textAlign: "left"
+                                }}>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); openModal('profile_drawer', u); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <User size={15} /> View Profile
+                                  </div>
+                                  {currentUserRole === 'superadmin' && (
+                                    <div 
+                                      onClick={() => { setActiveDropdown(null); openModal('edit', u); }}
+                                      style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                    >
+                                      <Edit size={15} /> Edit User
+                                    </div>
+                                  )}
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); openModal('history', u); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <History size={15} /> Exam History
+                                  </div>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); openModal('performance', u); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <Activity size={15} /> Performance
+                                  </div>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); openModal('tickets', u); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <Ticket size={15} /> Support Tickets
+                                  </div>
+                                  {currentUserRole === 'superadmin' && (
+                                    <>
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); openModal('suspend', u); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        {(u.status || 'Active') === 'Active' ? <><UserMinus size={15} /> Suspend</> : <><UserCheck size={15} /> Activate</>}
+                                      </div>
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); openModal('reset', u); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Key size={15} /> Reset Password
+                                      </div>
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); openModal('delete', u); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red, #ef4444)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Trash2 size={15} /> Delete User
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </>
+                            )}
                           </div>
                         )}
                       </td>
@@ -353,81 +446,9 @@ function Users() {
       )}
 
       {/* MODALS */}
-      {(activeModal || actionDrawerOpen) && (
-        <div className="modal-overlay" style={activeModal === 'profile_popup' ? { justifyContent: 'center' } : {}} onClick={() => { closeModal(); setActionDrawerOpen(false); }}>
+      {activeModal && (
+        <div className="modal-overlay" style={activeModal === 'profile_popup' ? { justifyContent: 'center' } : {}} onClick={() => { closeModal(); }}>
           
-          {/* ACTIONS DRAWER */}
-          {actionDrawerOpen && selectedUser && (
-            <div className="ticket-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Actions: {selectedUser.fullName}</h3>
-                <button className="close-btn" onClick={() => setActionDrawerOpen(false)}>
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="modal-body" style={{ padding: '20px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Eye size={14} /> USER INFORMATION
-                  </div>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('profile_drawer', selectedUser); }}>
-                    <User size={16} /> View Profile
-                  </button>
-                  {currentUserRole === 'superadmin' && (
-                    <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('edit', selectedUser); }}>
-                      <Edit size={16} /> Edit User
-                    </button>
-                  )}
-                  
-                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
-                  
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <BarChart2 size={14} /> PERFORMANCE
-                  </div>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('history', selectedUser); }}>
-                    <History size={16} /> View Exam History
-                  </button>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('performance', selectedUser); }}>
-                    <Activity size={16} /> View Performance
-                  </button>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('tickets', selectedUser); }}>
-                    <Ticket size={16} /> View Support Tickets
-                  </button>
-                  
-                  {currentUserRole === 'superadmin' && (
-                    <>
-                      <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
-                      
-                      <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Settings size={14} /> ACCOUNT MANAGEMENT
-                      </div>
-                      <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('role', selectedUser); }}>
-                        <ShieldCheck size={16} /> Change Role
-                      </button>
-                      <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('suspend', selectedUser); }}>
-                        {(selectedUser.status || 'Active') === 'Active' ? <><UserMinus size={16} /> Suspend User</> : <><UserCheck size={16} /> Activate User</>}
-                      </button>
-                      <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('reset', selectedUser); }}>
-                        <Key size={16} /> Reset Password
-                      </button>
-                      
-                      <div style={{ height: '1px', background: 'var(--border-color)', margin: '12px 0' }}></div>
-                      
-                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <AlertTriangle size={14} /> DANGEROUS ACTIONS
-                      </div>
-                      <button className="dropdown-item danger" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', color: '#ef4444' }} onClick={() => { setActionDrawerOpen(false); openModal('delete', selectedUser); }}>
-                        <Trash2 size={16} /> Delete User
-                      </button>
-                    </>
-                  )}
-                  
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* PROFILE MODAL */}
           {(activeModal === 'profile_popup' || activeModal === 'profile_drawer') && selectedUser && (
             <div className={`ticket-modal ${activeModal === 'profile_popup' ? 'center-modal' : ''}`} onClick={(e) => e.stopPropagation()}>
@@ -437,7 +458,7 @@ function Users() {
                     className="close-btn" 
                     onClick={() => {
                       setActiveModal(null);
-                      setActionDrawerOpen(true);
+                      closeModal();
                     }}
                     style={{ 
                       display: "flex", 
@@ -526,7 +547,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }} 
                   style={{ 
                     display: "flex", 
@@ -592,7 +613,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }}
                   style={{ 
                     display: "flex", 
@@ -641,7 +662,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }}
                   style={{ 
                     display: "flex", 
@@ -685,7 +706,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }}
                   style={{ 
                     display: "flex", 
@@ -725,7 +746,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }}
                   style={{ 
                     display: "flex", 
@@ -765,7 +786,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }}
                   style={{ 
                     display: "flex", 
@@ -866,7 +887,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }}
                   style={{ 
                     display: "flex", 
@@ -976,7 +997,7 @@ function Users() {
                   className="close-btn" 
                   onClick={() => {
                     setActiveModal(null);
-                    setActionDrawerOpen(true);
+                    closeModal();
                   }}
                   style={{ 
                     display: "flex", 

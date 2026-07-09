@@ -55,7 +55,12 @@ function AuditLog() {
     const matchSearch = log.action?.toLowerCase().includes(search.toLowerCase()) ||
       log.performedBy?.toLowerCase().includes(search.toLowerCase()) ||
       log.details?.toLowerCase().includes(search.toLowerCase());
-    const matchModule = moduleFilter === "All Modules" || log.module === moduleFilter;
+    
+    const matchModule = moduleFilter === "All Modules" || 
+      log.module === moduleFilter ||
+      (moduleFilter === "User Management" && log.module === "UserManagement") ||
+      (moduleFilter === "Support" && log.module === "Support") ||
+      (moduleFilter === "Auth" && log.module === "Auth");
     
     let matchDate = true;
     if (filterDate) {
@@ -116,7 +121,7 @@ function AuditLog() {
                 backgroundColor: "var(--bg-input)",
                 color: "var(--text-primary)",
                 fontSize: "13px",
-                width: "150px",
+                width: "170px",
                 flexShrink: 0,
                 outline: "none",
                 fontFamily: "inherit",
@@ -125,7 +130,9 @@ function AuditLog() {
             >
               <option>All Modules</option>
               <option>Quiz</option>
-              <option>Users</option>
+              <option>User Management</option>
+              <option>Support</option>
+              <option>Auth</option>
               <option>Results</option>
               <option>Settings</option>
             </select>
@@ -271,19 +278,39 @@ function AuditLog() {
                     >
                       <td style={{ padding: "14px 24px", fontWeight: "600", whiteSpace: "nowrap" }}>{log.performedBy}</td>
                       <td style={{ padding: "14px 24px", whiteSpace: "nowrap" }}>
-                        <span
-                          style={{
-                            padding: "4px 12px",
-                            borderRadius: "20px",
-                            fontSize: "11px",
-                            fontWeight: "700",
-                            backgroundColor: "rgba(110, 63, 243, 0.12)",
-                            color: "#8B5CF6",
-                            display: "inline-block",
-                          }}
-                        >
-                          {log.action}
-                        </span>
+                        {(() => {
+                          const a = log.action?.toUpperCase() || "";
+                          let bg = "rgba(139, 92, 246, 0.12)";
+                          let color = "#8B5CF6";
+                          if (a.includes("CREATE") || a.includes("PUBLISH") || a.includes("RESTORE")) {
+                            bg = "rgba(16, 185, 129, 0.12)";
+                            color = "#10b981";
+                          } else if (a.includes("DELETE") || a.includes("SUSPEND")) {
+                            bg = "rgba(239, 68, 68, 0.12)";
+                            color = "#ef4444";
+                          } else if (a.includes("UPDATE") || a.includes("ROLE") || a.includes("STATUS")) {
+                            bg = "rgba(245, 158, 11, 0.12)";
+                            color = "#f59e0b";
+                          } else if (a.includes("RESET") || a.includes("PASSWORD")) {
+                            bg = "rgba(59, 130, 246, 0.12)";
+                            color = "#3b82f6";
+                          }
+                          return (
+                            <span
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: "20px",
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                backgroundColor: bg,
+                                color: color,
+                                display: "inline-block",
+                              }}
+                            >
+                              {log.action}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td style={{ padding: "14px 24px", color: "var(--text-secondary)", whiteSpace: "normal", wordBreak: "break-word", lineHeight: "1.5" }}>{log.details}</td>
                       <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
