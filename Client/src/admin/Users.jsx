@@ -47,18 +47,53 @@ function Users() {
     fetchUsers();
   }, []);
 
-  // Fetch quizzes attempted for profile modal
+  const [attemptsData, setAttemptsData] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [userTickets, setUserTickets] = useState([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+
+  // Fetch quizzes attempted & attempts details for profile/history/performance modals
   useEffect(() => {
-    if ((activeModal === 'profile_popup' || activeModal === 'profile_drawer') && selectedUser) {
+    if ((activeModal === 'profile_popup' || activeModal === 'profile_drawer' || activeModal === 'history' || activeModal === 'performance') && selectedUser) {
       setQuizzesAttempted("Loading...");
+      setHistoryLoading(true);
       axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedUser._id}`)
-        .then(res => setQuizzesAttempted(res.data.length))
+        .then(res => {
+          setQuizzesAttempted(res.data.length);
+          setAttemptsData(res.data);
+          setHistoryLoading(false);
+        })
         .catch(err => {
           console.error("Error fetching quizzes attempted:", err);
           setQuizzesAttempted("Error");
+          setAttemptsData([]);
+          setHistoryLoading(false);
         });
     } else {
       setQuizzesAttempted(null);
+      setAttemptsData([]);
+    }
+  }, [activeModal, selectedUser]);
+
+  // Fetch user support tickets
+  useEffect(() => {
+    if (activeModal === 'tickets' && selectedUser) {
+      setTicketsLoading(true);
+      const token = localStorage.getItem("token");
+      axios.get(`${import.meta.env.VITE_API_URL}/api/tickets`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          const filtered = res.data.filter(t => (t.userId?._id || t.userId) === selectedUser._id);
+          setUserTickets(filtered);
+          setTicketsLoading(false);
+        })
+        .catch(err => {
+          console.error("Error fetching tickets:", err);
+          setTicketsLoading(false);
+        });
+    } else {
+      setUserTickets([]);
     }
   }, [activeModal, selectedUser]);
 
@@ -276,13 +311,13 @@ function Users() {
                   <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <BarChart2 size={14} /> PERFORMANCE
                   </div>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { showToast('Exam history module in development', 'info'); setActionDrawerOpen(false); }}>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('history', selectedUser); }}>
                     <History size={16} /> View Exam History
                   </button>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { showToast('Performance dashboard in development', 'info'); setActionDrawerOpen(false); }}>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('performance', selectedUser); }}>
                     <Activity size={16} /> View Performance
                   </button>
-                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { showToast('Support tickets module in development', 'info'); setActionDrawerOpen(false); }}>
+                  <button className="dropdown-item" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px' }} onClick={() => { setActionDrawerOpen(false); openModal('tickets', selectedUser); }}>
                     <Ticket size={16} /> View Support Tickets
                   </button>
                   
@@ -644,6 +679,301 @@ function Users() {
               <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button className="btn-danger" onClick={() => handleAction('', 'DELETE', {}, 'User deleted successfully')} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete User'}</button>
+              </div>
+            </div>
+          )}
+
+          {/* EXAM HISTORY MODAL */}
+          {activeModal === 'history' && (
+            <div className="ticket-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%' }}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Exam History</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>
+                  Exam attempts for <strong>{selectedUser?.fullName}</strong>:
+                </p>
+                {historyLoading ? (
+                  <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>Loading attempts...</div>
+                ) : attemptsData.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
+                    <History size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                    <p>No exam history found for this user.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {attemptsData.map((attempt) => (
+                      <div key={attempt._id} style={{ 
+                        background: 'rgba(255, 255, 255, 0.03)', 
+                        border: '1px solid var(--border-color)', 
+                        borderRadius: '12px', 
+                        padding: '16px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '12px'
+                      }}>
+                        <div>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--text-primary)' }}>{attempt.quizTitle || 'Mock Test'}</h4>
+                          <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                            Subject: {attempt.subject || 'N/A'} • {new Date(attempt.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: '700', color: '#6E3FF3', fontSize: '15px' }}>
+                              {attempt.score}/{attempt.totalMarks}
+                            </div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                              {(attempt.percentage || 0).toFixed(1)}%
+                            </div>
+                          </div>
+                          {attempt.shareId && (
+                            <a 
+                              href={`/student/result/${attempt.shareId}`} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                background: 'rgba(110, 63, 243, 0.1)', 
+                                color: '#6E3FF3', 
+                                padding: '8px', 
+                                borderRadius: '8px',
+                                textDecoration: 'none'
+                              }}
+                              title="View Result Page"
+                            >
+                              <Eye size={16} />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
+                <button className="btn-secondary" onClick={closeModal} style={{ width: '100%' }}>Close</button>
+              </div>
+            </div>
+          )}
+
+          {/* PERFORMANCE DASHBOARD MODAL */}
+          {activeModal === 'performance' && (
+            <div className="ticket-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%' }}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Performance Analytics</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <p style={{ marginBottom: '20px', color: 'var(--text-secondary)' }}>
+                  Performance analysis for <strong>{selectedUser?.fullName}</strong>:
+                </p>
+                {historyLoading ? (
+                  <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>Analyzing metrics...</div>
+                ) : attemptsData.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
+                    <Activity size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                    <p>No performance data available yet.</p>
+                  </div>
+                ) : (() => {
+                  const total = attemptsData.length;
+                  const avg = (attemptsData.reduce((sum, a) => sum + (a.percentage || 0), 0) / total).toFixed(1);
+                  const highest = Math.max(...attemptsData.map(a => a.percentage || 0)).toFixed(1);
+                  const lowest = Math.min(...attemptsData.map(a => a.percentage || 0)).toFixed(1);
+
+                  // Group by subject
+                  const subjectStats = {};
+                  attemptsData.forEach(a => {
+                    const subj = a.subject || 'General';
+                    if (!subjectStats[subj]) {
+                      subjectStats[subj] = { total: 0, sum: 0 };
+                    }
+                    subjectStats[subj].total += 1;
+                    subjectStats[subj].sum += a.percentage || 0;
+                  });
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      {/* STATS GRID */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Tests Attempted</div>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)' }}>{total}</div>
+                        </div>
+                        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Average Score</div>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: '#6E3FF3' }}>{avg}%</div>
+                        </div>
+                        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Highest Score</div>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--green)' }}>{highest}%</div>
+                        </div>
+                        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Lowest Score</div>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: '#ef4444' }}>{lowest}%</div>
+                        </div>
+                      </div>
+
+                      {/* SUBJECTS BAR CHART */}
+                      <div>
+                        <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Subject Performance</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {Object.entries(subjectStats).map(([subj, data]) => {
+                            const percentage = (data.sum / data.total).toFixed(1);
+                            return (
+                              <div key={subj}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                                  <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{subj}</span>
+                                  <span style={{ color: 'var(--text-muted)' }}>{percentage}% ({data.total} tests)</span>
+                                </div>
+                                <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${percentage}%`, height: '100%', background: '#6E3FF3', borderRadius: '4px' }}></div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
+                <button className="btn-secondary" onClick={closeModal} style={{ width: '100%' }}>Close</button>
+              </div>
+            </div>
+          )}
+
+          {/* SUPPORT TICKETS MODAL */}
+          {activeModal === 'tickets' && (
+            <div className="ticket-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '95%' }}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setActiveModal(null);
+                    setActionDrawerOpen(true);
+                  }}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Support Tickets</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>
+                  Support tickets raised by <strong>{selectedUser?.fullName}</strong>:
+                </p>
+                {ticketsLoading ? (
+                  <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>Loading tickets...</div>
+                ) : userTickets.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
+                    <Ticket size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                    <p>No support tickets raised by this user.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {userTickets.map((ticket) => (
+                      <div key={ticket._id} style={{ 
+                        background: 'rgba(255, 255, 255, 0.03)', 
+                        border: '1px solid var(--border-color)', 
+                        borderRadius: '12px', 
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                            {ticket.category}
+                          </span>
+                          <span style={{ 
+                            fontSize: '11px', 
+                            padding: '3px 8px', 
+                            borderRadius: '12px', 
+                            fontWeight: '600',
+                            background: ticket.status === 'Resolved' ? 'rgba(34, 197, 94, 0.15)' : ticket.status === 'Open' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                            color: ticket.status === 'Resolved' ? '#22c55e' : ticket.status === 'Open' ? '#3b82f6' : '#6b7280'
+                          }}>
+                            {ticket.status}
+                          </span>
+                        </div>
+                        <h4 style={{ margin: 0, fontSize: '14.5px', color: 'var(--text-primary)' }}>{ticket.subject}</h4>
+                        <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>{ticket.message}</p>
+                        <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Raised on: {new Date(ticket.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
+                <button className="btn-secondary" onClick={closeModal} style={{ width: '100%' }}>Close</button>
               </div>
             </div>
           )}
