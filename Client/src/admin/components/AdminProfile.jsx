@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
 import { User, Mail, Shield, Calendar, Edit3, Phone, MapPin } from "lucide-react";
@@ -13,11 +14,22 @@ function AdminProfile() {
   const [isSaving, setIsSaving] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
-  const handleSelectAvatar = (avatarUrlOrBase64) => {
-    const updatedUser = { ...user, avatar: avatarUrlOrBase64 };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    setShowAvatarPicker(false);
+  const handleSelectAvatar = async (avatarUrlOrBase64) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+        ...formData,
+        avatar: avatarUrlOrBase64
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      localStorage.setItem("user", JSON.stringify(res.data));
+      setUser(res.data);
+      setShowAvatarPicker(false);
+    } catch (error) {
+      console.error("Error saving avatar", error);
+      alert("Failed to update avatar.");
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -63,12 +75,23 @@ function AdminProfile() {
   const handleSave = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate save delay
-    setTimeout(() => {
-      setUser({ ...user, ...formData });
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+        ...formData,
+        avatar: user.avatar
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      localStorage.setItem("user", JSON.stringify(res.data));
+      setUser(res.data);
       setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving profile", error);
+      alert("Failed to save profile. Please try again.");
+    } finally {
       setIsSaving(false);
-    }, 800);
+    }
   };
 
   if (!user) return <div style={{padding: '40px', textAlign: 'center'}}>Loading...</div>;
