@@ -5,7 +5,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
-import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft } from 'lucide-react';
+import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar } from 'lucide-react';
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -269,8 +269,8 @@ function Users() {
                           </div>
                           <div>
                             <div className="user-name-text">{u.fullName}</div>
-                            <div className="user-join-date">
-                              📅 Joined {dateStr}
+                            <div className="user-join-date" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                              <Calendar size={13} style={{ opacity: 0.7 }} /> Joined {dateStr}
                             </div>
                           </div>
                         </div>
