@@ -78,13 +78,13 @@ return (
 
     {/* Responsive Inline SVG Waves matching mockup */}
     <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M 0,0 C 50,0 60,30 30,70 C 10,95 0,100 0,100 Z" fill="url(#blue-grad)" opacity="0.15" />
-      <path d="M 0,0 C 50,0 60,30 30,70" fill="none" stroke="#00D2FF" strokeWidth="0.5" />
+      <path d="M 0,0 C 40,0 45,30 20,60 C 5,80 15,95 0,100 Z" fill="url(#blue-grad)" opacity="0.12" />
+      <path d="M 0,0 C 40,0 45,30 20,60 C 5,80 15,95 0,100" fill="none" stroke="#00D2FF" strokeWidth="0.75" />
     </svg>
 
     <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M 100,100 C 50,100 40,70 70,30 C 90,5 100,0 100,0 Z" fill="url(#purple-grad)" opacity="0.15" />
-      <path d="M 100,100 C 50,100 40,70 70,30" fill="none" stroke="#7B3FF3" strokeWidth="0.5" />
+      <path d="M 100,0 C 85,15 80,40 90,65 C 95,80 75,90 100,100 Z" fill="url(#purple-grad)" opacity="0.12" />
+      <path d="M 100,0 C 85,15 80,40 90,65 C 95,80 75,90 100,100" fill="none" stroke="#7B3FF3" strokeWidth="0.75" />
     </svg>
 
     <div className="login-card animate-fade-in">
@@ -124,7 +124,7 @@ return (
           <div className="password-wrapper">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
