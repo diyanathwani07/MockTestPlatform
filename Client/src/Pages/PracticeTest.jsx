@@ -269,15 +269,6 @@ function PracticeTest() {
                   </div>
                 )}
                 
-                {/* 🚀 Did You Know? */}
-                <div className="did-you-know-card animate-fade-in" style={{ padding: "16px", backgroundColor: "rgba(255, 255, 255, 0.03)", borderRadius: "8px", marginTop: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                    <h5 style={{ margin: "0 0 8px 0", color: "#FBBF24", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "6px" }}>
-                      🚀 Did You Know?
-                    </h5>
-                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.6" }}>
-                      {currentQuestion.explanations?.didYouKnow || "AI-generated fun facts will appear here to keep learning engaging and memorable!"}
-                    </p>
-                </div>
 
                 <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
                   <button className="ai-explain-btn" onClick={() => setShowAiTutor(true)}>
