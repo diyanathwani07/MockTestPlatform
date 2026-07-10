@@ -1102,7 +1102,7 @@ function Users() {
                   <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleAddUserSubmit}>
+              <form onSubmit={handleAddUserSubmit} autoComplete="off">
                 <div className="modal-body" style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   
                   <div className="input-box" style={{ marginBottom: 0 }}>
@@ -1129,6 +1129,7 @@ function Users() {
                       placeholder="Enter email address"
                       value={addForm.email}
                       onChange={e => setAddForm({ ...addForm, email: e.target.value })}
+                      autoComplete="new-email"
                       style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                     />
                   </div>
@@ -1157,6 +1158,7 @@ function Users() {
                         placeholder="Enter password (min 6 characters)"
                         value={addForm.password}
                         onChange={e => setAddForm({ ...addForm, password: e.target.value })}
+                        autoComplete="new-password"
                         style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 46px 0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                       />
                       <button
