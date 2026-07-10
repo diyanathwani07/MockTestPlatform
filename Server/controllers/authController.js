@@ -88,7 +88,7 @@ const loginUser = async (req, res) => {
     if (!user || user.isDeleted) {
       return res.status(400).json({
         success: false,
-        message: user?.isDeleted ? "This account has been deleted. Please contact support." : "Invalid Email",
+        message: user?.isDeleted ? "User not found" : "Invalid Email",
       });
     }
 
