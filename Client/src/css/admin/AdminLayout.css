@@ -723,3 +723,14 @@ body.dark-mode table td {
 .btn-danger:hover {
   background: #dc2626;
 }
+
+/* Style option tags inside select elements for compatibility with dark/light mode */
+select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+body.dark-mode select option {
+  background-color: #1e1b29 !important;
+  color: #ffffff !important;
+}
