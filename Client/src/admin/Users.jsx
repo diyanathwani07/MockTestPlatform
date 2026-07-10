@@ -39,7 +39,20 @@ function Users() {
   const [showAddPassword, setShowAddPassword] = useState(false);
   const [toast, setToast] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
   const currentUserRole = localStorage.getItem("role");
+
+  const fetchDepartments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/departments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDepartments(res.data || []);
+    } catch (e) {
+      console.error("Failed to fetch departments:", e);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -59,6 +72,7 @@ function Users() {
 
   useEffect(() => {
     fetchUsers();
+    fetchDepartments();
   }, [viewTab]);
 
   const handleRestoreUser = async (userId) => {
@@ -674,16 +688,22 @@ function Users() {
                     <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Department</label>
                     <select 
                       value={editForm.department || ''} 
-                      onChange={e => setEditForm({...editForm, department: e.target.value || ''})} 
+                      onChange={e => {
+                        const deptName = e.target.value;
+                        const selectedDept = departments.find(d => d.name === deptName);
+                        const defaultPermissions = selectedDept ? (selectedDept.permissions || []) : [];
+                        setEditForm({
+                          ...editForm,
+                          department: deptName,
+                          permissions: defaultPermissions
+                        });
+                      }} 
                       style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
                     >
                       <option value="">None</option>
-                      <option value="Technical Team">Technical Team</option>
-                      <option value="Content Team">Content Team</option>
-                      <option value="Calling Team">Calling Team</option>
-                      <option value="YouTube Team">YouTube Team</option>
-                      <option value="Faculty">Faculty</option>
-                      <option value="Operations Team">Operations Team</option>
+                      {departments.map(d => (
+                        <option key={d._id} value={d.name}>{d.name}</option>
+                      ))}
                     </select>
                   </div>
                 )}
@@ -1288,16 +1308,22 @@ function Users() {
                         </label>
                         <select
                           value={addForm.department || ''}
-                          onChange={e => setAddForm({ ...addForm, department: e.target.value || '' })}
+                          onChange={e => {
+                            const deptName = e.target.value;
+                            const selectedDept = departments.find(d => d.name === deptName);
+                            const defaultPermissions = selectedDept ? (selectedDept.permissions || []) : [];
+                            setAddForm({
+                              ...addForm,
+                              department: deptName,
+                              permissions: defaultPermissions
+                            });
+                          }}
                           style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                         >
                           <option value="">None</option>
-                          <option value="Technical Team">Technical Team</option>
-                          <option value="Content Team">Content Team</option>
-                          <option value="Calling Team">Calling Team</option>
-                          <option value="YouTube Team">YouTube Team</option>
-                          <option value="Faculty">Faculty</option>
-                          <option value="Operations Team">Operations Team</option>
+                          {departments.map(d => (
+                            <option key={d._id} value={d.name}>{d.name}</option>
+                          ))}
                         </select>
                       </div>
 
