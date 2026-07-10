@@ -5,7 +5,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
-import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar } from 'lucide-react';
+import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar } from 'lucide-react';
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -22,6 +22,7 @@ function Users() {
   const [quizzesAttempted, setQuizzesAttempted] = useState(null);
   const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "" });
   const [addForm, setAddForm] = useState({ fullName: "", email: "", phone: "", role: "user", password: "" });
+  const [showAddPassword, setShowAddPassword] = useState(false);
   const [toast, setToast] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const currentUserRole = localStorage.getItem("role");
@@ -1149,14 +1150,36 @@ function Users() {
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
                       Password
                     </label>
-                    <input 
-                      type="password" 
-                      required 
-                      placeholder="Enter password (min 6 characters)"
-                      value={addForm.password}
-                      onChange={e => setAddForm({ ...addForm, password: e.target.value })}
-                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
-                    />
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <input 
+                        type={showAddPassword ? "text" : "password"} 
+                        required 
+                        placeholder="Enter password (min 6 characters)"
+                        value={addForm.password}
+                        onChange={e => setAddForm({ ...addForm, password: e.target.value })}
+                        style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 46px 0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAddPassword(!showAddPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-muted)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '6px'
+                        }}
+                      >
+                        {showAddPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="input-box" style={{ marginBottom: 0 }}>
