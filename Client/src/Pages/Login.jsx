@@ -7,44 +7,45 @@ import { useTheme } from "../context/ThemeContext";
 import BorderGlow from "../components/BorderGlow";
 import "../css/Login.css";
 
+import { useAuth } from "../context/AuthContext";
+
 function Login() {
   const navigate = useNavigate();
   const { toggleTheme } = useTheme();
+  const { login } = useAuth();
 
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
-const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/auth/login`,
-      {
-        email,
-        password,
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          email,
+          password,
+        }
+      );
+
+      console.log(res.data);
+
+      login(res.data);
+
+      if (res.data.user.role === "admin" || res.data.user.role === "superadmin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
       }
-    );
-
-    console.log(res.data);
-
-    localStorage.setItem("token", res.data.token);
-    localStorage.setItem("user", JSON.stringify(res.data.user));
-    localStorage.setItem("role", res.data.user.role);
-
-    if (res.data.user.role === "admin" || res.data.user.role === "superadmin") {
-      navigate("/admin");
-    } else {
-      navigate("/dashboard");
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+        "Login Failed"
+      );
     }
-  } catch (error) {
-    alert(
-      error.response?.data?.message ||
-      "Login Failed"
-    );
-  }
-};
+  };
 
 return (
   <div className="login-page">

@@ -1,0 +1,350 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Shield, Plus, Edit2, Trash2, Copy, Users, X, Check, ChevronDown, ChevronUp } from "lucide-react";
+import AdminSidebar from "./components/AdminSidebar";
+import AdminNavbar from "./components/AdminNavbar";
+
+const API = import.meta.env.VITE_API_URL;
+
+const ALL_PERMISSIONS = [
+  "dashboard",
+  "manage_users",
+  "create_quiz",
+  "edit_quiz",
+  "delete_quiz",
+  "manage_questions",
+  "question_bank",
+  "import_questions",
+  "practice_tests",
+  "manage_practice_tests",
+  "support_tickets",
+  "view_reports",
+  "manage_settings",
+  "manage_roles",
+  "student_list",
+  "student_profiles",
+  "call_logs",
+  "follow_up_notes",
+  "upload_videos",
+  "manage_videos",
+  "attach_videos",
+  "video_analytics",
+  "review_questions",
+  "student_performance",
+  "schedule_exams",
+  "publish_quizzes",
+  "student_enrollment",
+  "manage_notifications"
+];
+
+const PERMISSION_GROUPS = [
+  { label: "Dashboard", keys: ["dashboard"] },
+  { label: "Quiz Management", keys: ["create_quiz", "edit_quiz", "delete_quiz", "publish_quizzes", "schedule_exams"] },
+  { label: "Questions & Subjects", keys: ["manage_questions", "question_bank", "import_questions", "review_questions", "manage_subjects"] },
+  { label: "Practice Tests", keys: ["practice_tests", "manage_practice_tests"] },
+  { label: "Student & Support", keys: ["student_list", "student_profiles", "support_tickets", "call_logs", "follow_up_notes", "student_enrollment"] },
+  { label: "Video Management", keys: ["upload_videos", "manage_videos", "attach_videos", "video_analytics"] },
+  { label: "System & Admin Settings", keys: ["manage_users", "manage_roles", "manage_settings", "manage_notifications"] },
+  { label: "Reports & Performance", keys: ["view_reports", "student_performance"] }
+];
+
+const COLORS = ["#6E3FF3", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
+
+const EMPTY_FORM = { name: "", description: "", permissions: [], color: "#6E3FF3" };
+
+function RolesPermissions() {
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingDept, setEditingDept] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState({});
+  const token = localStorage.getItem("token");
+
+  const fetchDepartments = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API}/api/admin/departments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDepartments(res.data);
+    } catch (e) {
+      console.error("Fetch Departments Error:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const openCreate = () => {
+    setEditingDept(null);
+    setForm(EMPTY_FORM);
+    setDrawerOpen(true);
+  };
+
+  const openEdit = (dept) => {
+    setEditingDept(dept);
+    setForm({
+      name: dept.name,
+      description: dept.description || "",
+      permissions: [...(dept.permissions || [])],
+      color: dept.color || "#6E3FF3"
+    });
+    setDrawerOpen(true);
+  };
+
+  const togglePermission = (key) => {
+    setForm(f => ({
+      ...f,
+      permissions: f.permissions.includes(key)
+        ? f.permissions.filter(p => p !== key)
+        : [...f.permissions, key]
+    }));
+  };
+
+  const toggleAllGroupPermissions = (groupKeys, shouldSelectAll) => {
+    setForm(f => {
+      let nextPerms = [...f.permissions];
+      if (shouldSelectAll) {
+        groupKeys.forEach(k => {
+          if (!nextPerms.includes(k)) nextPerms.push(k);
+        });
+      } else {
+        nextPerms = nextPerms.filter(k => !groupKeys.includes(k));
+      }
+      return { ...f, permissions: nextPerms };
+    });
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) return alert("Department name is required.");
+    setSaving(true);
+    try {
+      if (editingDept) {
+        await axios.put(`${API}/api/admin/departments/${editingDept._id}`, form, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await axios.post(`${API}/api/admin/departments`, form, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      setDrawerOpen(false);
+      fetchDepartments();
+    } catch (e) {
+      alert(e.response?.data?.message || "Failed to save department.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDuplicate = async (dept) => {
+    try {
+      await axios.post(`${API}/api/admin/departments/${dept._id}/duplicate`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDepartments();
+    } catch (e) {
+      alert("Failed to duplicate department.");
+    }
+  };
+
+  const handleDelete = async (dept) => {
+    const isSystemDept = ["Technical Team", "Content Team", "Calling Team", "YouTube Team", "Faculty", "Operations Team"].includes(dept.name);
+    if (isSystemDept) {
+      if (!window.confirm(`"${dept.name}" is a default department. Deleting it might disrupt default flows. Are you sure you want to delete it?`)) return;
+    } else {
+      if (!window.confirm(`Delete department "${dept.name}"? This will clear department assignment for all users in this department.`)) return;
+    }
+
+    try {
+      await axios.delete(`${API}/api/admin/departments/${dept._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDepartments();
+    } catch (e) {
+      alert(e.response?.data?.message || "Failed to delete department.");
+    }
+  };
+
+  const toggleGroup = (label) => setExpandedGroups(g => ({ ...g, [label]: !g[label] }));
+
+  return (
+    <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
+      <AdminSidebar />
+      <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page, #0A0A14)" }}>
+        <AdminNavbar title="Departments & Permissions" />
+        <div style={{ flex: 1, padding: "24px 32px", overflowY: "auto" }}>
+
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "700", color: "var(--text-primary)" }}>Departments & Permissions</h2>
+              <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text-muted)" }}>{departments.length} departments configured</p>
+            </div>
+            <button onClick={openCreate} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #6E3FF3, #8B5CF6)", color: "#fff", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>
+              <Plus size={16} /> Create Department
+            </button>
+          </div>
+
+          {/* Departments Grid */}
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>Loading departments...</div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "20px" }}>
+              {departments.map(dept => {
+                const randomColor = COLORS[departments.indexOf(dept) % COLORS.length];
+                const displayColor = dept.color || randomColor;
+                return (
+                  <div key={dept._id} style={{ background: "var(--bg-card, #131326)", border: "1.5px solid var(--border-color, #232338)", borderRadius: "16px", padding: "24px", position: "relative", overflow: "hidden" }}>
+                    {/* Color stripe */}
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: displayColor, borderRadius: "16px 16px 0 0" }} />
+
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: `${displayColor}22`, border: `1.5px solid ${displayColor}55`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <Shield size={20} style={{ color: displayColor }} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: "700", fontSize: "15px", color: "var(--text-primary)" }}>{dept.name}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button onClick={() => openEdit(dept)} title="Edit" style={{ padding: "6px", borderRadius: "8px", border: "1px solid var(--border-color, #232338)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}><Edit2 size={14} /></button>
+                        <button onClick={() => handleDuplicate(dept)} title="Duplicate" style={{ padding: "6px", borderRadius: "8px", border: "1px solid var(--border-color, #232338)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}><Copy size={14} /></button>
+                        <button onClick={() => handleDelete(dept)} title="Delete" style={{ padding: "6px", borderRadius: "8px", border: "1px solid var(--border-color, #232338)", background: "transparent", color: "var(--red, #EF4444)", cursor: "pointer" }}><Trash2 size={14} /></button>
+                      </div>
+                    </div>
+
+                    <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "16px", lineHeight: 1.5 }}>{dept.description || "No description."}</p>
+
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--text-muted)" }}>
+                        <Users size={14} />
+                        <span>{dept.userCount || 0} active user{dept.userCount !== 1 ? "s" : ""}</span>
+                      </div>
+                      <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                        <span>{dept.permissions?.length || 0} permission{dept.permissions?.length !== 1 ? "s" : ""}</span>
+                      </div>
+                    </div>
+
+                    {/* Permission chips preview */}
+                    <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                      {(dept.permissions || []).slice(0, 5).map(p => (
+                        <span key={p} style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", background: `${displayColor}18`, color: displayColor, fontWeight: "500" }}>
+                          {p.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                      {(dept.permissions || []).length > 5 && (
+                        <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", background: "var(--bg-input, #1B1B32)", color: "var(--text-muted)" }}>+{(dept.permissions || []).length - 5} more</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Drawer Overlay */}
+      {drawerOpen && (
+        <div onClick={() => setDrawerOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "520px", maxWidth: "100vw", height: "100vh", background: "var(--bg-card, #131326)", borderLeft: "1.5px solid var(--border-color)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+            {/* Drawer Header */}
+            <div style={{ padding: "24px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "var(--bg-card)", zIndex: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Shield size={20} style={{ color: "#6E3FF3" }} />
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>{editingDept ? "Edit Department" : "Create New Department"}</h3>
+              </div>
+              <button onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)" }}><X size={20} /></button>
+            </div>
+
+            <div style={{ padding: "24px 28px", flex: 1 }}>
+              {/* Name */}
+              <label style={labelStyle}>Department Name</label>
+              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} style={inputStyle} placeholder="e.g. Content Team" />
+
+              {/* Description */}
+              <label style={labelStyle}>Description</label>
+              <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={{ ...inputStyle, height: "80px", resize: "vertical" }} placeholder="What does this department do?" />
+
+              {/* Color */}
+              <label style={labelStyle}>Accent Color</label>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "24px" }}>
+                {COLORS.map(c => (
+                  <button key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{ width: "32px", height: "32px", borderRadius: "50%", background: c, border: form.color === c ? "3px solid #fff" : "3px solid transparent", cursor: "pointer", outline: form.color === c ? `2px solid ${c}` : "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {form.color === c && <Check size={14} color="#fff" />}
+                  </button>
+                ))}
+              </div>
+
+              {/* Permissions */}
+              <label style={labelStyle}>Permissions Matrix</label>
+
+              {/* Permission Groups */}
+              {PERMISSION_GROUPS.map(group => {
+                const isExpanded = expandedGroups[group.label] !== false;
+                const groupSelected = group.keys.filter(k => form.permissions.includes(k)).length;
+                const allSelected = groupSelected === group.keys.length;
+                return (
+                  <div key={group.label} style={{ marginBottom: "12px", border: "1px solid var(--border-color)", borderRadius: "10px", overflow: "hidden" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--bg-input, #1B1B32)" }}>
+                      <div onClick={() => toggleGroup(group.label)} style={{ cursor: "pointer", fontWeight: "600", fontSize: "13px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+                        {isExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
+                        <span>{group.label}</span>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>({groupSelected}/{group.keys.length})</span>
+                      </div>
+                      <button
+                        onClick={() => toggleAllGroupPermissions(group.keys, !allSelected)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                          color: "#6E3FF3",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {allSelected ? "Deselect All" : "Select All"}
+                      </button>
+                    </div>
+                    {isExpanded && (
+                      <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: "8px", background: "var(--bg-card)" }}>
+                        {group.keys.map(key => (
+                          <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: "13px", color: "var(--text-secondary, #94a3b8)" }}>{key.replace(/_/g, " ")}</span>
+                            <div onClick={() => togglePermission(key)} style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.permissions.includes(key) ? "#6E3FF3" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                              <div style={{ position: "absolute", top: "2px", left: form.permissions.includes(key) ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Drawer Footer */}
+            <div style={{ padding: "20px 28px", borderTop: "1px solid var(--border-color)", display: "flex", gap: "12px", position: "sticky", bottom: 0, background: "var(--bg-card)" }}>
+              <button onClick={() => setDrawerOpen(false)} style={{ flex: 1, padding: "11px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "transparent", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}>Cancel</button>
+              <button onClick={handleSave} disabled={saving} style={{ flex: 2, padding: "11px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #6E3FF3, #8B5CF6)", color: "#fff", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
+                {saving ? "Saving..." : editingDept ? "Save Changes" : "Create Department"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const labelStyle = { display: "block", marginBottom: "6px", fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginTop: "16px" };
+const inputStyle = { width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #1B1B32)", color: "var(--text-primary)", fontSize: "13px", outline: "none", boxSizing: "border-box", marginBottom: "4px" };
+
+export default RolesPermissions;

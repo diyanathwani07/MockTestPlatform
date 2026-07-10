@@ -80,20 +80,22 @@ router.delete("/:id", protect, superAdminOnly, async (req, res) => {
 // UPDATE user (superadmin only)
 router.put("/:id", protect, superAdminOnly, async (req, res) => {
   try {
-    const { fullName, email, role, status } = req.body;
+    const { fullName, email, role, status, department, permissions } = req.body;
     const user = await User.findById(req.params.id);
     
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
     
-    user.fullName = fullName || user.fullName;
-    user.email = email || user.email;
-    user.role = role || user.role;
-    user.status = status || user.status;
+    user.fullName = fullName !== undefined ? fullName : user.fullName;
+    user.email = email !== undefined ? email : user.email;
+    user.role = role !== undefined ? role : user.role;
+    user.status = status !== undefined ? status : user.status;
+    user.department = department !== undefined ? department : user.department;
+    user.permissions = permissions !== undefined ? permissions : user.permissions;
     
     await user.save();
-    await logAction("UPDATE_USER", req.user?.fullName || "Admin", `Updated user details: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
+    await logAction("UPDATE_USER", req.user?.fullName || "Admin", `Updated user details: ${user.fullName} (${user.email}) - Role: ${user.role}, Dept: ${user.department}`, "UserManagement", req.ip);
     res.json({ message: "User updated successfully.", user });
   } catch (error) {
     console.error("Update User Error:", error);

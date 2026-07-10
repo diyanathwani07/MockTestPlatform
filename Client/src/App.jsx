@@ -4,6 +4,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PreviewBanner from "./components/PreviewBanner";
 import ForgotPassword from "./Pages/ForgotPassword";
 import AdminRoute from "./components/AdminRoute";
+import PermissionRoute from "./components/PermissionRoute";
+import Unauthorized from "./Pages/Unauthorized";
+import RolesPermissions from "./admin/RolesPermissions";
+
 
 
 import AdminDashboard from "./admin/AdminDashboard";
@@ -354,6 +358,19 @@ function App() {
             </AdminRoute>
           }
         />
+
+        <Route
+          path="/admin/roles"
+          element={
+            <AdminRoute>
+              <PermissionRoute permission="manage_roles">
+                <RolesPermissions />
+              </PermissionRoute>
+            </AdminRoute>
+          }
+        />
+
+        <Route path="/unauthorized" element={<Unauthorized />} />
 
       </Routes>
     </BrowserRouter>

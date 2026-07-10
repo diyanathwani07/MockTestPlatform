@@ -1,9 +1,10 @@
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function AdminRoute({ children }) {
-  const role = localStorage.getItem("role");
-  
-  return (role === "admin" || role === "superadmin") ? children : <Navigate to="/" />;
+  const { isAdminUser, loading } = useAuth();
+  if (loading) return null;
+  return isAdminUser() ? children : <Navigate to="/" />;
 }
 
 export default AdminRoute;

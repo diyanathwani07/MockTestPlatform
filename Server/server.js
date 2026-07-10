@@ -9,8 +9,9 @@ const auditLogRoutes = require("./routes/auditLogRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const practiceRoutes = require("./routes/practiceRoutes");
+const departmentRoutes = require("./routes/departmentRoutes");
 const Quiz = require("./models/Quiz");
-
+const seedDepartments = require("./seedDepartments");
 
 const express = require("express");
 const cors = require("cors");
@@ -29,7 +30,9 @@ app.set("trust proxy", true);
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 // MongoDB Connection
-connectDB();
+connectDB().then(() => {
+  seedDepartments();
+});
 
 // Middleware
 app.use(cors());
@@ -93,6 +96,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/results", resultRoutes);
 app.use("/api/admin/users", adminUserRoutes);
+app.use("/api/admin/departments", departmentRoutes);
 app.use("/api/admin/results", adminResultRoutes);
 app.use("/api/presets", presetRoutes);
 app.use("/api/audit-logs", auditLogRoutes);

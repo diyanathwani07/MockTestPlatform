@@ -1,75 +1,55 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy, LineChart, FileText, LifeBuoy, Menu, X, Bot, BookOpen } from 'lucide-react';
+import {
+  LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
+  LineChart, FileText, LifeBuoy, Menu, X, Bot, BookOpen, Shield
+} from 'lucide-react';
 import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
+import { useAuth } from '../../context/AuthContext';
+
+const NAV_ITEMS = [
+  { to: "/admin/dashboard",      icon: LayoutDashboard, label: "Dashboard",           permission: "dashboard" },
+  { to: "/admin/create-quiz",    icon: Edit3,           label: "Create Quiz",         permission: "create_quiz" },
+  { to: "/admin/manage-quizzes", icon: ClipboardList,   label: "Manage Quizzes",      permission: "edit_quiz" },
+  { to: "/admin/practice",       icon: BookOpen,        label: "Practice Modules",    permission: "manage_practice_tests" },
+  { to: "/admin/questions",      icon: HelpCircle,      label: "Questions",           permission: "manage_questions" },
+  { to: "/admin/users",          icon: Users,           label: "Users",               permission: "manage_users" },
+  { to: "/admin/results",        icon: Trophy,          label: "Results",             permission: "manage_results" },
+  { to: "/admin/reports",        icon: LineChart,       label: "Reports",             permission: "view_reports" },
+  { to: "/admin/audit-log",      icon: FileText,        label: "Audit Log",           permission: "audit_logs" },
+  { to: "/admin/tickets",        icon: LifeBuoy,        label: "Support Tickets",     permission: "support_tickets" },
+  { to: "/admin/roles",          icon: Shield,          label: "Roles & Permissions", permission: "manage_roles" },
+];
 
 function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const currentUserRole = localStorage.getItem("role");
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
+  const { hasPermission } = useAuth();
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button className="mobile-sidebar-toggle" onClick={toggleSidebar}>
+      <button className="mobile-sidebar-toggle" onClick={() => setIsOpen(!isOpen)}>
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
-
-      {/* Overlay for mobile */}
-      {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
+      {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
 
       <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo">
-          <Logo />
-        </div>
-
+        <div className="sidebar-logo"><Logo /></div>
         <nav className="sidebar-nav">
-          <NavLink to="/admin/dashboard" className="sidebar-link" onClick={() => setIsOpen(false)} end>
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink to="/admin/create-quiz" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <Edit3 size={20} />
-            <span>Create Quiz</span>
-          </NavLink>
-          <NavLink to="/admin/manage-quizzes" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <ClipboardList size={20} />
-            <span>Manage Quizzes</span>
-          </NavLink>
-          <NavLink to="/admin/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <BookOpen size={20} />
-            <span>Practice Modules</span>
-          </NavLink>
-          <NavLink to="/admin/questions" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <HelpCircle size={20} />
-            <span>Questions</span>
-          </NavLink>
-          <NavLink to="/admin/users" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <Users size={20} />
-            <span>Users</span>
-          </NavLink>
-          <NavLink to="/admin/results" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <Trophy size={20} />
-            <span>Results</span>
-          </NavLink>
-          <NavLink to="/admin/reports" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <LineChart size={20} />
-            <span>Reports</span>
-          </NavLink>
-          <NavLink to="/admin/audit-log" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <FileText size={20} />
-            <span>Audit Log</span>
-          </NavLink>
-          
-          <NavLink to="/admin/tickets" className="sidebar-link" onClick={() => setIsOpen(false)}>
-            <LifeBuoy size={20} />
-            <span>Support Tickets</span>
-          </NavLink>
-          
+          {NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
+            hasPermission(permission) ? (
+              <NavLink
+                key={to}
+                to={to}
+                className="sidebar-link"
+                onClick={() => setIsOpen(false)}
+                end={to === "/admin/dashboard"}
+              >
+                <Icon size={20} />
+                <span>{label}</span>
+              </NavLink>
+            ) : null
+          )}
           <AdminChatbot />
         </nav>
       </aside>

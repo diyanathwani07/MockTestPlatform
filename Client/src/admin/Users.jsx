@@ -7,6 +7,37 @@ import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
 import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar } from 'lucide-react';
 
+const ALL_PERMISSIONS = [
+  "dashboard",
+  "manage_users",
+  "create_quiz",
+  "edit_quiz",
+  "delete_quiz",
+  "manage_questions",
+  "question_bank",
+  "import_questions",
+  "practice_tests",
+  "manage_practice_tests",
+  "support_tickets",
+  "view_reports",
+  "manage_settings",
+  "manage_roles",
+  "student_list",
+  "student_profiles",
+  "call_logs",
+  "follow_up_notes",
+  "upload_videos",
+  "manage_videos",
+  "attach_videos",
+  "video_analytics",
+  "review_questions",
+  "student_performance",
+  "schedule_exams",
+  "publish_quizzes",
+  "student_enrollment",
+  "manage_notifications"
+];
+
 function Users() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -122,13 +153,17 @@ function Users() {
   const openModal = (type, user) => {
     setSelectedUser(user);
     setActiveModal(type);
-    setDropdownOpen(null);
+    if (typeof setDropdownOpen === 'function') {
+      setDropdownOpen(null);
+    }
     if (type === 'edit') {
       setEditForm({
         fullName: user.fullName,
         email: user.email,
         role: user.role || 'user',
-        status: user.status || 'Active'
+        status: user.status || 'Active',
+        department: user.department || '',
+        permissions: user.permissions || []
       });
     }
   };
@@ -273,6 +308,8 @@ function Users() {
                   <th>User</th>
                   <th>Email Address</th>
                   <th>Role</th>
+                  <th>Department</th>
+                  <th>Permissions</th>
                   <th>Status</th>
                   <th style={{ textAlign: 'center' }}>Actions</th>
                 </tr>
@@ -315,9 +352,27 @@ function Users() {
                       <td className="user-email-text" style={{ whiteSpace: "nowrap" }}>{u.email}</td>
 
                       <td>
-                        <span className={`role-outline-badge ${isUser ? 'role-user' : 'role-admin'}`}>
-                          {u.role || "User"}
+                        <span className={`role-outline-badge ${isUser ? 'role-user' : u.role === 'superadmin' ? 'role-super' : 'role-admin'}`} style={u.role === 'superadmin' ? { borderColor: '#10b981', color: '#10b981' } : {}}>
+                          {u.role === 'superadmin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'User'}
                         </span>
+                      </td>
+
+                      <td>
+                        {u.department ? (
+                          <span style={{ fontSize: '12.5px', color: 'var(--text-primary)', fontWeight: '500' }}>
+                            {u.department}
+                          </span>
+                        ) : (
+                          <span style={{ opacity: 0.4, fontSize: '12px' }}>—</span>
+                        )}
+                      </td>
+
+                      <td>
+                        {u.role === 'superadmin' ? (
+                          <span style={{ fontSize: '11px', color: '#10b981', background: 'rgba(16,185,129,0.15)', padding: '2px 8px', borderRadius: '12px', fontWeight: '600' }}>All</span>
+                        ) : (
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{u.permissions?.length || 0} custom</span>
+                        )}
                       </td>
 
                       <td>
@@ -625,12 +680,30 @@ function Users() {
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Role</label>
-                  <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
+                  <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value, department: e.target.value === 'admin' ? (editForm.department || '') : ''})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
                   </select>
                 </div>
+                {editForm.role === 'admin' && (
+                  <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Department</label>
+                    <select 
+                      value={editForm.department || ''} 
+                      onChange={e => setEditForm({...editForm, department: e.target.value || ''})} 
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
+                    >
+                      <option value="">None</option>
+                      <option value="Technical Team">Technical Team</option>
+                      <option value="Content Team">Content Team</option>
+                      <option value="Calling Team">Calling Team</option>
+                      <option value="YouTube Team">YouTube Team</option>
+                      <option value="Faculty">Faculty</option>
+                      <option value="Operations Team">Operations Team</option>
+                    </select>
+                  </div>
+                )}
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Status</label>
                   <select value={editForm.status} onChange={e => setEditForm({...editForm, status: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
@@ -638,6 +711,31 @@ function Users() {
                     <option value="Suspended">Suspended</option>
                   </select>
                 </div>
+                {editForm.role === 'admin' && (
+                  <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assign Custom Permissions</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '180px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '8px', background: 'var(--bg-input)' }}>
+                      {ALL_PERMISSIONS.map(p => {
+                        const isChecked = editForm.permissions?.includes(p);
+                        return (
+                          <label key={p} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => {
+                                const newPerms = isChecked
+                                  ? (editForm.permissions || []).filter(x => x !== p)
+                                  : [...(editForm.permissions || []), p];
+                                setEditForm({...editForm, permissions: newPerms});
+                              }}
+                            />
+                            <span>{p.replace(/_/g, " ")}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>

@@ -51,6 +51,15 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin", "superadmin"],
       default: "user",
     },
+    department: {
+      type: String,
+      enum: ["Technical Team", "Content Team", "Calling Team", "YouTube Team", "Faculty", "Operations Team", null],
+      default: null,
+    },
+    permissions: {
+      type: [String],
+      default: [],
+    },
     status: {
       type: String,
       enum: ["Active", "Suspended"],

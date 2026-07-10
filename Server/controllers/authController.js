@@ -116,6 +116,23 @@ const loginUser = async (req, res) => {
       }
     );
 
+    // Calculate Permissions
+    let userPermissions = [];
+    if (user.role === "superadmin") {
+      userPermissions = ["full_access"];
+    } else if (user.role === "user") {
+      userPermissions = ["student_dashboard", "my_exams", "practice_tests", "results", "leaderboard", "help_support"];
+    } else if (user.role === "admin") {
+      userPermissions = [...(user.permissions || [])];
+      if (user.department) {
+        const Department = require("../models/Department");
+        const dept = await Department.findOne({ name: user.department });
+        if (dept && dept.permissions) {
+          userPermissions = [...new Set([...userPermissions, ...dept.permissions])];
+        }
+      }
+    }
+
     // Success Response
     res.status(200).json({
       success: true,
@@ -126,6 +143,8 @@ const loginUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
+        department: user.department,
+        permissions: userPermissions,
         avatar: user.avatar,
       },
     });
