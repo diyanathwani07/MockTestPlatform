@@ -4,11 +4,13 @@ import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
 import { Trophy, FileText, CalendarDays, Clock, HelpCircle, Target, XCircle, Timer, TrendingUp, Medal, ArrowLeft, LayoutGrid } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle";
 
 function Result() {
   const location = useLocation();
   const navigate = useNavigate();
   const { shareId: routeShareId } = useParams();
+  const { isDark } = useTheme();
 
   // data is sent via navigate("/result", { state: data }) from Quiz.jsx
   const [data, setData] = useState(() => {
@@ -253,6 +255,10 @@ function Result() {
 
   return (
     <div className={`result-page-new ${showAnswers ? "show-answers" : ""}`}>
+      {/* Floating Theme Toggle on Top Right */}
+      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+        <ThemeToggle />
+      </div>
       
       {!showAnswers && (
         <div className="result-modal-overlay">
@@ -286,7 +292,7 @@ function Result() {
             {/* Score Section */}
             <div className="rm-score-section">
               <div className="rm-score-circle-wrapper">
-                <div className="rm-score-circle" style={{ background: `conic-gradient(#6E3FF3 ${computedPercentage}%, #F3F4F6 ${computedPercentage}%)` }}>
+                <div className="rm-score-circle" style={{ background: `conic-gradient(#6E3FF3 ${computedPercentage}%, ${isDark ? "#1D1B28" : "#F3F4F6"} ${computedPercentage}%)` }}>
                   <div className="rm-score-inner">
                     <span className="rm-pct">{computedPercentage}%</span>
                     <span className="rm-pct-label">Score</span>

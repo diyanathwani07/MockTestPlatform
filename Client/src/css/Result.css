@@ -129,8 +129,8 @@
   justify-content: flex-start;
 }
 .rm-score-circle {
-  width: 110px;
-  height: 110px;
+  width: 125px;
+  height: 125px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -139,8 +139,8 @@
   box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
 }
 .rm-score-inner {
-  width: 86px;
-  height: 86px;
+  width: 98px;
+  height: 98px;
   background: #ffffff;
   border-radius: 50%;
   display: flex;
@@ -150,7 +150,7 @@
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 .rm-pct {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   color: #1E293B;
   line-height: 1;
@@ -159,7 +159,7 @@
   font-size: 11px;
   color: #94A3B8;
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .rm-score-middle {
@@ -481,25 +481,19 @@
 }
 
 /* Specificity overrides to prevent global admin dark-mode table styles from leaking into the result page */
-body.dark-mode .rm-section-analytics,
 .rm-section-analytics {
   background-color: #F8FAFC !important;
   border: 1px solid #E2E8F0 !important;
 }
 
-body.dark-mode .rm-section-analytics h3,
 .rm-section-analytics h3 {
   color: #1E293B !important;
 }
 
-body.dark-mode .rm-section-analytics table thead,
 .rm-section-analytics table thead {
   background-color: rgba(110, 63, 243, 0.05) !important;
 }
 
-body.dark-mode .rm-section-analytics table tbody tr,
-body.dark-mode .rm-section-analytics table tbody tr:nth-child(even),
-body.dark-mode .rm-section-analytics table tbody tr:nth-child(odd),
 .rm-section-analytics table tbody tr,
 .rm-section-analytics table tbody tr:nth-child(even),
 .rm-section-analytics table tbody tr:nth-child(odd) {
@@ -507,14 +501,12 @@ body.dark-mode .rm-section-analytics table tbody tr:nth-child(odd),
   color: #1E293B !important;
 }
 
-body.dark-mode .rm-section-analytics table td,
 .rm-section-analytics table td {
   background-color: transparent !important;
   color: #475569 !important;
   border-bottom: 1px solid #E2E8F0 !important;
 }
 
-body.dark-mode .rm-section-analytics table th,
 .rm-section-analytics table th {
   background-color: transparent !important;
   color: #64748B !important;
@@ -522,7 +514,6 @@ body.dark-mode .rm-section-analytics table th,
 }
 
 /* Specificity overrides to force light-mode on review-item card list */
-body.dark-mode .review-list .review-item,
 .review-list .review-item {
   background-color: #ffffff !important;
   border: 1px solid #E2E8F0 !important;
@@ -531,7 +522,168 @@ body.dark-mode .review-list .review-item,
 }
 
 /* Specificity overrides to force dark text color onsticky review header */
-body.dark-mode .result-details h2,
 .result-details h2 {
   color: #1A1C23 !important;
+}
+
+/* ==========================================================================
+   🌙 8. DARK MODE FOR RESULT PAGE
+   ========================================================================== */
+body.dark-mode .result-page-new {
+  background: #0E0C15 !important;
+}
+
+body.dark-mode .result-modal-card {
+  background: #171520 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .rm-header h2 {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .rm-header p {
+  color: #8C8A9E !important;
+}
+
+body.dark-mode .rm-info-card {
+  background: #1D1B28 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .rm-icon-wrapper {
+  background: #12101B !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .rm-info-title {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .rm-info-meta {
+  color: #8C8A9E !important;
+}
+
+body.dark-mode .rm-score-inner {
+  background: #171520 !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .rm-pct {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .rm-score-circle {
+  background: conic-gradient(#6E3FF3 var(--score-pct, 100%), #1D1B28 var(--score-pct, 100%)) !important;
+}
+
+body.dark-mode .rm-score-middle {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .rm-score-label {
+  color: #8C8A9E !important;
+}
+
+body.dark-mode .rm-metric {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .rm-metric-val {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .rm-metric-label {
+  color: #8C8A9E !important;
+}
+
+body.dark-mode .rm-feedback-title {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .rm-feedback-text {
+  color: #8C8A9E !important;
+}
+
+body.dark-mode .rm-feedback-text strong {
+  color: #6E3FF3 !important;
+}
+
+body.dark-mode .rm-metrics-grid {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .rm-metric-data h4 {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .rm-metric-data p {
+  color: #8C8A9E !important;
+}
+
+body.dark-mode .rm-section-analytics {
+  background-color: #1D1B28 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .rm-section-analytics h3 {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .rm-section-analytics table td {
+  color: #D1CFE2 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark-mode .rm-section-analytics table th {
+  color: #8C8A9E !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .review-list .review-item {
+  background-color: #1D1B28 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .review-question {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .review-answers p {
+  color: #D1CFE2 !important;
+}
+
+body.dark-mode .review-answers strong {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .result-details h2 {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .q-text-line {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .opt-box {
+  background-color: #12101B !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #D1CFE2 !important;
+}
+
+body.dark-mode .opt-box.selected {
+  background-color: rgba(110, 63, 243, 0.1) !important;
+  border-color: #6E3FF3 !important;
+}
+
+body.dark-mode .opt-box.correct {
+  background-color: rgba(74, 222, 128, 0.1) !important;
+  border-color: #4ade80 !important;
+}
+
+body.dark-mode .explanation-text {
+  color: #8C8A9E !important;
 }
