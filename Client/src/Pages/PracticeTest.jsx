@@ -280,16 +280,6 @@ function PracticeTest() {
           </div>
 
           <div className="practice-footer" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-              {isCorrectSelected && (
-                <div className="success-banner animate-fade-in" style={{ textAlign: "center" }}>
-                  <h3 style={{ margin: "0 0 4px 0", color: "#4ade80", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                    🎉 Excellent!
-                  </h3>
-                  <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
-                    You understood this concept. Ready for the next challenge?
-                  </p>
-                </div>
-              )}
               
               <button 
                 className={`practice-next-btn ${isCorrectSelected ? 'active' : ''}`}
