@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Plus, Eye, Edit2, Trash2, Bot, Loader, X } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar } from "lucide-react";
 
 function PracticeQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -13,6 +13,12 @@ function PracticeQuizzes() {
   const navigate = useNavigate();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const [scheduleModal, setScheduleModal] = useState(null); // quiz object
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [savingSchedule, setSavingSchedule] = useState(false);
   const [editingQuizId, setEditingQuizId] = useState(null); // null means creating
   const [form, setForm] = useState({
     title: "",
@@ -185,6 +191,27 @@ function PracticeQuizzes() {
     }
   };
 
+  const handleSaveSchedule = async () => {
+    if (!scheduleDate || !scheduleTime) return alert("Please select both date and time.");
+    setSavingSchedule(true);
+    try {
+      const token = localStorage.getItem("token");
+      const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}`).toISOString();
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/practice/${scheduleModal._id}`, 
+        { scheduledAt },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(`✅ "${scheduleModal.title}" scheduled for ${new Date(scheduledAt).toLocaleString()}`);
+      setScheduleModal(null);
+      fetchQuizzes();
+    } catch (error) {
+      console.error("Schedule Error:", error);
+      alert(error.response?.data?.message || "Failed to save schedule.");
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
+
   const calculateAiProgress = (quiz) => {
     if (!quiz.questions || quiz.questions.length === 0) return 0;
     const generatedCount = quiz.questions.filter(q => q.aiGenerated).length;
@@ -192,25 +219,29 @@ function PracticeQuizzes() {
   };
 
   return (
-    <div className="admin-layout" style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
-      <div className="admin-main" style={{ flex: 1, backgroundColor: "var(--bg-page)" }}>
+      <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar title="Manage Practice Quizzes" />
         
-        <div className="admin-content" style={{ padding: "32px", maxWidth: "1200px", margin: "0 auto" }}>
+        <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
           
           <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <div className="pill-search-container" style={{ marginBottom: 0, flex: 1, maxWidth: '400px' }}>
-              <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+            <div style={{ 
+              flex: 1,
+              maxWidth: '400px',
+              display: "flex", alignItems: "center", gap: "10px", 
+              backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
+              borderRadius: "100px", padding: "8px 16px",
+              boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
+            }}>
+              <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
               <input 
                 type="text" 
                 placeholder="Search practice modules..." 
-                className="pill-search-input"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
               />
             </div>
 
@@ -228,7 +259,7 @@ function PracticeQuizzes() {
             borderRadius: "16px", 
             border: "1px solid var(--border-color)",
             boxShadow: "var(--card-shadow)",
-            overflow: "hidden" 
+            overflow: "visible" 
           }}>
             {loading ? (
               <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
@@ -239,7 +270,7 @@ function PracticeQuizzes() {
                 No practice quizzes found. Create one to get started!
               </div>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", overflow: "visible" }}>
                 <thead>
                   <tr style={{ 
                     borderBottom: "1px solid var(--border-color)", 
@@ -299,63 +330,102 @@ function PracticeQuizzes() {
                             </span>
                           </div>
                         </td>
-                        <td style={{ padding: "16px", textAlign: "right" }}>
-                          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                            
-                            <button 
-                              onClick={() => handleGenerateAI(quiz._id)}
-                              disabled={aiProgress === 100 || generatingAiFor === quiz._id}
-                              style={{
-                                padding: "6px 12px",
-                                backgroundColor: aiProgress === 100 ? "rgba(74, 222, 128, 0.1)" : "rgba(108, 93, 211, 0.1)",
-                                color: aiProgress === 100 ? "#4ade80" : "var(--primary-color)",
-                                border: aiProgress === 100 ? "1px solid rgba(74, 222, 128, 0.2)" : "1px solid rgba(108, 93, 211, 0.2)",
-                                borderRadius: "6px",
-                                cursor: aiProgress === 100 || generatingAiFor === quiz._id ? "not-allowed" : "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                                fontSize: "13px"
+                        <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>
+                          <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
+                            <button
+                              onClick={(e) => {
+                                if (activeDropdown === quiz._id) {
+                                  setActiveDropdown(null);
+                                } else {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+                                  setActiveDropdown(quiz._id);
+                                }
                               }}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                color: "var(--text-primary)",
+                                fontSize: "18px",
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                padding: "4px 12px",
+                                outline: "none"
+                              }}
+                              title="Quiz Actions"
                             >
-                              {generatingAiFor === quiz._id ? (
-                                <><Loader size={14} className="spin" /> Generating...</>
-                              ) : (
-                                <><Bot size={14} /> {aiProgress === 100 ? "AI Ready" : "Gen AI"}</>
-                              )}
+                              ⋮
                             </button>
 
-                            <button 
-                              onClick={() => openEditModal(quiz)}
-                              style={{
-                                padding: "6px",
-                                backgroundColor: "rgba(108, 93, 211, 0.1)",
-                                color: "var(--primary-color)",
-                                border: "1px solid rgba(108, 93, 211, 0.2)",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center"
-                              }}
-                            >
-                              <Edit2 size={16} />
-                            </button>
+                            {activeDropdown === quiz._id && (
+                              <>
+                                {/* Global backdrop to dismiss dropdown on outer click */}
+                                <div
+                                  onClick={() => setActiveDropdown(null)}
+                                  style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
+                                />
 
-                            <button 
-                              onClick={() => handleDelete(quiz._id, quiz.title)}
-                              style={{
-                                padding: "6px",
-                                backgroundColor: "rgba(255, 68, 68, 0.1)",
-                                color: "#ff4444",
-                                border: "1px solid rgba(255, 68, 68, 0.2)",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center"
-                              }}
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                                {/* Floating context dropdown menu - fixed position to escape overflow clipping */}
+                                <div style={{
+                                  position: "fixed",
+                                  top: `${dropdownPos.top}px`,
+                                  right: `${dropdownPos.right}px`,
+                                  backgroundColor: "var(--bg-card)",
+                                  border: "1.5px solid var(--border-color)",
+                                  borderRadius: "10px",
+                                  padding: "6px 0",
+                                  minWidth: "130px",
+                                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                                  zIndex: 9999,
+                                  textAlign: "left"
+                                }}>
+                                  {/* Preview */}
+                                  <div
+                                    onClick={() => { setActiveDropdown(null); navigate(`/practice/${quiz._id}?preview=true`); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <Eye size={15} /> Preview
+                                  </div>
+
+                                  {/* Edit */}
+                                  <div
+                                    onClick={() => { setActiveDropdown(null); openEditModal(quiz); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <Edit2 size={15} /> Edit
+                                  </div>
+
+                                  {/* Schedule */}
+                                  <div
+                                    onClick={() => { 
+                                      setActiveDropdown(null); 
+                                      setScheduleDate(quiz.scheduledAt ? quiz.scheduledAt.slice(0,10) : "");
+                                      setScheduleTime(quiz.scheduledAt ? quiz.scheduledAt.slice(11,16) : "");
+                                      setScheduleModal(quiz);
+                                    }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <Calendar size={15} /> Schedule
+                                  </div>
+
+                                  {/* Delete */}
+                                  <div
+                                    onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <Trash2 size={15} /> Delete
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -381,6 +451,63 @@ function PracticeQuizzes() {
         handleQuestionChange={handleQuestionChange}
         handleOptionChange={handleOptionChange}
       />
+
+      {/* ── SCHEDULE MODAL ── */}
+      {scheduleModal && (
+        <div 
+          onClick={() => setScheduleModal(null)}
+          style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: "32px", width: "380px", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Calendar size={20} style={{ color: "var(--violet)" }} />
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>Schedule Quiz</h3>
+              </div>
+              <button onClick={() => setScheduleModal(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "20px" }}>✕</button>
+            </div>
+
+            <p style={{ margin: "0 0 20px", fontSize: "13px", color: "var(--text-muted)" }}>
+              Setting schedule for: <strong style={{ color: "var(--text-primary)" }}>{scheduleModal.title}</strong>
+            </p>
+
+            <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</label>
+            <input 
+              type="date" 
+              value={scheduleDate}
+              onChange={e => setScheduleDate(e.target.value)}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "14px", outline: "none", marginBottom: "16px", boxSizing: "border-box" }}
+            />
+
+            <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Time</label>
+            <input 
+              type="time" 
+              value={scheduleTime}
+              onChange={e => setScheduleTime(e.target.value)}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "14px", outline: "none", marginBottom: "24px", boxSizing: "border-box" }}
+            />
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button 
+                onClick={() => setScheduleModal(null)}
+                style={{ flex: 1, padding: "10px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "transparent", color: "var(--text-primary)", cursor: "pointer", fontWeight: "600", fontSize: "13px" }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveSchedule}
+                disabled={savingSchedule}
+                style={{ flex: 1, padding: "10px", borderRadius: "10px", border: "none", background: "var(--violet)", color: "#fff", cursor: savingSchedule ? "not-allowed" : "pointer", fontWeight: "600", fontSize: "13px", opacity: savingSchedule ? 0.7 : 1 }}
+              >
+                {savingSchedule ? "Saving..." : "Save Schedule"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .spin { animation: spin 1s linear infinite; }

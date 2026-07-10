@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Eye, Edit2, Calendar, Trash2, Copy } from "lucide-react";
+import { Eye, Edit2, Calendar, Trash2, Copy, Search } from "lucide-react";
 
 function ManageQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -97,7 +97,7 @@ function ManageQuizzes() {
                 borderRadius: "100px", padding: "8px 16px",
                 boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
               }}>
-                <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
+                <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
                 <input 
                   type="text" 
                   placeholder="Search quiz or subject..." 

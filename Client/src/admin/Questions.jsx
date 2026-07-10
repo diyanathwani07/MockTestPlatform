@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { HelpCircle, Clock } from "lucide-react";
+import { HelpCircle, Clock, Search } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
@@ -395,12 +395,19 @@ function Questions() {
                     </div>
                     
                     <div className="qb-right-searchbar">
-                      <div className="qb-search-input">
-                        <span style={{position: "absolute", left: "12px", top: "10px"}}>🔍</span>
+                      <div style={{ 
+                        flex: 1,
+                        display: "flex", alignItems: "center", gap: "10px",
+                        backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)",
+                        borderRadius: "100px", padding: "8px 16px",
+                        boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)"
+                      }}>
+                        <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
                         <input 
                           placeholder="Search questions..." 
                           value={searchQuery}
                           onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                          style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500" }}
                         />
                       </div>
                       <select className="qb-type-select">
