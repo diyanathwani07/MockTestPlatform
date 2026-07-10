@@ -21,6 +21,7 @@ function Users() {
   // Profile/Edit states
   const [quizzesAttempted, setQuizzesAttempted] = useState(null);
   const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "" });
+  const [addForm, setAddForm] = useState({ fullName: "", email: "", phone: "", role: "user", password: "" });
   const [toast, setToast] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const currentUserRole = localStorage.getItem("role");
@@ -136,6 +137,28 @@ function Users() {
     setSelectedUser(null);
   };
 
+  const handleAddUserSubmit = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/admin/users`,
+        addForm,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      showToast("User created successfully");
+      setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "" });
+      fetchUsers();
+      closeModal();
+    } catch (error) {
+      console.error("Create User Error:", error);
+      showToast(error.response?.data?.message || "Failed to create user", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleBackToPanel = () => {
     setActiveModal(null);
     if (selectedUser) {
@@ -192,38 +215,50 @@ function Users() {
             </div>
 
             {currentUserRole === 'superadmin' && (
-              <div style={{ display: 'flex', gap: '4px', background: 'rgba(255, 255, 255, 0.05)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '4px', background: 'rgba(255, 255, 255, 0.05)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                  <button 
+                    onClick={() => { setViewTab('active'); setLoading(true); }}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: viewTab === 'active' ? '#6E3FF3' : 'transparent',
+                      color: '#FFFFFF',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    Active Users
+                  </button>
+                  <button 
+                    onClick={() => { setViewTab('archived'); setLoading(true); }}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: viewTab === 'archived' ? '#6E3FF3' : 'transparent',
+                      color: '#FFFFFF',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    Archived Users
+                  </button>
+                </div>
                 <button 
-                  onClick={() => { setViewTab('active'); setLoading(true); }}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: viewTab === 'active' ? '#6E3FF3' : 'transparent',
-                    color: '#FFFFFF',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                  onClick={() => {
+                    setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "" });
+                    setActiveModal('add_user');
                   }}
+                  className="create-quiz-pill-btn"
+                  style={{ minHeight: '38px', padding: '8px 20px', fontSize: '13px' }}
                 >
-                  Active Users
-                </button>
-                <button 
-                  onClick={() => { setViewTab('archived'); setLoading(true); }}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: viewTab === 'archived' ? '#6E3FF3' : 'transparent',
-                    color: '#FFFFFF',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  Archived Users
+                  + Add User
                 </button>
               </div>
             )}
@@ -458,7 +493,7 @@ function Users() {
 
       {/* MODALS */}
       {activeModal && (
-        <div className="modal-overlay" style={activeModal === 'profile_popup' ? { justifyContent: 'center' } : {}} onClick={() => { closeModal(); }}>
+        <div className="modal-overlay" style={activeModal === 'profile_popup' || activeModal === 'add_user' ? { justifyContent: 'center' } : {}} onClick={() => { closeModal(); }}>
           
           {/* PROFILE MODAL */}
           {(activeModal === 'profile_popup' || activeModal === 'profile_drawer') && selectedUser && (
@@ -1054,6 +1089,99 @@ function Users() {
               <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal} style={{ width: '100%' }}>Close</button>
               </div>
+            </div>
+          )}
+
+          {/* ADD USER MODAL */}
+          {activeModal === 'add_user' && (
+            <div className="ticket-modal center-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <h3 style={{ margin: 0 }}>Add New User</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleAddUserSubmit}>
+                <div className="modal-body" style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  
+                  <div className="input-box" style={{ marginBottom: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                      Full Name
+                    </label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Enter full name"
+                      value={addForm.fullName}
+                      onChange={e => setAddForm({ ...addForm, fullName: e.target.value })}
+                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+
+                  <div className="input-box" style={{ marginBottom: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                      Email Address
+                    </label>
+                    <input 
+                      type="email" 
+                      required 
+                      placeholder="Enter email address"
+                      value={addForm.email}
+                      onChange={e => setAddForm({ ...addForm, email: e.target.value })}
+                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+
+                  <div className="input-box" style={{ marginBottom: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                      Phone Number (Optional)
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter phone number"
+                      value={addForm.phone}
+                      onChange={e => setAddForm({ ...addForm, phone: e.target.value })}
+                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+
+                  <div className="input-box" style={{ marginBottom: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                      Password
+                    </label>
+                    <input 
+                      type="password" 
+                      required 
+                      placeholder="Enter password (min 6 characters)"
+                      value={addForm.password}
+                      onChange={e => setAddForm({ ...addForm, password: e.target.value })}
+                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+
+                  <div className="input-box" style={{ marginBottom: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                      Assign Role
+                    </label>
+                    <select
+                      value={addForm.role}
+                      onChange={e => setAddForm({ ...addForm, role: e.target.value })}
+                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                    >
+                      <option value="user">User / Student</option>
+                      <option value="admin">Admin</option>
+                      <option value="superadmin">Super Admin</option>
+                    </select>
+                  </div>
+
+                </div>
+                <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
+                  <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
+                  <button type="submit" className="create-quiz-pill-btn" style={{ minHeight: '38px', padding: '0 24px', fontSize: '13.5px' }} disabled={actionLoading}>
+                    {actionLoading ? "Creating..." : "Create User"}
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 

@@ -30,6 +30,36 @@ router.get("/", protect, adminOnly, async (req, res) => {
   }
 });
 
+// CREATE a new user (superadmin only)
+router.post("/", protect, superAdminOnly, async (req, res) => {
+  try {
+    const { fullName, email, phone, role, password } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists with this email." });
+    }
+
+    const bcrypt = require("bcryptjs");
+    const hashedPassword = await bcrypt.hash(password || "TempPass123!", 10);
+
+    const user = await User.create({
+      fullName,
+      email,
+      phone: phone || "",
+      role: role || "user",
+      password: hashedPassword,
+      status: "Active"
+    });
+
+    await logAction("CREATE_USER", req.user?.fullName || "Admin", `Created new user: ${user.fullName} (${user.email}) as ${user.role}`, "UserManagement", req.ip);
+    res.status(201).json({ message: "User created successfully.", user });
+  } catch (error) {
+    console.error("Create User Error:", error);
+    res.status(500).json({ message: "Failed to create user." });
+  }
+});
+
 // DELETE a user (superadmin only)
 router.delete("/:id", protect, superAdminOnly, async (req, res) => {
   try {

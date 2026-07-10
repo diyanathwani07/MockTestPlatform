@@ -3,11 +3,12 @@ const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
 const upload = require("../middleware/uploadMiddleware");
-const { createTicket, getMyTickets, getAllTickets, updateTicketStatus, replyToTicket } = require("../controllers/ticketController");
+const { createTicket, getMyTickets, getAllTickets, updateTicketStatus, replyToTicket, reopenTicket } = require("../controllers/ticketController");
 
 // Student Routes
 router.post("/", protect, upload.single("attachment"), createTicket);
 router.get("/my-tickets", protect, getMyTickets);
+router.put("/:id/reopen", protect, reopenTicket);
 
 // Admin Routes
 router.get("/", protect, adminOnly, getAllTickets);

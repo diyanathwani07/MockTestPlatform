@@ -151,10 +151,38 @@ const replyToTicket = async (req, res) => {
   }
 };
 
+const reopenTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found." });
+    }
+
+    if (ticket.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to reopen this ticket." });
+    }
+
+    ticket.status = "Open";
+    await ticket.save();
+
+    await logAction("REOPEN_TICKET", req.user.fullName || "User", `Reopened ticket: ${ticket.subject}`, "Support", req.ip);
+
+    res.json({
+      success: true,
+      message: "Ticket has been reopened.",
+      ticket,
+    });
+  } catch (error) {
+    console.error("Reopen Ticket Error:", error);
+    res.status(500).json({ message: "Failed to reopen ticket." });
+  }
+};
+
 module.exports = {
   createTicket,
   getMyTickets,
   getAllTickets,
   updateTicketStatus,
   replyToTicket,
+  reopenTicket,
 };

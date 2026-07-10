@@ -25,6 +25,7 @@ function HelpSupport() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
   const [replying, setReplying] = useState(false);
+  const [reopening, setReopening] = useState(false);
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
@@ -160,6 +161,31 @@ function HelpSupport() {
       alert("Failed to send reply.");
     } finally {
       setReplying(false);
+    }
+  };
+
+  const handleReopenTicket = async () => {
+    if (!selectedTicket) return;
+    setReopening(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/reopen`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      const updatedTicket = res.data.ticket;
+      setMyTickets(myTickets.map(t => 
+        t._id === updatedTicket._id ? updatedTicket : t
+      ));
+      setSelectedTicket(updatedTicket);
+      alert("Ticket reopened successfully!");
+    } catch (err) {
+      console.error("Error reopening ticket:", err);
+      alert("Failed to reopen ticket.");
+    } finally {
+      setReopening(false);
     }
   };
 
@@ -662,9 +688,36 @@ function HelpSupport() {
                       {replying ? "Sending..." : "Send Reply"}
                     </button>
                   </div>
-                </form>
-              )}
-            </div>
+                 </form>
+               )}
+
+               {selectedTicket.status === 'Resolved' && (
+                 <div style={{ marginTop: "24px", display: "flex", justifyContent: "center" }}>
+                   <button 
+                     onClick={handleReopenTicket}
+                     disabled={reopening}
+                     style={{
+                       padding: "12px 32px",
+                       background: "linear-gradient(135deg, #6a11cb, #7b3ff3)",
+                       color: "white",
+                       border: "none",
+                       borderRadius: "10px",
+                       fontWeight: "600",
+                       fontSize: "14px",
+                       cursor: reopening ? "not-allowed" : "pointer",
+                       opacity: reopening ? 0.7 : 1,
+                       display: "flex",
+                       alignItems: "center",
+                       gap: "8px",
+                       boxShadow: "0 4px 14px rgba(110, 63, 243, 0.3)",
+                       transition: "all 0.2s ease"
+                     }}
+                   >
+                     {reopening ? "Reopening..." : "🔄 Reopen Query"}
+                   </button>
+                 </div>
+               )}
+             </div>
           </div>
         </div>
       )}
