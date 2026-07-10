@@ -12,7 +12,10 @@ function SubjectResults() {
   const { subject } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const decodedSubject = decodeURIComponent(subject);
+  const decodedSubjectRaw = decodeURIComponent(subject);
+  const decodedSubject = decodedSubjectRaw.includes(" - ") && (decodedSubjectRaw.split(" - ")[0].trim() === decodedSubjectRaw.split(" - ")[1].trim())
+    ? decodedSubjectRaw.split(" - ")[0].trim()
+    : decodedSubjectRaw;
 
   const [group, setGroup] = useState(location.state?.group || []);
   const [loading, setLoading] = useState(!location.state?.group);
@@ -70,7 +73,7 @@ function SubjectResults() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
-        <StudentNavbar title={`${decodedSubject} Results`} />
+        <StudentNavbar title="Results" />
 
         <div className="sd-content" style={{ paddingTop: '20px' }}>
           <div className="practice-header-section" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "32px" }}>

@@ -41,7 +41,7 @@ function StudentResults() {
   // Group by Exam Name or Subject
   const examGroups = results.reduce((acc, result) => {
     const groupKey = result.examName && result.subject 
-      ? `${result.examName} - ${result.subject}` 
+      ? (result.examName.trim() === result.subject.trim() ? result.examName.trim() : `${result.examName.trim()} - ${result.subject.trim()}`)
       : (result.examName || result.subject || result.quizTitle || "Mock Tests");
       
     if (!acc[groupKey]) acc[groupKey] = [];
