@@ -122,9 +122,9 @@ You are an expert educator. I will provide a batch of multiple-choice practice q
 For each question, I will provide the question text, options, and the correct answer.
 
 For EACH question, I need:
-1. "correct": A detailed explanation of why the correct answer is correct.
-2. "incorrect": Explanations for WHY each of the other options is incorrect.
-3. "conceptSummary": A brief 2-3 sentence summary of the core concept being tested.
+1. "correct": A concise, single-sentence (one-line) explanation of why the correct answer is correct. Keep it extremely brief.
+2. "incorrect": Concise, single-sentence (one-line) explanations for WHY each of the other options is incorrect. Keep each explanation extremely brief.
+3. "conceptSummary": A brief 1-2 sentence summary of the core concept being tested.
 
 Here are the questions:
 ${JSON.stringify(batch.map(q => ({
@@ -141,13 +141,21 @@ ${JSON.stringify(batch.map(q => ({
           type: Type.OBJECT,
           properties: {
             id: { type: Type.STRING },
-            correct: { type: Type.STRING },
+            correct: { type: Type.STRING, description: "Strictly a single-sentence/one-line explanation of the correct answer" },
             incorrect: { 
-              type: Type.OBJECT,
-              description: "Map of incorrect option text to its explanation string"
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  option: { type: Type.STRING, description: "The text of the incorrect option (exactly matching one of the options)" },
+                  explanation: { type: Type.STRING, description: "Strictly a single-sentence/one-line explanation of why this option is incorrect" }
+                },
+                required: ["option", "explanation"]
+              }
             },
             conceptSummary: { type: Type.STRING }
-          }
+          },
+          required: ["id", "correct", "incorrect", "conceptSummary"]
         }
       };
 
@@ -162,15 +170,24 @@ ${JSON.stringify(batch.map(q => ({
           }
         });
 
-        const generatedData = JSON.parse(response.text());
+        const generatedData = JSON.parse(response.text);
 
         // Update the questions in the quiz
         generatedData.forEach(genData => {
           const qIndex = quiz.questions.findIndex(q => q._id.toString() === genData.id);
           if (qIndex !== -1) {
+            const incorrectMap = new Map();
+            if (Array.isArray(genData.incorrect)) {
+              genData.incorrect.forEach(item => {
+                if (item.option && item.explanation) {
+                  incorrectMap.set(item.option, item.explanation);
+                }
+              });
+            }
+
             quiz.questions[qIndex].explanations = {
               correct: genData.correct || "",
-              incorrect: genData.incorrect || {},
+              incorrect: incorrectMap,
               conceptSummary: genData.conceptSummary || ""
             };
             quiz.questions[qIndex].aiGenerated = true;

@@ -243,6 +243,18 @@ function PracticeTest() {
                         </p>
                       </div>
                     )}
+
+                    {/* Show explanation for the CORRECT option when correct answer is found */}
+                    {isCorrectSelected && isCorrectOption && (
+                      <div className="practice-inline-exp success" style={{ marginTop: "12px", padding: "12px", backgroundColor: "rgba(74, 222, 128, 0.05)", borderLeft: "3px solid #4ade80", borderRadius: "0 8px 8px 0" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", color: "#4ade80", fontWeight: "500" }}>
+                          <CheckCircle size={16} /> Correct
+                        </div>
+                        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                          {currentQuestion.explanations?.correct || "Great job! This is the correct answer."}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
