@@ -248,35 +248,7 @@ function PracticeTest() {
               })}
             </div>
 
-            {/* Show full explanation when correct answer is found */}
-            {isCorrectSelected && (
-              <div className="practice-full-exp animate-slide-up" style={{ marginTop: "24px", padding: "20px", backgroundColor: "rgba(74, 222, 128, 0.05)", border: "1px solid rgba(74, 222, 128, 0.2)", borderRadius: "12px" }}>
-                <h4 style={{ display: "flex", alignItems: "center", gap: "8px", color: "#4ade80", margin: "0 0 12px 0", fontSize: "18px" }}>
-                  <CheckCircle size={20} /> Correct Answer Explanation
-                </h4>
-                <p style={{ color: "var(--text-main)", lineHeight: "1.6", marginBottom: "16px" }}>
-                  {currentQuestion.explanations?.correct || "Great job! This is the correct answer."}
-                </p>
-                
-                {currentQuestion.explanations?.conceptSummary && (
-                  <div className="concept-summary-card animate-fade-in" style={{ padding: "16px", backgroundColor: "rgba(108, 93, 211, 0.1)", borderRadius: "8px", borderLeft: "4px solid var(--primary-color)" }}>
-                    <h5 style={{ margin: "0 0 8px 0", color: "var(--primary-color)", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "6px" }}>
-                      💡 Concept Summary
-                    </h5>
-                    <p style={{ margin: 0, color: "var(--text-main)", fontSize: "14px", lineHeight: "1.6" }}>
-                      {currentQuestion.explanations.conceptSummary}
-                    </p>
-                  </div>
-                )}
-                
 
-                <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
-                  <button className="ai-explain-btn" onClick={() => setShowAiTutor(true)}>
-                    ✨ Ask AI Tutor
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="practice-footer" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
