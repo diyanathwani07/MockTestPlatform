@@ -857,14 +857,10 @@ function EditQuiz() {
                     <div className="form-card header-questions-card">
                       <div 
                         className="questions-title-row" 
-                        onClick={() => setQuestionsCollapsed(!questionsCollapsed)}
-                        style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: questionsCollapsed ? "none" : "1.5px solid var(--border-color)", paddingBottom: questionsCollapsed ? "0" : "12px" }}
+                        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                           <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Assessment Questions</h3>
-                          <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal" }}>
-                            {questionsCollapsed ? "＋ Expand" : "－ Collapse"}
-                          </span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
                           {questions.length > 0 && (
