@@ -88,7 +88,7 @@ const loginUser = async (req, res) => {
     if (!user || user.isDeleted) {
       return res.status(400).json({
         success: false,
-        message: user?.isDeleted ? "User not found" : "Invalid Email",
+        message: "Invalid Email or Password",
       });
     }
 
@@ -101,7 +101,7 @@ const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Password",
+        message: "Invalid Email or Password",
       });
     }
 
