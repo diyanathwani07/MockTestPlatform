@@ -416,7 +416,7 @@ function Result() {
               <button className="rm-btn-outline" onClick={() => setShowAnswers(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
                 <FileText size={18} /> Review Answers
               </button>
-              <button className="rm-btn-solid" onClick={() => navigate("/")}>
+              <button className="rm-btn-solid" onClick={() => navigate("/dashboard")}>
                 Back to Dashboard →
               </button>
             </div>
@@ -624,7 +624,7 @@ function Result() {
               <button 
                 className="rm-btn-solid" 
                 style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
               >
                 Back to Dashboard
               </button>
