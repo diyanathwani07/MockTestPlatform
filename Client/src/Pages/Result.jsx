@@ -5,6 +5,7 @@ import "../css/Result.css";
 import axios from "axios";
 import { Trophy, FileText, CalendarDays, Clock, HelpCircle, Target, XCircle, Timer, TrendingUp, Medal, ArrowLeft, LayoutGrid } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
+import { useTheme } from "../context/ThemeContext";
 
 function Result() {
   const location = useLocation();
