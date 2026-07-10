@@ -214,7 +214,11 @@ function SubjectResults() {
                     </div>
                   </div>
                   <div className="sr-card-right" style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 0.6 }}>
-                    <button className="sr-view-details-btn" style={{ padding: "8px 12px", fontSize: "12px" }}>
+                    <button 
+                      className="sr-view-details-btn" 
+                      style={{ padding: "8px 12px", fontSize: "12px", cursor: "pointer" }}
+                      onClick={() => navigate(`/student/result/${result.shareId}`, { state: result })}
+                    >
                       View Details <ChevronRight size={14} />
                     </button>
                     {result.quizId && (

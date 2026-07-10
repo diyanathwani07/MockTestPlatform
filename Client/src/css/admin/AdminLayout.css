@@ -306,8 +306,10 @@ body:not(.dark-mode) input::placeholder, body:not(.dark-mode) textarea::placehol
   display: flex; 
   flex-direction: column; 
   flex-shrink: 0; 
-  position: sticky; 
+  position: fixed; 
   top: 0; 
+  left: 0;
+  bottom: 0;
   height: 100vh;
   z-index: 2000;
 }
@@ -354,6 +356,11 @@ body.dark-mode .sidebar-link.active {
    7. MAIN AREA & NAVBAR
    ========================================================================== */
 .admin-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+@media (min-width: 1025px) {
+  .admin-main {
+    margin-left: 220px;
+  }
+}
 .admin-navbar { background: #fff; border-bottom: 1.5px solid #ECE9F7; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
 .navbar-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: #1a1a2e; word-break: break-word; }
 
