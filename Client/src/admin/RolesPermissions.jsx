@@ -1,51 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Shield, Plus, Edit2, Trash2, Copy, Users, X, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Shield, Plus, Edit2, Trash2, Copy, Users, X, Check } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 
 const API = import.meta.env.VITE_API_URL;
 
-const ALL_PERMISSIONS = [
-  "dashboard",
-  "manage_users",
-  "create_quiz",
-  "edit_quiz",
-  "delete_quiz",
-  "manage_questions",
-  "question_bank",
-  "import_questions",
-  "practice_tests",
-  "manage_practice_tests",
-  "support_tickets",
-  "view_reports",
-  "manage_settings",
-  "manage_roles",
-  "student_list",
-  "student_profiles",
-  "call_logs",
-  "follow_up_notes",
-  "upload_videos",
-  "manage_videos",
-  "attach_videos",
-  "video_analytics",
-  "review_questions",
-  "student_performance",
-  "schedule_exams",
-  "publish_quizzes",
-  "student_enrollment",
-  "manage_notifications"
-];
-
-const PERMISSION_GROUPS = [
-  { label: "Dashboard", keys: ["dashboard"] },
-  { label: "Quiz Management", keys: ["create_quiz", "edit_quiz", "delete_quiz", "publish_quizzes", "schedule_exams"] },
-  { label: "Questions & Subjects", keys: ["manage_questions", "question_bank", "import_questions", "review_questions", "manage_subjects"] },
-  { label: "Practice Tests", keys: ["practice_tests", "manage_practice_tests"] },
-  { label: "Student & Support", keys: ["student_list", "student_profiles", "support_tickets", "call_logs", "follow_up_notes", "student_enrollment"] },
-  { label: "Video Management", keys: ["upload_videos", "manage_videos", "attach_videos", "video_analytics"] },
-  { label: "System & Admin Settings", keys: ["manage_users", "manage_roles", "manage_settings", "manage_notifications"] },
-  { label: "Reports & Performance", keys: ["view_reports", "student_performance"] }
+/* Dashboard panel permissions — these match the sidebar pages exactly */
+const PANEL_PERMISSIONS = [
+  { key: "dashboard",             label: "Dashboard" },
+  { key: "create_quiz",           label: "Create Quiz" },
+  { key: "edit_quiz",             label: "Manage Quizzes" },
+  { key: "manage_practice_tests", label: "Practice Modules" },
+  { key: "manage_questions",      label: "Questions" },
+  { key: "manage_users",          label: "Users" },
+  { key: "manage_results",        label: "Results" },
+  { key: "view_reports",          label: "Reports" },
+  { key: "audit_logs",            label: "Audit Log" },
+  { key: "support_tickets",       label: "Support Tickets" },
+  { key: "manage_roles",          label: "Roles & Permissions" }
 ];
 
 const COLORS = ["#6E3FF3", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
@@ -59,7 +32,6 @@ function RolesPermissions() {
   const [editingDept, setEditingDept] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState({});
   const token = localStorage.getItem("token");
 
   const fetchDepartments = async () => {
@@ -106,19 +78,6 @@ function RolesPermissions() {
     }));
   };
 
-  const toggleAllGroupPermissions = (groupKeys, shouldSelectAll) => {
-    setForm(f => {
-      let nextPerms = [...f.permissions];
-      if (shouldSelectAll) {
-        groupKeys.forEach(k => {
-          if (!nextPerms.includes(k)) nextPerms.push(k);
-        });
-      } else {
-        nextPerms = nextPerms.filter(k => !groupKeys.includes(k));
-      }
-      return { ...f, permissions: nextPerms };
-    });
-  };
 
   const handleSave = async () => {
     if (!form.name.trim()) return alert("Department name is required.");
@@ -171,7 +130,7 @@ function RolesPermissions() {
     }
   };
 
-  const toggleGroup = (label) => setExpandedGroups(g => ({ ...g, [label]: !g[label] }));
+
 
   return (
     <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
@@ -196,9 +155,8 @@ function RolesPermissions() {
             <div style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>Loading departments...</div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "20px" }}>
-              {departments.map(dept => {
-                const randomColor = COLORS[departments.indexOf(dept) % COLORS.length];
-                const displayColor = dept.color || randomColor;
+              {departments.map((dept, deptIdx) => {
+                const displayColor = dept.color || COLORS[deptIdx % COLORS.length];
                 return (
                   <div key={dept._id} style={{ background: "var(--bg-card, #131326)", border: "1.5px solid var(--border-color, #232338)", borderRadius: "16px", padding: "24px", position: "relative", overflow: "hidden" }}>
                     {/* Color stripe */}
@@ -228,17 +186,20 @@ function RolesPermissions() {
                         <span>{dept.userCount || 0} active user{dept.userCount !== 1 ? "s" : ""}</span>
                       </div>
                       <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                        <span>{dept.permissions?.length || 0} permission{dept.permissions?.length !== 1 ? "s" : ""}</span>
+                        <span>{dept.permissions?.length || 0} panel{dept.permissions?.length !== 1 ? "s" : ""}</span>
                       </div>
                     </div>
 
-                    {/* Permission chips preview */}
+                    {/* Panel chips preview */}
                     <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                      {(dept.permissions || []).slice(0, 5).map(p => (
-                        <span key={p} style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", background: `${displayColor}18`, color: displayColor, fontWeight: "500" }}>
-                          {p.replace(/_/g, " ")}
-                        </span>
-                      ))}
+                      {(dept.permissions || []).slice(0, 5).map(p => {
+                        const found = PANEL_PERMISSIONS.find(pp => pp.key === p);
+                        return (
+                          <span key={p} style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", background: `${displayColor}18`, color: displayColor, fontWeight: "500" }}>
+                            {found ? found.label : p.replace(/_/g, " ")}
+                          </span>
+                        );
+                      })}
                       {(dept.permissions || []).length > 5 && (
                         <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", background: "var(--bg-input, #1B1B32)", color: "var(--text-muted)" }}>+{(dept.permissions || []).length - 5} more</span>
                       )}
@@ -273,7 +234,7 @@ function RolesPermissions() {
               <label style={labelStyle}>Description</label>
               <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={{ ...inputStyle, height: "80px", resize: "vertical" }} placeholder="What does this department do?" />
 
-              {/* Color */}
+              {/* Accent Color */}
               <label style={labelStyle}>Accent Color</label>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "24px" }}>
                 {COLORS.map(c => (
@@ -283,51 +244,18 @@ function RolesPermissions() {
                 ))}
               </div>
 
-              {/* Permissions */}
-              <label style={labelStyle}>Permissions Matrix</label>
-
-              {/* Permission Groups */}
-              {PERMISSION_GROUPS.map(group => {
-                const isExpanded = expandedGroups[group.label] !== false;
-                const groupSelected = group.keys.filter(k => form.permissions.includes(k)).length;
-                const allSelected = groupSelected === group.keys.length;
-                return (
-                  <div key={group.label} style={{ marginBottom: "12px", border: "1px solid var(--border-color)", borderRadius: "10px", overflow: "hidden" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--bg-input, #1B1B32)" }}>
-                      <div onClick={() => toggleGroup(group.label)} style={{ cursor: "pointer", fontWeight: "600", fontSize: "13px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
-                        {isExpanded ? <ChevronUp size={14} style={{ color: "var(--text-muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />}
-                        <span>{group.label}</span>
-                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>({groupSelected}/{group.keys.length})</span>
-                      </div>
-                      <button
-                        onClick={() => toggleAllGroupPermissions(group.keys, !allSelected)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          fontSize: "11px",
-                          fontWeight: "600",
-                          color: "#6E3FF3",
-                          cursor: "pointer"
-                        }}
-                      >
-                        {allSelected ? "Deselect All" : "Select All"}
-                      </button>
+              {/* Dashboard Panels */}
+              <label style={labelStyle}>Dashboard Panels</label>
+              <div style={{ border: "1px solid var(--border-color)", borderRadius: "10px", overflow: "hidden" }}>
+                {PANEL_PERMISSIONS.map((panel, idx) => (
+                  <div key={panel.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: idx < PANEL_PERMISSIONS.length - 1 ? "1px solid var(--border-color)" : "none", background: "var(--bg-card)" }}>
+                    <span style={{ fontSize: "13px", color: "var(--text-secondary, #94a3b8)", fontWeight: "500" }}>{panel.label}</span>
+                    <div onClick={() => togglePermission(panel.key)} style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.permissions.includes(panel.key) ? "#6E3FF3" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                      <div style={{ position: "absolute", top: "2px", left: form.permissions.includes(panel.key) ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
                     </div>
-                    {isExpanded && (
-                      <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: "8px", background: "var(--bg-card)" }}>
-                        {group.keys.map(key => (
-                          <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <span style={{ fontSize: "13px", color: "var(--text-secondary, #94a3b8)" }}>{key.replace(/_/g, " ")}</span>
-                            <div onClick={() => togglePermission(key)} style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.permissions.includes(key) ? "#6E3FF3" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                              <div style={{ position: "absolute", top: "2px", left: form.permissions.includes(key) ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
 
             {/* Drawer Footer */}

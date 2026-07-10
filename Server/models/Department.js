@@ -15,6 +15,10 @@ const departmentSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    color: {
+      type: String,
+      default: "#6E3FF3",
+    },
   },
   {
     timestamps: true,

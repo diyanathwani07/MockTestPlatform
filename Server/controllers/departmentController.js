@@ -44,7 +44,7 @@ exports.getDepartment = async (req, res) => {
 // POST create department
 exports.createDepartment = async (req, res) => {
   try {
-    const { name, description, permissions } = req.body;
+    const { name, description, permissions, color } = req.body;
     if (!name) return res.status(400).json({ message: "Name is required." });
     
     const exists = await Department.findOne({ name });
@@ -53,7 +53,8 @@ exports.createDepartment = async (req, res) => {
     const dept = await Department.create({
       name,
       description: description || "",
-      permissions: permissions || []
+      permissions: permissions || [],
+      color: color || "#6E3FF3"
     });
     
     await logAction(
@@ -77,12 +78,13 @@ exports.updateDepartment = async (req, res) => {
     const dept = await Department.findById(req.params.id);
     if (!dept) return res.status(404).json({ message: "Department not found." });
     
-    const { name, description, permissions } = req.body;
+    const { name, description, permissions, color } = req.body;
     const oldName = dept.name;
     
     if (name) dept.name = name;
     if (description !== undefined) dept.description = description;
     if (permissions) dept.permissions = permissions;
+    if (color) dept.color = color;
     
     await dept.save();
     
@@ -147,7 +149,8 @@ exports.duplicateDepartment = async (req, res) => {
     const newDept = await Department.create({
       name: newName,
       description: source.description,
-      permissions: [...source.permissions]
+      permissions: [...source.permissions],
+      color: source.color || "#6E3FF3"
     });
     
     await logAction(
