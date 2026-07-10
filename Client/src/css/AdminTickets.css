@@ -308,6 +308,7 @@
 .tk-status-in-progress { background: #DBEAFE; color: #1D4ED8; }
 .tk-status-resolved { background: #D1FAE5; color: #047857; }
 .tk-status-closed { background: #F3F4F6; color: #374151; }
+.tk-status-reopened { background: #F5F3FF; color: #7C3AED; }
 
 .tk-date-cell {
   display: flex;
@@ -630,6 +631,12 @@
   border-color: #DBEAFE;
 }
 
+.status-btn.active.reopened {
+  background: #F5F3FF;
+  color: #7C3AED;
+  border-color: #F5F3FF;
+}
+
 /* ── DARK MODE OVERRIDES ── */
 .dark-mode .tk-content-wrapper { background: var(--bg-page); }
 .dark-mode .tk-header h2,
@@ -689,6 +696,7 @@
 
 /* Keep the colored backgrounds for active status buttons in dark mode too */
 .dark-mode .status-btn.active.open { background: rgba(180, 83, 9, 0.2); color: #FBBF24; border-color: transparent; }
+.dark-mode .status-btn.active.reopened { background: rgba(124, 58, 237, 0.2); color: #A78BFA; border-color: transparent; }
 .dark-mode .status-btn.active.in-progress { background: rgba(29, 78, 216, 0.2); color: #60A5FA; border-color: transparent; }
 .dark-mode .status-btn.active.resolved { background: rgba(4, 120, 87, 0.2); color: #34D399; border-color: transparent; }
 

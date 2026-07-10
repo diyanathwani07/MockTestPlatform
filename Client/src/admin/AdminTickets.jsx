@@ -198,6 +198,7 @@ function AdminTickets() {
                     <option value="All">All Status</option>
                     <option value="Open">Open</option>
                     <option value="In Progress">In Progress</option>
+                    <option value="Reopened">Reopened</option>
                     <option value="Resolved">Resolved</option>
                   </select>
                 </div>
@@ -418,7 +419,7 @@ function AdminTickets() {
                 )}
                 
                 {/* REPLY INPUT */}
-                {['Open', 'In Progress'].includes(selectedTicket.status) && (
+                {['Open', 'In Progress', 'Reopened'].includes(selectedTicket.status) && (
                   <form onSubmit={handleReplySubmit} style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
                   <textarea
                     value={replyMessage}
@@ -485,6 +486,13 @@ function AdminTickets() {
                     disabled={statusUpdating}
                   >
                     Open
+                  </button>
+                  <button 
+                    className={`status-btn ${selectedTicket.status === 'Reopened' ? 'active reopened' : ''}`}
+                    onClick={() => handleStatusChange('Reopened')}
+                    disabled={statusUpdating}
+                  >
+                    Reopened
                   </button>
                   <button 
                     className={`status-btn ${selectedTicket.status === 'In Progress' ? 'active in-progress' : ''}`}

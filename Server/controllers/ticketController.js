@@ -165,7 +165,7 @@ const reopenTicket = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to reopen this ticket." });
     }
 
-    ticket.status = "Open";
+    ticket.status = "Reopened";
     await ticket.save();
 
     await logAction("REOPEN_TICKET", req.user.fullName || "User", `Reopened ticket: ${ticket.subject}`, "Support", req.ip);

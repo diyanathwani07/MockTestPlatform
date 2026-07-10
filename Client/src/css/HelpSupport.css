@@ -393,6 +393,12 @@ body.dark-mode .hs-tickets-table th {
 }
 .hs-status-badge.closed .hs-status-dot { background: #6B7280; }
 
+.hs-status-badge.reopened {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
+.hs-status-badge.reopened .hs-status-dot { background: #a855f7; }
+
 .hs-ticket-action {
   background: rgba(0,0,0,0.05);
   border: none;
