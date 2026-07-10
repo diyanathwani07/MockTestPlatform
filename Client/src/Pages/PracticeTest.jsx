@@ -272,7 +272,7 @@ function PracticeTest() {
                 style={{ minWidth: "200px", padding: "14px 24px", fontSize: "16px" }}
               >
                 {isCorrectSelected ? (
-                  currentIndex === questions.length - 1 ? 'Finish Practice' : 'Continue Learning →'
+                  currentIndex === questions.length - 1 ? 'Finish Practice' : 'Next Question →'
                 ) : 'Select an Answer'}
               </button>
           </div>
