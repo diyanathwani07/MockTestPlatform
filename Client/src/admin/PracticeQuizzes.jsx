@@ -200,14 +200,6 @@ function PracticeQuizzes() {
         <div className="admin-content" style={{ padding: "32px", maxWidth: "1200px", margin: "0 auto" }}>
           
           <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <button 
-              onClick={openCreateModal}
-              className="create-quiz-pill-btn"
-              style={{ minHeight: '38px', padding: '8px 20px', fontSize: '13px' }}
-            >
-              + Create Practice Quiz
-            </button>
-            
             <div className="pill-search-container" style={{ marginBottom: 0, flex: 1, maxWidth: '400px' }}>
               <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="11" cy="11" r="8"></circle>
@@ -221,6 +213,14 @@ function PracticeQuizzes() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
+            <button 
+              onClick={openCreateModal}
+              className="create-quiz-pill-btn"
+              style={{ minHeight: '38px', padding: '8px 20px', fontSize: '13px' }}
+            >
+              + Create Practice Quiz
+            </button>
           </div>
 
           <div style={{ 
