@@ -183,7 +183,7 @@ function HelpSupport() {
       alert("Ticket reopened successfully!");
     } catch (err) {
       console.error("Error reopening ticket:", err);
-      alert("Failed to reopen ticket.");
+      alert(err.response?.data?.message || "Failed to reopen ticket.");
     } finally {
       setReopening(false);
     }

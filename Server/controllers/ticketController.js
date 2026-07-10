@@ -158,7 +158,10 @@ const reopenTicket = async (req, res) => {
       return res.status(404).json({ message: "Ticket not found." });
     }
 
-    if (ticket.userId.toString() !== req.user._id.toString()) {
+    const ticketOwnerId = ticket.userId._id ? ticket.userId._id.toString() : ticket.userId.toString();
+    const currentUserId = req.user._id.toString();
+
+    if (ticketOwnerId !== currentUserId) {
       return res.status(403).json({ message: "Not authorized to reopen this ticket." });
     }
 
