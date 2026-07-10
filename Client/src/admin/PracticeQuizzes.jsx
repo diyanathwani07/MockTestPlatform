@@ -199,47 +199,27 @@ function PracticeQuizzes() {
         
         <div className="admin-content" style={{ padding: "32px", maxWidth: "1200px", margin: "0 auto" }}>
           
-          <div className="dashboard-header-modern" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-            <div>
-              <h1 style={{ color: "var(--text-main)", fontSize: "28px", margin: "0 0 8px 0" }}>AI Practice Modules</h1>
-              <p style={{ color: "var(--text-muted)", margin: 0 }}>Manage interactive practice tests with AI-generated explanations.</p>
-            </div>
+          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+            <button 
+              onClick={openCreateModal}
+              className="create-quiz-pill-btn"
+              style={{ minHeight: '38px', padding: '8px 20px', fontSize: '13px' }}
+            >
+              + Create Practice Quiz
+            </button>
             
-            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+            <div className="pill-search-container" style={{ marginBottom: 0, flex: 1, maxWidth: '400px' }}>
+              <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
               <input 
                 type="text" 
                 placeholder="Search practice modules..." 
+                className="pill-search-input"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border-color)",
-                  backgroundColor: "var(--bg-input)",
-                  color: "var(--text-primary)",
-                  width: "250px"
-                }}
               />
-              
-              {/* Note: In a real app we'd have a Create/Edit page, but we'll navigate to a simplified builder */}
-              <button 
-                onClick={openCreateModal}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "var(--primary-color)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontWeight: "500",
-                  transition: "all 0.2s"
-                }}
-              >
-                <Plus size={18} /> Create Practice Quiz
-              </button>
             </div>
           </div>
 
