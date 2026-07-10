@@ -6,18 +6,15 @@ const DEFAULT_DEPARTMENTS = [
     description: "Full technical features, user management, quiz management, settings, reports, practice tests, support tickets.",
     permissions: [
       "dashboard",
-      "manage_users",
       "create_quiz",
       "edit_quiz",
-      "delete_quiz",
-      "manage_questions",
-      "question_bank",
-      "import_questions",
-      "practice_tests",
       "manage_practice_tests",
-      "support_tickets",
+      "manage_questions",
+      "manage_users",
+      "manage_results",
       "view_reports",
-      "manage_settings",
+      "audit_logs",
+      "support_tickets",
       "manage_roles"
     ]
   },
@@ -28,13 +25,8 @@ const DEFAULT_DEPARTMENTS = [
       "dashboard",
       "create_quiz",
       "edit_quiz",
-      "delete_quiz",
-      "manage_questions",
-      "question_bank",
-      "import_questions",
-      "manage_subjects",
-      "practice_tests",
-      "manage_practice_tests"
+      "manage_practice_tests",
+      "manage_questions"
     ]
   },
   {
@@ -42,11 +34,8 @@ const DEFAULT_DEPARTMENTS = [
     description: "Student list, profiles, support tickets, call logs, follow-up notes.",
     permissions: [
       "dashboard",
-      "student_list",
-      "student_profiles",
-      "support_tickets",
-      "call_logs",
-      "follow_up_notes"
+      "manage_users",
+      "support_tickets"
     ]
   },
   {
@@ -54,10 +43,7 @@ const DEFAULT_DEPARTMENTS = [
     description: "Upload videos, manage video library, attach videos to subjects, video analytics.",
     permissions: [
       "dashboard",
-      "upload_videos",
-      "manage_videos",
-      "attach_videos",
-      "video_analytics"
+      "manage_questions"
     ]
   },
   {
@@ -65,10 +51,10 @@ const DEFAULT_DEPARTMENTS = [
     description: "Review questions, monitor student performance, view reports, practice tests.",
     permissions: [
       "dashboard",
-      "review_questions",
-      "student_performance",
+      "manage_questions",
+      "manage_results",
       "view_reports",
-      "practice_tests"
+      "manage_practice_tests"
     ]
   },
   {
@@ -76,10 +62,9 @@ const DEFAULT_DEPARTMENTS = [
     description: "Schedule exams, publish quizzes, student enrollment, notifications, reports.",
     permissions: [
       "dashboard",
-      "schedule_exams",
-      "publish_quizzes",
-      "student_enrollment",
-      "manage_notifications",
+      "create_quiz",
+      "edit_quiz",
+      "manage_users",
       "view_reports"
     ]
   }
@@ -92,6 +77,12 @@ async function seedDepartments() {
       if (!exists) {
         await Department.create(deptData);
         console.log(`[Seed] Created department: ${deptData.name}`);
+      } else {
+        // Update to only use simplified panel permissions
+        exists.permissions = deptData.permissions;
+        exists.description = deptData.description;
+        await exists.save();
+        console.log(`[Seed] Updated department permissions: ${deptData.name}`);
       }
     }
     console.log("[Seed] Department seeding complete.");
