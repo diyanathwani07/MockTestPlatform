@@ -181,6 +181,36 @@ const reopenTicket = async (req, res) => {
   }
 };
 
+const closeTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found." });
+    }
+
+    const ticketOwnerId = ticket.userId._id ? ticket.userId._id.toString() : ticket.userId.toString();
+    const currentUserId = req.user._id.toString();
+
+    if (ticketOwnerId !== currentUserId) {
+      return res.status(403).json({ message: "Not authorized to close this ticket." });
+    }
+
+    ticket.status = "Resolved";
+    await ticket.save();
+
+    await logAction("CLOSE_TICKET", req.user.fullName || "User", `Closed ticket: ${ticket.subject}`, "Support", req.ip);
+
+    res.json({
+      success: true,
+      message: "Ticket has been closed.",
+      ticket,
+    });
+  } catch (error) {
+    console.error("Close Ticket Error:", error);
+    res.status(500).json({ message: "Failed to close ticket." });
+  }
+};
+
 module.exports = {
   createTicket,
   getMyTickets,
@@ -188,4 +218,5 @@ module.exports = {
   updateTicketStatus,
   replyToTicket,
   reopenTicket,
+  closeTicket,
 };

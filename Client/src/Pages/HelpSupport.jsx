@@ -26,6 +26,7 @@ function HelpSupport() {
   const [replyMessage, setReplyMessage] = useState("");
   const [replying, setReplying] = useState(false);
   const [reopening, setReopening] = useState(false);
+  const [closing, setClosing] = useState(false);
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
@@ -186,6 +187,32 @@ function HelpSupport() {
       alert(err.response?.data?.message || "Failed to reopen ticket.");
     } finally {
       setReopening(false);
+    }
+  };
+
+  const handleCloseTicket = async () => {
+    if (!selectedTicket) return;
+    if (!window.confirm("Are you sure you want to close this support query?")) return;
+    setClosing(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/close`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      const updatedTicket = res.data.ticket;
+      setMyTickets(myTickets.map(t => 
+        t._id === updatedTicket._id ? updatedTicket : t
+      ));
+      setSelectedTicket(updatedTicket);
+      alert("Ticket closed successfully!");
+    } catch (err) {
+      console.error("Error closing ticket:", err);
+      alert(err.response?.data?.message || "Failed to close ticket.");
+    } finally {
+      setClosing(false);
     }
   };
 
@@ -668,25 +695,45 @@ function HelpSupport() {
                         {replyFile ? replyFile.name : "Attach Image"}
                       </label>
                     </div>
-                    <button 
-                      type="submit" 
-                      disabled={replying || (!replyMessage.trim() && !replyFile)}
-                      style={{
-                        padding: "10px 24px",
-                        background: "var(--primary-color)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "8px",
-                        fontWeight: "600",
-                        cursor: replying || (!replyMessage.trim() && !replyFile) ? "not-allowed" : "pointer",
-                        opacity: replying || (!replyMessage.trim() && !replyFile) ? 0.6 : 1,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px"
-                      }}
-                    >
-                      {replying ? "Sending..." : "Send Reply"}
-                    </button>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      <button 
+                        type="button"
+                        onClick={handleCloseTicket}
+                        disabled={closing}
+                        style={{
+                          padding: "10px 20px",
+                          background: "rgba(239, 68, 68, 0.1)",
+                          color: "#ef4444",
+                          border: "1px solid rgba(239, 68, 68, 0.2)",
+                          borderRadius: "8px",
+                          fontWeight: "600",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease"
+                        }}
+                      >
+                        {closing ? "Closing..." : "Close Query"}
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={replying || (!replyMessage.trim() && !replyFile)}
+                        style={{
+                          padding: "10px 24px",
+                          background: "var(--primary-color)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "8px",
+                          fontWeight: "600",
+                          cursor: replying || (!replyMessage.trim() && !replyFile) ? "not-allowed" : "pointer",
+                          opacity: replying || (!replyMessage.trim() && !replyFile) ? 0.6 : 1,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px"
+                        }}
+                      >
+                        {replying ? "Sending..." : "Send Reply"}
+                      </button>
+                    </div>
                   </div>
                  </form>
                )}

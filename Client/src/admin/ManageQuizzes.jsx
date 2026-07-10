@@ -378,9 +378,9 @@ function ManageQuizzes() {
                 maxWidth: "500px",
                 boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)"
               }}>
-                <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: "700", color: "var(--text-primary)" }}>Export Section as Standalone Quiz</h3>
+                <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: "700", color: "var(--text-primary)" }}>Create Standalone Quiz from Section</h3>
                 <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
-                  Select a section from <strong>{selectedExportQuiz.title}</strong> to export as a new standalone, draft quiz.
+                  Select a section from <strong>{selectedExportQuiz.title}</strong> to create a new standalone, draft quiz.
                 </p>
                 
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "250px", overflowY: "auto", marginBottom: "24px" }}>
@@ -416,12 +416,12 @@ function ManageQuizzes() {
                               { quizId: selectedExportQuiz._id, sectionId: sec._id },
                               { headers: token ? { Authorization: `Bearer ${token}` } : {} }
                             );
-                            alert(`Successfully exported "${sec.title}" as standalone quiz.`);
+                            alert(`Successfully created "${sec.title}" as standalone quiz.`);
                             setSelectedExportQuiz(null);
                             fetchQuizzes();
                           } catch (err) {
                             console.error(err);
-                            alert(err.response?.data?.message || "Failed to export section.");
+                            alert(err.response?.data?.message || "Failed to create standalone quiz.");
                           }
                         }}
                         style={{
@@ -438,7 +438,7 @@ function ManageQuizzes() {
                         onMouseEnter={(e) => e.target.style.opacity = "0.9"}
                         onMouseLeave={(e) => e.target.style.opacity = "1"}
                       >
-                        Export
+                        Create Standalone
                       </button>
                     </div>
                   ))}
