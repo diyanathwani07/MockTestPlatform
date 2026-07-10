@@ -93,7 +93,7 @@ router.put("/:id", protect, superAdminOnly, async (req, res) => {
     user.email = email !== undefined ? email : user.email;
     user.role = role !== undefined ? role : user.role;
     user.status = status !== undefined ? status : user.status;
-    user.department = department !== undefined ? department : user.department;
+    user.department = department !== undefined ? (department === "" ? null : department) : user.department;
     user.permissions = permissions !== undefined ? permissions : user.permissions;
     
     await user.save();
