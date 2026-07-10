@@ -33,7 +33,7 @@ router.get("/", protect, adminOnly, async (req, res) => {
 // CREATE a new user (superadmin only)
 router.post("/", protect, superAdminOnly, async (req, res) => {
   try {
-    const { fullName, email, phone, role, password } = req.body;
+    const { fullName, email, phone, role, password, department, permissions } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -49,7 +49,9 @@ router.post("/", protect, superAdminOnly, async (req, res) => {
       phone: phone || "",
       role: role || "user",
       password: hashedPassword,
-      status: "Active"
+      status: "Active",
+      department: (role === "admin" || role === "superadmin") ? (department || null) : null,
+      permissions: (role === "admin" || role === "superadmin") ? (permissions || []) : []
     });
 
     await logAction("CREATE_USER", req.user?.fullName || "Admin", `Created new user: ${user.fullName} (${user.email}) as ${user.role}`, "UserManagement", req.ip);

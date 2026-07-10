@@ -8,34 +8,17 @@ import "../css/AdminTickets.css";
 import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar } from 'lucide-react';
 
 const ALL_PERMISSIONS = [
-  "dashboard",
-  "manage_users",
-  "create_quiz",
-  "edit_quiz",
-  "delete_quiz",
-  "manage_questions",
-  "question_bank",
-  "import_questions",
-  "practice_tests",
-  "manage_practice_tests",
-  "support_tickets",
-  "view_reports",
-  "manage_settings",
-  "manage_roles",
-  "student_list",
-  "student_profiles",
-  "call_logs",
-  "follow_up_notes",
-  "upload_videos",
-  "manage_videos",
-  "attach_videos",
-  "video_analytics",
-  "review_questions",
-  "student_performance",
-  "schedule_exams",
-  "publish_quizzes",
-  "student_enrollment",
-  "manage_notifications"
+  { key: "dashboard",             label: "Dashboard" },
+  { key: "create_quiz",           label: "Create Quiz" },
+  { key: "edit_quiz",             label: "Manage Quizzes" },
+  { key: "manage_practice_tests", label: "Practice Modules" },
+  { key: "manage_questions",      label: "Questions" },
+  { key: "manage_users",          label: "Users" },
+  { key: "manage_results",        label: "Results" },
+  { key: "view_reports",          label: "Reports" },
+  { key: "audit_logs",            label: "Audit Log" },
+  { key: "support_tickets",       label: "Support Tickets" },
+  { key: "manage_roles",          label: "Roles & Permissions" }
 ];
 
 function Users() {
@@ -51,8 +34,8 @@ function Users() {
   
   // Profile/Edit states
   const [quizzesAttempted, setQuizzesAttempted] = useState(null);
-  const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "" });
-  const [addForm, setAddForm] = useState({ fullName: "", email: "", phone: "", role: "user", password: "" });
+  const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "", department: "", permissions: [] });
+  const [addForm, setAddForm] = useState({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [] });
   const [showAddPassword, setShowAddPassword] = useState(false);
   const [toast, setToast] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -184,7 +167,7 @@ function Users() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       showToast("User created successfully");
-      setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "" });
+      setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [] });
       fetchUsers();
       closeModal();
     } catch (error) {
@@ -288,7 +271,7 @@ function Users() {
                 </div>
                 <button 
                   onClick={() => {
-                    setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "" });
+                    setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [] });
                     setActiveModal('add_user');
                   }}
                   className="create-quiz-pill-btn"
@@ -352,7 +335,7 @@ function Users() {
                       <td className="user-email-text" style={{ whiteSpace: "nowrap" }}>{u.email}</td>
 
                       <td>
-                        <span className={`role-outline-badge ${isUser ? 'role-user' : u.role === 'superadmin' ? 'role-super' : 'role-admin'}`} style={u.role === 'superadmin' ? { borderColor: '#10b981', color: '#10b981' } : {}}>
+                        <span className={`role-outline-badge ${isUser ? 'role-user' : u.role === 'superadmin' ? 'role-super' : 'role-admin'}`}>
                           {u.role === 'superadmin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'User'}
                         </span>
                       </td>
@@ -680,13 +663,13 @@ function Users() {
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Role</label>
-                  <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value, department: e.target.value === 'admin' ? (editForm.department || '') : ''})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
+                  <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value, department: (e.target.value === 'admin' || e.target.value === 'superadmin') ? (editForm.department || '') : ''})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
                   </select>
                 </div>
-                {editForm.role === 'admin' && (
+                {(editForm.role === 'admin' || editForm.role === 'superadmin') && (
                   <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Department</label>
                     <select 
@@ -711,25 +694,25 @@ function Users() {
                     <option value="Suspended">Suspended</option>
                   </select>
                 </div>
-                {editForm.role === 'admin' && (
+                {(editForm.role === 'admin' || editForm.role === 'superadmin') && (
                   <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assign Custom Permissions</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '180px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '8px', background: 'var(--bg-input)' }}>
                       {ALL_PERMISSIONS.map(p => {
-                        const isChecked = editForm.permissions?.includes(p);
+                        const isChecked = editForm.permissions?.includes(p.key);
                         return (
-                          <label key={p} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                          <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
                             <input 
                               type="checkbox" 
                               checked={isChecked}
                               onChange={() => {
                                 const newPerms = isChecked
-                                  ? (editForm.permissions || []).filter(x => x !== p)
-                                  : [...(editForm.permissions || []), p];
+                                  ? (editForm.permissions || []).filter(x => x !== p.key)
+                                  : [...(editForm.permissions || []), p.key];
                                 setEditForm({...editForm, permissions: newPerms});
                               }}
                             />
-                            <span>{p.replace(/_/g, " ")}</span>
+                            <span>{p.label}</span>
                           </label>
                         );
                       })}
@@ -1288,7 +1271,7 @@ function Users() {
                     </label>
                     <select
                       value={addForm.role}
-                      onChange={e => setAddForm({ ...addForm, role: e.target.value })}
+                      onChange={e => setAddForm({ ...addForm, role: e.target.value, department: (e.target.value === 'admin' || e.target.value === 'superadmin') ? (addForm.department || '') : '' })}
                       style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                     >
                       <option value="user">User / Student</option>
@@ -1296,6 +1279,55 @@ function Users() {
                       <option value="superadmin">Super Admin</option>
                     </select>
                   </div>
+
+                  {(addForm.role === 'admin' || addForm.role === 'superadmin') && (
+                    <>
+                      <div className="input-box" style={{ marginBottom: 0 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                          Department
+                        </label>
+                        <select
+                          value={addForm.department || ''}
+                          onChange={e => setAddForm({ ...addForm, department: e.target.value || '' })}
+                          style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                        >
+                          <option value="">None</option>
+                          <option value="Technical Team">Technical Team</option>
+                          <option value="Content Team">Content Team</option>
+                          <option value="Calling Team">Calling Team</option>
+                          <option value="YouTube Team">YouTube Team</option>
+                          <option value="Faculty">Faculty</option>
+                          <option value="Operations Team">Operations Team</option>
+                        </select>
+                      </div>
+
+                      <div className="input-box" style={{ marginBottom: 0 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                          Assign Custom Permissions
+                        </label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '140px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '10px', background: 'var(--bg-main)' }}>
+                          {ALL_PERMISSIONS.map(p => {
+                            const isChecked = addForm.permissions?.includes(p.key);
+                            return (
+                              <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    const newPerms = isChecked
+                                      ? (addForm.permissions || []).filter(x => x !== p.key)
+                                      : [...(addForm.permissions || []), p.key];
+                                    setAddForm({...addForm, permissions: newPerms});
+                                  }}
+                                />
+                                <span>{p.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                 </div>
                 <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
