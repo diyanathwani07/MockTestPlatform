@@ -160,7 +160,7 @@ function MyExams() {
                       <div className="sd-subjects-panel me-inline-panel">
                           <div className="sd-subjects-header">
                     <span className="sd-subjects-title">
-                      {selectedExam} ΓÇö Choose a Subject
+                      {selectedExam} — Choose a Subject
                     </span>
                     <span className="sd-subjects-count">
                       {examGroups[selectedExam].length} available
