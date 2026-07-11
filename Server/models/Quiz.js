@@ -1,14 +1,9 @@
 const mongoose = require("mongoose");
 
-const questionSchema = new mongoose.Schema({
-  questionEnglish: {
-    type: String,
-    required: true,
-  },
-  questionHindi: {
-    type: String,
-    default: "",
-  },
+// Legacy embedded question schema (kept for unmigrated data)
+const legacyQuestionSchema = new mongoose.Schema({
+  questionEnglish: { type: String, required: true },
+  questionHindi: { type: String, default: "" },
   options: {
     type: [String],
     validate: {
@@ -17,141 +12,84 @@ const questionSchema = new mongoose.Schema({
     },
     required: true,
   },
-  correctAnswer: {
-    type: String,
-    required: true,
-  },
-  explanation: {
-    type: String,
-    default: "",
+  correctAnswer: { type: String, required: true },
+  explanation: { type: String, default: "" },
+});
+
+// Legacy embedded section schema (kept for unmigrated data)
+const legacySectionSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true },
+  description: { type: String, default: "" },
+  type: { type: String, enum: ["standard", "coding"], default: "standard" },
+  duration: { type: Number, default: 0 },
+  marksPerQuestion: { type: Number, default: 1 },
+  negativeMarking: { type: Number, default: 0 },
+  questionLimit: { type: Number, default: 0 },
+  randomizeOptions: { type: Boolean, default: false },
+  questions: { type: [legacyQuestionSchema], default: [] },
+  subsections: {
+    easy: { type: [legacyQuestionSchema], default: [] },
+    medium: { type: [legacyQuestionSchema], default: [] },
+    hard: { type: [legacyQuestionSchema], default: [] },
   },
 });
 
-const sectionSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-    trim: true,
+// New modular section reference schema
+const quizSectionRefSchema = new mongoose.Schema(
+  {
+    sectionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Section",
+      required: true,
+    },
+    mode: { type: String, enum: ["linked", "cloned"], required: true },
+    order: { type: Number, default: 0 },
   },
-  description: {
-    type: String,
-    default: "",
-  },
-  type: {
-    type: String,
-    enum: ["standard", "coding"],
-    default: "standard"
-  },
-  duration: {
-    type: Number,
-    default: 0, // 0 means use global timer, otherwise section timer in seconds
-  },
-  marksPerQuestion: {
-    type: Number,
-    default: 1,
-  },
-  negativeMarking: {
-    type: Number,
-    default: 0,
-  },
-  questionLimit: {
-    type: Number,
-    default: 0, // 0 means show all
-  },
-  randomizeOptions: {
-    type: Boolean,
-    default: false,
-  },
-  questions: {
-    type: [questionSchema], // For standard sections
-    default: [],
-  },
-  subsections: {
-    // For coding sections (Easy, Medium, Hard)
-    easy: { type: [questionSchema], default: [] },
-    medium: { type: [questionSchema], default: [] },
-    hard: { type: [questionSchema], default: [] }
-  }
-});
+  { _id: false }
+);
 
 const quizSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    subject: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    examName: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-    description: {
-      type: String,
-      default: "",
-    },
-    duration: {
-      type: Number,
-      required: true,
-    },
-    marksPerQuestion: {
-      type: Number,
-      required: true,
-      default: 1,
-    },
-    negativeMarking: {
-      type: Number,
-      default: 0,
-    },
-    // --- NEW FEATURE FIELDS ---
-    enablePerQuestionTimer: {
-      type: Boolean,
-      default: false,
-    },
-    timePerQuestion: {
-      type: Number,
-      default: 0, // in seconds
-    },
-    lockPreviousQuestions: {
-      type: Boolean,
-      default: false,
-    },
-    // -----------------------------
-    status: { 
-      type: String, 
-      default: 'Draft' 
-    },
-    scheduledDate: { 
-      type: Date, 
-      default: null 
-    },
-    // -----------------------------
-    published: {
-      type: Boolean,
-      default: false,
-    },
-    sections: {
-      type: [sectionSchema],
-      default: [],
-    },
-    // Keep legacy questions array for backward compatibility
-    questions: {
-      type: [questionSchema],
-      default: [],
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+    title: { type: String, required: true, trim: true },
+    subject: { type: String, required: true, trim: true },
+    examName: { type: String, default: "", trim: true },
+    description: { type: String, default: "" },
+    duration: { type: Number, required: true },
+    marksPerQuestion: { type: Number, required: true, default: 1 },
+    negativeMarking: { type: Number, default: 0 },
+    enablePerQuestionTimer: { type: Boolean, default: false },
+    timePerQuestion: { type: Number, default: 0 },
+    lockPreviousQuestions: { type: Boolean, default: false },
+    status: { type: String, default: "Draft" },
+    scheduledDate: { type: Date, default: null },
+    published: { type: Boolean, default: false },
+    quizType: { type: String, enum: ["exam", "practice"], default: "exam" },
+    isModular: { type: Boolean, default: false },
+    // Mixed: holds either legacy embedded sections OR modular section refs
+    sections: { type: [mongoose.Schema.Types.Mixed], default: [] },
+    // Legacy top-level questions (kept for backward compatibility)
+    questions: { type: [legacyQuestionSchema], default: [] },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-module.exports = mongoose.model("Quiz", quizSchema);
+// Helpers to detect format
+quizSchema.statics.isModularSection = function (section) {
+  return section && section.sectionId != null;
+};
+
+quizSchema.methods.hasModularSections = function () {
+  return (
+    this.isModular ||
+    (this.sections.length > 0 &&
+      this.sections.every((s) => Quiz.isModularSection(s)))
+  );
+};
+
+const Quiz = mongoose.model("Quiz", quizSchema);
+
+module.exports = Quiz;
+module.exports.legacyQuestionSchema = legacyQuestionSchema;
+module.exports.legacySectionSchema = legacySectionSchema;
+module.exports.quizSectionRefSchema = quizSectionRefSchema;

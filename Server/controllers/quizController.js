@@ -1,9 +1,19 @@
 const Quiz = require("../models/Quiz");
+const Question = require("../models/Question");
 const User = require("../models/User");
 const Result = require("../models/Result");
 const logAction = require("../utils/logger");
+const {
+  createQuiz: createModularQuiz,
+  linkSectionToQuiz,
+  previewQuiz,
+  extractSection,
+  convertSingleQuizToSection,
+  duplicateQuiz,
+  countQuizQuestions,
+} = require("../services/quizService");
 
-// CREATE a new quiz
+// CREATE a new quiz (supports both legacy embedded and modular section refs)
 const createQuiz = async (req, res) => {
   try {
     const {
@@ -22,51 +32,74 @@ const createQuiz = async (req, res) => {
       timePerQuestion,
       lockPreviousQuestions,
       sections,
+      quizType,
     } = req.body;
 
     if (!title || !subject || duration === undefined || duration === null) {
       return res.status(400).json({ message: "Title, subject, and duration are required." });
     }
 
-    const quiz = await Quiz.create({
-      title,
-      subject,
-      examName,
-      description,
-      duration,
-      marksPerQuestion,
-      negativeMarking,
-      published,
-      questions,
-      status,
-      scheduledDate,
-      enablePerQuestionTimer,
-      timePerQuestion,
-      lockPreviousQuestions,
-      sections,
-      createdBy: req.user?._id,
-    });
+    const isModularRequest =
+      sections?.length > 0 && sections.every((s) => s.sectionId && s.mode);
+
+    let quiz;
+    if (isModularRequest) {
+      quiz = await createModularQuiz({
+        title,
+        subject,
+        examName,
+        description,
+        duration,
+        marksPerQuestion,
+        negativeMarking,
+        published,
+        status,
+        scheduledDate,
+        enablePerQuestionTimer,
+        timePerQuestion,
+        lockPreviousQuestions,
+        sections,
+        quizType,
+        createdBy: req.user?._id,
+      });
+    } else {
+      quiz = await Quiz.create({
+        title,
+        subject,
+        examName,
+        description,
+        duration,
+        marksPerQuestion,
+        negativeMarking,
+        published,
+        questions,
+        status,
+        scheduledDate,
+        enablePerQuestionTimer,
+        timePerQuestion,
+        lockPreviousQuestions,
+        sections,
+        quizType: quizType || "exam",
+        createdBy: req.user?._id,
+      });
+    }
 
     await logAction("CREATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
-
     res.status(201).json(quiz);
   } catch (error) {
     console.error("Create Quiz Error:", error);
-    res.status(500).json({ message: "Failed to create quiz." });
+    res.status(500).json({ message: error.message || "Failed to create quiz." });
   }
 };
 
-// GET all quizzes (with optional ?subject= filter and ?published= filter)
+// GET all quizzes (with optional filters)
 const getQuizzes = async (req, res) => {
   try {
     const filter = {};
 
-    if (req.query.subject) {
-      filter.subject = req.query.subject;
-    }
-    if (req.query.published !== undefined) {
-      filter.published = req.query.published === "true";
-    }
+    if (req.query.subject) filter.subject = req.query.subject;
+    if (req.query.published !== undefined) filter.published = req.query.published === "true";
+    if (req.query.quizType) filter.quizType = req.query.quizType;
 
     const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
     res.json(quizzes);
@@ -76,7 +109,7 @@ const getQuizzes = async (req, res) => {
   }
 };
 
-// GET a single quiz by ID
+// GET a single quiz by ID — with compatibility layer for modular quizzes
 const getQuizById = async (req, res) => {
   try {
     const quiz = await Quiz.findById(req.params.id);
@@ -84,7 +117,10 @@ const getQuizById = async (req, res) => {
       return res.status(404).json({ message: "Quiz not found." });
     }
 
-    // Allow multiple attempts, no blocking logic needed here
+    if (quiz.hasModularSections()) {
+      const hydrated = await previewQuiz(quiz._id);
+      return res.json(hydrated);
+    }
 
     res.json(quiz);
   } catch (error) {
@@ -103,16 +139,23 @@ const updateQuiz = async (req, res) => {
 
     const updateData = { ...req.body };
 
-    // For multi-section quizzes, clear out the legacy top-level questions array
-    // to avoid validation errors on empty question objects
     if (updateData.sections && updateData.sections.length > 0) {
-      updateData.questions = [];
+      const isModularUpdate = updateData.sections.every((s) => s.sectionId && s.mode);
+      if (isModularUpdate) {
+        updateData.isModular = true;
+        updateData.questions = [];
+      } else {
+        updateData.questions = [];
+      }
     }
 
-    // Strip any empty/invalid questions from the top-level questions array
     if (updateData.questions) {
       updateData.questions = updateData.questions.filter(
-        (q) => q.questionEnglish && q.questionEnglish.trim() !== "" && q.correctAnswer && q.correctAnswer.trim() !== ""
+        (q) =>
+          q.questionEnglish &&
+          q.questionEnglish.trim() !== "" &&
+          q.correctAnswer &&
+          q.correctAnswer.trim() !== ""
       );
     }
 
@@ -136,7 +179,7 @@ const updateQuiz = async (req, res) => {
   }
 };
 
-// DELETE a quiz
+// DELETE a quiz (does NOT delete linked sections)
 const deleteQuiz = async (req, res) => {
   try {
     const quiz = await Quiz.findByIdAndDelete(req.params.id);
@@ -151,27 +194,128 @@ const deleteQuiz = async (req, res) => {
   }
 };
 
-// GET dashboard stats (Total Users, Quizzes, Questions, Attempts)
+// POST /api/quizzes/:id/add-section
+const addSectionToQuiz = async (req, res) => {
+  try {
+    const { sectionId, mode = "linked" } = req.body;
+    if (!sectionId) return res.status(400).json({ message: "sectionId is required." });
+
+    const quiz = await linkSectionToQuiz(req.params.id, sectionId, mode);
+    res.json(quiz);
+  } catch (error) {
+    console.error("Add Section Error:", error);
+    res.status(500).json({ message: error.message || "Failed to add section to quiz." });
+  }
+};
+
+// POST /api/quizzes/:id/remove-section
+const removeSectionFromQuiz = async (req, res) => {
+  try {
+    const { sectionId } = req.body;
+    if (!sectionId) return res.status(400).json({ message: "sectionId is required." });
+
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) return res.status(404).json({ message: "Quiz not found." });
+
+    quiz.sections = quiz.sections.filter(
+      (s) => s.sectionId?.toString() !== sectionId.toString()
+    );
+    await quiz.save();
+    res.json(quiz);
+  } catch (error) {
+    console.error("Remove Section Error:", error);
+    res.status(500).json({ message: "Failed to remove section from quiz." });
+  }
+};
+
+// POST /api/quizzes/:id/reorder-sections
+const reorderSections = async (req, res) => {
+  try {
+    const { sectionOrder } = req.body;
+    if (!Array.isArray(sectionOrder)) {
+      return res.status(400).json({ message: "sectionOrder array is required." });
+    }
+
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) return res.status(404).json({ message: "Quiz not found." });
+
+    const orderMap = new Map(sectionOrder.map((id, idx) => [id.toString(), idx]));
+    quiz.sections = quiz.sections.map((ref) => ({
+      ...ref.toObject?.() || ref,
+      order: orderMap.has(ref.sectionId.toString())
+        ? orderMap.get(ref.sectionId.toString())
+        : ref.order,
+    }));
+    quiz.sections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    await quiz.save();
+    res.json(quiz);
+  } catch (error) {
+    console.error("Reorder Sections Error:", error);
+    res.status(500).json({ message: "Failed to reorder sections." });
+  }
+};
+
+// POST /api/quizzes/:id/extract-section
+const extractSectionHandler = async (req, res) => {
+  try {
+    const { sectionIndex } = req.body;
+    if (sectionIndex === undefined) {
+      return res.status(400).json({ message: "sectionIndex is required." });
+    }
+
+    const newQuiz = await extractSection(req.params.id, sectionIndex, req.user?._id);
+    await logAction("EXTRACT_SECTION", req.user?.fullName || "Admin", newQuiz.title, "Quiz", req.ip);
+    res.status(201).json(newQuiz);
+  } catch (error) {
+    console.error("Extract Section Error:", error);
+    res.status(500).json({ message: error.message || "Failed to extract section." });
+  }
+};
+
+// POST /api/quizzes/:id/duplicate
+const duplicateQuizHandler = async (req, res) => {
+  try {
+    const newQuiz = await duplicateQuiz(req.params.id, req.user?._id);
+    await logAction("DUPLICATE_QUIZ", req.user?.fullName || "Admin", newQuiz.title, "Quiz", req.ip);
+    res.status(201).json(newQuiz);
+  } catch (error) {
+    console.error("Duplicate Quiz Error:", error);
+    res.status(500).json({ message: error.message || "Failed to duplicate quiz." });
+  }
+};
+
+// POST /api/quizzes/convert-single-to-multi
+const convertSingleToMulti = async (req, res) => {
+  try {
+    const { quizId } = req.body;
+    if (!quizId) return res.status(400).json({ message: "quizId is required." });
+
+    const result = await convertSingleQuizToSection(quizId);
+    res.json(result);
+  } catch (error) {
+    console.error("Convert Single to Multi Error:", error);
+    res.status(500).json({ message: error.message || "Failed to convert quiz." });
+  }
+};
+
+// GET dashboard stats
 const getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ role: { $ne: "admin" } });
     const totalQuizzes = await Quiz.countDocuments();
 
-    const quizzes = await Quiz.find().select("questions published status createdAt updatedAt title subject");
-    const totalQuestions = quizzes.reduce((sum, quiz) => {
-      let qCount = quiz.questions?.length || 0;
-      if (quiz.sections && quiz.sections.length > 0) {
-        quiz.sections.forEach(sec => {
-          qCount += (sec.questions?.length || 0);
-          if (sec.subsections) {
-             qCount += (sec.subsections.easy?.length || 0);
-             qCount += (sec.subsections.medium?.length || 0);
-             qCount += (sec.subsections.hard?.length || 0);
-          }
-        });
+    const standaloneQuestionCount = await Question.countDocuments();
+    const quizzes = await Quiz.find().select(
+      "questions published status createdAt updatedAt title subject sections isModular quizType"
+    );
+
+    let legacyQuestionCount = 0;
+    for (const quiz of quizzes) {
+      if (!quiz.hasModularSections()) {
+        legacyQuestionCount += await countQuizQuestions(quiz);
       }
-      return sum + qCount;
-    }, 0);
+    }
+    const totalQuestions = standaloneQuestionCount + legacyQuestionCount;
 
     let totalAttempts = 0;
     let averageScore = 0;
@@ -184,59 +328,39 @@ const getDashboardStats = async (req, res) => {
       }
     } catch (e) {
       console.error("Error fetching results count/percentage:", e);
-      totalAttempts = 0;
-      averageScore = 0;
     }
 
-    // 1. Active Users in last 7 days (distinct userIds who took exams)
-    let activeUsersCount = 856; // Mock fallback
+    let activeUsersCount = 856;
     try {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const activeUsersList = await Result.distinct("userId", {
-        createdAt: { $gte: sevenDaysAgo }
+        createdAt: { $gte: sevenDaysAgo },
       });
-      if (activeUsersList.length > 0) {
-        activeUsersCount = activeUsersList.length;
-      }
+      if (activeUsersList.length > 0) activeUsersCount = activeUsersList.length;
     } catch (e) {
       console.error("Error fetching active users:", e);
     }
 
-    // 2. Quizzes Published
-    const quizzesPublishedCount = quizzes.filter(q => q.published || q.status === "Published").length || 178;
+    const quizzesPublishedCount =
+      quizzes.filter((q) => q.published || q.status === "Published").length || 178;
 
-    // 3. Questions Added in published quizzes
-    const questionsAddedCount = quizzes
-      .filter(q => q.published || q.status === "Published")
-      .reduce((sum, q) => sum + (q.questions?.length || 0), 0) || 1289;
+    const questionsAddedCount = totalQuestions || 1289;
 
-    // 4. Aggregate Top Subjects
     let topSubjects = [];
     try {
       if (totalAttempts > 0) {
         const subjectAggregation = await Result.aggregate([
-          {
-            $group: {
-              _id: "$subject",
-              count: { $sum: 1 }
-            }
-          },
+          { $group: { _id: "$subject", count: { $sum: 1 } } },
           { $sort: { count: -1 } },
-          { $limit: 5 }
+          { $limit: 5 },
         ]);
-
-        // If we got subjects, map them
-        if (subjectAggregation.length > 0 && subjectAggregation.some(item => item._id)) {
-          topSubjects = subjectAggregation.map(item => {
-            const name = item._id || "Others";
-            const percentage = ((item.count / totalAttempts) * 100).toFixed(0);
-            return {
-              name,
-              count: item.count,
-              percentage: parseInt(percentage, 10)
-            };
-          });
+        if (subjectAggregation.length > 0 && subjectAggregation.some((item) => item._id)) {
+          topSubjects = subjectAggregation.map((item) => ({
+            name: item._id || "Others",
+            count: item.count,
+            percentage: parseInt(((item.count / totalAttempts) * 100).toFixed(0), 10),
+          }));
         }
       }
     } catch (e) {
@@ -249,30 +373,23 @@ const getDashboardStats = async (req, res) => {
         { name: "General Studies", count: 1293, percentage: 24 },
         { name: "Aptitude", count: 970, percentage: 18 },
         { name: "Computer Science", count: 754, percentage: 14 },
-        { name: "Others", count: 648, percentage: 12 }
+        { name: "Others", count: 648, percentage: 12 },
       ];
     }
 
-    // 5. Aggregate Top Quizzes
     let topQuizzes = [];
     try {
       if (totalAttempts > 0) {
         const quizAggregation = await Result.aggregate([
-          {
-            $group: {
-              _id: "$quizTitle",
-              count: { $sum: 1 }
-            }
-          },
+          { $group: { _id: "$quizTitle", count: { $sum: 1 } } },
           { $sort: { count: -1 } },
-          { $limit: 5 }
+          { $limit: 5 },
         ]);
-
-        if (quizAggregation.length > 0 && quizAggregation.some(item => item._id)) {
+        if (quizAggregation.length > 0 && quizAggregation.some((item) => item._id)) {
           topQuizzes = quizAggregation.map((item, index) => ({
             rank: index + 1,
             name: item._id || "Unnamed Quiz",
-            attempts: item.count
+            attempts: item.count,
           }));
         }
       }
@@ -286,82 +403,62 @@ const getDashboardStats = async (req, res) => {
         { rank: 2, name: "The Loop Exam", attempts: 982 },
         { rank: 3, name: "JEE Main Final 1", attempts: 875 },
         { rank: 4, name: "Teaching Pariksha Aptitude", attempts: 740 },
-        { rank: 5, name: "Quantitative Aptitude Test", attempts: 654 }
+        { rank: 5, name: "Quantitative Aptitude Test", attempts: 654 },
       ];
     }
 
-    // 6. Recent Activity
     let activities = [];
     try {
-      // Fetch latest quizzes
       const recentQuizzes = await Quiz.find()
         .sort({ createdAt: -1 })
         .limit(5)
         .populate("createdBy", "fullName");
-
-      // Fetch latest attempts
       const recentResults = await Result.find()
         .sort({ createdAt: -1 })
         .limit(5)
         .populate("userId", "fullName");
 
-      // Map quiz events
-      recentQuizzes.forEach(quiz => {
+      recentQuizzes.forEach((quiz) => {
         activities.push({
           text: `New quiz "${quiz.title}" created`,
           timestamp: quiz.createdAt,
-          icon: '➕',
-          bg: '#FEF3C7',
-          color: '#D97706'
+          icon: "➕",
+          bg: "#FEF3C7",
+          color: "#D97706",
         });
-
         if (quiz.published || quiz.status === "Published") {
           activities.push({
             text: `Quiz "${quiz.title}" published`,
             timestamp: quiz.updatedAt || quiz.createdAt,
-            icon: '📖',
-            bg: '#EDE9FE',
-            color: '#6E3FF3'
+            icon: "📖",
+            bg: "#EDE9FE",
+            color: "#6E3FF3",
           });
         }
       });
 
-      // Map attempts events
-      recentResults.forEach(res => {
-        const userName = res.userId?.fullName || "Aspirant";
-        const quizName = res.quizTitle || res.subject || "a quiz";
+      recentResults.forEach((res) => {
         activities.push({
-          text: `User ${userName} attempted "${quizName}"`,
+          text: `User ${res.userId?.fullName || "Aspirant"} attempted "${res.quizTitle || res.subject || "a quiz"}"`,
           timestamp: res.createdAt,
-          icon: '👥',
-          bg: '#D1FAE5',
-          color: '#10B981'
+          icon: "👥",
+          bg: "#D1FAE5",
+          color: "#10B981",
         });
       });
 
-      // Sort and slice
       activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      activities = activities.slice(0, 5);
-
-      // Format timestamps
-      activities = activities.map(act => {
+      activities = activities.slice(0, 5).map((act) => {
         const date = new Date(act.timestamp);
-        const formattedTime = date.toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric"
-        }) + ", " + date.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true
-        });
-
         return {
           text: act.text,
-          time: formattedTime,
+          time:
+            date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) +
+            ", " +
+            date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
           icon: act.icon,
           bg: act.bg,
-          color: act.color
+          color: act.color,
         };
       });
     } catch (e) {
@@ -370,15 +467,14 @@ const getDashboardStats = async (req, res) => {
 
     if (activities.length === 0) {
       activities = [
-        { text: 'Quiz "BPSC Mock Test 5" published', time: '22 Jun 2026, 10:25 AM', icon: '📖', bg: '#EDE9FE', color: '#6E3FF3' },
-        { text: 'New quiz "The Loop Exam" created', time: '22 Jun 2026, 09:40 AM', icon: '➕', bg: '#FEF3C7', color: '#D97706' },
-        { text: 'User Ravi Kumar attempted "BPSC Mock Test 5"', time: '22 Jun 2026, 09:15 AM', icon: '👥', bg: '#D1FAE5', color: '#10B981' },
-        { text: 'Subject "History" updated', time: '21 Jun 2026, 04:45 PM', icon: '✏️', bg: '#DBEAFE', color: '#2563EB' },
-        { text: 'Question added in "Geography"', time: '21 Jun 2026, 02:30 PM', icon: '❓', bg: '#FCE7F3', color: '#DB2777' },
+        { text: 'Quiz "BPSC Mock Test 5" published', time: "22 Jun 2026, 10:25 AM", icon: "📖", bg: "#EDE9FE", color: "#6E3FF3" },
+        { text: 'New quiz "The Loop Exam" created', time: "22 Jun 2026, 09:40 AM", icon: "➕", bg: "#FEF3C7", color: "#D97706" },
+        { text: 'User Ravi Kumar attempted "BPSC Mock Test 5"', time: "22 Jun 2026, 09:15 AM", icon: "👥", bg: "#D1FAE5", color: "#10B981" },
+        { text: 'Subject "History" updated', time: "21 Jun 2026, 04:45 PM", icon: "✏️", bg: "#DBEAFE", color: "#2563EB" },
+        { text: 'Question added in "Geography"', time: "21 Jun 2026, 02:30 PM", icon: "❓", bg: "#FCE7F3", color: "#DB2777" },
       ];
     }
 
-    // 7. Chart Data (Last 7 Days)
     let chartData = [];
     try {
       const dates = [];
@@ -387,74 +483,31 @@ const getDashboardStats = async (req, res) => {
         d.setDate(d.getDate() - i);
         dates.push(d);
       }
-
       const startOfRange = new Date(dates[0]);
       startOfRange.setHours(0, 0, 0, 0);
 
       const quizzesByDay = await Quiz.aggregate([
-        {
-          $match: {
-            createdAt: { $gte: startOfRange }
-          }
-        },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            count: { $sum: 1 }
-          }
-        }
+        { $match: { createdAt: { $gte: startOfRange } } },
+        { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
       ]);
-
       const attemptsByDay = await Result.aggregate([
-        {
-          $match: {
-            createdAt: { $gte: startOfRange }
-          }
-        },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            count: { $sum: 1 }
-          }
-        }
+        { $match: { createdAt: { $gte: startOfRange } } },
+        { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
       ]);
 
-      const quizzesMap = new Map(quizzesByDay.map(item => [item._id, item.count]));
-      const attemptsMap = new Map(attemptsByDay.map(item => [item._id, item.count]));
+      const quizzesMap = new Map(quizzesByDay.map((item) => [item._id, item.count]));
+      const attemptsMap = new Map(attemptsByDay.map((item) => [item._id, item.count]));
 
-      chartData = dates.map(date => {
+      chartData = dates.map((date) => {
         const key = date.toISOString().slice(0, 10);
-        const label = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
         return {
-          label,
+          label: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
           quizzesCreated: quizzesMap.get(key) || 0,
-          attempts: attemptsMap.get(key) || 0
+          attempts: attemptsMap.get(key) || 0,
         };
       });
-
-      const hasChartData = chartData.some(d => d.quizzesCreated > 0 || d.attempts > 0);
-      if (!hasChartData) {
-        chartData = [
-          { label: "16 Jun", quizzesCreated: 1050, attempts: 480 },
-          { label: "17 Jun", quizzesCreated: 1450, attempts: 800 },
-          { label: "18 Jun", quizzesCreated: 1350, attempts: 650 },
-          { label: "19 Jun", quizzesCreated: 1700, attempts: 750 },
-          { label: "20 Jun", quizzesCreated: 1550, attempts: 1080 },
-          { label: "21 Jun", quizzesCreated: 1380, attempts: 1000 },
-          { label: "22 Jun", quizzesCreated: 1700, attempts: 1220 }
-        ];
-      }
     } catch (e) {
       console.error("Error creating chart data:", e);
-      chartData = [
-        { label: "16 Jun", quizzesCreated: 1050, attempts: 480 },
-        { label: "17 Jun", quizzesCreated: 1450, attempts: 800 },
-        { label: "18 Jun", quizzesCreated: 1350, attempts: 650 },
-        { label: "19 Jun", quizzesCreated: 1700, attempts: 750 },
-        { label: "20 Jun", quizzesCreated: 1550, attempts: 1080 },
-        { label: "21 Jun", quizzesCreated: 1380, attempts: 1000 },
-        { label: "22 Jun", quizzesCreated: 1700, attempts: 1220 }
-      ];
     }
 
     res.json({
@@ -469,7 +522,7 @@ const getDashboardStats = async (req, res) => {
       topSubjects,
       topQuizzes,
       activities,
-      chartData
+      chartData,
     });
   } catch (error) {
     console.error("Dashboard Stats Error:", error);
@@ -477,12 +530,13 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+// Legacy export — now uses modular extract when possible
 const exportSectionAsQuiz = async (req, res) => {
   try {
-    const { quizId, sectionId } = req.body;
+    const { quizId, sectionId, sectionIndex } = req.body;
 
-    if (!quizId || !sectionId) {
-      return res.status(400).json({ message: "quizId and sectionId are required." });
+    if (!quizId) {
+      return res.status(400).json({ message: "quizId is required." });
     }
 
     const parentQuiz = await Quiz.findById(quizId);
@@ -490,12 +544,36 @@ const exportSectionAsQuiz = async (req, res) => {
       return res.status(404).json({ message: "Quiz not found." });
     }
 
-    const section = parentQuiz.sections.find(s => s._id.toString() === sectionId);
+    if (parentQuiz.hasModularSections()) {
+      let idx = sectionIndex;
+      if (sectionId && idx === undefined) {
+        idx = parentQuiz.sections.findIndex(
+          (s) => s.sectionId?.toString() === sectionId.toString()
+        );
+      }
+      if (idx === undefined || idx < 0) {
+        return res.status(404).json({ message: "Section not found." });
+      }
+
+      const newQuiz = await extractSection(quizId, idx, req.user?._id);
+      await logAction("EXPORT_SECTION_AS_QUIZ", req.user?.fullName || "Admin", newQuiz.title, "Quiz", req.ip);
+      return res.status(201).json({
+        success: true,
+        message: "Successfully exported section as standalone quiz.",
+        quiz: newQuiz,
+      });
+    }
+
+    // Legacy embedded path
+    if (!sectionId) {
+      return res.status(400).json({ message: "sectionId is required for legacy quizzes." });
+    }
+
+    const section = parentQuiz.sections.find((s) => s._id.toString() === sectionId);
     if (!section) {
       return res.status(404).json({ message: "Section not found." });
     }
 
-    // Extract questions
     let flatQs = [];
     if (section.type === "coding") {
       flatQs = [
@@ -507,48 +585,41 @@ const exportSectionAsQuiz = async (req, res) => {
       flatQs = section.questions || [];
     }
 
-    // Convert seconds to minutes for standalone quiz duration
-    let durationMins = 0;
-    if (section.duration) {
-      durationMins = Math.floor(section.duration / 60);
-    } else {
-      durationMins = Math.floor((parentQuiz.duration || 0) / 60);
-    }
-    if (durationMins <= 0) durationMins = 30; // default fallback
-
-    const newQuizTitle = `${parentQuiz.title} - ${section.title}`;
+    let durationMins = section.duration
+      ? Math.floor(section.duration / 60)
+      : Math.floor((parentQuiz.duration || 0) / 60);
+    if (durationMins <= 0) durationMins = 30;
 
     const newQuiz = await Quiz.create({
-      title: newQuizTitle,
+      title: `${parentQuiz.title} - ${section.title}`,
       subject: parentQuiz.subject,
       examName: parentQuiz.examName,
-      description: section.description || `Standalone version of section "${section.title}" from "${parentQuiz.title}".`,
+      description: section.description || `Standalone version of section "${section.title}".`,
       duration: durationMins,
       marksPerQuestion: section.marksPerQuestion || parentQuiz.marksPerQuestion || 1,
       negativeMarking: section.negativeMarking || parentQuiz.negativeMarking || 0,
       published: false,
       status: "Draft",
-      questions: flatQs.map(q => ({
+      questions: flatQs.map((q) => ({
         questionEnglish: q.questionEnglish,
         questionHindi: q.questionHindi,
         options: q.options,
         correctAnswer: q.correctAnswer,
-        explanation: q.explanation
+        explanation: q.explanation,
       })),
       sections: [],
       createdBy: req.user?._id,
     });
 
     await logAction("EXPORT_SECTION_AS_QUIZ", req.user?.fullName || "Admin", newQuiz.title, "Quiz", req.ip);
-
     res.status(201).json({
       success: true,
       message: `Successfully exported section "${section.title}" as standalone quiz.`,
-      quiz: newQuiz
+      quiz: newQuiz,
     });
   } catch (error) {
     console.error("Export Section Error:", error);
-    res.status(500).json({ message: "Failed to export section as standalone quiz." });
+    res.status(500).json({ message: error.message || "Failed to export section as standalone quiz." });
   }
 };
 
@@ -560,4 +631,10 @@ module.exports = {
   deleteQuiz,
   getDashboardStats,
   exportSectionAsQuiz,
+  addSectionToQuiz,
+  removeSectionFromQuiz,
+  reorderSections,
+  extractSectionHandler,
+  duplicateQuizHandler,
+  convertSingleToMulti,
 };

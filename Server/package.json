@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "migrate:modular": "node scripts/migrateToModular.js",
+    "migrate:modular:run": "node scripts/migrateToModular.js --run"
   },
   "keywords": [],
   "author": "",

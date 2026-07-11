@@ -9,6 +9,9 @@ const auditLogRoutes = require("./routes/auditLogRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const practiceRoutes = require("./routes/practiceRoutes");
+const questionRoutes = require("./routes/questionRoutes");
+const sectionRoutes = require("./routes/sectionRoutes");
+const questionBankRoutes = require("./routes/questionBankRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const Quiz = require("./models/Quiz");
 const seedDepartments = require("./seedDepartments");
@@ -103,6 +106,9 @@ app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/practice", practiceRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/sections", sectionRoutes);
+app.use("/api/question-banks", questionBankRoutes);
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
 setInterval(async () => {
   try {
