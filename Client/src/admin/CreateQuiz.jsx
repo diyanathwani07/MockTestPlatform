@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
+import { saveSingleQuizModular } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
 
@@ -13,7 +14,7 @@ const emptyQuestion = () => ({
   options: ["", "", "", ""],
   correctAnswer: "",
   explanation: "",
-  correctOptionIndex: -1, // helper for highlighting correct answer in UI
+  correctOptionIndex: -1,
 });
 
 function CreateQuiz() {
@@ -46,15 +47,12 @@ function CreateQuiz() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // Collapse states for builder sections
   const [quizConfigCollapsed, setQuizConfigCollapsed] = useState(false);
   const [questionsCollapsed, setQuestionsCollapsed] = useState(false);
 
-  // Minutes and seconds inputs for duration
   const [durationMin, setDurationMin] = useState("");
   const [durationSec, setDurationSec] = useState("");
 
-  // Publication schedule fields
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledHour, setScheduledHour] = useState("12");
   const [scheduledMinute, setScheduledMinute] = useState("00");
@@ -81,52 +79,32 @@ function CreateQuiz() {
     if (!dateStr) return "";
     const parts = dateStr.split("-");
     if (parts.length !== 3) return dateStr;
-    return `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
   };
 
   const generateCalendarDays = () => {
     const days = [];
     const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
-    const firstDayOfWeek = new Date(calendarYear, calendarMonth, 1).getDay(); // 0 = Sunday, 6 = Saturday
-    
-    // Trailing days from previous month
+    const firstDayOfWeek = new Date(calendarYear, calendarMonth, 1).getDay();
+
     const prevMonthYear = calendarMonth === 0 ? calendarYear - 1 : calendarYear;
     const prevMonth = calendarMonth === 0 ? 11 : calendarMonth - 1;
     const daysInPrevMonth = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
-    
+
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const d = daysInPrevMonth - i;
-      days.push({
-        day: d,
-        month: prevMonth,
-        year: prevMonthYear,
-        isCurrentMonth: false
-      });
+      days.push({ day: daysInPrevMonth - i, month: prevMonth, year: prevMonthYear, isCurrentMonth: false });
     }
-    
-    // Current month days
     for (let i = 1; i <= daysInMonth; i++) {
-      days.push({
-        day: i,
-        month: calendarMonth,
-        year: calendarYear,
-        isCurrentMonth: true
-      });
+      days.push({ day: i, month: calendarMonth, year: calendarYear, isCurrentMonth: true });
     }
-    
-    // Leading days of next month to complete 42 cells (6 weeks grid)
+
     const nextMonthYear = calendarMonth === 11 ? calendarYear + 1 : calendarYear;
     const nextMonth = calendarMonth === 11 ? 0 : calendarMonth + 1;
     const remainingCells = 42 - days.length;
     for (let i = 1; i <= remainingCells; i++) {
-      days.push({
-        day: i,
-        month: nextMonth,
-        year: nextMonthYear,
-        isCurrentMonth: false
-      });
+      days.push({ day: i, month: nextMonth, year: nextMonthYear, isCurrentMonth: false });
     }
-    
+
     return days;
   };
 
@@ -136,8 +114,7 @@ function CreateQuiz() {
     if (periodVal === "PM" && hr24 < 12) hr24 += 12;
     if (periodVal === "AM" && hr24 === 12) hr24 = 0;
     const hr24Str = String(hr24).padStart(2, "0");
-    const formatted = `${dateVal}T${hr24Str}:${minVal}`;
-    setScheduledDateTime(formatted);
+    setScheduledDateTime(`${dateVal}T${hr24Str}:${minVal}`);
   };
 
   const handleDurationMinChange = (e) => {
@@ -161,12 +138,7 @@ function CreateQuiz() {
   const handleMetaChange = (e) => {
     const { name, value, type, checked } = e.target;
     setQuizMeta((prev) => {
-      const updated = {
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      };
-
-      // If user edits preset-controlled values manually, reset preset to Custom
+      const updated = { ...prev, [name]: type === "checkbox" ? checked : value };
       if (["duration", "marksPerQuestion", "negativeMarking", "examName"].includes(name)) {
         setPresetSelected("Custom");
       }
@@ -179,13 +151,7 @@ function CreateQuiz() {
     setPresetSelected(presetId);
 
     if (presetId === "Custom") {
-      setQuizMeta((prev) => ({
-        ...prev,
-        examName: "",
-        duration: "",
-        marksPerQuestion: 1,
-        negativeMarking: 0,
-      }));
+      setQuizMeta((prev) => ({ ...prev, examName: "", duration: "", marksPerQuestion: 1, negativeMarking: 0 }));
       setDurationMin("");
       setDurationSec("");
       setIncludeNegative(false);
@@ -212,14 +178,13 @@ function CreateQuiz() {
   const handleSavePreset = async () => {
     const presetName = prompt("Enter a name for this new Exam Template Preset:");
     if (!presetName) return;
-
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/presets`, {
         presetName,
         examName: quizMeta.examName,
         duration: quizMeta.duration || 60,
         marksPerQuestion: quizMeta.marksPerQuestion,
-        negativeMarking: quizMeta.negativeMarking
+        negativeMarking: quizMeta.negativeMarking,
       });
       setPresets([res.data, ...presets]);
       setPresetSelected(res.data._id);
@@ -254,7 +219,6 @@ function CreateQuiz() {
       });
     }
 
-    // Map parsed questions to fit our inline-option layout
     const mapped = flatQuestions.map((q) => {
       let correctIdx = -1;
       if (q.correctAnswer === "A") correctIdx = 0;
@@ -262,12 +226,9 @@ function CreateQuiz() {
       else if (q.correctAnswer === "C") correctIdx = 2;
       else if (q.correctAnswer === "D") correctIdx = 3;
 
-      // Extract options text array
       const optionsMapped = q.options.map(opt => {
         if (typeof opt === "object") {
-          if (opt.english && opt.hindi) {
-            return `${opt.english} / ${opt.hindi}`;
-          }
+          if (opt.english && opt.hindi) return `${opt.english} / ${opt.hindi}`;
           return opt.english || opt.hindi || "";
         }
         return String(opt).trim();
@@ -288,14 +249,14 @@ function CreateQuiz() {
         correctOptionIndex: correctIdx,
         correctAnswer: correctText,
         explanation: q.explanation || "",
-        sectionName: q.sectionName // Pass it down
+        sectionName: q.sectionName,
       };
     });
 
     setQuestions(mapped);
     setExpandedQuestions({ 0: true });
     setMessage({
-      text: `✅ ${parsedQuestions.length} questions imported from Word file. Review and submit below.`,
+      text: `✅ ${mapped.length} questions imported from Word file. Review and submit below.`,
       type: "status-success",
     });
   };
@@ -313,18 +274,11 @@ function CreateQuiz() {
       const updated = [...prev];
       const newOptions = [...updated[qIndex].options];
       newOptions[optIndex] = value;
-
       let newCorrectVal = updated[qIndex].correctAnswer;
-      // If we edited the option that is currently selected as correct, update correctAnswer string
       if (updated[qIndex].correctOptionIndex === optIndex) {
         newCorrectVal = value;
       }
-
-      updated[qIndex] = { 
-        ...updated[qIndex], 
-        options: newOptions,
-        correctAnswer: newCorrectVal
-      };
+      updated[qIndex] = { ...updated[qIndex], options: newOptions, correctAnswer: newCorrectVal };
       return updated;
     });
   };
@@ -333,28 +287,18 @@ function CreateQuiz() {
     setQuestions((prev) => {
       const updated = [...prev];
       const optVal = updated[qIndex].options[optIndex];
-      updated[qIndex] = {
-        ...updated[qIndex],
-        correctOptionIndex: optIndex,
-        correctAnswer: optVal,
-      };
+      updated[qIndex] = { ...updated[qIndex], correctOptionIndex: optIndex, correctAnswer: optVal };
       return updated;
     });
   };
 
   const toggleQuestionExpand = (index) => {
-    setExpandedQuestions((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
+    setExpandedQuestions((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
   const addQuestion = () => {
     setQuestions((prev) => [...prev, emptyQuestion()]);
-    setExpandedQuestions((prev) => ({
-      ...prev,
-      [questions.length]: true,
-    }));
+    setExpandedQuestions((prev) => ({ ...prev, [questions.length]: true }));
   };
 
   const removeQuestion = (index) => {
@@ -363,11 +307,8 @@ function CreateQuiz() {
       const next = {};
       Object.keys(prev).forEach((k) => {
         const keyVal = parseInt(k, 10);
-        if (keyVal < index) {
-          next[keyVal] = prev[keyVal];
-        } else if (keyVal > index) {
-          next[keyVal - 1] = prev[keyVal];
-        }
+        if (keyVal < index) next[keyVal] = prev[keyVal];
+        else if (keyVal > index) next[keyVal - 1] = prev[keyVal];
       });
       return next;
     });
@@ -388,7 +329,6 @@ function CreateQuiz() {
       }
       return true;
     }
-
     if (!quizMeta.examName || !quizMeta.subject || !quizMeta.title || !quizMeta.duration) {
       setMessage({ text: "Please fill in Exam Name, Subject, Title, and Duration.", type: "status-error" });
       return false;
@@ -408,20 +348,20 @@ function CreateQuiz() {
         return false;
       }
       for (let j = 0; j < q.options.length; j++) {
-        const opt = q.options[j];
-        if (!opt || !String(opt).trim()) {
+        if (!q.options[j] || !String(q.options[j]).trim()) {
           setMessage({ text: `Question ${i + 1}, Option ${["A","B","C","D"][j]}: Option text cannot be blank.`, type: "status-error" });
           return false;
         }
       }
       if (q.correctOptionIndex === -1 || !q.correctAnswer) {
-        setMessage({ text: `Question ${i + 1}: Please select a correct answer by clicking on one of the option letters (A, B, C, or D).`, type: "status-error" });
+        setMessage({ text: `Question ${i + 1}: Please select a correct answer.`, type: "status-error" });
         return false;
       }
     }
     return true;
   };
 
+  // ✅ FIXED: single clean handleSubmit — no duplicate scheduledDateVal
   const handleSubmit = async (submitType) => {
     setMessage({ text: "", type: "" });
     const isDraft = submitType === "draft";
@@ -429,50 +369,29 @@ function CreateQuiz() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const isPublishing = submitType === "publish";
+      const scheduledDateVal = submitType === "schedule" ? new Date(scheduledDateTime) : null;
 
-      // Build payload based on button pressed:
-      let publishedVal = false;
-      let statusVal = "Draft";
-      let scheduledDateVal = null;
-
-      if (submitType === "publish") {
-        publishedVal = true;
-        statusVal = "Published";
-      } else if (submitType === "schedule") {
-        publishedVal = false;
-        statusVal = "Scheduled";
-        scheduledDateVal = new Date(scheduledDateTime);
-      } else {
-        publishedVal = false;
-        statusVal = "Draft";
-      }
-
-      const sanitizedQuestions = questions.map(q => ({
-        questionEnglish: q.questionEnglish.trim(),
-        questionHindi: q.questionHindi.trim(),
-        options: q.options.map(opt => String(opt).trim()),
-        correctAnswer: q.correctAnswer.trim()
-      }));
-
-      const payload = { 
-        ...quizMeta, 
-        published: publishedVal,
-        status: statusVal,
+      await saveSingleQuizModular({
+        quizMeta: {
+          ...quizMeta,
+          status:
+            submitType === "publish"
+              ? "Published"
+              : submitType === "schedule"
+              ? "Scheduled"
+              : "Draft",
+        },
+        questions,
+        isPublishing,
         scheduledDate: scheduledDateVal,
-        questions: sanitizedQuestions 
-      };
+      });
 
-      console.log("Submitting payload...", payload);
-
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/quizzes`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setMessage({ 
-        text: `✅ Quiz successfully saved as ${statusVal}!`, 
-        type: "status-success" 
+      setMessage({
+        text: `✅ Quiz successfully saved as ${
+          submitType === "publish" ? "Published" : submitType === "schedule" ? "Scheduled" : "Draft"
+        }!`,
+        type: "status-success",
       });
       setTimeout(() => navigate("/admin/manage-quizzes"), 1200);
     } catch (error) {
@@ -494,47 +413,46 @@ function CreateQuiz() {
 
         <div className="admin-content">
           <div className="create-quiz-page">
-            
+
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
               <div style={{ display: "flex", background: "var(--bg-input)", padding: "4px", borderRadius: "12px", border: "1.5px solid var(--border-input)" }}>
-                 <button 
-                   onClick={() => navigate('/admin/create-quiz')} 
-                   style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--primary-color, #6E3FF3)", color: "#fff", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
-                 >
-                   Single Quiz
-                 </button>
-                 <button 
-                   onClick={() => navigate('/admin/create-quiz-multi')} 
-                   style={{ padding: "8px 24px", borderRadius: "8px", background: "transparent", color: "var(--text-muted)", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
-                 >
-                   Multi-Section
-                 </button>
+                <button
+                  onClick={() => navigate('/admin/create-quiz')}
+                  style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--primary-color, #6E3FF3)", color: "#fff", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                >
+                  Single Quiz
+                </button>
+                <button
+                  onClick={() => navigate('/admin/create-quiz-multi')}
+                  style={{ padding: "8px 24px", borderRadius: "8px", background: "transparent", color: "var(--text-muted)", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                >
+                  Multi-Section
+                </button>
               </div>
             </div>
 
             {message.text && (
-              <p className={`admin-status-message ${message.type}`}>
-                {message.text}
-              </p>
+              <p className={`admin-status-message ${message.type}`}>{message.text}</p>
             )}
 
             <div className="quiz-two-column-layout">
-              {/* ── LEFT PANEL: QUIZ DETAILS & QUESTIONS ── */}
+              {/* ── LEFT PANEL ── */}
               <div className="quiz-left-panel">
-                {/* 1. Preset Selector Card */}
+
+                {/* Preset Selector */}
                 <div className="form-card compact-card">
                   <h3 className="form-card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     Exam Template Preset
                     {presetSelected !== "Custom" && (
-                      <button onClick={(e) => { e.preventDefault(); handleDeletePreset(presetSelected); }} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "14px", padding: 0 }} title="Delete Preset">🗑️</button>
+                      <button
+                        onClick={(e) => { e.preventDefault(); handleDeletePreset(presetSelected); }}
+                        style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "14px", padding: 0 }}
+                        title="Delete Preset"
+                      >🗑️</button>
                     )}
                   </h3>
                   <div className="form-field">
-                    <select
-                      value={presetSelected}
-                      onChange={handlePresetChange}
-                      className="preset-select"
-                    >
+                    <select value={presetSelected} onChange={handlePresetChange} className="preset-select">
                       <option value="Custom">Custom Settings</option>
                       {presets.map(p => (
                         <option key={p._id} value={p._id}>
@@ -545,16 +463,20 @@ function CreateQuiz() {
                   </div>
                 </div>
 
-                {/* 2. Details Card */}
+                {/* Quiz Configuration */}
                 <div className="form-card">
-                  <div 
-                    className="form-card-title" 
+                  <div
+                    className="form-card-title"
                     onClick={() => setQuizConfigCollapsed(!quizConfigCollapsed)}
                     style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", borderBottom: quizConfigCollapsed ? "none" : "1px solid var(--border-color)", paddingBottom: quizConfigCollapsed ? "0" : "10px" }}
                   >
                     <span>Quiz Configuration</span>
                     <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <button onClick={(e) => { e.stopPropagation(); handleSavePreset(); }} className="dashboard-view-all-btn" style={{ padding: "4px 8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleSavePreset(); }}
+                        className="dashboard-view-all-btn"
+                        style={{ padding: "4px 8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.2)" }}
+                      >
                         💾 Save as Preset
                       </button>
                       <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal" }}>
@@ -562,98 +484,42 @@ function CreateQuiz() {
                       </span>
                     </div>
                   </div>
-                  
+
                   {!quizConfigCollapsed && (
                     <div className="details-vertical-fields" style={{ marginTop: "16px" }}>
                       <div className="form-field">
                         <label>Exam Name</label>
-                        <input
-                          type="text"
-                          name="examName"
-                          value={quizMeta.examName}
-                          onChange={handleMetaChange}
-                          placeholder="e.g. JEE Main / NEET / BPSC"
-                          required
-                        />
+                        <input type="text" name="examName" value={quizMeta.examName} onChange={handleMetaChange} placeholder="e.g. JEE Main / NEET / BPSC" required />
                       </div>
-
                       <div className="form-field">
                         <label>Subject</label>
-                        <input
-                          type="text"
-                          name="subject"
-                          value={quizMeta.subject}
-                          onChange={handleMetaChange}
-                          placeholder="e.g. Physics / Chemistry / Math"
-                          required
-                        />
+                        <input type="text" name="subject" value={quizMeta.subject} onChange={handleMetaChange} placeholder="e.g. Physics / Chemistry / Math" required />
                       </div>
-
                       <div className="form-field">
                         <label>Quiz Title</label>
-                        <input
-                          type="text"
-                          name="title"
-                          value={quizMeta.title}
-                          onChange={handleMetaChange}
-                          placeholder="e.g. Chapter 3 Practice Test"
-                          required
-                        />
+                        <input type="text" name="title" value={quizMeta.title} onChange={handleMetaChange} placeholder="e.g. Chapter 3 Practice Test" required />
                       </div>
-
                       <div className="form-field">
                         <label>Description (Optional)</label>
-                        <textarea
-                          name="description"
-                          value={quizMeta.description}
-                          onChange={handleMetaChange}
-                          placeholder="Enter brief description of this quiz"
-                          rows={2}
-                        />
+                        <textarea name="description" value={quizMeta.description} onChange={handleMetaChange} placeholder="Enter brief description of this quiz" rows={2} />
                       </div>
-
                       <div className="form-field">
                         <label>Duration</label>
                         <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
-                            <input
-                              type="number"
-                              value={durationMin}
-                              onChange={handleDurationMinChange}
-                              placeholder="Minutes"
-                              min="0"
-                              required
-                            />
+                            <input type="number" value={durationMin} onChange={handleDurationMinChange} placeholder="Minutes" min="0" required />
                             <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>min</span>
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
-                            <input
-                              type="number"
-                              value={durationSec}
-                              onChange={handleDurationSecChange}
-                              placeholder="Seconds"
-                              min="0"
-                              max="59"
-                              required
-                            />
+                            <input type="number" value={durationSec} onChange={handleDurationSecChange} placeholder="Seconds" min="0" max="59" required />
                             <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>sec</span>
                           </div>
                         </div>
                       </div>
-
                       <div className="form-field">
                         <label>Marks Per Question</label>
-                        <input
-                          type="number"
-                          name="marksPerQuestion"
-                          value={quizMeta.marksPerQuestion}
-                          onChange={handleMetaChange}
-                          min="1"
-                          step="1"
-                        />
+                        <input type="number" name="marksPerQuestion" value={quizMeta.marksPerQuestion} onChange={handleMetaChange} min="1" step="1" />
                       </div>
-
-                      {/* Negative Marking Toggle and Field */}
                       <div className="form-field toggle-negative-field">
                         <label className="checkbox-toggle-label">
                           <input
@@ -663,81 +529,52 @@ function CreateQuiz() {
                               const checked = e.target.checked;
                               setIncludeNegative(checked);
                               setPresetSelected("Custom");
-                              if (!checked) {
-                                setQuizMeta(prev => ({ ...prev, negativeMarking: 0 }));
-                              }
+                              if (!checked) setQuizMeta(prev => ({ ...prev, negativeMarking: 0 }));
                             }}
                           />
                           <span>Enable Negative Marking</span>
                         </label>
-                        
                         {includeNegative && (
                           <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
                             <label style={{ fontSize: "10.5px" }}>Negative Marks (-value)</label>
-                            <input
-                              type="number"
-                              name="negativeMarking"
-                              value={quizMeta.negativeMarking}
-                              onChange={handleMetaChange}
-                              min="0"
-                              step="0.25"
-                              placeholder="e.g. 1"
-                            />
+                            <input type="number" name="negativeMarking" value={quizMeta.negativeMarking} onChange={handleMetaChange} min="0" step="0.25" placeholder="e.g. 1" />
                           </div>
                         )}
                       </div>
-
-                      {/* NEW FEATURES: Per Question Timer and Lock Previous Questions */}
                       <div className="form-field toggle-negative-field">
                         <label className="checkbox-toggle-label">
                           <input
                             type="checkbox"
                             checked={quizMeta.enablePerQuestionTimer}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setQuizMeta(prev => ({ ...prev, enablePerQuestionTimer: checked }));
-                            }}
+                            onChange={(e) => setQuizMeta(prev => ({ ...prev, enablePerQuestionTimer: e.target.checked }))}
                           />
                           <span>Enable Per Question Timer</span>
                         </label>
-                        
                         {quizMeta.enablePerQuestionTimer && (
                           <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
                             <label style={{ fontSize: "10.5px" }}>Time Per Question (Seconds)</label>
-                            <input
-                              type="number"
-                              name="timePerQuestion"
-                              value={quizMeta.timePerQuestion}
-                              onChange={handleMetaChange}
-                              min="1"
-                              step="1"
-                            />
+                            <input type="number" name="timePerQuestion" value={quizMeta.timePerQuestion} onChange={handleMetaChange} min="1" step="1" />
                           </div>
                         )}
                       </div>
-
                       <div className="form-field toggle-negative-field">
                         <label className="checkbox-toggle-label">
                           <input
                             type="checkbox"
                             checked={quizMeta.lockPreviousQuestions}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setQuizMeta(prev => ({ ...prev, lockPreviousQuestions: checked }));
-                            }}
+                            onChange={(e) => setQuizMeta(prev => ({ ...prev, lockPreviousQuestions: e.target.checked }))}
                           />
                           <span>Lock Previous Questions</span>
                         </label>
                       </div>
-                      
                     </div>
                   )}
                 </div>
 
-                {/* 3. Questions Builder */}
+                {/* Questions Builder */}
                 <div className="form-card header-questions-card">
-                  <div 
-                    className="questions-title-row" 
+                  <div
+                    className="questions-title-row"
                     style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px", flexWrap: "wrap", gap: "12px" }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -745,21 +582,11 @@ function CreateQuiz() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
                       {questions.length > 0 && (
-                        <button 
-                          type="button" 
-                          onClick={clearAllQuestions} 
+                        <button
+                          type="button"
+                          onClick={clearAllQuestions}
                           className="btn-danger-compact"
-                          style={{
-                            background: "rgba(239, 68, 68, 0.1)",
-                            color: "var(--red)",
-                            border: "1.5px solid rgba(239, 68, 68, 0.2)",
-                            borderRadius: "8px",
-                            padding: "6px 12px",
-                            fontSize: "12px",
-                            fontWeight: "600",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease"
-                          }}
+                          style={{ background: "rgba(239, 68, 68, 0.1)", color: "var(--red)", border: "1.5px solid rgba(239, 68, 68, 0.2)", borderRadius: "8px", padding: "6px 12px", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}
                         >
                           🗑️ Delete All Questions
                         </button>
@@ -789,144 +616,88 @@ function CreateQuiz() {
                                   <span style={{ height: "1px", flex: 1, backgroundColor: "var(--border-color)" }}></span>
                                 </div>
                               )}
+
                               <div className="question-block-enhanced" style={{ gridColumn: isExpanded ? "1 / -1" : "auto", minWidth: 0 }}>
-                                {/* Question Block Header */}
-                              <div 
-                                className="question-block-header"
-                                onClick={() => toggleQuestionExpand(qIndex)}
-                                style={{ cursor: "pointer", userSelect: "none" }}
-                              >
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
-                                  <span className="question-number">Question {qIndex + 1}</span>
-                                  {!isExpanded && q.questionEnglish && (
-                                    <span 
-                                      style={{ 
-                                        fontSize: "12px", 
-                                        color: "var(--text-muted)", 
-                                        whiteSpace: "nowrap", 
-                                        overflow: "hidden", 
-                                        textOverflow: "ellipsis",
-                                        fontWeight: "500",
-                                        flex: 1
-                                      }}
-                                    >
-                                      {q.questionEnglish}
+                                <div
+                                  className="question-block-header"
+                                  onClick={() => toggleQuestionExpand(qIndex)}
+                                  style={{ cursor: "pointer", userSelect: "none" }}
+                                >
+                                  <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
+                                    <span className="question-number">Question {qIndex + 1}</span>
+                                    {!isExpanded && q.questionEnglish && (
+                                      <span style={{ fontSize: "12px", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: "500", flex: 1 }}>
+                                        {q.questionEnglish}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
+                                    {questions.length > 1 && (
+                                      <button type="button" className="remove-btn-compact" onClick={() => removeQuestion(qIndex)} title="Delete Question">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                        <span>Delete</span>
+                                      </button>
+                                    )}
+                                    <span style={{ fontSize: "12px", color: "var(--text-muted)", padding: "0 2px" }}>
+                                      {isExpanded ? "▲" : "▼"}
                                     </span>
-                                  )}
+                                  </div>
                                 </div>
-                                
-                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
-                                  {questions.length > 1 && (
-                                    <button
-                                      type="button"
-                                      className="remove-btn-compact"
-                                      onClick={() => removeQuestion(qIndex)}
-                                      title="Delete Question"
-                                    >
-                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                                      </svg>
-                                      <span>Delete</span>
-                                    </button>
-                                  )}
-                                  <span style={{ fontSize: "12px", color: "var(--text-muted)", padding: "0 2px" }}>
-                                    {isExpanded ? "▲" : "▼"}
-                                  </span>
-                                </div>
+
+                                {isExpanded && (
+                                  <div className="question-inputs-fields" style={{ marginTop: "14px" }}>
+                                    <div className="form-field full-width">
+                                      <textarea value={q.questionEnglish} onChange={(e) => handleQuestionChange(qIndex, "questionEnglish", e.target.value)} rows={2} placeholder="Enter question in English..." />
+                                    </div>
+                                    <div className="form-field full-width">
+                                      <textarea value={q.questionHindi} onChange={(e) => handleQuestionChange(qIndex, "questionHindi", e.target.value)} rows={2} placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..." />
+                                    </div>
+
+                                    <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", display: "block" }}>
+                                      Options (Select correct answer using checkmark ✓ on the right)
+                                    </label>
+
+                                    <div className="options-grid-enhanced">
+                                      {["A", "B", "C", "D"].map((label, optIndex) => {
+                                        const isCorrect = q.correctOptionIndex === optIndex;
+                                        return (
+                                          <div className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`} key={label}>
+                                            <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>{label}</div>
+                                            <input
+                                              type="text"
+                                              value={q.options[optIndex]}
+                                              onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
+                                              placeholder="English Option / हिंदी विकल्प"
+                                              className="option-text-field"
+                                            />
+                                            <div
+                                              className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
+                                              onClick={() => selectCorrectOption(qIndex, optIndex)}
+                                              title="Mark as correct answer"
+                                              style={{
+                                                display: "flex", alignItems: "center", justifyContent: "center",
+                                                width: "22px", height: "22px", borderRadius: "50%",
+                                                border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
+                                                backgroundColor: isCorrect ? "#10B981" : "transparent",
+                                                color: isCorrect ? "#ffffff" : "transparent",
+                                                cursor: "pointer", fontSize: "12px", fontWeight: "bold",
+                                                transition: "all 0.15s ease", userSelect: "none", flexShrink: 0
+                                              }}
+                                            >✓</div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    <div className="form-field full-width" style={{ marginTop: "14px" }}>
+                                      <textarea value={q.explanation || ""} onChange={(e) => handleQuestionChange(qIndex, "explanation", e.target.value)} rows={2} placeholder="Answer Explanation (Optional)..." />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-
-                              {/* Collapsible Question Inputs */}
-                              {isExpanded && (
-                                <div className="question-inputs-fields" style={{ marginTop: "14px" }}>
-                                  <div className="form-field full-width">
-                                    <textarea
-                                      value={q.questionEnglish}
-                                      onChange={(e) =>
-                                        handleQuestionChange(qIndex, "questionEnglish", e.target.value)
-                                      }
-                                      rows={2}
-                                      placeholder="Enter question in English..."
-                                    />
-                                  </div>
-
-                                  <div className="form-field full-width">
-                                    <textarea
-                                      value={q.questionHindi}
-                                      onChange={(e) =>
-                                        handleQuestionChange(qIndex, "questionHindi", e.target.value)
-                                      }
-                                      rows={2}
-                                      placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..."
-                                    />
-                                  </div>
-
-                                  <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", display: "block" }}>
-                                    Options (Select correct answer using checkmark ✓ on the right)
-                                  </label>
-                                  
-                                  <div className="options-grid-enhanced">
-                                    {["A", "B", "C", "D"].map((label, optIndex) => {
-                                      const isCorrect = q.correctOptionIndex === optIndex;
-                                      return (
-                                        <div 
-                                          className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`}
-                                          key={label}
-                                        >
-                                          <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
-                                            {label}
-                                          </div>
-                                          <input
-                                            type="text"
-                                            value={q.options[optIndex]}
-                                            onChange={(e) =>
-                                              handleOptionChange(qIndex, optIndex, e.target.value)
-                                            }
-                                            placeholder="English Option / हिंदी विकल्प"
-                                            className="option-text-field"
-                                          />
-                                          <div 
-                                            className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
-                                            onClick={() => selectCorrectOption(qIndex, optIndex)}
-                                            title="Mark as correct answer"
-                                            style={{
-                                              display: "flex",
-                                              alignItems: "center",
-                                              justifyContent: "center",
-                                              width: "22px",
-                                              height: "22px",
-                                              borderRadius: "50%",
-                                              border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
-                                              backgroundColor: isCorrect ? "#10B981" : "transparent",
-                                              color: isCorrect ? "#ffffff" : "transparent",
-                                              cursor: "pointer",
-                                              fontSize: "12px",
-                                              fontWeight: "bold",
-                                              transition: "all 0.15s ease",
-                                              userSelect: "none",
-                                              flexShrink: 0
-                                            }}
-                                          >
-                                            ✓
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-
-                                  <div className="form-field full-width" style={{ marginTop: "14px" }}>
-                                    <textarea
-                                      value={q.explanation || ""}
-                                      onChange={(e) =>
-                                        handleQuestionChange(qIndex, "explanation", e.target.value)
-                                      }
-                                      rows={2}
-                                      placeholder="Answer Explanation (Optional)..."
-                                    />
-                                  </div>
-                                </div>
-                              )}
-                            </div>
                             </React.Fragment>
                           );
                         })}
@@ -940,166 +711,63 @@ function CreateQuiz() {
                 </div>
               </div>
 
-              {/* ── RIGHT PANEL: PUBLICATION & TOOLS ── */}
+              {/* ── RIGHT PANEL ── */}
               <div className="admin-quiz-right-panel">
-                {/* 4. Docx Parser Card */}
+
+                {/* DocxParser */}
                 <div className="form-card compact-card">
                   <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
                 </div>
 
-                {/* 5. Schedule Card */}
+                {/* Schedule Card */}
                 <div className="form-card compact-card">
                   <h3 className="form-card-title">Publication Schedule</h3>
                   <div className="form-field">
                     <label className="checkbox-toggle-label">
-                      <input
-                        type="checkbox"
-                        checked={isScheduled}
-                        onChange={(e) => setIsScheduled(e.target.checked)}
-                      />
+                      <input type="checkbox" checked={isScheduled} onChange={(e) => setIsScheduled(e.target.checked)} />
                       <span>Schedule for Later</span>
                     </label>
 
                     {isScheduled && (
                       <div className="scheduled-datetime-wrapper" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                        {/* Date Input */}
+
+                        {/* Date Picker */}
                         <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
                           <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Date</label>
                           <button
                             type="button"
                             onClick={() => setShowDatePicker(!showDatePicker)}
-                            style={{
-                              background: "var(--bg-input)",
-                              border: "1.5px solid var(--border-input)",
-                              borderRadius: "10px",
-                              padding: "10px 14px",
-                              fontSize: "13.5px",
-                              color: "var(--text-primary)",
-                              cursor: "pointer",
-                              textAlign: "left",
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              width: "100%",
-                              boxSizing: "border-box"
-                            }}
+                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                           >
                             <span>{scheduledDate ? formatDateDisplay(scheduledDate) : "Select Date"}</span>
                             <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
                           </button>
 
                           {showDatePicker && (
-                            <div 
-                              style={{
-                                position: "absolute",
-                                top: "105%",
-                                left: 0,
-                                zIndex: 1000,
-                                backgroundColor: "var(--bg-card)",
-                                border: "1.5px solid var(--border-color)",
-                                borderRadius: "16px",
-                                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-                                padding: "16px",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "12px",
-                                width: "260px",
-                                boxSizing: "border-box"
-                              }}
-                            >
-                              {/* Header: < Month Year > */}
+                            <div style={{ position: "absolute", top: "105%", left: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "12px", width: "260px", boxSizing: "border-box" }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (calendarMonth === 0) {
-                                      setCalendarMonth(11);
-                                      setCalendarYear(calendarYear - 1);
-                                    } else {
-                                      setCalendarMonth(calendarMonth - 1);
-                                    }
-                                  }}
-                                  style={{
-                                    background: "transparent",
-                                    border: "none",
-                                    color: "var(--text-primary)",
-                                    fontSize: "14px",
-                                    cursor: "pointer",
-                                    padding: "4px 8px",
-                                    fontWeight: "bold"
-                                  }}
-                                >
-                                  &lt;
-                                </button>
+                                <button type="button" onClick={() => { if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); } else { setCalendarMonth(calendarMonth - 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&lt;</button>
                                 <span style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)" }}>
-                                  {`${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][calendarMonth]} ${calendarYear}`}
+                                  {["January","February","March","April","May","June","July","August","September","October","November","December"][calendarMonth]} {calendarYear}
                                 </span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (calendarMonth === 11) {
-                                      setCalendarMonth(0);
-                                      setCalendarYear(calendarYear + 1);
-                                    } else {
-                                      setCalendarMonth(calendarMonth + 1);
-                                    }
-                                  }}
-                                  style={{
-                                    background: "transparent",
-                                    border: "none",
-                                    color: "var(--text-primary)",
-                                    fontSize: "14px",
-                                    cursor: "pointer",
-                                    padding: "4px 8px",
-                                    fontWeight: "bold"
-                                  }}
-                                >
-                                  &gt;
-                                </button>
+                                <button type="button" onClick={() => { if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); } else { setCalendarMonth(calendarMonth + 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&gt;</button>
                               </div>
 
-                              {/* Days labels S M T W T F S */}
                               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", textAlign: "center" }}>
-                                {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
-                                  <span key={idx} style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)" }}>
-                                    {d}
-                                  </span>
+                                {["S","M","T","W","T","F","S"].map((d, idx) => (
+                                  <span key={idx} style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)" }}>{d}</span>
                                 ))}
                               </div>
 
-                              {/* Days Grid */}
                               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
                                 {generateCalendarDays().map((cell, idx) => {
                                   const cellDateStr = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
                                   const isSelected = cellDateStr === scheduledDate;
-                                  
                                   return (
                                     <div
                                       key={idx}
-                                      onClick={() => {
-                                        setScheduledDate(cellDateStr);
-                                        updateScheduledDateTime(cellDateStr, scheduledHour, scheduledMinute, scheduledPeriod);
-                                        setShowDatePicker(false);
-                                      }}
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        height: "28px",
-                                        fontSize: "12px",
-                                        fontWeight: isSelected ? "700" : "500",
-                                        borderRadius: "50%",
-                                        cursor: "pointer",
-                                        backgroundColor: isSelected ? "var(--violet)" : "transparent",
-                                        color: isSelected 
-                                          ? "#ffffff" 
-                                          : cell.isCurrentMonth 
-                                            ? "var(--text-primary)" 
-                                            : "var(--text-muted)",
-                                        border: isSelected ? "2px solid rgba(110, 63, 243, 0.2)" : "none",
-                                        boxSizing: "border-box"
-                                      }}
-                                      className={isSelected ? "calendar-day-cell selected-day-cell" : "calendar-day-cell"}
+                                      onClick={() => { setScheduledDate(cellDateStr); updateScheduledDateTime(cellDateStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }}
+                                      style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "28px", fontSize: "12px", fontWeight: isSelected ? "700" : "500", borderRadius: "50%", cursor: "pointer", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : cell.isCurrentMonth ? "var(--text-primary)" : "var(--text-muted)", border: isSelected ? "2px solid rgba(110,63,243,0.2)" : "none", boxSizing: "border-box" }}
                                     >
                                       {cell.day}
                                     </div>
@@ -1107,124 +775,36 @@ function CreateQuiz() {
                                 })}
                               </div>
 
-                              {/* Actions footer */}
                               <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1.5px solid var(--border-color)", paddingTop: "8px", marginTop: "4px" }}>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setScheduledDate("");
-                                    setScheduledDateTime("");
-                                    setShowDatePicker(false);
-                                  }}
-                                  style={{
-                                    background: "transparent",
-                                    border: "none",
-                                    color: "var(--red)",
-                                    fontSize: "12px",
-                                    fontWeight: "600",
-                                    cursor: "pointer"
-                                  }}
-                                >
-                                  Clear
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const today = new Date();
-                                    const yyyy = today.getFullYear();
-                                    const mm = String(today.getMonth() + 1).padStart(2, "0");
-                                    const dd = String(today.getDate()).padStart(2, "0");
-                                    const todayStr = `${yyyy}-${mm}-${dd}`;
-                                    setScheduledDate(todayStr);
-                                    setCalendarMonth(today.getMonth());
-                                    setCalendarYear(today.getFullYear());
-                                    updateScheduledDateTime(todayStr, scheduledHour, scheduledMinute, scheduledPeriod);
-                                    setShowDatePicker(false);
-                                  }}
-                                  style={{
-                                    background: "transparent",
-                                    border: "none",
-                                    color: "var(--violet)",
-                                    fontSize: "12px",
-                                    fontWeight: "600",
-                                    cursor: "pointer"
-                                  }}
-                                >
-                                  Today
-                                </button>
+                                <button type="button" onClick={() => { setScheduledDate(""); setScheduledDateTime(""); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--red)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Clear</button>
+                                <button type="button" onClick={() => { const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth()+1).padStart(2,"0"); const dd = String(today.getDate()).padStart(2,"0"); const todayStr = `${yyyy}-${mm}-${dd}`; setScheduledDate(todayStr); setCalendarMonth(today.getMonth()); setCalendarYear(today.getFullYear()); updateScheduledDateTime(todayStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--violet)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Today</button>
                               </div>
                             </div>
                           )}
                         </div>
 
-                        {/* Custom Time Selector Dropdown */}
+                        {/* Time Picker */}
                         <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
                           <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Time</label>
                           <button
                             type="button"
                             onClick={() => setShowTimePicker(!showTimePicker)}
-                            style={{
-                              background: "var(--bg-input)",
-                              border: "1.5px solid var(--border-input)",
-                              borderRadius: "10px",
-                              padding: "10px 14px",
-                              fontSize: "13.5px",
-                              color: "var(--text-primary)",
-                              cursor: "pointer",
-                              textAlign: "left",
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              width: "100%",
-                              boxSizing: "border-box"
-                            }}
+                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                           >
                             <span>{`${scheduledHour}:${scheduledMinute} ${scheduledPeriod}`}</span>
                             <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
                           </button>
 
                           {showTimePicker && (
-                            <div 
-                              style={{
-                                position: "absolute",
-                                top: "105%",
-                                right: 0,
-                                zIndex: 1000,
-                                backgroundColor: "var(--bg-card)",
-                                border: "1.5px solid var(--border-color)",
-                                borderRadius: "16px",
-                                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-                                padding: "16px",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "14px",
-                                width: "240px"
-                              }}
-                            >
+                            <div style={{ position: "absolute", top: "105%", right: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "14px", width: "240px" }}>
                               <div style={{ display: "flex", height: "180px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
-                                {/* Hour Column */}
+
+                                {/* Hours */}
                                 <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", paddingRight: "4px" }} className="time-scroll-col">
                                   {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
                                     const isSelected = hr === scheduledHour;
                                     return (
-                                      <div
-                                        key={hr}
-                                        onClick={() => {
-                                          setScheduledHour(hr);
-                                          updateScheduledDateTime(scheduledDate, hr, scheduledMinute, scheduledPeriod);
-                                        }}
-                                        style={{
-                                          padding: "6px",
-                                          textAlign: "center",
-                                          borderRadius: "8px",
-                                          cursor: "pointer",
-                                          fontSize: "13px",
-                                          fontWeight: isSelected ? "700" : "500",
-                                          backgroundColor: isSelected ? "var(--violet)" : "transparent",
-                                          color: isSelected ? "#ffffff" : "var(--text-primary)",
-                                          transition: "all 0.1s ease"
-                                        }}
-                                      >
+                                      <div key={hr} onClick={() => { setScheduledHour(hr); updateScheduledDateTime(scheduledDate, hr, scheduledMinute, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
                                         {hr}
                                       </div>
                                     );
@@ -1233,29 +813,12 @@ function CreateQuiz() {
 
                                 <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
 
-                                {/* Minute Column */}
+                                {/* Minutes */}
                                 <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }} className="time-scroll-col">
                                   {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
                                     const isSelected = min === scheduledMinute;
                                     return (
-                                      <div
-                                        key={min}
-                                        onClick={() => {
-                                          setScheduledMinute(min);
-                                          updateScheduledDateTime(scheduledDate, scheduledHour, min, scheduledPeriod);
-                                        }}
-                                        style={{
-                                          padding: "6px",
-                                          textAlign: "center",
-                                          borderRadius: "8px",
-                                          cursor: "pointer",
-                                          fontSize: "13px",
-                                          fontWeight: isSelected ? "700" : "500",
-                                          backgroundColor: isSelected ? "var(--violet)" : "transparent",
-                                          color: isSelected ? "#ffffff" : "var(--text-primary)",
-                                          transition: "all 0.1s ease"
-                                        }}
-                                      >
+                                      <div key={min} onClick={() => { setScheduledMinute(min); updateScheduledDateTime(scheduledDate, scheduledHour, min, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
                                         {min}
                                       </div>
                                     );
@@ -1264,29 +827,12 @@ function CreateQuiz() {
 
                                 <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
 
-                                {/* Period Column */}
+                                {/* AM/PM */}
                                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px", justifyContent: "center" }}>
                                   {["AM", "PM"].map(p => {
                                     const isSelected = p === scheduledPeriod;
                                     return (
-                                      <div
-                                        key={p}
-                                        onClick={() => {
-                                          setScheduledPeriod(p);
-                                          updateScheduledDateTime(scheduledDate, scheduledHour, scheduledMinute, p);
-                                        }}
-                                        style={{
-                                          padding: "10px 6px",
-                                          textAlign: "center",
-                                          borderRadius: "8px",
-                                          cursor: "pointer",
-                                          fontSize: "13px",
-                                          fontWeight: "700",
-                                          backgroundColor: isSelected ? "var(--violet)" : "transparent",
-                                          color: isSelected ? "#ffffff" : "var(--text-secondary)",
-                                          transition: "all 0.1s ease"
-                                        }}
-                                      >
+                                      <div key={p} onClick={() => { setScheduledPeriod(p); updateScheduledDateTime(scheduledDate, scheduledHour, scheduledMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
                                         {p}
                                       </div>
                                     );
@@ -1294,29 +840,14 @@ function CreateQuiz() {
                                 </div>
                               </div>
 
-                              <button
-                                type="button"
-                                onClick={() => setShowTimePicker(false)}
-                                style={{
-                                  padding: "8px 12px",
-                                  border: "1.5px solid var(--border-input)",
-                                  borderRadius: "10px",
-                                  background: "var(--bg-card)",
-                                  color: "var(--text-primary)",
-                                  fontSize: "13px",
-                                  fontWeight: "700",
-                                  cursor: "pointer",
-                                  transition: "all 0.15s ease",
-                                  textAlign: "center"
-                                }}
-                              >
+                              <button type="button" onClick={() => setShowTimePicker(false)} style={{ padding: "8px 12px", border: "1.5px solid var(--border-input)", borderRadius: "10px", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "center" }}>
                                 Select Time
                               </button>
                             </div>
                           )}
                         </div>
 
-                        <span className="info-text-sm" style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", display: "inline-block" }}>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", display: "inline-block" }}>
                           Quiz will automatically publish at this date & time.
                         </span>
                       </div>
@@ -1326,38 +857,23 @@ function CreateQuiz() {
               </div>
             </div>
 
-            {/* Bottom Actions Row */}
+            {/* Bottom Actions */}
             <div className="quiz-bottom-actions-row">
               <div className="quiz-status-summary">
                 <span className="status-dot" style={{ backgroundColor: isScheduled ? "var(--gold)" : "var(--text-muted)" }}></span>
                 <span style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-secondary)" }}>
-                  {isScheduled 
+                  {isScheduled
                     ? `Status: Scheduled for ${scheduledDateTime ? new Date(scheduledDateTime).toLocaleDateString('en-GB').replace(/\//g, '-') + ', ' + new Date(scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "..."}`
                     : "Status: Ready (Draft / Publish)"
                   }
                 </span>
               </div>
               <div className="action-buttons-group">
-                <button 
-                  type="button" 
-                  className="btn-save-draft" 
-                  disabled={loading}
-                  onClick={() => handleSubmit("draft")}
-                >
+                <button type="button" className="btn-save-draft" disabled={loading} onClick={() => handleSubmit("draft")}>
                   Save to Drafts
                 </button>
-                <button 
-                  type="button" 
-                  className="btn-submit-publish" 
-                  disabled={loading}
-                  onClick={() => handleSubmit(isScheduled ? "schedule" : "publish")}
-                >
-                  {loading 
-                    ? "Processing..." 
-                    : isScheduled 
-                      ? "Schedule Quiz" 
-                      : "Publish Immediately"
-                  }
+                <button type="button" className="btn-submit-publish" disabled={loading} onClick={() => handleSubmit(isScheduled ? "schedule" : "publish")}>
+                  {loading ? "Processing..." : isScheduled ? "Schedule Quiz" : "Publish Immediately"}
                 </button>
               </div>
             </div>

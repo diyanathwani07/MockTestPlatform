@@ -130,179 +130,239 @@ function PracticeTest() {
     );
   }
 
-  const progressPercentage = ((currentIndex) / questions.length) * 100;
+  const renderExplanationText = (text) => {
+    if (!text) return null;
+    const parts = text.split(/(\([^)]+\))/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('(') && part.endsWith(')')) {
+        return (
+          <span 
+            key={index} 
+            className="hindi-exp-text" 
+            style={{ 
+              color: '#EF4444', 
+              fontWeight: '500', 
+              display: 'block', 
+              marginTop: '4px' 
+            }}
+          >
+            {part}
+          </span>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
+  const handleRefresh = () => {
+    setCurrentIndex(0);
+    setSelectedOptions({});
+    setIsCorrectSelected(false);
+    setQuestionTime(0);
+    setShowAiTutor(false);
+    setStats({
+      firstTryCorrect: 0,
+      multipleTries: 0,
+      totalWrongAttempts: 0,
+      totalAttemptsAll: 0,
+      startTime: Date.now()
+    });
+  };
 
   return (
-    <div className="practice-fullscreen-layout" style={{ minHeight: "100vh", backgroundColor: "var(--bg-main)", padding: "40px 20px" }}>
-        <div className="practice-test-container" style={{ maxWidth: "900px", margin: "0 auto" }}>
+    <div className="practice-fullscreen-layout" style={{ minHeight: "100vh", backgroundColor: "var(--bg-page, #f8fafc)", display: "flex", flexDirection: "column" }}>
+      {/* ── TOP HEADER BAR ── */}
+      <div className="practice-top-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#8B5CF6", color: "#ffffff", padding: "14px 24px", position: "sticky", top: 0, zIndex: 100 }}>
+        <button className="back-btn" onClick={() => navigate("/dashboard/practice")} style={{ background: "transparent", border: "none", color: "#ffffff", fontSize: "16px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+          <ArrowLeft size={18} /> Back
+        </button>
+        <h3 style={{ margin: 0, fontSize: "19px", fontWeight: "700" }}>Quiz</h3>
+        <button className="refresh-btn" onClick={handleRefresh} style={{ background: "transparent", border: "none", color: "#ffffff", cursor: "pointer", display: "flex", alignItems: "center" }} title="Reset Quiz">
+          <svg style={{ width: "20px", height: "20px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+        </button>
+      </div>
+
+      {/* ── MAIN CONTENT AREA ── */}
+      <div style={{ flex: 1, padding: "24px 20px 60px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        
+        {/* Quiz Title */}
+        <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", textAlign: "center", margin: "0 0 24px 0", maxWidth: "800px", lineHeight: 1.3 }}>
+          {quiz?.title || quiz?.examGroup}
+        </h2>
+
+        {/* Question Card */}
+        <div className="practice-question-card animate-fade-in" style={{ backgroundColor: "var(--bg-card, #ffffff)", border: "1px solid var(--border-color, #e2e8f0)", borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "800px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
           
-          <div className="practice-header">
-            <button className="practice-back-btn" onClick={() => navigate("/dashboard/practice")}>
-              <ArrowLeft size={20} />
-            </button>
-            <div className="practice-progress-wrapper" style={{ flex: 1 }}>
-              <div className="practice-progress-text" style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>Question {currentIndex + 1} of {questions.length}</span>
-                <span style={{ color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
-                  ⏱ {Math.floor(questionTime / 60).toString().padStart(2, '0')}:{(questionTime % 60).toString().padStart(2, '0')}
-                </span>
-              </div>
-              <div className="practice-progress-bar">
-                <div className="practice-progress-fill" style={{ width: `${progressPercentage}%` }}></div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── LEARNING STATUS PANEL ── */}
-          <div className="practice-learning-status">
-            <div className="status-item">
-              <span className="status-label">Attempts</span>
-              <span className="status-value">{Object.keys(selectedOptions).length}</span>
-            </div>
-            <div className="status-item">
-              <span className="status-label">Wrong Attempts</span>
-              <span className="status-value">{Object.keys(selectedOptions).length - (isCorrectSelected ? 1 : 0)}</span>
-            </div>
-            <div className="status-item">
-              <span className="status-label">Correct on Attempt</span>
-              <span className="status-value">{isCorrectSelected ? Object.keys(selectedOptions).length : "-"}</span>
-            </div>
-            <div className="status-item" style={{ borderLeft: "1px solid rgba(255,255,255,0.05)", paddingLeft: "16px" }}>
-              <span className="status-label">Avg. Attempts</span>
-              <span className="status-value">
-                {currentIndex > 0 || isCorrectSelected 
-                  ? ((stats.totalAttemptsAll + (isCorrectSelected ? 0 : Object.keys(selectedOptions).length)) / (currentIndex + (isCorrectSelected ? 1 : 0))).toFixed(1)
-                  : "-"}
-              </span>
-            </div>
-            <div className="status-item">
-              <span className="status-label">Accuracy</span>
-              <span className="status-value">
-                {currentIndex > 0 || isCorrectSelected
-                  ? Math.round(((currentIndex + (isCorrectSelected ? 1 : 0)) / (stats.totalAttemptsAll + (isCorrectSelected ? 0 : Object.keys(selectedOptions).length))) * 100) + "%"
-                  : "-"}
-              </span>
-            </div>
-          </div>
-
-          <div className="practice-question-card animate-fade-in">
-            <div className="practice-q-text">
-              <span className="q-num">Q{currentIndex + 1}.</span>
-              <div className="q-content">
-                <p>{currentQuestion.questionEnglish}</p>
-                {currentQuestion.questionHindi && <p className="q-hindi">{currentQuestion.questionHindi}</p>}
-              </div>
-            </div>
-
-            <div className="practice-options-grid">
-              {currentQuestion.options.map((opt, idx) => {
-                const isSelected = selectedOptions[idx];
-                const isCorrectOption = opt === currentQuestion.correctAnswer;
-                
-                let optionClass = "practice-opt";
-                if (isSelected) {
-                  if (isCorrectOption) optionClass += " correct";
-                  else optionClass += " wrong";
-                } else if (isCorrectSelected && isCorrectOption) {
-                   optionClass += " correct-revealed";
-                }
-
-                return (
-                  <div key={idx} className="practice-opt-wrapper">
-                    <button 
-                      className={optionClass}
-                      onClick={() => handleOptionClick(idx)}
-                      disabled={isCorrectSelected || isSelected}
-                    >
-                      <div className="opt-marker">
-                        {String.fromCharCode(65 + idx)}
-                      </div>
-                      <div className="opt-text">{opt}</div>
-                      
-                      {isSelected && isCorrectOption && <CheckCircle size={20} className="status-icon success" />}
-                      {isSelected && !isCorrectOption && <XCircle size={20} className="status-icon danger" />}
-                    </button>
-
-                    {/* Show explanation instantly for wrong selected answer */}
-                    {isSelected && !isCorrectOption && (
-                      <div className="practice-inline-exp danger" style={{ marginTop: "12px", padding: "12px", backgroundColor: "rgba(255,68,68,0.05)", borderLeft: "3px solid #ff4444", borderRadius: "0 8px 8px 0" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", color: "#ff4444", fontWeight: "500" }}>
-                          <AlertCircle size={16} /> Incorrect
-                        </div>
-                        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                          {currentQuestion.explanations?.incorrect?.[opt] || "This is not the correct answer. Try to think about the core concepts and try again!"}
-                        </p>
-                      </div>
-                    )}
-                    
-                    {/* Show explanation for WRONG options when correct answer is found (so user can learn about all options) */}
-                    {isCorrectSelected && !isCorrectOption && (
-                      <div className="practice-inline-exp" style={{ marginTop: "12px", padding: "12px", backgroundColor: "rgba(255,255,255,0.03)", borderLeft: "3px solid rgba(255,255,255,0.2)", borderRadius: "0 8px 8px 0" }}>
-                        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                          {currentQuestion.explanations?.incorrect?.[opt] || "This option is incorrect."}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Show explanation for the CORRECT option when correct answer is found */}
-                    {isCorrectSelected && isCorrectOption && (
-                      <div className="practice-inline-exp success" style={{ marginTop: "12px", padding: "12px", backgroundColor: "rgba(74, 222, 128, 0.05)", borderLeft: "3px solid #4ade80", borderRadius: "0 8px 8px 0" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", color: "#4ade80", fontWeight: "500" }}>
-                          <CheckCircle size={16} /> Correct
-                        </div>
-                        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                          {currentQuestion.explanations?.correct || "Great job! This is the correct answer."}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-
-          </div>
-
-          <div className="practice-footer" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-              
-              <button 
-                className={`practice-next-btn ${isCorrectSelected ? 'active' : ''}`}
-                onClick={handleNext}
-                disabled={!isCorrectSelected}
-                style={{ minWidth: "200px", padding: "14px 24px", fontSize: "16px" }}
-              >
-                {isCorrectSelected ? (
-                  currentIndex === questions.length - 1 ? 'Finish Practice' : 'Next Question →'
-                ) : 'Select an Answer'}
-              </button>
-          </div>
-        </div>
-
-      {/* 🤖 AI TUTOR MODAL */}
-      {showAiTutor && (
-        <div className="ai-tutor-overlay animate-fade-in" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div className="ai-tutor-modal animate-slide-up" style={{ background: "var(--bg-main)", border: "1px solid rgba(108, 93, 211, 0.3)", borderRadius: "16px", padding: "32px", maxWidth: "500px", width: "90%", position: "relative", boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }}>
+          {/* Pagination circles list */}
+          <div className="practice-pagination" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginBottom: "28px" }}>
             <button 
-              onClick={() => setShowAiTutor(false)}
-              style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+              onClick={() => currentIndex > 0 && setCurrentIndex(currentIndex - 1)} 
+              disabled={currentIndex === 0}
+              style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--bg-page, #f1f5f9)", color: "#8B5CF6", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontWeight: "700" }}
             >
-              <XCircle size={24} />
+              &lt;
             </button>
-            <h3 style={{ margin: "0 0 16px 0", color: "var(--primary-color)", display: "flex", alignItems: "center", gap: "8px" }}>
-              🤖 AI Tutor
-            </h3>
-            <div style={{ backgroundColor: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", minHeight: "150px" }}>
-              <p style={{ color: "var(--text-main)", lineHeight: "1.6", margin: "0 0 12px 0" }}>
-                Think of JavaScript like a calculator. It only knows one number box called Number. 
-                Whether you write 5, 5.5 or 100.25, they are all stored inside the same Number box.
-              </p>
-              <p style={{ color: "var(--text-muted)", fontStyle: "italic", margin: 0, fontSize: "13px" }}>
-                (Note: This is a simulated UI placeholder. Future updates will stream real-time generative AI tutoring based on your exact mistakes!)
-              </p>
-            </div>
+            {questions.map((_, idx) => (
+              <button 
+                key={idx} 
+                className={`page-num ${idx === currentIndex ? 'active' : ''}`}
+                onClick={() => setCurrentIndex(idx)}
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: idx === currentIndex ? "#8B5CF6" : "transparent",
+                  border: idx === currentIndex ? "1px solid #8B5CF6" : "1px solid var(--border-color, #e2e8f0)",
+                  color: idx === currentIndex ? "#ffffff" : "var(--text-secondary, #64748b)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  fontWeight: "600"
+                }}
+              >
+                {idx + 1}
+              </button>
+            ))}
+            <button 
+              onClick={() => currentIndex < questions.length - 1 && handleNext()} 
+              disabled={!isCorrectSelected && currentIndex === currentIndex}
+              style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--bg-page, #f1f5f9)", color: "#8B5CF6", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontWeight: "700" }}
+            >
+              &gt;
+            </button>
           </div>
+
+          {/* Question Text */}
+          <div className="practice-q-text" style={{ textAlign: "center", marginBottom: "28px" }}>
+            <p style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 10px 0", lineHeight: 1.5 }}>
+              {currentQuestion.questionEnglish}
+            </p>
+            {currentQuestion.questionHindi && (
+              <p className="q-hindi" style={{ fontSize: "16px", color: "var(--text-secondary)", fontWeight: "500", margin: 0 }}>
+                {currentQuestion.questionHindi}
+              </p>
+            )}
+          </div>
+
+          {/* Options Grid */}
+          <div className="practice-options-grid" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {currentQuestion.options.map((opt, idx) => {
+              const isSelected = selectedOptions[idx];
+              const isCorrectOption = opt === currentQuestion.correctAnswer;
+              
+              // Define border & background styles based on correctness
+              let borderStyle = "1px solid var(--border-color, #e2e8f0)";
+              let backgroundStyle = "var(--bg-page, #f8fafc)";
+              let textColor = "var(--text-primary)";
+              
+              if (isSelected && isCorrectOption) {
+                borderStyle = "2px solid #10B981";
+                backgroundStyle = "var(--bg-card, #ffffff)";
+              } else if (isSelected && !isCorrectOption) {
+                borderStyle = "1px solid var(--border-color)";
+                backgroundStyle = "var(--bg-page, #f8fafc)";
+              } else if (isCorrectSelected && isCorrectOption) {
+                borderStyle = "2px solid #10B981";
+                backgroundStyle = "var(--bg-card, #ffffff)";
+              }
+
+              return (
+                <div key={idx} className="practice-opt-wrapper" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <button 
+                    onClick={() => handleOptionClick(idx)}
+                    disabled={isCorrectSelected || isSelected}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "16px 20px",
+                      borderRadius: "16px",
+                      border: borderStyle,
+                      background: backgroundStyle,
+                      color: textColor,
+                      cursor: (isCorrectSelected || isSelected) ? "default" : "pointer",
+                      width: "100%",
+                      textAlign: "left",
+                      fontSize: "15px",
+                      fontWeight: "500",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    <span>{opt}</span>
+                    {((isSelected && isCorrectOption) || (isCorrectSelected && isCorrectOption)) && (
+                      <span style={{ color: "#10B981", fontWeight: "bold", fontSize: "16px" }}>✓</span>
+                    )}
+                  </button>
+
+                  {/* Show explanation under selected wrong option */}
+                  {isSelected && !isCorrectOption && (
+                    <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "var(--bg-page, #fef2f2)", border: "1px solid #FCA5A5", borderRadius: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#EF4444", fontWeight: "700", fontSize: "14px" }}>
+                        ❌ Incorrect
+                      </div>
+                      <p style={{ margin: 0, fontSize: "14.5px", color: "var(--text-primary)", lineHeight: 1.5, fontWeight: "500" }}>
+                        {renderExplanationText(currentQuestion.explanations?.incorrect?.[opt] || "This is associated with another school.")}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Show explanation under wrong options once correct answer is chosen */}
+                  {isCorrectSelected && !isCorrectOption && !isSelected && (
+                    <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "var(--bg-page, #fef2f2)", border: "1px solid #FCA5A5", borderRadius: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#EF4444", fontWeight: "700", fontSize: "14px" }}>
+                        ❌ Incorrect
+                      </div>
+                      <p style={{ margin: 0, fontSize: "14.5px", color: "var(--text-primary)", lineHeight: 1.5, fontWeight: "500" }}>
+                        {renderExplanationText(currentQuestion.explanations?.incorrect?.[opt] || "This option is incorrect.")}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Show explanation for the correct option once correct answer is chosen */}
+                  {isCorrectSelected && isCorrectOption && (
+                    <div className="practice-inline-exp success" style={{ padding: "16px", backgroundColor: "var(--bg-page, #f0fdf4)", border: "1px solid #BBF7D0", borderRadius: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#166534", fontWeight: "700", fontSize: "14px" }}>
+                        ☑ Correct Answer
+                      </div>
+                      <p style={{ margin: 0, fontSize: "14.5px", color: "var(--text-primary)", lineHeight: 1.5, fontWeight: "500" }}>
+                        {renderExplanationText(currentQuestion.explanations?.correct || "This is correct.")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
         </div>
-      )}
+
+        {/* Footer/Navigation Buttons */}
+        <div style={{ width: "100%", maxWidth: "800px", display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
+          <button 
+            onClick={handleNext}
+            disabled={!isCorrectSelected}
+            style={{
+              padding: "12px 24px",
+              borderRadius: "12px",
+              background: isCorrectSelected ? "#8B5CF6" : "#E2E8F0",
+              color: isCorrectSelected ? "#ffffff" : "#94A3B8",
+              border: "none",
+              fontSize: "15px",
+              fontWeight: "700",
+              cursor: isCorrectSelected ? "pointer" : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: isCorrectSelected ? "0 4px 12px rgba(139, 92, 246, 0.25)" : "none"
+            }}
+          >
+            {currentIndex === questions.length - 1 ? 'Finish Practice' : 'Next Question'}
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 }

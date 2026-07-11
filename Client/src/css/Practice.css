@@ -648,3 +648,112 @@
   box-shadow: 0 6px 16px rgba(108, 93, 211, 0.2);
 }
 
+/* Custom Screenshot Layout Matches & Theme Fixes */
+.practice-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #8B5CF6;
+  color: #ffffff;
+  padding: 14px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+}
+
+body.dark-mode .practice-top-bar {
+  background-color: #6D28D9;
+}
+
+.practice-top-bar .back-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.practice-top-bar .back-btn:hover {
+  opacity: 0.8;
+}
+
+.practice-top-bar .refresh-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+.practice-top-bar .refresh-btn:hover {
+  transform: rotate(45deg);
+}
+
+/* Pagination circles style */
+.practice-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.practice-pagination button {
+  transition: all 0.2s ease;
+}
+
+.practice-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+body.dark-mode .practice-pagination button:not(.active) {
+  background-color: var(--bg-input, #1B1B32) !important;
+  border-color: var(--border-color, #232338) !important;
+  color: var(--text-secondary, #94a3b8) !important;
+}
+
+body.dark-mode .practice-pagination button.page-num.active {
+  background-color: #8B5CF6 !important;
+  border-color: #8B5CF6 !important;
+  color: #ffffff !important;
+}
+
+/* Options */
+body.dark-mode .practice-opt-wrapper button:not([style*="border: 2px solid rgb(16, 185, 129)"]) {
+  background-color: var(--bg-input, #1B1B32) !important;
+  border-color: var(--border-color, #232338) !important;
+  color: var(--text-primary, #ffffff) !important;
+}
+
+body.dark-mode .practice-opt-wrapper button[style*="border: 2px solid rgb(16, 185, 129)"] {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  border-color: #10B981 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .practice-inline-exp.success {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  color: #10B981 !important;
+}
+
+body.dark-mode .practice-inline-exp.danger {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  color: #F87171 !important;
+}
+
+/* Hindi text inside explanation */
+.hindi-exp-text {
+  font-family: inherit;
+}
+
