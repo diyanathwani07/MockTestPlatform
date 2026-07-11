@@ -731,6 +731,7 @@ function Users() {
                                   : [...(editForm.permissions || []), p.key];
                                 setEditForm({...editForm, permissions: newPerms});
                               }}
+                              style={{ width: 'auto', height: 'auto', cursor: 'pointer' }}
                             />
                             <span>{p.label}</span>
                           </label>
@@ -1327,8 +1328,8 @@ function Users() {
                         </select>
                       </div>
 
-                      <div className="input-box" style={{ marginBottom: 0 }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                      <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                           Assign Custom Permissions
                         </label>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '140px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '10px', background: 'var(--bg-main)' }}>
@@ -1345,6 +1346,7 @@ function Users() {
                                       : [...(addForm.permissions || []), p.key];
                                     setAddForm({...addForm, permissions: newPerms});
                                   }}
+                                  style={{ width: 'auto', height: 'auto', cursor: 'pointer' }}
                                 />
                                 <span>{p.label}</span>
                               </label>
