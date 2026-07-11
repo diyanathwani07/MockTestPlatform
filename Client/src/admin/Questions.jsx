@@ -123,7 +123,7 @@ function Questions() {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes`);
         const grouped = {};
 
-        res.data.forEach((quiz) => {
+        for (const quiz of res.data) {
           const bookKey = (quiz.examName && quiz.examName.trim()) ? quiz.examName.trim() : "General Quizzes";
           if (!grouped[bookKey]) {
             grouped[bookKey] = {
@@ -141,11 +141,36 @@ function Questions() {
               publishedDate: quiz.createdAt, status: quiz.status || "Draft",
             };
           }
-          const quizQuestions = (quiz.questions || []).map((q, idx) => ({
-            questionId: q._id, qNo: idx + 1,
-            questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
-            options: q.options || [], correctAnswer: q.correctAnswer,
-          }));
+
+          let quizQuestions = [];
+          if (quiz.sections && quiz.sections.length > 0) {
+            // Modular quiz: fetch questions from section references
+            for (const sectionRef of quiz.sections) {
+              const secId = typeof sectionRef === "object" ? sectionRef.sectionId?._id || sectionRef.sectionId : sectionRef;
+              if (secId) {
+                try {
+                  const secRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`);
+                  const secData = secRes.data;
+                  if (secData.questions && secData.questions.length > 0) {
+                    quizQuestions = [...quizQuestions, ...secData.questions.map((q, idx) => ({
+                      questionId: q._id, qNo: quizQuestions.length + idx + 1,
+                      questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
+                      options: q.options || [], correctAnswer: q.correctAnswer,
+                    }))];
+                  }
+                } catch (e) {
+                  console.error("Error loading modular section in question bank:", secId, e);
+                }
+              }
+            }
+          } else {
+            quizQuestions = (quiz.questions || []).map((q, idx) => ({
+              questionId: q._id, qNo: idx + 1,
+              questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
+              options: q.options || [], correctAnswer: q.correctAnswer,
+            }));
+          }
+
           grouped[bookKey].subjects[subjectKey].questions.push(...quizQuestions);
           grouped[bookKey].subjects[subjectKey].questionsCount += quizQuestions.length;
           grouped[bookKey].totalQuestions += quizQuestions.length;
@@ -153,7 +178,7 @@ function Questions() {
             grouped[bookKey].publishedDate = quiz.updatedAt || quiz.createdAt;
             grouped[bookKey].status = quiz.status || "Draft";
           }
-        });
+        }
 
         const colors = ["purple", "green", "blue", "orange"];
         const booksList = Object.values(grouped).map((book, i) => ({

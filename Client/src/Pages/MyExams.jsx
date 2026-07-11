@@ -98,9 +98,7 @@ function MyExams() {
                   const group = examGroups[examName];
                   const count = group.length;
                   const totalMins = group.reduce((sum, q) => {
-                    const isMulti = q.sections && q.sections.length > 0;
-                    const durMin = isMulti ? (Number(q.duration) / 60) : Number(q.duration);
-                    return sum + (durMin || 0);
+                    return sum + (Math.round(Number(q.duration)) || 0);
                   }, 0);
                   const totalQs = group.reduce((sum, q) => sum + (Number(q.questionCount) || q.questions?.length || 0), 0);
                   const isSelected = selectedExam === examName;
@@ -199,7 +197,7 @@ function MyExams() {
                             </div>
                             <div className="meta-item">
                               <Clock size={14} />
-                              <span>{quiz.sections && quiz.sections.length > 0 ? quiz.duration / 60 : quiz.duration} mins</span>
+                               <span>{Math.round(Number(quiz.duration) || 0)} mins</span>
                             </div>
                           </div>
                           

@@ -95,35 +95,37 @@ function SectionPickerModal({ isOpen, onClose, onAdd, excludeSectionIds = [] }) 
           )}
         </div>
 
-        <div className="section-picker-mode">
-          <p className="section-picker-mode-label">Choose usage type</p>
-          <label className={`section-picker-mode-option ${mode === "linked" ? "active" : ""}`}>
-            <input
-              type="radio"
-              name="sectionMode"
-              checked={mode === "linked"}
-              onChange={() => setMode("linked")}
-            />
-            <Link2 size={16} />
-            <div>
-              <strong>Link Section</strong>
-              <span>Uses the original. Future edits update every linked quiz.</span>
-            </div>
-          </label>
-          <label className={`section-picker-mode-option ${mode === "cloned" ? "active" : ""}`}>
-            <input
-              type="radio"
-              name="sectionMode"
-              checked={mode === "cloned"}
-              onChange={() => setMode("cloned")}
-            />
-            <Copy size={16} />
-            <div>
-              <strong>Clone Section</strong>
-              <span>Creates an independent copy for this quiz only.</span>
-            </div>
-          </label>
-        </div>
+        {selectedId && (
+          <div className="section-picker-mode">
+            <p className="section-picker-mode-label">Choose usage type</p>
+            <label className={`section-picker-mode-option ${mode === "linked" ? "active" : ""}`}>
+              <input
+                type="radio"
+                name="sectionMode"
+                checked={mode === "linked"}
+                onChange={() => setMode("linked")}
+              />
+              <Link2 size={16} />
+              <div>
+                <strong>Link Section</strong>
+                <span>Uses the original. Future edits update every linked quiz.</span>
+              </div>
+            </label>
+            <label className={`section-picker-mode-option ${mode === "cloned" ? "active" : ""}`}>
+              <input
+                type="radio"
+                name="sectionMode"
+                checked={mode === "cloned"}
+                onChange={() => setMode("cloned")}
+              />
+              <Copy size={16} />
+              <div>
+                <strong>Clone Section</strong>
+                <span>Creates an independent copy for this quiz only.</span>
+              </div>
+            </label>
+          </div>
+        )}
 
         <div className="section-picker-actions">
           <button type="button" className="section-picker-btn secondary" onClick={onClose}>

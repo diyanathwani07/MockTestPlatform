@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
+import { saveSingleQuizModular } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
 
@@ -256,7 +257,31 @@ function EditQuiz() {
           setCalendarYear(today.getFullYear());
         }
 
-        const loadedQuestions = (dbQuiz.questions || []).map((q) => {
+        // Handle modular sections if present
+        let finalQuestions = [];
+        if (dbQuiz.sections && dbQuiz.sections.length > 0) {
+          // Modular quiz: fetch questions from section references
+          for (const sectionRef of dbQuiz.sections) {
+            const secId = typeof sectionRef === "object" ? sectionRef.sectionId?._id || sectionRef.sectionId : sectionRef;
+            if (secId) {
+              try {
+                const secResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, {
+                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                });
+                const sectionData = secResponse.data;
+                if (sectionData.questions && sectionData.questions.length > 0) {
+                  finalQuestions = [...finalQuestions, ...sectionData.questions];
+                }
+              } catch (e) {
+                console.error("Error loading modular section:", secId, e);
+              }
+            }
+          }
+        } else {
+          finalQuestions = dbQuiz.questions || [];
+        }
+
+        const loadedQuestions = finalQuestions.map((q) => {
           const options = q.options?.length === 4 ? q.options : ["", "", "", ""];
           const correctIdx = options.indexOf(q.correctAnswer);
           return {
@@ -582,24 +607,16 @@ function EditQuiz() {
         statusVal = "Draft";
       }
 
-      const cleanQuestions = questions.map((q) => ({
-        ...(q._id ? { _id: q._id } : {}),
-        questionEnglish: q.questionEnglish.trim(),
-        questionHindi: q.questionHindi.trim(),
-        options: q.options.map((opt) => String(opt).trim()),
-        correctAnswer: q.correctAnswer.trim(),
-      }));
-
-      const payload = {
-        ...quizMeta,
-        published: publishedVal,
-        status: statusVal,
+      // Save modularly using single quiz modular helper
+      await saveSingleQuizModular({
+        quizMeta: {
+          ...quizMeta,
+          status: statusVal,
+        },
+        questions,
+        isPublishing: publishedVal,
         scheduledDate: scheduledDateVal,
-        questions: cleanQuestions,
-      };
-
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+        quizId: id,
       });
 
       setMessage({ text: `✅ Quiz successfully updated as ${statusVal}!`, type: "status-success" });

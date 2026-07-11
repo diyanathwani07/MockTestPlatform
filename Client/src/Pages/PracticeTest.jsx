@@ -154,20 +154,8 @@ function PracticeTest() {
     });
   };
 
-  const handleRefresh = () => {
-    setCurrentIndex(0);
-    setSelectedOptions({});
-    setIsCorrectSelected(false);
-    setQuestionTime(0);
-    setShowAiTutor(false);
-    setStats({
-      firstTryCorrect: 0,
-      multipleTries: 0,
-      totalWrongAttempts: 0,
-      totalAttemptsAll: 0,
-      startTime: Date.now()
-    });
-  };
+  // Removed handleRefresh functionality as per user request.
+
 
   return (
     <div className="practice-fullscreen-layout" style={{ minHeight: "100vh", backgroundColor: "var(--bg-page, #f8fafc)", display: "flex", flexDirection: "column" }}>
@@ -177,9 +165,6 @@ function PracticeTest() {
           <ArrowLeft size={18} /> Back
         </button>
         <h3 style={{ margin: 0, fontSize: "19px", fontWeight: "700" }}>Quiz</h3>
-        <button className="refresh-btn" onClick={handleRefresh} style={{ background: "transparent", border: "none", color: "#ffffff", cursor: "pointer", display: "flex", alignItems: "center" }} title="Reset Quiz">
-          <svg style={{ width: "20px", height: "20px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-        </button>
       </div>
 
       {/* ── MAIN CONTENT AREA ── */}
@@ -193,46 +178,6 @@ function PracticeTest() {
         {/* Question Card */}
         <div className="practice-question-card animate-fade-in" style={{ backgroundColor: "var(--bg-card, #ffffff)", border: "1px solid var(--border-color, #e2e8f0)", borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "800px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
           
-          {/* Pagination circles list */}
-          <div className="practice-pagination" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginBottom: "28px" }}>
-            <button 
-              onClick={() => currentIndex > 0 && setCurrentIndex(currentIndex - 1)} 
-              disabled={currentIndex === 0}
-              style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--bg-page, #f1f5f9)", color: "#8B5CF6", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontWeight: "700" }}
-            >
-              &lt;
-            </button>
-            {questions.map((_, idx) => (
-              <button 
-                key={idx} 
-                className={`page-num ${idx === currentIndex ? 'active' : ''}`}
-                onClick={() => setCurrentIndex(idx)}
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: idx === currentIndex ? "#8B5CF6" : "transparent",
-                  border: idx === currentIndex ? "1px solid #8B5CF6" : "1px solid var(--border-color, #e2e8f0)",
-                  color: idx === currentIndex ? "#ffffff" : "var(--text-secondary, #64748b)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  fontWeight: "600"
-                }}
-              >
-                {idx + 1}
-              </button>
-            ))}
-            <button 
-              onClick={() => currentIndex < questions.length - 1 && handleNext()} 
-              disabled={!isCorrectSelected && currentIndex === currentIndex}
-              style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--bg-page, #f1f5f9)", color: "#8B5CF6", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontWeight: "700" }}
-            >
-              &gt;
-            </button>
-          </div>
-
           {/* Question Text */}
           <div className="practice-q-text" style={{ textAlign: "center", marginBottom: "28px" }}>
             <p style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 10px 0", lineHeight: 1.5 }}>

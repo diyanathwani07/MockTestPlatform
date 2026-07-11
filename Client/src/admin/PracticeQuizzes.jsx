@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
+import DocxParser from "./components/DocxParser";
 import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar } from "lucide-react";
 
 function PracticeQuizzes() {
@@ -19,6 +20,10 @@ function PracticeQuizzes() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
   const [savingSchedule, setSavingSchedule] = useState(false);
+  const [scheduledHour, setScheduledHour] = useState("12");
+  const [scheduledMinute, setScheduledMinute] = useState("00");
+  const [scheduledPeriod, setScheduledPeriod] = useState("AM");
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [editingQuizId, setEditingQuizId] = useState(null); // null means creating
   const [form, setForm] = useState({
     title: "",
@@ -32,6 +37,56 @@ function PracticeQuizzes() {
     questionHindi: "",
     options: ["", "", "", ""],
     correctAnswer: ""
+  };
+
+  const handleQuestionsLoaded = (parsedSections) => {
+    let flatQuestions = [];
+    if (parsedSections && parsedSections.length > 0) {
+      parsedSections.forEach(sec => {
+        if (sec.questions) {
+          flatQuestions = flatQuestions.concat(sec.questions);
+        }
+      });
+    }
+
+    const mapped = flatQuestions.map((q) => {
+      const optionsMapped = q.options.map(opt => {
+        if (typeof opt === "object") {
+          if (opt.english && opt.hindi) return `${opt.english} / ${opt.hindi}`;
+          return opt.english || opt.hindi || "";
+        }
+        return String(opt).trim();
+      });
+
+      let correctText = "";
+      if (q.correctAnswer === "A") correctText = optionsMapped[0] || "";
+      else if (q.correctAnswer === "B") correctText = optionsMapped[1] || "";
+      else if (q.correctAnswer === "C") correctText = optionsMapped[2] || "";
+      else if (q.correctAnswer === "D") correctText = optionsMapped[3] || "";
+      else {
+        correctText = q.correctAnswer;
+      }
+
+      return {
+        questionEnglish: q.questionEnglish || "",
+        questionHindi: q.questionHindi || "",
+        options: optionsMapped.length === 4 ? optionsMapped : ["", "", "", ""],
+        correctAnswer: correctText,
+      };
+    });
+
+    setForm(prev => ({
+      ...prev,
+      questions: [...prev.questions, ...mapped]
+    }));
+  };
+
+  const updateScheduledTime = (hr, min, period) => {
+    let hr24 = parseInt(hr, 10);
+    if (period === "PM" && hr24 < 12) hr24 += 12;
+    if (period === "AM" && hr24 === 12) hr24 = 0;
+    const hr24Str = String(hr24).padStart(2, "0");
+    setScheduleTime(`${hr24Str}:${min}`);
   };
 
   const openCreateModal = () => {
@@ -404,7 +459,22 @@ function PracticeQuizzes() {
                                     onClick={() => { 
                                       setActiveDropdown(null); 
                                       setScheduleDate(quiz.scheduledAt ? quiz.scheduledAt.slice(0,10) : "");
-                                      setScheduleTime(quiz.scheduledAt ? quiz.scheduledAt.slice(11,16) : "");
+                                      let hrStr = "12";
+                                      let minStr = "00";
+                                      let periodStr = "AM";
+                                      if (quiz.scheduledAt) {
+                                        const dt = new Date(quiz.scheduledAt);
+                                        let hours = dt.getHours();
+                                        minStr = String(dt.getMinutes()).padStart(2, "0");
+                                        periodStr = hours >= 12 ? "PM" : "AM";
+                                        hours = hours % 12;
+                                        hours = hours ? hours : 12;
+                                        hrStr = String(hours).padStart(2, "0");
+                                      }
+                                      setScheduledHour(hrStr);
+                                      setScheduledMinute(minStr);
+                                      setScheduledPeriod(periodStr);
+                                      setScheduleTime(quiz.scheduledAt ? quiz.scheduledAt.slice(11,16) : "00:00");
                                       setScheduleModal(quiz);
                                     }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
@@ -450,6 +520,7 @@ function PracticeQuizzes() {
         removeQuestion={removeQuestion}
         handleQuestionChange={handleQuestionChange}
         handleOptionChange={handleOptionChange}
+        handleQuestionsLoaded={handleQuestionsLoaded}
       />
 
       {/* ── SCHEDULE MODAL ── */}
@@ -483,12 +554,67 @@ function PracticeQuizzes() {
             />
 
             <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Time</label>
-            <input 
-              type="time" 
-              value={scheduleTime}
-              onChange={e => setScheduleTime(e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "14px", outline: "none", marginBottom: "24px", boxSizing: "border-box" }}
-            />
+            <div style={{ position: "relative", marginBottom: "24px" }}>
+              <button
+                type="button"
+                onClick={() => setShowTimePicker(!showTimePicker)}
+                style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-color)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+              >
+                <span>{`${scheduledHour}:${scheduledMinute} ${scheduledPeriod}`}</span>
+                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+              </button>
+
+              {showTimePicker && (
+                <div style={{ position: "absolute", top: "105%", left: 0, right: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                  <div style={{ display: "flex", height: "180px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
+
+                    {/* Hours */}
+                    <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", paddingRight: "4px" }} className="time-scroll-col">
+                      {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
+                        const isSelected = hr === scheduledHour;
+                        return (
+                          <div key={hr} onClick={() => { setScheduledHour(hr); updateScheduledTime(hr, scheduledMinute, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                            {hr}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                    {/* Minutes */}
+                    <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }} className="time-scroll-col">
+                      {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
+                        const isSelected = min === scheduledMinute;
+                        return (
+                          <div key={min} onClick={() => { setScheduledMinute(min); updateScheduledTime(scheduledHour, min, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                            {min}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                    {/* AM/PM */}
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px", justifyContent: "center" }}>
+                      {["AM", "PM"].map(p => {
+                        const isSelected = p === scheduledPeriod;
+                        return (
+                          <div key={p} onClick={() => { setScheduledPeriod(p); updateScheduledTime(scheduledHour, scheduledMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
+                            {p}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <button type="button" onClick={() => setShowTimePicker(false)} style={{ padding: "8px 12px", border: "1.5px solid var(--border-color)", borderRadius: "10px", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "center" }}>
+                    Select Time
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div style={{ display: "flex", gap: "10px" }}>
               <button 
@@ -520,7 +646,7 @@ function PracticeQuizzes() {
 export default PracticeQuizzes;
 
 // Modal Overlay component rendered when open
-function PracticeQuizModal({ isOpen, setIsOpen, editingQuizId, form, setForm, handleSubmit, addQuestion, removeQuestion, handleQuestionChange, handleOptionChange }) {
+function PracticeQuizModal({ isOpen, setIsOpen, editingQuizId, form, setForm, handleSubmit, addQuestion, removeQuestion, handleQuestionChange, handleOptionChange, handleQuestionsLoaded }) {
   if (!isOpen) return null;
   return (
     <div className="ticket-modal-overlay center-overlay" onClick={() => setIsOpen(false)} style={{ zIndex: 1100 }}>
@@ -604,26 +730,31 @@ function PracticeQuizModal({ isOpen, setIsOpen, editingQuizId, form, setForm, ha
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '10px 0' }} />
 
-            <div style={{ display: 'flex', alignItems: 'center', justifySpace: 'space-between', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
               <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Questions ({form.questions.length})</h4>
-              <button 
-                type="button" 
-                onClick={addQuestion}
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "rgba(108, 93, 211, 0.1)",
-                  color: "var(--primary-color)",
-                  border: "1px solid rgba(108, 93, 211, 0.2)",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "500",
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <Plus size={16} /> Add Question
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {handleQuestionsLoaded && (
+                  <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
+                )}
+                <button 
+                  type="button" 
+                  onClick={addQuestion}
+                  style={{
+                    padding: "8px 16px",
+                    backgroundColor: "rgba(108, 93, 211, 0.1)",
+                    color: "var(--primary-color)",
+                    border: "1px solid rgba(108, 93, 211, 0.2)",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Plus size={16} /> Add Question
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

@@ -193,18 +193,20 @@ function ManageQuizzes() {
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
-                          {quiz.sections && quiz.sections.length > 0 ? quiz.duration / 60 : quiz.duration} min
+                          {Math.round(Number(quiz.duration) || 0)} min
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
                           {(() => {
                             if (quiz.sections && quiz.sections.length > 0) {
                               return quiz.sections.reduce((sum, sec) => {
-                                let count = sec.questions?.length || 0;
-                                if (sec.type === 'coding' && sec.subsections) {
-                                  count += (sec.subsections.easy?.length || 0) +
-                                           (sec.subsections.medium?.length || 0) +
-                                           (sec.subsections.hard?.length || 0);
+                                const sectionData = sec.sectionId;
+                                if (!sectionData) return sum;
+                                let count = sectionData.questions?.length || 0;
+                                if (sectionData.type === 'coding' && sectionData.subsections) {
+                                  count += (sectionData.subsections.easy?.length || 0) +
+                                           (sectionData.subsections.medium?.length || 0) +
+                                           (sectionData.subsections.hard?.length || 0);
                                 }
                                 return sum + count;
                               }, 0);
@@ -384,64 +386,69 @@ function ManageQuizzes() {
                 </p>
                 
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "250px", overflowY: "auto", marginBottom: "24px" }}>
-                  {selectedExportQuiz.sections.map((sec) => (
-                    <div key={sec._id} style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "12px 16px",
-                      backgroundColor: "var(--bg-sidebar)",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "10px",
-                      gap: "12px"
-                    }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", textAlign: "left" }}>
-                        <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>{sec.title}</span>
-                        <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "capitalize" }}>
-                          {sec.type} Section • {
-                            sec.type === 'coding' && sec.subsections ? (
-                              ((sec.subsections.easy?.length || 0) + (sec.subsections.medium?.length || 0) + (sec.subsections.hard?.length || 0))
-                            ) : (
-                              sec.questions?.length || 0
-                            )
-                          } Questions
-                        </span>
+                  {selectedExportQuiz.sections.map((sec) => {
+                    const sectionData = sec.sectionId;
+                    if (!sectionData) return null;
+                    const secId = sectionData._id || sectionData;
+                    return (
+                      <div key={secId} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "12px 16px",
+                        backgroundColor: "var(--bg-sidebar)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "10px",
+                        gap: "12px"
+                      }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px", textAlign: "left" }}>
+                          <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>{sectionData.title}</span>
+                          <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "capitalize" }}>
+                            {sectionData.type} Section • {
+                              sectionData.type === 'coding' && sectionData.subsections ? (
+                                ((sectionData.subsections.easy?.length || 0) + (sectionData.subsections.medium?.length || 0) + (sectionData.subsections.hard?.length || 0))
+                              ) : (
+                                sectionData.questions?.length || 0
+                              )
+                            } Questions
+                          </span>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem("token");
+                              await axios.post(
+                                `${import.meta.env.VITE_API_URL}/api/quizzes/export-section`,
+                                { quizId: selectedExportQuiz._id, sectionId: secId },
+                                { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+                              );
+                              alert(`Successfully created "${sectionData.title}" as standalone quiz.`);
+                              setSelectedExportQuiz(null);
+                              fetchQuizzes();
+                            } catch (err) {
+                              console.error(err);
+                              alert(err.response?.data?.message || "Failed to create standalone quiz.");
+                            }
+                          }}
+                          style={{
+                            padding: "8px 14px",
+                            borderRadius: "8px",
+                            backgroundColor: "var(--violet)",
+                            color: "#fff",
+                            border: "none",
+                            fontSize: "12px",
+                            fontWeight: "700",
+                            cursor: "pointer",
+                            transition: "opacity 0.2s"
+                          }}
+                          onMouseEnter={(e) => e.target.style.opacity = "0.9"}
+                          onMouseLeave={(e) => e.target.style.opacity = "1"}
+                        >
+                          Create Standalone
+                        </button>
                       </div>
-                      <button
-                        onClick={async () => {
-                          try {
-                            const token = localStorage.getItem("token");
-                            await axios.post(
-                              `${import.meta.env.VITE_API_URL}/api/quizzes/export-section`,
-                              { quizId: selectedExportQuiz._id, sectionId: sec._id },
-                              { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-                            );
-                            alert(`Successfully created "${sec.title}" as standalone quiz.`);
-                            setSelectedExportQuiz(null);
-                            fetchQuizzes();
-                          } catch (err) {
-                            console.error(err);
-                            alert(err.response?.data?.message || "Failed to create standalone quiz.");
-                          }
-                        }}
-                        style={{
-                          padding: "8px 14px",
-                          borderRadius: "8px",
-                          backgroundColor: "var(--violet)",
-                          color: "#fff",
-                          border: "none",
-                          fontSize: "12px",
-                          fontWeight: "700",
-                          cursor: "pointer",
-                          transition: "opacity 0.2s"
-                        }}
-                        onMouseEnter={(e) => e.target.style.opacity = "0.9"}
-                        onMouseLeave={(e) => e.target.style.opacity = "1"}
-                      >
-                        Create Standalone
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>

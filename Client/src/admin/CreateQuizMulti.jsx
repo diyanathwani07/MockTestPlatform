@@ -92,18 +92,36 @@ function CreateQuizMulti() {
           });
 
           if (dbQuiz.sections && dbQuiz.sections.length > 0) {
-            const parsedSections = dbQuiz.sections.map(sec => {
-              const secDurationMins = Math.floor((sec.duration || 0) / 60);
-              const secDurationSecs = (sec.duration || 0) % 60;
-              return {
-                ...sec,
-                id: sec._id || Date.now().toString() + Math.random(),
-                durationMin: secDurationMins > 0 ? String(secDurationMins) : "",
-                durationSec: secDurationSecs > 0 ? String(secDurationSecs) : "",
-              };
-            });
-            setSections(parsedSections);
-            setActiveSectionId(parsedSections[0].id);
+            const parsedSections = [];
+            for (const secRef of dbQuiz.sections) {
+              const secId = typeof secRef === "object" ? secRef.sectionId?._id || secRef.sectionId : secRef;
+              const linkMode = typeof secRef === "object" ? secRef.mode || "clone" : "clone";
+              if (secId) {
+                try {
+                  const secRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                  });
+                  const secData = secRes.data;
+                  const secDurationMins = Math.floor((secData.duration || 0) / 60);
+                  const secDurationSecs = (secData.duration || 0) % 60;
+                  parsedSections.push({
+                    ...secData,
+                    sectionId: secData._id,
+                    id: secData._id || Date.now().toString() + Math.random(),
+                    durationMin: secDurationMins > 0 ? String(secDurationMins) : "",
+                    durationSec: secDurationSecs > 0 ? String(secDurationSecs) : "",
+                    isExternal: true,
+                    mode: linkMode,
+                  });
+                } catch (e) {
+                  console.error("Failed to load referenced section info:", secId, e);
+                }
+              }
+            }
+            if (parsedSections.length > 0) {
+              setSections(parsedSections);
+              setActiveSectionId(parsedSections[0].id);
+            }
           }
         } catch (err) {
           console.error("Error fetching quiz for edit", err);
