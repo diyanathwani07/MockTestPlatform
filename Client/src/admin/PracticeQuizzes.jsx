@@ -4,7 +4,7 @@ import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
 import DocxParser from "./components/DocxParser";
-import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, ArrowRightLeft } from "lucide-react";
 
 function PracticeQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -494,6 +494,28 @@ function PracticeQuizzes() {
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                                   >
                                     <Calendar size={15} /> Schedule
+                                  </div>
+
+                                  {/* Convert to Exam */}
+                                  <div
+                                    onClick={async () => {
+                                      setActiveDropdown(null);
+                                      if (window.confirm(`Convert "${quiz.title}" into a Real Exam? This will create a duplicate in your My Exams list.`)) {
+                                        try {
+                                          const token = localStorage.getItem("token");
+                                          await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/${quiz._id}/convert-to-exam`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                                          alert("Successfully converted to Real Exam. Check 'Manage Quizzes' to publish it.");
+                                        } catch (error) {
+                                          console.error("Conversion error", error);
+                                          alert("Failed to convert to exam.");
+                                        }
+                                      }
+                                    }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <ArrowRightLeft size={15} /> Convert to Exam
                                   </div>
 
                                   {/* Delete */}

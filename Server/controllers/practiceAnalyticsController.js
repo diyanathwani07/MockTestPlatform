@@ -432,7 +432,7 @@ Task: ${instruction}
       }
     });
 
-    res.json({ result: response.text() });
+    res.json({ result: response.text });
   } catch (error) {
     res.status(500).json({ message: "AI Tutor Error", error: error.message });
   }

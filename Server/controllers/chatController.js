@@ -81,7 +81,7 @@ const chatSupport = async (req, res) => {
 
     // 3. Call Gemini API with Structured Outputs (JSON Schema)
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: [
         ...formattedHistory,
         { role: "user", parts: [{ text: latestMessage }] }

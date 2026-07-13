@@ -7,7 +7,8 @@ const {
   updatePracticeQuiz,
   deletePracticeQuiz,
   generateAIExplanations,
-  getOrCreatePracticeSession
+  getOrCreatePracticeSession,
+  convertToExam
 } = require("../controllers/practiceController");
 const {
   savePracticeResult,
@@ -46,5 +47,6 @@ router.get("/:id/session", protect, getOrCreatePracticeSession);  // ✅ was mis
 router.put("/:id", protect, adminOnly, updatePracticeQuiz);
 router.delete("/:id", protect, adminOnly, deletePracticeQuiz);
 router.post("/:id/generate-ai", protect, adminOnly, generateAIExplanations);
+router.post("/:id/convert-to-exam", protect, adminOnly, convertToExam);
 
 module.exports = router;

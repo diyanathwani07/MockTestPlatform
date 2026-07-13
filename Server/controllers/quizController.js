@@ -367,6 +367,14 @@ const getDashboardStats = async (req, res) => {
             bg: "#EDE9FE",
             color: "#6E3FF3",
           });
+        } else if (quiz.status === "Draft" && quiz.updatedAt && new Date(quiz.updatedAt).getTime() > new Date(quiz.createdAt).getTime()) {
+          activities.push({
+            text: `Quiz "${quiz.title}" unpublished (or updated)`,
+            timestamp: quiz.updatedAt,
+            icon: "🚫",
+            bg: "#FEE2E2",
+            color: "#EF4444",
+          });
         }
       });
 
