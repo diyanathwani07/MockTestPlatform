@@ -332,27 +332,7 @@ function PracticeTest() {
         <div className="practice-question-card" style={{ backgroundColor: "#111222", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "20px", padding: "36px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           
           <div>
-            {/* Shuffling/Randomization indicator */}
-            {(quiz?.shuffleQuestions || quiz?.shuffleOptions || quiz?.randomSelection) && (
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                backgroundColor: "rgba(139, 92, 246, 0.1)",
-                border: "1px solid rgba(139, 92, 246, 0.2)",
-                borderRadius: "10px",
-                padding: "10px 16px",
-                color: "#a78bfa",
-                fontSize: "13.5px",
-                fontWeight: "600",
-                marginBottom: "20px"
-              }}>
-                <span style={{ fontSize: "16px" }}>🔀</span>
-                <span>
-                  <strong>Practice Mode:</strong> Questions and options are randomized for better learning.
-                </span>
-              </div>
-            )}
+
 
             {/* Question Indicator & Mark for Review */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
