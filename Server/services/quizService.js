@@ -253,7 +253,7 @@ const extractSection = async (quizId, sectionIndex, createdBy) => {
   if (durationMins <= 0) durationMins = 30;
 
   return createQuiz({
-    title: `${quiz.title} - ${section.title}`,
+    title: section.title,
     subject: quiz.subject,
     examName: quiz.examName,
     description: section.description || `Extracted from "${quiz.title}".`,

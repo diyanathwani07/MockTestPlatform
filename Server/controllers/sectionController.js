@@ -1,168 +1,172 @@
 const Section = require("../models/Section");
+const quizService = require("../services/quizService");
 const logAction = require("../utils/logger");
-const {
-  createSection,
-  cloneSection,
-  getQuizzesReferencingSection,
-  countSectionQuestions,
-} = require("../services/quizService");
 
-const createSectionHandler = async (req, res) => {
+// Create a section
+const createSection = async (req, res) => {
   try {
-    const section = await createSection({
+    const section = await quizService.createSection({
       ...req.body,
       createdBy: req.user?._id,
     });
-    await logAction("CREATE_SECTION", req.user?.fullName || "Admin", section.title, "Section", req.ip);
+
+    await logAction("CREATE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
     res.status(201).json(section);
   } catch (error) {
     console.error("Create Section Error:", error);
-    res.status(500).json({ message: error.message || "Failed to create section." });
+    res.status(500).json({ message: "Failed to create section.", error: error.message });
   }
 };
 
+// Get all reusable sections (standalone)
 const getSections = async (req, res) => {
   try {
+    const { standalone } = req.query;
     const filter = {};
-    if (req.query.standalone === "true") filter.isStandalone = true;
-    if (req.query.search) {
-      filter.title = { $regex: req.query.search, $options: "i" };
+    if (standalone === "true") {
+      filter.isStandalone = true;
     }
 
     const sections = await Section.find(filter)
-      .populate("questions", "questionEnglish difficulty")
-      .sort({ updatedAt: -1 });
-
-    const withCounts = sections.map((s) => ({
-      ...s.toObject(),
-      questionCount: countSectionQuestions(s),
-    }));
-
-    res.json(withCounts);
+      .populate("questions")
+      .sort({ createdAt: -1 });
+    res.json(sections);
   } catch (error) {
     console.error("Get Sections Error:", error);
-    res.status(500).json({ message: "Failed to fetch sections." });
+    res.status(500).json({ message: "Failed to fetch sections.", error: error.message });
   }
 };
 
+// Get single section by ID (populated)
 const getSectionById = async (req, res) => {
   try {
-    const section = await Section.findById(req.params.id)
-      .populate("questions")
-      .populate("subsections.easy")
-      .populate("subsections.medium")
-      .populate("subsections.hard");
-
-    if (!section) return res.status(404).json({ message: "Section not found." });
+    const section = await quizService.populateSectionQuestions(req.params.id);
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
+    }
     res.json(section);
   } catch (error) {
     console.error("Get Section Error:", error);
-    res.status(500).json({ message: "Failed to fetch section." });
+    res.status(500).json({ message: "Failed to fetch section.", error: error.message });
   }
 };
 
+// Update a section
 const updateSection = async (req, res) => {
   try {
     const section = await Section.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
-    if (!section) return res.status(404).json({ message: "Section not found." });
-    await logAction("UPDATE_SECTION", req.user?.fullName || "Admin", section.title, "Section", req.ip);
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
+    }
+
+    await logAction("UPDATE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
     res.json(section);
   } catch (error) {
     console.error("Update Section Error:", error);
-    res.status(500).json({ message: "Failed to update section." });
+    res.status(500).json({ message: "Failed to update section.", error: error.message });
   }
 };
 
+// Delete a section
 const deleteSection = async (req, res) => {
   try {
-    const linkedQuizzes = await getQuizzesReferencingSection(req.params.id);
-    if (linkedQuizzes.length > 0) {
-      return res.status(409).json({
-        message: "Cannot delete section: it is linked to one or more quizzes.",
-        linkedQuizCount: linkedQuizzes.length,
-        linkedQuizzes: linkedQuizzes.map((q) => ({ _id: q._id, title: q.title })),
+    const sectionId = req.params.id;
+    // Safety check: verify no active modular quizzes reference this section
+    const referencingQuizzes = await quizService.getQuizzesReferencingSection(sectionId);
+    if (referencingQuizzes.length > 0) {
+      return res.status(400).json({
+        message: `Section cannot be deleted because it is linked in ${referencingQuizzes.length} quiz(zes).`,
+        quizzes: referencingQuizzes.map(q => q.title),
       });
     }
 
-    const section = await Section.findByIdAndDelete(req.params.id);
-    if (!section) return res.status(404).json({ message: "Section not found." });
-    await logAction("DELETE_SECTION", req.user?.fullName || "Admin", section.title, "Section", req.ip);
+    const section = await Section.findByIdAndDelete(sectionId);
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
+    }
+
+    await logAction("DELETE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
     res.json({ message: "Section deleted successfully." });
   } catch (error) {
     console.error("Delete Section Error:", error);
-    res.status(500).json({ message: "Failed to delete section." });
+    res.status(500).json({ message: "Failed to delete section.", error: error.message });
   }
 };
 
-const cloneSectionHandler = async (req, res) => {
+// Clone a section (deep copy)
+const cloneSection = async (req, res) => {
   try {
-    const cloned = await cloneSection(req.params.id, req.user?._id);
-    await logAction("CLONE_SECTION", req.user?.fullName || "Admin", cloned.title, "Section", req.ip);
+    const cloned = await quizService.cloneSection(req.params.id, req.user?._id);
+    await logAction("CLONE_SECTION", req.user?.fullName || "Admin", `Cloned Section from ID: ${req.params.id} -> ${cloned.title}`, "Section", req.ip);
     res.status(201).json(cloned);
   } catch (error) {
     console.error("Clone Section Error:", error);
-    res.status(500).json({ message: error.message || "Failed to clone section." });
+    res.status(500).json({ message: "Failed to clone section.", error: error.message });
   }
 };
 
+// Add questions to a section
 const addQuestionsToSection = async (req, res) => {
   try {
     const { questionIds } = req.body;
-    if (!Array.isArray(questionIds) || questionIds.length === 0) {
-      return res.status(400).json({ message: "questionIds array is required." });
+    if (!Array.isArray(questionIds)) {
+      return res.status(400).json({ message: "questionIds must be an array." });
     }
 
     const section = await Section.findById(req.params.id);
-    if (!section) return res.status(404).json({ message: "Section not found." });
-
-    const existing = new Set(section.questions.map((id) => id.toString()));
-    for (const qid of questionIds) {
-      if (!existing.has(qid.toString())) {
-        section.questions.push(qid);
-      }
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
     }
-    await section.save();
 
-    const populated = await Section.findById(section._id).populate("questions");
-    res.json(populated);
+    // Add without duplicates
+    questionIds.forEach((id) => {
+      if (!section.questions.includes(id)) {
+        section.questions.push(id);
+      }
+    });
+
+    await section.save();
+    await logAction("ADD_QUESTIONS_TO_SECTION", req.user?.fullName || "Admin", `Added ${questionIds.length} questions to Section: ${section.title}`, "Section", req.ip);
+    res.json(section);
   } catch (error) {
-    console.error("Add Questions Error:", error);
-    res.status(500).json({ message: "Failed to add questions to section." });
+    console.error("Add Questions to Section Error:", error);
+    res.status(500).json({ message: "Failed to add questions to section.", error: error.message });
   }
 };
 
+// Remove questions from a section
 const removeQuestionsFromSection = async (req, res) => {
   try {
     const { questionIds } = req.body;
-    if (!Array.isArray(questionIds) || questionIds.length === 0) {
-      return res.status(400).json({ message: "questionIds array is required." });
+    if (!Array.isArray(questionIds)) {
+      return res.status(400).json({ message: "questionIds must be an array." });
     }
 
     const section = await Section.findById(req.params.id);
-    if (!section) return res.status(404).json({ message: "Section not found." });
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
+    }
 
-    const removeSet = new Set(questionIds.map((id) => id.toString()));
-    section.questions = section.questions.filter((id) => !removeSet.has(id.toString()));
+    section.questions = section.questions.filter((id) => !questionIds.includes(id.toString()));
     await section.save();
-
-    const populated = await Section.findById(section._id).populate("questions");
-    res.json(populated);
+    await logAction("REMOVE_QUESTIONS_FROM_SECTION", req.user?.fullName || "Admin", `Removed ${questionIds.length} questions from Section: ${section.title}`, "Section", req.ip);
+    res.json(section);
   } catch (error) {
-    console.error("Remove Questions Error:", error);
-    res.status(500).json({ message: "Failed to remove questions from section." });
+    console.error("Remove Questions from Section Error:", error);
+    res.status(500).json({ message: "Failed to remove questions from section.", error: error.message });
   }
 };
 
 module.exports = {
-  createSectionHandler,
+  createSection,
   getSections,
   getSectionById,
   updateSection,
   deleteSection,
-  cloneSectionHandler,
+  cloneSection,
   addQuestionsToSection,
   removeQuestionsFromSection,
 };

@@ -6,7 +6,8 @@ const {
   createPracticeQuiz,
   updatePracticeQuiz,
   deletePracticeQuiz,
-  generateAIExplanations
+  generateAIExplanations,
+  getOrCreatePracticeSession
 } = require("../controllers/practiceController");
 const {
   savePracticeResult,
@@ -21,15 +22,11 @@ const {
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
 
-// Practice Quiz Management (Admin/All)
+// ── STATIC ROUTES FIRST (must come before /:id to avoid conflicts) ──
+
+// Practice Quiz list
 router.get("/", protect, getPracticeQuizzes);
-router.get("/:id", protect, getPracticeQuizById);
-
 router.post("/", protect, adminOnly, createPracticeQuiz);
-router.put("/:id", protect, adminOnly, updatePracticeQuiz);
-router.delete("/:id", protect, adminOnly, deletePracticeQuiz);
-
-router.post("/:id/generate-ai", protect, adminOnly, generateAIExplanations);
 
 // Advanced Learning Endpoints (Students)
 router.post("/history", protect, savePracticeResult);
@@ -40,5 +37,14 @@ router.post("/wrong-questions/resolve", protect, resolveWrongQuestion);
 router.post("/bookmarks", protect, toggleBookmark);
 router.get("/bookmarks", protect, getBookmarks);
 router.post("/ai-explain", protect, getAiTutorExplanation);
+
+// ── DYNAMIC :id ROUTES AFTER (so static routes above are not swallowed) ──
+
+router.get("/:id", protect, getPracticeQuizById);
+router.get("/:id/session", protect, getOrCreatePracticeSession);  // ✅ was missing entirely
+
+router.put("/:id", protect, adminOnly, updatePracticeQuiz);
+router.delete("/:id", protect, adminOnly, deletePracticeQuiz);
+router.post("/:id/generate-ai", protect, adminOnly, generateAIExplanations);
 
 module.exports = router;

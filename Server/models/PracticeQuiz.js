@@ -50,6 +50,22 @@ const practiceQuizSchema = new mongoose.Schema(
       default: "",
     },
     questions: [practiceQuestionSchema],
+    shuffleQuestions: {
+      type: Boolean,
+      default: false,
+    },
+    shuffleOptions: {
+      type: Boolean,
+      default: false,
+    },
+    randomSelection: {
+      type: Boolean,
+      default: false,
+    },
+    questionsPerAttempt: {
+      type: Number,
+      default: 20,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

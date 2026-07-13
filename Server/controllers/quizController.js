@@ -12,96 +12,39 @@ const {
   duplicateQuiz,
   countQuizQuestions,
 } = require("../services/quizService");
+const quizService = require("../services/quizService");
 
-// CREATE a new quiz (supports both legacy embedded and modular section refs)
+// CREATE a new quiz
 const createQuiz = async (req, res) => {
   try {
-    const {
-      title,
-      subject,
-      examName,
-      description,
-      duration,
-      marksPerQuestion,
-      negativeMarking,
-      published,
-      questions,
-      status,
-      scheduledDate,
-      enablePerQuestionTimer,
-      timePerQuestion,
-      lockPreviousQuestions,
-      sections,
-      quizType,
-    } = req.body;
-
-    if (!title || !subject || duration === undefined || duration === null) {
-      return res.status(400).json({ message: "Title, subject, and duration are required." });
-    }
-
-    const isModularRequest =
-      sections?.length > 0 && sections.every((s) => s.sectionId && s.mode);
-
-    let quiz;
-    if (isModularRequest) {
-      quiz = await createModularQuiz({
-        title,
-        subject,
-        examName,
-        description,
-        duration,
-        marksPerQuestion,
-        negativeMarking,
-        published,
-        status,
-        scheduledDate,
-        enablePerQuestionTimer,
-        timePerQuestion,
-        lockPreviousQuestions,
-        sections,
-        quizType,
-        createdBy: req.user?._id,
-      });
-    } else {
-      quiz = await Quiz.create({
-        title,
-        subject,
-        examName,
-        description,
-        duration,
-        marksPerQuestion,
-        negativeMarking,
-        published,
-        questions,
-        status,
-        scheduledDate,
-        enablePerQuestionTimer,
-        timePerQuestion,
-        lockPreviousQuestions,
-        sections,
-        quizType: quizType || "exam",
-        createdBy: req.user?._id,
-      });
-    }
+    const quiz = await quizService.createQuiz({
+      ...req.body,
+      createdBy: req.user?._id,
+    });
 
     await logAction("CREATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     res.status(201).json(quiz);
   } catch (error) {
     console.error("Create Quiz Error:", error);
-    res.status(500).json({ message: error.message || "Failed to create quiz." });
+    res.status(500).json({ message: "Failed to create quiz.", error: error.message });
   }
 };
 
-// GET all quizzes (with optional filters)
+// GET all quizzes (with optional ?subject= filter and ?published= filter)
 const getQuizzes = async (req, res) => {
   try {
     const filter = {};
 
-    if (req.query.subject) filter.subject = req.query.subject;
-    if (req.query.published !== undefined) filter.published = req.query.published === "true";
-    if (req.query.quizType) filter.quizType = req.query.quizType;
+    if (req.query.subject) {
+      filter.subject = req.query.subject;
+    }
+    if (req.query.published !== undefined) {
+      filter.published = req.query.published === "true";
+    }
 
-    const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
+    const quizzes = await Quiz.find(filter)
+      .populate({ path: "sections.sectionId", model: "Section" })
+      .sort({ createdAt: -1 });
     res.json(quizzes);
   } catch (error) {
     console.error("Get Quizzes Error:", error);
@@ -109,23 +52,17 @@ const getQuizzes = async (req, res) => {
   }
 };
 
-// GET a single quiz by ID — with compatibility layer for modular quizzes
+// GET a single quiz by ID (fully populated preview)
 const getQuizById = async (req, res) => {
   try {
-    const quiz = await Quiz.findById(req.params.id);
+    const quiz = await quizService.previewQuiz(req.params.id);
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found." });
     }
-
-    if (quiz.hasModularSections()) {
-      const hydrated = await previewQuiz(quiz._id);
-      return res.json(hydrated);
-    }
-
     res.json(quiz);
   } catch (error) {
     console.error("Get Quiz Error:", error);
-    res.status(500).json({ message: "Failed to fetch quiz." });
+    res.status(500).json({ message: "Failed to fetch quiz.", error: error.message });
   }
 };
 
@@ -139,24 +76,22 @@ const updateQuiz = async (req, res) => {
 
     const updateData = { ...req.body };
 
-    if (updateData.sections && updateData.sections.length > 0) {
-      const isModularUpdate = updateData.sections.every((s) => s.sectionId && s.mode);
-      if (isModularUpdate) {
-        updateData.isModular = true;
-        updateData.questions = [];
-      } else {
-        updateData.questions = [];
+    // Resolve section references if updating sections array
+    if (updateData.sections?.length > 0) {
+      const resolved = [];
+      for (let i = 0; i < updateData.sections.length; i++) {
+        const entry = updateData.sections[i];
+        if (entry.sectionId) {
+          resolved.push({
+            sectionId: entry.sectionId._id || entry.sectionId,
+            mode: entry.mode || "linked",
+            order: entry.order ?? i,
+          });
+        }
       }
-    }
-
-    if (updateData.questions) {
-      updateData.questions = updateData.questions.filter(
-        (q) =>
-          q.questionEnglish &&
-          q.questionEnglish.trim() !== "" &&
-          q.correctAnswer &&
-          q.correctAnswer.trim() !== ""
-      );
+      updateData.sections = resolved;
+      updateData.isModular = true;
+      updateData.questions = [];
     }
 
     const quiz = await Quiz.findByIdAndUpdate(req.params.id, updateData, {
@@ -166,8 +101,6 @@ const updateQuiz = async (req, res) => {
 
     if (quiz.published && !originalQuiz.published) {
       await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
-    } else if (quiz.status === "Published" && originalQuiz.status !== "Published") {
-      await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     } else {
       await logAction("UPDATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     }
@@ -175,7 +108,7 @@ const updateQuiz = async (req, res) => {
     res.json(quiz);
   } catch (error) {
     console.error("Update Quiz Error:", error);
-    res.status(500).json({ message: "Failed to update quiz." });
+    res.status(500).json({ message: "Failed to update quiz.", error: error.message });
   }
 };
 
@@ -591,7 +524,7 @@ const exportSectionAsQuiz = async (req, res) => {
     if (durationMins <= 0) durationMins = 30;
 
     const newQuiz = await Quiz.create({
-      title: `${parentQuiz.title} - ${section.title}`,
+      title: section.title,
       subject: parentQuiz.subject,
       examName: parentQuiz.examName,
       description: section.description || `Standalone version of section "${section.title}".`,

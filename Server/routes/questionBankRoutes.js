@@ -10,8 +10,11 @@ const {
   deleteQuestionBank,
 } = require("../controllers/questionBankController");
 
+// Public/General read routes
 router.get("/", protect, getQuestionBanks);
 router.get("/:id", protect, getQuestionBankById);
+
+// Admin-only write routes
 router.post("/", protect, adminOnly, createQuestionBank);
 router.put("/:id", protect, adminOnly, updateQuestionBank);
 router.delete("/:id", protect, adminOnly, deleteQuestionBank);

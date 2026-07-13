@@ -38,4 +38,10 @@ const questionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for efficient filtering
+questionSchema.index({ subject: 1 });
+questionSchema.index({ tags: 1 });
+questionSchema.index({ difficulty: 1 });
+questionSchema.index({ questionBankId: 1 });
+
 module.exports = mongoose.model("Question", questionSchema);
