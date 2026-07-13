@@ -22,6 +22,9 @@ function PracticeTest() {
   const [visitedQuestions, setVisitedQuestions] = useState([0]); // Array of visited indices
   const [showInstructions, setShowInstructions] = useState(false);
   const [wrongQuestionIds, setWrongQuestionIds] = useState(new Set());
+  // Live AI explanations fetched on-demand when stored ones are missing
+  const [liveExplanations, setLiveExplanations] = useState({}); // { questionIndex: { correct, incorrect: {} } }
+  const [fetchingExplanation, setFetchingExplanation] = useState(false);
 
   const [stats, setStats] = useState({
     firstTryCorrect: 0,
@@ -105,9 +108,20 @@ function PracticeTest() {
     }
   }, [currentIndex]);
 
-  const renderExplanationText = (text) => {
+  const renderExplanationText = (text, optionText) => {
     if (!text) return null;
-    const parts = text.split(/(\([^)]+\))/g);
+    
+    // Remove markdown formatting
+    let cleanedText = text.replace(/\*/g, '').replace(/#/g, '').trim();
+    
+    // Remove prepended option text if it exists at the start of the explanation
+    if (optionText) {
+      const escapedOpt = optionText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`^\\s*${escapedOpt}\\s*[:\\-]?\\s*`, 'i');
+      cleanedText = cleanedText.replace(regex, '');
+    }
+
+    const parts = cleanedText.split(/(\([^)]+\))/g);
     return parts.map((part, index) => {
       if (part.startsWith('(') && part.endsWith(')')) {
         return (
@@ -153,8 +167,63 @@ function PracticeTest() {
 
   const currentQuestion = questions[currentIndex];
 
+  // Fetch AI explanation on-demand if not pre-generated in DB
+  const fetchLiveExplanation = async (question, qIndex) => {
+    // Skip if already fetched or if DB already has real explanations
+    const hasStoredCorrect = question.explanations?.correct && question.explanations.correct.trim().length > 0;
+    const hasStoredIncorrect = question.explanations?.incorrect && Object.keys(question.explanations.incorrect).length > 0;
+    if ((hasStoredCorrect && hasStoredIncorrect) || liveExplanations[qIndex] || fetchingExplanation) return;
+
+    setFetchingExplanation(true);
+    try {
+      const token = localStorage.getItem("token");
+      // Use incorrect-options mode to get per-option explanations + correct explanation
+      const [incorrectRes, correctRes] = await Promise.all([
+        axios.post(
+          `${import.meta.env.VITE_API_URL}/api/practice/ai-explain`,
+          { question, mode: "incorrect-options" },
+          { headers: { Authorization: `Bearer ${token}` } }
+        ),
+        axios.post(
+          `${import.meta.env.VITE_API_URL}/api/practice/ai-explain`,
+          { question, mode: "simple" },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+      ]);
+
+      // Build incorrect map from the text response
+      const incorrectText = incorrectRes.data?.result || "";
+      const correctText = correctRes.data?.result || "";
+
+      // Parse per-option explanations: try to match option text in the response
+      const incorrectMap = {};
+      question.options.forEach(opt => {
+        if (opt === question.correctAnswer) return;
+        // Try to find the option mentioned in the response
+        const regex = new RegExp(`${opt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*\\.?`, 'i');
+        const match = incorrectText.match(regex);
+        incorrectMap[opt] = match ? match[0].trim() : incorrectText;
+      });
+
+      setLiveExplanations(prev => ({
+        ...prev,
+        [qIndex]: {
+          correct: correctText,
+          incorrect: incorrectMap
+        }
+      }));
+    } catch (err) {
+      console.error("Live explanation fetch failed:", err);
+    } finally {
+      setFetchingExplanation(false);
+    }
+  };
+
   const handleOptionClick = (optIdx) => {
     if (isCorrectSelected || selectedOptions[optIdx]) return; // prevent re-clicking
+
+    // Fetch live AI explanation if not pre-generated
+    fetchLiveExplanation(currentQuestion, currentIndex);
 
     const isCorrect = currentQuestion.options[optIdx] === currentQuestion.correctAnswer;
     const newSelected = { ...selectedOptions, [optIdx]: true };
@@ -400,6 +469,12 @@ function PracticeTest() {
                   badgeBorder = "2px solid #10B981";
                   badgeBg = "#10B981";
                   badgeText = "#ffffff";
+                } else if (isCorrectSelected && !isCorrectOption) {
+                  borderStyle = "1.5px solid rgba(255, 255, 255, 0.08)";
+                  backgroundStyle = "#18192e";
+                  badgeBorder = "2px solid rgba(239, 68, 68, 0.6)";
+                  badgeBg = "#EF4444";
+                  badgeText = "#ffffff";
                 }
 
                 return (
@@ -442,41 +517,75 @@ function PracticeTest() {
                       <span style={{ flex: 1 }}>{opt}</span>
                     </button>
 
-                    {/* Show explanation under selected wrong option */}
-                    {isSelected && !isCorrectOption && (
-                      <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "14px" }}>
-                          ❌ Incorrect
+                    {/* Show explanation under selected wrong option, or all wrong options if correct answer is selected */}
+                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
+                      const stored = currentQuestion.explanations?.incorrect?.[opt];
+                      const live = liveExplanations[currentIndex]?.incorrect?.[opt];
+                      const text = (stored && stored.trim()) ? stored : live;
+                      
+                      return (
+                        <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "8px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
+                            ❌ Incorrect
+                          </div>
+                          <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
+                            {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                          </p>
                         </div>
-                        <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
-                          {renderExplanationText(currentQuestion.explanations?.incorrect?.[opt] || "This option is incorrect.")}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Show explanation under wrong options once correct answer is chosen */}
-                    {isCorrectSelected && !isCorrectOption && !isSelected && (
-                      <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "14px" }}>
-                          ❌ Incorrect
-                        </div>
-                        <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
-                          {renderExplanationText(currentQuestion.explanations?.incorrect?.[opt] || "This option is incorrect.")}
-                        </p>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Show explanation for the correct option once correct answer is chosen */}
-                    {isCorrectSelected && isCorrectOption && (
-                      <div className="practice-inline-exp success" style={{ padding: "16px", backgroundColor: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#10B981", fontWeight: "700", fontSize: "14px" }}>
-                          ☑ Correct Answer
+                    {isCorrectSelected && isCorrectOption && (() => {
+                      const stored = currentQuestion.explanations?.correct;
+                      const live = liveExplanations[currentIndex]?.correct;
+                      const text = (stored && stored.trim()) ? stored : live;
+                      
+                      const conceptSummary = currentQuestion.explanations?.conceptSummary;
+                      const didYouKnow = currentQuestion.explanations?.didYouKnow;
+
+                      return (
+                        <div className="practice-inline-exp success" style={{ padding: "16px", backgroundColor: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "12px", marginTop: "8px" }}>
+                          
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#10B981", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
+                              ☑ Correct Answer
+                            </div>
+                            <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
+                              {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is correct.")}
+                            </p>
+                          </div>
+
+                          {conceptSummary && (
+                            <>
+                              <hr style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "none", margin: "4px 0" }} />
+                              <div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#60A5FA", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
+                                  💡 Concept Summary
+                                </div>
+                                <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
+                                  {renderExplanationText(conceptSummary)}
+                                </p>
+                              </div>
+                            </>
+                          )}
+
+                          {didYouKnow && (
+                            <>
+                              <hr style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "none", margin: "4px 0" }} />
+                              <div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#FBBF24", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
+                                  ✨ Did You Know?
+                                </div>
+                                <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
+                                  {renderExplanationText(didYouKnow)}
+                                </p>
+                              </div>
+                            </>
+                          )}
                         </div>
-                        <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
-                          {renderExplanationText(currentQuestion.explanations?.correct || "This option is correct.")}
-                        </p>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 );
               })}

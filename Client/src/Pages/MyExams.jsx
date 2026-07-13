@@ -19,7 +19,9 @@ function MyExams() {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
-        setQuizzes(res.data);
+        // Filter out practice quizzes so they only appear in the Practice tab
+        const examsOnly = res.data.filter(q => q.quizType !== 'practice');
+        setQuizzes(examsOnly);
         
         const userStr = localStorage.getItem("user");
         if (userStr) {

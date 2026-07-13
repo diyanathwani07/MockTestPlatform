@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Eye, Edit2, Calendar, Trash2, Copy, Search } from "lucide-react";
+import { Eye, Edit2, Calendar, Trash2, Copy, Search, EyeOff, UploadCloud } from "lucide-react";
 
 function ManageQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -304,21 +304,56 @@ function ManageQuizzes() {
                                   >
                                     <Edit2 size={15} /> Edit
                                   </div>
-                                  <div 
-                                    onClick={() => { 
-                                      setActiveDropdown(null); 
-                                      if (quiz.sections && quiz.sections.length > 0) {
-                                        navigate(`/admin/edit-quiz-multi/${quiz._id}`);
-                                      } else {
-                                        navigate(`/admin/edit-quiz/${quiz._id}`); 
-                                      }
-                                    }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                  >
-                                    <Calendar size={15} /> Schedule
-                                  </div>
+                                    <div 
+                                      onClick={() => { 
+                                        setActiveDropdown(null); 
+                                        if (quiz.sections && quiz.sections.length > 0) {
+                                          navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                        } else {
+                                          navigate(`/admin/edit-quiz/${quiz._id}`); 
+                                        }
+                                      }}
+                                      style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                      onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                    >
+                                      <Calendar size={15} /> Schedule
+                                    </div>
+                                    {quiz.status === "Published" || quiz.published ? (
+                                      <div 
+                                        onClick={async () => {
+                                          setActiveDropdown(null);
+                                          if (window.confirm(`Are you sure you want to unpublish "${quiz.title}"? Students will no longer see it.`)) {
+                                            try {
+                                              const token = localStorage.getItem("token");
+                                              await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: false, status: "Draft" }, { headers: { Authorization: `Bearer ${token}` }});
+                                              fetchQuizzes();
+                                            } catch (error) { console.error("Failed to unpublish", error); }
+                                          }
+                                        }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                      >
+                                        <EyeOff size={15} /> Unpublish
+                                      </div>
+                                    ) : (
+                                      <div 
+                                        onClick={async () => {
+                                          setActiveDropdown(null);
+                                          try {
+                                            const token = localStorage.getItem("token");
+                                            await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: true, status: "Published", scheduledDate: null }, { headers: { Authorization: `Bearer ${token}` }});
+                                            fetchQuizzes();
+                                          } catch (error) { console.error("Failed to publish", error); }
+                                        }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                      >
+                                        <UploadCloud size={15} /> Publish
+                                      </div>
+                                    )}
                                   {quiz.sections && quiz.sections.length > 0 && (
                                     <div 
                                       onClick={() => { setActiveDropdown(null); setSelectedExportQuiz(quiz); }}
@@ -326,7 +361,7 @@ function ManageQuizzes() {
                                       onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                       onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                     >
-                                      <Copy size={15} /> Export Section
+                                      <Copy size={15} /> Duplicate Section
                                     </div>
                                   )}
                                   <div 
