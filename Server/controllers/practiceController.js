@@ -23,7 +23,28 @@ const getPracticeQuizById = async (req, res) => {
   try {
     const quiz = await PracticeQuiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
-    res.json(quiz);
+
+    // Convert Mongoose Map to plain object for explanations.incorrect
+    // so frontend can access it as explanations.incorrect[optionText]
+    const quizObj = quiz.toObject();
+    quizObj.questions = quizObj.questions.map(q => {
+      const incorrectRaw = q.explanations?.incorrect;
+      let incorrectPlain = {};
+      if (incorrectRaw instanceof Map) {
+        incorrectPlain = Object.fromEntries(incorrectRaw);
+      } else if (incorrectRaw && typeof incorrectRaw === "object") {
+        incorrectPlain = Object.fromEntries(Object.entries(incorrectRaw));
+      }
+      return {
+        ...q,
+        explanations: {
+          ...q.explanations,
+          incorrect: incorrectPlain
+        }
+      };
+    });
+
+    res.json(quizObj);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
@@ -34,17 +55,13 @@ const getPracticeQuizById = async (req, res) => {
 // @access  Private/Admin
 const createPracticeQuiz = async (req, res) => {
   try {
-    const { title, subject, description, questions, shuffleQuestions, shuffleOptions, randomSelection, questionsPerAttempt } = req.body;
+    const { title, subject, description, questions } = req.body;
     
     const quiz = new PracticeQuiz({
       title,
       subject,
       description,
       questions: questions || [],
-      shuffleQuestions: shuffleQuestions || false,
-      shuffleOptions: shuffleOptions || false,
-      randomSelection: randomSelection || false,
-      questionsPerAttempt: questionsPerAttempt || 20,
       createdBy: req.user._id,
     });
     
@@ -66,10 +83,6 @@ const updatePracticeQuiz = async (req, res) => {
     quiz.title = req.body.title || quiz.title;
     quiz.subject = req.body.subject || quiz.subject;
     quiz.description = req.body.description ?? quiz.description;
-    quiz.shuffleQuestions = req.body.shuffleQuestions ?? quiz.shuffleQuestions;
-    quiz.shuffleOptions = req.body.shuffleOptions ?? quiz.shuffleOptions;
-    quiz.randomSelection = req.body.randomSelection ?? quiz.randomSelection;
-    quiz.questionsPerAttempt = req.body.questionsPerAttempt ?? quiz.questionsPerAttempt;
     
     // We update the questions array directly here if passed
     if (req.body.questions) {
@@ -218,84 +231,11 @@ ${JSON.stringify(batch.map(q => ({
   }
 };
 
-const PracticeSession = require("../models/PracticeSession");
-
-function shuffle(array) {
-  let currentIndex = array.length, randomIndex;
-  while (currentIndex !== 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-  }
-  return array;
-}
-
-const getOrCreatePracticeSession = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { restart } = req.query;
-    const userId = req.user._id;
-
-    const quiz = await PracticeQuiz.findById(id);
-    if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
-
-    // Try to find existing session
-    let session = await PracticeSession.findOne({ userId, practiceQuizId: id });
-
-    // If restart is requested, delete the old session so we can generate a new one
-    if (session && restart === "true") {
-      await session.deleteOne();
-      session = null;
-    }
-
-    if (!session) {
-      // Create new session
-      let questionIndices = Array.from({ length: quiz.questions.length }, (_, i) => i);
-
-      // Handle randomSelection or shuffleQuestions
-      if (quiz.randomSelection) {
-        // Pick questionsPerAttempt random questions
-        questionIndices = shuffle(questionIndices);
-        const limit = quiz.questionsPerAttempt || 20;
-        questionIndices = questionIndices.slice(0, limit);
-      } else if (quiz.shuffleQuestions) {
-        questionIndices = shuffle(questionIndices);
-      }
-
-      // Generate shuffled options map
-      const optionsOrder = {};
-      questionIndices.forEach((qIdx) => {
-        const originalOptionsLength = quiz.questions[qIdx].options.length;
-        let optIndices = Array.from({ length: originalOptionsLength }, (_, i) => i);
-        if (quiz.shuffleOptions) {
-          optIndices = shuffle(optIndices);
-        }
-        optionsOrder[qIdx] = optIndices;
-      });
-
-      session = new PracticeSession({
-        userId,
-        practiceQuizId: id,
-        questionsOrder: questionIndices,
-        optionsOrder
-      });
-
-      await session.save();
-    }
-
-    res.json(session);
-  } catch (error) {
-    console.error("Session Error:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
 module.exports = {
   getPracticeQuizzes,
   getPracticeQuizById,
   createPracticeQuiz,
   updatePracticeQuiz,
   deletePracticeQuiz,
-  generateAIExplanations,
-  getOrCreatePracticeSession
+  generateAIExplanations
 };
