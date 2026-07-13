@@ -29,7 +29,11 @@ function PracticeQuizzes() {
     title: "",
     subject: "",
     description: "",
-    questions: []
+    questions: [],
+    shuffleQuestions: false,
+    shuffleOptions: false,
+    randomSelection: false,
+    questionsPerAttempt: 20
   });
 
   const emptyQuestion = {
@@ -95,7 +99,11 @@ function PracticeQuizzes() {
       title: "",
       subject: "",
       description: "",
-      questions: [{ ...emptyQuestion, options: ["", "", "", ""] }]
+      questions: [{ ...emptyQuestion, options: ["", "", "", ""] }],
+      shuffleQuestions: false,
+      shuffleOptions: false,
+      randomSelection: false,
+      questionsPerAttempt: 20
     });
     setIsModalOpen(true);
   };
@@ -111,7 +119,11 @@ function PracticeQuizzes() {
         questionHindi: q.questionHindi || "",
         options: q.options ? [...q.options] : ["", "", "", ""],
         correctAnswer: q.correctAnswer || ""
-      })) : []
+      })) : [],
+      shuffleQuestions: quiz.shuffleQuestions || false,
+      shuffleOptions: quiz.shuffleOptions || false,
+      randomSelection: quiz.randomSelection || false,
+      questionsPerAttempt: quiz.questionsPerAttempt || 20
     });
     setIsModalOpen(true);
   };
@@ -726,6 +738,65 @@ function PracticeQuizModal({ isOpen, setIsOpen, editingQuizId, form, setForm, ha
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 style={{ width: '100%', minHeight: '80px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '12px 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)', resize: 'vertical' }}
               />
+            </div>
+
+            {/* Learning Settings */}
+            <div style={{
+              backgroundColor: 'var(--bg-sidebar)',
+              border: '1.5px solid var(--border-color)',
+              borderRadius: '12px',
+              padding: '20px',
+              marginTop: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px'
+            }}>
+              <h4 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '14.5px', fontWeight: '700' }}>Learning Settings</h4>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                  <input 
+                    type="checkbox"
+                    checked={form.shuffleQuestions}
+                    onChange={e => setForm({ ...form, shuffleQuestions: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                  />
+                  Shuffle Questions
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                  <input 
+                    type="checkbox"
+                    checked={form.shuffleOptions}
+                    onChange={e => setForm({ ...form, shuffleOptions: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                  />
+                  Shuffle Options
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                  <input 
+                    type="checkbox"
+                    checked={form.randomSelection}
+                    onChange={e => setForm({ ...form, randomSelection: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                  />
+                  Random Question Selection (Optional)
+                </label>
+              </div>
+
+              {form.randomSelection && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>Questions per Attempt:</label>
+                  <input 
+                    type="number"
+                    min="1"
+                    value={form.questionsPerAttempt}
+                    onChange={e => setForm({ ...form, questionsPerAttempt: parseInt(e.target.value, 10) || 20 })}
+                    style={{ width: '70px', height: '36px', borderRadius: '8px', border: '1.5px solid var(--border-color)', padding: '0 8px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)', textAlign: 'center' }}
+                  />
+                </div>
+              )}
             </div>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '10px 0' }} />

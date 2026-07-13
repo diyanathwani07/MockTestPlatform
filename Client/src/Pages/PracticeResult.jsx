@@ -115,7 +115,7 @@ function PracticeResult() {
           </div>
 
           <div className="pr-actions">
-            <button className="pr-btn-secondary" onClick={() => navigate(`/practice/${quizId}`)}>
+            <button className="pr-btn-secondary" onClick={() => navigate(`/practice/${quizId}?restart=true`)}>
               <RotateCcw size={18} />
               Practice Again
             </button>
