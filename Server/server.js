@@ -12,6 +12,7 @@ const practiceRoutes = require("./routes/practiceRoutes");
 const questionRoutes = require("./routes/questionRoutes");
 const sectionRoutes = require("./routes/sectionRoutes");
 const questionBankRoutes = require("./routes/questionBankRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const Quiz = require("./models/Quiz");
 const seedDepartments = require("./seedDepartments");
@@ -98,6 +99,7 @@ app.post("/submit", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/results", resultRoutes);
+app.use("/api/users/upload-profile", uploadRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/departments", departmentRoutes);
 app.use("/api/admin/results", adminResultRoutes);

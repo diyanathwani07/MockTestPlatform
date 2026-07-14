@@ -583,13 +583,6 @@ function CreateQuiz() {
                       <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Assessment Questions</h3>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setQuestionsCollapsed(!questionsCollapsed); }}
-                        style={{ background: "transparent", color: "var(--text-secondary)", border: "1.5px solid var(--border-color)", borderRadius: "8px", padding: "6px 12px", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}
-                      >
-                        {questionsCollapsed ? "🔽 Expand All" : "🔼 Collapse All"}
-                      </button>
                       {questions.length > 0 && (
                         <button
                           type="button"
@@ -600,8 +593,14 @@ function CreateQuiz() {
                           🗑️ Delete All Questions
                         </button>
                       )}
-                      <span className="question-count-badge">
-                        {questions.length} Question{questions.length !== 1 ? "s" : ""}
+                      {questions.length > 0 && (
+                        <span style={{ fontSize: "16px", fontWeight: "bold", color: "var(--text-primary)" }}>{questions.length} Question{questions.length !== 1 ? 's' : ''}</span>
+                      )}
+                      <span
+                        onClick={(e) => { e.stopPropagation(); setQuestionsCollapsed(!questionsCollapsed); }}
+                        style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal", cursor: "pointer", userSelect: "none" }}
+                      >
+                        {questionsCollapsed ? "＋ Expand All" : "－ Collapse All"}
                       </span>
                     </div>
                   </div>

@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { X, Upload, Trash2 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { X, Upload, Trash2, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 const PRESET_AVATARS = [
   "/avatars/avatar1.png",
@@ -13,22 +14,55 @@ const PRESET_AVATARS = [
 ];
 
 const AvatarPickerModal = ({ isOpen, onClose, onSelect }) => {
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   if (!isOpen) return null;
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Please upload an image smaller than 2MB.");
+
+    const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedMimeTypes.includes(file.type)) {
+      alert("Invalid file type. Only JPG, PNG, and WebP are allowed.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      onSelect(event.target.result);
-    };
-    reader.readAsDataURL(file);
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Please upload an image smaller than 5MB.");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      // Ensure the endpoint matches what we defined in server.js
+      const response = await axios.post("http://localhost:5000/api/users/upload-profile", formData, config);
+
+      if (response.data.success) {
+        onSelect(response.data.imageUrl); // Close modal and update UI
+        alert("Profile picture updated!");
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert(error.response?.data?.message || "Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   return (
@@ -63,11 +97,21 @@ const AvatarPickerModal = ({ isOpen, onClose, onSelect }) => {
             style={{ display: 'none' }}
             onChange={handleFileUpload}
           />
-          <button className="avatar-btn avatar-btn-primary" onClick={() => fileInputRef.current.click()}>
-            <Upload size={16} /> Import from Gallery
+          <button 
+            className="avatar-btn avatar-btn-primary" 
+            onClick={() => fileInputRef.current.click()}
+            disabled={isUploading}
+          >
+            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
+            {isUploading ? "Uploading..." : "Import from Gallery"}
           </button>
           
-          <button className="avatar-btn avatar-btn-secondary" onClick={() => onSelect("")} style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+          <button 
+            className="avatar-btn avatar-btn-secondary" 
+            onClick={() => onSelect("")} 
+            style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+            disabled={isUploading}
+          >
             <Trash2 size={16} /> Remove Picture
           </button>
         </div>

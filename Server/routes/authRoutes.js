@@ -212,6 +212,7 @@ router.put("/profile", protect, async (req, res) => {
     user.bio = bio || user.bio;
     if (avatar !== undefined) {
       user.avatar = avatar;
+      user.profilePicture = avatar;
     }
 
     const updatedUser = await user.save();
@@ -227,6 +228,7 @@ router.put("/profile", protect, async (req, res) => {
       location: updatedUser.location,
       bio: updatedUser.bio,
       avatar: updatedUser.avatar,
+      profilePicture: updatedUser.profilePicture,
     });
   } catch (error) {
     console.error("Update Profile Error:", error);
