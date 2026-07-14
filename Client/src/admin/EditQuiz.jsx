@@ -5,7 +5,7 @@ import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
 import MathRenderer from "../components/MathRenderer";
-import MathToolbar from "../components/MathToolbar";
+
 import { saveSingleQuizModular } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
@@ -998,7 +998,7 @@ function EditQuiz() {
                                   {isExpanded && (
                                     <div className="question-expanded-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '14px', alignItems: 'start' }}>
                                       <div className="question-inputs-left">
-                                        <MathToolbar />
+
                                         <div className="question-inputs-fields">
                                           <div className="form-field full-width">
                                             <textarea
