@@ -186,14 +186,11 @@ ${JSON.stringify(batch.map(q => ({
       };
 
       try {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: promptText,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: schema,
-            temperature: 0.3,
-          }
+        const { generateContentWithFallback } = require("../utils/geminiHelper");
+        const response = await generateContentWithFallback(ai, promptText, {
+          responseMimeType: 'application/json',
+          responseSchema: schema,
+          temperature: 0.3,
         });
 
         const generatedData = JSON.parse(response.text);

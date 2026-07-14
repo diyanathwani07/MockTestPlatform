@@ -243,15 +243,16 @@ function StartTest() {
             <div className="row">
               <div className="label">Sections</div>
               <div className="value">
-                <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "8px", fontSize: "12px", border: "1px solid var(--border-color)" }}>
-                  <thead style={{ background: "rgba(255,255,255,0.05)", textAlign: "left" }}>
-                    <tr>
-                      <th style={{ padding: "8px", borderBottom: "1px solid var(--border-color)" }}>Section</th>
-                      <th style={{ padding: "8px", borderBottom: "1px solid var(--border-color)" }}>Questions</th>
-                      <th style={{ padding: "8px", borderBottom: "1px solid var(--border-color)" }}>Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <div style={{ width: "100%", border: "1px solid var(--border-color)", borderRadius: "8px", overflow: "hidden", background: "var(--bg-card)", fontSize: "14px" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead style={{ background: "rgba(255,255,255,0.03)", textAlign: "left" }}>
+                      <tr>
+                        <th style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", color: "var(--text-secondary)", fontWeight: "600" }}>Section</th>
+                        <th style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", color: "var(--text-secondary)", fontWeight: "600" }}>Questions</th>
+                        <th style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", color: "var(--text-secondary)", fontWeight: "600" }}>Duration</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                     {selectedQuiz.sections.map((sec, i) => {
                        let qCount = sec.questions?.length || 0;
                        if (sec.type === 'coding' && sec.subsections) {
@@ -261,9 +262,9 @@ function StartTest() {
                        }
                        return (
                         <tr key={i}>
-                          <td style={{ padding: "8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{sec.title}</td>
-                          <td style={{ padding: "8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{qCount}</td>
-                          <td style={{ padding: "8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                          <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{sec.title || selectedQuiz.title || "Main Section"}</td>
+                          <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{qCount}</td>
+                          <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>
                             {sec.duration ? `${sec.duration / 60} Min` : 'Global'}
                           </td>
                         </tr>
@@ -271,6 +272,7 @@ function StartTest() {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}

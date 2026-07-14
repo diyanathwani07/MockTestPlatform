@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
-import { Users, ClipboardList, HelpCircle, Trophy, TrendingUp } from "lucide-react";
+import { Users, User, ClipboardList, HelpCircle, Trophy, TrendingUp, Plus, BookOpen, Ban, Edit3, ArrowRight, FileText, Package, CalendarDays, GraduationCap, Library, File } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -468,28 +468,28 @@ function AdminDashboard() {
                 <h3 className="dashboard-card-title" style={{ marginBottom: "16px" }}>Quiz Status</h3>
                 <div className="dashboard-status-grid">
                   <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontSize: "16px", background: "rgba(16, 185, 129, 0.1)", color: "#10B981", padding: "6px", borderRadius: "8px" }}>📖</span>
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", background: "rgba(16, 185, 129, 0.1)", color: "#10B981", borderRadius: "8px" }}><BookOpen size={16} strokeWidth={2.5} /></span>
                     <div>
                       <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Published</p>
                       <p style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>{publishedQuizzes}</p>
                     </div>
                   </div>
                   <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontSize: "16px", background: "rgba(245, 158, 11, 0.1)", color: "#F59E0B", padding: "6px", borderRadius: "8px" }}>📝</span>
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", background: "rgba(245, 158, 11, 0.1)", color: "#F59E0B", borderRadius: "8px" }}><FileText size={16} strokeWidth={2.5} /></span>
                     <div>
                       <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Draft</p>
                       <p style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>{draftQuizzes}</p>
                     </div>
                   </div>
                   <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontSize: "16px", background: "rgba(139, 92, 246, 0.1)", color: "#8B5CF6", padding: "6px", borderRadius: "8px" }}>📦</span>
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", background: "rgba(139, 92, 246, 0.1)", color: "#8B5CF6", borderRadius: "8px" }}><Package size={16} strokeWidth={2.5} /></span>
                     <div>
                       <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Archived</p>
                       <p style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>{archivedQuizzes}</p>
                     </div>
                   </div>
                   <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontSize: "16px", background: "rgba(37, 99, 235, 0.1)", color: "#2563EB", padding: "6px", borderRadius: "8px" }}>📅</span>
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", background: "rgba(37, 99, 235, 0.1)", color: "#2563EB", borderRadius: "8px" }}><CalendarDays size={16} strokeWidth={2.5} /></span>
                     <div>
                       <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Scheduled</p>
                       <p style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>{scheduledQuizzes}</p>
@@ -567,8 +567,8 @@ function AdminDashboard() {
                   onMouseOut={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "#6E3FF3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>
-                        {explorerView === "exams" ? "🎓" : explorerView === "subjects" ? "📚" : "📄"}
+                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "#6E3FF3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {explorerView === "exams" ? <GraduationCap size={20} strokeWidth={2} /> : explorerView === "subjects" ? <Library size={20} strokeWidth={2} /> : <File size={20} strokeWidth={2} />}
                       </div>
                       <div>
                         <p style={{ margin: 0, fontWeight: "600", color: "var(--text-primary)", fontSize: "14.5px" }}>{item.name}</p>
@@ -580,7 +580,7 @@ function AdminDashboard() {
                       </div>
                     </div>
                     {explorerView !== "quizzes" && (
-                      <div style={{ color: "var(--text-muted)", fontSize: "16px" }}>➔</div>
+                      <div style={{ color: "var(--text-muted)", display: "flex", alignItems: "center" }}><ArrowRight size={16} strokeWidth={2.5} /></div>
                     )}
                     {explorerView === "quizzes" && (
                       <span style={{ 
@@ -615,18 +615,32 @@ function AdminDashboard() {
                 </div>
               </div>
               <div className="recent-activities-list">
-                {currentActivities.map((act, i) => (
-                  <div key={i} className="activity-item">
-                    <div className="activity-icon-badge" style={{ background: act.bg, color: act.color }}>
-                      {act.icon}
+                {currentActivities.map((act, i) => {
+                  const renderIcon = (emoji) => {
+                    switch (emoji) {
+                      case '➕': return <Plus size={16} strokeWidth={2.5} />;
+                      case '📖': return <BookOpen size={16} strokeWidth={2.5} />;
+                      case '🚫': return <Ban size={16} strokeWidth={2.5} />;
+                      case '👥': return <User size={16} strokeWidth={2.5} />;
+                      case '✏️': return <Edit3 size={16} strokeWidth={2.5} />;
+                      case '❓': return <HelpCircle size={16} strokeWidth={2.5} />;
+                      default: return emoji;
+                    }
+                  };
+
+                  return (
+                    <div key={i} className="activity-item">
+                      <div className="activity-icon-badge" style={{ background: act.bg, color: act.color }}>
+                        {renderIcon(act.icon)}
+                      </div>
+                      <div className="activity-info">
+                        <span className="activity-text" title={act.text}>{act.text}</span>
+                        <span className="activity-time">{act.time}</span>
+                      </div>
+                      <span className="activity-arrow"><ArrowRight size={14} style={{ color: "var(--text-muted)", strokeWidth: "2.5px" }} /></span>
                     </div>
-                    <div className="activity-info">
-                      <span className="activity-text" title={act.text}>{act.text}</span>
-                      <span className="activity-time">{act.time}</span>
-                    </div>
-                    <span className="activity-arrow">➔</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

@@ -32,7 +32,8 @@ const bulkCreateQuestions = async (questions, subject) => {
     { questions: valid.map((q) => sanitizeQuestion(q, subject)) },
     { headers: authHeaders() }
   );
-  return (res.data.questions || []).map((q) => q._id);
+  const questionsData = Array.isArray(res.data) ? res.data : (res.data.questions || []);
+  return questionsData.map((q) => q._id);
 };
 
 const createSectionDoc = async (section, questionIds, subsections) => {
@@ -180,22 +181,25 @@ export const saveModularQuiz = async ({
   return res.data;
 };
 
-export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing, scheduledDate }) => {
+export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing, scheduledDate, quizId, existingSectionId }) => {
   const questionIds = await bulkCreateQuestions(questions, quizMeta.subject);
 
-  const sectionId = await createSectionDoc(
-    {
-      title: quizMeta.title,
-      description: quizMeta.description,
-      durationMin: 0,
-      durationSec: 0,
-      marksPerQuestion: quizMeta.marksPerQuestion,
-      negativeMarking: quizMeta.negativeMarking,
-      type: "standard",
-    },
-    questionIds,
-    { easy: [], medium: [], hard: [] }
-  );
+  let sectionId = existingSectionId;
+  const sectionData = {
+    title: quizMeta.title,
+    description: quizMeta.description,
+    durationMin: 0,
+    durationSec: 0,
+    marksPerQuestion: quizMeta.marksPerQuestion,
+    negativeMarking: quizMeta.negativeMarking,
+    type: "standard",
+  };
+
+  if (sectionId) {
+    await updateSectionDoc(sectionId, sectionData, questionIds, { easy: [], medium: [], hard: [] });
+  } else {
+    sectionId = await createSectionDoc(sectionData, questionIds, { easy: [], medium: [], hard: [] });
+  }
 
   const duration =
     parseInt(quizMeta.duration, 10) > 0
@@ -213,6 +217,13 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     isModular: true,
     quizType: "exam",
   };
+
+  if (quizId) {
+    const res = await axios.put(`${API()}/api/quizzes/${quizId}`, payload, {
+      headers: authHeaders(),
+    });
+    return res.data;
+  }
 
   const res = await axios.post(`${API()}/api/quizzes`, payload, {
     headers: authHeaders(),

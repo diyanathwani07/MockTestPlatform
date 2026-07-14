@@ -423,13 +423,10 @@ Task: ${instruction}
       };
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: promptText,
-      config: {
-        ...responseConfig,
-        temperature: 0.7
-      }
+    const { generateContentWithFallback } = require("../utils/geminiHelper");
+    const response = await generateContentWithFallback(ai, promptText, {
+      ...responseConfig,
+      temperature: 0.7
     });
 
     res.json({ result: response.text });

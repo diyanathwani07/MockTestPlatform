@@ -4,6 +4,7 @@ import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import { usePreview } from "../context/PreviewContext";
 import { Sun, Moon, Clock, Bookmark, ArrowLeft, ArrowRight, LayoutGrid, CheckCircle, Trash2, Info, X } from "lucide-react";
+import MathRenderer from "../components/MathRenderer";
 import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
 import "../css/Quiz.css";
@@ -671,14 +672,18 @@ function QuizMulti() {
             {/* English Question */}
             {(current?.english || current?.questionEnglish) && (
               <div style={{ marginBottom: current?.hindi ? "20px" : "30px", textAlign: "left" }}>
-                <h2 style={{ fontSize: "18px", fontWeight: "700", lineHeight: "1.5", margin: 0, color: "var(--text-primary)", textAlign: "left" }}>{current?.english || current?.questionEnglish}</h2>
+                <h2 style={{ fontSize: "18px", fontWeight: "700", lineHeight: "1.5", margin: 0, color: "var(--text-primary)", textAlign: "left" }}>
+                  <MathRenderer text={current?.english || current?.questionEnglish} />
+                </h2>
               </div>
             )}
 
             {/* Hindi Question */}
             {(current?.hindi || current?.questionHindi) && (
               <div style={{ marginBottom: "30px", textAlign: "left" }}>
-                <h2 style={{ fontSize: "18px", fontWeight: "600", lineHeight: "1.5", color: "var(--text-secondary)", margin: 0, textAlign: "left" }}>{current?.hindi || current?.questionHindi}</h2>
+                <h2 style={{ fontSize: "18px", fontWeight: "600", lineHeight: "1.5", color: "var(--text-secondary)", margin: 0, textAlign: "left" }}>
+                  <MathRenderer text={current?.hindi || current?.questionHindi} />
+                </h2>
               </div>
             )}
 
@@ -703,7 +708,7 @@ function QuizMulti() {
                       width: "20px", height: "20px", borderRadius: "50%", 
                       border: isSelected ? "6px solid var(--violet)" : "2.5px solid var(--text-muted)", backgroundColor: "var(--bg-card)" 
                     }} />
-                    <span>{option}</span>
+                    <span><MathRenderer text={option} /></span>
                   </div>
                 );
               })}

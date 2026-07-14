@@ -193,7 +193,9 @@ function ManageQuizzes() {
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
-                          {Math.round(Number(quiz.duration) || 0)} min
+                          {quiz.sections && quiz.sections.length > 0
+                            ? Math.round((Number(quiz.duration) || 0) / 60)
+                            : Math.round(Number(quiz.duration) || 0)} min
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
@@ -292,7 +294,7 @@ function ManageQuizzes() {
                                   <div 
                                     onClick={() => { 
                                       setActiveDropdown(null); 
-                                      if (quiz.sections && quiz.sections.length > 0) {
+                                      if (quiz.sections && quiz.sections.length > 1) {
                                         navigate(`/admin/edit-quiz-multi/${quiz._id}`);
                                       } else {
                                         navigate(`/admin/edit-quiz/${quiz._id}`); 
@@ -307,7 +309,7 @@ function ManageQuizzes() {
                                     <div 
                                       onClick={() => { 
                                         setActiveDropdown(null); 
-                                        if (quiz.sections && quiz.sections.length > 0) {
+                                        if (quiz.sections && quiz.sections.length > 1) {
                                           navigate(`/admin/edit-quiz-multi/${quiz._id}`);
                                         } else {
                                           navigate(`/admin/edit-quiz/${quiz._id}`); 

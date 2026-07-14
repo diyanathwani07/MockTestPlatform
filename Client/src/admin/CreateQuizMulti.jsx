@@ -5,6 +5,8 @@ import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
 import SectionPickerModal from "./components/SectionPickerModal";
+import MathRenderer from "../components/MathRenderer";
+import MathToolbar from "../components/MathToolbar";
 import { saveModularQuiz } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
@@ -854,102 +856,137 @@ function CreateQuizMulti() {
                                   </svg>
                                   <span>Delete</span>
                                 </button>
-                                <span style={{ fontSize: "12px", color: "var(--text-muted)", padding: "0 2px" }}>
-                                  {isExpanded ? "▲" : "▼"}
-                                </span>
+                                  <span style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600" }}>
+                                    {isExpanded ? "- Collapse" : "+ Expand"}
+                                  </span>
                               </div>
                             </div>
 
                             {/* Collapsible Question Inputs */}
                             {isExpanded && (
-                              <div className="question-inputs-fields" style={{ marginTop: "14px" }}>
-                                <div className="form-field full-width">
-                                  <textarea
-                                    value={q.questionEnglish}
-                                    onChange={(e) => handleQuestionChange(qIndex, "questionEnglish", e.target.value)}
-                                    rows={2}
-                                    placeholder="Enter question in English..."
-                                  />
+                              <div className="question-expanded-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '14px', alignItems: 'start' }}>
+                                <div className="question-inputs-left">
+                                  <MathToolbar />
+                                  <div className="question-inputs-fields">
+                                    <div className="form-field full-width">
+                                      <textarea
+                                        value={q.questionEnglish}
+                                        onChange={(e) => handleQuestionChange(qIndex, "questionEnglish", e.target.value)}
+                                        rows={2}
+                                        placeholder="Enter question in English..."
+                                      />
+                                    </div>
+
+                                    <div className="form-field full-width">
+                                      <textarea
+                                        value={q.questionHindi || ""}
+                                        onChange={(e) => handleQuestionChange(qIndex, "questionHindi", e.target.value)}
+                                        rows={2}
+                                        placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..."
+                                      />
+                                    </div>
+
+                                    <label
+                                      style={{
+                                        fontSize: "11px",
+                                        fontWeight: "700",
+                                        color: "var(--text-secondary)",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.5px",
+                                        marginBottom: "8px",
+                                        display: "block"
+                                      }}
+                                    >
+                                      Options (Select correct answer using checkmark ✓ on the right)
+                                    </label>
+
+                                    <div className="options-grid-enhanced">
+                                      {["A", "B", "C", "D"].map((label, optIndex) => {
+                                        const isCorrect = q.correctOptionIndex === optIndex;
+                                        return (
+                                          <div
+                                            className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`}
+                                            key={label}
+                                          >
+                                            <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
+                                              {label}
+                                            </div>
+                                            <input
+                                              type="text"
+                                              value={q.options[optIndex] || ""}
+                                              onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
+                                              placeholder="English Option / हिंदी विकल्प"
+                                              className="option-text-field"
+                                            />
+                                            <div
+                                              className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
+                                              onClick={() => setCorrectOption(qIndex, optIndex)}
+                                              title="Mark as correct answer"
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                width: "22px",
+                                                height: "22px",
+                                                borderRadius: "50%",
+                                                border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
+                                                backgroundColor: isCorrect ? "#10B981" : "transparent",
+                                                color: isCorrect ? "#ffffff" : "transparent",
+                                                cursor: "pointer",
+                                                fontSize: "12px",
+                                                fontWeight: "bold",
+                                                transition: "all 0.15s ease",
+                                                userSelect: "none",
+                                                flexShrink: 0
+                                              }}
+                                            >
+                                              ✓
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    <div className="form-field full-width" style={{ marginTop: "16px" }}>
+                                      <textarea
+                                        value={q.explanation || ""}
+                                        onChange={(e) => handleQuestionChange(qIndex, "explanation", e.target.value)}
+                                        rows={2}
+                                        placeholder="Answer Explanation (Optional)..."
+                                        style={{ backgroundColor: "var(--bg-input)" }}
+                                      />
+                                    </div>
+                                  </div>
                                 </div>
-
-                                <div className="form-field full-width">
-                                  <textarea
-                                    value={q.questionHindi || ""}
-                                    onChange={(e) => handleQuestionChange(qIndex, "questionHindi", e.target.value)}
-                                    rows={2}
-                                    placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..."
-                                  />
-                                </div>
-
-                                <label
-                                  style={{
-                                    fontSize: "11px",
-                                    fontWeight: "700",
-                                    color: "var(--text-secondary)",
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.5px",
-                                    marginBottom: "8px",
-                                    display: "block"
-                                  }}
-                                >
-                                  Options (Select correct answer using checkmark ✓ on the right)
-                                </label>
-
-                                <div className="options-grid-enhanced">
-                                  {["A", "B", "C", "D"].map((label, optIndex) => {
-                                    const isCorrect = q.correctOptionIndex === optIndex;
-                                    return (
-                                      <div
-                                        className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`}
-                                        key={label}
-                                      >
-                                        <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
-                                          {label}
-                                        </div>
-                                        <input
-                                          type="text"
-                                          value={q.options[optIndex] || ""}
-                                          onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
-                                          placeholder="English Option / हिंदी विकल्प"
-                                          className="option-text-field"
-                                        />
-                                        <div
-                                          className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
-                                          onClick={() => setCorrectOption(qIndex, optIndex)}
-                                          title="Mark as correct answer"
-                                          style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            width: "22px",
-                                            height: "22px",
-                                            borderRadius: "50%",
-                                            border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
-                                            backgroundColor: isCorrect ? "#10B981" : "transparent",
-                                            color: isCorrect ? "#ffffff" : "transparent",
-                                            cursor: "pointer",
-                                            fontSize: "12px",
-                                            fontWeight: "bold",
-                                            transition: "all 0.15s ease",
-                                            userSelect: "none",
-                                            flexShrink: 0
-                                          }}
-                                        >
-                                          ✓
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-
-                                <div className="form-field full-width" style={{ marginTop: "16px" }}>
-                                  <textarea
-                                    value={q.explanation || ""}
-                                    onChange={(e) => handleQuestionChange(qIndex, "explanation", e.target.value)}
-                                    rows={2}
-                                    placeholder="Answer Explanation (Optional)..."
-                                    style={{ backgroundColor: "var(--bg-input)" }}
-                                  />
+                                <div className="question-preview-right" style={{ background: 'var(--bg-panel)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px', lineHeight: '1.6' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>Live Preview</div>
+                                  <div style={{ marginBottom: '16px' }}>
+                                    <div style={{ fontWeight: '600', marginBottom: '4px' }}>Question:</div>
+                                    <div><MathRenderer text={q.questionEnglish || "..."} /></div>
+                                    {q.questionHindi && <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}><MathRenderer text={q.questionHindi} /></div>}
+                                  </div>
+                                  <div style={{ marginBottom: '16px' }}>
+                                    <div style={{ fontWeight: '600', marginBottom: '4px' }}>Options:</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                      {["A", "B", "C", "D"].map((label, optIndex) => {
+                                        const isCorrect = q.correctOptionIndex === optIndex;
+                                        if (!q.options[optIndex]) return null;
+                                        return (
+                                          <div key={label} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <span style={{ fontWeight: 'bold', color: isCorrect ? '#10B981' : 'var(--text-secondary)' }}>{label}.</span>
+                                            <MathRenderer text={q.options[optIndex]} />
+                                            {isCorrect && <span style={{ color: '#10B981', fontSize: '12px', marginLeft: '4px' }}>✓</span>}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                  {q.explanation && (
+                                    <div>
+                                      <div style={{ fontWeight: '600', marginBottom: '4px' }}>Explanation:</div>
+                                      <div><MathRenderer text={q.explanation} /></div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}

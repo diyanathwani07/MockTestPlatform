@@ -4,6 +4,7 @@ import axios from "axios";
 import { ArrowLeft, ChevronRight, Info, Trash2, Bookmark, X, Shield } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/Practice.css";
+import MathRenderer from "../components/MathRenderer";
 
 function PracticeTest() {
   const { quizId } = useParams();
@@ -135,11 +136,11 @@ function PracticeTest() {
               marginTop: '4px' 
             }}
           >
-            {part}
+            <MathRenderer text={part} />
           </span>
         );
       }
-      return <span key={index}>{part}</span>;
+      return <MathRenderer key={index} text={part} />;
     });
   };
 
@@ -429,11 +430,11 @@ function PracticeTest() {
             {/* Question Texts */}
             <div className="practice-q-text" style={{ marginBottom: "32px", textAlign: "left" }}>
               <p style={{ fontSize: "19px", fontWeight: "700", color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.5 }}>
-                {currentQuestion.questionEnglish}
+                <MathRenderer text={currentQuestion.questionEnglish} />
               </p>
               {currentQuestion.questionHindi && (
                 <p className="q-hindi" style={{ fontSize: "17px", color: "#94a3b8", fontWeight: "500", margin: 0 }}>
-                  {currentQuestion.questionHindi}
+                  <MathRenderer text={currentQuestion.questionHindi} />
                 </p>
               )}
             </div>
@@ -514,7 +515,7 @@ function PracticeTest() {
                       }}>
                         {getOptionLetter(idx)}
                       </div>
-                      <span style={{ flex: 1 }}>{opt}</span>
+                      <span style={{ flex: 1 }}><MathRenderer text={opt} /></span>
                     </button>
 
                     {/* Show explanation under selected wrong option, or all wrong options if correct answer is selected */}

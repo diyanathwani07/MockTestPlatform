@@ -80,18 +80,15 @@ const chatSupport = async (req, res) => {
     const latestMessage = messages[messages.length - 1].text;
 
     // 3. Call Gemini API with Structured Outputs (JSON Schema)
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [
+    const { generateContentWithFallback } = require("../utils/geminiHelper");
+    const response = await generateContentWithFallback(ai, [
         ...formattedHistory,
         { role: "user", parts: [{ text: latestMessage }] }
-      ],
-      config: {
+      ], {
         systemInstruction: systemInstruction,
         responseMimeType: "application/json",
         responseSchema: responseSchema
-      }
-    });
+      });
 
     // 4. Parse the structured JSON response
     const result = JSON.parse(response.text);

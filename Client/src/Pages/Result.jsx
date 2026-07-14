@@ -3,7 +3,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
-import { Trophy, FileText, CalendarDays, Clock, HelpCircle, Target, XCircle, Timer, TrendingUp, Medal, ArrowLeft, LayoutGrid } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks } from "lucide-react";
+import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
 
@@ -518,8 +519,8 @@ function Result() {
                     <div className="review-question" style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
                       <span className="q-number" style={{ minWidth: "30px", fontWeight: "700", color: "#6E3FF3" }}>Q{index + 1}.</span>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: "600", color: "#1E293B", marginBottom: "6px", fontSize: "16px", lineHeight: "1.5" }}>{q.english || q.questionEnglish}</div>
-                        {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: "#475569", marginBottom: "12px", fontSize: "15px", lineHeight: "1.5" }}>{q.hindi || q.questionHindi}</div>}
+                        <div style={{ fontWeight: "600", color: "#1E293B", marginBottom: "6px", fontSize: "16px", lineHeight: "1.5" }}><MathRenderer text={q.english || q.questionEnglish} /></div>
+                        {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: "#475569", marginBottom: "12px", fontSize: "15px", lineHeight: "1.5" }}><MathRenderer text={q.hindi || q.questionHindi} /></div>}
                       </div>
                     </div>
 
@@ -574,7 +575,7 @@ function Result() {
                             }}>
                               {String.fromCharCode(65 + optIdx)}
                             </span>
-                            <span style={{ lineHeight: "1.4" }}>{opt}</span>
+                            <span style={{ lineHeight: "1.4" }}><MathRenderer text={opt} /></span>
                           </div>
                         );
                       }) : (
@@ -595,7 +596,7 @@ function Result() {
                           }
                           style={{ padding: "4px 10px", borderRadius: "6px", backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", fontWeight: "600", whiteSpace: "nowrap" }}
                         >
-                          {(userAns !== undefined && userAns !== null) ? userAns : "Not Answered"}
+                          {(userAns !== undefined && userAns !== null) ? <MathRenderer text={userAns} /> : "Not Answered"}
                         </span>
                       </div>
                       
@@ -604,7 +605,7 @@ function Result() {
                           <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
                             <span>💡</span> Explanation
                           </p>
-                          <p style={{ margin: 0, fontSize: "14.5px", color: "#475569", lineHeight: "1.6" }}>{q.explanation}</p>
+                          <p style={{ margin: 0, fontSize: "14.5px", color: "#475569", lineHeight: "1.6" }}><MathRenderer text={q.explanation} /></p>
                         </div>
                       )}
                     </div>
