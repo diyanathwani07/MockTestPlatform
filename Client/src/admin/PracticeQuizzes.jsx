@@ -79,10 +79,19 @@ function PracticeQuizzes() {
       };
     });
 
-    setForm(prev => ({
-      ...prev,
-      questions: [...prev.questions, ...mapped]
-    }));
+    setForm(prev => {
+      // Check if the only existing question is the default empty one
+      const isFirstEmpty = prev.questions.length === 1 && 
+                           !prev.questions[0].questionEnglish.trim() && 
+                           !prev.questions[0].questionHindi.trim();
+      
+      const existingQs = isFirstEmpty ? [] : prev.questions;
+
+      return {
+        ...prev,
+        questions: [...existingQs, ...mapped]
+      };
+    });
   };
 
   const updateScheduledTime = (hr, min, period) => {
@@ -683,16 +692,17 @@ export default PracticeQuizzes;
 function PracticeQuizModal({ isOpen, setIsOpen, editingQuizId, form, setForm, handleSubmit, addQuestion, removeQuestion, handleQuestionChange, handleOptionChange, handleQuestionsLoaded }) {
   if (!isOpen) return null;
   return (
-    <div className="ticket-modal-overlay center-overlay" onClick={() => setIsOpen(false)} style={{ zIndex: 1100 }}>
+    <div className="modal-overlay" onClick={() => setIsOpen(false)} style={{ zIndex: 1100 }}>
       <div 
-        className="ticket-modal center-modal" 
+        className="ticket-modal" 
         onClick={e => e.stopPropagation()} 
         style={{ 
-          maxWidth: '850px', 
-          width: '95%', 
-          maxHeight: '90vh', 
+          maxWidth: '550px', 
+          width: '90%', 
+          height: '100vh', 
           display: 'flex', 
-          flexDirection: 'column' 
+          flexDirection: 'column',
+          borderRadius: '0'
         }}
       >
         <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px", padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>

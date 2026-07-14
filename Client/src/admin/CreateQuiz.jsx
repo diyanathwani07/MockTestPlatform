@@ -255,7 +255,13 @@ function CreateQuiz() {
       };
     });
 
-    setQuestions(mapped);
+    setQuestions(prev => {
+      const isFirstEmpty = prev.length === 1 && 
+                           !prev[0].questionEnglish.trim() && 
+                           !prev[0].questionHindi.trim();
+      const existingQs = isFirstEmpty ? [] : prev;
+      return [...existingQs, ...mapped];
+    });
     setExpandedQuestions({ 0: true });
     setMessage({
       text: `✅ ${mapped.length} questions imported from Word file. Review and submit below.`,

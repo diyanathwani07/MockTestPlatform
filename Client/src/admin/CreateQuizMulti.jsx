@@ -267,7 +267,12 @@ function CreateQuizMulti() {
 
     if (parsedSections.length === 1 && parsedSections[0].sectionTitle === "Default") {
       const mappedQs = mapParsedQuestions(parsedSections[0].questions);
-      setActiveQuestions([...getActiveQuestions(), ...mappedQs]);
+      const activeQs = getActiveQuestions();
+      const isFirstEmpty = activeQs.length === 1 && 
+                           !activeQs[0].questionEnglish.trim() && 
+                           !activeQs[0].questionHindi.trim();
+      const existingQs = isFirstEmpty ? [] : activeQs;
+      setActiveQuestions([...existingQs, ...mappedQs]);
       setMessage({ text: `Imported ${mappedQs.length} questions into the active section.`, type: "success" });
       return;
     }
