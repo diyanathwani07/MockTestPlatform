@@ -108,6 +108,11 @@ function Questions() {
   const questionsPerPage = 15; // More per page since we now show options
   const [currentPage, setCurrentPage] = useState(1);
   const [openingBookId, setOpeningBookId] = useState(null);
+  const [quizType, setQuizType] = useState("exams");
+  const [isRecycleBin, setIsRecycleBin] = useState(false);
+  const [deletedSections, setDeletedSections] = useState([]);
+  const [deletedQuestions, setDeletedQuestions] = useState([]);
+  const [loadingDeleted, setLoadingDeleted] = useState(false);
 
   const handleCardClick = (book) => {
     setOpeningBookId(book.id);
@@ -118,18 +123,33 @@ function Questions() {
   };
 
   useEffect(() => {
+    if (isRecycleBin) {
+      fetchDeleted();
+      return;
+    }
     const fetchQuestionsAndGroup = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes`);
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const endpoint = quizType === "exams" 
+          ? `${import.meta.env.VITE_API_URL}/api/quizzes` 
+          : `${import.meta.env.VITE_API_URL}/api/practice`;
+          
+        const res = await axios.get(endpoint, { headers });
         const grouped = {};
 
         for (const quiz of res.data) {
-          const bookKey = (quiz.examName && quiz.examName.trim()) ? quiz.examName.trim() : "General Quizzes";
+          const bookKey = quizType === "practice" 
+            ? quiz.title 
+            : ((quiz.examName && quiz.examName.trim()) ? quiz.examName.trim() : "General Quizzes");
+            
           if (!grouped[bookKey]) {
             grouped[bookKey] = {
               id: bookKey, title: bookKey,
-              description: bookKey === "General Quizzes" ? "Standalone Quiz Modules" : `${bookKey} Collection`,
-              totalQuestions: 0, publishedDate: quiz.createdAt,
+              description: quizType === "practice" ? (quiz.subject || "Practice Quiz") : (bookKey === "General Quizzes" ? "Standalone Quiz Modules" : `${bookKey} Collection`),
+              totalQuestions: 0, publishedDate: quiz.publishedAt || quiz.createdAt,
               status: quiz.status || "Draft", subjects: {},
             };
           }
@@ -138,18 +158,17 @@ function Questions() {
             grouped[bookKey].subjects[subjectKey] = {
               quizId: quiz._id, subjectName: subjectKey,
               questionsCount: 0, questions: [],
-              publishedDate: quiz.createdAt, status: quiz.status || "Draft",
+              publishedDate: quiz.publishedAt || quiz.createdAt, status: quiz.status || "Draft",
             };
           }
 
           let quizQuestions = [];
-          if (quiz.sections && quiz.sections.length > 0) {
-            // Modular quiz: fetch questions from section references
+          if (quizType === "exams" && quiz.sections && quiz.sections.length > 0) {
             for (const sectionRef of quiz.sections) {
               const secId = typeof sectionRef === "object" ? sectionRef.sectionId?._id || sectionRef.sectionId : sectionRef;
               if (secId) {
                 try {
-                  const secRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`);
+                  const secRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, { headers });
                   const secData = secRes.data;
                   if (secData.questions && secData.questions.length > 0) {
                     quizQuestions = [...quizQuestions, ...secData.questions.map((q, idx) => ({
@@ -195,8 +214,82 @@ function Questions() {
         setLoading(false);
       }
     };
-    fetchQuestionsAndGroup();
-  }, []);
+    if (!isRecycleBin) {
+      fetchQuestionsAndGroup();
+    }
+  }, [quizType, isRecycleBin]);
+
+  const fetchDeleted = async () => {
+    try {
+      setLoadingDeleted(true);
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const [secRes, qRes] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_URL}/api/sections?deleted=true`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/questions?deleted=true`, { headers })
+      ]);
+      
+      setDeletedSections(secRes.data);
+      setDeletedQuestions(qRes.data);
+    } catch (err) {
+      console.error("Fetch Deleted Error:", err);
+    } finally {
+      setLoadingDeleted(false);
+    }
+  };
+
+  const handleRestoreSection = async (id) => {
+    if (!window.confirm("Restore this section?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/sections/${id}/restore`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDeleted();
+    } catch (error) {
+      alert("Failed to restore section.");
+    }
+  };
+
+  const handlePermDeleteSection = async (id) => {
+    if (!window.confirm("PERMANENTLY delete this section? This cannot be undone.")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/sections/${id}/permanent`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDeleted();
+    } catch (error) {
+      alert("Failed to permanently delete section.");
+    }
+  };
+
+  const handleRestoreQuestion = async (id) => {
+    if (!window.confirm("Restore this question?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/questions/${id}/restore`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDeleted();
+    } catch (error) {
+      alert("Failed to restore question.");
+    }
+  };
+
+  const handlePermDeleteQuestion = async (id) => {
+    if (!window.confirm("PERMANENTLY delete this question? This cannot be undone.")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/questions/${id}/permanent`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDeleted();
+    } catch (error) {
+      alert("Failed to permanently delete question.");
+    }
+  };
 
   const handleSelectBook = (book) => {
     setSelectedBook(book);
@@ -248,9 +341,76 @@ function Questions() {
       <div className="admin-main">
         <AdminNavbar title="Questions Bank" />
         <div className="admin-content" style={{ padding: "24px", minHeight: 0 }}>
-          {loading ? (
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
+            <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", height: "fit-content" }}>
+              <button
+                onClick={() => setIsRecycleBin(false)}
+                style={{
+                  padding: "6px 12px", borderRadius: "6px", border: "none", fontSize: "13px", fontWeight: "600", cursor: "pointer",
+                  backgroundColor: !isRecycleBin ? "var(--violet)" : "transparent",
+                  color: !isRecycleBin ? "white" : "var(--text-secondary)",
+                }}
+              >
+                Active
+              </button>
+              <button
+                onClick={() => setIsRecycleBin(true)}
+                style={{
+                  padding: "6px 12px", borderRadius: "6px", border: "none", fontSize: "13px", fontWeight: "600", cursor: "pointer",
+                  backgroundColor: isRecycleBin ? "var(--red)" : "transparent",
+                  color: isRecycleBin ? "white" : "var(--text-secondary)",
+                }}
+              >
+                Recycle Bin
+              </button>
+            </div>
+          </div>
+
+          {(loading || loadingDeleted) ? (
             <div style={{ textAlign: "center", padding: "80px", color: "var(--text-secondary)", fontSize: "16px" }}>
-              ⏳ Loading Questions database...
+              ⏳ Loading...
+            </div>
+          ) : isRecycleBin ? (
+            <div className="recycle-bin-view" style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+              <div>
+                <h3 style={{ marginBottom: "16px", color: "var(--text-primary)" }}>Deleted Sections ({deletedSections.length})</h3>
+                {deletedSections.length === 0 ? (
+                  <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No deleted sections.</p>
+                ) : (
+                  <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}>
+                    {deletedSections.map(sec => (
+                      <div key={sec._id} style={{ background: "var(--bg-card)", padding: "16px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                        <h4 style={{ margin: "0 0 8px 0" }}>{sec.name}</h4>
+                        <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "0 0 16px 0" }}>Deleted: {new Date(sec.deletedAt).toLocaleString()}</p>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button onClick={() => handleRestoreSection(sec._id)} style={{ padding: "6px 12px", background: "var(--bg-page)", border: "1px solid var(--border-color)", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--text-primary)" }}>Restore</button>
+                          <button onClick={() => handlePermDeleteSection(sec._id)} style={{ padding: "6px 12px", background: "rgba(226, 67, 107, 0.1)", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--red)" }}>Delete Permanently</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h3 style={{ marginBottom: "16px", color: "var(--text-primary)" }}>Deleted Questions ({deletedQuestions.length})</h3>
+                {deletedQuestions.length === 0 ? (
+                  <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No deleted questions.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {deletedQuestions.map(q => (
+                      <div key={q._id} style={{ background: "var(--bg-card)", padding: "16px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                        <p style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: "500", margin: "0 0 8px 0" }}>{q.questionEnglish}</p>
+                        <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "0 0 16px 0" }}>Subject: {q.subject || "N/A"} • Deleted: {new Date(q.deletedAt).toLocaleString()}</p>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button onClick={() => handleRestoreQuestion(q._id)} style={{ padding: "6px 12px", background: "var(--bg-page)", border: "1px solid var(--border-color)", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--text-primary)" }}>Restore</button>
+                          <button onClick={() => handlePermDeleteQuestion(q._id)} style={{ padding: "6px 12px", background: "rgba(226, 67, 107, 0.1)", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--red)" }}>Delete Permanently</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           ) : books.length === 0 ? (
             <div className="no-books-placeholder">
@@ -264,9 +424,54 @@ function Questions() {
               {/* ── VIEW 1: QUIZZES ── */}
               {viewMode === "quizzes" && (
                 <div className="qb-quizzes-view">
-                  <div className="qb-view-header">
-                    <h2>Select a Quiz</h2>
-                    <p>Choose a quiz to view its subjects and questions.</p>
+                  <div className="qb-view-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <h2>Select a Quiz</h2>
+                      <p>Choose a quiz to view its subjects and questions.</p>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        background: "var(--bg-input)",
+                        padding: "4px",
+                        borderRadius: "12px",
+                        border: "1.5px solid var(--border-input)",
+                        height: "max-content"
+                      }}
+                    >
+                      <button
+                        onClick={() => setQuizType("exams")}
+                        style={{
+                          padding: "8px 24px",
+                          borderRadius: "8px",
+                          background: quizType === "exams" ? "var(--violet)" : "transparent",
+                          color: quizType === "exams" ? "white" : "var(--text-muted)",
+                          fontWeight: "600",
+                          border: "none",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          boxShadow: quizType === "exams" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                        }}
+                      >
+                        Exams
+                      </button>
+                      <button
+                        onClick={() => setQuizType("practice")}
+                        style={{
+                          padding: "8px 24px",
+                          borderRadius: "8px",
+                          background: quizType === "practice" ? "var(--violet)" : "transparent",
+                          color: quizType === "practice" ? "white" : "var(--text-muted)",
+                          fontWeight: "600",
+                          border: "none",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          boxShadow: quizType === "practice" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                        }}
+                      >
+                        Practice
+                      </button>
+                    </div>
                   </div>
                   <div className="practice-grid">
                     {books.map((book, index) => {

@@ -18,6 +18,8 @@ const {
   extractSectionHandler,
   duplicateQuizHandler,
   convertSingleToMulti,
+  restoreQuiz,
+  permanentlyDeleteQuiz,
 } = require("../controllers/quizController");
 
 // Dashboard stats — admin only
@@ -40,5 +42,7 @@ router.post("/:id/extract-section", protect, adminOnly, extractSectionHandler);
 router.post("/:id/duplicate", protect, adminOnly, duplicateQuizHandler);
 router.put("/:id", protect, adminOnly, updateQuiz);
 router.delete("/:id", protect, adminOnly, deleteQuiz);
+router.put("/:id/restore", protect, adminOnly, restoreQuiz);
+router.delete("/:id/permanent", protect, adminOnly, permanentlyDeleteQuiz);
 
 module.exports = router;

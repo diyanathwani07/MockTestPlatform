@@ -11,6 +11,7 @@ function PracticeQuizzes() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [generatingAiFor, setGeneratingAiFor] = useState(null); // id of quiz being generated
+  const [viewMode, setViewMode] = useState("active"); // "active" or "recycle"
   const navigate = useNavigate();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -175,8 +176,8 @@ function PracticeQuizzes() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, statusOverride = "Published") => {
+    if (e) e.preventDefault();
     
     if (!form.title.trim()) return alert("Please enter a title");
     if (!form.subject.trim()) return alert("Please enter a subject");
@@ -195,12 +196,16 @@ function PracticeQuizzes() {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
+      const payload = {
+        ...form,
+        status: statusOverride
+      };
       
       if (editingQuizId) {
-        await axios.put(`${import.meta.env.VITE_API_URL}/api/practice/${editingQuizId}`, form, { headers });
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/practice/${editingQuizId}`, payload, { headers });
         alert("Practice quiz updated successfully");
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/practice`, form, { headers });
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/practice`, payload, { headers });
         alert("Practice quiz created successfully");
       }
       
@@ -212,10 +217,13 @@ function PracticeQuizzes() {
     }
   };
 
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = async (mode = viewMode) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/practice`, {
+      const endpoint = mode === "recycle"
+        ? `${import.meta.env.VITE_API_URL}/api/practice?deleted=true`
+        : `${import.meta.env.VITE_API_URL}/api/practice`;
+      const response = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuizzes(response.data);
@@ -227,8 +235,8 @@ function PracticeQuizzes() {
   };
 
   useEffect(() => {
-    fetchQuizzes();
-  }, []);
+    fetchQuizzes(viewMode);
+  }, [viewMode]);
 
   const filteredQuizzes = quizzes.filter(q => {
     return q.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -236,7 +244,7 @@ function PracticeQuizzes() {
   });
 
   const handleDelete = async (id, title) => {
-    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+    if (window.confirm(`Are you sure you want to move "${title}" to the recycle bin?`)) {
       try {
         const token = localStorage.getItem("token");
         await axios.delete(`${import.meta.env.VITE_API_URL}/api/practice/${id}`, {
@@ -245,7 +253,37 @@ function PracticeQuizzes() {
         setQuizzes(quizzes.filter((q) => q._id !== id));
       } catch (error) {
         console.error("Delete Error:", error);
-        alert("Failed to delete practice quiz");
+        alert("Failed to move practice quiz to recycle bin");
+      }
+    }
+  };
+
+  const handleRestore = async (id, title) => {
+    if (window.confirm(`Restore "${title}"?`)) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/practice/${id}/restore`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setQuizzes(quizzes.filter((q) => q._id !== id));
+      } catch (error) {
+        console.error("Restore Error:", error);
+        alert("Failed to restore practice quiz.");
+      }
+    }
+  };
+
+  const handlePermanentDelete = async (id, title) => {
+    if (window.confirm(`WARNING: Are you sure you want to PERMANENTLY delete "${title}"? This cannot be undone.`)) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/practice/${id}/permanent`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setQuizzes(quizzes.filter((q) => q._id !== id));
+      } catch (error) {
+        console.error("Permanent Delete Error:", error);
+        alert("Failed to permanently delete practice quiz.");
       }
     }
   };
@@ -303,22 +341,57 @@ function PracticeQuizzes() {
         <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
           
           <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <div style={{ 
-              flex: 1,
-              maxWidth: '400px',
-              display: "flex", alignItems: "center", gap: "10px", 
-              backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
-              borderRadius: "100px", padding: "8px 16px",
-              boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
-            }}>
-              <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
-              <input 
-                type="text" 
-                placeholder="Search practice modules..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
-              />
+            <div style={{ display: "flex", gap: "16px", flex: 1, alignItems: "center" }}>
+              <div style={{ 
+                flex: 1,
+                maxWidth: '400px',
+                display: "flex", alignItems: "center", gap: "10px", 
+                backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
+                borderRadius: "100px", padding: "8px 16px",
+                boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
+              }}>
+                <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
+                <input 
+                  type="text" 
+                  placeholder="Search practice modules..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                <button
+                  onClick={() => setViewMode("active")}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
+                    color: viewMode === "active" ? "white" : "var(--text-secondary)",
+                  }}
+                >
+                  Active
+                </button>
+                <button
+                  onClick={() => setViewMode("recycle")}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    backgroundColor: viewMode === "recycle" ? "var(--red)" : "transparent",
+                    color: viewMode === "recycle" ? "white" : "var(--text-secondary)",
+                  }}
+                >
+                  Recycle Bin
+                </button>
+              </div>
             </div>
 
             <button 
@@ -355,6 +428,8 @@ function PracticeQuizzes() {
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Title</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Subject</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Questions</th>
+                    <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Date Created</th>
+                    <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Status</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>AI Status</th>
                     <th style={{ padding: "16px", textAlign: "right", color: "var(--text-muted)", fontWeight: "500" }}>Actions</th>
                   </tr>
@@ -366,9 +441,6 @@ function PracticeQuizzes() {
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                         <td style={{ padding: "16px", color: "var(--text-primary)" }}>
                           <div style={{ fontWeight: "500" }}>{quiz.title}</div>
-                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
-                            Created: {new Date(quiz.createdAt).toLocaleDateString()}
-                          </div>
                         </td>
                         <td style={{ padding: "16px", color: "var(--text-main)" }}>
                           <span style={{ 
@@ -381,8 +453,32 @@ function PracticeQuizzes() {
                             {quiz.subject}
                           </span>
                         </td>
-                        <td style={{ padding: "16px", color: "var(--text-main)" }}>
+                        <td style={{ padding: "16px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
                           {quiz.questions?.length || 0}
+                        </td>
+                        <td style={{ padding: "16px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13px", whiteSpace: "nowrap" }}>
+                          {new Date(quiz.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}
+                        </td>
+                        <td style={{ padding: "16px", whiteSpace: "nowrap" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                            <span style={{
+                              backgroundColor: quiz.status === "Published" ? "#E4F8F0" : "#F1F5F9",
+                              color: quiz.status === "Published" ? "#10B981" : "#64748B",
+                              padding: "4px 10px", 
+                              borderRadius: "20px", 
+                              fontSize: "12px", 
+                              fontWeight: "600",
+                              display: "inline-block", 
+                              textAlign: "center"
+                            }}>
+                              {quiz.status || "Draft"}
+                            </span>
+                            {quiz.status === "Published" && quiz.publishedAt && (
+                              <span style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "2px", textAlign: "center" }}>
+                                {new Date(quiz.publishedAt).toLocaleDateString('en-GB').replace(/\//g, '-')}, {new Date(quiz.publishedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td style={{ padding: "16px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -455,87 +551,110 @@ function PracticeQuizzes() {
                                   zIndex: 9999,
                                   textAlign: "left"
                                 }}>
-                                  {/* Preview */}
-                                  <div
-                                    onClick={() => { setActiveDropdown(null); navigate(`/practice/${quiz._id}?preview=true`); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
-                                  >
-                                    <Eye size={15} /> Preview
-                                  </div>
-
-                                  {/* Edit */}
-                                  <div
-                                    onClick={() => { setActiveDropdown(null); openEditModal(quiz); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
-                                  >
-                                    <Edit2 size={15} /> Edit
-                                  </div>
-
-                                  {/* Schedule */}
-                                  <div
-                                    onClick={() => { 
-                                      setActiveDropdown(null); 
-                                      setScheduleDate(quiz.scheduledAt ? quiz.scheduledAt.slice(0,10) : "");
-                                      let hrStr = "12";
-                                      let minStr = "00";
-                                      let periodStr = "AM";
-                                      if (quiz.scheduledAt) {
-                                        const dt = new Date(quiz.scheduledAt);
-                                        let hours = dt.getHours();
-                                        minStr = String(dt.getMinutes()).padStart(2, "0");
-                                        periodStr = hours >= 12 ? "PM" : "AM";
-                                        hours = hours % 12;
-                                        hours = hours ? hours : 12;
-                                        hrStr = String(hours).padStart(2, "0");
-                                      }
-                                      setScheduledHour(hrStr);
-                                      setScheduledMinute(minStr);
-                                      setScheduledPeriod(periodStr);
-                                      setScheduleTime(quiz.scheduledAt ? quiz.scheduledAt.slice(11,16) : "00:00");
-                                      setScheduleModal(quiz);
-                                    }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
-                                  >
-                                    <Calendar size={15} /> Schedule
-                                  </div>
-
-                                  {/* Convert to Exam */}
-                                  <div
-                                    onClick={async () => {
-                                      setActiveDropdown(null);
-                                      if (window.confirm(`Convert "${quiz.title}" into a Real Exam? This will create a duplicate in your My Exams list.`)) {
-                                        try {
-                                          const token = localStorage.getItem("token");
-                                          await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/${quiz._id}/convert-to-exam`, {}, { headers: { Authorization: `Bearer ${token}` } });
-                                          alert("Successfully converted to Real Exam. Check 'Manage Quizzes' to publish it.");
-                                        } catch (error) {
-                                          console.error("Conversion error", error);
-                                          alert("Failed to convert to exam.");
-                                        }
-                                      }
-                                    }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
-                                  >
-                                    <ArrowRightLeft size={15} /> Convert to Exam
-                                  </div>
-
-                                  {/* Delete */}
-                                  <div
-                                    onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
-                                  >
-                                    <Trash2 size={15} /> Delete
-                                  </div>
+                                  {viewMode === "active" ? (
+                                    <>
+                                      {/* Preview */}
+                                      <div
+                                        onClick={() => { setActiveDropdown(null); navigate(`/practice/${quiz._id}?preview=true`); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Eye size={15} /> Preview
+                                      </div>
+  
+                                      {/* Edit */}
+                                      <div
+                                        onClick={() => { setActiveDropdown(null); openEditModal(quiz); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Edit2 size={15} /> Edit
+                                      </div>
+  
+                                      {/* Schedule */}
+                                      <div
+                                        onClick={() => { 
+                                          setActiveDropdown(null); 
+                                          setScheduleDate(quiz.scheduledAt ? quiz.scheduledAt.slice(0,10) : "");
+                                          let hrStr = "12";
+                                          let minStr = "00";
+                                          let periodStr = "AM";
+                                          if (quiz.scheduledAt) {
+                                            const dt = new Date(quiz.scheduledAt);
+                                            let hours = dt.getHours();
+                                            minStr = String(dt.getMinutes()).padStart(2, "0");
+                                            periodStr = hours >= 12 ? "PM" : "AM";
+                                            hours = hours % 12;
+                                            hours = hours ? hours : 12;
+                                            hrStr = String(hours).padStart(2, "0");
+                                          }
+                                          setScheduledHour(hrStr);
+                                          setScheduledMinute(minStr);
+                                          setScheduledPeriod(periodStr);
+                                          setScheduleTime(quiz.scheduledAt ? quiz.scheduledAt.slice(11,16) : "00:00");
+                                          setScheduleModal(quiz);
+                                        }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Calendar size={15} /> Schedule
+                                      </div>
+  
+                                      {/* Convert to Exam */}
+                                      <div
+                                        onClick={async () => {
+                                          setActiveDropdown(null);
+                                          if (window.confirm(`Convert "${quiz.title}" into a Real Exam? This will create a duplicate in your My Exams list.`)) {
+                                            try {
+                                              const token = localStorage.getItem("token");
+                                              await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/${quiz._id}/convert-to-exam`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                                              alert("Successfully converted to Real Exam. Check 'Manage Quizzes' to publish it.");
+                                            } catch (error) {
+                                              console.error("Conversion error", error);
+                                              alert("Failed to convert to exam.");
+                                            }
+                                          }
+                                        }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <ArrowRightLeft size={15} /> Convert to Exam
+                                      </div>
+  
+                                      {/* Delete */}
+                                      <div
+                                        onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Trash2 size={15} /> Delete
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); handleRestore(quiz._id, quiz.title); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Eye size={15} /> Restore
+                                      </div>
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); handlePermanentDelete(quiz._id, quiz.title); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                      >
+                                        <Trash2 size={15} /> Delete Permanently
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
                               </>
                             )}
@@ -681,6 +800,43 @@ function PracticeQuizzes() {
       <style>{`
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .btn-save-draft {
+          background: var(--bg-card);
+          border: 1.5px solid var(--border-input);
+          color: var(--text-secondary);
+          font-size: 13.5px;
+          font-weight: 600;
+          padding: 10px 20px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.15s;
+          min-height: 44px;
+        }
+
+        .btn-save-draft:hover {
+          background: var(--bg-page);
+          border-color: var(--text-muted);
+        }
+
+        .btn-submit-publish {
+          background: linear-gradient(135deg, var(--violet-dark) 0%, var(--violet) 100%);
+          color: #ffffff;
+          border: none;
+          font-size: 13.5px;
+          font-weight: 700;
+          padding: 10px 24px;
+          border-radius: 10px;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(110, 63, 243, 0.25);
+          transition: all 0.15s;
+          min-height: 44px;
+        }
+
+        .btn-submit-publish:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(110, 63, 243, 0.35);
+        }
       `}</style>
     </div>
   );
@@ -970,31 +1126,23 @@ function PracticeQuizModal({ isOpen, setIsOpen, editingQuizId, form, setForm, ha
             <button 
               type="button" 
               onClick={() => setIsOpen(false)}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "transparent",
-                color: "var(--text-secondary)",
-                border: "1px solid var(--border-color)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: "500"
-              }}
+              className="btn-save-draft"
             >
               Cancel
             </button>
             <button 
-              type="submit"
-              style={{
-                padding: "10px 24px",
-                backgroundColor: "var(--primary-color)",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: "500"
-              }}
+              type="button"
+              onClick={(e) => handleSubmit(e, "Draft")}
+              className="btn-save-draft"
             >
-              {editingQuizId ? "Save Changes" : "Create Quiz"}
+              Save to Drafts
+            </button>
+            <button 
+              type="button"
+              onClick={(e) => handleSubmit(e, "Published")}
+              className="btn-submit-publish"
+            >
+              {editingQuizId ? "Publish Changes" : "Publish Immediately"}
             </button>
           </div>
         </form>

@@ -103,7 +103,12 @@ function MyExams() {
                     const dur = Number(q.duration) || 0;
                     return sum + Math.round(q.sections && q.sections.length > 0 ? dur / 60 : dur);
                   }, 0);
-                  const totalQs = group.reduce((sum, q) => sum + (Number(q.questionCount) || q.questions?.length || 0), 0);
+                  const totalQs = group.reduce((sum, q) => sum + (
+                    Number(q.questionCount) || 
+                    (q.isModular && q.sections
+                      ? q.sections.reduce((s, sec) => s + (sec.sectionId?.questions?.length || 0), 0)
+                      : q.questions?.length) || 0
+                  ), 0);
                   const isSelected = selectedExam === examName;
                   
                   return (
@@ -181,7 +186,7 @@ function MyExams() {
                               style={{ backgroundColor: color.bg, color: color.text }}
                             >
                               <span className="dot" style={{ backgroundColor: color.dot }}></span>
-                              {quiz.subject || "General"}
+                              <span className="badge-text" title={quiz.subject || "General"}>{quiz.subject || "General"}</span>
                             </div>
                             <div className="practice-difficulty">
                               {quiz.difficulty || "Medium"}
@@ -196,7 +201,12 @@ function MyExams() {
                           <div className="practice-meta-grid">
                             <div className="meta-item">
                               <HelpCircle size={14} />
-                              <span>{quiz.questionCount || quiz.questions?.length || 0} Questions</span>
+                              <span>{
+                                quiz.questionCount || 
+                                (quiz.isModular && quiz.sections
+                                  ? quiz.sections.reduce((sum, sec) => sum + (sec.sectionId?.questions?.length || 0), 0)
+                                  : quiz.questions?.length) || 0
+                              } Questions</span>
                             </div>
                             <div className="meta-item">
                               <Clock size={14} />

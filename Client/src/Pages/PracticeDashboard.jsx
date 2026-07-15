@@ -67,14 +67,17 @@ function PracticeDashboard() {
             <div className="practice-grid">
               {quizzes.map((quiz, index) => {
                 const color = subjectColors[index % subjectColors.length];
-                const questionCount = quiz.questionCount || quiz.questions?.length || 0;
+                const questionCount = quiz.questionCount || 
+                  (quiz.isModular && quiz.sections
+                    ? quiz.sections.reduce((sum, sec) => sum + (sec.sectionId?.questions?.length || 0), 0)
+                    : quiz.questions?.length) || 0;
                 
                 return (
                   <div key={quiz._id} className="practice-card">
                     <div className="practice-card-header">
                       <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
                         <span className="dot" style={{ backgroundColor: color.dot }}></span>
-                        {quiz.subject || "General"}
+                        <span className="badge-text" title={quiz.subject || "General"}>{quiz.subject || "General"}</span>
                       </div>
                       <div className="practice-difficulty">
                         {quiz.difficulty || "Medium"}

@@ -27,6 +27,12 @@ const getSections = async (req, res) => {
       filter.isStandalone = true;
     }
 
+    if (req.query.deleted === "true") {
+      filter.isDeleted = true;
+    } else {
+      filter.isDeleted = { $ne: true }; // default to active sections only
+    }
+
     const sections = await Section.find(filter)
       .populate("questions")
       .sort({ createdAt: -1 });
@@ -70,7 +76,7 @@ const updateSection = async (req, res) => {
   }
 };
 
-// Delete a section
+// Delete a section (soft delete)
 const deleteSection = async (req, res) => {
   try {
     const sectionId = req.params.id;
@@ -83,16 +89,54 @@ const deleteSection = async (req, res) => {
       });
     }
 
-    const section = await Section.findByIdAndDelete(sectionId);
+    const section = await Section.findByIdAndUpdate(
+      sectionId, 
+      { isDeleted: true, deletedAt: new Date() },
+      { new: true }
+    );
     if (!section) {
       return res.status(404).json({ message: "Section not found." });
     }
 
     await logAction("DELETE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
-    res.json({ message: "Section deleted successfully." });
+    res.json({ message: "Section moved to recycle bin." });
   } catch (error) {
     console.error("Delete Section Error:", error);
     res.status(500).json({ message: "Failed to delete section.", error: error.message });
+  }
+};
+
+// Restore a soft-deleted section
+const restoreSection = async (req, res) => {
+  try {
+    const section = await Section.findByIdAndUpdate(
+      req.params.id, 
+      { isDeleted: false, deletedAt: null },
+      { new: true }
+    );
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
+    }
+    await logAction("RESTORE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
+    res.json({ message: "Section restored successfully.", section });
+  } catch (error) {
+    console.error("Restore Section Error:", error);
+    res.status(500).json({ message: "Failed to restore section." });
+  }
+};
+
+// Permanently delete a section
+const permanentlyDeleteSection = async (req, res) => {
+  try {
+    const section = await Section.findByIdAndDelete(req.params.id);
+    if (!section) {
+      return res.status(404).json({ message: "Section not found." });
+    }
+    await logAction("PERMANENTLY_DELETE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
+    res.json({ message: "Section permanently deleted." });
+  } catch (error) {
+    console.error("Permanent Delete Section Error:", error);
+    res.status(500).json({ message: "Failed to permanently delete section." });
   }
 };
 
@@ -166,6 +210,8 @@ module.exports = {
   getSectionById,
   updateSection,
   deleteSection,
+  restoreSection,
+  permanentlyDeleteSection,
   cloneSection,
   addQuestionsToSection,
   removeQuestionsFromSection,

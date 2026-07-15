@@ -9,6 +9,8 @@ const {
   getQuestionById,
   updateQuestion,
   deleteQuestion,
+  restoreQuestion,
+  permanentlyDeleteQuestion,
 } = require("../controllers/questionController");
 
 // Public/General read queries (or protected/general student routes)
@@ -20,5 +22,7 @@ router.post("/", protect, adminOnly, createQuestion);
 router.post("/bulk", protect, adminOnly, bulkCreateQuestions);
 router.put("/:id", protect, adminOnly, updateQuestion);
 router.delete("/:id", protect, adminOnly, deleteQuestion);
+router.put("/:id/restore", protect, adminOnly, restoreQuestion);
+router.delete("/:id/permanent", protect, adminOnly, permanentlyDeleteQuestion);
 
 module.exports = router;

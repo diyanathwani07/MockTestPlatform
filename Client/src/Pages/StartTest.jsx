@@ -253,19 +253,20 @@ function StartTest() {
                       </tr>
                     </thead>
                     <tbody>
-                    {selectedQuiz.sections.map((sec, i) => {
-                       let qCount = sec.questions?.length || 0;
-                       if (sec.type === 'coding' && sec.subsections) {
-                          qCount += (sec.subsections.easy?.length || 0);
-                          qCount += (sec.subsections.medium?.length || 0);
-                          qCount += (sec.subsections.hard?.length || 0);
-                       }
-                       return (
-                        <tr key={i}>
-                          <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{sec.title || selectedQuiz.title || "Main Section"}</td>
-                          <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{qCount}</td>
+                     {selectedQuiz.sections.map((sec, i) => {
+                        const actualSec = sec.sectionId || sec;
+                        let qCount = actualSec.questions?.length || 0;
+                        if (actualSec.type === 'coding' && actualSec.subsections) {
+                           qCount += (actualSec.subsections.easy?.length || 0);
+                           qCount += (actualSec.subsections.medium?.length || 0);
+                           qCount += (actualSec.subsections.hard?.length || 0);
+                        }
+                        return (
+                         <tr key={i}>
+                           <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{actualSec.title || selectedQuiz.title || "Main Section"}</td>
+                           <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{qCount}</td>
                           <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>
-                            {sec.duration ? `${sec.duration / 60} Min` : 'Global'}
+                            {actualSec.duration ? `${actualSec.duration / 60} Min` : 'Global'}
                           </td>
                         </tr>
                        );

@@ -42,6 +42,12 @@ const getQuizzes = async (req, res) => {
       filter.published = req.query.published === "true";
     }
 
+    if (req.query.deleted === "true") {
+      filter.isDeleted = true;
+    } else {
+      filter.isDeleted = { $ne: true }; // default to active quizzes only
+    }
+
     const quizzes = await Quiz.find(filter)
       .populate({ path: "sections.sectionId", model: "Section" })
       .sort({ createdAt: -1 });
@@ -101,6 +107,8 @@ const updateQuiz = async (req, res) => {
 
     if (quiz.published && !originalQuiz.published) {
       await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+    } else if (!quiz.published && originalQuiz.published) {
+      await logAction("UNPUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     } else {
       await logAction("UPDATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     }
@@ -112,20 +120,59 @@ const updateQuiz = async (req, res) => {
   }
 };
 
-// DELETE a quiz (does NOT delete linked sections)
+// DELETE a quiz (soft delete)
 const deleteQuiz = async (req, res) => {
   try {
-    const quiz = await Quiz.findByIdAndDelete(req.params.id);
+    const quiz = await Quiz.findByIdAndUpdate(
+      req.params.id, 
+      { isDeleted: true, deletedAt: new Date(), status: "Deleted", published: false }, 
+      { new: true }
+    );
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found." });
     }
     await logAction("DELETE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
-    res.json({ message: "Quiz deleted successfully." });
+    res.json({ message: "Quiz moved to recycle bin." });
   } catch (error) {
     console.error("Delete Quiz Error:", error);
     res.status(500).json({ message: "Failed to delete quiz." });
   }
 };
+
+// RESTORE a soft-deleted quiz
+const restoreQuiz = async (req, res) => {
+  try {
+    const quiz = await Quiz.findByIdAndUpdate(
+      req.params.id, 
+      { isDeleted: false, deletedAt: null, status: "Draft" }, 
+      { new: true }
+    );
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found." });
+    }
+    await logAction("RESTORE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+    res.json({ message: "Quiz restored successfully.", quiz });
+  } catch (error) {
+    console.error("Restore Quiz Error:", error);
+    res.status(500).json({ message: "Failed to restore quiz." });
+  }
+};
+
+// PERMANENTLY DELETE a quiz
+const permanentlyDeleteQuiz = async (req, res) => {
+  try {
+    const quiz = await Quiz.findByIdAndDelete(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found." });
+    }
+    await logAction("PERMANENTLY_DELETE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+    res.json({ message: "Quiz permanently deleted." });
+  } catch (error) {
+    console.error("Permanent Delete Quiz Error:", error);
+    res.status(500).json({ message: "Failed to permanently delete quiz." });
+  }
+};
+
 
 // POST /api/quizzes/:id/add-section
 const addSectionToQuiz = async (req, res) => {
@@ -570,6 +617,8 @@ module.exports = {
   getQuizById,
   updateQuiz,
   deleteQuiz,
+  restoreQuiz,
+  permanentlyDeleteQuiz,
   getDashboardStats,
   exportSectionAsQuiz,
   addSectionToQuiz,

@@ -11,12 +11,18 @@ function ManageQuizzes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const [selectedExportQuiz, setSelectedExportQuiz] = useState(null);
+  const [viewMode, setViewMode] = useState("active"); // "active" or "recycle"
   const navigate = useNavigate();
 
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = async (mode = viewMode) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes`);
+      setLoading(true);
+      const endpoint = mode === "recycle" 
+        ? `${import.meta.env.VITE_API_URL}/api/quizzes?deleted=true`
+        : `${import.meta.env.VITE_API_URL}/api/quizzes`;
+      const response = await axios.get(endpoint);
       setQuizzes(response.data);
     } catch (error) {
       console.error("Fetch Quizzes Error:", error);
@@ -26,8 +32,8 @@ function ManageQuizzes() {
   };
 
   useEffect(() => {
-    fetchQuizzes();
-  }, []);
+    fetchQuizzes(viewMode);
+  }, [viewMode]);
 
   const filteredQuizzes = quizzes.filter(q => {
     const matchesSearch = q.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -43,7 +49,7 @@ function ManageQuizzes() {
   });
 
   const handleDelete = async (id, title) => {
-    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+    if (window.confirm(`Are you sure you want to move "${title}" to the recycle bin?`)) {
       try {
         const token = localStorage.getItem("token");
         await axios.delete(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, {
@@ -52,7 +58,37 @@ function ManageQuizzes() {
         setQuizzes(quizzes.filter(q => q._id !== id));
       } catch (error) {
         console.error("Delete Quiz Error:", error);
-        alert("Failed to delete quiz.");
+        alert("Failed to move quiz to recycle bin.");
+      }
+    }
+  };
+
+  const handleRestore = async (id, title) => {
+    if (window.confirm(`Restore "${title}"?`)) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}/restore`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setQuizzes(quizzes.filter(q => q._id !== id));
+      } catch (error) {
+        console.error("Restore Quiz Error:", error);
+        alert("Failed to restore quiz.");
+      }
+    }
+  };
+
+  const handlePermanentDelete = async (id, title) => {
+    if (window.confirm(`WARNING: Are you sure you want to PERMANENTLY delete "${title}"? This cannot be undone.`)) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}/permanent`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setQuizzes(quizzes.filter(q => q._id !== id));
+      } catch (error) {
+        console.error("Permanent Delete Quiz Error:", error);
+        alert("Failed to permanently delete quiz.");
       }
     }
   };
@@ -79,13 +115,48 @@ function ManageQuizzes() {
             textAlign: "left"
           }}>
             
-            <div style={{ marginBottom: "16px", textAlign: "left" }}>
-              <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
-                Active Assessment Modules
-              </h2>
-              <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600" }}>
-                Total Quizzes in Bank: {filteredQuizzes.length}
-              </span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%", marginBottom: "16px" }}>
+              <div style={{ textAlign: "left" }}>
+                <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
+                  {viewMode === "active" ? "Active Assessment Modules" : "Recycle Bin"}
+                </h2>
+                <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600" }}>
+                  Total {viewMode === "active" ? "Quizzes" : "Deleted Quizzes"} in Bank: {filteredQuizzes.length}
+                </span>
+              </div>
+              
+              <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                <button
+                  onClick={() => setViewMode("active")}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
+                    color: viewMode === "active" ? "white" : "var(--text-secondary)",
+                  }}
+                >
+                  Active
+                </button>
+                <button
+                  onClick={() => setViewMode("recycle")}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    backgroundColor: viewMode === "recycle" ? "var(--red)" : "transparent",
+                    color: viewMode === "recycle" ? "white" : "var(--text-secondary)",
+                  }}
+                >
+                  Recycle Bin
+                </button>
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: "16px", width: "100%", maxWidth: "600px", flexWrap: "wrap" }}>
@@ -245,7 +316,15 @@ function ManageQuizzes() {
                         <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
                             <button 
-                              onClick={() => setActiveDropdown(activeDropdown === quiz._id ? null : quiz._id)}
+                              onClick={(e) => {
+                                if (activeDropdown === quiz._id) {
+                                  setActiveDropdown(null);
+                                } else {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+                                  setActiveDropdown(quiz._id);
+                                }
+                              }}
                               style={{ 
                                 background: "transparent", 
                                 border: "none", 
@@ -271,109 +350,132 @@ function ManageQuizzes() {
                                 
                                 {/* Floating context dropdown menu */}
                                 <div style={{ 
-                                  position: "absolute", 
-                                  right: 0, 
-                                  top: "28px", 
+                                  position: "fixed", 
+                                  top: `${dropdownPos.top}px`,
+                                  right: `${dropdownPos.right}px`, 
                                   backgroundColor: "var(--bg-card)", 
                                   border: "1.5px solid var(--border-color)", 
                                   borderRadius: "10px", 
                                   padding: "6px 0", 
                                   minWidth: "130px", 
                                   boxShadow: "0 8px 24px rgba(0,0,0,0.12)", 
-                                  zIndex: 100,
+                                  zIndex: 9999,
                                   textAlign: "left"
                                 }}>
-                                  <div 
-                                    onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                  >
-                                    <Eye size={15} /> Preview
-                                  </div>
-                                  <div 
-                                    onClick={() => { 
-                                      setActiveDropdown(null); 
-                                      if (quiz.sections && quiz.sections.length > 1) {
-                                        navigate(`/admin/edit-quiz-multi/${quiz._id}`);
-                                      } else {
-                                        navigate(`/admin/edit-quiz/${quiz._id}`); 
-                                      }
-                                    }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                  >
-                                    <Edit2 size={15} /> Edit
-                                  </div>
-                                    <div 
-                                      onClick={() => { 
-                                        setActiveDropdown(null); 
-                                        if (quiz.sections && quiz.sections.length > 1) {
-                                          navigate(`/admin/edit-quiz-multi/${quiz._id}`);
-                                        } else {
-                                          navigate(`/admin/edit-quiz/${quiz._id}`); 
-                                        }
-                                      }}
-                                      style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                      onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                    >
-                                      <Calendar size={15} /> Schedule
-                                    </div>
-                                    {quiz.status === "Published" || quiz.published ? (
+                                  {viewMode === "active" ? (
+                                    <>
                                       <div 
-                                        onClick={async () => {
-                                          setActiveDropdown(null);
-                                          if (window.confirm(`Are you sure you want to unpublish "${quiz.title}"? Students will no longer see it.`)) {
-                                            try {
-                                              const token = localStorage.getItem("token");
-                                              await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: false, status: "Draft" }, { headers: { Authorization: `Bearer ${token}` }});
-                                              fetchQuizzes();
-                                            } catch (error) { console.error("Failed to unpublish", error); }
+                                        onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                      >
+                                        <Eye size={15} /> Preview
+                                      </div>
+                                      <div 
+                                        onClick={() => { 
+                                          setActiveDropdown(null); 
+                                          if (quiz.sections && quiz.sections.length > 1) {
+                                            navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                          } else {
+                                            navigate(`/admin/edit-quiz/${quiz._id}`); 
                                           }
                                         }}
                                         style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                         onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                         onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                       >
-                                        <EyeOff size={15} /> Unpublish
+                                        <Edit2 size={15} /> Edit
                                       </div>
-                                    ) : (
                                       <div 
-                                        onClick={async () => {
-                                          setActiveDropdown(null);
-                                          try {
-                                            const token = localStorage.getItem("token");
-                                            await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: true, status: "Published", scheduledDate: null }, { headers: { Authorization: `Bearer ${token}` }});
-                                            fetchQuizzes();
-                                          } catch (error) { console.error("Failed to publish", error); }
+                                        onClick={() => { 
+                                          setActiveDropdown(null); 
+                                          if (quiz.sections && quiz.sections.length > 1) {
+                                            navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                          } else {
+                                            navigate(`/admin/edit-quiz/${quiz._id}`); 
+                                          }
                                         }}
                                         style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                         onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                         onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                       >
-                                        <UploadCloud size={15} /> Publish
+                                        <Calendar size={15} /> Schedule
                                       </div>
-                                    )}
-                                  {quiz.sections && quiz.sections.length > 0 && (
-                                    <div 
-                                      onClick={() => { setActiveDropdown(null); setSelectedExportQuiz(quiz); }}
-                                      style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                      onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                    >
-                                      <Copy size={15} /> Duplicate Section
-                                    </div>
+                                      {quiz.status === "Published" || quiz.published ? (
+                                        <div 
+                                          onClick={async () => {
+                                            setActiveDropdown(null);
+                                            if (window.confirm(`Are you sure you want to unpublish "${quiz.title}"? Students will no longer see it.`)) {
+                                              try {
+                                                const token = localStorage.getItem("token");
+                                                await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: false, status: "Draft" }, { headers: { Authorization: `Bearer ${token}` }});
+                                                fetchQuizzes();
+                                              } catch (error) { console.error("Failed to unpublish", error); }
+                                            }
+                                          }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <EyeOff size={15} /> Unpublish
+                                        </div>
+                                      ) : (
+                                        <div 
+                                          onClick={async () => {
+                                            setActiveDropdown(null);
+                                            try {
+                                              const token = localStorage.getItem("token");
+                                              await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: true, status: "Published", scheduledDate: null }, { headers: { Authorization: `Bearer ${token}` }});
+                                              fetchQuizzes();
+                                            } catch (error) { console.error("Failed to publish", error); }
+                                          }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <UploadCloud size={15} /> Publish
+                                        </div>
+                                      )}
+                                      {quiz.sections && quiz.sections.length > 0 && (
+                                        <div 
+                                          onClick={() => { setActiveDropdown(null); setSelectedExportQuiz(quiz); }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <Copy size={15} /> Duplicate Section
+                                        </div>
+                                      )}
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                      >
+                                        <Trash2 size={15} /> Delete
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); handleRestore(quiz._id, quiz.title); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                      >
+                                        <Eye size={15} /> Restore
+                                      </div>
+                                      <div 
+                                        onClick={() => { setActiveDropdown(null); handlePermanentDelete(quiz._id, quiz.title); }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                      >
+                                        <Trash2 size={15} /> Delete Permanently
+                                      </div>
+                                    </>
                                   )}
-                                  <div 
-                                    onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
-                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                  >
-                                    <Trash2 size={15} /> Delete
-                                  </div>
                                 </div>
                               </>
                             )}

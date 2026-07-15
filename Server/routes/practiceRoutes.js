@@ -6,6 +6,8 @@ const {
   createPracticeQuiz,
   updatePracticeQuiz,
   deletePracticeQuiz,
+  restorePracticeQuiz,
+  permanentlyDeletePracticeQuiz,
   generateAIExplanations,
   getOrCreatePracticeSession,
   convertToExam
@@ -46,6 +48,8 @@ router.get("/:id/session", protect, getOrCreatePracticeSession);  // ✅ was mis
 
 router.put("/:id", protect, adminOnly, updatePracticeQuiz);
 router.delete("/:id", protect, adminOnly, deletePracticeQuiz);
+router.put("/:id/restore", protect, adminOnly, restorePracticeQuiz);
+router.delete("/:id/permanent", protect, adminOnly, permanentlyDeletePracticeQuiz);
 router.post("/:id/generate-ai", protect, adminOnly, generateAIExplanations);
 router.post("/:id/convert-to-exam", protect, adminOnly, convertToExam);
 

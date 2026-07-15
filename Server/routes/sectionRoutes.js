@@ -8,6 +8,8 @@ const {
   getSectionById,
   updateSection,
   deleteSection,
+  restoreSection,
+  permanentlyDeleteSection,
   cloneSection,
   addQuestionsToSection,
   removeQuestionsFromSection,
@@ -21,6 +23,8 @@ router.get("/:id", protect, getSectionById);
 router.post("/", protect, adminOnly, createSection);
 router.put("/:id", protect, adminOnly, updateSection);
 router.delete("/:id", protect, adminOnly, deleteSection);
+router.put("/:id/restore", protect, adminOnly, restoreSection);
+router.delete("/:id/permanent", protect, adminOnly, permanentlyDeleteSection);
 
 // Reusability & Modification Endpoints
 router.post("/:id/clone", protect, adminOnly, cloneSection);

@@ -269,19 +269,24 @@ function EditQuiz() {
         if (dbQuiz.sections && dbQuiz.sections.length > 0) {
           // Modular quiz: fetch questions from section references
           for (const sectionRef of dbQuiz.sections) {
-            const secId = typeof sectionRef === "object" ? sectionRef.sectionId?._id || sectionRef.sectionId : sectionRef;
+            const secId = typeof sectionRef === "object" ? sectionRef._id || sectionRef.sectionId?._id || sectionRef.sectionId : sectionRef;
             if (secId) {
               setSectionIdToUpdate(secId);
-              try {
-                const secResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, {
-                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-                });
-                const sectionData = secResponse.data;
-                if (sectionData.questions && sectionData.questions.length > 0) {
-                  finalQuestions = [...finalQuestions, ...sectionData.questions];
+              
+              if (sectionRef.questions && sectionRef.questions.length > 0) {
+                finalQuestions = [...finalQuestions, ...sectionRef.questions];
+              } else {
+                try {
+                  const secResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                  });
+                  const sectionData = secResponse.data;
+                  if (sectionData.questions && sectionData.questions.length > 0) {
+                    finalQuestions = [...finalQuestions, ...sectionData.questions];
+                  }
+                } catch (e) {
+                  console.error("Error loading modular section:", secId, e);
                 }
-              } catch (e) {
-                console.error("Error loading modular section:", secId, e);
               }
             }
           }

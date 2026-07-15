@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { Info, BookOpen, FileText, Calendar, Search, ChevronDown, ChevronRight, Trophy, Users, CheckCircle, Percent, User } from "lucide-react";
@@ -8,6 +8,7 @@ import "../css/StudentDashboard.css";
 import "../css/Leaderboard.css";
 
 function Leaderboard() {
+  const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedExam, setSelectedExam] = useState("All Exams");
@@ -135,7 +136,15 @@ function Leaderboard() {
                   <div className="lb-stat-value purple">{filteredResults.length}</div>
                 </div>
 
-                <button className="lb-btn-primary">
+                <button 
+                  className="lb-btn-primary"
+                  onClick={() => {
+                    if (userStat) {
+                      navigate("/result", { state: userStat });
+                    }
+                  }}
+                  disabled={!userStat}
+                >
                   View My Result <ChevronRight size={16} />
                 </button>
               </div>

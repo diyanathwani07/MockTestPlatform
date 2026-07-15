@@ -61,6 +61,14 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
+  max-width: calc(100% - 85px);
+}
+
+.practice-subject-badge .badge-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .practice-subject-badge .dot {

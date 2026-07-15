@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
-import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid } from "lucide-react";
 import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
@@ -500,11 +500,11 @@ function Result() {
               alignItems: "center",
               justifyContent: "center",
               padding: "24px 70px 20px",
-              backgroundColor: "#EAEBF3",
+              backgroundColor: isDark ? "#1D1B28" : "#EAEBF3",
               marginBottom: "24px",
               margin: "-20px -16px 24px -16px",
             }}>
-              <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", margin: 0, lineHeight: "1.3", color: "#000000", textAlign: "center" }}>Answer Review - {examTitle}</h2>
+              <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#000000", textAlign: "center" }}>Answer Review - {examTitle}</h2>
             </div>
 
             <div className="review-list">
@@ -519,8 +519,8 @@ function Result() {
                     <div className="review-question" style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
                       <span className="q-number" style={{ minWidth: "30px", fontWeight: "700", color: "#6E3FF3" }}>Q{index + 1}.</span>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: "600", color: "#1E293B", marginBottom: "6px", fontSize: "16px", lineHeight: "1.5" }}><MathRenderer text={q.english || q.questionEnglish} /></div>
-                        {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: "#475569", marginBottom: "12px", fontSize: "15px", lineHeight: "1.5" }}><MathRenderer text={q.hindi || q.questionHindi} /></div>}
+                        <div style={{ fontWeight: "600", color: isDark ? "#F1F5F9" : "#1E293B", marginBottom: "6px", fontSize: "16px", lineHeight: "1.5" }}><MathRenderer text={q.english || q.questionEnglish} /></div>
+                        {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: isDark ? "#CBD5E1" : "#475569", marginBottom: "12px", fontSize: "15px", lineHeight: "1.5" }}><MathRenderer text={q.hindi || q.questionHindi} /></div>}
                       </div>
                     </div>
 
@@ -529,20 +529,20 @@ function Result() {
                         const isSelected = userAns === opt;
                         const isCorrectOpt = q.correctAnswer === opt;
                         
-                        let optBg = "#ffffff";
-                        let optBorder = "1px solid #E2E8F0";
-                        let optColor = "#1E293B";
+                        let optBg = isDark ? "#2A273A" : "#ffffff";
+                        let optBorder = isDark ? "1px solid #3F3C53" : "1px solid #E2E8F0";
+                        let optColor = isDark ? "#F8FAFC" : "#1E293B";
                         let optWeight = "500";
                         
                         if (isCorrectOpt) {
-                          optBg = "#dcfce7";
+                          optBg = isDark ? "rgba(34, 197, 94, 0.15)" : "#dcfce7";
                           optBorder = "1px solid #22c55e";
-                          optColor = "#166534";
+                          optColor = isDark ? "#4ade80" : "#166534";
                           optWeight = "600";
                         } else if (isSelected && !isCorrectOpt) {
-                          optBg = "#fee2e2";
+                          optBg = isDark ? "rgba(239, 68, 68, 0.15)" : "#fee2e2";
                           optBorder = "1px solid #ef4444";
-                          optColor = "#991b1b";
+                          optColor = isDark ? "#f87171" : "#991b1b";
                         }
                         
                         return (
@@ -563,9 +563,9 @@ function Result() {
                               width: "26px", 
                               height: "26px", 
                               borderRadius: "50%", 
-                              backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected && !isCorrectOpt ? "#ef4444" : "#F1F5F9"),
-                              color: isCorrectOpt || (isSelected && !isCorrectOpt) ? "#fff" : "#64748B",
-                              border: isCorrectOpt || (isSelected && !isCorrectOpt) ? "none" : "1px solid #E2E8F0",
+                              backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected && !isCorrectOpt ? "#ef4444" : (isDark ? "#3F3C53" : "#F1F5F9")),
+                              color: isCorrectOpt || (isSelected && !isCorrectOpt) ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
+                              border: isCorrectOpt || (isSelected && !isCorrectOpt) ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",

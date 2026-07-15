@@ -10,7 +10,14 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // @access  Private
 const getPracticeQuizzes = async (req, res) => {
   try {
-    const quizzes = await PracticeQuiz.find().populate("createdBy", "fullName email").sort({ createdAt: -1 });
+    const filter = {};
+    if (req.query.deleted === "true") {
+      filter.isDeleted = true;
+    } else {
+      filter.isDeleted = { $ne: true };
+    }
+
+    const quizzes = await PracticeQuiz.find(filter).populate("createdBy", "fullName email").sort({ createdAt: -1 });
     res.json(quizzes);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -56,7 +63,7 @@ const getPracticeQuizById = async (req, res) => {
 // @access  Private/Admin
 const createPracticeQuiz = async (req, res) => {
   try {
-    const { title, subject, description, questions, shuffleQuestions, shuffleOptions, randomSelection, questionsPerAttempt } = req.body;
+    const { title, subject, description, questions, shuffleQuestions, shuffleOptions, randomSelection, questionsPerAttempt, status } = req.body;
 
     const quiz = new PracticeQuiz({
       title,
@@ -68,6 +75,8 @@ const createPracticeQuiz = async (req, res) => {
       randomSelection: randomSelection || false,
       questionsPerAttempt: questionsPerAttempt || 20,
       createdBy: req.user._id,
+      status: status || "Draft",
+      publishedAt: status === "Published" ? Date.now() : null,
     });
 
     const createdQuiz = await quiz.save();
@@ -97,6 +106,15 @@ const updatePracticeQuiz = async (req, res) => {
       quiz.questions = req.body.questions;
     }
 
+    if (req.body.status) {
+      if (req.body.status === "Published" && quiz.status !== "Published") {
+        quiz.publishedAt = Date.now();
+      } else if (req.body.status === "Draft") {
+        quiz.publishedAt = null;
+      }
+      quiz.status = req.body.status;
+    }
+
     const updatedQuiz = await quiz.save();
     res.json(updatedQuiz);
   } catch (error) {
@@ -104,16 +122,49 @@ const updatePracticeQuiz = async (req, res) => {
   }
 };
 
-// @desc    Delete a practice quiz
+// @desc    Delete a practice quiz (soft delete)
 // @route   DELETE /api/practice/:id
 // @access  Private/Admin
 const deletePracticeQuiz = async (req, res) => {
   try {
-    const quiz = await PracticeQuiz.findById(req.params.id);
+    const quiz = await PracticeQuiz.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: true, deletedAt: new Date() },
+      { new: true }
+    );
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
-    await quiz.deleteOne();
-    res.json({ message: "Practice Quiz removed" });
+    res.json({ message: "Practice Quiz moved to recycle bin" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// @desc    Restore a practice quiz
+// @route   PUT /api/practice/:id/restore
+// @access  Private/Admin
+const restorePracticeQuiz = async (req, res) => {
+  try {
+    const quiz = await PracticeQuiz.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: false, deletedAt: null },
+      { new: true }
+    );
+    if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
+    res.json({ message: "Practice Quiz restored successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// @desc    Permanently delete a practice quiz
+// @route   DELETE /api/practice/:id/permanent
+// @access  Private/Admin
+const permanentlyDeletePracticeQuiz = async (req, res) => {
+  try {
+    const quiz = await PracticeQuiz.findByIdAndDelete(req.params.id);
+    if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
+    res.json({ message: "Practice Quiz permanently deleted" });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
@@ -348,6 +399,8 @@ module.exports = {
   createPracticeQuiz,
   updatePracticeQuiz,
   deletePracticeQuiz,
+  restorePracticeQuiz,
+  permanentlyDeletePracticeQuiz,
   generateAIExplanations,
   getOrCreatePracticeSession,
   convertToExam
