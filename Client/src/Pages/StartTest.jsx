@@ -6,6 +6,7 @@ import { Sun, Moon } from "lucide-react";
 import Logo from "../components/Logo";
 import { usePreview } from "../context/PreviewContext";
 import "../css/StartTest.css";
+import "../css/Login.css";
 
 function StartTest() {
   const navigate = useNavigate();
@@ -128,7 +129,23 @@ function StartTest() {
   const userEmail = storedUser.email || "";
 
   return (
-    <div className="start-page">
+    <div className="login-page" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 20px", overflow: "auto" }}>
+
+      {/* SVG Gradients definition */}
+      <svg style={{ width: 0, height: 0, position: 'absolute' }}>
+        <defs>
+          <linearGradient id="left-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00D2FF" />
+            <stop offset="50%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#7B3FF3" />
+          </linearGradient>
+          <linearGradient id="right-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#3B82F6" />
+            <stop offset="50%" stopColor="#7B3FF3" />
+            <stop offset="100%" stopColor="#EC4899" />
+          </linearGradient>
+        </defs>
+      </svg>
 
       {/* ── Theme Toggle ── */}
       <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
@@ -138,11 +155,24 @@ function StartTest() {
         </div>
       </div>
 
-      {/* ── Background Blobs ── */}
-      <div className="top-left"></div>
-      <div className="bottom-right"></div>
-      <div className="big-circle"></div>
-      <div className="small-circle"></div>
+      {/* Decorative Background Elements */}
+      <div className="top-left-glow" style={{ position: "fixed" }}></div>
+      <div className="bottom-right-glow" style={{ position: "fixed" }}></div>
+      <div className="grid-pattern-left" style={{ position: "fixed" }}></div>
+      <div className="grid-pattern-right" style={{ position: "fixed" }}></div>
+      <div className="glow-dot glow-dot-1" style={{ position: "fixed" }}></div>
+      <div className="glow-dot glow-dot-2" style={{ position: "fixed" }}></div>
+
+      {/* Responsive Inline SVG Waves matching mockup */}
+      <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: "fixed" }}>
+        <path d="M 0,0 C 35,0 45,28 32,55 C 20,80 5,88 0,88 Z" fill="url(#left-3d-grad)" opacity="0.95" />
+        <path d="M 0,10 C 35,25 38,50 18,75 C 10,85 0,90 0,90" fill="none" stroke="#00D2FF" strokeWidth="1.25" />
+      </svg>
+
+      <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: "fixed" }}>
+        <path d="M 100,100 C 65,100 55,72 68,45 C 80,20 95,12 100,12 Z" fill="url(#right-3d-grad)" opacity="0.95" />
+        <path d="M 100,90 C 65,75 62,50 82,25 C 90,15 100,10 100,10" fill="none" stroke="#7B3FF3" strokeWidth="1.25" />
+      </svg>
 
       {/* ════════ 5-SECOND COUNTDOWN OVERLAY ════════ */}
       {countdown !== null && (
@@ -178,7 +208,7 @@ function StartTest() {
       )}
 
       {/* ════════ MAIN CARD ════════ */}
-      <div className="start-card">
+      <div className="start-card" style={{ margin: "auto" }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
           <Logo size="large" />
         </div>
@@ -239,45 +269,7 @@ function StartTest() {
             </div>
           </div>
 
-          {selectedQuiz?.sections?.length > 0 && (
-            <div className="row">
-              <div className="label">Sections</div>
-              <div className="value">
-                <div style={{ width: "100%", border: "1px solid var(--border-color)", borderRadius: "8px", overflow: "hidden", background: "var(--bg-card)", fontSize: "14px" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead style={{ background: "rgba(255,255,255,0.03)", textAlign: "left" }}>
-                      <tr>
-                        <th style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", color: "var(--text-secondary)", fontWeight: "600" }}>Section</th>
-                        <th style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", color: "var(--text-secondary)", fontWeight: "600" }}>Questions</th>
-                        <th style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", color: "var(--text-secondary)", fontWeight: "600" }}>Duration</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                     {selectedQuiz.sections.map((sec, i) => {
-                        const actualSec = sec.sectionId || sec;
-                        let qCount = actualSec.questions?.length || 0;
-                        if (actualSec.type === 'coding' && actualSec.subsections) {
-                           qCount += (actualSec.subsections.easy?.length || 0);
-                           qCount += (actualSec.subsections.medium?.length || 0);
-                           qCount += (actualSec.subsections.hard?.length || 0);
-                        }
-                        return (
-                         <tr key={i}>
-                           <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{actualSec.title || selectedQuiz.title || "Main Section"}</td>
-                           <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>{qCount}</td>
-                          <td style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)" }}>
-                            {actualSec.duration ? `${actualSec.duration / 60} Min` : 'Global'}
-                          </td>
-                        </tr>
-                       );
-                    })}
-                  </tbody>
-                </table>
-                </div>
-              </div>
-            </div>
-          )}
-
+          
           <div className="row">
             <div className="label">Do's</div>
             <div className="value">
