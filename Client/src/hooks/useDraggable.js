@@ -21,6 +21,17 @@ const useDraggable = (initialBottom = 30, initialRight = 30) => {
   const startPos = useRef({ x: 0, y: 0 });
   const startOffset = useRef({ bottom: 0, right: 0 });
 
+  // Clamp position on mount to ensure it's not off-screen
+  useEffect(() => {
+    setPosition(prev => {
+      const maxX = Math.max(0, window.innerWidth - 70);
+      const maxY = Math.max(0, window.innerHeight - 70);
+      const clampedRight = Math.max(0, Math.min(maxX, prev.right));
+      const clampedBottom = Math.max(0, Math.min(maxY, prev.bottom));
+      return { bottom: clampedBottom, right: clampedRight };
+    });
+  }, []);
+
   const handlePointerDown = useCallback((e) => {
     isDragging.current = true;
     wasDragged.current = false;

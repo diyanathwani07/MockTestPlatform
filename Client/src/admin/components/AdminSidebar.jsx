@@ -50,9 +50,9 @@ function AdminSidebar() {
               </NavLink>
             ) : null
           )}
-          <AdminChatbot />
         </nav>
       </aside>
+      <AdminChatbot />
     </>
   );
 }

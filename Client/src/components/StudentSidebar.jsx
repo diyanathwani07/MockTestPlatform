@@ -60,8 +60,8 @@ function StudentSidebar() {
           <span>Help & Support</span>
         </NavLink>
       </nav>
-      <StudentChatbot />
     </aside>
+    <StudentChatbot />
     </>
   );
 }
