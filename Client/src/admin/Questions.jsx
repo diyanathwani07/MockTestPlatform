@@ -341,10 +341,65 @@ function Questions() {
       <div className="admin-main">
         <AdminNavbar title="Questions Bank" />
         <div className="admin-content" style={{ padding: "24px", minHeight: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
-            <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", height: "fit-content" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            {/* LEFT: Exams / Practice Toggle */}
+            <div style={{ flex: 1, display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  background: "var(--bg-input)",
+                  padding: "4px",
+                  borderRadius: "12px",
+                  border: "1.5px solid var(--border-input)",
+                  height: "max-content"
+                }}
+              >
               <button
-                onClick={() => setIsRecycleBin(false)}
+                onClick={() => setQuizType("exams")}
+                style={{
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  background: quizType === "exams" ? "var(--violet)" : "transparent",
+                  color: quizType === "exams" ? "white" : "var(--text-muted)",
+                  fontWeight: "600",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  boxShadow: quizType === "exams" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                }}
+              >
+                Exams
+              </button>
+              <button
+                onClick={() => setQuizType("practice")}
+                style={{
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  background: quizType === "practice" ? "var(--violet)" : "transparent",
+                  color: quizType === "practice" ? "white" : "var(--text-muted)",
+                  fontWeight: "600",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  boxShadow: quizType === "practice" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                }}
+              >
+                Practice
+              </button>
+            </div>
+            </div>
+
+            {/* MIDDLE: Text */}
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <h2 style={{ margin: 0, fontSize: "20px", color: "var(--text-primary)" }}>Select a Quiz</h2>
+              <p style={{ margin: "4px 0 0 0", color: "var(--text-muted)", fontSize: "14px" }}>Choose a quiz to view its subjects and questions.</p>
+            </div>
+
+            {/* RIGHT: Active / Recycle Bin Toggle */}
+            <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+              <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", height: "fit-content" }}>
+                <button
+                  onClick={() => setIsRecycleBin(false)}
                 style={{
                   padding: "6px 12px", borderRadius: "6px", border: "none", fontSize: "13px", fontWeight: "600", cursor: "pointer",
                   backgroundColor: !isRecycleBin ? "var(--violet)" : "transparent",
@@ -363,6 +418,7 @@ function Questions() {
               >
                 Recycle Bin
               </button>
+              </div>
             </div>
           </div>
 
@@ -424,55 +480,6 @@ function Questions() {
               {/* ── VIEW 1: QUIZZES ── */}
               {viewMode === "quizzes" && (
                 <div className="qb-quizzes-view">
-                  <div className="qb-view-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <h2>Select a Quiz</h2>
-                      <p>Choose a quiz to view its subjects and questions.</p>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        background: "var(--bg-input)",
-                        padding: "4px",
-                        borderRadius: "12px",
-                        border: "1.5px solid var(--border-input)",
-                        height: "max-content"
-                      }}
-                    >
-                      <button
-                        onClick={() => setQuizType("exams")}
-                        style={{
-                          padding: "8px 24px",
-                          borderRadius: "8px",
-                          background: quizType === "exams" ? "var(--violet)" : "transparent",
-                          color: quizType === "exams" ? "white" : "var(--text-muted)",
-                          fontWeight: "600",
-                          border: "none",
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                          boxShadow: quizType === "exams" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
-                        }}
-                      >
-                        Exams
-                      </button>
-                      <button
-                        onClick={() => setQuizType("practice")}
-                        style={{
-                          padding: "8px 24px",
-                          borderRadius: "8px",
-                          background: quizType === "practice" ? "var(--violet)" : "transparent",
-                          color: quizType === "practice" ? "white" : "var(--text-muted)",
-                          fontWeight: "600",
-                          border: "none",
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                          boxShadow: quizType === "practice" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
-                        }}
-                      >
-                        Practice
-                      </button>
-                    </div>
-                  </div>
                   <div className="practice-grid">
                     {books.map((book, index) => {
                       const dateText = book.status === "Published" ? `Published on ${formatDate(book.publishedDate)}` : "Draft (Not Published)";
