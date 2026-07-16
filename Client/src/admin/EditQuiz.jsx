@@ -295,15 +295,20 @@ function EditQuiz() {
         }
 
         const loadedQuestions = finalQuestions.map((q) => {
-          const options = q.options?.length === 4 ? q.options : ["", "", "", ""];
-          const correctIdx = options.indexOf(q.correctAnswer);
+          let options = q.options || [];
+          if (options.length < 4) {
+            options = [...options, ...Array(4 - options.length).fill("")];
+          } else if (options.length > 4) {
+            options = options.slice(0, 4);
+          }
+          const correctIdx = options.findIndex(opt => opt && opt.trim() === q.correctAnswer?.trim());
           return {
             _id: q._id,
             questionEnglish: q.questionEnglish || "",
             questionHindi: q.questionHindi || "",
             options,
-            correctOptionIndex: correctIdx,
-            correctAnswer: q.correctAnswer || "",
+            correctOptionIndex: correctIdx !== -1 ? correctIdx : 0,
+            correctAnswer: correctIdx !== -1 ? `Option ${correctIdx + 1}` : "Option 1",
           };
         });
 
@@ -913,6 +918,33 @@ function EditQuiz() {
                           <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Assessment Questions</h3>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigate(`/admin/edit-quiz-multi/${id}`);
+                            }}
+                            className="btn-primary"
+                            style={{
+                              background: "rgba(59, 130, 246, 0.1)",
+                              color: "#3B82F6",
+                              border: "1.5px solid rgba(59, 130, 246, 0.2)",
+                              borderRadius: "8px",
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}
+                            title="Convert this single-section quiz into a multi-section quiz to add more sections."
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 12h16m-8-8v16" />
+                            </svg>
+                            Convert to Multi-Section
+                          </button>
                           {questions.length > 0 && (
                             <button 
                               type="button" 
@@ -994,7 +1026,10 @@ function EditQuiz() {
                                           <span>Delete</span>
                                         </button>
                                       )}
-                                      <span style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600" }}>
+                                      <span 
+                                        style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600", cursor: "pointer" }}
+                                        onClick={() => toggleQuestionExpand(qIndex)}
+                                      >
                                         {isExpanded ? "- Collapse" : "+ Expand"}
                                       </span>
                                     </div>

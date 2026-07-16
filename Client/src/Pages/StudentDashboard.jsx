@@ -39,12 +39,15 @@ const ScoreTrendChart = ({ data }) => {
 
   const yTicks = [100, 75, 50, 25, 0];
 
-  const formatDate = (dateStr, index) => {
-    if(!dateStr) return `Test ${index + 1}`;
+  const formatDateTime = (dateStr, index) => {
+    if(!dateStr) return { date: `Test ${index + 1}`, time: "" };
     const d = new Date(dateStr);
-    if(isNaN(d.getTime())) return `Test ${index + 1}`;
+    if(isNaN(d.getTime())) return { date: `Test ${index + 1}`, time: "" };
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return `${months[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}`;
+    return {
+      date: `${months[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}`,
+      time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
   };
 
   return (
@@ -64,12 +67,18 @@ const ScoreTrendChart = ({ data }) => {
           </g>
         );
       })}
-      {points.map((p, i) => (
-        <g key={`x-${i}`}>
-          <line x1={p.x} y1={padding.top} x2={p.x} y2={height - padding.bottom} stroke="var(--border-input)" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.5" />
-          <text x={p.x} y={height - padding.bottom + 15} fill="var(--text-muted)" fontSize="11" textAnchor="middle">{formatDate(p.date, i)}</text>
-        </g>
-      ))}
+      {points.map((p, i) => {
+        const dt = formatDateTime(p.date, i);
+        return (
+          <g key={`x-${i}`}>
+            <line x1={p.x} y1={padding.top} x2={p.x} y2={height - padding.bottom} stroke="var(--border-input)" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.5" />
+            <text x={p.x} y={height - padding.bottom + 15} fill="var(--text-muted)" fontSize="11" textAnchor="middle">{dt.date}</text>
+            {dt.time && (
+              <text x={p.x} y={height - padding.bottom + 27} fill="var(--text-muted)" fontSize="9" textAnchor="middle" opacity="0.7">{dt.time}</text>
+            )}
+          </g>
+        );
+      })}
       {points.length > 0 && (
         <>
           <path d={areaPath} fill="url(#areaGradient)" />

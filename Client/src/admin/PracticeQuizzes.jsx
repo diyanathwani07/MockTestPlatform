@@ -393,14 +393,6 @@ function PracticeQuizzes() {
                 </button>
               </div>
             </div>
-
-            <button 
-              onClick={openCreateModal}
-              className="create-quiz-pill-btn"
-              style={{ minHeight: '38px', padding: '8px 20px', fontSize: '13px' }}
-            >
-              + Create Practice Quiz
-            </button>
           </div>
 
           <div style={{ 
@@ -797,47 +789,6 @@ function PracticeQuizzes() {
         </div>
       )}
 
-      <style>{`
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        
-        .btn-save-draft {
-          background: var(--bg-card);
-          border: 1.5px solid var(--border-input);
-          color: var(--text-secondary);
-          font-size: 13.5px;
-          font-weight: 600;
-          padding: 10px 20px;
-          border-radius: 10px;
-          cursor: pointer;
-          transition: all 0.15s;
-          min-height: 44px;
-        }
-
-        .btn-save-draft:hover {
-          background: var(--bg-page);
-          border-color: var(--text-muted);
-        }
-
-        .btn-submit-publish {
-          background: linear-gradient(135deg, var(--violet-dark) 0%, var(--violet) 100%);
-          color: #ffffff;
-          border: none;
-          font-size: 13.5px;
-          font-weight: 700;
-          padding: 10px 24px;
-          border-radius: 10px;
-          cursor: pointer;
-          box-shadow: 0 4px 12px rgba(110, 63, 243, 0.25);
-          transition: all 0.15s;
-          min-height: 44px;
-        }
-
-        .btn-submit-publish:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(110, 63, 243, 0.35);
-        }
-      `}</style>
     </div>
   );
 }

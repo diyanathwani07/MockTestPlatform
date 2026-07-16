@@ -55,6 +55,7 @@ function CreateQuizMulti() {
     enablePerQuestionTimer: false,
     timePerQuestion: 30,
     lockPreviousQuestions: false,
+    breakBetweenSections: 0,
   });
 
   const [sections, setSections] = useState([defaultSection(0)]);
@@ -91,6 +92,7 @@ function CreateQuizMulti() {
             enablePerQuestionTimer: dbQuiz.enablePerQuestionTimer || false,
             timePerQuestion: dbQuiz.timePerQuestion || 30,
             lockPreviousQuestions: dbQuiz.lockPreviousQuestions || false,
+            breakBetweenSections: dbQuiz.breakBetweenSections || 0,
           });
 
           if (dbQuiz.sections && dbQuiz.sections.length > 0) {
@@ -527,6 +529,11 @@ function CreateQuizMulti() {
                   >
                     + Add New Section
                   </button>
+                  <SectionPickerModal
+                    isOpen={isSectionPickerOpen}
+                    onClose={() => setIsSectionPickerOpen(false)}
+                    onSelect={handleAddExistingSection}
+                  />
                   <button
                     onClick={() => setIsSectionPickerOpen(true)}
                     style={{
@@ -735,6 +742,62 @@ function CreateQuizMulti() {
                       />
                     </div>
                   </div>
+
+                  {/* NEW FEATURES: Per Question Timer, Lock Previous Questions, Break Time */}
+                  <div className="form-field" style={{ marginTop: "16px" }}>
+                    <label style={{ marginBottom: "12px", display: "block", color: "var(--text-secondary)" }}>Advanced Settings</label>
+                    
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "center" }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "var(--text-primary)", margin: 0 }}>
+                        <input
+                          type="checkbox"
+                          checked={quizMeta.enablePerQuestionTimer}
+                          onChange={(e) => setQuizMeta(prev => ({ ...prev, enablePerQuestionTimer: e.target.checked }))}
+                          style={{ accentColor: "var(--primary-color)", width: "16px", height: "16px" }}
+                        />
+                        <span>Enable Per Question Timer</span>
+                      </label>
+                      
+                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "var(--text-primary)", margin: 0 }}>
+                        <input
+                          type="checkbox"
+                          checked={quizMeta.lockPreviousQuestions}
+                          onChange={(e) => setQuizMeta(prev => ({ ...prev, lockPreviousQuestions: e.target.checked }))}
+                          style={{ accentColor: "var(--primary-color)", width: "16px", height: "16px" }}
+                        />
+                        <span>Lock Previous Questions</span>
+                      </label>
+                    </div>
+
+                    {quizMeta.enablePerQuestionTimer && (
+                      <div style={{ marginTop: "16px", maxWidth: "300px" }}>
+                        <label>Time per question (Seconds)</label>
+                        <input
+                          type="number"
+                          className="force-quiz-input"
+                          value={quizMeta.timePerQuestion}
+                          onChange={(e) => setQuizMeta(prev => ({ ...prev, timePerQuestion: e.target.value }))}
+                          min="1"
+                          placeholder="30"
+                        />
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: "16px", maxWidth: "300px" }}>
+                      <label>Break Between Sections (Seconds)</label>
+                      <input
+                        type="number"
+                        className="force-quiz-input"
+                        value={quizMeta.breakBetweenSections}
+                        onChange={(e) => setQuizMeta(prev => ({ ...prev, breakBetweenSections: e.target.value }))}
+                        min="0"
+                        placeholder="0 (No break)"
+                      />
+                      <span style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", display: "block", width: "max-content" }}>
+                        Time students must wait between finishing one section and starting the next.
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Section Questions */}
@@ -861,7 +924,10 @@ function CreateQuizMulti() {
                                   </svg>
                                   <span>Delete</span>
                                 </button>
-                                  <span style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600" }}>
+                                  <span 
+                                    style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600", cursor: "pointer" }}
+                                    onClick={() => toggleQuestionExpand(qIndex)}
+                                  >
                                     {isExpanded ? "- Collapse" : "+ Expand"}
                                   </span>
                               </div>

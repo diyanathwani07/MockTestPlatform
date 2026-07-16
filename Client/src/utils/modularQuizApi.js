@@ -159,6 +159,7 @@ export const saveModularQuiz = async ({
     enablePerQuestionTimer: quizMeta.enablePerQuestionTimer || false,
     timePerQuestion: quizMeta.timePerQuestion || 0,
     lockPreviousQuestions: quizMeta.lockPreviousQuestions || false,
+    breakBetweenSections: quizMeta.breakBetweenSections || 0,
     published: isPublishing,
     status: isPublishing ? "Published" : quizMeta.status || "Draft",
     scheduledDate: quizMeta.scheduledDate || null,

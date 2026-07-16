@@ -10,6 +10,7 @@ function ManageQuizzes() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [filterType, setFilterType] = useState("All");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const [selectedExportQuiz, setSelectedExportQuiz] = useState(null);
@@ -45,7 +46,12 @@ function ManageQuizzes() {
       matchesDate = qDate === filterDate;
     }
 
-    return matchesSearch && matchesDate;
+    let matchesType = true;
+    const isMulti = q.sections && q.sections.length > 1;
+    if (filterType === "Single") matchesType = !isMulti;
+    if (filterType === "Multi") matchesType = isMulti;
+
+    return matchesSearch && matchesDate && matchesType;
   });
 
   const handleDelete = async (id, title) => {
@@ -222,6 +228,33 @@ function ManageQuizzes() {
                   </span>
                 )}
               </div>
+
+              {/* Type Filter */}
+              <div style={{ 
+                display: "flex", alignItems: "center", gap: "8px", 
+                backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
+                borderRadius: "100px", padding: "8px 16px"
+              }}>
+                <span style={{ fontSize: "14px", color: "var(--text-secondary)", userSelect: "none" }}>🏷️</span>
+                <select 
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  style={{ 
+                    border: "none", 
+                    background: "transparent", 
+                    outline: "none", 
+                    fontSize: "13px", 
+                    color: "var(--text-primary)", 
+                    fontWeight: "500", 
+                    fontFamily: "inherit", 
+                    cursor: "pointer"
+                  }}
+                >
+                  <option value="All" style={{ background: "var(--bg-card)" }}>All Types</option>
+                  <option value="Single" style={{ background: "var(--bg-card)" }}>Single Section</option>
+                  <option value="Multi" style={{ background: "var(--bg-card)" }}>Multi Section</option>
+                </select>
+              </div>
             </div>
 
           </div>
@@ -260,7 +293,14 @@ function ManageQuizzes() {
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)", whiteSpace: "nowrap" }}>
-                          {quiz.title}
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            {quiz.title}
+                            {(quiz.sections && quiz.sections.length > 1) ? (
+                              <span style={{ fontSize: "10px", backgroundColor: "rgba(59, 130, 246, 0.2)", color: "#3B82F6", border: "1px solid #3B82F6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase" }}>Multi</span>
+                            ) : (
+                              <span style={{ fontSize: "10px", backgroundColor: "rgba(139, 92, 246, 0.2)", color: "#8B5CF6", border: "1px solid #8B5CF6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase" }}>Single</span>
+                            )}
+                          </div>
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
@@ -387,6 +427,19 @@ function ManageQuizzes() {
                                       >
                                         <Edit2 size={15} /> Edit
                                       </div>
+                                      {!(quiz.sections && quiz.sections.length > 1) && (
+                                      <div 
+                                        onClick={() => { 
+                                          setActiveDropdown(null); 
+                                          navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                        }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                      >
+                                        <Edit2 size={15} /> Edit as Multi
+                                      </div>
+                                      )}
                                       <div 
                                         onClick={() => { 
                                           setActiveDropdown(null); 

@@ -377,31 +377,56 @@ function CreateQuiz() {
 
     setLoading(true);
     try {
-      const isPublishing = submitType === "publish";
-      const scheduledDateVal = submitType === "schedule" ? new Date(scheduledDateTime) : null;
+      if (quizMeta.quizType === "practice") {
+        const payload = {
+          title: quizMeta.title,
+          subject: quizMeta.subject || quizMeta.examName || "General",
+          description: quizMeta.description,
+          questions: questions.map(q => ({
+            questionEnglish: q.questionEnglish,
+            questionHindi: q.questionHindi,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || ""
+          })),
+          status: submitType === "publish" ? "Published" : "Draft"
+        };
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/practice`, payload, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+        
+        setMessage({
+          text: `✅ Practice Quiz successfully saved as ${submitType === "publish" ? "Published" : "Draft"}!`,
+          type: "status-success",
+        });
+        setTimeout(() => navigate("/admin/practice"), 1200);
+      } else {
+        const isPublishing = submitType === "publish";
+        const scheduledDateVal = submitType === "schedule" ? new Date(scheduledDateTime) : null;
 
-      await saveSingleQuizModular({
-        quizMeta: {
-          ...quizMeta,
-          status:
-            submitType === "publish"
-              ? "Published"
-              : submitType === "schedule"
-              ? "Scheduled"
-              : "Draft",
-        },
-        questions,
-        isPublishing,
-        scheduledDate: scheduledDateVal,
-      });
+        await saveSingleQuizModular({
+          quizMeta: {
+            ...quizMeta,
+            status:
+              submitType === "publish"
+                ? "Published"
+                : submitType === "schedule"
+                ? "Scheduled"
+                : "Draft",
+          },
+          questions,
+          isPublishing,
+          scheduledDate: scheduledDateVal,
+        });
 
-      setMessage({
-        text: `✅ Quiz successfully saved as ${
-          submitType === "publish" ? "Published" : submitType === "schedule" ? "Scheduled" : "Draft"
-        }!`,
-        type: "status-success",
-      });
-      setTimeout(() => navigate("/admin/manage-quizzes"), 1200);
+        setMessage({
+          text: `✅ Quiz successfully saved as ${
+            submitType === "publish" ? "Published" : submitType === "schedule" ? "Scheduled" : "Draft"
+          }!`,
+          type: "status-success",
+        });
+        setTimeout(() => navigate("/admin/manage-quizzes"), 1200);
+      }
     } catch (error) {
       console.error("Create Quiz Error:", error);
       setMessage({
@@ -446,6 +471,54 @@ function CreateQuiz() {
             <div className="quiz-two-column-layout">
               {/* ── LEFT PANEL ── */}
               <div className="quiz-left-panel">
+
+                {/* Quiz Type Selector */}
+                <div className="form-card compact-card" style={{ marginBottom: "16px" }}>
+                  <h3 className="form-card-title">Quiz Type</h3>
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <div
+                      onClick={() => setQuizMeta(prev => ({ ...prev, quizType: "exam" }))}
+                      style={{
+                        flex: 1,
+                        padding: "16px",
+                        borderRadius: "12px",
+                        border: quizMeta.quizType === "exam" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-input)",
+                        background: quizMeta.quizType === "exam" ? "rgba(139, 92, 246, 0.08)" : "var(--bg-input)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "12px",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      <div style={{ fontSize: "14px", fontWeight: "600", color: quizMeta.quizType === "exam" ? "var(--text-primary)" : "var(--text-secondary)" }}>
+                        Exam
+                      </div>
+                    </div>
+                    
+                    <div
+                      onClick={() => setQuizMeta(prev => ({ ...prev, quizType: "practice" }))}
+                      style={{
+                        flex: 1,
+                        padding: "16px",
+                        borderRadius: "12px",
+                        border: quizMeta.quizType === "practice" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-input)",
+                        background: quizMeta.quizType === "practice" ? "rgba(139, 92, 246, 0.08)" : "var(--bg-input)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "12px",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      <div style={{ fontSize: "14px", fontWeight: "600", color: quizMeta.quizType === "practice" ? "var(--text-primary)" : "var(--text-secondary)" }}>
+                        Practice
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Preset Selector */}
                 <div className="form-card compact-card">
@@ -655,7 +728,10 @@ function CreateQuiz() {
                                         <span>Delete</span>
                                       </button>
                                     )}
-                                      <span style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600" }}>
+                                      <span 
+                                        style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600", cursor: "pointer" }}
+                                        onClick={() => toggleQuestionExpand(qIndex)}
+                                      >
                                         {isExpanded ? "- Collapse" : "+ Expand"}
                                       </span>
                                   </div>

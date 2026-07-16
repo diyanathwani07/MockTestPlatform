@@ -58,9 +58,13 @@ function QuizMulti() {
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
   const [palettePage, setPalettePage] = useState(0);
   const itemsPerPage = 25;
-  const lockPreviousQuestions = false;
-  const enablePerQuestionTimer = false;
-  const questionTimeLeft = 0;
+  const [lockPreviousQuestions, setLockPreviousQuestions] = useState(false);
+  const [enablePerQuestionTimer, setEnablePerQuestionTimer] = useState(false);
+  const [timePerQuestion, setTimePerQuestion] = useState(0);
+  const [questionTimeLeft, setQuestionTimeLeft] = useState(0);
+  const [breakBetweenSections, setBreakBetweenSections] = useState(0);
+  const [isBreakTime, setIsBreakTime] = useState(false);
+  const [breakTimeLeft, setBreakTimeLeft] = useState(0);
   const [showTimerTooltip, setShowTimerTooltip] = useState(false);
 
   useEffect(() => {
@@ -79,6 +83,10 @@ function QuizMulti() {
       setExamName(data.examName || data.subject);
       setQuizTitle(data.title);
       setExamSubject(data.subject);
+      setLockPreviousQuestions(data.lockPreviousQuestions || false);
+      setEnablePerQuestionTimer(data.enablePerQuestionTimer || false);
+      setTimePerQuestion(data.timePerQuestion || 0);
+      setBreakBetweenSections(data.breakBetweenSections || 0);
       
       let loadedSections = data.sections || [];
       // Backward compatibility for legacy flat quizzes
@@ -228,7 +236,7 @@ function QuizMulti() {
 
   // Timers
   useEffect(() => {
-    if (pageLoading) return;
+    if (pageLoading || isBreakTime) return;
     const timer = setInterval(() => {
       // Global timer tick
       setGlobalTimeLeft(prev => {
@@ -252,6 +260,11 @@ function QuizMulti() {
          });
       }
 
+      // Per Question Timer tick
+      if (enablePerQuestionTimer) {
+         setQuestionTimeLeft(prev => prev > 0 ? prev - 1 : 0);
+      }
+
       // Track time spent per section
       if (sections.length > 0) {
          setSectionTimeSpent(prev => {
@@ -262,30 +275,82 @@ function QuizMulti() {
 
     }, 1000);
     return () => clearInterval(timer);
-  }, [pageLoading, currentSectionIndex, sectionTimeLeft, sections]);
+  }, [pageLoading, currentSectionIndex, sectionTimeLeft, sections, isBreakTime, enablePerQuestionTimer]);
+
+  // Break Timer
+  useEffect(() => {
+    if (!isBreakTime) return;
+    const timer = setInterval(() => {
+      setBreakTimeLeft(prev => {
+        if (prev <= 1) {
+          endBreak();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isBreakTime]);
+
+  // Reset Question Timer on Question Change
+  useEffect(() => {
+    if (enablePerQuestionTimer && timePerQuestion > 0) {
+      setQuestionTimeLeft(timePerQuestion);
+    }
+  }, [currentQuestionIndex, enablePerQuestionTimer, timePerQuestion]);
+
+  // Auto-advance / Auto-submit when Question Timer hits 0
+  useEffect(() => {
+    if (enablePerQuestionTimer && questionTimeLeft === 0 && !pageLoading && !isBreakTime) {
+       if (currentQuestionIndex < currentQuestions.length - 1) {
+          const nextIdx = currentQuestionIndex + 1;
+          setCurrentQuestionIndex(nextIdx);
+          const secId = sections[currentSectionIndex]._id;
+          if (!visitedQuestions[secId]?.includes(nextIdx)) {
+            setVisitedQuestions(prev => ({
+               ...prev,
+               [secId]: [...(prev[secId] || []), nextIdx]
+            }));
+          }
+       } else {
+          handleNextSection();
+       }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionTimeLeft, enablePerQuestionTimer, pageLoading, currentQuestions.length, isBreakTime]);
 
   const handleNextSection = () => {
      if (currentSectionIndex < sections.length - 1) {
-        const nextIdx = currentSectionIndex + 1;
-        setCurrentSectionIndex(nextIdx);
-        setCurrentQuestions(sections[nextIdx].flatQuestions);
-        setCurrentQuestionIndex(0);
-        
-        // Mark first question visited
-        setVisitedQuestions(prev => ({
-           ...prev,
-           [sections[nextIdx]._id]: [0]
-        }));
-        
-        // Reset local timer if next section has one
-        if (sections[nextIdx].duration > 0) {
-           setSectionTimeLeft(sections[nextIdx].duration);
+        if (breakBetweenSections > 0) {
+           setIsBreakTime(true);
+           setBreakTimeLeft(breakBetweenSections);
         } else {
-           setSectionTimeLeft(null); // fallback to global
+           endBreak();
         }
      } else {
         submitQuiz();
      }
+  };
+
+  const endBreak = () => {
+      setIsBreakTime(false);
+      const nextIdx = currentSectionIndex + 1;
+      setCurrentSectionIndex(nextIdx);
+      setCurrentQuestions(sections[nextIdx].flatQuestions);
+      setCurrentQuestionIndex(0);
+      
+      // Mark first question visited
+      setVisitedQuestions(prev => ({
+         ...prev,
+         [sections[nextIdx]._id]: [0]
+      }));
+      
+      // Reset local timer if next section has one
+      if (sections[nextIdx].duration > 0) {
+         setSectionTimeLeft(sections[nextIdx].duration);
+      } else {
+         setSectionTimeLeft(null); // fallback to global
+      }
   };
 
   const handleOptionSelect = (option) => {
@@ -543,6 +608,34 @@ function QuizMulti() {
               </button>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ════ BREAK TIME OVERLAY ════ */}
+      {isBreakTime && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 99990,
+          background: "rgba(10,9,20,0.95)",
+          backdropFilter: "blur(16px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexDirection: "column", color: "#fff"
+        }}>
+          <h2 style={{ fontSize: "36px", marginBottom: "16px", fontWeight: "800", color: "#F4C842" }}>Section Completed!</h2>
+          <p style={{ fontSize: "18px", color: "rgba(255,255,255,0.7)", marginBottom: "32px" }}>Next section starting in:</p>
+          <div style={{ fontSize: "72px", fontWeight: "900", fontFamily: "'JetBrains Mono', monospace", color: "#10B981", marginBottom: "48px" }}>
+            {breakTimeLeft}s
+          </div>
+          <button
+            onClick={endBreak}
+            style={{
+              background: "linear-gradient(135deg,#3730A3,#6E3FF3)",
+              color: "#fff", border: "none", borderRadius: "12px",
+              padding: "16px 48px", fontSize: "16px", fontWeight: "700",
+              cursor: "pointer", transition: "transform 0.2s"
+            }}
+          >
+            Skip Break & Start Now
+          </button>
         </div>
       )}
 
