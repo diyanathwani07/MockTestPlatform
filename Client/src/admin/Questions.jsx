@@ -335,68 +335,61 @@ function Questions() {
     currentPage * questionsPerPage
   );
 
-  return (
+return (
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
         <AdminNavbar title="Questions Bank" />
         <div className="admin-content" style={{ padding: "24px", minHeight: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <div className="qb-middle-header">
             {/* LEFT: Exams / Practice Toggle */}
-            <div style={{ flex: 1, display: "flex" }}>
-              <div
-                style={{
-                  display: "flex",
-                  background: "var(--bg-input)",
-                  padding: "4px",
-                  borderRadius: "12px",
-                  border: "1.5px solid var(--border-input)",
-                  height: "max-content"
-                }}
-              >
-              <button
-                onClick={() => setQuizType("exams")}
-                style={{
-                  padding: "8px 24px",
-                  borderRadius: "8px",
-                  background: quizType === "exams" ? "var(--violet)" : "transparent",
-                  color: quizType === "exams" ? "white" : "var(--text-muted)",
-                  fontWeight: "600",
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: quizType === "exams" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
-                }}
-              >
-                Exams
-              </button>
-              <button
-                onClick={() => setQuizType("practice")}
-                style={{
-                  padding: "8px 24px",
-                  borderRadius: "8px",
-                  background: quizType === "practice" ? "var(--violet)" : "transparent",
-                  color: quizType === "practice" ? "white" : "var(--text-muted)",
-                  fontWeight: "600",
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: quizType === "practice" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
-                }}
-              >
-                Practice
-              </button>
-            </div>
+            <div className="qb-middle-left">
+              <div style={{ display: "flex", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "10px", border: "1px solid var(--border-color)", width: "fit-content" }}>
+                <button
+                  onClick={() => setQuizType("exams")}
+                  style={{
+                    padding: "8px 20px",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    backgroundColor: quizType === "exams" ? "var(--violet)" : "transparent",
+                    color: quizType === "exams" ? "white" : "var(--text-secondary)",
+                    boxShadow: quizType === "exams" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                  }}
+                >
+                  Exams
+                </button>
+                <button
+                  onClick={() => setQuizType("practice")}
+                  style={{
+                    padding: "8px 20px",
+                    borderRadius: "8px",
+                    backgroundColor: quizType === "practice" ? "var(--violet)" : "transparent",
+                    color: quizType === "practice" ? "white" : "var(--text-secondary)",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    boxShadow: quizType === "practice" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                  }}
+                >
+                  Practice
+                </button>
+              </div>
             </div>
 
             {/* MIDDLE: Text */}
-            <div style={{ flex: 1, textAlign: "center" }}>
-              <h2 style={{ margin: 0, fontSize: "20px", color: "var(--text-primary)" }}>Select a Quiz</h2>
-              <p style={{ margin: "4px 0 0 0", color: "var(--text-muted)", fontSize: "14px" }}>Choose a quiz to view its subjects and questions.</p>
+            <div className="qb-middle-center">
+              <h2>Select a Quiz</h2>
+              <p>Choose a quiz to view its subjects and questions.</p>
             </div>
 
             {/* RIGHT: Active / Recycle Bin Toggle */}
-            <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+            <div className="qb-middle-right">
               <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", height: "fit-content" }}>
                 <button
                   onClick={() => setIsRecycleBin(false)}

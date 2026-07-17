@@ -740,10 +740,11 @@ function PracticeTest() {
       </div>
 
       {/* ── BOTTOM ACTIONS ROW ── */}
-      <div style={{ backgroundColor: "#0c0d1e", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "20px 40px" }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="practice-bottom-actions" style={{ backgroundColor: "#0c0d1e", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "20px 40px" }}>
+        <div className="practice-bottom-actions-container" style={{ maxWidth: "1400px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           
           <button 
+            className="practice-nav-btn practice-nav-prev"
             onClick={handlePrev}
             disabled={currentIndex === 0}
             style={{
@@ -762,9 +763,10 @@ function PracticeTest() {
           </button>
 
           {/* Centered spacer / empty box since we removed the auto-saved text */}
-          <div style={{ flex: 1 }}></div>
+          <div className="practice-nav-spacer" style={{ flex: 1 }}></div>
 
           <button 
+            className="practice-nav-btn practice-nav-next"
             onClick={handleNext}
             disabled={!isCorrectSelected}
             style={{

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
-import { BookOpen, Clock, HelpCircle } from "lucide-react";
+import { BookOpen, Clock, HelpCircle, Search } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/Practice.css";
 
@@ -11,6 +11,12 @@ function PracticeDashboard() {
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredQuizzes = quizzes.filter(quiz => 
+    (quiz.title || quiz.examGroup || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (quiz.subject || "General").toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,23 +55,45 @@ function PracticeDashboard() {
       <div className="sd-main-content">
         <StudentNavbar title="Practice Tests" />
         <div className="sd-content" style={{ paddingTop: '20px' }}>
-          
-
+          <div className="practice-header-actions" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '24px' }}>
+            <div className="practice-search-container" style={{ position: 'relative', width: '300px', maxWidth: '100%' }}>
+              <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+              <input 
+                type="text" 
+                placeholder="Search practice modules..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ 
+                  width: '100%', 
+                  padding: '12px 16px 12px 40px', 
+                  borderRadius: '12px', 
+                  border: '1px solid var(--border-color)', 
+                  backgroundColor: 'var(--bg-panel)',
+                  color: 'var(--text-primary)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s, box-shadow 0.2s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+              />
+            </div>
+          </div>
 
           {loading ? (
             <div className="sd-loading">
               <div className="sd-spinner"></div>
               <p>Loading available practice modules...</p>
             </div>
-          ) : quizzes.length === 0 ? (
+          ) : filteredQuizzes.length === 0 ? (
             <div className="sd-empty">
               <div className="sd-empty-icon">📭</div>
-              <h3>No Practice Tests Available</h3>
-              <p>Check back soon for new learning modules.</p>
+              <h3>No Practice Tests Found</h3>
+              <p>{searchQuery ? "Try adjusting your search keywords." : "Check back soon for new learning modules."}</p>
             </div>
           ) : (
             <div className="practice-grid">
-              {quizzes.map((quiz, index) => {
+              {filteredQuizzes.map((quiz, index) => {
                 const color = subjectColors[index % subjectColors.length];
                 const questionCount = quiz.questionCount || 
                   (quiz.isModular && quiz.sections

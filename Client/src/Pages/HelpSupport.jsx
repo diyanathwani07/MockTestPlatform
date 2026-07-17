@@ -399,41 +399,31 @@ function HelpSupport() {
                 <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>You haven't raised any support tickets yet.</div>
               ) : (
                 <>
-                  <div className="hs-tickets-table-container">
-                    <table className="hs-tickets-table">
-                      <thead>
-                        <tr>
-                          <th>Ticket ID</th>
-                          <th>Subject</th>
-                          <th>Status</th>
-                          <th>Last Update</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {myTickets.slice((currentPage - 1) * ticketsPerPage, currentPage * ticketsPerPage).map(tkt => {
-                          const statusClass = tkt.status.toLowerCase().replace(" ", "-");
-                          return (
-                            <tr key={tkt._id}>
-                              <td className="hs-ticket-id">TKT-{tkt._id.substring(tkt._id.length - 8).toUpperCase()}</td>
-                              <td className="hs-ticket-subject">{tkt.subject}</td>
-                              <td>
-                                <div className={`hs-status-badge ${statusClass}`}>
-                                  <div className="hs-status-dot"></div>
-                                  {tkt.status}
-                                </div>
-                              </td>
-                              <td>{formatDate(tkt.updatedAt || tkt.createdAt)}</td>
-                              <td>
-                                <button className="hs-ticket-action" title="View Details" onClick={() => setSelectedTicket(tkt)}>
-                                  <Eye size={16} />
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <div className="hs-tickets-grid">
+                    {myTickets.slice((currentPage - 1) * ticketsPerPage, currentPage * ticketsPerPage).map(tkt => {
+                      const statusClass = tkt.status.toLowerCase().replace(" ", "-");
+                      return (
+                        <div className="hs-ticket-card" key={tkt._id}>
+                          <div className="hs-ticket-card-header">
+                            <span className="hs-ticket-id">TKT-{tkt._id.substring(tkt._id.length - 8).toUpperCase()}</span>
+                            <div className={`hs-status-badge ${statusClass}`}>
+                              <div className="hs-status-dot"></div>
+                              {tkt.status}
+                            </div>
+                          </div>
+                          <h3 className="hs-ticket-subject">{tkt.subject}</h3>
+                          <div className="hs-ticket-card-meta">
+                            <span className="hs-meta-label">Last Update:</span>
+                            <span className="hs-meta-value">{formatDate(tkt.updatedAt || tkt.createdAt)}</span>
+                          </div>
+                          <div className="hs-ticket-card-footer">
+                            <button className="hs-ticket-view-btn" onClick={() => setSelectedTicket(tkt)}>
+                              <Eye size={16} /> View Details
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                   
                   {myTickets.length > ticketsPerPage && (

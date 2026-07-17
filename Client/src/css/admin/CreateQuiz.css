@@ -842,4 +842,180 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
 .section-picker-btn.secondary:hover {
   background-color: var(--option-hover, rgba(255, 255, 255, 0.05));
   color: var(--text-primary, #ffffff);
+}
+
+/* ==========================================================================
+   MOBILE FIRST RESPONSIVENESS (Enterprise Layout Support)
+   ========================================================================== */
+
+/* Multi-Section Assessment Layout */
+.create-multi-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.create-multi-sidebar {
+  width: 100%;
+  max-width: 350px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-multi-main {
+  flex: 1 1 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 24px;
+}
+
+/* KaTeX Overflow Protection */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+@media (max-width: 1024px) {
+  .quiz-two-column-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .create-multi-layout {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+  
+  .create-multi-sidebar {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .create-multi-main {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .admin-quiz-right-panel {
+    position: relative;
+    top: 0;
+  }
+  
+  /* Sections Grid */
+  .sections-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .details-vertical-fields {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Header adjustments */
+  .create-quiz-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .create-quiz-header-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .create-quiz-header-actions button {
+    flex: 1;
+    min-height: 44px;
+    justify-content: center;
+  }
+  
+  /* Sections */
+  .sections-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Question Options layout */
+  .question-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .question-block-enhanced {
+    padding: 16px;
+  }
+  
+  .question-block-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .question-block-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .question-block-actions button {
+    min-height: 44px;
+    flex: 1;
+  }
+
+  /* Modals to Bottom Sheet */
+  .section-picker-modal, .preview-modal, .import-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 20px 20px 0 0;
+    max-height: 90vh;
+    transform: translateY(100%);
+    animation: slideUpModal 0.3s forwards;
+  }
+  
+  @keyframes slideUpModal {
+    to { transform: translateY(0); }
+  }
+  
+  /* Import Table */
+  .import-preview-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* General Form Buttons */
+  button.force-quiz-btn, 
+  .form-card button,
+  .admin-actions button {
+    min-height: 44px;
+    width: 100%;
+    margin-bottom: 8px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 412px) {
+  /* Extra tight mobile screens */
+  .create-quiz-container {
+    padding: 12px;
+  }
+  
+  .form-card {
+    padding: 16px 12px;
+  }
+  
+  .question-block-actions button span {
+    display: none; /* Hide text on small screens, show icons only */
+  }
 }

@@ -765,3 +765,141 @@ body.dark-mode .practice-inline-exp.danger {
   font-family: inherit;
 }
 
+/* ==============================================================
+   PRACTICE MODULE RESPONSIVE STYLES
+   ============================================================== */
+
+/* KaTeX Responsive Overrides */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+/* Question Images */
+.practice-q-text img, .practice-opt-wrapper img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .practice-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile (under 768px) */
+@media (max-width: 767px) {
+  /* Practice Dashboard */
+  .practice-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .practice-title {
+    font-size: 24px;
+  }
+
+  /* Practice Test Nav */
+  .practice-top-bar {
+    padding: 12px 16px;
+  }
+  
+  .practice-question-card {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+  
+  .practice-q-text {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .q-num {
+    font-size: 18px;
+  }
+  
+  .q-content p {
+    font-size: 16px;
+  }
+  
+  .practice-opt {
+    min-height: 44px; /* Touch target */
+    padding: 12px 16px;
+  }
+  
+  .practice-inline-exp {
+    margin-left: 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Bottom Actions Mobile Sticky */
+  .practice-bottom-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    padding: 12px 16px !important;
+  }
+
+  .practice-bottom-actions-container {
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .practice-nav-btn {
+    flex: 1;
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+    justify-content: center;
+  }
+
+  .practice-nav-spacer {
+    display: none;
+  }
+  
+  /* Result Page Stats Grid */
+  .pr-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .pr-actions {
+    flex-direction: column;
+  }
+  
+  .pr-btn-primary, .pr-btn-secondary {
+    width: 100%;
+  }
+
+  .practice-learning-status {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .status-item {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-right: 0;
+    padding-bottom: 12px;
+  }
+  
+  .status-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+/* Very Small Mobile (< 400px) */
+@media (max-width: 399px) {
+  .practice-bottom-actions-container {
+    flex-direction: column;
+  }
+  
+  .practice-nav-btn {
+    width: 100%;
+  }
+}
+

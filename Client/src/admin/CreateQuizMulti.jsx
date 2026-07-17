@@ -465,9 +465,9 @@ function CreateQuizMulti() {
               </div>
             )}
 
-            <div style={{ display: "flex", gap: "24px" }}>
+            <div className="create-multi-layout">
               {/* LEFT SIDEBAR */}
-              <div style={{ width: "350px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div className="create-multi-sidebar">
 
                 {/* Sections List */}
                 <div className="form-card" style={{ padding: "20px", marginBottom: 0 }}>
@@ -653,7 +653,7 @@ function CreateQuizMulti() {
               </div>
 
               {/* MAIN AREA */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "24px", minWidth: 0, overflowX: "auto", paddingBottom: "24px" }}>
+              <div className="create-multi-main">
 
                 {/* Section Config */}
                 <div
@@ -985,31 +985,18 @@ function CreateQuizMulti() {
                                             <input
                                               type="text"
                                               value={q.options[optIndex] || ""}
-                                              onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
+                                              onChange={(e) => {
+                                                const newOpts = [...(q.options || ["", "", "", ""])];
+                                                newOpts[optIndex] = e.target.value;
+                                                handleQuestionChange(qIndex, "options", newOpts);
+                                              }}
                                               placeholder="English Option / हिंदी विकल्प"
                                               className="option-text-field"
                                             />
                                             <div
                                               className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
-                                              onClick={() => setCorrectOption(qIndex, optIndex)}
+                                              onClick={() => handleQuestionChange(qIndex, "correctOptionIndex", optIndex)}
                                               title="Mark as correct answer"
-                                              style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                width: "22px",
-                                                height: "22px",
-                                                borderRadius: "50%",
-                                                border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
-                                                backgroundColor: isCorrect ? "#10B981" : "transparent",
-                                                color: isCorrect ? "#ffffff" : "transparent",
-                                                cursor: "pointer",
-                                                fontSize: "12px",
-                                                fontWeight: "bold",
-                                                transition: "all 0.15s ease",
-                                                userSelect: "none",
-                                                flexShrink: 0
-                                              }}
                                             >
                                               ✓
                                             </div>
@@ -1017,7 +1004,6 @@ function CreateQuizMulti() {
                                         );
                                       })}
                                     </div>
-
                                     <div className="form-field full-width" style={{ marginTop: "16px" }}>
                                       <textarea
                                         value={q.explanation || ""}
@@ -1027,8 +1013,8 @@ function CreateQuizMulti() {
                                         style={{ backgroundColor: "var(--bg-input)" }}
                                       />
                                     </div>
+                                    </div>
                                   </div>
-                                </div>
                                 <div className="question-preview-right" style={{ background: 'var(--bg-panel)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px', lineHeight: '1.6' }}>
                                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>Live Preview</div>
                                   <div style={{ marginBottom: '16px' }}>
@@ -1075,7 +1061,8 @@ function CreateQuizMulti() {
                         border: "1px dashed var(--primary-color)",
                         borderRadius: "8px",
                         cursor: "pointer",
-                        fontWeight: "bold"
+                        fontWeight: "bold",
+                        gridColumn: "1 / -1"
                       }}
                     >
                       + Add Question

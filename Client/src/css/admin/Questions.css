@@ -27,6 +27,47 @@
   margin-bottom: 32px;
 }
 
+.qb-middle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 24px;
+  gap: 20px;
+}
+
+.qb-middle-left, .qb-middle-right {
+  flex: 1;
+  display: flex;
+}
+
+.qb-middle-left {
+  justify-content: flex-start;
+}
+
+.qb-middle-right {
+  justify-content: flex-end;
+}
+
+.qb-middle-center {
+  flex: 1;
+  text-align: center;
+  min-width: max-content;
+}
+
+.qb-middle-center h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.qb-middle-center p {
+  margin: 4px 0 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
 .qb-view-header-with-back {
   display: flex;
   align-items: center;
@@ -509,7 +550,16 @@ body.dark-mode .qb-pagination {
   border-color: #2b2b3d;
 }
 
-/* ── RESPONSIVE DESIGN FOR QUESTIONS BANK ── */
+/* ── RESPONSIVE DESIGN FOR QUESTIONS BANK (Mobile First & Enterprise) ── */
+
+/* KaTeX Overflow Protection for Math Equations */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
 @media (max-width: 1024px) {
   .qb-quizzes-grid, .qb-subjects-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -520,6 +570,62 @@ body.dark-mode .qb-pagination {
 }
 
 @media (max-width: 768px) {
+  .qb-view-header-with-back {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .qb-middle-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding-bottom: 16px;
+  }
+
+  .qb-middle-left, .qb-middle-center, .qb-middle-right {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .qb-middle-center {
+    min-width: unset;
+  }
+
+  .qb-right-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .qb-right-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .qb-right-actions button {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+  
+  .qb-right-searchbar {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .qb-search-input {
+    width: 100%;
+  }
+  
+  .qb-type-select {
+    width: 100%;
+    min-height: 44px;
+  }
+  
   .qb-options-grid {
     grid-template-columns: 1fr;
   }
@@ -531,5 +637,44 @@ body.dark-mode .qb-pagination {
 
   .qb-book-card {
     min-height: 44px;
+  }
+  
+  /* Modal / Full-Screen Bottom Sheet logic for Modals (if added) */
+  .preview-modal, .qb-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 20px 20px 0 0;
+    max-height: 90vh;
+    transform: translateY(100%);
+    animation: slideUpModal 0.3s forwards;
+  }
+  
+  @keyframes slideUpModal {
+    to { transform: translateY(0); }
+  }
+  
+  .qb-btn-export, .qb-btn-filter, .qb-back-btn {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 412px) {
+  .qb-quizzes-grid, .qb-subjects-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .qb-qcard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .qb-qnum {
+    margin-bottom: 8px;
   }
 }
