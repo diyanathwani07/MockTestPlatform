@@ -166,7 +166,7 @@ function MyExams() {
                     <input 
                       type="text" 
                       className="me-search-input" 
-                      placeholder="Search exams..." 
+                      placeholder="Search quiz or subject..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />

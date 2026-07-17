@@ -601,11 +601,11 @@ function Result() {
                       </div>
                       
                       {q.explanation && (
-                        <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: "#F8FAFC", borderLeft: "4px solid #6E3FF3", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                          <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", borderLeft: "4px solid #6E3FF3", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                          <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: isDark ? "#A78BFA" : "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
                             <span>💡</span> Explanation
                           </p>
-                          <p style={{ margin: 0, fontSize: "14.5px", color: "#475569", lineHeight: "1.6" }}><MathRenderer text={q.explanation} /></p>
+                          <p style={{ margin: 0, fontSize: "14.5px", color: isDark ? "#E2E8F0" : "#475569", lineHeight: "1.6" }}><MathRenderer text={q.explanation} /></p>
                         </div>
                       )}
                     </div>

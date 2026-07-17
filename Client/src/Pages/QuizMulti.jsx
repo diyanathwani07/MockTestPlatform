@@ -498,7 +498,7 @@ function QuizMulti() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
 
-      navigate(`/student/result/${res.data.result.shareId}`);
+      navigate(`/student/result/${res.data.result.shareId}`, { replace: true });
     } catch (error) {
       console.error("Submit Error:", error);
       alert("Failed to submit results. Please try again.");

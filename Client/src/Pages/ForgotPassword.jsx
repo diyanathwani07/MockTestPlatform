@@ -126,7 +126,7 @@ const ForgotPassword = () => {
     }
   };
 
-  const { toggleTheme } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
 
   return (
     <div className="login-page">
@@ -147,10 +147,23 @@ const ForgotPassword = () => {
       </svg>
 
       <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
-        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
-          <div className="pill-thumb-slider"></div>
-        </div>
+        <button 
+          onClick={toggleTheme} 
+          title="Switch Theme"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px",
+            borderRadius: "50%",
+          }}
+        >
+          {isDark ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
       </div>
 
       {/* Decorative Background Elements */}

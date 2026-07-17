@@ -314,6 +314,7 @@ function PracticeTest() {
       }
 
       navigate("/practice-result", {
+        replace: true,
         state: {
           quizId,
           title: quiz.title,
