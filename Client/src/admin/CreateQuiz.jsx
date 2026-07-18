@@ -36,6 +36,7 @@ function CreateQuiz() {
     enablePerQuestionTimer: false,
     timePerQuestion: 30,
     lockPreviousQuestions: false,
+    publishAs: "exam",
   });
 
   const [presetSelected, setPresetSelected] = useState("Custom");
@@ -472,53 +473,6 @@ function CreateQuiz() {
               {/* ── LEFT PANEL ── */}
               <div className="quiz-left-panel">
 
-                {/* Quiz Type Selector */}
-                <div className="form-card compact-card" style={{ marginBottom: "16px" }}>
-                  <h3 className="form-card-title">Quiz Type</h3>
-                  <div style={{ display: "flex", gap: "12px" }}>
-                    <div
-                      onClick={() => setQuizMeta(prev => ({ ...prev, quizType: "exam" }))}
-                      style={{
-                        flex: 1,
-                        padding: "16px",
-                        borderRadius: "12px",
-                        border: quizMeta.quizType === "exam" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-input)",
-                        background: quizMeta.quizType === "exam" ? "rgba(139, 92, 246, 0.08)" : "var(--bg-input)",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "12px",
-                        transition: "all 0.2s"
-                      }}
-                    >
-                      <div style={{ fontSize: "14px", fontWeight: "600", color: quizMeta.quizType === "exam" ? "var(--text-primary)" : "var(--text-secondary)" }}>
-                        Exam
-                      </div>
-                    </div>
-                    
-                    <div
-                      onClick={() => setQuizMeta(prev => ({ ...prev, quizType: "practice" }))}
-                      style={{
-                        flex: 1,
-                        padding: "16px",
-                        borderRadius: "12px",
-                        border: quizMeta.quizType === "practice" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-input)",
-                        background: quizMeta.quizType === "practice" ? "rgba(139, 92, 246, 0.08)" : "var(--bg-input)",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "12px",
-                        transition: "all 0.2s"
-                      }}
-                    >
-                      <div style={{ fontSize: "14px", fontWeight: "600", color: quizMeta.quizType === "practice" ? "var(--text-primary)" : "var(--text-secondary)" }}>
-                        Practice
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Preset Selector */}
                 <div className="form-card compact-card">
@@ -583,6 +537,19 @@ function CreateQuiz() {
                       <div className="form-field">
                         <label>Description (Optional)</label>
                         <textarea name="description" value={quizMeta.description} onChange={handleMetaChange} placeholder="Enter brief description of this quiz" rows={2} />
+                      </div>
+                      <div className="form-field">
+                        <label>Create As</label>
+                        <select
+                          name="publishAs"
+                          value={quizMeta.publishAs || "exam"}
+                          onChange={handleMetaChange}
+                          style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
+                        >
+                          <option value="exam">Exam Only</option>
+                          <option value="practice">Practice Only</option>
+                          <option value="both">Both Exam & Practice</option>
+                        </select>
                       </div>
                       <div className="form-field">
                         <label>Duration</label>

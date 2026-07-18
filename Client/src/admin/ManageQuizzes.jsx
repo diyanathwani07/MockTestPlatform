@@ -36,9 +36,11 @@ function ManageQuizzes() {
     fetchQuizzes(viewMode);
   }, [viewMode]);
 
+  const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
   const filteredQuizzes = quizzes.filter(q => {
-    const matchesSearch = q.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          q.subject?.toLowerCase().includes(searchTerm.toLowerCase());
+    const titleText = (q.title || "").toLowerCase();
+    const subjectText = (q.subject || "").toLowerCase();
+    const matchesSearch = searchTerms.every(term => titleText.includes(term) || subjectText.includes(term));
     
     let matchesDate = true;
     if (filterDate && q.createdAt) {
@@ -104,7 +106,7 @@ function ManageQuizzes() {
       <AdminSidebar />
 
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
-        <AdminNavbar title="Manage Quizzes" />
+        <AdminNavbar title={<><span className="hidden sm:inline">Manage </span>Quizzes</>} />
 
         <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
 

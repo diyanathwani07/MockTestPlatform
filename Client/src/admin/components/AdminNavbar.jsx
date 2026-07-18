@@ -53,13 +53,14 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
       <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "18px", fontWeight: "600", color: "var(--text-secondary)", flexWrap: "wrap" }}>
         <span 
           onClick={() => navigate(parentLink)}
+          className="hidden sm:inline"
           style={{ cursor: "pointer", transition: "color 0.15s" }}
           onMouseEnter={(e) => e.target.style.color = "var(--violet)"}
           onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}
         >
           {parentText}
         </span>
-        <span style={{ color: "var(--text-muted)" }}>&gt;</span>
+        <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
         <span style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "normal", wordBreak: "break-word" }}>{title}</span>
       </div>
 

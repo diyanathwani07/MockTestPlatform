@@ -63,6 +63,7 @@ function StudentNavbar({ title }) {
       <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "20px", fontWeight: "600", color: "var(--text-secondary)" }}>
         <span 
           onClick={() => navigate("/dashboard")}
+          className={title !== "Dashboard" ? "hidden sm:inline" : ""}
           style={{ cursor: "pointer", transition: "color 0.15s" }}
           onMouseEnter={(e) => e.target.style.color = "var(--violet)"}
           onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}
@@ -71,7 +72,7 @@ function StudentNavbar({ title }) {
         </span>
         {title !== "Dashboard" && (
           <>
-            <span style={{ color: "var(--text-muted)" }}>&gt;</span>
+            <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
             <span style={{ color: "var(--text-primary)", fontWeight: "700" }}>{title}</span>
           </>
         )}

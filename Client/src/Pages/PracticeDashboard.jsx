@@ -13,10 +13,12 @@ function PracticeDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredQuizzes = quizzes.filter(quiz => 
-    (quiz.title || quiz.examGroup || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (quiz.subject || "General").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const searchTerms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+  const filteredQuizzes = quizzes.filter(quiz => {
+    const titleText = (quiz.title || quiz.examGroup || "").toLowerCase();
+    const subjectText = (quiz.subject || "General").toLowerCase();
+    return searchTerms.every(term => titleText.includes(term) || subjectText.includes(term));
+  });
 
   useEffect(() => {
     const fetchData = async () => {

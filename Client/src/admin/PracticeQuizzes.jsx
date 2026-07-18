@@ -238,9 +238,11 @@ function PracticeQuizzes() {
     fetchQuizzes(viewMode);
   }, [viewMode]);
 
+  const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
   const filteredQuizzes = quizzes.filter(q => {
-    return q.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-           q.subject?.toLowerCase().includes(searchTerm.toLowerCase());
+    const titleText = (q.title || "").toLowerCase();
+    const subjectText = (q.subject || "").toLowerCase();
+    return searchTerms.every(term => titleText.includes(term) || subjectText.includes(term));
   });
 
   const handleDelete = async (id, title) => {
@@ -336,31 +338,31 @@ function PracticeQuizzes() {
     <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
-        <AdminNavbar title="Manage Practice Quizzes" />
+        <AdminNavbar title={<><span className="hidden sm:inline">Manage </span>Practice Quizzes</>} />
         
         <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
           
-          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <div style={{ display: "flex", gap: "16px", flex: 1, alignItems: "center" }}>
-              <div style={{ 
-                flex: 1,
-                maxWidth: '400px',
-                display: "flex", alignItems: "center", gap: "10px", 
-                backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
-                borderRadius: "100px", padding: "8px 16px",
-                boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
-              }}>
-                <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
-                <input 
-                  type="text" 
-                  placeholder="Search practice modules..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
-                />
-              </div>
+          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div style={{ 
+              flex: 1,
+              minWidth: '200px',
+              maxWidth: '400px',
+              display: "flex", alignItems: "center", gap: "10px", 
+              backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
+              borderRadius: "100px", padding: "8px 16px",
+              boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
+            }}>
+              <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
+              <input 
+                type="text" 
+                placeholder="Search practice modules..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
+              />
+            </div>
 
-              <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+            <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", marginLeft: "auto" }}>
                 <button
                   onClick={() => setViewMode("active")}
                   style={{
@@ -392,15 +394,15 @@ function PracticeQuizzes() {
                   Recycle Bin
                 </button>
               </div>
-            </div>
           </div>
 
-          <div style={{ 
+          <div className="quiz-table-wrapper" style={{ 
             backgroundColor: "var(--bg-card)", 
             borderRadius: "16px", 
             border: "1px solid var(--border-color)",
             boxShadow: "var(--card-shadow)",
-            overflow: "visible" 
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch"
           }}>
             {loading ? (
               <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
@@ -411,11 +413,12 @@ function PracticeQuizzes() {
                 No practice quizzes found. Create one to get started!
               </div>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", overflow: "visible" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "800px" }}>
                 <thead>
                   <tr style={{ 
                     borderBottom: "1px solid var(--border-color)", 
-                    backgroundColor: "var(--bg-input)" 
+                    backgroundColor: "var(--bg-input)",
+                    whiteSpace: "nowrap"
                   }}>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Title</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Subject</th>

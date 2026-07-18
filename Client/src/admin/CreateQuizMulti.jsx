@@ -56,6 +56,7 @@ function CreateQuizMulti() {
     timePerQuestion: 30,
     lockPreviousQuestions: false,
     breakBetweenSections: 0,
+    publishAs: "exam",
   });
 
   const [sections, setSections] = useState([defaultSection(0)]);
@@ -600,6 +601,20 @@ function CreateQuizMulti() {
                         placeholder="Brief info..."
                         className="force-quiz-input"
                       />
+                    </div>
+                    <div className="form-field">
+                      <label>Create As</label>
+                      <select
+                        name="publishAs"
+                        value={quizMeta.publishAs || "exam"}
+                        onChange={handleMetaChange}
+                        className="force-quiz-input"
+                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
+                      >
+                        <option value="exam">Exam Only</option>
+                        <option value="practice">Practice Only</option>
+                        <option value="both">Both Exam & Practice</option>
+                      </select>
                     </div>
                     <div className="form-field">
                       <label>Global Duration (Optional)</label>

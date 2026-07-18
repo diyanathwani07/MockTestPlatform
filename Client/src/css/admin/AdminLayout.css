@@ -516,7 +516,7 @@ body.dark-mode .page-nav-btn { border-color: rgba(255,255,255,0.1); color: #fff;
     flex-wrap: wrap;
   }
   .admin-content {
-    padding: 16px;
+    padding: 16px 8px;
     width: 100%;
     max-width: 100vw;
   }

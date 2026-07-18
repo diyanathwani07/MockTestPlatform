@@ -709,7 +709,7 @@
 
 @media (max-width: 768px) {
   .tk-content-wrapper {
-    padding: 20px 16px;
+    padding: 16px 8px;
   }
   
   .tk-stats-grid {

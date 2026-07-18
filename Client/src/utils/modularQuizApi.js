@@ -163,7 +163,8 @@ export const saveModularQuiz = async ({
     published: isPublishing,
     status: isPublishing ? "Published" : quizMeta.status || "Draft",
     scheduledDate: quizMeta.scheduledDate || null,
-    quizType: quizMeta.quizType || "exam",
+    quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
+    publishAs: quizMeta.publishAs || "exam",
     sections: sectionRefs,
     questions: [],
     isModular: true,
@@ -216,7 +217,8 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     sections: [{ sectionId, mode: "linked", order: 0 }],
     questions: [],
     isModular: true,
-    quizType: "exam",
+    quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
+    publishAs: quizMeta.publishAs || "exam",
   };
 
   if (quizId) {

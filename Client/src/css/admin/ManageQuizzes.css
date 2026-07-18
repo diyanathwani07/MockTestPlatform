@@ -244,5 +244,10 @@ input[type="text"] {
   input[type="text"] {
     max-width: 100%;
   }
-}
 
+  .admin-content > div:first-child {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+}

@@ -211,7 +211,23 @@ function MyExams() {
                   <div className="me-exams-grid">
                     <AnimatePresence>
                       {displayedQuizzes.map(quiz => {
-                        const qCount = quiz.questionCount || (quiz.questions ? quiz.questions.length : 0);
+                        let qCount = quiz.questionCount || 0;
+                        if (!qCount) {
+                          if (quiz.sections && quiz.sections.length > 0) {
+                            qCount = quiz.sections.reduce((sum, sec) => {
+                              const secData = sec.sectionId || sec;
+                              let count = secData.questions?.length || 0;
+                              if (secData.type === 'coding' && secData.subsections) {
+                                count += (secData.subsections.easy?.length || 0) +
+                                         (secData.subsections.medium?.length || 0) +
+                                         (secData.subsections.hard?.length || 0);
+                              }
+                              return sum + count;
+                            }, 0);
+                          } else if (quiz.questions) {
+                            qCount = quiz.questions.length;
+                          }
+                        }
                         const isMulti = quiz.sections && quiz.sections.length > 1;
                         const dur = isMulti ? Math.round((Number(quiz.duration) || 0) / 60) : Math.round(Number(quiz.duration) || 0);
                         return (
