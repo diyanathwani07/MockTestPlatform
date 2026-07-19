@@ -165,6 +165,10 @@ export const saveModularQuiz = async ({
     scheduledDate: quizMeta.scheduledDate || null,
     quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
     publishAs: quizMeta.publishAs || "exam",
+    shuffleQuestions: quizMeta.shuffleQuestions || false,
+    shuffleOptions: quizMeta.shuffleOptions || false,
+    randomSelection: quizMeta.randomSelection || false,
+    questionsPerAttempt: quizMeta.questionsPerAttempt || 20,
     sections: sectionRefs,
     questions: [],
     isModular: true,
@@ -178,6 +182,46 @@ export const saveModularQuiz = async ({
   }
 
   const res = await axios.post(`${API()}/api/quizzes`, payload, {
+    headers: authHeaders(),
+  });
+  return res.data;
+};
+
+export const saveModularPractice = async ({
+  quizMeta,
+  sections,
+  quizId = null,
+  isPublishing = false,
+}) => {
+  const globalDuration =
+    (parseInt(quizMeta.durationMin || 0, 10) * 60) +
+    parseInt(quizMeta.durationSec || quizMeta.duration || 0, 10);
+
+  const sectionRefs = [];
+  for (let i = 0; i < sections.length; i++) {
+    const ref = await resolveSectionRef(sections[i], quizMeta.subject);
+    sectionRefs.push({ ...ref, order: i });
+  }
+
+  const payload = {
+    title: quizMeta.title,
+    subject: quizMeta.subject,
+    description: quizMeta.description || "",
+    published: isPublishing,
+    status: isPublishing ? "Published" : quizMeta.status || "Draft",
+    sections: sectionRefs,
+    questions: [],
+    isModular: true,
+  };
+
+  if (quizId) {
+    const res = await axios.put(`${API()}/api/practice/${quizId}`, payload, {
+      headers: authHeaders(),
+    });
+    return res.data;
+  }
+
+  const res = await axios.post(`${API()}/api/practice`, payload, {
     headers: authHeaders(),
   });
   return res.data;

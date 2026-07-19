@@ -12,10 +12,13 @@ function PracticeTest() {
   const location = useLocation();
 
   const [quiz, setQuiz] = useState(null);
+  const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [palettePage, setPalettePage] = useState(0);
+  const itemsPerPage = 25;
   const [selectedOptions, setSelectedOptions] = useState({}); // { optionIndex: true }
   const [isCorrectSelected, setIsCorrectSelected] = useState(false);
   const [reviewQuestions, setReviewQuestions] = useState([]); // Array of review indices
@@ -66,12 +69,38 @@ function PracticeTest() {
         ]);
 
         const rawQuiz = quizRes.data;
-        const rawQuestions = rawQuiz.questions || [];
         const sessionData = sessionRes.data;
+
+        let loadedSections = rawQuiz.sections || [];
+        // Backward compatibility for legacy flat quizzes
+        if (loadedSections.length === 0 && rawQuiz.questions && rawQuiz.questions.length > 0) {
+           loadedSections = [{
+              _id: "legacy",
+              title: "General Section",
+              questions: rawQuiz.questions
+           }];
+        }
+
+        let allQuestions = [];
+        let normalizedSections = loadedSections.map(sec => {
+           let qs = sec.questions || [];
+           if (sec.type === 'coding' && sec.subsections) {
+              qs = [
+                ...(sec.subsections.easy || []).map(q => ({...q, difficulty: 'easy'})),
+                ...(sec.subsections.medium || []).map(q => ({...q, difficulty: 'medium'})),
+                ...(sec.subsections.hard || []).map(q => ({...q, difficulty: 'hard'})),
+              ];
+           }
+           
+           const startIndex = allQuestions.length;
+           allQuestions.push(...qs);
+           
+           return { ...sec, flatQuestions: qs, startIndex, count: qs.length };
+        });
 
         // Re-map the questions array to match sessionData.questionsOrder list of indices
         const orderedQuestions = sessionData.questionsOrder.map((origIdx) => {
-          const q = rawQuestions[origIdx];
+          const q = allQuestions[origIdx];
           if (!q) return null;
 
           // Handle Option Shuffling
@@ -87,6 +116,7 @@ function PracticeTest() {
         }).filter(Boolean);
 
         setQuiz(rawQuiz);
+        setSections(normalizedSections);
         setQuestions(orderedQuestions);
 
         // Strip restart parameter from address bar to prevent reshuffle on refresh
@@ -143,6 +173,16 @@ function PracticeTest() {
       return <MathRenderer key={index} text={part} />;
     });
   };
+
+  const activeSectionIndex = sections.findIndex(s => currentIndex >= s.startIndex && currentIndex < s.startIndex + s.count);
+  const activeSection = sections[activeSectionIndex > -1 ? activeSectionIndex : 0];
+
+  useEffect(() => {
+    if (activeSection) {
+      const relativeIdx = currentIndex - activeSection.startIndex;
+      setPalettePage(Math.floor(relativeIdx / itemsPerPage));
+    }
+  }, [currentIndex, activeSection]);
 
   if (loading) {
     return (
@@ -399,9 +439,41 @@ function PracticeTest() {
       {/* ── MAIN CONTENT AREA (GRID) ── */}
       <div style={{ flex: 1, padding: "24px 40px 40px", display: "grid", gridTemplateColumns: "1fr 340px", gap: "24px", maxWidth: "1400px", width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
         
-        {/* LEFT COLUMN: QUESTION CARD */}
-        <div className="practice-question-card" style={{ backgroundColor: "#111222", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "20px", padding: "36px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        {/* LEFT COLUMN: QUESTION CARD AND TABS */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           
+          {/* Section Tabs */}
+          {sections.length > 0 && (
+             <div className="practice-section-tabs" style={{ display: "flex", gap: "8px", overflowX: "auto" }}>
+               {sections.map((sec, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => {
+                      setCurrentIndex(sec.startIndex);
+                      setSelectedOptions({});
+                      setIsCorrectSelected(false);
+                      setQuestionTime(0);
+                    }}
+                    style={{ 
+                      padding: "10px 20px", 
+                      borderRadius: "10px", 
+                      border: "none",
+                      cursor: "pointer",
+                      background: idx === activeSectionIndex ? "#8B5CF6" : "rgba(255,255,255,0.05)", 
+                      color: idx === activeSectionIndex ? "#ffffff" : "#94a3b8", 
+                      fontSize: "14px", 
+                      fontWeight: "700", 
+                      transition: "all 0.2s"
+                    }}
+                  >
+                     {sec.title}
+                  </button>
+               ))}
+             </div>
+          )}
+
+          <div className="practice-question-card" style={{ backgroundColor: "#111222", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "20px", padding: "36px", display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1 }}>
+            
           <div>
 
 
@@ -595,6 +667,7 @@ function PracticeTest() {
           </div>
 
         </div>
+        </div>
 
         {/* RIGHT COLUMN: SIDE PANEL */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -630,108 +703,125 @@ function PracticeTest() {
 
           {/* Palette Grid */}
           <div style={{ backgroundColor: "#111222", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", display: "flex", flexDirection: "column", gap: "18px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "14px", fontWeight: "700", color: "#ffffff" }}>Question Palette</span>
-              <span style={{ fontSize: "13px", fontWeight: "700", color: "#c084fc" }}>{questions.length} Questions</span>
-            </div>
+            <div className="practice-grid-section">
+              <h4 style={{ color: "#ffffff", fontSize: "14px", marginBottom: "12px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px" }}>
+                {activeSection?.title || "Questions"}
+              </h4>
+              <div className="practice-grid-scroll" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px" }}>
+                {questions.slice(activeSection?.startIndex || 0, (activeSection?.startIndex || 0) + (activeSection?.count || questions.length))
+                  .slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage)
+                  .map((_, i) => {
+                  const relativeIdx = palettePage * itemsPerPage + i;
+                  const qIdx = (activeSection?.startIndex || 0) + relativeIdx;
+                  const isCurrent = currentIndex === qIdx;
+                  const isAnswered = answeredQuestions[qIdx];
+                  const isReview = reviewQuestions.includes(qIdx);
+                  const isVisited = visitedQuestions.includes(qIdx);
 
-            {/* Legends */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "11px", color: "#94a3b8", fontWeight: "600" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ width: "12px", height: "12px", borderRadius: "4px", backgroundColor: "#8B5CF6" }}></span> Current
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ width: "12px", height: "12px", borderRadius: "4px", backgroundColor: "#10B981" }}></span> Answered
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ width: "12px", height: "12px", borderRadius: "4px", backgroundColor: "#F59E0B" }}></span> Review
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ width: "12px", height: "12px", borderRadius: "4px", backgroundColor: "#334155" }}></span> Not Visited
-              </div>
-            </div>
+                  let bg = "#1e293b";
+                  let text = "#94a3b8";
+                  let border = "1px solid rgba(255,255,255,0.06)";
 
-            {/* Buttons Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px" }}>
-              {questions.map((_, idx) => {
-                const isCurrent = currentIndex === idx;
-                const isAnswered = answeredQuestions[idx];
-                const isReview = reviewQuestions.includes(idx);
-                const isVisited = visitedQuestions.includes(idx);
+                  if (isCurrent) {
+                    bg = "#8B5CF6";
+                    text = "#ffffff";
+                    border = "1px solid #8B5CF6";
+                  } else if (isAnswered) {
+                    bg = "#10B981";
+                    text = "#ffffff";
+                    border = "1px solid #10B981";
+                  } else if (isReview) {
+                    bg = "#F59E0B";
+                    text = "#ffffff";
+                    border = "1px solid #F59E0B";
+                  } else if (!isVisited) {
+                    bg = "#0f172a";
+                    text = "#475569";
+                  }
 
-                let bg = "#1e293b";
-                let text = "#94a3b8";
-                let border = "1px solid rgba(255,255,255,0.06)";
+                  return (
+                    <button
+                      key={qIdx}
+                      onClick={() => {
+                        setCurrentIndex(qIdx);
+                        setSelectedOptions({});
+                        setIsCorrectSelected(false);
+                        setQuestionTime(0);
+                      }}
+                      style={{
+                        height: "36px",
+                        borderRadius: "8px",
+                        background: bg,
+                        color: text,
+                        border: border,
+                        fontWeight: "700",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "all 0.15s ease"
+                      }}
+                    >
+                      {qIdx + 1}
+                    </button>
+                  );
+                })}
+              </div>
 
-                if (isCurrent) {
-                  bg = "#8B5CF6";
-                  text = "#ffffff";
-                  border = "1px solid #8B5CF6";
-                } else if (isAnswered) {
-                  bg = "#10B981";
-                  text = "#ffffff";
-                  border = "1px solid #10B981";
-                } else if (isReview) {
-                  bg = "#F59E0B";
-                  text = "#ffffff";
-                  border = "1px solid #F59E0B";
-                } else if (!isVisited) {
-                  bg = "#0f172a";
-                  text = "#475569";
+              {/* Pagination Controls */}
+              {(() => {
+                const totalSectionQuestions = activeSection?.count || questions.length;
+                const totalPages = Math.ceil(totalSectionQuestions / itemsPerPage);
+                if (totalPages <= 1) return null;
+
+                let startPage = Math.max(0, palettePage - 2);
+                let endPage = Math.min(totalPages - 1, startPage + 4);
+                
+                if (endPage - startPage < 4) {
+                  startPage = Math.max(0, endPage - 4);
+                }
+
+                const visiblePages = [];
+                for (let i = startPage; i <= endPage; i++) {
+                  visiblePages.push(i);
                 }
 
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setCurrentIndex(idx);
-                      setSelectedOptions({});
-                      setIsCorrectSelected(false);
-                      setQuestionTime(0);
-                    }}
-                    style={{
-                      height: "36px",
-                      borderRadius: "8px",
-                      background: bg,
-                      color: text,
-                      border: border,
-                      fontWeight: "700",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all 0.15s ease"
-                    }}
-                  >
-                    {idx + 1}
-                  </button>
+                  <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1.5px solid rgba(255,255,255,0.06)", flexWrap: "wrap" }}>
+                    <button 
+                      onClick={() => setPalettePage(Math.max(0, palettePage - 1))}
+                      disabled={palettePage === 0}
+                      style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.06)", cursor: palettePage === 0 ? "not-allowed" : "pointer", opacity: palettePage === 0 ? 0.5 : 1, fontWeight: "bold", color: "#94a3b8", transition: "all 0.2s" }}
+                    >
+                      {"<"}
+                    </button>
+                    {visiblePages.map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPalettePage(p)}
+                        style={{
+                          width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px",
+                          backgroundColor: palettePage === p ? "rgba(139, 92, 246, 0.2)" : "#1e293b",
+                          border: `1px solid ${palettePage === p ? "#8B5CF6" : "rgba(255,255,255,0.06)"}`,
+                          color: palettePage === p ? "#ffffff" : "#94a3b8",
+                          fontWeight: "bold", cursor: "pointer", transition: "all 0.2s"
+                        }}
+                      >
+                        {p + 1}
+                      </button>
+                    ))}
+                    <button 
+                      onClick={() => setPalettePage(Math.min(totalPages - 1, palettePage + 1))}
+                      disabled={palettePage === totalPages - 1}
+                      style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.06)", cursor: palettePage === totalPages - 1 ? "not-allowed" : "pointer", opacity: palettePage === totalPages - 1 ? 0.5 : 1, fontWeight: "bold", color: "#94a3b8", transition: "all 0.2s" }}
+                    >
+                      {">"}
+                    </button>
+                  </div>
                 );
-              })}
+              })()}
             </div>
-
-            {/* Clear Response Button */}
-            <button 
-              onClick={clearResponse}
-              style={{
-                background: "transparent",
-                border: "1px solid rgba(239, 68, 68, 0.4)",
-                color: "#EF4444",
-                padding: "10px",
-                borderRadius: "8px",
-                fontSize: "13px",
-                fontWeight: "700",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                cursor: "pointer",
-                marginTop: "10px",
-                transition: "all 0.15s ease"
-              }}
-            >
-              <Trash2 size={16} /> Clear Response
-            </button>
 
           </div>
 

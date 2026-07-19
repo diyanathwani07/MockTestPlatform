@@ -50,6 +50,11 @@ function EditQuiz() {
     enablePerQuestionTimer: false,
     timePerQuestion: 30,
     lockPreviousQuestions: false,
+    publishAs: "exam",
+    shuffleQuestions: false,
+    shuffleOptions: false,
+    randomSelection: false,
+    questionsPerAttempt: 20,
   });
 
   const [presetSelected, setPresetSelected] = useState("Custom");
@@ -199,6 +204,11 @@ function EditQuiz() {
           enablePerQuestionTimer: dbQuiz.enablePerQuestionTimer || false,
           timePerQuestion: dbQuiz.timePerQuestion || 30,
           lockPreviousQuestions: dbQuiz.lockPreviousQuestions || false,
+          publishAs: dbQuiz.publishAs || "exam",
+          shuffleQuestions: dbQuiz.shuffleQuestions || false,
+          shuffleOptions: dbQuiz.shuffleOptions || false,
+          randomSelection: dbQuiz.randomSelection || false,
+          questionsPerAttempt: dbQuiz.questionsPerAttempt || 20,
         });
 
         const minVal = Math.floor(durationVal);
@@ -903,10 +913,60 @@ function EditQuiz() {
                               <span>Lock Previous Questions</span>
                             </label>
                           </div>
-                          
+
+                          <div className="form-field" style={{ marginTop: "16px" }}>
+                            <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px", display: "block" }}>
+                              Learning Settings
+                            </label>
+                            <div style={{ background: "var(--bg-panel)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "12px" }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                                <input 
+                                  type="checkbox"
+                                  name="shuffleQuestions"
+                                  checked={quizMeta.shuffleQuestions}
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, shuffleQuestions: e.target.checked })}
+                                  style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                                />
+                                Shuffle Questions
+                              </label>
+
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                                <input 
+                                  type="checkbox"
+                                  name="shuffleOptions"
+                                  checked={quizMeta.shuffleOptions}
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, shuffleOptions: e.target.checked })}
+                                  style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                                />
+                                Shuffle Options
+                              </label>
+
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                                <input 
+                                  type="checkbox"
+                                  name="randomSelection"
+                                  checked={quizMeta.randomSelection}
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, randomSelection: e.target.checked })}
+                                  style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                                />
+                                Random Question Selection (Optional)
+                              </label>
+
+                              {quizMeta.randomSelection && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                                  <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>Questions per Attempt:</label>
+                                  <input 
+                                    type="number"
+                                    min="1"
+                                    value={quizMeta.questionsPerAttempt}
+                                    onChange={(e) => setQuizMeta({ ...quizMeta, questionsPerAttempt: parseInt(e.target.value, 10) || 20 })}
+                                    style={{ width: '70px', height: '36px', borderRadius: '8px', border: '1.5px solid var(--border-color)', padding: '0 8px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)', textAlign: 'center' }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </div>
 
                     {/* 3. Questions Builder */}
                     <div className="form-card header-questions-card">

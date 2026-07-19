@@ -7,7 +7,7 @@ import DocxParser from "./components/DocxParser";
 import SectionPickerModal from "./components/SectionPickerModal";
 import MathRenderer from "../components/MathRenderer";
 
-import { saveModularQuiz } from "../utils/modularQuizApi";
+import { saveModularPractice } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
 
@@ -39,7 +39,7 @@ const defaultSection = (index) => ({
   }
 });
 
-function CreateQuizMulti() {
+function CreatePracticeMulti() {
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -78,7 +78,7 @@ function CreateQuizMulti() {
       const fetchQuiz = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/practice/${id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
           });
           const dbQuiz = res.data;
@@ -150,21 +150,13 @@ function CreateQuizMulti() {
               setActiveSectionId(parsedSections[0].id);
             }
           } else if (dbQuiz.questions && dbQuiz.questions.length > 0) {
-            const legacySec = defaultSection(0);
-            legacySec.title = "Legacy Questions";
-            legacySec.questions = dbQuiz.questions;
-            
-            const durMins = Math.floor((dbQuiz.duration || 0) / 60);
-            const durSecs = (dbQuiz.duration || 0) % 60;
-            legacySec.durationMin = durMins > 0 ? String(durMins) : "";
-            legacySec.durationSec = durSecs > 0 ? String(durSecs) : "";
-            
-            legacySec.marksPerQuestion = dbQuiz.marksPerQuestion !== undefined ? dbQuiz.marksPerQuestion : 1;
-            legacySec.negativeMarking = dbQuiz.negativeMarking !== undefined ? dbQuiz.negativeMarking : 0;
-            legacySec.questionLimit = dbQuiz.questionLimit !== undefined ? dbQuiz.questionLimit : 0;
-            
-            setSections([legacySec]);
-            setActiveSectionId(legacySec.id);
+            const singleSection = {
+              ...defaultSection(0),
+              title: "General Section",
+              questions: dbQuiz.questions
+            };
+            setSections([singleSection]);
+            setActiveSectionId(singleSection.id);
           }
         } catch (err) {
           console.error("Error fetching quiz for edit", err);
@@ -401,7 +393,7 @@ function CreateQuizMulti() {
         return;
       }
 
-      await saveModularQuiz({
+      await saveModularPractice({
         quizMeta,
         sections,
         quizId: id || null,
@@ -409,7 +401,7 @@ function CreateQuizMulti() {
       });
 
       setMessage({ text: "Quiz saved successfully!", type: "success" });
-      setTimeout(() => navigate("/admin/manage-quizzes"), 1500);
+      setTimeout(() => navigate("/admin/practice-quizzes"), 1500);
     } catch (err) {
       console.error(err);
       setMessage({
@@ -458,7 +450,7 @@ function CreateQuizMulti() {
                   }}
                 >
                   <button
-                    onClick={() => navigate('/admin/create-quiz')}
+                    onClick={() => navigate('/admin/create-practice')}
                     style={{
                       padding: "8px 24px",
                       borderRadius: "8px",
@@ -675,9 +667,7 @@ function CreateQuizMulti() {
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {true && (
                     <div className="form-field" style={{ marginTop: "16px" }}>
                       <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px", display: "block" }}>
                         Learning Settings
@@ -730,7 +720,7 @@ function CreateQuizMulti() {
                         )}
                       </div>
                     </div>
-                  )}
+                  </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
                     <button
@@ -1245,4 +1235,4 @@ function CreateQuizMulti() {
   );
 }
 
-export default CreateQuizMulti;
+export default CreatePracticeMulti;

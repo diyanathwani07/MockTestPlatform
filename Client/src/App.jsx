@@ -13,6 +13,7 @@ import RolesPermissions from "./admin/RolesPermissions";
 import AdminDashboard from "./admin/AdminDashboard";
 import CreateQuizSingle from "./admin/CreateQuiz";
 import CreateQuizMulti from "./admin/CreateQuizMulti";
+import CreatePracticeMulti from "./admin/CreatePracticeMulti";
 import EditQuiz from "./admin/EditQuiz";
 import ManageQuizzes from "./admin/ManageQuizzes";
 import AdminQuestions from "./admin/Questions";
@@ -282,6 +283,24 @@ function App() {
           element={
             <AdminRoute>
               <PracticeQuizzes />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/create-practice"
+          element={
+            <AdminRoute>
+              <CreatePracticeMulti />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/edit-practice/:id"
+          element={
+            <AdminRoute>
+              <CreatePracticeMulti />
             </AdminRoute>
           }
         />

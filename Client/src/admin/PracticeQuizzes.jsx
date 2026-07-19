@@ -362,7 +362,23 @@ function PracticeQuizzes() {
               />
             </div>
 
-            <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", marginLeft: "auto" }}>
+            <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", marginLeft: "auto", alignItems: "center" }}>
+                <button
+                  onClick={() => navigate("/admin/create-practice")}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    backgroundColor: "var(--violet)",
+                    color: "white",
+                  }}
+                >
+                  + Modular Practice
+                </button>
+                <div style={{ width: "1px", height: "20px", backgroundColor: "var(--border-color)", margin: "0 4px" }}></div>
                 <button
                   onClick={() => setViewMode("active")}
                   style={{
@@ -560,7 +576,10 @@ function PracticeQuizzes() {
   
                                       {/* Edit */}
                                       <div
-                                        onClick={() => { setActiveDropdown(null); openEditModal(quiz); }}
+                                        onClick={() => { 
+                                          setActiveDropdown(null); 
+                                          navigate(`/admin/edit-practice/${quiz._id}`);
+                                        }}
                                         style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
@@ -882,64 +901,7 @@ function PracticeQuizModal({ isOpen, setIsOpen, editingQuizId, form, setForm, ha
               />
             </div>
 
-            {/* Learning Settings */}
-            <div style={{
-              backgroundColor: 'var(--bg-sidebar)',
-              border: '1.5px solid var(--border-color)',
-              borderRadius: '12px',
-              padding: '20px',
-              marginTop: '10px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px'
-            }}>
-              <h4 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '14.5px', fontWeight: '700' }}>Learning Settings</h4>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
-                  <input 
-                    type="checkbox"
-                    checked={form.shuffleQuestions}
-                    onChange={e => setForm({ ...form, shuffleQuestions: e.target.checked })}
-                    style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
-                  />
-                  Shuffle Questions
-                </label>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
-                  <input 
-                    type="checkbox"
-                    checked={form.shuffleOptions}
-                    onChange={e => setForm({ ...form, shuffleOptions: e.target.checked })}
-                    style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
-                  />
-                  Shuffle Options
-                </label>
-
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
-                  <input 
-                    type="checkbox"
-                    checked={form.randomSelection}
-                    onChange={e => setForm({ ...form, randomSelection: e.target.checked })}
-                    style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
-                  />
-                  Random Question Selection (Optional)
-                </label>
-              </div>
-
-              {form.randomSelection && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>Questions per Attempt:</label>
-                  <input 
-                    type="number"
-                    min="1"
-                    value={form.questionsPerAttempt}
-                    onChange={e => setForm({ ...form, questionsPerAttempt: parseInt(e.target.value, 10) || 20 })}
-                    style={{ width: '70px', height: '36px', borderRadius: '8px', border: '1.5px solid var(--border-color)', padding: '0 8px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)', textAlign: 'center' }}
-                  />
-                </div>
-              )}
-            </div>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '10px 0' }} />
 
