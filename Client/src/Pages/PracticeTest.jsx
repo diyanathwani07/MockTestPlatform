@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, ChevronRight, Info, Trash2, Bookmark, X, Shield } from "lucide-react";
+import { ArrowLeft, ChevronRight, Info, Trash2, Bookmark, X, Shield, Menu } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/Practice.css";
 import MathRenderer from "../components/MathRenderer";
@@ -16,6 +16,17 @@ function PracticeTest() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Mobile check state
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [palettePage, setPalettePage] = useState(0);
   const itemsPerPage = 25;
@@ -25,6 +36,7 @@ function PracticeTest() {
   const [answeredQuestions, setAnsweredQuestions] = useState({}); // { index: true }
   const [visitedQuestions, setVisitedQuestions] = useState([0]); // Array of visited indices
   const [showInstructions, setShowInstructions] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [wrongQuestionIds, setWrongQuestionIds] = useState(new Set());
   // Live AI explanations fetched on-demand when stored ones are missing
   const [liveExplanations, setLiveExplanations] = useState({}); // { questionIndex: { correct, incorrect: {} } }
@@ -152,26 +164,7 @@ function PracticeTest() {
       cleanedText = cleanedText.replace(regex, '');
     }
 
-    const parts = cleanedText.split(/(\([^)]+\))/g);
-    return parts.map((part, index) => {
-      if (part.startsWith('(') && part.endsWith(')')) {
-        return (
-          <span 
-            key={index} 
-            className="hindi-exp-text" 
-            style={{ 
-              color: '#F87171', 
-              fontWeight: '500', 
-              display: 'block', 
-              marginTop: '4px' 
-            }}
-          >
-            <MathRenderer text={part} />
-          </span>
-        );
-      }
-      return <MathRenderer key={index} text={part} />;
-    });
+    return <MathRenderer text={cleanedText} />;
   };
 
   const activeSectionIndex = sections.findIndex(s => currentIndex >= s.startIndex && currentIndex < s.startIndex + s.count);
@@ -385,16 +378,6 @@ function PracticeTest() {
     }
   };
 
-  const clearResponse = () => {
-    setSelectedOptions({});
-    setIsCorrectSelected(false);
-    setAnsweredQuestions(prev => {
-      const updated = { ...prev };
-      delete updated[currentIndex];
-      return updated;
-    });
-  };
-
   // Stats for right sidebar
   const answeredCount = Object.keys(answeredQuestions).length;
   const reviewCount = reviewQuestions.length;
@@ -405,23 +388,427 @@ function PracticeTest() {
     return ["A", "B", "C", "D"][idx] || String.fromCharCode(65 + idx);
   };
 
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  if (isMobile) {
+    return (
+      <div className="practice-mobile-root" style={{ minHeight: "100vh", backgroundColor: "#080914", display: "flex", flexDirection: "column", fontFamily: "'Inter', sans-serif", boxSizing: "border-box" }}>
+        
+        {/* ── MOBILE HEADER (Compact Rows) ── */}
+        <div style={{ display: "flex", flexDirection: "column", backgroundColor: "#111222", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "10px 12px", gap: "8px", sticky: "top", top: 0, zIndex: 100 }}>
+          {/* Row 1 */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "44px" }}>
+            <button onClick={() => navigate("/dashboard/practice")} style={{ background: "transparent", border: "none", color: "#ffffff", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", padding: "6px 0", minHeight: "44px" }}>
+              <ArrowLeft size={16} /> Back
+            </button>
+            <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "#ffffff" }}>Quiz</h3>
+            <div style={{ fontSize: "13px", color: "#a78bfa", fontWeight: "700" }}>⏱ {formatTime(questionTime)}</div>
+          </div>
+          
+          {/* Row 2 */}
+          <div style={{ fontSize: "13px", fontWeight: "700", color: "#ffffff", wordBreak: "break-word", lineHeight: "1.4", maxHeight: "2.8em", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+            {quiz?.title || quiz?.examGroup || "Practice Test"}
+          </div>
+          
+          {/* Row 3 */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "12px", color: "#8B5CF6", fontWeight: "700", backgroundColor: "rgba(139, 92, 246, 0.1)", padding: "4px 8px", borderRadius: "6px" }}>
+              {activeSection?.title || "General Section"}
+            </span>
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button onClick={() => setShowInstructions(true)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#ffffff", padding: "6px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "600", minHeight: "44px", display: "flex", alignItems: "center" }}>
+                Instructions
+              </button>
+              <button onClick={() => setShowSidebar(true)} style={{ background: "#8B5CF6", border: "none", color: "#ffffff", padding: "6px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700", minHeight: "44px", display: "flex", alignItems: "center" }}>
+                📋 Questions
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── MAIN CONTENT AREA ── */}
+        <div style={{ flex: 1, padding: "12px 12px 88px", display: "flex", flexDirection: "column", gap: "12px", boxSizing: "border-box" }}>
+          
+          {/* ── PROGRESS CARD ── */}
+          <div style={{ backgroundColor: "#111222", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "12px", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <span style={{ fontSize: "12px", fontWeight: "700", color: "#a78bfa" }}>Progress: {currentIndex + 1} / {questions.length}</span>
+              <span style={{ fontSize: "12px", fontWeight: "700", color: "#ffffff" }}>{progressPercent}%</span>
+            </div>
+            <div style={{ width: "100%", height: "6px", backgroundColor: "#1e293b", borderRadius: "3px", overflow: "hidden", marginBottom: "10px" }}>
+              <div style={{ width: `${progressPercent}%`, height: "100%", backgroundColor: "#8B5CF6", transition: "width 0.3s ease" }}></div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#94a3b8", gap: "4px" }}>
+              <span style={{ flex: 1, textAlign: "left" }}>Answered: <strong style={{ color: "#10B981" }}>{answeredCount}</strong></span>
+              <span style={{ flex: 1, textAlign: "center" }}>Review: <strong style={{ color: "#F59E0B" }}>{reviewCount}</strong></span>
+              <span style={{ flex: 1, textAlign: "right" }}>Remaining: <strong style={{ color: "#ffffff" }}>{remainingCount}</strong></span>
+            </div>
+          </div>
+
+          {/* ── QUESTION CARD ── */}
+          <div style={{ backgroundColor: "#111222", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "16px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <span style={{ backgroundColor: "rgba(139, 92, 246, 0.12)", color: "#c084fc", border: "1px solid rgba(139, 92, 246, 0.2)", fontWeight: "700", fontSize: "12px", padding: "4px 10px", borderRadius: "20px" }}>
+                Question {currentIndex + 1} / {questions.length}
+              </span>
+              <button onClick={handleMarkReview} style={{ background: "transparent", border: "none", color: reviewQuestions.includes(currentIndex) ? "#F59E0B" : "#94a3b8", display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", fontWeight: "600", minHeight: "44px" }}>
+                <Bookmark size={16} fill={reviewQuestions.includes(currentIndex) ? "#F59E0B" : "none"} /> Mark
+              </button>
+            </div>
+
+            <div style={{ marginBottom: "20px", wordBreak: "break-word" }}>
+              <p style={{ fontSize: "16px", fontWeight: "700", color: "#ffffff", margin: "0 0 8px 0", lineHeight: 1.5 }}>
+                <MathRenderer text={currentQuestion.questionEnglish} />
+              </p>
+              {currentQuestion.questionHindi && (
+                <p style={{ fontSize: "13px", color: "#94a3b8", fontWeight: "500", margin: 0, lineHeight: 1.5 }}>
+                  <MathRenderer text={currentQuestion.questionHindi} />
+                </p>
+              )}
+            </div>
+
+            {/* ── OPTIONS ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {currentQuestion.options.map((opt, idx) => {
+                const isSelected = selectedOptions[idx];
+                const isCorrectOption = opt === currentQuestion.correctAnswer;
+                
+                let borderStyle = "1.5px solid rgba(255, 255, 255, 0.08)";
+                let backgroundStyle = "#18192e";
+                let badgeBorder = "2px solid rgba(139, 92, 246, 0.4)";
+                let badgeBg = "transparent";
+                let badgeText = "#a78bfa";
+                
+                if (isSelected && isCorrectOption) {
+                  borderStyle = "2.5px solid #10B981";
+                  backgroundStyle = "rgba(16, 185, 129, 0.08)";
+                  badgeBorder = "2px solid #10B981";
+                  badgeBg = "#10B981";
+                  badgeText = "#ffffff";
+                } else if (isSelected && !isCorrectOption) {
+                  borderStyle = "1.5px solid rgba(255, 255, 255, 0.08)";
+                  backgroundStyle = "#18192e";
+                  badgeBorder = "2px solid rgba(239, 68, 68, 0.6)";
+                  badgeBg = "#EF4444";
+                  badgeText = "#ffffff";
+                } else if (isCorrectSelected && isCorrectOption) {
+                  borderStyle = "2.5px solid #10B981";
+                  backgroundStyle = "rgba(16, 185, 129, 0.08)";
+                  badgeBorder = "2px solid #10B981";
+                  badgeBg = "#10B981";
+                  badgeText = "#ffffff";
+                } else if (isCorrectSelected && !isCorrectOption) {
+                  borderStyle = "1.5px solid rgba(255, 255, 255, 0.08)";
+                  backgroundStyle = "#18192e";
+                  badgeBorder = "2px solid rgba(239, 68, 68, 0.6)";
+                  badgeBg = "#EF4444";
+                  badgeText = "#ffffff";
+                }
+
+                return (
+                  <div key={idx} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <button 
+                      onClick={() => handleOptionClick(idx)}
+                      disabled={isCorrectSelected || isSelected}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "12px",
+                        borderRadius: "10px",
+                        border: borderStyle,
+                        background: backgroundStyle,
+                        color: "#ffffff",
+                        cursor: (isCorrectSelected || isSelected) ? "default" : "pointer",
+                        width: "100%",
+                        textAlign: "left",
+                        minHeight: "48px",
+                        transition: "all 0.15s ease",
+                        gap: "12px",
+                        boxSizing: "border-box"
+                      }}
+                    >
+                      <div style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        border: badgeBorder,
+                        background: badgeBg,
+                        color: badgeText,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "700",
+                        fontSize: "13px",
+                        flexShrink: 0
+                      }}>
+                        {getOptionLetter(idx)}
+                      </div>
+                      <span style={{ flex: 1, fontSize: "14px", wordBreak: "break-word", whiteSpace: "normal" }}>
+                        <MathRenderer text={opt} />
+                      </span>
+                    </button>
+
+                    {/* Explanation right below the clicked choice */}
+                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
+                      const stored = currentQuestion.explanations?.incorrect?.[opt];
+                      const live = liveExplanations[currentIndex]?.incorrect?.[opt];
+                      const text = (stored && stored.trim()) ? stored : live;
+                      
+                      return (
+                        <div style={{ padding: "12px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "13px" }}>
+                            ❌ Incorrect
+                          </div>
+                          <p style={{ margin: 0, fontSize: "14px", color: "#e2e8f0", lineHeight: 1.5 }}>
+                            {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                          </p>
+                        </div>
+                      );
+                    })()}
+
+                    {isCorrectSelected && isCorrectOption && (() => {
+                      const stored = currentQuestion.explanations?.correct;
+                      const live = liveExplanations[currentIndex]?.correct;
+                      const text = (stored && stored.trim()) ? stored : live;
+                      
+                      const conceptSummary = currentQuestion.explanations?.conceptSummary;
+                      const didYouKnow = currentQuestion.explanations?.didYouKnow;
+
+                      return (
+                        <div style={{ padding: "14px", backgroundColor: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.25)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "10px", marginTop: "4px" }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#10B981", fontWeight: "700", fontSize: "13px" }}>
+                              ☑ Correct Answer
+                            </div>
+                            <p style={{ margin: 0, fontSize: "14px", color: "#e2e8f0", lineHeight: 1.5 }}>
+                              {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is correct.")}
+                            </p>
+                          </div>
+
+                          {conceptSummary && (
+                            <div>
+                              <div style={{ color: "#60A5FA", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>💡 Concept Summary</div>
+                              <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(conceptSummary)}</p>
+                            </div>
+                          )}
+
+                          {didYouKnow && (
+                            <div>
+                              <div style={{ color: "#FBBF24", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>✨ Did You Know?</div>
+                              <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(didYouKnow)}</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ── STICKY BOTTOM NAVIGATION BAR ── */}
+        <div style={{ position: "sticky", bottom: 0, width: "100%", backgroundColor: "#0c0d1e", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "12px 16px", boxSizing: "border-box", zIndex: 90 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", height: "48px" }}>
+            <button 
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              style={{
+                height: "48px",
+                borderRadius: "10px",
+                border: "1px solid rgba(255,255,255,0.12)",
+                background: "transparent",
+                color: currentIndex === 0 ? "#475569" : "#ffffff",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: currentIndex === 0 ? "not-allowed" : "pointer",
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              &lt; Previous
+            </button>
+
+            <button 
+              onClick={handleNext}
+              disabled={!isCorrectSelected}
+              style={{
+                height: "48px",
+                borderRadius: "10px",
+                background: isCorrectSelected ? "#6d28d9" : "rgba(109, 40, 217, 0.4)",
+                color: isCorrectSelected ? "#ffffff" : "#94a3b8",
+                border: "none",
+                fontSize: "15px",
+                fontWeight: "700",
+                cursor: isCorrectSelected ? "pointer" : "not-allowed",
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px"
+              }}
+            >
+              {currentIndex === questions.length - 1 ? 'Finish' : 'Next'} <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── MOBILE PALETTE BOTTOM SHEET ── */}
+        {showSidebar && (
+          <div style={{ 
+            position: "fixed", 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            height: "75vh", 
+            backgroundColor: "#0d0e1b", 
+            borderTopLeftRadius: "24px",
+            borderTopRightRadius: "24px",
+            borderTop: "1px solid rgba(255,255,255,0.08)", 
+            padding: "20px", 
+            zIndex: 10000,
+            overflowY: "auto",
+            boxShadow: "0 -10px 45px rgba(0,0,0,0.8)",
+            boxSizing: "border-box"
+          }}>
+            <div style={{ width: "40px", height: "4px", backgroundColor: "rgba(255,255,255,0.2)", borderRadius: "2px", margin: "-10px auto 16px" }} onClick={() => setShowSidebar(false)}></div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>Question Palette</h3>
+              <button onClick={() => setShowSidebar(false)} style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", padding: "4px" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Counts inside drawer */}
+            <div style={{ backgroundColor: "#111222", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", padding: "14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", textAlign: "center", marginBottom: "16px" }}>
+              <div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#10B981" }}>{answeredCount}</div>
+                <div style={{ fontSize: "10px", color: "#94a3b8" }}>Answered</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#F59E0B" }}>{reviewCount}</div>
+                <div style={{ fontSize: "10px", color: "#94a3b8" }}>Review</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#ffffff" }}>{remainingCount}</div>
+                <div style={{ fontSize: "10px", color: "#94a3b8" }}>Remaining</div>
+              </div>
+            </div>
+
+            {/* Grid selector */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px", marginBottom: "20px" }}>
+              {questions.slice(activeSection?.startIndex || 0, (activeSection?.startIndex || 0) + (activeSection?.count || questions.length))
+                .slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage)
+                .map((_, i) => {
+                const relativeIdx = palettePage * itemsPerPage + i;
+                const qIdx = (activeSection?.startIndex || 0) + relativeIdx;
+                const isCurrent = currentIndex === qIdx;
+                const isAnswered = answeredQuestions[qIdx];
+                const isReview = reviewQuestions.includes(qIdx);
+                const isVisited = visitedQuestions.includes(qIdx);
+
+                let bg = "#1e293b";
+                let text = "#94a3b8";
+                let border = "1px solid rgba(255,255,255,0.06)";
+
+                if (isCurrent) {
+                  bg = "#8B5CF6";
+                  text = "#ffffff";
+                  border = "1px solid #8B5CF6";
+                } else if (isAnswered) {
+                  bg = "#10B981";
+                  text = "#ffffff";
+                  border = "1px solid #10B981";
+                } else if (isReview) {
+                  bg = "#F59E0B";
+                  text = "#ffffff";
+                  border = "1px solid #F59E0B";
+                } else if (!isVisited) {
+                  bg = "#0f172a";
+                  text = "#475569";
+                }
+
+                return (
+                  <button
+                    key={qIdx}
+                    onClick={() => {
+                      setCurrentIndex(qIdx);
+                      setSelectedOptions({});
+                      setIsCorrectSelected(false);
+                      setQuestionTime(0);
+                      setShowSidebar(false);
+                    }}
+                    style={{
+                      height: "36px",
+                      borderRadius: "8px",
+                      background: bg,
+                      color: text,
+                      border: border,
+                      fontWeight: "700",
+                      fontSize: "13px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {qIdx + 1}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Close palette */}
+            <button onClick={() => setShowSidebar(false)} style={{ width: "100%", background: "rgba(255,255,255,0.08)", color: "#ffffff", border: "none", padding: "12px", borderRadius: "10px", fontWeight: "700", fontSize: "14px" }}>
+              Close Palette
+            </button>
+          </div>
+        )}
+
+        {/* ── MOBILE INSTRUCTIONS MODAL ── */}
+        {showInstructions && (
+          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000, padding: "20px" }}>
+            <div style={{ backgroundColor: "#111222", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "450px", position: "relative" }}>
+              <button onClick={() => setShowInstructions(false)} style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "#94a3b8" }}><X size={20} /></button>
+              <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "700", margin: "0 0 12px 0" }}>Instructions</h3>
+              <div style={{ color: "#cbd5e1", fontSize: "13.5px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "10px" }}>
+                <p>Select the correct answer to enable the "Next" button.</p>
+                <p>Use the floating "Questions" button to skip directly to other question blocks.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
   return (
     <div className="practice-fullscreen-layout" style={{ minHeight: "100vh", backgroundColor: "#080914", display: "flex", flexDirection: "column", fontFamily: "'Inter', sans-serif" }}>
       
-      {/* ── TOP HEADER BAR ── */}
+      {/* ── DESKTOP HEADER BAR ── */}
       <div className="practice-top-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#1e1b4b", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "#ffffff", padding: "14px 24px", position: "sticky", top: 0, zIndex: 100 }}>
         <button className="back-btn" onClick={() => navigate("/dashboard/practice")} style={{ background: "transparent", border: "none", color: "#ffffff", fontSize: "15px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
           <ArrowLeft size={18} /> Back
         </button>
         <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700", letterSpacing: "0.5px" }}>Quiz</h3>
-        <button className="instructions-btn" onClick={() => setShowInstructions(true)} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff", padding: "6px 14px", borderRadius: "20px", fontSize: "13px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-          <Info size={16} /> Instructions
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button className="instructions-btn" onClick={() => setShowInstructions(true)} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff", padding: "6px 14px", borderRadius: "20px", fontSize: "13px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+            <Info size={16} /> Instructions
+          </button>
+          <button className="practice-progress-toggle-btn" onClick={() => setShowSidebar(!showSidebar)} style={{ background: "#8B5CF6", border: "none", color: "#ffffff", padding: "6px 14px", borderRadius: "20px", fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+            {showSidebar ? "Hide Progress" : "Show Progress"}
+          </button>
+        </div>
       </div>
 
-      {/* ── SUBJECT / TITLE BANNER ── */}
-      <div style={{ padding: "24px 40px 0", maxWidth: "1400px", width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "8px" }}>
+      {/* ── DESKTOP SUBJECT / TITLE BANNER ── */}
+      <div className="practice-test-banner" style={{ maxWidth: "1400px", width: "100%", margin: "0 auto", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "8px", width: "100%" }}>
           <div style={{ width: "54px", height: "54px", borderRadius: "14px", backgroundColor: "#1e1b4c", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: "800", color: "#FBBF24" }}>
             JS
           </div>
@@ -437,10 +824,10 @@ function PracticeTest() {
       </div>
 
       {/* ── MAIN CONTENT AREA (GRID) ── */}
-      <div style={{ flex: 1, padding: "24px 40px 40px", display: "grid", gridTemplateColumns: "1fr 340px", gap: "24px", maxWidth: "1400px", width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+      <div className="practice-main-layout" style={{ flex: 1, maxWidth: "1400px", width: "100%", margin: "0 auto", boxSizing: "border-box", display: "flex", position: "relative" }}>
         
         {/* LEFT COLUMN: QUESTION CARD AND TABS */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%", minWidth: 0 }}>
           
           {/* Section Tabs */}
           {sections.length > 0 && (
@@ -473,8 +860,6 @@ function PracticeTest() {
           )}
 
           <div className="practice-question-card" style={{ backgroundColor: "#111222", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "20px", padding: "36px", display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1 }}>
-            
-          <div>
 
 
             {/* Question Indicator & Mark for Review */}
@@ -502,11 +887,11 @@ function PracticeTest() {
 
             {/* Question Texts */}
             <div className="practice-q-text" style={{ marginBottom: "32px", textAlign: "left" }}>
-              <p style={{ fontSize: "19px", fontWeight: "700", color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.5 }}>
+              <p className="practice-question-title" style={{ fontSize: "19px", fontWeight: "700", color: "#ffffff", margin: "0 0 12px 0", lineHeight: 1.5 }}>
                 <MathRenderer text={currentQuestion.questionEnglish} />
               </p>
               {currentQuestion.questionHindi && (
-                <p className="q-hindi" style={{ fontSize: "17px", color: "#94a3b8", fontWeight: "500", margin: 0 }}>
+                <p className="q-hindi" style={{ fontSize: "17px", color: "#94a3b8", fontWeight: "500", margin: 0, lineHeight: 1.7 }}>
                   <MathRenderer text={currentQuestion.questionHindi} />
                 </p>
               )}
@@ -584,7 +969,8 @@ function PracticeTest() {
                         alignItems: "center",
                         justifyContent: "center",
                         fontWeight: "700",
-                        fontSize: "13px"
+                        fontSize: "13px",
+                        flexShrink: 0
                       }}>
                         {getOptionLetter(idx)}
                       </div>
@@ -665,12 +1051,10 @@ function PracticeTest() {
               })}
             </div>
           </div>
-
-        </div>
         </div>
 
-        {/* RIGHT COLUMN: SIDE PANEL */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* RIGHT COLUMN: SIDE PANEL (DESKTOP VERSION) */}
+        <div className="practice-desktop-sidebar" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           
           {/* Progress Widget */}
           <div style={{ backgroundColor: "#111222", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px" }}>
@@ -794,7 +1178,7 @@ function PracticeTest() {
                       disabled={palettePage === 0}
                       style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.06)", cursor: palettePage === 0 ? "not-allowed" : "pointer", opacity: palettePage === 0 ? 0.5 : 1, fontWeight: "bold", color: "#94a3b8", transition: "all 0.2s" }}
                     >
-                      {"<"}
+                      &lt;
                     </button>
                     {visiblePages.map((p) => (
                       <button
@@ -827,11 +1211,13 @@ function PracticeTest() {
 
         </div>
 
+
+
       </div>
 
-      {/* ── BOTTOM ACTIONS ROW ── */}
-      <div className="practice-bottom-actions" style={{ backgroundColor: "#0c0d1e", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "20px 40px" }}>
-        <div className="practice-bottom-actions-container" style={{ maxWidth: "1400px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {/* ── BOTTOM ACTIONS ROW (Desktop & Mobile safe-area wrapper) ── */}
+      <div className="practice-bottom-actions-sticky-wrapper" style={{ position: "sticky", bottom: 0, width: "100%", backgroundColor: "#0c0d1e", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "16px 24px", boxSizing: "border-box", zIndex: 90 }}>
+        <div style={{ maxWidth: "1400px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", minHeight: "48px" }}>
           
           <button 
             className="practice-nav-btn practice-nav-prev"
@@ -846,14 +1232,17 @@ function PracticeTest() {
               fontSize: "14px",
               fontWeight: "600",
               cursor: currentIndex === 0 ? "not-allowed" : "pointer",
-              transition: "all 0.15s ease"
+              transition: "all 0.15s ease",
+              minHeight: "48px",
+              flex: 1,
+              maxWidth: "200px"
             }}
           >
-            &lt; Previous Question
+            &lt; Previous
           </button>
 
           {/* Centered spacer / empty box since we removed the auto-saved text */}
-          <div className="practice-nav-spacer" style={{ flex: 1 }}></div>
+          <div className="practice-nav-spacer practice-desktop-only" style={{ flex: 1 }}></div>
 
           <button 
             className="practice-nav-btn practice-nav-next"
@@ -870,11 +1259,15 @@ function PracticeTest() {
               cursor: isCorrectSelected ? "pointer" : "not-allowed",
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: "8px",
-              transition: "all 0.15s ease"
+              transition: "all 0.15s ease",
+              minHeight: "48px",
+              flex: 1,
+              maxWidth: "200px"
             }}
           >
-            {currentIndex === questions.length - 1 ? 'Finish Practice' : 'Next Question'} <ChevronRight size={16} />
+            {currentIndex === questions.length - 1 ? 'Finish' : 'Next'} <ChevronRight size={16} />
           </button>
 
         </div>

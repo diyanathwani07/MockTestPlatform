@@ -273,10 +273,11 @@ body.dark-mode .acb-input-area input {
 /* Media Query for smaller screens */
 @media (max-width: 768px) {
   .acb-window {
-    left: 20px;
-    right: 20px;
-    bottom: 80px;
-    width: auto;
-    height: 400px;
+    left: auto;
+    right: 0;
+    bottom: 70px;
+    width: 320px;
+    height: 450px;
+    max-height: calc(100vh - 120px);
   }
 }

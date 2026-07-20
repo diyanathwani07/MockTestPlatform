@@ -39,6 +39,8 @@ const AdminChatbot = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
+
+
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;

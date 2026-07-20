@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name"> Mock Test Platform</string>
+    <string name="title_activity_main"> Mock Test Platform</string>
+    <string name="package_name">com.mocktest.platform</string>
+    <string name="custom_url_scheme">com.mocktest.platform</string>
+</resources>

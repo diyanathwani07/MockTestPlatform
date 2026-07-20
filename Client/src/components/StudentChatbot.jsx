@@ -38,6 +38,8 @@ const StudentChatbot = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
+
+
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
