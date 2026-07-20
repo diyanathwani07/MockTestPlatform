@@ -223,31 +223,32 @@ function AdminTickets() {
                 <p>Loading tickets...</p>
               </div>
             ) : (
-              <table className="tk-table">
-                <thead>
-                  <tr>
-                    <th>Ticket ID</th>
-                    <th>Subject</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Created At</th>
-                    <th>Last Update</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTickets.map((ticket, idx) => {
-                    const tkId = `#TP-${(idx + 149).toString().padStart(4, '0')}`;
-                    const uName = ticket.userId?.fullName || 'Unknown User';
-                    const initials = uName.split(' ').map(n=>n[0]).join('').substring(0, 2).toUpperCase();
-                    
-                    return (
-                      <tr key={ticket._id}>
-                        <td className="tk-id">{tkId}</td>
-                        <td>
-                          <div className="tk-subject-cell">
-                            <span className="tk-subject-title">{ticket.subject}</span>
-                            <span className="tk-subject-desc">{ticket.message.substring(0, 40)}...</span>
+              <div className="tk-table-wrapper" style={{ overflowX: "auto", width: "100%", WebkitOverflowScrolling: "touch" }}>
+                <table className="tk-table">
+                  <thead>
+                    <tr>
+                      <th>Ticket ID</th>
+                      <th>Subject</th>
+                      <th>Category</th>
+                      <th>Status</th>
+                      <th>Created At</th>
+                      <th>Last Update</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTickets.map((ticket, idx) => {
+                      const tkId = `#TP-${(idx + 149).toString().padStart(4, '0')}`;
+                      const uName = ticket.userId?.fullName || 'Unknown User';
+                      const initials = uName.split(' ').map(n=>n[0]).join('').substring(0, 2).toUpperCase();
+                      
+                      return (
+                        <tr key={ticket._id}>
+                          <td className="tk-id">{tkId}</td>
+                          <td>
+                            <div className="tk-subject-cell">
+                              <span className="tk-subject-title">{ticket.subject}</span>
+                              <span className="tk-subject-desc">{ticket.message.substring(0, 40)}...</span>
                           </div>
                         </td>
                         <td>
@@ -291,6 +292,7 @@ function AdminTickets() {
                   )}
                 </tbody>
               </table>
+              </div>
             )}
             
             {!loading && filteredTickets.length > 0 && (

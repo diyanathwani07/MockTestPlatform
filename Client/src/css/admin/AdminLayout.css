@@ -506,7 +506,6 @@ body.dark-mode .page-nav-btn { border-color: rgba(255,255,255,0.1); color: #fff;
 }
 
 @media (max-width: 900px) {
-  .manage-command-bar { flex-direction: column; align-items: stretch; }
   .pill-search-container { max-width: 100%; }
 }
 
@@ -528,6 +527,21 @@ body.dark-mode .page-nav-btn { border-color: rgba(255,255,255,0.1); color: #fff;
     flex-wrap: wrap;
     gap: 12px;
     justify-content: center;
+  }
+  .manage-quizzes-header-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+  }
+  .manage-quizzes-header-row > div:nth-child(1) {
+    text-align: center !important;
+    width: 100% !important;
+  }
+  .manage-quizzes-header-row > div:nth-child(2) {
+    width: auto !important;
+    display: inline-flex !important;
+    margin: 0 auto !important;
   }
 }
 

@@ -967,6 +967,8 @@ function EditQuiz() {
                             </div>
                           </div>
                         </div>
+                      )}
+                    </div>
 
                     {/* 3. Questions Builder */}
                     <div className="form-card header-questions-card">

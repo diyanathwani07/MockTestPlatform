@@ -24,7 +24,7 @@
 
 .practice-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 24px;
   animation: fadeIn 0.4s ease;
 }
@@ -796,7 +796,44 @@ body.dark-mode .practice-inline-exp.danger {
 @media (max-width: 767px) {
   /* Practice Dashboard */
   .practice-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  
+  .practice-card {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .practice-subject-badge {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .practice-difficulty {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  .practice-quiz-title {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .practice-quiz-desc {
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+
+  .practice-meta-grid {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  .practice-meta-grid .meta-item {
+    font-size: 11px;
   }
   
   .practice-title {

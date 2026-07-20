@@ -165,7 +165,7 @@ function AdminDashboard() {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title="Dashboard Overview" />
+        <AdminNavbar title={<><span className="inline sm:hidden">Dashboard</span><span className="hidden sm:inline">Dashboard Overview</span></>} />
 
         <div className="admin-content">
           {error && <p className="admin-error">{error}</p>}

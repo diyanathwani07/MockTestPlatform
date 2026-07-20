@@ -125,37 +125,25 @@ function Results() {
           
           <div className="dashboard-header" style={{ justifyContent: "space-between", alignItems: "center" }}>
             {/* FILTERS BAR */}
-            <div className="filters-bar" style={{ margin: 0, overflowX: "auto", flexWrap: "nowrap", paddingBottom: "8px" }}>
+            <div className="filters-bar" style={{ margin: 0 }}>
               <input 
                 className="filter-search"
-                placeholder="Search by user name, email or quiz..." 
+                placeholder="Search..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ maxWidth: "250px", minWidth: "200px", flexShrink: 0 }}
               />
               <input 
                 type="date"
+                className="filter-select"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
                 title="Filter by date"
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: "8px",
-                  border: "1.5px solid var(--border-color)",
-                  background: "var(--bg-card)",
-                  color: "var(--text-primary)",
-                  fontSize: "14px",
-                  outline: "none",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  flexShrink: 0
-                }}
               />
-              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Quizzes</option></select>
-              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Subjects</option></select>
-              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Users</option></select>
-              <select className="filter-select" style={{ flexShrink: 0 }}><option>All Status</option></select>
-              <button className="btn-reset" style={{ flexShrink: 0 }} onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻ Reset</button>
+              <select className="filter-select"><option>Quizzes</option></select>
+              <select className="filter-select"><option>Subjects</option></select>
+              <select className="filter-select"><option>Users</option></select>
+              <select className="filter-select"><option>Status</option></select>
+              <button className="btn-reset" onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻</button>
             </div>
 
             <div className="header-actions">
@@ -166,54 +154,49 @@ function Results() {
             </div>
           </div>
 
-          {/* STAT CARDS */}
-          <div className="results-stat-cards-grid">
-            <div className="stat-card">
-              <div className="stat-icon purple" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Users size={24} />
+          {/* STAT CARDS + PERFORMANCE SUMMARY - SIDE BY SIDE */}
+          <div className="stats-perf-row">
+            {/* LEFT: STAT CARDS 2x2 */}
+            <div className="results-stat-cards-grid">
+              <div className="stat-card">
+                <div className="stat-card-header">
+                  <h4>Total Attempts</h4>
+                </div>
+                <div className="stat-card-body">
+                  <h2>{totalAttempts.toLocaleString()}</h2>
+                  <span className="trend">Active</span>
+                </div>
               </div>
-              <div className="stat-info">
-                <h4>Total Attempts</h4>
-                <h2>{totalAttempts.toLocaleString()}</h2>
-                <span className="trend positive">↑ Active</span>
+              <div className="stat-card">
+                <div className="stat-card-header">
+                  <h4>Average Score</h4>
+                </div>
+                <div className="stat-card-body">
+                  <h2>{averageScore}%</h2>
+                  <span className="trend">Overall</span>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-card-header">
+                  <h4>Highest Score</h4>
+                </div>
+                <div className="stat-card-body">
+                  <h2>{highestPercentage.toFixed(2)}%</h2>
+                  <span className="trend">Top</span>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-card-header">
+                  <h4>Students Appeared</h4>
+                </div>
+                <div className="stat-card-body">
+                  <h2>{studentsAppeared.toLocaleString()}</h2>
+                  <span className="trend">Users</span>
+                </div>
               </div>
             </div>
-            <div className="stat-card">
-              <div className="stat-icon green" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle size={24} />
-              </div>
-              <div className="stat-info">
-                <h4>Average Score</h4>
-                <h2>{averageScore}%</h2>
-                <span className="trend positive">Overall</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon yellow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Star size={24} />
-              </div>
-              <div className="stat-info">
-                <h4>Highest Score</h4>
-                <h2>{highestPercentage.toFixed(2)}%</h2>
-                <span className="trend positive">Top Performance</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon blue" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <GraduationCap size={24} />
-              </div>
-              <div className="stat-info">
-                <h4>Students Appeared</h4>
-                <h2>{studentsAppeared.toLocaleString()}</h2>
-                <span className="trend positive">Unique Users</span>
-              </div>
-            </div>
-          </div>
 
-          {/* MAIN SECTIONS: Excluded Trend, Recent, Score Dist, Subject Results */}
-          <div className="dashboard-sections-grid">
-            
-            {/* PERFORMANCE SUMMARY */}
+            {/* RIGHT: PERFORMANCE SUMMARY */}
             <div className="section-card">
               <div className="section-header">
                 <h3>Performance Summary ⓘ</h3>
@@ -248,8 +231,9 @@ function Results() {
                   </div>
                 </div>
               </div>
-              <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px', marginBottom: 0}}>Performance is calculated based on average scores.</p>
+              <p style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '12px', marginBottom: 0}}>Performance is calculated based on average scores.</p>
             </div>
+          </div>
 
             {/* TABLES SIDE BY SIDE */}
             <div className="tables-grid">
@@ -352,8 +336,6 @@ function Results() {
               </div>
             </div>
             </div>
-
-          </div>
 
         </div>
       </div>

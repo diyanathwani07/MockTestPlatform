@@ -727,8 +727,22 @@
   }
   
   .tk-filters {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .tk-filter-group {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tk-filter-group select {
+    width: 100%;
+    font-size: 12px;
+    padding: 6px 20px 6px 8px;
   }
   
   .tk-date-range {

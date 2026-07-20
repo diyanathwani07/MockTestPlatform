@@ -227,13 +227,13 @@ body.dark-mode .reports-analytics-table td {
 .report-search-pill {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   background: #FAFAFC;
   border: 1.5px solid #ECE9F7;
   border-radius: 100px;
-  padding: 9px 16px;
+  padding: 7px 10px;
   flex: 1;
-  min-width: 220px; 
+  min-width: 0; 
   transition: all 0.2s ease;
 }
 
@@ -327,7 +327,9 @@ body.dark-mode .reports-analytics-table td {
 }
 
 @media (max-width: 950px) {
-  .reports-filter-bar { flex-direction: column; }
+  .reports-filter-bar { flex-direction: row; flex-wrap: nowrap; gap: 6px; padding: 10px 12px; }
+  .report-search-pill { padding: 6px 8px; gap: 4px; }
+  .report-search-pill input { font-size: 11px; }
 }
 
 /* --- PREMIUM ADMIN DASHBOARD EXTENSIONS --- */
@@ -388,7 +390,7 @@ body.dark-mode .reports-analytics-table td {
 
 @media (max-width: 600px) {
   .dashboard-status-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

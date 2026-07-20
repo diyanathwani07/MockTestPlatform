@@ -619,7 +619,6 @@ function CreateQuiz() {
                           <span>Lock Previous Questions</span>
                         </label>
                       </div>
-                      </div>
                     </div>
                   )}
 

@@ -136,15 +136,11 @@ function RolesPermissions() {
     <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page, #0A0A14)" }}>
-        <AdminNavbar title="Departments & Permissions" />
+        <AdminNavbar title="Roles & Permissions" />
         <div style={{ flex: 1, padding: "24px 32px", overflowY: "auto" }}>
 
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "16px" }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "700", color: "var(--text-primary)" }}>Departments & Permissions</h2>
-              <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text-muted)" }}>{departments.length} departments configured</p>
-            </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: "28px", flexWrap: "wrap", gap: "16px" }}>
             <button onClick={openCreate} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #6E3FF3, #8B5CF6)", color: "#fff", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>
               <Plus size={16} /> Create Department
             </button>

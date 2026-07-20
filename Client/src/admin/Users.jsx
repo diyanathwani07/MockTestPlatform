@@ -232,55 +232,58 @@ function Users() {
         <AdminNavbar title="Manage Users" />
 
         <div className="admin-content">
-          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <div className="pill-search-container" style={{ marginBottom: 0, flex: 1, maxWidth: '400px' }}>
-              <svg width="16" height="16" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'nowrap', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
+            <div className="pill-search-container" style={{ marginBottom: 0, flex: 1.5, minWidth: '120px' }}>
+              <svg width="14" height="14" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
               <input 
                 type="text" 
-                placeholder="Search users by name or email..." 
+                placeholder="Search..." 
                 className="pill-search-input"
                 onChange={(e) => setSearchTerm(e.target.value)}
                 value={searchTerm}
+                style={{ fontSize: "12px" }}
               />
             </div>
 
             {currentUserRole === 'superadmin' && (
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '4px', background: 'rgba(255, 255, 255, 0.05)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.05)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                   <button 
                     onClick={() => { setViewTab('active'); setLoading(true); }}
                     style={{
-                      padding: '8px 16px',
-                      borderRadius: '8px',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
                       border: 'none',
                       background: viewTab === 'active' ? '#6E3FF3' : 'transparent',
                       color: '#FFFFFF',
-                      fontSize: '13px',
+                      fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
                     }}
                   >
-                    Active Users
+                    Active
                   </button>
                   <button 
                     onClick={() => { setViewTab('archived'); setLoading(true); }}
                     style={{
-                      padding: '8px 16px',
-                      borderRadius: '8px',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
                       border: 'none',
                       background: viewTab === 'archived' ? '#6E3FF3' : 'transparent',
                       color: '#FFFFFF',
-                      fontSize: '13px',
+                      fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
                     }}
                   >
-                    Archived Users
+                    Archived
                   </button>
                 </div>
                 <button 
@@ -288,8 +291,13 @@ function Users() {
                     setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [] });
                     setActiveModal('add_user');
                   }}
+                  style={{
+                    whiteSpace: 'nowrap',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    minHeight: '34px'
+                  }}
                   className="create-quiz-pill-btn"
-                  style={{ minHeight: '38px', padding: '8px 20px', fontSize: '13px' }}
                 >
                   + Add User
                 </button>

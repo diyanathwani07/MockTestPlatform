@@ -342,50 +342,33 @@ function PracticeQuizzes() {
         
         <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
           
-          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'nowrap', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
             <div style={{ 
-              flex: 1,
-              minWidth: '200px',
-              maxWidth: '400px',
-              display: "flex", alignItems: "center", gap: "10px", 
+              flex: 1.5,
+              minWidth: '120px',
+              display: "flex", alignItems: "center", gap: "6px", 
               backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
-              borderRadius: "100px", padding: "8px 16px",
+              borderRadius: "100px", padding: "6px 12px",
               boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
             }}>
-              <span style={{ fontSize: "14px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
+              <span style={{ fontSize: "12px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
               <input 
                 type="text" 
-                placeholder="Search practice modules..." 
+                placeholder="Search..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
+                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "12px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "18px" }}
               />
             </div>
 
-            <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", marginLeft: "auto", alignItems: "center" }}>
-                <button
-                  onClick={() => navigate("/admin/create-practice")}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: "none",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    backgroundColor: "var(--violet)",
-                    color: "white",
-                  }}
-                >
-                  + Modular Practice
-                </button>
-                <div style={{ width: "1px", height: "20px", backgroundColor: "var(--border-color)", margin: "0 4px" }}></div>
+            <div style={{ display: "flex", gap: "4px", backgroundColor: "var(--bg-page)", padding: "3px", borderRadius: "8px", border: "1px solid var(--border-color)", flexShrink: 0, alignItems: "center" }}>
                 <button
                   onClick={() => setViewMode("active")}
                   style={{
-                    padding: "6px 12px",
+                    padding: "5px 10px",
                     borderRadius: "6px",
                     border: "none",
-                    fontSize: "13px",
+                    fontSize: "12px",
                     fontWeight: "600",
                     cursor: "pointer",
                     backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
@@ -397,17 +380,17 @@ function PracticeQuizzes() {
                 <button
                   onClick={() => setViewMode("recycle")}
                   style={{
-                    padding: "6px 12px",
+                    padding: "5px 10px",
                     borderRadius: "6px",
                     border: "none",
-                    fontSize: "13px",
+                    fontSize: "12px",
                     fontWeight: "600",
                     cursor: "pointer",
                     backgroundColor: viewMode === "recycle" ? "var(--red)" : "transparent",
                     color: viewMode === "recycle" ? "white" : "var(--text-secondary)",
                   }}
                 >
-                  Recycle Bin
+                  Recycle
                 </button>
               </div>
           </div>

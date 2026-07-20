@@ -92,38 +92,39 @@ function Reports() {
 
 
           {/* 3. 3-WAY LIVE COMMAND BAR (Zero button bloat) */}
-          <div className="reports-filter-bar" style={{ display: "flex", overflowX: "auto", flexWrap: "nowrap", gap: "12px", paddingBottom: "8px" }}>
+          <div className="reports-filter-bar" style={{ display: "flex", gap: "8px", paddingBottom: "8px" }}>
             
-            <div className="report-search-pill" style={{ flexShrink: 0, minWidth: "220px" }}>
-              <span className="search-icon-wrapper"><User size={16} /></span>
+            <div className="report-search-pill" style={{ flex: 1, minWidth: 0 }}>
+              <span className="search-icon-wrapper"><User size={14} /></span>
               <input
                 type="text"
-                placeholder="Filter by Candidate Name..."
+                placeholder="Candidate..."
                 value={searchCandidate}
                 onChange={(e) => setSearchCandidate(e.target.value)}
               />
             </div>
 
-            <div className="report-search-pill" style={{ flexShrink: 0, minWidth: "220px" }}>
-              <span className="search-icon-wrapper"><FileText size={16} /></span>
+            <div className="report-search-pill" style={{ flex: 1, minWidth: 0 }}>
+              <span className="search-icon-wrapper"><FileText size={14} /></span>
               <input
                 type="text"
-                placeholder="Filter by Quiz Title..."
+                placeholder="Quiz..."
                 value={searchQuiz}
                 onChange={(e) => setSearchQuiz(e.target.value)}
               />
             </div>
 
-            <div className="report-search-pill" style={{ flexShrink: 0, minWidth: "220px" }}>
-              <span className="search-icon-wrapper"><BookOpen size={16} /></span>
+            <div className="report-search-pill" style={{ flex: 1, minWidth: 0 }}>
+              <span className="search-icon-wrapper"><BookOpen size={14} /></span>
               <input
                 type="text"
-                placeholder="Filter by Subject..."
+                placeholder="Subject..."
                 value={searchSubject}
                 onChange={(e) => setSearchSubject(e.target.value)}
               />
             </div>
           </div>
+
 
           {/* 4. NEW: CANDIDATE DRILL-DOWN TABLE */}
           <div className="reports-table-wrapper" style={{ overflowX: "auto" }}>

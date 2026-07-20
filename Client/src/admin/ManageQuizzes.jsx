@@ -123,7 +123,7 @@ function ManageQuizzes() {
             textAlign: "left"
           }}>
             
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%", marginBottom: "16px" }}>
+            <div className="manage-quizzes-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
               <div style={{ textAlign: "left" }}>
                 <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
                   {viewMode === "active" ? "Active Assessment Modules" : "Recycle Bin"}
@@ -167,27 +167,28 @@ function ManageQuizzes() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "16px", width: "100%", maxWidth: "600px", flexWrap: "wrap" }}>
+            <div className="manage-quizzes-filter-row" style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "100%", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px" }}>
               {/* Sleek Rounded Search Bar */}
               <div style={{ 
-                flex: 1,
-                display: "flex", alignItems: "center", gap: "10px", 
+                flex: 1.5,
+                minWidth: "120px",
+                display: "flex", alignItems: "center", gap: "6px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
-                borderRadius: "100px", padding: "8px 16px",
+                borderRadius: "100px", padding: "6px 12px",
                 boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
               }}>
-                <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
+                <Search size={14} style={{ color: "var(--violet)", flexShrink: 0 }} />
                 <input 
                   type="text" 
-                  placeholder="Search quiz or subject..." 
+                  placeholder="Search..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "24px" }}
+                  style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "12px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "18px" }}
                 />
                 {searchTerm && (
                   <span 
                     onClick={() => setSearchTerm("")}
-                    style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold" }}
+                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}
                     title="Clear search"
                   >
                     ✕
@@ -197,12 +198,13 @@ function ManageQuizzes() {
 
               {/* Date Filter */}
               <div style={{ 
-                display: "flex", alignItems: "center", gap: "8px", 
+                flex: 1,
+                minWidth: "90px",
+                display: "flex", alignItems: "center", gap: "4px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
-                borderRadius: "100px", padding: "8px 16px",
+                borderRadius: "100px", padding: "6px 12px",
                 position: "relative"
               }}>
-                <span style={{ fontSize: "14px", color: "var(--text-secondary)", userSelect: "none" }}>📅</span>
                 <input 
                   type="date"
                   value={filterDate}
@@ -212,18 +214,18 @@ function ManageQuizzes() {
                     background: "transparent", 
                     outline: "none", 
                     boxShadow: "none",
-                    fontSize: "13px", 
+                    fontSize: "12px", 
                     color: "var(--text-primary)", 
                     fontWeight: "500", 
                     fontFamily: "inherit", 
-                    paddingRight: filterDate ? "16px" : "0",
-                    WebkitAppearance: "none"
+                    paddingRight: filterDate ? "12px" : "0",
+                    width: "100%"
                   }}
                 />
                 {filterDate && (
                   <span 
                     onClick={() => setFilterDate("")}
-                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold", background: "var(--bg-card)", paddingLeft: "4px" }}
+                    style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "11px", cursor: "pointer", fontWeight: "bold", background: "var(--bg-card)", paddingLeft: "2px" }}
                     title="Clear date filter"
                   >
                     ✕
@@ -233,11 +235,13 @@ function ManageQuizzes() {
 
               {/* Type Filter */}
               <div style={{ 
-                display: "flex", alignItems: "center", gap: "8px", 
+                flex: 1,
+                minWidth: "90px",
+                display: "flex", alignItems: "center", gap: "4px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
-                borderRadius: "100px", padding: "8px 16px"
+                borderRadius: "100px", padding: "6px 12px"
               }}>
-                <span style={{ fontSize: "14px", color: "var(--text-secondary)", userSelect: "none" }}>🏷️</span>
+                <span style={{ fontSize: "12px", color: "var(--text-secondary)", userSelect: "none" }}>🏷️</span>
                 <select 
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
@@ -245,16 +249,16 @@ function ManageQuizzes() {
                     border: "none", 
                     background: "transparent", 
                     outline: "none", 
-                    fontSize: "13px", 
+                    fontSize: "12px", 
                     color: "var(--text-primary)", 
                     fontWeight: "500", 
-                    fontFamily: "inherit", 
+                    width: "100%",
                     cursor: "pointer"
                   }}
                 >
-                  <option value="All" style={{ background: "var(--bg-card)" }}>All Types</option>
-                  <option value="Single" style={{ background: "var(--bg-card)" }}>Single Section</option>
-                  <option value="Multi" style={{ background: "var(--bg-card)" }}>Multi Section</option>
+                  <option value="all">Types</option>
+                  <option value="exams">Exams</option>
+                  <option value="practice">Practice</option>
                 </select>
               </div>
             </div>
