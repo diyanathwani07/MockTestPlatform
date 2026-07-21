@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Quiz = require("../models/Quiz");
 const Section = require("../models/Section");
 const Question = require("../models/Question");
+const PracticeQuiz = require("../models/PracticeQuiz");
 
 const isModularSection = (section) => section && section.sectionId != null;
 
@@ -380,6 +381,77 @@ const getQuizzesReferencingSection = async (sectionId) => {
   });
 };
 
+const syncToPracticeQuiz = async (quizId, publishAs) => {
+  if (publishAs === "exam") {
+    await PracticeQuiz.deleteOne({ linkedExamId: quizId });
+    return;
+  }
+
+  const populatedQuiz = await previewQuiz(quizId);
+  if (!populatedQuiz) return;
+
+  const practiceQuestions = [];
+
+  // Extract from modular sections
+  if (populatedQuiz.isModular && populatedQuiz.sections) {
+    populatedQuiz.sections.forEach((sec) => {
+      const allQs = [
+        ...(sec.questions || []),
+        ...(sec.subsections?.easy || []),
+        ...(sec.subsections?.medium || []),
+        ...(sec.subsections?.hard || []),
+      ];
+      allQs.forEach((q) => {
+        practiceQuestions.push({
+          questionEnglish: q.questionEnglish,
+          questionHindi: q.questionHindi || "",
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanations: {
+            correct: q.explanation || "",
+            incorrect: {},
+            conceptSummary: "",
+            didYouKnow: ""
+          }
+        });
+      });
+    });
+  } else {
+    // Extract from legacy questions
+    (populatedQuiz.questions || []).forEach((q) => {
+      practiceQuestions.push({
+        questionEnglish: q.questionEnglish,
+        questionHindi: q.questionHindi || "",
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanations: {
+          correct: q.explanation || "",
+          incorrect: {},
+          conceptSummary: "",
+          didYouKnow: ""
+        }
+      });
+    });
+  }
+
+  const practiceData = {
+    title: populatedQuiz.title,
+    subject: populatedQuiz.subject,
+    description: populatedQuiz.description || "",
+    questions: practiceQuestions,
+    questionsPerAttempt: practiceQuestions.length,
+    createdBy: populatedQuiz.createdBy,
+    status: populatedQuiz.status,
+    publishedAt: populatedQuiz.published ? new Date() : null,
+  };
+
+  await PracticeQuiz.findOneAndUpdate(
+    { linkedExamId: quizId },
+    { $set: practiceData },
+    { upsert: true, new: true }
+  );
+};
+
 module.exports = {
   isModularSection,
   createQuestionFromEmbedded,
@@ -399,4 +471,5 @@ module.exports = {
   countSectionQuestions,
   countQuizQuestions,
   getQuizzesReferencingSection,
+  syncToPracticeQuiz,
 };

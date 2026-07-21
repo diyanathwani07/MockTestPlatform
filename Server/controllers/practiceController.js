@@ -32,10 +32,46 @@ const getPracticeQuizById = async (req, res) => {
     const quiz = await PracticeQuiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
+    let quizObj = quiz.toObject();
+
+    // If modular, fetch sections
+    if (quiz.hasModularSections && quiz.hasModularSections()) {
+      const Section = require("../models/Section");
+      const populatedSections = [];
+      const sortedRefs = [...quiz.sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+      for (const ref of sortedRefs) {
+        const section = await Section.findById(ref.sectionId)
+          .populate("questions")
+          .populate("subsections.easy")
+          .populate("subsections.medium")
+          .populate("subsections.hard");
+        
+        if (section) {
+          const sec = section.toObject();
+          populatedSections.push({
+            _id: sec._id,
+            title: sec.title,
+            description: sec.description,
+            type: sec.type,
+            duration: sec.duration,
+            marksPerQuestion: sec.marksPerQuestion,
+            negativeMarking: sec.negativeMarking,
+            questionLimit: sec.questionLimit,
+            randomizeOptions: sec.randomizeOptions,
+            questions: sec.questions || [],
+            subsections: sec.subsections || { easy: [], medium: [], hard: [] },
+            mode: ref.mode,
+            order: ref.order,
+          });
+        }
+      }
+      quizObj.sections = populatedSections;
+    }
+
     // Convert Mongoose Map to plain object for explanations.incorrect
     // so frontend can access it as explanations.incorrect[optionText]
-    const quizObj = quiz.toObject();
-    quizObj.questions = quizObj.questions.map(q => {
+    quizObj.questions = (quizObj.questions || []).map(q => {
       const incorrectRaw = q.explanations?.incorrect;
       let incorrectPlain = {};
       if (incorrectRaw instanceof Map) {
@@ -70,6 +106,8 @@ const createPracticeQuiz = async (req, res) => {
       subject,
       description,
       questions: questions || [],
+      isModular: req.body.isModular || false,
+      sections: req.body.sections || [],
       shuffleQuestions: shuffleQuestions || false,
       shuffleOptions: shuffleOptions || false,
       randomSelection: randomSelection || false,
@@ -101,6 +139,9 @@ const updatePracticeQuiz = async (req, res) => {
     quiz.shuffleOptions = req.body.shuffleOptions ?? quiz.shuffleOptions;
     quiz.randomSelection = req.body.randomSelection ?? quiz.randomSelection;
     quiz.questionsPerAttempt = req.body.questionsPerAttempt ?? quiz.questionsPerAttempt;
+    
+    if (req.body.isModular !== undefined) quiz.isModular = req.body.isModular;
+    if (req.body.sections) quiz.sections = req.body.sections;
 
     if (req.body.questions) {
       quiz.questions = req.body.questions;
@@ -305,6 +346,24 @@ const getOrCreatePracticeSession = async (req, res) => {
     const quiz = await PracticeQuiz.findById(id);
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
+    let allQuestions = [];
+    if (quiz.hasModularSections && quiz.hasModularSections()) {
+      const Section = require("../models/Section");
+      for (const ref of [...quiz.sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
+        const section = await Section.findById(ref.sectionId).populate("questions").populate("subsections.easy").populate("subsections.medium").populate("subsections.hard");
+        if (section) {
+          if (section.questions) allQuestions.push(...section.questions);
+          if (section.subsections) {
+            allQuestions.push(...(section.subsections.easy || []));
+            allQuestions.push(...(section.subsections.medium || []));
+            allQuestions.push(...(section.subsections.hard || []));
+          }
+        }
+      }
+    } else {
+      allQuestions = quiz.questions || [];
+    }
+
     let session = await PracticeSession.findOne({ userId, practiceQuizId: id });
 
     if (session && restart === "true") {
@@ -313,24 +372,27 @@ const getOrCreatePracticeSession = async (req, res) => {
     }
 
     if (!session) {
-      let questionIndices = Array.from({ length: quiz.questions.length }, (_, i) => i);
+      let questionIndices = Array.from({ length: allQuestions.length }, (_, i) => i);
 
-      if (quiz.randomSelection) {
+      if (quiz.randomSelection && !quiz.isModular) {
         questionIndices = shuffle(questionIndices);
         const limit = quiz.questionsPerAttempt || 20;
         questionIndices = questionIndices.slice(0, limit);
-      } else if (quiz.shuffleQuestions) {
+      } else if (quiz.shuffleQuestions && !quiz.isModular) {
         questionIndices = shuffle(questionIndices);
       }
 
       const optionsOrder = {};
       questionIndices.forEach((qIdx) => {
-        const originalOptionsLength = quiz.questions[qIdx].options.length;
-        let optIndices = Array.from({ length: originalOptionsLength }, (_, i) => i);
-        if (quiz.shuffleOptions) {
-          optIndices = shuffle(optIndices);
+        const q = allQuestions[qIdx];
+        if (q && q.options) {
+          const originalOptionsLength = q.options.length;
+          let optIndices = Array.from({ length: originalOptionsLength }, (_, i) => i);
+          if (quiz.shuffleOptions) {
+            optIndices = shuffle(optIndices);
+          }
+          optionsOrder[qIdx] = optIndices;
         }
-        optionsOrder[qIdx] = optIndices;
       });
 
       session = new PracticeSession({

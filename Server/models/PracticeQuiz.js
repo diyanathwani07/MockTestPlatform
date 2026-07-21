@@ -71,6 +71,19 @@ const practiceQuizSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    linkedExamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Quiz",
+      default: null,
+    },
+    isModular: {
+      type: Boolean,
+      default: false,
+    },
+    sections: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
     status: {
       type: String,
       enum: ["Draft", "Published"],
@@ -91,5 +104,18 @@ const practiceQuizSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Helpers to detect format
+practiceQuizSchema.statics.isModularSection = function (section) {
+  return section && section.sectionId != null;
+};
+
+practiceQuizSchema.methods.hasModularSections = function () {
+  return (
+    this.isModular ||
+    (this.sections.length > 0 &&
+      this.sections.every((s) => mongoose.model("PracticeQuiz").isModularSection(s)))
+  );
+};
 
 module.exports = mongoose.model("PracticeQuiz", practiceQuizSchema);

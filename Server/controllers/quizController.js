@@ -22,6 +22,10 @@ const createQuiz = async (req, res) => {
       createdBy: req.user?._id,
     });
 
+    if (req.body.publishAs) {
+      await quizService.syncToPracticeQuiz(quiz._id, req.body.publishAs);
+    }
+
     await logAction("CREATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     res.status(201).json(quiz);
   } catch (error) {
@@ -104,6 +108,10 @@ const updateQuiz = async (req, res) => {
       new: true,
       runValidators: false,
     });
+
+    if (req.body.publishAs) {
+      await quizService.syncToPracticeQuiz(quiz._id, req.body.publishAs);
+    }
 
     if (quiz.published && !originalQuiz.published) {
       await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);

@@ -10,7 +10,7 @@ exports.getAllDepartments = async (req, res) => {
     const deptsWithCounts = await Promise.all(
       departments.map(async (dept) => {
         const count = await User.countDocuments({
-          role: "admin",
+          role: { $in: ["admin", "superadmin"] },
           department: dept.name,
           isDeleted: { $ne: true }
         });
@@ -30,7 +30,7 @@ exports.getDepartment = async (req, res) => {
     const dept = await Department.findById(req.params.id);
     if (!dept) return res.status(404).json({ message: "Department not found." });
     const userCount = await User.countDocuments({
-      role: "admin",
+      role: { $in: ["admin", "superadmin"] },
       department: dept.name,
       isDeleted: { $ne: true }
     });

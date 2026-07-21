@@ -60,6 +60,7 @@ const quizSchema = new mongoose.Schema(
     enablePerQuestionTimer: { type: Boolean, default: false },
     timePerQuestion: { type: Number, default: 0 },
     lockPreviousQuestions: { type: Boolean, default: false },
+    breakBetweenSections: { type: Number, default: 0 },
     status: { type: String, enum: ["Draft", "Published", "Scheduled", "Deleted"], default: "Draft" },
     scheduledDate: { type: Date, default: null },
     published: { type: Boolean, default: false },
