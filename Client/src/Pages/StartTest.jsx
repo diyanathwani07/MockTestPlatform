@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, ArrowLeft } from "lucide-react";
 import Logo from "../components/Logo";
 import { usePreview } from "../context/PreviewContext";
 import "../css/StartTest.css";
@@ -11,7 +11,7 @@ import "../css/Login.css";
 function StartTest() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toggleTheme } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
   const { previewMode } = usePreview();
 
   const [quizzes, setQuizzes] = useState([]);
@@ -147,12 +147,45 @@ function StartTest() {
         </defs>
       </svg>
 
-      {/* ── Theme Toggle ── */}
+      {/* ── Header Actions (Back & Theme Toggle) ── */}
+      <div style={{ position: "fixed", top: "20px", left: "20px", zIndex: 1000 }}>
+        <button 
+          onClick={() => navigate("/dashboard")} 
+          title="Back to Dashboard"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px",
+            borderRadius: "50%",
+          }}
+        >
+          <ArrowLeft size={24} />
+        </button>
+      </div>
+
       <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
-        <div className="theme-pill-switch" onClick={toggleTheme} title="Switch Theme">
-          <div className="pill-track-icons"><span><Sun size={14} /></span><span><Moon size={14} /></span></div>
-          <div className="pill-thumb-slider"></div>
-        </div>
+        <button 
+          onClick={toggleTheme} 
+          title="Switch Theme"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px",
+            borderRadius: "50%",
+          }}
+        >
+          {isDark ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
       </div>
 
       {/* Decorative Background Elements */}

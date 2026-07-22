@@ -1,19 +1,11 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PreviewBanner from "./components/PreviewBanner";
 import ForgotPassword from "./Pages/ForgotPassword";
 import AdminRoute from "./components/AdminRoute";
-import PermissionRoute from "./components/PermissionRoute";
-import Unauthorized from "./Pages/Unauthorized";
-import RolesPermissions from "./admin/RolesPermissions";
-
 
 
 import AdminDashboard from "./admin/AdminDashboard";
-import CreateQuizSingle from "./admin/CreateQuiz";
-import CreateQuizMulti from "./admin/CreateQuizMulti";
-import CreatePracticeMulti from "./admin/CreatePracticeMulti";
+import CreateQuiz from "./admin/CreateQuiz";
 import EditQuiz from "./admin/EditQuiz";
 import ManageQuizzes from "./admin/ManageQuizzes";
 import AdminQuestions from "./admin/Questions";
@@ -21,50 +13,34 @@ import AdminUsers from "./admin/Users";
 import AdminResults from "./admin/Results";
 import Reports from "./admin/Reports";
 import Settings from "./admin/Settings";
-import AdminTickets from "./admin/AdminTickets";
 
 
 // ─── 🎯 FORENSICALLY CORRECTED PATHS ───
 import AuditLog from "./admin/AuditLog"; // <── (Requires src/admin/AuditLog.jsx to exist!)
 import AdminProfile from "./admin/components/AdminProfile"; // <── Re-routed into 'components'
 import PracticeQuizzes from "./admin/PracticeQuizzes";
+import CreatePracticeMulti from "./admin/CreatePracticeMulti";
+import RolesPermissions from "./admin/RolesPermissions";
+import AdminTickets from "./admin/AdminTickets";
 
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import StudentDashboard from "./Pages/StudentDashboard";
-import MyExams from "./Pages/MyExams";
-import StudentProfile from "./Pages/StudentProfile";
-import StudentResults from "./Pages/StudentResults";
-import SubjectResults from "./Pages/SubjectResults";
-import Leaderboard from "./Pages/Leaderboard";
-import HelpSupport from "./Pages/HelpSupport";
 import StartTest from "./Pages/StartTest";
-import Quiz from "./Pages/QuizMulti";
+import Quiz from "./Pages/Quiz";
 import Result from "./Pages/Result";
-import SharedResult from "./Pages/SharedResult";
-
-// Practice Test Module
+import MyExams from "./Pages/MyExams";
 import PracticeDashboard from "./Pages/PracticeDashboard";
 import PracticeTest from "./Pages/PracticeTest";
 import PracticeResult from "./Pages/PracticeResult";
-
-function TitleUpdater() {
-  const location = useLocation();
-  useEffect(() => {
-    if (location.pathname.startsWith('/admin')) {
-      document.title = "Admin";
-    } else {
-      document.title = "Student";
-    }
-  }, [location]);
-  return null;
-}
+import StudentResults from "./Pages/StudentResults";
+import Leaderboard from "./Pages/Leaderboard";
+import HelpSupport from "./Pages/HelpSupport";
+import StudentProfile from "./Pages/StudentProfile";
 
 function App() {
   return (
     <BrowserRouter>
-      <TitleUpdater />
-      <PreviewBanner />
       <Routes>
 
         <Route path="/" element={<Login />} />
@@ -75,69 +51,6 @@ function App() {
           element={
             <ProtectedRoute>
               <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/dashboard/exams"
-          element={
-            <ProtectedRoute>
-              <MyExams />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/dashboard/practice"
-          element={
-            <ProtectedRoute>
-              <PracticeDashboard />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/dashboard/help"
-          element={
-            <ProtectedRoute>
-              <HelpSupport />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/profile"
-          element={
-            <ProtectedRoute>
-              <StudentProfile />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path="/dashboard/results"
-          element={
-            <ProtectedRoute>
-              <StudentResults />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/results/:subject"
-          element={
-            <ProtectedRoute>
-              <SubjectResults />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/leaderboard"
-          element={
-            <ProtectedRoute>
-              <Leaderboard />
             </ProtectedRoute>
           }
         />
@@ -166,32 +79,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/quiz/:quizId"
-          element={
-            <ProtectedRoute>
-              <Quiz />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/practice/:quizId"
-          element={
-            <ProtectedRoute>
-              <PracticeTest />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/practice-result"
-          element={
-            <ProtectedRoute>
-              <PracticeResult />
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/result"
@@ -202,20 +89,82 @@ function App() {
           }
         />
 
+        {/* ================= STUDENT SUBPAGE ROUTES ================= */}
         <Route
-          path="/student/result/:shareId"
+          path="/dashboard/exams"
           element={
             <ProtectedRoute>
-              <Result />
+              <MyExams />
             </ProtectedRoute>
           }
         />
 
-        <Route path="/share-result/:shareId" element={<SharedResult />} />
+        <Route
+          path="/dashboard/practice"
+          element={
+            <ProtectedRoute>
+              <PracticeDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/practice/test/:quizId"
+          element={
+            <ProtectedRoute>
+              <PracticeTest />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/practice/result/:id"
+          element={
+            <ProtectedRoute>
+              <PracticeResult />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/results"
+          element={
+            <ProtectedRoute>
+              <StudentResults />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/leaderboard"
+          element={
+            <ProtectedRoute>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/help"
+          element={
+            <ProtectedRoute>
+              <HelpSupport />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/profile"
+          element={
+            <ProtectedRoute>
+              <StudentProfile />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ================= ADMIN ROUTES ================= */}
 
-        {/* DOOR 1: Catches people typing localhost:5173/admin */}
+        {/* DOOR 1: Catches people typing /admin */}
         <Route
           path="/admin"
           element={
@@ -239,15 +188,7 @@ function App() {
           path="/admin/create-quiz"
           element={
             <AdminRoute>
-              <CreateQuizSingle />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/create-quiz-multi"
-          element={
-            <AdminRoute>
-              <CreateQuizMulti />
+              <CreateQuiz />
             </AdminRoute>
           }
         />
@@ -257,23 +198,6 @@ function App() {
           element={
             <AdminRoute>
               <EditQuiz />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/edit-quiz-multi/:id"
-          element={
-            <AdminRoute>
-              <CreateQuizMulti />
-            </AdminRoute>
-          }
-        />
-
-        <Route
-          path="/admin/manage-quizzes"
-          element={
-            <AdminRoute>
-              <ManageQuizzes />
             </AdminRoute>
           }
         />
@@ -297,10 +221,10 @@ function App() {
         />
 
         <Route
-          path="/admin/edit-practice/:id"
+          path="/admin/manage-quizzes"
           element={
             <AdminRoute>
-              <CreatePracticeMulti />
+              <ManageQuizzes />
             </AdminRoute>
           }
         />
@@ -359,15 +283,6 @@ function App() {
             </AdminRoute>
           }
         />
-        
-        <Route
-          path="/admin/tickets"
-          element={
-            <AdminRoute>
-              <AdminTickets />
-            </AdminRoute>
-          }
-        />
 
         <Route
           path="/admin/profile"
@@ -379,17 +294,22 @@ function App() {
         />
 
         <Route
-          path="/admin/roles"
+          path="/admin/tickets"
           element={
             <AdminRoute>
-              <PermissionRoute permission="manage_roles">
-                <RolesPermissions />
-              </PermissionRoute>
+              <AdminTickets />
             </AdminRoute>
           }
         />
 
-        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route
+          path="/admin/roles"
+          element={
+            <AdminRoute>
+              <RolesPermissions />
+            </AdminRoute>
+          }
+        />
 
       </Routes>
     </BrowserRouter>

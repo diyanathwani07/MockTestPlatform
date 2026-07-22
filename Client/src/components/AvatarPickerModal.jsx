@@ -47,8 +47,8 @@ const AvatarPickerModal = ({ isOpen, onClose, onSelect }) => {
         },
       };
 
-      // Ensure the endpoint matches what we defined in server.js
-      const response = await axios.post("http://localhost:5000/api/users/upload-profile", formData, config);
+      const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const response = await axios.post(`${API_URL}/api/users/upload-profile`, formData, config);
 
       if (response.data.success) {
         onSelect(response.data.imageUrl); // Close modal and update UI
