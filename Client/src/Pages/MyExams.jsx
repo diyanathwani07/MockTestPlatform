@@ -4,36 +4,69 @@ import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, BarChart2 } from "lucide-react";
+import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/MyExams.css";
 
 function MyExams() {
   const navigate = useNavigate();
-  const [quizzes, setQuizzes] = useState([]);
+  const [seriesList, setSeriesList] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("All Exams");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAllCompleted, setShowAllCompleted] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState("All");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
-        const examsOnly = res.data.filter(q => q.quizType !== 'practice');
-        setQuizzes(examsOnly);
-        
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        // Fetch ALL series + their published quizzes in ONE request
+        const seriesRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/exam-series/with-quizzes`,
+          { headers }
+        );
+
+        const rawSeries = Array.isArray(seriesRes.data) ? seriesRes.data : [];
+        console.log("[MyExams] Got", rawSeries.length, "series from API");
+
+        // Add subjects and lastUpdated metadata
+        const hydratedSeries = rawSeries.map((series) => {
+          const quizzes = Array.isArray(series.quizzes) ? series.quizzes : [];
+          const subjects = [...new Set(quizzes.map((q) => q.subject).filter(Boolean))];
+          const lastUpdated =
+            quizzes.length > 0
+              ? new Date(Math.max(...quizzes.map((q) => new Date(q.updatedAt || q.createdAt))))
+              : new Date(series.updatedAt || series.createdAt);
+          return { ...series, subjects, lastUpdated };
+        });
+
+        console.log("[MyExams] Series:", hydratedSeries.map((s) => `${s.title} (${s.paperCount} papers)`));
+        setSeriesList(hydratedSeries);
+      } catch (err) {
+        console.error("[MyExams] Failed to fetch exam series:", err?.response?.status, err?.message);
+      }
+
+      // Fetch user results separately so a failure here never hides the exams
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const user = JSON.parse(userStr);
-          const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
-          const sortedResults = resultsRes.data.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-          setResults(sortedResults);
+          const userId = user.id || user._id;
+          if (userId) {
+            const resultsRes = await axios.get(
+              `${import.meta.env.VITE_API_URL}/api/results/${userId}`,
+              { headers }
+            );
+            setResults(Array.isArray(resultsRes.data) ? resultsRes.data : []);
+          }
         }
-      } catch (err) {
-        console.error(err);
+      } catch (resErr) {
+        console.warn("[MyExams] Could not load results:", resErr?.message);
       } finally {
         setLoading(false);
       }
@@ -41,44 +74,74 @@ function MyExams() {
     fetchData();
   }, []);
 
-  const attemptedQuizzes = results.map(r => r.quizId).filter(Boolean);
-  
-  const totalExams = quizzes.length;
-  const upcomingExams = quizzes.filter(q => !attemptedQuizzes.includes(q._id));
-  const completedExams = results;
-  const ongoingExamsCount = 0; // Placeholder as per instructions if no ongoing exists
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
-  const handleStartExam = (quiz) => {
-    navigate("/start-test", {
-      state: {
-        preSelectedQuizId: quiz._id,
-        subject: quiz.subject || "General",
-        quizId: quiz._id,
-        quizTitle: quiz.title,
-        duration: quiz.duration,
-      },
-    });
-  };
+  // Attempt status lookup
+  const attemptedQuizIds = results.map(r => r.quizId).filter(Boolean);
+
+  // Stats calculation - only show series that have at least 1 paper
+  const validSeriesList = seriesList.filter(s => (s.paperCount || 0) > 0);
+  const totalSeriesCount = validSeriesList.length;
+  
+  // A series is completed if all its child quizzes have been attempted (and it has quizzes)
+  const completedSeries = validSeriesList.filter(series => 
+    series.quizzes.every(q => attemptedQuizIds.includes(q._id))
+  );
+
+  // A series is upcoming if none of its child quizzes have been attempted yet
+  const upcomingSeries = validSeriesList.filter(series => 
+    series.quizzes.every(q => !attemptedQuizIds.includes(q._id))
+  );
+
+  // Ongoing series: some quizzes attempted, some not
+  const ongoingSeries = validSeriesList.filter(series => 
+    series.quizzes.some(q => attemptedQuizIds.includes(q._id)) && 
+    series.quizzes.some(q => !attemptedQuizIds.includes(q._id))
+  );
 
   const tabs = ["All Exams", "Upcoming", "Ongoing", "Completed"];
 
-  let displayedQuizzes = activeTab === "All Exams" ? quizzes : upcomingExams;
+  // Filter list based on active tab
+  let displayedSeries = validSeriesList;
+  if (activeTab === "Upcoming") displayedSeries = upcomingSeries;
+  if (activeTab === "Ongoing") displayedSeries = ongoingSeries;
+  if (activeTab === "Completed") displayedSeries = completedSeries;
+
+  // Search filtering (title / subjects match)
   if (searchQuery) {
-    displayedQuizzes = displayedQuizzes.filter(q => 
-      q.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      q.subject?.toLowerCase().includes(searchQuery.toLowerCase())
+    displayedSeries = displayedSeries.filter(series => 
+      series.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      series.subjects?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }
-  if (selectedSubject !== "All") {
-    displayedQuizzes = displayedQuizzes.filter(q => q.subject === selectedSubject);
+
+  // Unified Filter check
+  if (selectedFilter !== "all") {
+    if (selectedFilter === "exam:all") {
+      // Show all series (no filter) — same as "All"
+      // displayedSeries stays as is
+    } else if (selectedFilter.startsWith("exam:")) {
+      const examTitle = selectedFilter.replace("exam:", "");
+      displayedSeries = displayedSeries.filter(series => series.title === examTitle);
+    } else if (selectedFilter === "subject:all") {
+      // Show only series that have at least one subject tagged
+      displayedSeries = displayedSeries.filter(series => series.subjects && series.subjects.length > 0);
+    } else if (selectedFilter.startsWith("subject:")) {
+      const subjectName = selectedFilter.replace("subject:", "");
+      displayedSeries = displayedSeries.filter(series =>
+        series.subjects?.some(s => s.toLowerCase() === subjectName.toLowerCase())
+      );
+    }
   }
 
-  const subjects = ["All", ...new Set(quizzes.map(q => q.subject).filter(Boolean))];
+  // Categories list (Exam Titles)
+  const categories = [...new Set(validSeriesList.map(s => s.title).filter(Boolean))];
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ", " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  // Subjects list
+  const subjectsList = [...new Set(validSeriesList.flatMap(s => s.subjects || []).filter(Boolean))];
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const containerVariants = {
@@ -103,15 +166,15 @@ function MyExams() {
           ) : (
             <motion.div variants={containerVariants} initial="hidden" animate="visible">
               
-              {/* SECTION 2 - STATISTICS */}
+              {/* STATISTICS ROW */}
               <div className="me-stats-grid">
                 <motion.div variants={itemVariants} className="me-stat-card">
                   <div className="me-stat-icon-wrapper" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6' }}>
                     <Calendar size={24} />
                   </div>
                   <div className="me-stat-content">
-                    <span className="me-stat-value">{totalExams}</span>
-                    <span className="me-stat-label">Total Exams</span>
+                    <span className="me-stat-value">{totalSeriesCount}</span>
+                    <span className="me-stat-label">Exam Series</span>
                   </div>
                 </motion.div>
                 
@@ -120,7 +183,7 @@ function MyExams() {
                     <Clock size={24} />
                   </div>
                   <div className="me-stat-content">
-                    <span className="me-stat-value">{upcomingExams.length}</span>
+                    <span className="me-stat-value">{upcomingSeries.length}</span>
                     <span className="me-stat-label">Upcoming</span>
                   </div>
                 </motion.div>
@@ -130,7 +193,7 @@ function MyExams() {
                     <Play size={24} />
                   </div>
                   <div className="me-stat-content">
-                    <span className="me-stat-value">{ongoingExamsCount}</span>
+                    <span className="me-stat-value">{ongoingSeries.length}</span>
                     <span className="me-stat-label">Ongoing</span>
                   </div>
                 </motion.div>
@@ -140,13 +203,13 @@ function MyExams() {
                     <CheckCircle2 size={24} />
                   </div>
                   <div className="me-stat-content">
-                    <span className="me-stat-value">{completedExams.length}</span>
+                    <span className="me-stat-value">{completedSeries.length}</span>
                     <span className="me-stat-label">Completed</span>
                   </div>
                 </motion.div>
               </div>
 
-              {/* SECTION 3 - FILTERS */}
+              {/* SEARCH & FILTERS ROW */}
               <motion.div variants={itemVariants} className="me-filters-section">
                 <div className="me-tabs">
                   {tabs.map(tab => (
@@ -166,104 +229,138 @@ function MyExams() {
                     <input 
                       type="text" 
                       className="me-search-input" 
-                      placeholder="Search quiz or subject..." 
+                      placeholder="Search series or subjects..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                  {/* Single Filter Dropdown */}
                   <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
                     <div style={{ position: "absolute", left: "16px", pointerEvents: "none", color: "var(--text-secondary)", display: "flex", alignItems: "center" }}>
                       <Filter size={18} />
                     </div>
                     <select 
                       className="me-filter-btn"
-                      value={selectedSubject}
-                      onChange={(e) => setSelectedSubject(e.target.value)}
-                      style={{ paddingLeft: "42px", appearance: "none", cursor: "pointer", minWidth: "120px", background: "var(--bg-card)", color: "var(--text-primary)" }}
+                      value={selectedFilter}
+                      onChange={(e) => setSelectedFilter(e.target.value)}
+                      style={{ paddingLeft: "42px", appearance: "none", cursor: "pointer", minWidth: "180px", background: "var(--bg-card)", color: "var(--text-primary)" }}
                     >
-                      {subjects.map(sub => (
-                        <option key={sub} value={sub} style={{ background: "var(--bg-card)" }}>{sub === "All" ? "Filter: All" : sub}</option>
-                      ))}
+                      <option value="all" style={{ background: "var(--bg-card)" }}>Filter By: All</option>
+                      
+                      <optgroup label="── Exams ──" style={{ background: "var(--bg-card)", color: "var(--violet)" }}>
+                        <option value="exam:all" style={{ background: "var(--bg-card)", color: "#6E3FF3", fontWeight: 600 }}>All Exams</option>
+                        {categories.map(cat => (
+                          <option key={`exam:${cat}`} value={`exam:${cat}`} style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{cat}</option>
+                        ))}
+                      </optgroup>
+
+                      <optgroup label="── Subjects ──" style={{ background: "var(--bg-card)", color: "var(--violet)" }}>
+                        <option value="subject:all" style={{ background: "var(--bg-card)", color: "#6E3FF3", fontWeight: 600 }}>All Subjects</option>
+                        {subjectsList.map(sub => (
+                          <option key={`subject:${sub}`} value={`subject:${sub}`} style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{sub}</option>
+                        ))}
+                      </optgroup>
                     </select>
+                  </div>
                   </div>
                 </div>
               </motion.div>
 
               {/* EMPTY STATE */}
-              {totalExams === 0 && (
+              {displayedSeries.length === 0 && (
                 <motion.div variants={itemVariants} className="me-empty-state">
                   <div className="me-empty-icon">
                     <FileText size={40} />
                   </div>
-                  <h3 className="me-empty-title">No Exams Available</h3>
-                  <p className="me-empty-desc">There are currently no exams published for you. Please check back later.</p>
-                  <button className="me-btn-primary" onClick={() => navigate('/student-dashboard')}>Browse Dashboard</button>
+                  <h3 className="me-empty-title">No Exam Series Available</h3>
+                  <p className="me-empty-desc">There are currently no mock series published matching your criteria.</p>
                 </motion.div>
               )}
 
-              {/* SECTION 4 - UPCOMING EXAMS */}
-              {(activeTab === "All Exams" || activeTab === "Upcoming") && displayedQuizzes.length > 0 && (
+              {/* EXAM SERIES GRID */}
+              {displayedSeries.length > 0 && (
                 <motion.div variants={itemVariants}>
-                  <div className="me-section-header">
-                    <h3 className="me-section-title">{activeTab === "All Exams" ? "All Exams" : "Upcoming Exams"}</h3>
-                    <a className="me-view-all">View All</a>
-                  </div>
                   <div className="me-exams-grid">
                     <AnimatePresence>
-                      {displayedQuizzes.map(quiz => {
-                        let qCount = quiz.questionCount || 0;
-                        if (!qCount) {
-                          if (quiz.sections && quiz.sections.length > 0) {
-                            qCount = quiz.sections.reduce((sum, sec) => {
-                              const secData = sec.sectionId || sec;
-                              let count = secData.questions?.length || 0;
-                              if (secData.type === 'coding' && secData.subsections) {
-                                count += (secData.subsections.easy?.length || 0) +
-                                         (secData.subsections.medium?.length || 0) +
-                                         (secData.subsections.hard?.length || 0);
-                              }
-                              return sum + count;
-                            }, 0);
-                          } else if (quiz.questions) {
-                            qCount = quiz.questions.length;
-                          }
-                        }
-                        const isMulti = quiz.sections && quiz.sections.length > 1;
-                        const dur = isMulti ? Math.round((Number(quiz.duration) || 0) / 60) : Math.round(Number(quiz.duration) || 0);
+                      {displayedSeries.map(series => {
+                        const attemptedCount = series.quizzes.filter(q => attemptedQuizIds.includes(q._id)).length;
+                        const isCompleted = attemptedCount === series.paperCount && series.paperCount > 0;
                         return (
-                          <motion.div 
-                            key={quiz._id} 
+                          <motion.div
+                            key={series._id}
                             className="me-exam-card"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
+                            onClick={() => navigate(`/student/exams/${series._id}`)}
+                            style={{ cursor: "pointer" }}
                           >
-                            <div className="me-exam-top">
-                              <div className="me-exam-icon-wrapper">
-                                <FileText size={24} />
-                              </div>
-                              <div className="me-exam-info">
-                                <h4>{quiz.title}</h4>
-                                <div className="me-exam-datetime">
-                                  <span><Calendar size={14} /> Available Now</span>
-                                </div>
-                              </div>
+                            {/* Top row: subject badge + completion status */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                              {series.subjects && series.subjects.length > 0 ? (
+                                <span style={{
+                                  background: "rgba(110, 63, 243, 0.15)",
+                                  color: "#A78BFA",
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  padding: "4px 10px",
+                                  borderRadius: "100px",
+                                  letterSpacing: "0.3px",
+                                  maxWidth: "60%",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap"
+                                }}>
+                                  {series.subjects[0]}
+                                </span>
+                              ) : (
+                                <span style={{
+                                  background: "rgba(59, 130, 246, 0.1)",
+                                  color: "#3B82F6",
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  padding: "4px 10px",
+                                  borderRadius: "100px"
+                                }}>
+                                  Mock Series
+                                </span>
+                              )}
+                              {isCompleted && (
+                                <span style={{ color: "#10B981", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
+                                  <CheckCircle2 size={13} /> Completed
+                                </span>
+                              )}
                             </div>
-                            
-                            <div className="me-exam-tags">
-                              {quiz.subject && <span className="me-exam-tag">{quiz.subject}</span>}
-                              {quiz.difficulty && <span className="me-exam-tag">{quiz.difficulty}</span>}
-                              <span className="me-exam-tag">{qCount} Questions</span>
+
+                            {/* Title */}
+                            <div>
+                              <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
+                                {series.title}
+                              </h4>
+                              <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
+                                Practice mock exams for your preparation.
+                              </p>
                             </div>
-                            
-                            <div className="me-exam-bottom">
-                              <div className="me-exam-duration">
-                                <Clock size={14} />
-                                <span>{dur} min</span>
-                              </div>
-                              <button className="me-btn-primary" onClick={() => handleStartExam(quiz)}>Start Now</button>
+
+                            {/* Stats row */}
+                            <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                              <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                <FileText size={13} /> {series.paperCount} Papers
+                              </span>
+                              <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                <CheckCircle2 size={13} /> {attemptedCount} Attempted
+                              </span>
                             </div>
+
+                            {/* Button */}
+                            <button
+                              className="me-btn-primary"
+                              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                            >
+                              View Papers <ChevronRight size={14} />
+                            </button>
                           </motion.div>
                         );
                       })}
@@ -272,86 +369,6 @@ function MyExams() {
                 </motion.div>
               )}
 
-              {/* SECTION 6 - COMPLETED EXAMS */}
-              {activeTab === "Completed" && completedExams.length > 0 && (
-                <motion.div variants={itemVariants}>
-                  <div className="me-section-header">
-                    <h3 className="me-section-title">Completed Exams</h3>
-                    <a 
-                      className="me-view-all" 
-                      onClick={() => setShowAllCompleted(!showAllCompleted)}
-                      style={{cursor: 'pointer'}}
-                    >
-                      {showAllCompleted ? "View Less" : "View All"}
-                    </a>
-                  </div>
-                  <div className="me-table-container">
-                    <table className="me-table">
-                      <thead>
-                        <tr>
-                          <th>Exam Name</th>
-                          <th>Date</th>
-                          <th>Score</th>
-                          <th>Accuracy</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {completedExams.slice(0, showAllCompleted ? completedExams.length : 5).map((result, idx) => {
-                          const boxColors = ["#6E3FF3", "#F59E0B", "#3B82F6", "#10B981", "#EC4899"];
-                          return (
-                            <tr key={result._id}>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <div className="me-icon-box" style={{ background: boxColors[idx % boxColors.length] }}>
-                                    <FileText size={14} />
-                                  </div>
-                                  <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{result.quizTitle || result.examName || "Mock Exam"}</span>
-                                </div>
-                              </td>
-                              <td style={{ color: 'var(--text-secondary)' }}>{formatDate(result.createdAt)}</td>
-                              <td>
-                                <span style={{ color: result.percentage >= 75 ? '#10B981' : result.percentage >= 50 ? '#F59E0B' : '#EF4444', fontWeight: '600' }}>
-                                  {result.score}
-                                </span>
-                                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>/{result.total}</span>
-                              </td>
-                              <td style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
-                                {result.percentage ? result.percentage.toFixed(0) : "0"}%
-                              </td>
-                              <td>
-                                <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: '600' }}>
-                                  Completed
-                                </span>
-                              </td>
-                              <td>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                  <button className="me-action-btn" onClick={() => navigate(`/student-results/${result.quizId}`)}>View Result</button>
-                                  <button className="me-action-btn" onClick={() => navigate("/start-test", {
-                                    state: {
-                                      preSelectedQuizId: result.quizId,
-                                      quizId: result.quizId,
-                                      quizTitle: result.quizTitle || result.examName || "Mock Exam",
-                                      subject: "Reattempt",
-                                    }
-                                  })}>Reattempt</button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                    {completedExams.length > 5 && (
-                      <div className="me-table-footer-link" onClick={() => {}}>
-                        View All Completed Exams 
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
             </motion.div>
           )}
         </div>
@@ -361,4 +378,3 @@ function MyExams() {
 }
 
 export default MyExams;
-

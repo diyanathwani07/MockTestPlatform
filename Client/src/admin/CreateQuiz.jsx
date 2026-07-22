@@ -41,7 +41,10 @@ function CreateQuiz() {
     shuffleOptions: false,
     randomSelection: false,
     questionsPerAttempt: 20,
+    examSeriesId: "",
   });
+
+  const [seriesList, setSeriesList] = useState([]);
 
   const [presetSelected, setPresetSelected] = useState("Custom");
   const [presets, setPresets] = useState([]);
@@ -71,7 +74,38 @@ function CreateQuiz() {
 
   React.useEffect(() => {
     fetchPresets();
+    fetchSeries();
   }, []);
+
+  const fetchSeries = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setSeriesList(res.data);
+    } catch (err) {
+      console.error("Error fetching series list:", err);
+    }
+  };
+
+  const handleCreateNewSeriesShortcut = async () => {
+    const title = window.prompt("Enter new Exam Series Title (e.g. UPTET):");
+    if (!title || !title.trim()) return;
+
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+        title: title.trim(),
+        category: "General"
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      alert("✅ Exam Series created successfully!");
+      await fetchSeries();
+      setQuizMeta(prev => ({ ...prev, examSeriesId: res.data._id }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create Exam Series.");
+    }
+  };
 
   const fetchPresets = async () => {
     try {
@@ -153,12 +187,12 @@ function CreateQuiz() {
     });
   };
 
-  const handlePresetChange = (e) => {
+  const handlePresetChange = async (e) => {
     const presetId = e.target.value;
     setPresetSelected(presetId);
 
     if (presetId === "Custom") {
-      setQuizMeta((prev) => ({ ...prev, examName: "", duration: "", marksPerQuestion: 1, negativeMarking: 0 }));
+      setQuizMeta((prev) => ({ ...prev, examName: "", examSeriesId: "", duration: "", marksPerQuestion: 1, negativeMarking: 0 }));
       setDurationMin("");
       setDurationSec("");
       setIncludeNegative(false);
@@ -167,9 +201,34 @@ function CreateQuiz() {
 
     const selected = presets.find(p => p._id === presetId);
     if (selected) {
+      // Find or create an Exam Series matching the preset's examName
+      let matchingSeriesId = "";
+      if (selected.examName) {
+        const slug = selected.examName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        const matched = seriesList.find(s => s.slug === slug || s.title?.toLowerCase() === selected.examName.toLowerCase());
+        if (matched) {
+          matchingSeriesId = matched._id;
+        } else {
+          try {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+              title: selected.examName,
+              category: "General"
+            }, {
+              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+            });
+            matchingSeriesId = res.data._id;
+            // Refresh seriesList locally
+            setSeriesList(prev => [...prev, res.data]);
+          } catch (err) {
+            console.error("Error auto-creating series for preset:", err);
+          }
+        }
+      }
+
       setQuizMeta((prev) => ({
         ...prev,
         examName: selected.examName,
+        examSeriesId: matchingSeriesId,
         duration: selected.duration,
         marksPerQuestion: selected.marksPerQuestion,
         negativeMarking: selected.negativeMarking,
@@ -343,7 +402,7 @@ function CreateQuiz() {
       return true;
     }
     if (!quizMeta.examName || !quizMeta.subject || !quizMeta.title || !quizMeta.duration) {
-      setMessage({ text: "Please fill in Exam Name, Subject, Title, and Duration.", type: "status-error" });
+      setMessage({ text: "Please fill in Exam, Subject, Title, and Duration.", type: "status-error" });
       return false;
     }
     if (isScheduled && !scheduledDateTime) {
@@ -527,8 +586,15 @@ function CreateQuiz() {
                   {!quizConfigCollapsed && (
                     <div className="details-vertical-fields" style={{ marginTop: "16px" }}>
                       <div className="form-field">
-                        <label>Exam Name</label>
-                        <input type="text" name="examName" value={quizMeta.examName} onChange={handleMetaChange} placeholder="e.g. JEE Main / NEET / BPSC" required />
+                        <label>Exam</label>
+                        <input 
+                          type="text" 
+                          name="examName" 
+                          value={quizMeta.examName || ""} 
+                          onChange={handleMetaChange} 
+                          placeholder="e.g. UPTET / CTET / BPSC" 
+                          required 
+                        />
                       </div>
                       <div className="form-field">
                         <label>Subject</label>

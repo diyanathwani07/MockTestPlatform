@@ -22,6 +22,7 @@ import PracticeQuizzes from "./admin/PracticeQuizzes";
 import CreatePracticeMulti from "./admin/CreatePracticeMulti";
 import RolesPermissions from "./admin/RolesPermissions";
 import AdminTickets from "./admin/AdminTickets";
+import ExamSeriesManager from "./admin/ExamSeriesManager";
 
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
@@ -30,6 +31,7 @@ import StartTest from "./Pages/StartTest";
 import Quiz from "./Pages/Quiz";
 import Result from "./Pages/Result";
 import MyExams from "./Pages/MyExams";
+import ExamSeriesDetails from "./Pages/ExamSeriesDetails";
 import PracticeDashboard from "./Pages/PracticeDashboard";
 import PracticeTest from "./Pages/PracticeTest";
 import PracticeResult from "./Pages/PracticeResult";
@@ -95,6 +97,15 @@ function App() {
           element={
             <ProtectedRoute>
               <MyExams />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/exams/:examSeriesId"
+          element={
+            <ProtectedRoute>
+              <ExamSeriesDetails />
             </ProtectedRoute>
           }
         />
@@ -225,6 +236,15 @@ function App() {
           element={
             <AdminRoute>
               <ManageQuizzes />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/exam-series"
+          element={
+            <AdminRoute>
+              <ExamSeriesManager />
             </AdminRoute>
           }
         />

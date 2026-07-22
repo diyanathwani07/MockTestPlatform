@@ -206,18 +206,19 @@
 /* Exams Grid */
 .me-exams-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
   margin-bottom: 40px;
 }
 
 .me-exam-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  gap: 14px;
   transition: all 0.3s ease;
 }
 
@@ -230,14 +231,14 @@
 
 .me-exam-top {
   display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .me-exam-icon-wrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,10 +248,11 @@
 }
 
 .me-exam-info h4 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 8px 0;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .me-exam-datetime {
@@ -270,15 +272,13 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
 }
 
 .me-exam-tag {
-  background: var(--option-bg);
-  color: var(--text-secondary);
   font-size: 12px;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 100px;
+  font-weight: 500;
 }
 
 .me-exam-bottom {
@@ -300,13 +300,15 @@
   background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%);
   color: #fff;
   border: none;
-  padding: 10px 24px;
-  border-radius: 12px;
+  padding: 9px 20px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  width: 100%;
+  justify-content: center;
 }
 
 .me-table-container {
@@ -547,6 +549,7 @@
   
   .me-exams-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
 }
 
@@ -596,19 +599,21 @@
   }
   
   .me-tabs {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 8px;
-    border-radius: 16px;
-    justify-content: center;
+    padding: 6px;
+    border-radius: 12px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .me-tab-btn {
-    flex: 1 1 calc(50% - 8px);
     text-align: center;
-    padding: 10px 8px;
-    font-size: 13px;
+    padding: 8px 6px;
+    font-size: 12px;
   }
   
   .me-search-filter {
@@ -631,24 +636,26 @@
   }
   
   .me-exams-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   
   .me-exam-bottom {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
   }
   
   .me-exam-bottom .me-btn-primary {
     width: 100%;
-    min-height: 44px; /* Large tap target */
+    min-height: 38px;
+    font-size: 12px;
+    padding: 6px 12px;
   }
   
   .me-exam-duration {
     justify-content: center;
-    margin-bottom: 4px;
+    margin-bottom: 0;
   }
   
   .me-section-header {

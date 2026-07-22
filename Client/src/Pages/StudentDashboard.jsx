@@ -103,7 +103,7 @@ function StudentDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState([]);
-  const [quizzes, setQuizzes] = useState([]);
+  const [seriesList, setSeriesList] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -115,9 +115,11 @@ function StudentDashboard() {
         const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
         setResults(resultsRes.data);
         
-        // Fetch published quizzes to find upcoming mocks
-        const quizzesRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
-        setQuizzes(quizzesRes.data);
+        // Fetch published parent Exam Series
+        const seriesRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+        setSeriesList(seriesRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data", error);
       } finally {
@@ -139,9 +141,8 @@ function StudentDashboard() {
   const bestScore = bestResult ? Math.round(bestResult.percentage || 0) : 0;
   const bestScoreExam = bestResult ? (bestResult.quizTitle || bestResult.subject || "N/A") : "No attempts yet";
 
-  const availableQuizzes = quizzes;
-  const availableCount = availableQuizzes.length;
-  const recentAvailable = [...availableQuizzes].reverse().slice(0, 3);
+  const availableCount = seriesList.length;
+  const recentAvailable = [...seriesList].reverse().slice(0, 3);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -232,7 +233,7 @@ function StudentDashboard() {
             </div>
             <div className="sd-stat-info">
               <h3>{availableCount}</h3>
-              <p>Available Mocks</p>
+              <p>Exam Series</p>
             </div>
           </div>
         </div>
@@ -258,10 +259,10 @@ function StudentDashboard() {
             </div>
           </div>
 
-          {/* RIGHT: UPCOMING MOCKS */}
+          {/* RIGHT: AVAILABLE SERIES */}
           <div className="sd-upcoming-section">
             <div className="sd-section-header">
-              <h2>Available Mocks</h2>
+              <h2>Available Series</h2>
               <span className="sd-view-all" onClick={() => navigate("/dashboard/exams")}>View All</span>
             </div>
             
@@ -269,23 +270,21 @@ function StudentDashboard() {
               {recentAvailable.length === 0 ? (
                 <div className="sd-empty-upcoming">
                   <Calendar size={32} color="var(--border-input)" />
-                  <p>No available mocks right now.</p>
+                  <p>No available series right now.</p>
                 </div>
               ) : (
-                recentAvailable.map(quiz => {
-                  const d = new Date(quiz.createdAt || new Date());
+                recentAvailable.map(series => {
+                  const d = new Date(series.createdAt || new Date());
                   return (
-                    <div key={quiz._id} className="sd-upcoming-item" onClick={() => navigate("/dashboard/exams")}>
+                    <div key={series._id} className="sd-upcoming-item" onClick={() => navigate(`/student/exams/${series._id}`)}>
                       <div className="sd-upcoming-date">
                         <span className="month">{d.toLocaleString('default', { month: 'short' }).toUpperCase()}</span>
                         <span className="day">{d.getDate()}</span>
                       </div>
                       <div className="sd-upcoming-info">
-                        <h4>{quiz.title}</h4>
-                        <p>
-                          <Clock size={12} /> {d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          <span className="dot">•</span>
-                          {quiz.duration} min
+                        <h4>{series.title}</h4>
+                        <p style={{ marginTop: "4px" }}>
+                          Category: {series.category || "General"}
                         </p>
                       </div>
                       <ChevronRight size={16} className="sd-chevron" />

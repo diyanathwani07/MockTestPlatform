@@ -172,6 +172,7 @@ export const saveModularQuiz = async ({
     sections: sectionRefs,
     questions: [],
     isModular: true,
+    examSeriesId: quizMeta.examSeriesId || null,
   };
 
   if (quizId) {
@@ -263,6 +264,7 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     isModular: true,
     quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
     publishAs: quizMeta.publishAs || "exam",
+    examSeriesId: quizMeta.examSeriesId || null,
   };
 
   if (quizId) {
