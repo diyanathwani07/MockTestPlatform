@@ -21,6 +21,8 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const resultRoutes = require("./routes/resultRoutes");
+const examSeriesRoutes = require("./routes/examSeriesRoutes");
+const ExamSeries = require("./models/ExamSeries");
 
 const app = express();
 const PORT = 5000;
@@ -34,8 +36,33 @@ app.set("trust proxy", true);
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 // MongoDB Connection
-connectDB().then(() => {
+connectDB().then(async () => {
   seedDepartments();
+
+  // One-time database migration backfill: Group existing unlinked quizzes under a default 'Ungrouped Mocks' parent series
+  try {
+    const unlinkedQuizzes = await Quiz.find({ examSeriesId: null, quizType: "exam" });
+    if (unlinkedQuizzes.length > 0) {
+      console.log(`[Migration] Found ${unlinkedQuizzes.length} unlinked quizzes. Creating default 'Ungrouped Mocks' series...`);
+      let ungroupedSeries = await ExamSeries.findOne({ slug: "ungrouped-mocks" });
+      if (!ungroupedSeries) {
+        ungroupedSeries = await ExamSeries.create({
+          title: "Ungrouped Mocks",
+          slug: "ungrouped-mocks",
+          description: "Quizzes that do not belong to any specific exam series.",
+          category: "General",
+          isPublished: true,
+        });
+      }
+      const result = await Quiz.updateMany(
+        { examSeriesId: null, quizType: "exam" },
+        { $set: { examSeriesId: ungroupedSeries._id } }
+      );
+      console.log(`[Migration] Backfilled ${result.modifiedCount} quizzes to 'Ungrouped Mocks'.`);
+    }
+  } catch (err) {
+    console.error("[Migration Error] Failed to backfill unlinked quizzes:", err);
+  }
 });
 
 // Middleware
@@ -99,6 +126,7 @@ app.post("/submit", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/results", resultRoutes);
+app.use("/api/exam-series", examSeriesRoutes);
 app.use("/api/users/upload-profile", uploadRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/departments", departmentRoutes);

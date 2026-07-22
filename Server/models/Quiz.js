@@ -72,6 +72,7 @@ const quizSchema = new mongoose.Schema(
     sections: { type: [mongoose.Schema.Types.Mixed], default: [] },
     // Legacy top-level questions (kept for backward compatibility)
     questions: { type: [legacyQuestionSchema], default: [] },
+    examSeriesId: { type: mongoose.Schema.Types.ObjectId, ref: "ExamSeries", default: null },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

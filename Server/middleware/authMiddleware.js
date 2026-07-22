@@ -26,4 +26,20 @@ async function protect(req, res, next) {
   }
 }
 
-module.exports = { protect };
+// Optional protect: attaches user if token valid, but never blocks
+async function optionalProtect(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id).select("-password");
+      if (user) req.user = user;
+    }
+  } catch (e) {
+    // Token invalid or expired — continue as unauthenticated
+  }
+  next();
+}
+
+module.exports = { protect, optionalProtect };
