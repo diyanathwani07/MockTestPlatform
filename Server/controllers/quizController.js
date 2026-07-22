@@ -399,11 +399,11 @@ const getDashboardStats = async (req, res) => {
     try {
       const recentQuizzes = await Quiz.find()
         .sort({ createdAt: -1 })
-        .limit(5)
+        .limit(25)
         .populate("createdBy", "fullName");
       const recentResults = await Result.find()
         .sort({ createdAt: -1 })
-        .limit(5)
+        .limit(25)
         .populate("userId", "fullName");
 
       recentQuizzes.forEach((quiz) => {
@@ -444,7 +444,7 @@ const getDashboardStats = async (req, res) => {
       });
 
       activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      activities = activities.slice(0, 5).map((act) => {
+      activities = activities.slice(0, 25).map((act) => {
         const date = new Date(act.timestamp);
         return {
           text: act.text,

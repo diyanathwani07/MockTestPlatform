@@ -637,7 +637,6 @@ function AdminDashboard() {
                         <span className="activity-text" title={act.text}>{act.text}</span>
                         <span className="activity-time">{act.time}</span>
                       </div>
-                      <span className="activity-arrow"><ArrowRight size={14} style={{ color: "var(--text-muted)", strokeWidth: "2.5px" }} /></span>
                     </div>
                   );
                 })}
