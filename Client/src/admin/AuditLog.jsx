@@ -9,6 +9,7 @@ function AuditLog() {
   const [moduleFilter, setModuleFilter] = useState("All Modules");
   const [filterDate, setFilterDate] = useState("");
   const [viewMode, setViewMode] = useState("Admin Actions"); // 'All Activity' or 'Admin Actions'
+  const [expandedLogId, setExpandedLogId] = useState(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -312,7 +313,25 @@ function AuditLog() {
                           );
                         })()}
                       </td>
-                      <td style={{ padding: "14px 24px", color: "var(--text-secondary)", whiteSpace: "normal", wordBreak: "break-word", lineHeight: "1.5" }}>{log.details}</td>
+                      <td 
+                        onClick={() => {
+                          setExpandedLogId(expandedLogId === log._id ? null : log._id);
+                        }}
+                        style={{ 
+                          padding: "14px 24px", 
+                          color: "var(--text-secondary)", 
+                          whiteSpace: expandedLogId === log._id ? "normal" : "nowrap", 
+                          wordBreak: "break-word", 
+                          lineHeight: "1.5",
+                          maxWidth: "280px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          cursor: "pointer"
+                        }}
+                        title={expandedLogId === log._id ? "Click to collapse" : "Click to expand details"}
+                      >
+                        {log.details}
+                      </td>
                       <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                         {new Date(log.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
                       </td>
