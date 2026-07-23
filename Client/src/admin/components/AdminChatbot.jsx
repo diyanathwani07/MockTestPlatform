@@ -87,6 +87,30 @@ const AdminChatbot = () => {
     setIsOpen(!isOpen);
   };
 
+  const isUpperHalf = position.bottom > window.innerHeight / 2;
+  const isLeftHalf = position.right > window.innerWidth / 2;
+
+  const windowStyle = {
+    position: "absolute",
+    zIndex: 9999,
+    width: "350px",
+    height: "500px",
+    maxHeight: "calc(100vh - 120px)",
+    borderRadius: "20px",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    border: "1.5px solid var(--border-color, #E2E8F0)",
+    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
+    
+    // Dynamic Positioning
+    bottom: isUpperHalf ? "auto" : "70px",
+    top: isUpperHalf ? "70px" : "auto",
+    right: isLeftHalf ? "auto" : "0",
+    left: isLeftHalf ? "0" : "auto",
+    transformOrigin: `${isUpperHalf ? "top" : "bottom"} ${isLeftHalf ? "left" : "right"}`
+  };
+
   return (
     <div className="admin-chatbot-container" style={{ bottom: position.bottom, right: position.right }}>
       {/* Circular Sidebar Button */}
@@ -104,7 +128,7 @@ const AdminChatbot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="acb-window slide-up">
+        <div className="acb-window slide-up" style={windowStyle}>
           <div className="acb-header">
             <div className="acb-header-info">
               <div className="acb-avatar">

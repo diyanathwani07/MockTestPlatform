@@ -18,6 +18,24 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    if (token && role) {
+      if (role === "admin" || role === "superadmin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+      return;
+    }
+
+    const savedEmail = localStorage.getItem("remembered_email") || "";
+    const savedPassword = localStorage.getItem("remembered_password") || "";
+    if (savedEmail) setEmail(savedEmail);
+    if (savedPassword) setPassword(savedPassword);
+  }, [navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -31,6 +49,10 @@ function Login() {
       );
 
       console.log(res.data);
+
+      // Save credentials for auto-fill on next load
+      localStorage.setItem("remembered_email", email);
+      localStorage.setItem("remembered_password", password);
 
       login(res.data);
 
