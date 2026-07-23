@@ -199,7 +199,7 @@ function ManageQuizzes() {
               {/* Date Filter */}
               <div style={{ 
                 flex: 1,
-                minWidth: "90px",
+                minWidth: "135px",
                 display: "flex", alignItems: "center", gap: "4px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
                 borderRadius: "100px", padding: "6px 12px",
@@ -236,7 +236,7 @@ function ManageQuizzes() {
               {/* Type Filter */}
               <div style={{ 
                 flex: 1,
-                minWidth: "90px",
+                minWidth: "120px",
                 display: "flex", alignItems: "center", gap: "4px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
                 borderRadius: "100px", padding: "6px 12px"

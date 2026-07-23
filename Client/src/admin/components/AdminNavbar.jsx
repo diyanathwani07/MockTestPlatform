@@ -50,7 +50,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "18px", fontWeight: "600", color: "var(--text-secondary)", flexWrap: "wrap" }}>
+      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "18px", fontWeight: "600", color: "var(--text-secondary)", flexWrap: "wrap", fontFamily: "'Fraunces', serif" }}>
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline"

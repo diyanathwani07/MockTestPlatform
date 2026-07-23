@@ -240,14 +240,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/admin/exam-series"
-          element={
-            <AdminRoute>
-              <ExamSeriesManager />
-            </AdminRoute>
-          }
-        />
+
 
         <Route
           path="/admin/questions"

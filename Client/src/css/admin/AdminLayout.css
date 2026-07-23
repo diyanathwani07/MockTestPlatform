@@ -437,9 +437,9 @@ body.dark-mode .table-pagination-footer { background: #0E0F21 !important; border
 
 .pagination-info { font-size: 12.5px; color: #a8a5bd; }
 .pagination-controls { display: flex; gap: 8px; }
-.page-nav-btn { background: transparent; border: 1px solid #E2DDF0; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #1a1a2e; cursor: pointer; transition: all 0.2s ease; }
+.page-nav-btn { flex-shrink: 0; background: transparent; border: 1px solid #E2DDF0; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #1a1a2e; cursor: pointer; transition: all 0.2s ease; }
 body.dark-mode .page-nav-btn { border-color: rgba(255,255,255,0.1); color: #fff; }
-.page-nav-btn.active-page { background: #6E3FF3; color: #ffffff; border-color: #6E3FF3; box-shadow: 0 2px 8px rgba(110, 63, 243, 0.4); }
+.page-nav-btn.active-page { flex-shrink: 0; background: #6E3FF3; color: #ffffff; border-color: #6E3FF3; box-shadow: 0 2px 8px rgba(110, 63, 243, 0.4); }
 
 
 /* ==========================================================================
