@@ -166,9 +166,8 @@ function AuditLog() {
               display: "flex", alignItems: "center", gap: "8px", 
               backgroundColor: "var(--bg-input)", border: "1.5px solid var(--border-color)", 
               borderRadius: "10px", padding: "10.5px 16px",
-              position: "relative", flex: "0 0 auto"
+              position: "relative", flex: "0 0 auto" 
             }}>
-              <span style={{ fontSize: "14px", color: "var(--text-secondary)", userSelect: "none" }}>📅</span>
               <input 
                 type="date"
                 value={filterDate}

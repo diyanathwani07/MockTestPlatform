@@ -4,7 +4,7 @@ import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
 import DocxParser from "./components/DocxParser";
-import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, ArrowRightLeft } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, ArrowRightLeft, Search } from "lucide-react";
 
 function PracticeQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -344,14 +344,14 @@ function PracticeQuizzes() {
           
           <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'nowrap', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
             <div style={{ 
-              flex: 1.5,
+              flex: "0 1 320px",
               minWidth: '120px',
               display: "flex", alignItems: "center", gap: "6px", 
               backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
               borderRadius: "100px", padding: "6px 12px",
               boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
             }}>
-              <span style={{ fontSize: "12px", color: "var(--violet)", userSelect: "none" }}>🔍</span>
+              <Search size={14} style={{ color: "var(--violet)", flexShrink: 0 }} />
               <input 
                 type="text" 
                 placeholder="Search..." 

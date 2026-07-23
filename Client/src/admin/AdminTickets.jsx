@@ -182,7 +182,6 @@ function AdminTickets() {
             {/* TOOLBAR */}
             <div className="tk-toolbar">
               <div className="tk-search">
-                <Search size={18} />
                 <input 
                   type="text" 
                   placeholder="Search by ticket ID or subject..." 

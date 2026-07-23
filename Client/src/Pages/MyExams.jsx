@@ -4,7 +4,7 @@ import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText } from "lucide-react";
+import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/MyExams.css";
 
@@ -75,6 +75,31 @@ function MyExams() {
   }, []);
 
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = React.useRef(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const getFilterLabel = () => {
+    if (selectedFilter === "all") return "Filter By: All";
+    if (selectedFilter === "exam:all") return "All Exams";
+    if (selectedFilter === "subject:all") return "All Subjects";
+    if (selectedFilter.startsWith("exam:")) {
+      return selectedFilter.replace("exam:", "");
+    }
+    if (selectedFilter.startsWith("subject:")) {
+      return selectedFilter.replace("subject:", "");
+    }
+    return "Filter By: All";
+  };
 
   // Attempt status lookup
   const attemptedQuizIds = results.map(r => r.quizId).filter(Boolean);
@@ -235,34 +260,163 @@ function MyExams() {
                     />
                   </div>
                   <div style={{ display: "flex", gap: "10px" }}>
-                  {/* Single Filter Dropdown */}
-                  <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                    <div style={{ position: "absolute", left: "16px", pointerEvents: "none", color: "var(--text-secondary)", display: "flex", alignItems: "center" }}>
-                      <Filter size={18} />
-                    </div>
-                    <select 
-                      className="me-filter-btn"
-                      value={selectedFilter}
-                      onChange={(e) => setSelectedFilter(e.target.value)}
-                      style={{ paddingLeft: "42px", appearance: "none", cursor: "pointer", minWidth: "180px", background: "var(--bg-card)", color: "var(--text-primary)" }}
-                    >
-                      <option value="all" style={{ background: "var(--bg-card)" }}>Filter By: All</option>
-                      
-                      <optgroup label="── Exams ──" style={{ background: "var(--bg-card)", color: "var(--violet)" }}>
-                        <option value="exam:all" style={{ background: "var(--bg-card)", color: "#6E3FF3", fontWeight: 600 }}>All Exams</option>
-                        {categories.map(cat => (
-                          <option key={`exam:${cat}`} value={`exam:${cat}`} style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{cat}</option>
-                        ))}
-                      </optgroup>
+                    {/* Single Filter Dropdown */}
+                    <div ref={dropdownRef} style={{ position: "relative", zIndex: 999 }}>
+                      <button 
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="me-filter-btn"
+                        style={{ 
+                          paddingLeft: "42px", 
+                          paddingRight: "16px",
+                          cursor: "pointer", 
+                          minWidth: "220px", 
+                          background: "var(--bg-card)", 
+                          color: "var(--text-primary)",
+                          border: "1.5px solid var(--border-color)",
+                          borderRadius: "10px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          height: "42px"
+                        }}
+                      >
+                        <div style={{ position: "absolute", left: "16px", pointerEvents: "none", color: "var(--text-secondary)", display: "flex", alignItems: "center" }}>
+                          <Filter size={18} />
+                        </div>
+                        <span style={{ fontSize: "13.5px", fontWeight: "600" }}>{getFilterLabel()}</span>
+                        <ChevronDown size={16} style={{ color: "var(--text-secondary)", transition: "transform 0.2s", transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
+                      </button>
 
-                      <optgroup label="── Subjects ──" style={{ background: "var(--bg-card)", color: "var(--violet)" }}>
-                        <option value="subject:all" style={{ background: "var(--bg-card)", color: "#6E3FF3", fontWeight: 600 }}>All Subjects</option>
-                        {subjectsList.map(sub => (
-                          <option key={`subject:${sub}`} value={`subject:${sub}`} style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}>{sub}</option>
-                        ))}
-                      </optgroup>
-                    </select>
-                  </div>
+                      {isDropdownOpen && (
+                        <div style={{
+                          position: "absolute",
+                          top: "calc(100% + 6px)",
+                          right: 0,
+                          backgroundColor: "var(--bg-card, #1E1B2E)",
+                          border: "1.5px solid var(--border-color)",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                          width: "240px",
+                          maxHeight: "320px",
+                          overflowY: "auto",
+                          padding: "6px",
+                          zIndex: 1000
+                        }}>
+                          {/* Option: Filter By: All */}
+                          <div 
+                            onClick={() => { setSelectedFilter("all"); setIsDropdownOpen(false); }}
+                            style={{
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              fontSize: "13.5px",
+                              fontWeight: selectedFilter === "all" ? "600" : "500",
+                              color: selectedFilter === "all" ? "#FFFFFF" : "var(--text-primary)",
+                              backgroundColor: selectedFilter === "all" ? "var(--violet)" : "transparent",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                              marginBottom: "4px",
+                              textAlign: "left"
+                            }}
+                            onMouseEnter={(e) => { if (selectedFilter !== "all") e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                            onMouseLeave={(e) => { if (selectedFilter !== "all") e.target.style.backgroundColor = "transparent"; }}
+                          >
+                            Filter By: All
+                          </div>
+
+                          {/* EXAMS GROUP */}
+                          <div style={{ fontSize: "10px", fontWeight: "700", textTransform: "uppercase", color: "var(--violet)", padding: "8px 12px 6px 12px", letterSpacing: "0.08em", textAlign: "left", opacity: 0.8 }}>
+                            Exams
+                          </div>
+                          <div 
+                            onClick={() => { setSelectedFilter("exam:all"); setIsDropdownOpen(false); }}
+                            style={{
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              fontSize: "13.5px",
+                              fontWeight: selectedFilter === "exam:all" ? "600" : "500",
+                              color: selectedFilter === "exam:all" ? "#FFFFFF" : "#6E3FF3",
+                              backgroundColor: selectedFilter === "exam:all" ? "var(--violet)" : "transparent",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                              marginBottom: "2px",
+                              textAlign: "left"
+                            }}
+                            onMouseEnter={(e) => { if (selectedFilter !== "exam:all") e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                            onMouseLeave={(e) => { if (selectedFilter !== "exam:all") e.target.style.backgroundColor = "transparent"; }}
+                          >
+                            All Exams
+                          </div>
+                          {categories.map(cat => (
+                            <div 
+                              key={`exam:${cat}`}
+                              onClick={() => { setSelectedFilter(`exam:${cat}`); setIsDropdownOpen(false); }}
+                              style={{
+                                padding: "8px 12px",
+                                borderRadius: "8px",
+                                fontSize: "13.5px",
+                                fontWeight: selectedFilter === `exam:${cat}` ? "600" : "500",
+                                color: selectedFilter === `exam:${cat}` ? "#FFFFFF" : "var(--text-primary)",
+                                backgroundColor: selectedFilter === `exam:${cat}` ? "var(--violet)" : "transparent",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                                marginBottom: "2px",
+                                textAlign: "left"
+                              }}
+                              onMouseEnter={(e) => { if (selectedFilter !== `exam:${cat}`) e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                              onMouseLeave={(e) => { if (selectedFilter !== `exam:${cat}`) e.target.style.backgroundColor = "transparent"; }}
+                            >
+                              {cat}
+                            </div>
+                          ))}
+
+                          {/* SUBJECTS GROUP */}
+                          <div style={{ fontSize: "10px", fontWeight: "700", textTransform: "uppercase", color: "var(--violet)", padding: "12px 12px 6px 12px", letterSpacing: "0.08em", textAlign: "left", opacity: 0.8 }}>
+                            Subjects
+                          </div>
+                          <div 
+                            onClick={() => { setSelectedFilter("subject:all"); setIsDropdownOpen(false); }}
+                            style={{
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              fontSize: "13.5px",
+                              fontWeight: selectedFilter === "subject:all" ? "600" : "500",
+                              color: selectedFilter === "subject:all" ? "#FFFFFF" : "#6E3FF3",
+                              backgroundColor: selectedFilter === "subject:all" ? "var(--violet)" : "transparent",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                              marginBottom: "2px",
+                              textAlign: "left"
+                            }}
+                            onMouseEnter={(e) => { if (selectedFilter !== "subject:all") e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                            onMouseLeave={(e) => { if (selectedFilter !== "subject:all") e.target.style.backgroundColor = "transparent"; }}
+                          >
+                            All Subjects
+                          </div>
+                          {subjectsList.map(sub => (
+                            <div 
+                              key={`subject:${sub}`}
+                              onClick={() => { setSelectedFilter(`subject:${sub}`); setIsDropdownOpen(false); }}
+                              style={{
+                                padding: "8px 12px",
+                                borderRadius: "8px",
+                                fontSize: "13.5px",
+                                fontWeight: selectedFilter === `subject:${sub}` ? "600" : "500",
+                                color: selectedFilter === `subject:${sub}` ? "#FFFFFF" : "var(--text-primary)",
+                                backgroundColor: selectedFilter === `subject:${sub}` ? "var(--violet)" : "transparent",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                                marginBottom: "2px",
+                                textAlign: "left"
+                              }}
+                              onMouseEnter={(e) => { if (selectedFilter !== `subject:${sub}`) e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                              onMouseLeave={(e) => { if (selectedFilter !== `subject:${sub}`) e.target.style.backgroundColor = "transparent"; }}
+                            >
+                              {sub}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>

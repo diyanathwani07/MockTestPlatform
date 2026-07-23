@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Eye, Edit2, Calendar, Trash2, Copy, Search, EyeOff, UploadCloud } from "lucide-react";
+import { Eye, Edit2, Calendar, Trash2, Copy, Search, EyeOff, UploadCloud, Tag } from "lucide-react";
 
 function ManageQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
@@ -167,11 +167,12 @@ function ManageQuizzes() {
               </div>
             </div>
 
-            <div className="manage-quizzes-filter-row" style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "100%", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px" }}>
+            <div className="manage-quizzes-filter-row" style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "100%", overflowX: "auto", flexWrap: "wrap", paddingBottom: "4px" }}>
               {/* Sleek Rounded Search Bar */}
               <div style={{ 
-                flex: 1.5,
+                flex: "0 1 240px",
                 minWidth: "120px",
+                maxWidth: "240px",
                 display: "flex", alignItems: "center", gap: "6px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
                 borderRadius: "100px", padding: "6px 12px",
@@ -198,8 +199,9 @@ function ManageQuizzes() {
 
               {/* Date Filter */}
               <div style={{ 
-                flex: 1,
+                flex: "0 1 150px",
                 minWidth: "135px",
+                maxWidth: "150px",
                 display: "flex", alignItems: "center", gap: "4px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
                 borderRadius: "100px", padding: "6px 12px",
@@ -235,13 +237,14 @@ function ManageQuizzes() {
 
               {/* Type Filter */}
               <div style={{ 
-                flex: 1,
+                flex: "0 1 125px",
                 minWidth: "120px",
+                maxWidth: "125px",
                 display: "flex", alignItems: "center", gap: "4px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
                 borderRadius: "100px", padding: "6px 12px"
               }}>
-                <span style={{ fontSize: "12px", color: "var(--text-secondary)", userSelect: "none" }}>🏷️</span>
+                <Tag size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
                 <select 
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
