@@ -868,6 +868,20 @@ function EditQuiz() {
                           </div>
 
                           <div className="form-field">
+                            <label>Create As</label>
+                            <select
+                              name="publishAs"
+                              value={quizMeta.publishAs || "exam"}
+                              onChange={handleMetaChange}
+                              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
+                            >
+                              <option value="exam">Exam Only</option>
+                              <option value="practice">Practice Only</option>
+                              <option value="both">Both Exam & Practice</option>
+                            </select>
+                          </div>
+
+                          <div className="form-field">
                             <label>Duration</label>
                             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
@@ -1180,7 +1194,8 @@ function EditQuiz() {
                                               onChange={(e) =>
                                                 handleQuestionChange(qIndex, "questionEnglish", e.target.value)
                                               }
-                                              rows={2}
+                                              rows={4}
+                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
                                               placeholder="Enter question in English..."
                                             />
                                           </div>
@@ -1191,7 +1206,8 @@ function EditQuiz() {
                                               onChange={(e) =>
                                                 handleQuestionChange(qIndex, "questionHindi", e.target.value)
                                               }
-                                              rows={2}
+                                              rows={4}
+                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
                                               placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..."
                                             />
                                           </div>
@@ -1255,7 +1271,8 @@ function EditQuiz() {
                                               onChange={(e) =>
                                                 handleQuestionChange(qIndex, "explanation", e.target.value)
                                               }
-                                              rows={2}
+                                              rows={4}
+                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
                                               placeholder="Answer Explanation (Optional)..."
                                             />
                                           </div>

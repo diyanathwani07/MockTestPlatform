@@ -38,7 +38,7 @@ function PracticeDashboard() {
   }, []);
 
   const handleStartPractice = (quizId) => {
-    navigate(`/practice/${quizId}?restart=true`);
+    navigate(`/dashboard/practice/test/${quizId}?restart=true`);
   };
 
   const subjectColors = [

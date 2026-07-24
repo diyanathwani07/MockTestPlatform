@@ -15,7 +15,6 @@ import Reports from "./admin/Reports";
 import Settings from "./admin/Settings";
 
 
-// ─── 🎯 FORENSICALLY CORRECTED PATHS ───
 import AuditLog from "./admin/AuditLog"; // <── (Requires src/admin/AuditLog.jsx to exist!)
 import AdminProfile from "./admin/components/AdminProfile"; // <── Re-routed into 'components'
 import PracticeQuizzes from "./admin/PracticeQuizzes";
@@ -23,6 +22,7 @@ import CreatePracticeMulti from "./admin/CreatePracticeMulti";
 import RolesPermissions from "./admin/RolesPermissions";
 import AdminTickets from "./admin/AdminTickets";
 import ExamSeriesManager from "./admin/ExamSeriesManager";
+import CreateQuizMulti from "./admin/CreateQuizMulti";
 
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
@@ -244,10 +244,28 @@ function App() {
         />
 
         <Route
+          path="/admin/edit-quiz-multi/:id"
+          element={
+            <AdminRoute>
+              <CreateQuizMulti />
+            </AdminRoute>
+          }
+        />
+
+        <Route
           path="/admin/practice"
           element={
             <AdminRoute>
               <PracticeQuizzes />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/edit-practice/:id"
+          element={
+            <AdminRoute>
+              <EditQuiz />
             </AdminRoute>
           }
         />

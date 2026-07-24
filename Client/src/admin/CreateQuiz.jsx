@@ -833,10 +833,10 @@ function CreateQuiz() {
 
                                       <div className="question-inputs-fields">
                                         <div className="form-field full-width">
-                                          <textarea value={q.questionEnglish} onChange={(e) => handleQuestionChange(qIndex, "questionEnglish", e.target.value)} rows={2} placeholder="Enter question in English..." />
+                                          <textarea value={q.questionEnglish} onChange={(e) => handleQuestionChange(qIndex, "questionEnglish", e.target.value)} rows={4} style={{ minHeight: "90px", height: "auto", resize: "vertical" }} placeholder="Enter question in English..." />
                                         </div>
                                         <div className="form-field full-width">
-                                          <textarea value={q.questionHindi} onChange={(e) => handleQuestionChange(qIndex, "questionHindi", e.target.value)} rows={2} placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..." />
+                                          <textarea value={q.questionHindi} onChange={(e) => handleQuestionChange(qIndex, "questionHindi", e.target.value)} rows={4} style={{ minHeight: "90px", height: "auto", resize: "vertical" }} placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..." />
                                         </div>
 
                                         <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", display: "block" }}>
@@ -876,7 +876,7 @@ function CreateQuiz() {
                                         </div>
 
                                         <div className="form-field full-width" style={{ marginTop: "14px" }}>
-                                          <textarea value={q.explanation || ""} onChange={(e) => handleQuestionChange(qIndex, "explanation", e.target.value)} rows={2} placeholder="Answer Explanation (Optional)..." />
+                                          <textarea value={q.explanation || ""} onChange={(e) => handleQuestionChange(qIndex, "explanation", e.target.value)} rows={4} style={{ minHeight: "90px", height: "auto", resize: "vertical" }} placeholder="Answer Explanation (Optional)..." />
                                         </div>
                                       </div>
                                     </div>

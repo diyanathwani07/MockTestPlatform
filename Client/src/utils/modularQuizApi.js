@@ -11,6 +11,7 @@ export const sanitizeQuestion = (q, subject = "") => ({
   options: (q.options || []).map((o) => String(o).trim()).filter(Boolean),
   correctAnswer: (q.correctAnswer || "").trim(),
   explanation: (q.explanation || "").trim(),
+  explanations: q.explanations || undefined,
   difficulty: q.difficulty || "medium",
   subject,
 });
