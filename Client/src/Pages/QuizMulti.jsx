@@ -941,7 +941,7 @@ function QuizMulti() {
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", paddingRight: "4px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", paddingRight: "12px" }}>
               {currentQuestions.slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage).map((_, i) => {
                 const idx = palettePage * itemsPerPage + i;
                 const status = getPaletteStatus(idx);
@@ -996,7 +996,7 @@ function QuizMulti() {
               }
 
               return (
-                <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1.5px solid var(--border-color)", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1.5px solid var(--border-color)", flexWrap: "wrap", paddingRight: "12px" }}>
                   {/* Prev Button */}
                   <button 
                     onClick={() => setPalettePage(Math.max(0, palettePage - 1))}

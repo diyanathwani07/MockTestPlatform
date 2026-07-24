@@ -11,6 +11,13 @@ function ManageQuizzes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterType, setFilterType] = useState("All");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const [selectedExportQuiz, setSelectedExportQuiz] = useState(null);
@@ -125,7 +132,7 @@ function ManageQuizzes() {
             
             <div className="manage-quizzes-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
               <div style={{ textAlign: "left" }}>
-                <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
+                <h2 style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
                   {viewMode === "active" ? "Active Assessment Modules" : "Recycle Bin"}
                 </h2>
                 <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600" }}>
@@ -170,9 +177,9 @@ function ManageQuizzes() {
             <div className="manage-quizzes-filter-row" style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "100%", overflowX: "auto", flexWrap: "wrap", paddingBottom: "4px" }}>
               {/* Sleek Rounded Search Bar */}
               <div style={{ 
-                flex: "0 1 240px",
+                flex: isMobile ? "0 1 150px" : "0 1 240px",
                 minWidth: "120px",
-                maxWidth: "240px",
+                maxWidth: isMobile ? "150px" : "240px",
                 display: "flex", alignItems: "center", gap: "6px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
                 borderRadius: "100px", padding: "6px 12px",
@@ -199,14 +206,15 @@ function ManageQuizzes() {
 
               {/* Date Filter */}
               <div style={{ 
-                flex: "0 1 150px",
-                minWidth: "135px",
-                maxWidth: "150px",
-                display: "flex", alignItems: "center", gap: "4px", 
+                flex: isMobile ? "0 1 160px" : "0 1 150px",
+                minWidth: isMobile ? "145px" : "135px",
+                maxWidth: isMobile ? "160px" : "150px",
+                display: "flex", alignItems: "center", gap: "6px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
-                borderRadius: "100px", padding: "6px 12px",
+                borderRadius: "100px", padding: isMobile ? "6px 8px" : "6px 12px",
                 position: "relative"
               }}>
+                <Calendar size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
                 <input 
                   type="date"
                   value={filterDate}
@@ -216,7 +224,7 @@ function ManageQuizzes() {
                     background: "transparent", 
                     outline: "none", 
                     boxShadow: "none",
-                    fontSize: "12px", 
+                    fontSize: "11px", 
                     color: "var(--text-primary)", 
                     fontWeight: "500", 
                     fontFamily: "inherit", 

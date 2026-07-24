@@ -1088,7 +1088,7 @@ function PracticeTest() {
               <h4 style={{ color: "#ffffff", fontSize: "14px", marginBottom: "12px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px" }}>
                 {activeSection?.title || "Questions"}
               </h4>
-              <div className="practice-grid-scroll" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px" }}>
+              <div className="practice-grid-scroll" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px", paddingRight: "12px" }}>
                 {questions.slice(activeSection?.startIndex || 0, (activeSection?.startIndex || 0) + (activeSection?.count || questions.length))
                   .slice(palettePage * itemsPerPage, palettePage * itemsPerPage + itemsPerPage)
                   .map((_, i) => {
@@ -1169,7 +1169,7 @@ function PracticeTest() {
                 }
 
                 return (
-                  <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1.5px solid rgba(255,255,255,0.06)", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center", marginTop: "16px", paddingTop: "12px", borderTop: "1.5px solid rgba(255,255,255,0.06)", flexWrap: "wrap", paddingRight: "12px" }}>
                     <button 
                       onClick={() => setPalettePage(Math.max(0, palettePage - 1))}
                       disabled={palettePage === 0}

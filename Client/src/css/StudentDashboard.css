@@ -815,7 +815,7 @@
   position: fixed;
   top: 15px;
   left: 15px;
-  z-index: 1000;
+  z-index: 10005;
   background: var(--bg-sidebar, #12101E);
   color: white;
   border: none;
@@ -830,7 +830,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 90;
+  z-index: 10000;
   backdrop-filter: blur(4px);
 }
 
@@ -842,7 +842,7 @@
     position: fixed;
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 95;
+    z-index: 10001;
     height: 100vh;
     overflow-y: auto;
   }

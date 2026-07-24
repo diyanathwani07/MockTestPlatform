@@ -130,7 +130,7 @@ const AdminChatbot = () => {
       {/* Chat Window */}
       {isOpen && (
         <div className="acb-window slide-up" style={windowStyle}>
-          <div className="acb-header">
+          <div className="acb-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
             <div className="acb-header-info">
               <div className="acb-avatar">
                 <Bot size={20} />
@@ -140,6 +140,13 @@ const AdminChatbot = () => {
                 <p>Online</p>
               </div>
             </div>
+            <button 
+              onClick={() => setIsOpen(false)}
+              style={{ background: "transparent", border: "none", color: "#ffffff", opacity: 0.8, cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", justifyContent: "center" }}
+              title="Close Chat"
+            >
+              <X size={18} />
+            </button>
           </div>
           
           <div className="acb-messages">

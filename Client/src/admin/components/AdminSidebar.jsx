@@ -26,6 +26,17 @@ function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { hasPermission } = useAuth();
 
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   return (
     <>
       <button className="mobile-sidebar-toggle" onClick={() => setIsOpen(!isOpen)}>
