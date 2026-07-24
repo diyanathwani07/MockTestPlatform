@@ -90,6 +90,31 @@ const StudentChatbot = () => {
     setIsOpen(!isOpen);
   };
 
+  const isUpperHalf = position.bottom > window.innerHeight / 2;
+  const isLeftHalf = position.right > window.innerWidth / 2;
+  const isMobile = window.innerWidth < 480;
+
+  const windowStyle = {
+    position: isMobile ? "fixed" : "absolute",
+    zIndex: 9999,
+    width: isMobile ? "calc(100vw - 32px)" : "350px",
+    height: isMobile ? "420px" : "500px",
+    maxHeight: isMobile ? "70vh" : "calc(100vh - 120px)",
+    borderRadius: "20px",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    border: "1.5px solid var(--border-color, #E2E8F0)",
+    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
+    
+    // Dynamic Positioning
+    bottom: isMobile ? "90px" : (isUpperHalf ? "auto" : "70px"),
+    top: isMobile ? "auto" : (isUpperHalf ? "70px" : "auto"),
+    right: isMobile ? "16px" : (isLeftHalf ? "auto" : "0"),
+    left: isMobile ? "16px" : (isLeftHalf ? "0" : "auto"),
+    transformOrigin: isMobile ? "bottom right" : `${isUpperHalf ? "top" : "bottom"} ${isLeftHalf ? "left" : "right"}`
+  };
+
   return (
     <div className="admin-chatbot-container" style={{ bottom: position.bottom, right: position.right }}>
       {/* Circular Sidebar Button */}
@@ -107,7 +132,7 @@ const StudentChatbot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="acb-window slide-up">
+        <div className="acb-window slide-up" style={windowStyle}>
           <div className="acb-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div className="acb-header-info">
               <div className="acb-avatar">
