@@ -89,13 +89,14 @@ const AdminChatbot = () => {
 
   const isUpperHalf = position.bottom > window.innerHeight / 2;
   const isLeftHalf = position.right > window.innerWidth / 2;
+  const isMobile = window.innerWidth < 480;
 
   const windowStyle = {
-    position: "absolute",
+    position: isMobile ? "fixed" : "absolute",
     zIndex: 9999,
-    width: "350px",
-    height: "500px",
-    maxHeight: "calc(100vh - 120px)",
+    width: isMobile ? "calc(100vw - 32px)" : "350px",
+    height: isMobile ? "420px" : "500px",
+    maxHeight: isMobile ? "70vh" : "calc(100vh - 120px)",
     borderRadius: "20px",
     display: "flex",
     flexDirection: "column",
@@ -104,11 +105,11 @@ const AdminChatbot = () => {
     boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
     
     // Dynamic Positioning
-    bottom: isUpperHalf ? "auto" : "70px",
-    top: isUpperHalf ? "70px" : "auto",
-    right: isLeftHalf ? "auto" : "0",
-    left: isLeftHalf ? "0" : "auto",
-    transformOrigin: `${isUpperHalf ? "top" : "bottom"} ${isLeftHalf ? "left" : "right"}`
+    bottom: isMobile ? "90px" : (isUpperHalf ? "auto" : "70px"),
+    top: isMobile ? "auto" : (isUpperHalf ? "70px" : "auto"),
+    right: isMobile ? "16px" : (isLeftHalf ? "auto" : "0"),
+    left: isMobile ? "16px" : (isLeftHalf ? "0" : "auto"),
+    transformOrigin: isMobile ? "bottom right" : `${isUpperHalf ? "top" : "bottom"} ${isLeftHalf ? "left" : "right"}`
   };
 
   return (

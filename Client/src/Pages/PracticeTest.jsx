@@ -816,9 +816,6 @@ function PracticeTest() {
             <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#ffffff", margin: 0 }}>
               {quiz?.title || quiz?.examGroup || "Basic Practice"}
             </h2>
-            <p style={{ fontSize: "14px", color: "#94a3b8", margin: "2px 0 0 0" }}>
-              {quiz?.description || "Test your fundamentals"}
-            </p>
           </div>
         </div>
       </div>
@@ -1054,7 +1051,7 @@ function PracticeTest() {
         </div>
 
         {/* RIGHT COLUMN: SIDE PANEL (DESKTOP VERSION) */}
-        <div className="practice-desktop-sidebar" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div className="practice-desktop-sidebar" style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: sections.length > 0 ? "54px" : "0px" }}>
           
           {/* Progress Widget */}
           <div style={{ backgroundColor: "#111222", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.06)", padding: "20px" }}>

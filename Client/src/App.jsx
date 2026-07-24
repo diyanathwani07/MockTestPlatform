@@ -36,9 +36,12 @@ import PracticeDashboard from "./Pages/PracticeDashboard";
 import PracticeTest from "./Pages/PracticeTest";
 import PracticeResult from "./Pages/PracticeResult";
 import StudentResults from "./Pages/StudentResults";
+import SubjectResults from "./Pages/SubjectResults";
 import Leaderboard from "./Pages/Leaderboard";
 import HelpSupport from "./Pages/HelpSupport";
 import StudentProfile from "./Pages/StudentProfile";
+import ExamsPage from "./Pages/ExamsPage";
+import PracticePage from "./Pages/PracticePage";
 
 function App() {
   return (
@@ -111,6 +114,24 @@ function App() {
         />
 
         <Route
+          path="/dashboard/exams-list"
+          element={
+            <ProtectedRoute>
+              <ExamsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/practice-list"
+          element={
+            <ProtectedRoute>
+              <PracticePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/dashboard/practice"
           element={
             <ProtectedRoute>
@@ -142,6 +163,15 @@ function App() {
           element={
             <ProtectedRoute>
               <StudentResults />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/results/:subject"
+          element={
+            <ProtectedRoute>
+              <SubjectResults />
             </ProtectedRoute>
           }
         />

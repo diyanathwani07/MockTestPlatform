@@ -28,6 +28,10 @@ function HelpSupport() {
   const [reopening, setReopening] = useState(false);
   const [closing, setClosing] = useState(false);
 
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const formatDate = (dateString) => {
     const d = new Date(dateString);
     const datePart = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });

@@ -714,7 +714,39 @@
   
   .tk-stats-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .tk-stat-card {
+    padding: 10px;
+    gap: 8px;
+    border-radius: 10px;
+  }
+
+  .tk-stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .tk-stat-icon-wrapper svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .tk-stat-label {
+    font-size: 11px;
+    margin-bottom: 1px;
+  }
+
+  .tk-stat-value {
+    font-size: 16px;
+    margin-bottom: 1px;
+  }
+
+  .tk-stat-desc {
+    font-size: 10px;
   }
   
   .tk-toolbar {

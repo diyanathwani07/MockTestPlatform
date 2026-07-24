@@ -549,7 +549,7 @@ function PracticeQuizzes() {
                                     <>
                                       {/* Preview */}
                                       <div
-                                        onClick={() => { setActiveDropdown(null); navigate(`/practice/${quiz._id}?preview=true`); }}
+                                        onClick={() => { setActiveDropdown(null); navigate(`/dashboard/practice/test/${quiz._id}?preview=true`); }}
                                         style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}

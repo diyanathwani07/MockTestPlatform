@@ -39,13 +39,21 @@ function StudentSidebar() {
           <Home size={20} />
           <span>Dashboard</span>
         </NavLink>
-        <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
+        <NavLink to="/dashboard/exams-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
           <FileText size={20} />
           <span>My Exams</span>
         </NavLink>
+        <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <BookOpen size={20} />
+          <span>My Practice</span>
+        </NavLink>
+        <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <FileText size={20} />
+          <span>Exams</span>
+        </NavLink>
         <NavLink to="/dashboard/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
           <BookOpen size={20} />
-          <span>Practice Tests</span>
+          <span>Practice</span>
         </NavLink>
         <NavLink to="/dashboard/results" className="sidebar-link" onClick={() => setIsOpen(false)}>
           <LineChart size={20} />
