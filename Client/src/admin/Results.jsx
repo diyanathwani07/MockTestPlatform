@@ -145,10 +145,12 @@ function Results() {
                     borderRadius: "8px",
                     border: "1.5px solid var(--border-color)",
                     background: "var(--bg-card)",
-                    color: filterDate ? "var(--text-primary)" : "rgba(255, 255, 255, 0.4)",
+                    color: filterDate ? "var(--text-primary)" : "transparent",
                     fontSize: "12px",
                     outline: "none",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    position: "relative",
+                    zIndex: 5
                   }}
                 />
                 {!filterDate && (
@@ -160,7 +162,8 @@ function Results() {
                       fontSize: "12px",
                       color: "var(--text-muted, #9ca3af)",
                       fontWeight: "500",
-                      fontFamily: "inherit"
+                      fontFamily: "inherit",
+                      zIndex: 1
                     }}
                   >
                     dd-mm-yyyy

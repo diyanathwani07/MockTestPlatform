@@ -225,13 +225,15 @@ function ManageQuizzes() {
                     outline: "none", 
                     boxShadow: "none",
                     fontSize: "12px", 
-                    color: filterDate ? "var(--text-primary)" : "rgba(255, 255, 255, 0.4)", 
+                    color: filterDate ? "var(--text-primary)" : "transparent", 
                     fontWeight: "500", 
                     fontFamily: "inherit", 
                     paddingRight: filterDate ? "12px" : "0",
                     width: "100%",
                     minHeight: "24px",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    position: "relative",
+                    zIndex: 5
                   }}
                   required
                 />
@@ -244,7 +246,8 @@ function ManageQuizzes() {
                       fontSize: "12px",
                       color: "var(--text-muted, #9ca3af)",
                       fontWeight: "500",
-                      fontFamily: "inherit"
+                      fontFamily: "inherit",
+                      zIndex: 1
                     }}
                   >
                     dd-mm-yyyy

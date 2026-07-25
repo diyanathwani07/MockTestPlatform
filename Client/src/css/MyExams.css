@@ -548,7 +548,7 @@
   }
   
   .me-exams-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 14px;
   }
 }
@@ -636,8 +636,8 @@
   }
   
   .me-exams-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
   
   .me-exam-bottom {
