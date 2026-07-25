@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect } = require("../middleware/authMiddleware");
+const { protect, optionalProtect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
 
 const {
@@ -29,7 +29,7 @@ router.get("/stats/dashboard", protect, adminOnly, getDashboardStats);
 router.post("/convert-single-to-multi", protect, adminOnly, convertSingleToMulti);
 
 // Public/general quiz listing
-router.get("/", getQuizzes);
+router.get("/", optionalProtect, getQuizzes);
 router.get("/:id", protect, getQuizById);
 
 // Admin-only write operations

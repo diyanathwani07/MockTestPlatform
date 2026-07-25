@@ -74,6 +74,10 @@ const quizSchema = new mongoose.Schema(
     questions: { type: [legacyQuestionSchema], default: [] },
     examSeriesId: { type: mongoose.Schema.Types.ObjectId, ref: "ExamSeries", default: null },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    isPaid: { type: Boolean, default: false },
+    price: { type: Number, default: 0 },
+    thumbnail: { type: String, default: "" },
+    tags: { type: [String], default: [] },
   },
   { timestamps: true }
 );

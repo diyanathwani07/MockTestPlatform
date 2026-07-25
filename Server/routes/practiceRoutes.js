@@ -22,13 +22,13 @@ const {
   getBookmarks,
   getAiTutorExplanation
 } = require("../controllers/practiceAnalyticsController");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, optionalProtect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
 
 // ── STATIC ROUTES FIRST (must come before /:id to avoid conflicts) ──
 
 // Practice Quiz list
-router.get("/", protect, getPracticeQuizzes);
+router.get("/", optionalProtect, getPracticeQuizzes);
 router.post("/", protect, adminOnly, createPracticeQuiz);
 
 // Advanced Learning Endpoints (Students)

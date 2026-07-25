@@ -3,9 +3,6 @@ const User = require("../models/User");
 const PracticeQuiz = require("../models/PracticeQuiz");
 const { GoogleGenAI, Type } = require("@google/genai");
 
-// Initialize Gemini API Client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 // @desc    Save a practice test session result
 // @route   POST /api/practice/history
 // @access  Private
@@ -357,9 +354,20 @@ const getAiTutorExplanation = async (req, res) => {
       return res.status(400).json({ message: "question and mode are required." });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ message: "GEMINI_API_KEY is not configured on the server." });
-    }
+    // Force Gemini AI Studio mode by temporarily clearing Google Cloud credentials env vars
+    const tempCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const tempGha = process.env.GOOGLE_GHA_CREDS_PATH;
+    const tempVertex = process.env.GOOGLE_GENAI_USE_VERTEXAI;
+    delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    delete process.env.GOOGLE_GHA_CREDS_PATH;
+    delete process.env.GOOGLE_GENAI_USE_VERTEXAI;
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+    // Restore them if needed
+    if (tempCreds) process.env.GOOGLE_APPLICATION_CREDENTIALS = tempCreds;
+    if (tempGha) process.env.GOOGLE_GHA_CREDS_PATH = tempGha;
+    if (tempVertex) process.env.GOOGLE_GENAI_USE_VERTEXAI = tempVertex;
 
     let instruction = "";
     switch (mode) {

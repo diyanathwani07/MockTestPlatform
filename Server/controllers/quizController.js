@@ -52,9 +52,20 @@ const getQuizzes = async (req, res) => {
       filter.isDeleted = { $ne: true }; // default to active quizzes only
     }
 
-    const quizzes = await Quiz.find(filter)
+    let quizzes = await Quiz.find(filter)
       .populate({ path: "sections.sectionId", model: "Section" })
       .sort({ createdAt: -1 });
+
+    if (req.user) {
+      const user = await User.findById(req.user._id).select("purchasedExams");
+      const purchasedExamIds = user.purchasedExams.map((id) => id.toString());
+      quizzes = quizzes.map((quiz) => {
+        const qObj = quiz.toObject();
+        qObj.isPurchased = purchasedExamIds.includes(qObj._id.toString());
+        return qObj;
+      });
+    }
+
     res.json(quizzes);
   } catch (error) {
     console.error("Get Quizzes Error:", error);

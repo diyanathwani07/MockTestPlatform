@@ -100,7 +100,11 @@ const practiceQuizSchema = new mongoose.Schema(
     deletedAt: {
       type: Date,
       default: null,
-    }
+    },
+    isPaid: { type: Boolean, default: false },
+    price: { type: Number, default: 0 },
+    thumbnail: { type: String, default: "" },
+    category: { type: String, default: "" },
   },
   { timestamps: true }
 );

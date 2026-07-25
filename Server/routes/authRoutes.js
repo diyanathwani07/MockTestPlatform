@@ -204,12 +204,12 @@ router.put("/profile", protect, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.fullName = fullName || user.fullName;
-    user.phone = phone || user.phone;
-    user.dateOfBirth = dateOfBirth || user.dateOfBirth;
-    user.gender = gender || user.gender;
-    user.location = location || user.location;
-    user.bio = bio || user.bio;
+    if (fullName !== undefined) user.fullName = fullName;
+    if (phone !== undefined) user.phone = phone;
+    if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
+    if (gender !== undefined) user.gender = gender;
+    if (location !== undefined) user.location = location;
+    if (bio !== undefined) user.bio = bio;
     if (avatar !== undefined) {
       user.avatar = avatar;
       user.profilePicture = avatar;

@@ -1,11 +1,29 @@
 const { GoogleGenAI, Type } = require("@google/genai");
 
-// Initialize Gemini API Client
-// Note: Ensure GEMINI_API_KEY is present in your Server/.env file
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 const chatSupport = async (req, res) => {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error("[Chatbot Error] GEMINI_API_KEY is not defined in environment variables.");
+      return res.status(500).json({ success: false, message: "Server configuration error: Missing API Key." });
+    }
+
+    // Explicitly delete any environment variables that might force the SDK into Vertex AI/ADC mode
+    delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    delete process.env.GOOGLE_GHA_CREDS_PATH;
+    delete process.env.GOOGLE_CLOUD_PROJECT;
+    delete process.env.GOOGLE_GENAI_USE_VERTEXAI;
+
+    let ai;
+    try {
+      ai = new GoogleGenAI({
+        apiKey: apiKey,
+      });
+    } catch (initError) {
+      console.error("[Chatbot Error] Failed to initialize GoogleGenAI SDK:", initError.message);
+      return res.status(500).json({ success: false, message: "AI initialization failed." });
+    }
+
     const { messages } = req.body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -80,6 +98,15 @@ const chatSupport = async (req, res) => {
     const latestMessage = messages[messages.length - 1].text;
 
     // 3. Call Gemini API with Structured Outputs (JSON Schema)
+    console.log(`[Chatbot Debug] Initiating API call in chatController.js`);
+    console.log(`  -> API Key Loaded: ${apiKey ? "true" : "false"}`);
+    console.log(`  -> Model Name: gemini-2.5-flash`);
+    console.log(`  -> SDK Version: @google/genai (v2.11.0)`);
+    console.log(`  -> Authentication Mode: Gemini Developer API Key`);
+    console.log(`  -> API Endpoint: https://generativelanguage.googleapis.com (Google AI Studio)`);
+    console.log(`  -> Request Configuration: { model: "gemini-2.5-flash", config: { responseMimeType: "application/json" } }`);
+    console.log(`  -> Source: chatController.js:108`);
+
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
@@ -93,6 +120,9 @@ const chatSupport = async (req, res) => {
       }
     });
 
+    console.log(`[Chatbot Debug] API call successful. Content generated.`);
+    console.log(`  -> SDK Response structure: ${response && response.text ? "Text Present" : "Empty Response"}`);
+
     // 4. Parse the structured JSON response
     const result = JSON.parse(response.text);
 
@@ -101,8 +131,28 @@ const chatSupport = async (req, res) => {
       data: result
     });
   } catch (error) {
-    console.error("Chat API Error:", error);
-    res.status(500).json({ success: false, message: "Failed to generate AI response.", error: error.message, stack: error.stack });
+    console.error("[Chatbot Error] An error occurred while generating content:");
+    console.error(`  -> Source File: chatController.js`);
+    console.error(`  -> Model Name: gemini-2.5-flash`);
+    console.error(`  -> SDK Version: @google/genai (v2.11.0)`);
+    if (error.message && error.message.includes("API key")) {
+      console.error("  -> Type: Authentication Error (Invalid/Expired API Key)");
+    } else if (error.message && error.message.includes("model")) {
+      console.error("  -> Type: Model Reference Error");
+    } else if (error.code === "ENOTFOUND" || (error.message && error.message.includes("fetch"))) {
+      console.error("  -> Type: Network/Connectivity Error");
+    } else if (error instanceof SyntaxError) {
+      console.error("  -> Type: Structured JSON Parsing Error");
+    } else {
+      console.error("  -> Detail:", error.message);
+    }
+    console.error("  -> Stack Trace:", error.stack);
+
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to generate AI response.", 
+      error: error.message 
+    });
   }
 };
 

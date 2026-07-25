@@ -1,5 +1,13 @@
 require("dotenv").config();
 
+console.log("=== STARTUP DEBUG LOGS ===");
+console.log("GEMINI_API_KEY Exists:", !!process.env.GEMINI_API_KEY);
+console.log("API Key Length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
+console.log("Vertex Mode:", process.env.GOOGLE_GENAI_USE_VERTEXAI);
+console.log("Google Credentials:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
+console.log("Cloud Project:", process.env.GOOGLE_CLOUD_PROJECT);
+console.log("==========================");
+
 const quizRoutes = require("./routes/quizRoutes");
 const authRoutes = require("./routes/authRoutes");
 const adminResultRoutes = require("./routes/adminResultRoutes");
@@ -14,6 +22,7 @@ const sectionRoutes = require("./routes/sectionRoutes");
 const questionBankRoutes = require("./routes/questionBankRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
+const purchaseRoutes = require("./routes/purchaseRoutes");
 const Quiz = require("./models/Quiz");
 const seedDepartments = require("./seedDepartments");
 
@@ -139,6 +148,7 @@ app.use("/api/practice", practiceRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/sections", sectionRoutes);
 app.use("/api/question-banks", questionBankRoutes);
+app.use("/api/purchase", purchaseRoutes);
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
 setInterval(async () => {
   try {

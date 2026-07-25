@@ -2,9 +2,6 @@ const PracticeQuiz = require("../models/PracticeQuiz");
 const PracticeSession = require("../models/PracticeSession");
 const { GoogleGenAI, Type } = require("@google/genai");
 
-// Initialize Gemini API Client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 // @desc    Get all practice quizzes
 // @route   GET /api/practice
 // @access  Private
@@ -17,7 +14,19 @@ const getPracticeQuizzes = async (req, res) => {
       filter.isDeleted = { $ne: true };
     }
 
-    const quizzes = await PracticeQuiz.find(filter).populate("createdBy", "fullName email").sort({ createdAt: -1 });
+    let quizzes = await PracticeQuiz.find(filter).populate("createdBy", "fullName email").sort({ createdAt: -1 });
+
+    if (req.user) {
+      const User = require("../models/User");
+      const user = await User.findById(req.user._id).select("purchasedPractice");
+      const purchasedPracticeIds = user.purchasedPractice.map((id) => id.toString());
+      quizzes = quizzes.map((quiz) => {
+        const qObj = quiz.toObject();
+        qObj.isPurchased = purchasedPracticeIds.includes(qObj._id.toString());
+        return qObj;
+      });
+    }
+
     res.json(quizzes);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -225,9 +234,20 @@ const generateAIExplanations = async (req, res) => {
       return res.json({ message: "All questions already have AI explanations generated.", quiz });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ message: "GEMINI_API_KEY is not configured on the server." });
-    }
+    // Force Gemini AI Studio mode by temporarily clearing Google Cloud credentials env vars
+    const tempCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const tempGha = process.env.GOOGLE_GHA_CREDS_PATH;
+    const tempVertex = process.env.GOOGLE_GENAI_USE_VERTEXAI;
+    delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    delete process.env.GOOGLE_GHA_CREDS_PATH;
+    delete process.env.GOOGLE_GENAI_USE_VERTEXAI;
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+    // Restore them if needed
+    if (tempCreds) process.env.GOOGLE_APPLICATION_CREDENTIALS = tempCreds;
+    if (tempGha) process.env.GOOGLE_GHA_CREDS_PATH = tempGha;
+    if (tempVertex) process.env.GOOGLE_GENAI_USE_VERTEXAI = tempVertex;
 
     let updatedCount = 0;
     const batchSize = 3;
