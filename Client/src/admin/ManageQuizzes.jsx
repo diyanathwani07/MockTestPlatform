@@ -206,12 +206,11 @@ function ManageQuizzes() {
 
               {/* Date Filter */}
               <div style={{ 
-                flex: isMobile ? "0 1 160px" : "0 1 150px",
-                minWidth: isMobile ? "145px" : "135px",
-                maxWidth: isMobile ? "160px" : "150px",
+                flex: isMobile ? "1 1 auto" : "0 1 150px",
+                minWidth: "140px",
                 display: "flex", alignItems: "center", gap: "6px", 
                 backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
-                borderRadius: "100px", padding: isMobile ? "6px 8px" : "6px 12px",
+                borderRadius: "100px", padding: "6px 12px",
                 position: "relative"
               }}>
                 <Calendar size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
@@ -224,12 +223,14 @@ function ManageQuizzes() {
                     background: "transparent", 
                     outline: "none", 
                     boxShadow: "none",
-                    fontSize: "11px", 
+                    fontSize: "12px", 
                     color: "var(--text-primary)", 
                     fontWeight: "500", 
                     fontFamily: "inherit", 
                     paddingRight: filterDate ? "12px" : "0",
-                    width: "100%"
+                    width: "100%",
+                    minHeight: "24px",
+                    cursor: "pointer"
                   }}
                 />
                 {filterDate && (

@@ -70,7 +70,7 @@ function Reports() {
       <AdminSidebar />
 
       <div className="admin-main">
-        <AdminNavbar title="Reports & Analytics" />
+        <AdminNavbar title={<><span className="sm:hidden">Reports</span><span className="hidden sm:inline">Reports & Analytics</span></>} />
 
         <div className="admin-content">
 

@@ -132,12 +132,24 @@ function Results() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <input 
+               <input 
                 type="date"
-                className="filter-select"
+                className="filter-date-input"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
                 title="Filter by date"
+                style={{
+                  flex: "1",
+                  minWidth: "130px",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1.5px solid var(--border-color)",
+                  background: "var(--bg-card)",
+                  color: "var(--text-primary)",
+                  fontSize: "12px",
+                  outline: "none",
+                  cursor: "pointer"
+                }}
               />
               <select className="filter-select"><option>Quizzes</option></select>
               <select className="filter-select"><option>Subjects</option></select>

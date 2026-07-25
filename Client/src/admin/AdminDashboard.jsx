@@ -504,8 +504,8 @@ function AdminDashboard() {
           <div className="dashboard-three-column-grid">
             {/* Quiz Explorer (Spans 2 columns) */}
             <div className="form-card quiz-explorer-card" style={{ margin: 0, padding: "24px", gridColumn: "span 2", display: "flex", flexDirection: "column" }}>
-              <div className="dashboard-card-title-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "16px", marginBottom: "20px" }}>
-                <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px" }}>
+              <div className="dashboard-card-title-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "16px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px", margin: 0 }}>
                   <span 
                     style={{ cursor: "pointer", color: explorerPath.length === 0 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }} 
                     onClick={() => { setExplorerPath([]); setExplorerPage(1); }}
@@ -535,10 +535,10 @@ function AdminDashboard() {
                   )}
                 </h3>
                 
-                <div className="pagination-controls" style={{ transform: "scale(0.85)", transformOrigin: "right" }}>
-                  <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1}>&lt;</button>
-                  <button className="page-nav-btn active-page">{explorerPage}</button>
-                  <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))}>&gt;</button>
+                <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                  <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&lt;</button>
+                  <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{explorerPage}</button>
+                  <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&gt;</button>
                 </div>
               </div>
 
