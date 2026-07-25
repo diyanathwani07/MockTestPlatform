@@ -45,7 +45,7 @@ function AdminSidebar() {
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
 
       <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo"><Logo /></div>
+        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}><Logo /></div>
         <nav className="sidebar-nav">
           {NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
             hasPermission(permission) ? (
