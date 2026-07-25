@@ -338,7 +338,7 @@ function PracticeQuizzes() {
     <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
-        <AdminNavbar title={<><span className="hidden sm:inline">Manage </span>Practice Quizzes</>} />
+        <AdminNavbar title={<><span className="sm:hidden">Practice</span><span className="hidden sm:inline">Practice Quizzes</span></>} />
         
         <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
           

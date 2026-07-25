@@ -132,25 +132,41 @@ function Results() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-               <input 
-                type="date"
-                className="filter-date-input"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                title="Filter by date"
-                style={{
-                  flex: "1",
-                  minWidth: "130px",
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  border: "1.5px solid var(--border-color)",
-                  background: "var(--bg-card)",
-                  color: "var(--text-primary)",
-                  fontSize: "12px",
-                  outline: "none",
-                  cursor: "pointer"
-                }}
-              />
+               <div style={{ position: "relative", flex: "1", minWidth: "130px", display: "flex", alignItems: "center" }}>
+                 <input 
+                  type="date"
+                  className="filter-date-input"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  title="Filter by date"
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1.5px solid var(--border-color)",
+                    background: "var(--bg-card)",
+                    color: filterDate ? "var(--text-primary)" : "rgba(255, 255, 255, 0.4)",
+                    fontSize: "12px",
+                    outline: "none",
+                    cursor: "pointer"
+                  }}
+                />
+                {!filterDate && (
+                  <span 
+                    style={{
+                      position: "absolute",
+                      left: "12px",
+                      pointerEvents: "none",
+                      fontSize: "12px",
+                      color: "var(--text-muted, #9ca3af)",
+                      fontWeight: "500",
+                      fontFamily: "inherit"
+                    }}
+                  >
+                    dd-mm-yyyy
+                  </span>
+                )}
+               </div>
               <select className="filter-select"><option>Quizzes</option></select>
               <select className="filter-select"><option>Subjects</option></select>
               <select className="filter-select"><option>Users</option></select>

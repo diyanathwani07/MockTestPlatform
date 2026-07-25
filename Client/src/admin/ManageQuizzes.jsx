@@ -218,13 +218,14 @@ function ManageQuizzes() {
                   type="date"
                   value={filterDate}
                   onChange={(e) => setFilterDate(e.target.value)}
+                  className="mobile-friendly-date-input"
                   style={{ 
                     border: "none", 
                     background: "transparent", 
                     outline: "none", 
                     boxShadow: "none",
                     fontSize: "12px", 
-                    color: "var(--text-primary)", 
+                    color: filterDate ? "var(--text-primary)" : "rgba(255, 255, 255, 0.4)", 
                     fontWeight: "500", 
                     fontFamily: "inherit", 
                     paddingRight: filterDate ? "12px" : "0",
@@ -232,7 +233,23 @@ function ManageQuizzes() {
                     minHeight: "24px",
                     cursor: "pointer"
                   }}
+                  required
                 />
+                {!filterDate && (
+                  <span 
+                    style={{
+                      position: "absolute",
+                      left: "28px",
+                      pointerEvents: "none",
+                      fontSize: "12px",
+                      color: "var(--text-muted, #9ca3af)",
+                      fontWeight: "500",
+                      fontFamily: "inherit"
+                    }}
+                  >
+                    dd-mm-yyyy
+                  </span>
+                )}
                 {filterDate && (
                   <span 
                     onClick={() => setFilterDate("")}

@@ -136,7 +136,7 @@ function RolesPermissions() {
     <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page, #0A0A14)" }}>
-        <AdminNavbar title="Roles & Permissions" />
+        <AdminNavbar title={<><span className="sm:hidden">Roles</span><span className="hidden sm:inline">Roles & Permissions</span></>} />
         <div style={{ flex: 1, padding: "24px 32px", overflowY: "auto" }}>
 
           {/* Header */}
