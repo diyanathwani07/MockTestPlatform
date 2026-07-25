@@ -419,9 +419,14 @@ function AdminDashboard() {
                         ))}
 
                         {/* X Axis Labels */}
-                        {chartDataList.map((d, i) => (
-                          <text key={`x-${i}`} x={startX + i * stepX} y="225" fill="var(--text-muted)" fontSize="11" textAnchor="middle" fontWeight="500">{d.label}</text>
-                        ))}
+                        {chartDataList.map((d, i) => {
+                          // If there are many data points (e.g. 30 days), only render labels at intervals of 5 to avoid overlap
+                          const showLabel = chartDataList.length <= 15 || i % 5 === 0 || i === chartDataList.length - 1;
+                          if (!showLabel) return null;
+                          return (
+                            <text key={`x-${i}`} x={startX + i * stepX} y="225" fill="var(--text-muted)" fontSize="11" textAnchor="middle" fontWeight="500">{d.label}</text>
+                          );
+                        })}
                       </svg>
 
                       {/* Tooltip Overlay */}
