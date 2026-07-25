@@ -26,6 +26,7 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [hoveredPoint, setHoveredPoint] = useState(null);
 
+  const [rangeDays, setRangeDays] = useState(7);
   const [explorerPage, setExplorerPage] = useState(1);
   const [explorerPath, setExplorerPath] = useState([]);
   const [activityPage, setActivityPage] = useState(1);
@@ -37,9 +38,9 @@ function AdminDashboard() {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
 
-        // Fetch basic stats
+        // Fetch basic stats with range parameter
         const statsRes = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/quizzes/stats/dashboard`,
+          `${import.meta.env.VITE_API_URL}/api/quizzes/stats/dashboard?range=${rangeDays}`,
           { headers }
         );
         setStats(statsRes.data);
@@ -58,7 +59,7 @@ function AdminDashboard() {
       }
     };
     fetchDashboardData();
-  }, []);
+  }, [rangeDays]);
 
   const formatNumber = (num) => {
     return num ? Number(num).toLocaleString() : "0";
@@ -302,8 +303,13 @@ function AdminDashboard() {
               <div className="dashboard-card-title-row">
                 <h3 className="dashboard-card-title">Overview</h3>
                 <div>
-                  <select defaultValue="Last 7 Days" style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600" }}>
-                    <option>Last 7 Days</option>
+                  <select 
+                    value={rangeDays} 
+                    onChange={(e) => setRangeDays(parseInt(e.target.value, 10))}
+                    style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
+                  >
+                    <option value={7}>Last 7 Days</option>
+                    <option value={30}>Last 30 Days</option>
                   </select>
                 </div>
               </div>
@@ -606,12 +612,12 @@ function AdminDashboard() {
 
             {/* Recent Activity */}
             <div className="form-card" style={{ margin: 0, padding: "20px" }}>
-              <div className="dashboard-card-title-row">
-                <h3 className="dashboard-card-title">Recent Activity</h3>
-                <div className="pagination-controls" style={{ transform: "scale(0.85)", transformOrigin: "right" }}>
-                  <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1}>&lt;</button>
-                  <button className="page-nav-btn active-page">{activityPage}</button>
-                  <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages}>&gt;</button>
+              <div className="dashboard-card-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
+                <h3 className="dashboard-card-title" style={{ margin: 0 }}>Recent Activity</h3>
+                <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                  <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&lt;</button>
+                  <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{activityPage}</button>
+                  <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&gt;</button>
                 </div>
               </div>
               <div className="recent-activities-list">
