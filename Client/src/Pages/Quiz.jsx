@@ -186,7 +186,24 @@ function Quiz() {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
-        const rawQuestions = response.data.questions || [];
+        let rawQuestions = response.data.questions || [];
+        
+        // If the quiz is section-based, flatten questions from all sections
+        if (rawQuestions.length === 0 && response.data.sections && response.data.sections.length > 0) {
+          const normalizedSections = response.data.sections.map(sec => {
+             let qs = sec.questions || [];
+             if (sec.type === 'coding' && sec.subsections) {
+                qs = [
+                  ...(sec.subsections.easy || []),
+                  ...(sec.subsections.medium || []),
+                  ...(sec.subsections.hard || []),
+                ];
+             }
+             return { ...sec, flatQuestions: qs };
+          });
+          rawQuestions = normalizedSections.flatMap(sec => sec.flatQuestions);
+        }
+
         const mappedQuestions = rawQuestions.map((q, idx) => {
           let correctText = q.correctAnswer || "";
           if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {

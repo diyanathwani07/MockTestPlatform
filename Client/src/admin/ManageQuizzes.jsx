@@ -310,6 +310,7 @@ function ManageQuizzes() {
                     <th style={{ padding: "18px 28px", fontWeight: "700" }}>Exam</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Subject</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Title</th>
+                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Pricing</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Duration</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Questions</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Date Created</th>
@@ -339,6 +340,34 @@ function ManageQuizzes() {
                               <span style={{ fontSize: "10px", backgroundColor: "rgba(139, 92, 246, 0.2)", color: "#8B5CF6", border: "1px solid #8B5CF6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase" }}>Single</span>
                             )}
                           </div>
+                        </td>
+
+                        <td style={{ padding: "18px 24px", whiteSpace: "nowrap" }}>
+                          {quiz.isPaid ? (
+                            <span style={{ 
+                              backgroundColor: "rgba(239, 68, 68, 0.12)", 
+                              color: "#EF4444", 
+                              border: "1px solid rgba(239, 68, 68, 0.2)",
+                              padding: "4px 8px", 
+                              borderRadius: "6px", 
+                              fontSize: "12px", 
+                              fontWeight: "700" 
+                            }}>
+                              ₹{quiz.price || 0}
+                            </span>
+                          ) : (
+                            <span style={{ 
+                              backgroundColor: "rgba(16, 185, 129, 0.12)", 
+                              color: "#10B981", 
+                              border: "1px solid rgba(16, 185, 129, 0.2)",
+                              padding: "4px 8px", 
+                              borderRadius: "6px", 
+                              fontSize: "12px", 
+                              fontWeight: "700" 
+                            }}>
+                              Free
+                            </span>
+                          )}
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontFamily: "'JetBrains Mono', monospace", fontWeight: "600", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>

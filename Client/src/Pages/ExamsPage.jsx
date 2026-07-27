@@ -18,7 +18,7 @@ function ExamsPage() {
 
   const fetchExams = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/quizzes", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setExams(res.data);
@@ -32,7 +32,7 @@ function ExamsPage() {
   const handlePurchase = async (examId) => {
     try {
       await axios.post(
-        "http://localhost:5000/api/purchase/exam",
+        `${import.meta.env.VITE_API_URL}/api/purchase/exam`,
         { examId },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
@@ -44,95 +44,115 @@ function ExamsPage() {
     }
   };
 
-  const filteredExams = exams.filter((e) => {
-    if (filter === "Free") return !e.isPaid;
-    if (filter === "Premium") return e.isPaid;
-    return true;
-  });
+  // My Exams: only show exams the student has purchased
+  const purchasedExams = exams.filter((e) => e.isPurchased);
+
+  const filteredExams = purchasedExams;
 
   return (
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
         <StudentNavbar title="My Exams" />
-        <div className="sd-content" style={{ paddingTop: '20px' }}>
-          {(() => {
-            const purchasedExams = filteredExams.filter((item) => item.isPurchased);
-            const isEmpty = purchasedExams.length === 0;
-            return (
-              <>
-                {!isEmpty && (
-                  <div className="flex justify-end items-center mb-6">
-                    <div className="flex gap-4">
-                      {["All", "Free", "Premium"].map((f) => (
-                        <button
-                          key={f}
-                          onClick={() => setFilter(f)}
-                          className={`px-4 py-2 rounded ${filter === f ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-                        >
-                          {f}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            );
-          })()}
-
+        
+        <div className="me-premium-layout" style={{ padding: '24px', minHeight: 'calc(100vh - 70px)' }}>
           {loading ? (
-            <p>Loading...</p>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px', color: 'var(--text-secondary)' }}>
+              Loading...
+            </div>
           ) : (
             (() => {
-              const purchasedExams = filteredExams.filter((item) => item.isPurchased);
-              if (purchasedExams.length === 0) {
+              if (filteredExams.length === 0) {
                 return (
-                  <div className="sd-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', backgroundColor: 'var(--bg-card, #111222)', borderRadius: '16px', border: '1px solid var(--border-color, rgba(255,255,255,0.08))', padding: '40px', textAlign: 'center' }}>
+                  <div className="sd-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '350px', backgroundColor: '#111222', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', padding: '40px', textAlign: 'center' }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary, #ffffff)', marginBottom: '8px' }}>No Exam Series Available</h3>
-                    <p style={{ fontSize: '14px', color: 'var(--text-secondary, #94a3b8)', margin: 0 }}>You haven't enrolled or purchased any exam series yet.</p>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>No Purchased Exams</h3>
+                    <p style={{ fontSize: '14px', color: '#94a3b8', margin: 0 }}>Exams you purchase will appear here for you to attempt anytime.</p>
                   </div>
                 );
               }
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {purchasedExams.map((exam) => (
-                    <div key={exam._id} className="bg-white rounded-xl shadow-md p-6 flex flex-col relative overflow-hidden">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold">{exam.title}</h3>
-                        {exam.isPaid && !exam.isPurchased ? (
-                          <Lock className="text-red-500" />
-                        ) : (
-                          <Unlock className="text-green-500" />
-                        )}
-                      </div>
-                      <p className="text-gray-600 mb-2">{exam.subject}</p>
-                      
-                      <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                        <div>
-                          {exam.isPaid ? (
-                            <span className="font-bold text-lg">₹{exam.price}</span>
-                          ) : (
-                            <span className="text-green-600 font-semibold">Free</span>
-                          )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+                  {filteredExams.map((exam) => (
+                    <div key={exam._id} style={{
+                      backgroundColor: '#111222',
+                      borderRadius: '16px',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      position: 'relative',
+                      minHeight: '220px',
+                      justifyContent: 'space-between',
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
+                    }}>
+                      <div>
+                        {/* Tags */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                          <span style={{ 
+                            fontSize: '11px', 
+                            backgroundColor: 'rgba(110, 63, 243, 0.15)', 
+                            color: '#a78bfa', 
+                            padding: '4px 10px', 
+                            borderRadius: '20px', 
+                            fontWeight: '600',
+                            textTransform: 'uppercase' 
+                          }}>
+                            {exam.subject || "Exam"}
+                          </span>
+                          
+                          <span style={{ 
+                            backgroundColor: "rgba(16, 185, 129, 0.12)", 
+                            color: "#10B981", 
+                            border: "1px solid rgba(16, 185, 129, 0.2)",
+                            padding: "3px 8px", 
+                            borderRadius: "6px", 
+                            fontSize: "11px", 
+                            fontWeight: "700" 
+                          }}>
+                            ✓ Purchased
+                          </span>
                         </div>
+
+                        {/* Title */}
+                        <h3 style={{ 
+                          fontSize: '18px', 
+                          fontWeight: '700', 
+                          color: '#ffffff', 
+                          marginBottom: '8px',
+                          lineHeight: '1.4'
+                        }}>
+                          {exam.title}
+                        </h3>
                         
-                        {exam.isPurchased || !exam.isPaid ? (
-                          <button 
-                            onClick={() => navigate(`/start-test`, { state: { quizId: exam._id } })}
-                            className="bg-green-100 text-green-700 px-4 py-2 rounded font-medium"
-                          >
-                            View
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => handlePurchase(exam._id)}
-                            className="bg-blue-600 text-white px-4 py-2 rounded font-medium flex items-center gap-2"
-                          >
-                            <ShoppingCart size={16} /> Buy Now
-                          </button>
-                        )}
+                        {/* Subtitle / Details */}
+                        <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 16px 0' }}>
+                          Attempt this premium quiz to test your preparation.
+                        </p>
                       </div>
+
+                      {/* Action */}
+                      <button 
+                        onClick={() => navigate(`/start-test`, { state: { quizId: exam._id } })}
+                        className="me-btn-primary"
+                        style={{ 
+                          width: '100%', 
+                          padding: '12px', 
+                          fontSize: '14px', 
+                          fontWeight: '600',
+                          background: 'linear-gradient(135deg, #6E3FF3, #3B82F6)',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}
+                      >
+                        Start Test
+                      </button>
                     </div>
                   ))}
                 </div>

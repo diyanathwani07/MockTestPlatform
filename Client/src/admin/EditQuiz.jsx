@@ -223,6 +223,8 @@ function EditQuiz() {
           randomSelection: dbQuiz.randomSelection || false,
           questionsPerAttempt: dbQuiz.questionsPerAttempt || 20,
           examSeriesId: dbQuiz.examSeriesId || "",
+          isPaid: dbQuiz.isPaid || false,
+          price: dbQuiz.price || 0,
         });
 
         const minVal = Math.floor(durationVal);
@@ -997,6 +999,30 @@ function EditQuiz() {
                               />
                               <span>Lock Previous Questions</span>
                             </label>
+                          </div>
+
+                          <div className="form-field toggle-negative-field">
+                            <label className="checkbox-toggle-label">
+                              <input
+                                type="checkbox"
+                                checked={quizMeta.isPaid || false}
+                                onChange={(e) => setQuizMeta(prev => ({ ...prev, isPaid: e.target.checked }))}
+                              />
+                              <span>Paid Test (Premium)</span>
+                            </label>
+                            {quizMeta.isPaid && (
+                              <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
+                                <label style={{ fontSize: "10.5px" }}>Test Price (INR)</label>
+                                <input 
+                                  type="number" 
+                                  name="price" 
+                                  value={quizMeta.price || ""} 
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))} 
+                                  min="0" 
+                                  placeholder="e.g. 99" 
+                                />
+                              </div>
+                            )}
                           </div>
 
                           <div className="form-field" style={{ marginTop: "16px" }}>

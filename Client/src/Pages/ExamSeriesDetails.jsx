@@ -233,6 +233,35 @@ function ExamSeriesDetails() {
                             <span><strong>Time:</strong> {durMin}m</span>
                           </div>
 
+                          {/* Pricing Badge */}
+                          <div style={{ marginTop: "8px" }}>
+                            {quiz.isPaid ? (
+                              <span style={{ 
+                                backgroundColor: "rgba(239, 68, 68, 0.12)", 
+                                color: "#EF4444", 
+                                border: "1px solid rgba(239, 68, 68, 0.2)",
+                                padding: "3px 8px", 
+                                borderRadius: "6px", 
+                                fontSize: "11px", 
+                                fontWeight: "700" 
+                              }}>
+                                {quiz.isPurchased ? "✓ Purchased" : `₹${quiz.price || 0}`}
+                              </span>
+                            ) : (
+                              <span style={{ 
+                                backgroundColor: "rgba(16, 185, 129, 0.12)", 
+                                color: "#10B981", 
+                                border: "1px solid rgba(16, 185, 129, 0.2)",
+                                padding: "3px 8px", 
+                                borderRadius: "6px", 
+                                fontSize: "11px", 
+                                fontWeight: "700" 
+                              }}>
+                                Free
+                              </span>
+                            )}
+                          </div>
+
                           {/* Sections list in smaller text */}
                           {isMulti && quiz.sections && quiz.sections.length > 0 && (
                             <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "6px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -243,7 +272,24 @@ function ExamSeriesDetails() {
 
                         {/* Actions at bottom */}
                         <div style={{ display: "flex", gap: "8px", marginTop: "auto", width: "100%" }}>
-                          {attemptedQuizIds.includes(quiz._id) ? (
+                          {quiz.isPaid && !quiz.isPurchased ? (
+                            <button 
+                              className="me-btn-primary" 
+                              style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #6E3FF3, #3B82F6)" }}
+                              onClick={async () => {
+                                try {
+                                  const token = localStorage.getItem("token");
+                                  await axios.post(`${import.meta.env.VITE_API_URL}/api/purchase/exam`, { examId: quiz._id }, { headers: { Authorization: `Bearer ${token}` } });
+                                  alert("✅ Purchase Successful! You can now attempt this exam.");
+                                  window.location.reload();
+                                } catch (err) {
+                                  alert("Purchase failed. Please try again.");
+                                }
+                              }}
+                            >
+                              🔒 Buy Now — ₹{quiz.price || 0}
+                            </button>
+                          ) : attemptedQuizIds.includes(quiz._id) ? (
                             <>
                               <button 
                                 className="me-action-btn" 

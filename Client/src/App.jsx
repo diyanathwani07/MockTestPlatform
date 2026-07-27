@@ -252,6 +252,15 @@ function App() {
         />
 
         <Route
+          path="/admin/create-quiz-multi"
+          element={
+            <AdminRoute>
+              <CreateQuizMulti />
+            </AdminRoute>
+          }
+        />
+
+        <Route
           path="/admin/edit-quiz-multi/:id"
           element={
             <AdminRoute>

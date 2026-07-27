@@ -90,6 +90,7 @@ function Result() {
   const [visibleCount, setVisibleCount] = useState(10);
   const [shareId, setShareId] = useState(data?.shareId || null);
   const [showAnswers, setShowAnswers] = useState(false);
+  const [expandedQuestions, setExpandedQuestions] = useState({});
 
   const computedPercentage =
     percentage !== undefined && percentage !== null
@@ -507,107 +508,178 @@ function Result() {
               <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#000000", textAlign: "center" }}>Answer Review - {examTitle}</h2>
             </div>
 
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px", gap: "10px" }}>
+              <button 
+                onClick={() => {
+                  const allIndices = {};
+                  questions.forEach((_, idx) => { allIndices[idx] = true; });
+                  setExpandedQuestions(allIndices);
+                }}
+                style={{ background: "transparent", border: "none", color: "#6E3FF3", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+              >
+                Expand All
+              </button>
+              <span style={{ color: "var(--text-muted, #94A3B8)" }}>|</span>
+              <button 
+                onClick={() => setExpandedQuestions({})}
+                style={{ background: "transparent", border: "none", color: "var(--text-muted, #94A3B8)", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+              >
+                Collapse All
+              </button>
+            </div>
+
             <div className="review-list">
               {questions.slice(0, visibleCount).map((q, index) => {
                 const userAns = userAnswers[index];
                 const isCorrect = q.correctAnswer
                   ? userAns === q.correctAnswer
                   : undefined;
+                const isExpanded = !!expandedQuestions[index];
 
                 return (
-                  <div className="review-item" key={q.id || index}>
-                    <div className="review-question" style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                      <span className="q-number" style={{ minWidth: "30px", fontWeight: "700", color: "#6E3FF3" }}>Q{index + 1}.</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: "600", color: isDark ? "#F1F5F9" : "#1E293B", marginBottom: "6px", fontSize: "16px", lineHeight: "1.5" }}><MathRenderer text={q.english || q.questionEnglish} /></div>
-                        {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: isDark ? "#CBD5E1" : "#475569", marginBottom: "12px", fontSize: "15px", lineHeight: "1.5" }}><MathRenderer text={q.hindi || q.questionHindi} /></div>}
-                      </div>
-                    </div>
-
-                    <div className="review-options" style={{ margin: "16px 0", display: "flex", flexDirection: "column", gap: "10px" }}>
-                      {q.options && q.options.length > 0 ? q.options.map((opt, optIdx) => {
-                        const isSelected = userAns === opt;
-                        const isCorrectOpt = q.correctAnswer === opt;
-                        
-                        let optBg = isDark ? "#2A273A" : "#ffffff";
-                        let optBorder = isDark ? "1px solid #3F3C53" : "1px solid #E2E8F0";
-                        let optColor = isDark ? "#F8FAFC" : "#1E293B";
-                        let optWeight = "500";
-                        
-                        if (isCorrectOpt) {
-                          optBg = isDark ? "rgba(34, 197, 94, 0.15)" : "#dcfce7";
-                          optBorder = "1px solid #22c55e";
-                          optColor = isDark ? "#4ade80" : "#166534";
-                          optWeight = "600";
-                        } else if (isSelected && !isCorrectOpt) {
-                          optBg = isDark ? "rgba(239, 68, 68, 0.15)" : "#fee2e2";
-                          optBorder = "1px solid #ef4444";
-                          optColor = isDark ? "#f87171" : "#991b1b";
-                        }
-                        
-                        return (
-                          <div key={optIdx} style={{ 
-                            padding: "12px 16px", 
-                            borderRadius: "10px", 
-                            backgroundColor: optBg, 
-                            border: optBorder,
-                            color: optColor,
-                            fontWeight: optWeight,
-                            fontSize: "14.5px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "12px",
-                            transition: "all 0.2s"
-                          }}>
-                            <span style={{ 
-                              width: "26px", 
-                              height: "26px", 
-                              borderRadius: "50%", 
-                              backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected && !isCorrectOpt ? "#ef4444" : (isDark ? "#3F3C53" : "#F1F5F9")),
-                              color: isCorrectOpt || (isSelected && !isCorrectOpt) ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
-                              border: isCorrectOpt || (isSelected && !isCorrectOpt) ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "13px",
-                              fontWeight: "700",
-                              flexShrink: 0
-                            }}>
-                              {String.fromCharCode(65 + optIdx)}
-                            </span>
-                            <span style={{ lineHeight: "1.4" }}><MathRenderer text={opt} /></span>
-                          </div>
-                        );
-                      }) : (
-                        <div style={{ color: "#94A3B8", fontStyle: "italic", fontSize: "14px" }}>No options available.</div>
-                      )}
-                    </div>
-
-                    <div className="review-answers" style={{ marginTop: "16px" }}>
-                      <div style={{ marginBottom: "16px", fontSize: "14.5px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-                        <strong style={{ color: "#1E293B" }}>Your Answer: </strong>
-                        <span
-                          className={
-                            userAns === undefined || userAns === null
-                              ? "unanswered-text"
-                              : isCorrect === false
-                              ? "wrong-text"
-                              : "correct-text"
-                          }
-                          style={{ padding: "4px 10px", borderRadius: "6px", backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", fontWeight: "600", whiteSpace: "nowrap" }}
-                        >
-                          {(userAns !== undefined && userAns !== null) ? <MathRenderer text={userAns} /> : "Not Answered"}
-                        </span>
+                  <div 
+                    className="review-item" 
+                    key={q.id || index}
+                    style={{ 
+                      borderRadius: "12px", 
+                      marginBottom: "16px", 
+                      border: "1px solid var(--border-color)", 
+                      overflow: "hidden" 
+                    }}
+                  >
+                    {/* Collapsible Header */}
+                    <div 
+                      onClick={() => {
+                        setExpandedQuestions(prev => ({
+                          ...prev,
+                          [index]: !prev[index]
+                        }));
+                      }}
+                      style={{ 
+                        padding: "16px 20px", 
+                        cursor: "pointer", 
+                        backgroundColor: isDark ? "rgba(255, 255, 255, 0.02)" : "#FAFAFC", 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        alignItems: "center",
+                        userSelect: "none"
+                      }}
+                    >
+                      <div className="review-question" style={{ display: "flex", gap: "10px", alignItems: "flex-start", flex: 1, textAlign: "left" }}>
+                        <span className="q-number" style={{ minWidth: "30px", fontWeight: "700", color: "#6E3FF3" }}>Q{index + 1}.</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: "600", color: isDark ? "#F1F5F9" : "#1E293B", fontSize: "15px", lineHeight: "1.5" }}><MathRenderer text={q.english || q.questionEnglish} /></div>
+                          {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: isDark ? "#CBD5E1" : "#475569", marginTop: "4px", fontSize: "14px", lineHeight: "1.5" }}><MathRenderer text={q.hindi || q.questionHindi} /></div>}
+                        </div>
                       </div>
                       
-                      {q.explanation && (
-                        <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", borderLeft: "4px solid #6E3FF3", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                          <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: isDark ? "#A78BFA" : "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                            <span>💡</span> Explanation
-                          </p>
-                          <p style={{ margin: 0, fontSize: "14.5px", color: isDark ? "#E2E8F0" : "#475569", lineHeight: "1.6" }}><MathRenderer text={q.explanation} /></p>
+                      {/* Accordion Indicator Chevron */}
+                      <span style={{ 
+                        marginLeft: "16px", 
+                        color: "var(--text-secondary)", 
+                        fontSize: "18px", 
+                        transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", 
+                        transition: "transform 0.2s ease",
+                        fontWeight: "bold"
+                      }}>
+                        ❯
+                      </span>
+                    </div>
+
+                    {/* Expandable options and explanation container */}
+                    <div style={{ 
+                      height: isExpanded ? "auto" : "0px",
+                      overflow: "hidden",
+                      transition: "all 0.25s ease-in-out",
+                      borderTop: isExpanded ? "1px solid var(--border-color)" : "none",
+                      backgroundColor: isDark ? "#171622" : "#ffffff",
+                      padding: isExpanded ? "20px" : "0px 20px"
+                    }}>
+                      <div className="review-options" style={{ marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {q.options && q.options.length > 0 ? q.options.map((opt, optIdx) => {
+                          const isSelected = userAns === opt;
+                          const isCorrectOpt = q.correctAnswer === opt;
+                          
+                          let optBg = isDark ? "#2A273A" : "#ffffff";
+                          let optBorder = isDark ? "1px solid #3F3C53" : "1px solid #E2E8F0";
+                          let optColor = isDark ? "#F8FAFC" : "#1E293B";
+                          let optWeight = "500";
+                          
+                          if (isCorrectOpt) {
+                            optBg = isDark ? "rgba(34, 197, 94, 0.15)" : "#dcfce7";
+                            optBorder = "1px solid #22c55e";
+                            optColor = isDark ? "#4ade80" : "#166534";
+                            optWeight = "600";
+                          } else if (isSelected && !isCorrectOpt) {
+                            optBg = isDark ? "rgba(239, 68, 68, 0.15)" : "#fee2e2";
+                            optBorder = "1px solid #ef4444";
+                            optColor = isDark ? "#f87171" : "#991b1b";
+                          }
+                          
+                          return (
+                            <div key={optIdx} style={{ 
+                              padding: "12px 16px", 
+                              borderRadius: "10px", 
+                              backgroundColor: optBg, 
+                              border: optBorder,
+                              color: optColor,
+                              fontWeight: optWeight,
+                              fontSize: "14.5px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              transition: "all 0.2s"
+                            }}>
+                              <span style={{ 
+                                width: "26px", 
+                                height: "26px", 
+                                borderRadius: "50%", 
+                                backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected && !isCorrectOpt ? "#ef4444" : (isDark ? "#3F3C53" : "#F1F5F9")),
+                                color: isCorrectOpt || (isSelected && !isCorrectOpt) ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
+                                border: isCorrectOpt || (isSelected && !isCorrectOpt) ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "13px",
+                                fontWeight: "700",
+                                flexShrink: 0
+                              }}>
+                                {String.fromCharCode(65 + optIdx)}
+                              </span>
+                              <span style={{ lineHeight: "1.4" }}><MathRenderer text={opt} /></span>
+                            </div>
+                          );
+                        }) : (
+                          <div style={{ color: "#94A3B8", fontStyle: "italic", fontSize: "14px" }}>No options available.</div>
+                        )}
+                      </div>
+
+                      <div className="review-answers" style={{ marginTop: "16px" }}>
+                        <div style={{ marginBottom: "16px", fontSize: "14.5px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                          <strong style={{ color: "#1E293B" }}>Your Answer: </strong>
+                          <span
+                            className={
+                              userAns === undefined || userAns === null
+                                ? "unanswered-text"
+                                : isCorrect === false
+                                ? "wrong-text"
+                                : "correct-text"
+                            }
+                            style={{ padding: "4px 10px", borderRadius: "6px", backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", fontWeight: "600", whiteSpace: "nowrap" }}
+                          >
+                            {(userAns !== undefined && userAns !== null) ? <MathRenderer text={userAns} /> : "Not Answered"}
+                          </span>
                         </div>
-                      )}
+                        
+                        {q.explanation && (
+                          <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", borderLeft: "4px solid #6E3FF3", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "left" }}>
+                            <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: isDark ? "#A78BFA" : "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span>💡</span> Explanation
+                            </p>
+                            <p style={{ margin: 0, fontSize: "14.5px", color: isDark ? "#E2E8F0" : "#475569", lineHeight: "1.6" }}><MathRenderer text={q.explanation} /></p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

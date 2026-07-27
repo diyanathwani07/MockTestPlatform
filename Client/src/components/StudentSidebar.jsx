@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, BrainCircuit } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
 import StudentChatbot from "./StudentChatbot";
+import axios from "axios";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasPurchasedExams, setHasPurchasedExams] = useState(false);
+  const [hasPurchasedPractice, setHasPurchasedPractice] = useState(false);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -19,6 +22,35 @@ function StudentSidebar() {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    const checkPurchases = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        // Fetch user purchases from endpoint
+        const [examsRes, practiceRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quizzes`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).catch(() => ({ data: [] })),
+          axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/practice`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).catch(() => ({ data: [] }))
+        ]);
+
+        const hasExams = (examsRes.data || []).some(quiz => quiz.isPurchased);
+        const hasPractice = (practiceRes.data || []).some(item => item.isPurchased);
+
+        setHasPurchasedExams(hasExams);
+        setHasPurchasedPractice(hasPractice);
+      } catch (err) {
+        console.error("Error checking student purchases:", err);
+      }
+    };
+
+    checkPurchases();
+  }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -41,46 +73,53 @@ function StudentSidebar() {
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
       <aside className={`student-sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}>
-        <Logo />
-      </div>
+        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}>
+          <Logo />
+        </div>
 
-      <nav className="sidebar-nav">
-        <NavLink to="/dashboard" className="sidebar-link" onClick={() => setIsOpen(false)} end>
-          <Home size={20} />
-          <span>Dashboard</span>
-        </NavLink>
-        <NavLink to="/dashboard/exams-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
-          <FileText size={20} />
-          <span>My Exams</span>
-        </NavLink>
-        <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
-          <BookOpen size={20} />
-          <span>My Practice</span>
-        </NavLink>
-        <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
-          <FileText size={20} />
-          <span>Exams</span>
-        </NavLink>
-        <NavLink to="/dashboard/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
-          <BookOpen size={20} />
-          <span>Practice</span>
-        </NavLink>
-        <NavLink to="/dashboard/results" className="sidebar-link" onClick={() => setIsOpen(false)}>
-          <LineChart size={20} />
-          <span>Results</span>
-        </NavLink>
-        <NavLink to="/dashboard/leaderboard" className="sidebar-link" onClick={() => setIsOpen(false)}>
-          <Trophy size={20} />
-          <span>Leaderboard</span>
-        </NavLink>
-        <NavLink to="/dashboard/help" className="sidebar-link" onClick={() => setIsOpen(false)}>
-          <LifeBuoy size={20} />
-          <span>Help & Support</span>
-        </NavLink>
-      </nav>
-    </aside>
-    <StudentChatbot />
+        <nav className="sidebar-nav">
+          <NavLink to="/dashboard" className="sidebar-link" onClick={() => setIsOpen(false)} end>
+            <Home size={20} />
+            <span>Dashboard</span>
+          </NavLink>
+          
+          {hasPurchasedExams && (
+            <NavLink to="/dashboard/exams-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+              <FileText size={20} />
+              <span>My Exams</span>
+            </NavLink>
+          )}
+
+          {hasPurchasedPractice && (
+            <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+              <BookOpen size={20} />
+              <span>My Practice</span>
+            </NavLink>
+          )}
+
+          <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <FileText size={20} />
+            <span>Exams</span>
+          </NavLink>
+          <NavLink to="/dashboard/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <BookOpen size={20} />
+            <span>Practice</span>
+          </NavLink>
+          <NavLink to="/dashboard/results" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <LineChart size={20} />
+            <span>Results</span>
+          </NavLink>
+          <NavLink to="/dashboard/leaderboard" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <Trophy size={20} />
+            <span>Leaderboard</span>
+          </NavLink>
+          <NavLink to="/dashboard/help" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <LifeBuoy size={20} />
+            <span>Help & Support</span>
+          </NavLink>
+        </nav>
+      </aside>
+      <StudentChatbot />
     </>
   );
 }

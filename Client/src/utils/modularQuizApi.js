@@ -174,6 +174,8 @@ export const saveModularQuiz = async ({
     questions: [],
     isModular: true,
     examSeriesId: quizMeta.examSeriesId || null,
+    isPaid: quizMeta.isPaid || false,
+    price: quizMeta.price || 0,
   };
 
   if (quizId) {
@@ -214,6 +216,8 @@ export const saveModularPractice = async ({
     sections: sectionRefs,
     questions: [],
     isModular: true,
+    isPaid: quizMeta.isPaid || false,
+    price: quizMeta.price || 0,
   };
 
   if (quizId) {
@@ -266,6 +270,8 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
     publishAs: quizMeta.publishAs || "exam",
     examSeriesId: quizMeta.examSeriesId || null,
+    isPaid: quizMeta.isPaid || false,
+    price: quizMeta.price || 0,
   };
 
   if (quizId) {

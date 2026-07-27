@@ -183,7 +183,7 @@ function MyExams() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
-        <StudentNavbar title="My Exams" />
+        <StudentNavbar title="Exams" />
         
         <div className="me-premium-layout">
           {loading ? (
