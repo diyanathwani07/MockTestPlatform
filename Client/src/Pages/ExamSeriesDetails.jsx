@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import QuizDetailsModal from "../components/QuizDetailsModal";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, BookOpen, AlertCircle, FileText, CheckCircle } from "lucide-react";
 import "../css/StudentDashboard.css";
@@ -17,6 +18,7 @@ function ExamSeriesDetails() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("All"); // All, Single Subject, Full Length Mock, Practice
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedQuizForDetails, setSelectedQuizForDetails] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,9 +52,9 @@ function ExamSeriesDetails() {
   let filteredQuizzes = quizzes;
 
   if (activeFilter === "Single Subject") {
-    filteredQuizzes = quizzes.filter(q => q.quizType !== "practice" && (!q.isModular && (!q.sections || q.sections.length <= 1)));
+    filteredQuizzes = quizzes.filter(q => q.quizType !== "practice" && (!q.sections || q.sections.length <= 1));
   } else if (activeFilter === "Full Length Mock") {
-    filteredQuizzes = quizzes.filter(q => q.isModular || (q.sections && q.sections.length > 1));
+    filteredQuizzes = quizzes.filter(q => q.quizType !== "practice" && q.sections && q.sections.length > 1);
   } else if (activeFilter === "Practice") {
     filteredQuizzes = quizzes.filter(q => q.quizType === "practice");
   }
@@ -276,16 +278,7 @@ function ExamSeriesDetails() {
                             <button 
                               className="me-btn-primary" 
                               style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #6E3FF3, #3B82F6)" }}
-                              onClick={async () => {
-                                try {
-                                  const token = localStorage.getItem("token");
-                                  await axios.post(`${import.meta.env.VITE_API_URL}/api/purchase/exam`, { examId: quiz._id }, { headers: { Authorization: `Bearer ${token}` } });
-                                  alert("✅ Purchase Successful! You can now attempt this exam.");
-                                  window.location.reload();
-                                } catch (err) {
-                                  alert("Purchase failed. Please try again.");
-                                }
-                              }}
+                              onClick={() => setSelectedQuizForDetails(quiz)}
                             >
                               🔒 Buy Now — ₹{quiz.price || 0}
                             </button>
@@ -326,6 +319,12 @@ function ExamSeriesDetails() {
 
         </div>
       </div>
+      {selectedQuizForDetails && (
+        <QuizDetailsModal 
+          quiz={selectedQuizForDetails} 
+          onClose={() => setSelectedQuizForDetails(null)} 
+        />
+      )}
     </div>
   );
 }

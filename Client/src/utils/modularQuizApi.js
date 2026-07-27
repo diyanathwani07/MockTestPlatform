@@ -176,6 +176,10 @@ export const saveModularQuiz = async ({
     examSeriesId: quizMeta.examSeriesId || null,
     isPaid: quizMeta.isPaid || false,
     price: quizMeta.price || 0,
+    isPracticePaid: quizMeta.isPracticePaid || false,
+    practicePrice: quizMeta.practicePrice || 0,
+    detailedDescription: quizMeta.detailedDescription || "",
+    plans: quizMeta.plans || [],
   };
 
   if (quizId) {
@@ -258,6 +262,9 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
       ? parseInt(quizMeta.duration, 10) * 60
       : 1800;
 
+  const isPractice = quizMeta.publishAs === "practice" || quizMeta.quizType === "practice" || window.location.pathname.includes("edit-practice");
+  const endpoint = isPractice ? `${API()}/api/practice` : `${API()}/api/quizzes`;
+
   const payload = {
     ...quizMeta,
     duration,
@@ -267,21 +274,25 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     sections: [{ sectionId, mode: "linked", order: 0 }],
     questions: [],
     isModular: true,
-    quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
-    publishAs: quizMeta.publishAs || "exam",
+    quizType: isPractice ? "practice" : "exam",
+    publishAs: quizMeta.publishAs || (isPractice ? "practice" : "exam"),
     examSeriesId: quizMeta.examSeriesId || null,
-    isPaid: quizMeta.isPaid || false,
-    price: quizMeta.price || 0,
+    isPaid: isPractice ? (quizMeta.isPracticePaid || quizMeta.isPaid || false) : (quizMeta.isPaid || false),
+    price: isPractice ? (quizMeta.practicePrice || quizMeta.price || 0) : (quizMeta.price || 0),
+    isPracticePaid: quizMeta.isPracticePaid || false,
+    practicePrice: quizMeta.practicePrice || 0,
+    detailedDescription: quizMeta.detailedDescription || "",
+    plans: quizMeta.plans || [],
   };
 
   if (quizId) {
-    const res = await axios.put(`${API()}/api/quizzes/${quizId}`, payload, {
+    const res = await axios.put(`${endpoint}/${quizId}`, payload, {
       headers: authHeaders(),
     });
     return res.data;
   }
 
-  const res = await axios.post(`${API()}/api/quizzes`, payload, {
+  const res = await axios.post(endpoint, payload, {
     headers: authHeaders(),
   });
   return res.data;

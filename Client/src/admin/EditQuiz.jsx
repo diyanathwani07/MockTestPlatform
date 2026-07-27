@@ -56,6 +56,10 @@ function EditQuiz() {
     randomSelection: false,
     questionsPerAttempt: 20,
     examSeriesId: "",
+    isPracticePaid: false,
+    practicePrice: 0,
+    detailedDescription: "",
+    plans: [],
   });
 
   const [seriesList, setSeriesList] = useState([]);
@@ -180,7 +184,10 @@ function EditQuiz() {
           console.warn("No ID parameter found in route!");
           return;
         }
-        const url = `${import.meta.env.VITE_API_URL}/api/quizzes/${id}`;
+        const isPracticeRoute = window.location.pathname.includes("edit-practice");
+        const url = isPracticeRoute
+          ? `${import.meta.env.VITE_API_URL}/api/practice/${id}`
+          : `${import.meta.env.VITE_API_URL}/api/quizzes/${id}`;
         console.log("Fetching quiz from:", url);
         const response = await axios.get(url, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
@@ -217,7 +224,7 @@ function EditQuiz() {
           enablePerQuestionTimer: dbQuiz.enablePerQuestionTimer || false,
           timePerQuestion: dbQuiz.timePerQuestion || 30,
           lockPreviousQuestions: dbQuiz.lockPreviousQuestions || false,
-          publishAs: dbQuiz.publishAs || "exam",
+          publishAs: dbQuiz.publishAs || (isPracticeRoute ? "practice" : "exam"),
           shuffleQuestions: dbQuiz.shuffleQuestions || false,
           shuffleOptions: dbQuiz.shuffleOptions || false,
           randomSelection: dbQuiz.randomSelection || false,
@@ -225,6 +232,10 @@ function EditQuiz() {
           examSeriesId: dbQuiz.examSeriesId || "",
           isPaid: dbQuiz.isPaid || false,
           price: dbQuiz.price || 0,
+          isPracticePaid: dbQuiz.isPracticePaid !== undefined ? dbQuiz.isPracticePaid : (isPracticeRoute ? dbQuiz.isPaid : false),
+          practicePrice: dbQuiz.practicePrice !== undefined ? dbQuiz.practicePrice : (isPracticeRoute ? dbQuiz.price : 0),
+          detailedDescription: dbQuiz.detailedDescription || "",
+          plans: dbQuiz.plans || [],
         });
 
         const minVal = Math.floor(durationVal);
@@ -1001,29 +1012,125 @@ function EditQuiz() {
                             </label>
                           </div>
 
-                          <div className="form-field toggle-negative-field">
-                            <label className="checkbox-toggle-label">
-                              <input
-                                type="checkbox"
-                                checked={quizMeta.isPaid || false}
-                                onChange={(e) => setQuizMeta(prev => ({ ...prev, isPaid: e.target.checked }))}
-                              />
-                              <span>Paid Test (Premium)</span>
-                            </label>
-                            {quizMeta.isPaid && (
-                              <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
-                                <label style={{ fontSize: "10.5px" }}>Test Price (INR)</label>
-                                <input 
-                                  type="number" 
-                                  name="price" 
-                                  value={quizMeta.price || ""} 
-                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))} 
-                                  min="0" 
-                                  placeholder="e.g. 99" 
+                           {quizMeta.publishAs !== "practice" && (
+                            <div className="form-field toggle-negative-field">
+                              <label className="checkbox-toggle-label">
+                                <input
+                                  type="checkbox"
+                                  checked={quizMeta.isPaid || false}
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, isPaid: e.target.checked }))}
+                                />
+                                <span>Paid Exam (Premium)</span>
+                              </label>
+                              {quizMeta.isPaid && (
+                                <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
+                                  <label style={{ fontSize: "10.5px" }}>Exam Price (INR)</label>
+                                  <input 
+                                    type="number" 
+                                    name="price" 
+                                    value={quizMeta.price || ""} 
+                                    onChange={(e) => setQuizMeta(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))} 
+                                    min="0" 
+                                    placeholder="e.g. 99" 
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {quizMeta.publishAs !== "exam" && (
+                            <div className="form-field toggle-negative-field">
+                              <label className="checkbox-toggle-label">
+                                <input
+                                  type="checkbox"
+                                  checked={quizMeta.isPracticePaid || false}
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, isPracticePaid: e.target.checked }))}
+                                />
+                                <span>Paid Practice Module (Premium)</span>
+                              </label>
+                              {quizMeta.isPracticePaid && (
+                                <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
+                                  <label style={{ fontSize: "10.5px" }}>Practice Price (INR)</label>
+                                  <input 
+                                    type="number" 
+                                    name="practicePrice" 
+                                    value={quizMeta.practicePrice || ""} 
+                                    onChange={(e) => setQuizMeta(prev => ({ ...prev, practicePrice: parseFloat(e.target.value) || 0 }))} 
+                                    min="0" 
+                                    placeholder="e.g. 49" 
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Detailed Overview & Subscriptions Block */}
+                          {(quizMeta.isPaid || quizMeta.isPracticePaid) && (
+                            <div style={{ marginTop: "20px", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                              <h4 style={{ margin: "0 0 12px 0", fontSize: "13.5px", fontWeight: "700", color: "var(--violet)" }}>Overview & Plans</h4>
+                              
+                              <div className="form-field" style={{ marginBottom: "16px" }}>
+                                <label>Detailed Description (Overview tab markdown details)</label>
+                                <textarea 
+                                  name="detailedDescription" 
+                                  value={quizMeta.detailedDescription || ""} 
+                                  onChange={handleMetaChange} 
+                                  placeholder="Describe exam features, launch offers, and terms..." 
+                                  rows={5}
+                                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
                                 />
                               </div>
-                            )}
-                          </div>
+
+                              <div className="form-field">
+                                <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                                  <span>Subscription Duration Plans</span>
+                                  <button 
+                                    type="button"
+                                    className="dashboard-view-all-btn"
+                                    style={{ padding: "4px 8px", fontSize: "11px" }}
+                                    onClick={() => {
+                                      const durationVal = prompt("Enter duration in months (e.g. 1, 6, 12):");
+                                      if (!durationVal) return;
+                                      const priceVal = prompt("Enter price in INR:");
+                                      if (!priceVal) return;
+                                      const discount = prompt("Enter discount tag (optional, e.g. 90% off):") || "";
+                                      const newPlan = {
+                                        durationMonths: parseInt(durationVal, 10) || 1,
+                                        price: parseFloat(priceVal) || 0,
+                                        discountLabel: discount
+                                      };
+                                      setQuizMeta(prev => ({ ...prev, plans: [...(prev.plans || []), newPlan] }));
+                                    }}
+                                  >
+                                    ＋ Add Plan
+                                  </button>
+                                </label>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                  {(quizMeta.plans || []).map((plan, index) => (
+                                    <div key={index} style={{ display: "flex", alignItems: "center", justifyBetween: "space-between", background: "var(--bg-main)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "13px" }}>
+                                      <div style={{ flex: 1 }}>
+                                        <strong>{plan.durationMonths} Month{plan.durationMonths > 1 ? 's' : ''}</strong> — ₹{plan.price} {plan.discountLabel && <span style={{ color: "var(--green)", marginLeft: "8px", fontSize: "11px" }}>({plan.discountLabel})</span>}
+                                      </div>
+                                      <button
+                                        type="button"
+                                        style={{ background: "transparent", border: "none", color: "var(--red)", cursor: "pointer", fontSize: "12px" }}
+                                        onClick={() => {
+                                          const updated = [...quizMeta.plans];
+                                          updated.splice(index, 1);
+                                          setQuizMeta(prev => ({ ...prev, plans: updated }));
+                                        }}
+                                      >
+                                        🗑️ Remove
+                                      </button>
+                                    </div>
+                                  ))}
+                                  {(!quizMeta.plans || quizMeta.plans.length === 0) && (
+                                    <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No plans added. Defaulting to standard test price.</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="form-field" style={{ marginTop: "16px" }}>
                             <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px", display: "block" }}>

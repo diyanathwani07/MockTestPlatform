@@ -353,7 +353,7 @@ function ManageQuizzes() {
                               fontSize: "12px", 
                               fontWeight: "700" 
                             }}>
-                              ₹{quiz.price || 0}
+                              Paid
                             </span>
                           ) : (
                             <span style={{ 
