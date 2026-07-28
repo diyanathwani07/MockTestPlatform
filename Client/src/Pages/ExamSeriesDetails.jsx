@@ -247,7 +247,7 @@ function ExamSeriesDetails() {
                                 fontSize: "11px", 
                                 fontWeight: "700" 
                               }}>
-                                {quiz.isPurchased ? "✓ Purchased" : `₹${quiz.price || 0}`}
+                                {quiz.isPurchased ? "✓ Purchased" : "Paid"}
                               </span>
                             ) : (
                               <span style={{ 

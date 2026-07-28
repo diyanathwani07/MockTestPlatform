@@ -1126,7 +1126,7 @@ function EditQuiz() {
                                 style={{ padding: "5px 12px", fontSize: "12px", background: "rgba(110, 63, 243, 0.12)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.25)", borderRadius: "8px", cursor: "pointer", fontWeight: "600", display: "flex", alignItems: "center", gap: "5px" }}
                                 onClick={handleSaveOverview}
                               >
-                                💾 Save Overview & Plans
+                                💾 Save 
                               </button>
                             </div>
                             
