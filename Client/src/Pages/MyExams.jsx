@@ -478,7 +478,7 @@ function MyExams() {
                                   padding: "4px 10px",
                                   borderRadius: "100px"
                                 }}>
-                                  Mock Series
+                                  {series.title}
                                 </span>
                               )}
                               {isCompleted && (

@@ -174,10 +174,10 @@ export const saveModularQuiz = async ({
     questions: [],
     isModular: true,
     examSeriesId: quizMeta.examSeriesId || null,
-    isPaid: quizMeta.isPaid || false,
-    price: quizMeta.price || 0,
-    isPracticePaid: quizMeta.isPracticePaid || false,
-    practicePrice: quizMeta.practicePrice || 0,
+    isPaid: Boolean(quizMeta.isPaid || quizMeta.isPracticePaid),
+    price: Number(quizMeta.price || quizMeta.practicePrice || 0),
+    isPracticePaid: Boolean(quizMeta.isPracticePaid || quizMeta.isPaid),
+    practicePrice: Number(quizMeta.practicePrice || quizMeta.price || 0),
     detailedDescription: quizMeta.detailedDescription || "",
     plans: quizMeta.plans || [],
   };
@@ -220,8 +220,10 @@ export const saveModularPractice = async ({
     sections: sectionRefs,
     questions: [],
     isModular: true,
-    isPaid: quizMeta.isPaid || false,
-    price: quizMeta.price || 0,
+    isPaid: Boolean(quizMeta.isPaid || quizMeta.isPracticePaid),
+    price: Number(quizMeta.price || quizMeta.practicePrice || 0),
+    detailedDescription: quizMeta.detailedDescription || "",
+    plans: quizMeta.plans || [],
   };
 
   if (quizId) {
@@ -277,15 +279,24 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     quizType: isPractice ? "practice" : "exam",
     publishAs: quizMeta.publishAs || (isPractice ? "practice" : "exam"),
     examSeriesId: quizMeta.examSeriesId || null,
-    isPaid: isPractice ? (quizMeta.isPracticePaid || quizMeta.isPaid || false) : (quizMeta.isPaid || false),
-    price: isPractice ? (quizMeta.practicePrice || quizMeta.price || 0) : (quizMeta.price || 0),
-    isPracticePaid: quizMeta.isPracticePaid || false,
-    practicePrice: quizMeta.practicePrice || 0,
+    isPaid: Boolean(quizMeta.isPaid || quizMeta.isPracticePaid),
+    price: Number(quizMeta.price || quizMeta.practicePrice || 0),
+    isPracticePaid: Boolean(quizMeta.isPracticePaid || quizMeta.isPaid),
+    practicePrice: Number(quizMeta.practicePrice || quizMeta.price || 0),
     detailedDescription: quizMeta.detailedDescription || "",
     plans: quizMeta.plans || [],
   };
 
   if (quizId) {
+    console.log("[saveSingleQuizModular] PUT payload overview fields:", {
+      detailedDescription: payload.detailedDescription,
+      plans: payload.plans,
+      isPaid: payload.isPaid,
+      price: payload.price,
+      isPracticePaid: payload.isPracticePaid,
+      practicePrice: payload.practicePrice,
+      publishAs: payload.publishAs,
+    });
     const res = await axios.put(`${endpoint}/${quizId}`, payload, {
       headers: authHeaders(),
     });

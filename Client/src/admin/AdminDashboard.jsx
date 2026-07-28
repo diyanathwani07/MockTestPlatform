@@ -26,7 +26,7 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [hoveredPoint, setHoveredPoint] = useState(null);
 
-  const [rangeDays, setRangeDays] = useState(7);
+  const [rangeDays, setRangeDays] = useState(30);
   const [explorerPage, setExplorerPage] = useState(1);
   const [explorerPath, setExplorerPath] = useState([]);
   const [activityPage, setActivityPage] = useState(1);
@@ -102,15 +102,24 @@ function AdminDashboard() {
     { rank: 5, name: "Quantitative Aptitude Test", attempts: 654 }
   ];
 
-  const chartDataList = stats.chartData && stats.chartData.length > 0 ? stats.chartData : [
-    { label: "16 Jun", quizzesCreated: 1050, attempts: 480 },
-    { label: "17 Jun", quizzesCreated: 1450, attempts: 800 },
-    { label: "18 Jun", quizzesCreated: 1350, attempts: 650 },
-    { label: "19 Jun", quizzesCreated: 1700, attempts: 750 },
-    { label: "20 Jun", quizzesCreated: 1550, attempts: 1080 },
-    { label: "21 Jun", quizzesCreated: 1380, attempts: 1000 },
-    { label: "22 Jun", quizzesCreated: 1700, attempts: 1220 }
-  ];
+  const generateFallbackChartData = (days) => {
+    const today = new Date();
+    const result = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      result.push({
+        label: d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+        quizzesCreated: 0,
+        attempts: 0,
+      });
+    }
+    return result;
+  };
+
+  const chartDataList = stats.chartData && stats.chartData.length > 0 
+    ? stats.chartData 
+    : generateFallbackChartData(rangeDays);
 
   const activeUsersCount = stats.activeUsers || 856;
   const questionsAddedCount = stats.questionsAdded || 1289;
@@ -301,7 +310,14 @@ function AdminDashboard() {
             {/* Overview Line Chart */}
             <div className="form-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column" }}>
               <div className="dashboard-card-title-row">
-                <h3 className="dashboard-card-title">Overview</h3>
+                <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  Overview
+                  {chartDataList.length > 0 && (
+                    <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "500" }}>
+                      ({chartDataList[0].label} – {chartDataList[chartDataList.length - 1].label})
+                    </span>
+                  )}
+                </h3>
                 <div>
                   <select 
                     value={rangeDays} 
@@ -374,12 +390,61 @@ function AdminDashboard() {
                     return d;
                   };
 
+                  const getAreaPath = (pts) => {
+                    if (pts.length === 0) return "";
+                    const strokeD = getSmoothPath(pts);
+                    const lastPt = pts[pts.length - 1];
+                    const firstPt = pts[0];
+                    return `${strokeD} L ${lastPt.x},200 L ${firstPt.x},200 Z`;
+                  };
+
                   const pathQuizzesStroke = getSmoothPath(pointsQuizzes);
                   const pathAttemptsStroke = getSmoothPath(pointsAttempts);
+                  const pathQuizzesArea = getAreaPath(pointsQuizzes);
+                  const pathAttemptsArea = getAreaPath(pointsAttempts);
+
+                  // Check if all data points are zero — show empty state overlay
+                  const allZero = chartDataList.every(d => d.quizzesCreated === 0 && d.attempts === 0);
 
                   return (
                     <div style={{ width: "100%", height: "100%", position: "relative" }}>
+                      {/* Empty State Overlay */}
+                      {allZero && (
+                        <div style={{
+                          position: "absolute",
+                          top: 0, left: 0, right: 0, bottom: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          zIndex: 5,
+                          pointerEvents: "none",
+                          background: "rgba(var(--bg-card-rgb, 255,255,255), 0.7)",
+                          borderRadius: "12px",
+                          backdropFilter: "blur(2px)",
+                          gap: "10px",
+                        }}>
+                          <span style={{ fontSize: "40px", lineHeight: 1 }}>📊</span>
+                          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-muted, #888)" }}>
+                            No activity in last {rangeDays} days
+                          </span>
+                          <span style={{ fontSize: "12px", color: "var(--text-muted, #aaa)" }}>
+                            Data will appear once quizzes are created or attempted
+                          </span>
+                        </div>
+                      )}
                       <svg viewBox="0 0 1000 250" style={{ width: "100%", height: "auto", overflow: "visible" }}>
+                        <defs>
+                          <linearGradient id="gradient-quizzes-chart" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#FF6384" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#FF6384" stopOpacity="0.0" />
+                          </linearGradient>
+                          <linearGradient id="gradient-attempts-chart" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#FF9F40" stopOpacity="0.35" />
+                            <stop offset="100%" stopColor="#FF9F40" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+
                         {/* Gridlines */}
                         <line x1={startX} y1="30" x2={endX} y2="30" stroke="var(--border-color)" strokeWidth="1" />
                         <line x1={startX} y1="72.5" x2={endX} y2="72.5" stroke="var(--border-color)" strokeWidth="1" />
@@ -394,34 +459,49 @@ function AdminDashboard() {
                         <text x="45" y="161.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.25)}</text>
                         <text x="45" y="204" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">0</text>
 
+                        {/* Area Fills */}
+                        <path d={pathAttemptsArea} fill="url(#gradient-attempts-chart)" />
+                        <path d={pathQuizzesArea} fill="url(#gradient-quizzes-chart)" />
+
                         {/* Quizzes Created Path */}
                         <path d={pathQuizzesStroke} fill="none" stroke="#FF6384" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
                         {/* Attempts Path */}
                         <path d={pathAttemptsStroke} fill="none" stroke="#FF9F40" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
-                        {/* Hover Overlay Targets (Invisible) */}
+                        {/* Hover Overlay Targets & Active Points */}
                         {pointsQuizzes.concat(pointsAttempts).map((pt, i) => (
                           <g 
                             key={`target-${i}`}
                             onMouseEnter={() => setHoveredPoint(pt)}
                             onMouseLeave={() => setHoveredPoint(null)}
-                            style={{ cursor: "crosshair" }}
+                            style={{ cursor: "pointer" }}
                           >
-                            <circle cx={pt.x} cy={pt.y} r="15" fill="transparent" />
+                            <circle cx={pt.x} cy={pt.y} r="12" fill="transparent" />
                             <circle 
-                              cx={pt.x} cy={pt.y} r="5" 
-                              fill={hoveredPoint && hoveredPoint.x === pt.x && hoveredPoint.y === pt.y ? pt.color : "#ffffff"} 
-                              stroke={pt.color} strokeWidth="3" 
+                              cx={pt.x} cy={pt.y} 
+                              r={pt.val > 0 ? "6" : "3.5"} 
+                              fill={hoveredPoint && hoveredPoint.x === pt.x && hoveredPoint.y === pt.y ? pt.color : (pt.val > 0 ? pt.color : "#ffffff")} 
+                              stroke={pt.color} 
+                              strokeWidth={pt.val > 0 ? "3" : "2"} 
                               style={{ transition: "all 0.15s" }}
                             />
                           </g>
                         ))}
 
-                        {/* X Axis Labels */}
+                        {/* X Axis Labels — dynamic label count based on rangeDays */}
                         {chartDataList.map((d, i) => {
-                          // If there are many data points (e.g. 30 days), only render labels at intervals of 5 to avoid overlap
-                          const showLabel = chartDataList.length <= 15 || i % 5 === 0 || i === chartDataList.length - 1;
+                          // Show more labels for longer ranges
+                          const maxLabels = rangeDays <= 7 ? 7 : rangeDays <= 14 ? 8 : 10;
+                          const stepInterval = Math.max(1, Math.floor((chartDataList.length - 1) / (maxLabels - 1)));
+                          const isLast = i === chartDataList.length - 1;
+                          const showLabel = i % stepInterval === 0 || isLast;
+
+                          // Prevent last label if it would overlap too closely with the previous one
+                          if (isLast && i % stepInterval !== 0 && (i % stepInterval) < stepInterval / 2) {
+                            return null;
+                          }
+
                           if (!showLabel) return null;
                           return (
                             <text key={`x-${i}`} x={startX + i * stepX} y="225" fill="var(--text-muted)" fontSize="11" textAnchor="middle" fontWeight="500">{d.label}</text>

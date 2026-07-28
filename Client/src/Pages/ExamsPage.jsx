@@ -100,18 +100,6 @@ function ExamsPage() {
                           }}>
                             {exam.subject || "Exam"}
                           </span>
-                          
-                          <span style={{ 
-                            backgroundColor: "rgba(16, 185, 129, 0.12)", 
-                            color: "#10B981", 
-                            border: "1px solid rgba(16, 185, 129, 0.2)",
-                            padding: "3px 8px", 
-                            borderRadius: "6px", 
-                            fontSize: "11px", 
-                            fontWeight: "700" 
-                          }}>
-                            ✓ Purchased
-                          </span>
                         </div>
 
                         {/* Title */}
