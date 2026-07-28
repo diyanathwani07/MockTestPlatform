@@ -934,11 +934,28 @@ body.dark-mode .mobile-sidebar-toggle {
   justify-content: space-between;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.me-my-exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6E3FF3, #9333EA);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.me-my-exam-card:hover::before {
+  opacity: 1;
 }
 
 .me-my-exam-card:hover {
   background: var(--option-hover);
   transform: translateY(-4px);
-  border-color: rgba(110, 63, 243, 0.3);
-  box-shadow: 0 10px 30px -10px rgba(110, 63, 243, 0.2);
+  border-color: rgba(110, 63, 243, 0.35);
+  box-shadow: 0 12px 32px -8px rgba(110, 63, 243, 0.22);
 }

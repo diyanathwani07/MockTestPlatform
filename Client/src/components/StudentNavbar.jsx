@@ -60,10 +60,10 @@ function StudentNavbar({ title }) {
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "20px", fontWeight: "600", color: "var(--text-secondary)" }}>
+      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", color: "var(--text-secondary)" }}>
         <span 
           onClick={() => navigate("/dashboard")}
-          className={title !== "Dashboard" ? "hidden sm:inline" : ""}
+          className={title !== "Dashboard" ? "hidden sm:inline navbar-breadcrumb-home" : "navbar-breadcrumb-home"}
           style={{ cursor: "pointer", transition: "color 0.15s" }}
           onMouseEnter={(e) => e.target.style.color = "var(--violet)"}
           onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}
@@ -73,7 +73,7 @@ function StudentNavbar({ title }) {
         {title !== "Dashboard" && (
           <>
             <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
-            <span style={{ color: "var(--text-primary)", fontWeight: "700" }}>{title}</span>
+            <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "nowrap" }}>{title}</span>
           </>
         )}
       </div>
@@ -103,7 +103,7 @@ function StudentNavbar({ title }) {
             {unreadNotifications > 0 && <span className="bell-badge">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}
           </button>
           {notifOpen && (
-            <div className="profile-floating-menu" style={{ width: "320px", right: "-10px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div className="profile-floating-menu notif-panel" style={{ width: "320px", maxWidth: "calc(100vw - 24px)", right: "0", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <div style={{ padding: "16px", borderBottom: "1px solid var(--border-color)", fontWeight: "600", color: "var(--text-primary)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Notifications</span>
                 <span style={{ fontSize: "12px", background: "var(--violet)", color: "white", padding: "2px 8px", borderRadius: "10px" }}>{unreadNotifications} New</span>

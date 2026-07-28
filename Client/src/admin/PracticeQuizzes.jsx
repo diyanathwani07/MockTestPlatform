@@ -419,7 +419,7 @@ function PracticeQuizzes() {
                     backgroundColor: "var(--bg-input)",
                     whiteSpace: "nowrap"
                   }}>
-                    <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Title</th>
+                    <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500", maxWidth: "180px" }}>Title</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Pricing</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Subject</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Questions</th>
@@ -434,8 +434,8 @@ function PracticeQuizzes() {
                     const aiProgress = calculateAiProgress(quiz);
                     return (
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                        <td style={{ padding: "16px", color: "var(--text-primary)" }}>
-                          <div style={{ fontWeight: "500" }}>{quiz.title}</div>
+                        <td style={{ padding: "16px", color: "var(--text-primary)", maxWidth: "180px" }}>
+                          <div style={{ fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={quiz.title}>{quiz.title}</div>
                         </td>
                         <td style={{ padding: "16px", whiteSpace: "nowrap" }}>
                           {quiz.isPaid ? (

@@ -140,7 +140,7 @@
 }
 
 .me-search-input {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-input, rgba(110, 63, 243, 0.04));
   border: 1.5px solid #8B5CF6;
   border-radius: 9999px;
   padding: 10px 16px 10px 42px !important;
@@ -154,16 +154,16 @@
 
 .me-search-input:focus {
   border-color: #A78BFA;
-  background: rgba(0, 0, 0, 0.3);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  background: var(--bg-input, rgba(110, 63, 243, 0.07));
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 
 .me-filter-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-card, #FFFFFF);
+  border: 1.5px solid var(--border-color, #ECE9F7);
   border-radius: 10px;
   padding: 10px 20px;
   color: var(--text-primary);
@@ -173,7 +173,8 @@
 }
 
 .me-filter-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--option-hover);
+  border-color: rgba(110, 63, 243, 0.3);
 }
 
 /* Section Titles */
@@ -220,13 +221,31 @@
   flex-direction: column;
   gap: 14px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.me-exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6E3FF3, #9333EA);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.me-exam-card:hover::before {
+  opacity: 1;
 }
 
 .me-exam-card:hover {
   background: var(--option-hover);
   transform: translateY(-4px);
-  border-color: rgba(124, 58, 237, 0.3);
-  box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.2);
+  border-color: rgba(110, 63, 243, 0.35);
+  box-shadow: 0 12px 32px -8px rgba(110, 63, 243, 0.22);
 }
 
 .me-exam-top {
@@ -297,18 +316,21 @@
 }
 
 .me-btn-primary {
-  background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%);
+  background: linear-gradient(135deg, #6E3FF3 0%, #9333EA 100%);
   color: #fff;
   border: none;
-  padding: 9px 20px;
+  padding: 10px 20px;
   border-radius: 10px;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 14px rgba(110, 63, 243, 0.25);
   width: 100%;
   justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .me-table-container {
@@ -602,8 +624,8 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--bg-card, #FFFFFF);
+    border: 1.5px solid var(--border-color, #ECE9F7);
     padding: 6px;
     border-radius: 12px;
     width: 100%;
