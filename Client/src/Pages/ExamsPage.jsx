@@ -64,35 +64,35 @@ function ExamsPage() {
             (() => {
               if (filteredExams.length === 0) {
                 return (
-                  <div className="sd-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '350px', backgroundColor: '#111222', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', padding: '40px', textAlign: 'center' }}>
+                  <div className="sd-empty" style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    minHeight: '350px', 
+                    backgroundColor: 'var(--bg-card, #FFFFFF)', 
+                    borderRadius: '16px', 
+                    border: '1px solid var(--border-color, #ECE9F7)', 
+                    padding: '40px', 
+                    textAlign: 'center' 
+                  }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>No Purchased Exams</h3>
-                    <p style={{ fontSize: '14px', color: '#94a3b8', margin: 0 }}>Exams you purchase will appear here for you to attempt anytime.</p>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary, #1a1a2e)', marginBottom: '8px' }}>No Purchased Exams</h3>
+                    <p style={{ fontSize: '14px', color: 'var(--text-secondary, #6B7280)', margin: 0 }}>Exams you purchase will appear here for you to attempt anytime.</p>
                   </div>
                 );
               }
               return (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
                   {filteredExams.map((exam) => (
-                    <div key={exam._id} style={{
-                      backgroundColor: '#111222',
-                      borderRadius: '16px',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      padding: '24px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      position: 'relative',
-                      minHeight: '220px',
-                      justifyContent: 'space-between',
-                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
-                    }}>
+                    <div key={exam._id} className="me-my-exam-card">
                       <div>
                         {/* Tags */}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
                           <span style={{ 
                             fontSize: '11px', 
-                            backgroundColor: 'rgba(110, 63, 243, 0.15)', 
-                            color: '#a78bfa', 
+                            backgroundColor: 'rgba(110, 63, 243, 0.12)', 
+                            color: '#6E3FF3', 
                             padding: '4px 10px', 
                             borderRadius: '20px', 
                             fontWeight: '600',
@@ -106,7 +106,7 @@ function ExamsPage() {
                         <h3 style={{ 
                           fontSize: '18px', 
                           fontWeight: '700', 
-                          color: '#ffffff', 
+                          color: 'var(--text-primary, #1a1a2e)', 
                           marginBottom: '8px',
                           lineHeight: '1.4'
                         }}>
@@ -114,7 +114,7 @@ function ExamsPage() {
                         </h3>
                         
                         {/* Subtitle / Details */}
-                        <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 16px 0' }}>
+                        <p style={{ fontSize: '13px', color: 'var(--text-secondary, #6B7280)', margin: '0 0 16px 0' }}>
                           Attempt this premium quiz to test your preparation.
                         </p>
                       </div>

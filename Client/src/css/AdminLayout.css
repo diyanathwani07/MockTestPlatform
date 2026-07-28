@@ -128,13 +128,20 @@ body.dark-mode .simple-date-pill input[type="date"]::-webkit-calendar-picker-ind
   top: 15px;
   left: 15px;
   z-index: 1000;
-  background: #1a1a2e;
-  color: white;
-  border: none;
+  background: var(--sidebar-active-bg, #F3E8FF);
+  color: var(--sidebar-active-text, #6E3FF3);
+  border: 1.5px solid rgba(110, 63, 243, 0.15);
   border-radius: 8px;
   padding: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(110, 63, 243, 0.08);
+}
+
+body.dark-mode .mobile-sidebar-toggle {
+  background: #1a1b2e !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
 }
 
 .sidebar-overlay {

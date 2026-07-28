@@ -85,8 +85,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-card, #FFFFFF);
+  border: 1.5px solid var(--border-color, #ECE9F7);
   padding: 8px;
   border-radius: 16px;
   gap: 16px;
@@ -617,22 +617,34 @@
   }
   
   .me-search-filter {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
   }
   
   .me-search-wrapper,
   .me-search-input {
-    width: 100%;
-    max-width: none;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .me-search-wrapper {
+    flex: 1.5 !important;
+    min-width: 0 !important;
   }
   
   .me-search-filter > div {
-    width: 100%;
+    flex: 1 !important;
+    min-width: 0 !important;
   }
   
   .me-filter-btn {
-    width: 100%;
+    width: 100% !important;
+    min-width: unset !important;
+    padding-left: 32px !important;
+    padding-right: 12px !important;
+    font-size: 13px !important;
   }
   
   .me-exams-grid {

@@ -816,13 +816,21 @@
   top: 15px;
   left: 15px;
   z-index: 10005;
-  background: var(--bg-sidebar, #12101E);
-  color: white;
-  border: none;
-  border-radius: 8px;
+  background: var(--sidebar-active-bg, #F3E8FF);
+  color: var(--sidebar-active-text, #6E3FF3);
+  border: 1.5px solid rgba(110, 63, 243, 0.15);
+  border-radius: 10px;
   padding: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(110, 63, 243, 0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+body.dark-mode .mobile-sidebar-toggle {
+  background: #1a1b2e !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
 }
 
 .sidebar-overlay {
@@ -912,4 +920,25 @@
   .sd-stat-card { padding: 16px; }
   .sd-exam-card { padding: 16px; }
   .sd-subject-card { padding: 16px; }
+}
+
+.me-my-exam-card {
+  background-color: var(--bg-card, #FFFFFF);
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color, #ECE9F7);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 220px;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.me-my-exam-card:hover {
+  background: var(--option-hover);
+  transform: translateY(-4px);
+  border-color: rgba(110, 63, 243, 0.3);
+  box-shadow: 0 10px 30px -10px rgba(110, 63, 243, 0.2);
 }

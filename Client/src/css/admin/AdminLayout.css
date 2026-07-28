@@ -451,17 +451,24 @@ body.dark-mode .page-nav-btn { border-color: rgba(255,255,255,0.1); color: #fff;
   top: 15px !important;
   left: 15px !important;
   z-index: 10005 !important;
-  background: #1a1a2e !important;
-  color: white !important;
-  border: none !important;
+  background: var(--sidebar-active-bg, #F3E8FF) !important;
+  color: var(--sidebar-active-text, #6E3FF3) !important;
+  border: 1.5px solid rgba(110, 63, 243, 0.15) !important;
   border-radius: 8px !important;
   padding: 8px !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+  box-shadow: 0 4px 12px rgba(110, 63, 243, 0.08) !important;
   width: 40px !important;
   height: 40px !important;
   align-items: center;
   justify-content: center;
+}
+
+body.dark-mode .mobile-sidebar-toggle {
+  background: #1a1b2e !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
 }
 
 .sidebar-overlay {
