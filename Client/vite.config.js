@@ -11,5 +11,15 @@ export default defineConfig({
     alias: {
       stream: 'stream-browserify',
     }
+  },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'EVAL' && warning.id && warning.id.includes('lottie-web')) {
+          return;
+        }
+        warn(warning);
+      }
+    }
   }
 })
