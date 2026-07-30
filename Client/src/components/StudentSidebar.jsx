@@ -79,7 +79,7 @@ function StudentSidebar() {
   return (
     <>
       {/* Mobile Toggle Button */}
-      <button className="mobile-sidebar-toggle" onClick={toggleSidebar}>
+      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={toggleSidebar}>
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 

@@ -39,7 +39,7 @@ function AdminSidebar() {
 
   return (
     <>
-      <button className="mobile-sidebar-toggle" onClick={() => setIsOpen(!isOpen)}>
+      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={() => setIsOpen(!isOpen)}>
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
