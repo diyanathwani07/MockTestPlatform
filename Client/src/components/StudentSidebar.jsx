@@ -6,10 +6,21 @@ import Logo from "./Logo";
 import StudentChatbot from "./StudentChatbot";
 import axios from "axios";
 import Lottie from "lottie-react";
-import sidebarAnim from "../../public/sidebar-anim.json";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [animationData, setAnimationData] = useState(null);
+
+  useEffect(() => {
+    fetch("/sidebar-anim.json")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch animation");
+        return res.json();
+      })
+      .then((data) => setAnimationData(data))
+      .catch((err) => console.error("Error loading sidebar animation:", err));
+  }, []);
+
 
 
 
@@ -87,21 +98,23 @@ function StudentSidebar() {
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
       <aside className={`student-sidebar ${isOpen ? 'open' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
-        <div className="sidebar-lottie-bg" style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.65 }}>
-          {(() => {
-            const LottieComponent = Lottie.default || Lottie;
-            return (
-              <LottieComponent 
-                animationData={sidebarAnim} 
-                loop={true} 
-                style={{ width: "100%", height: "100%" }} 
-                rendererSettings={{
-                  preserveAspectRatio: "xMidYMid slice"
-                }}
-              />
-            );
-          })()}
-        </div>
+        {animationData && (
+          <div className="sidebar-lottie-bg" style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.65 }}>
+            {(() => {
+              const LottieComponent = Lottie.default || Lottie;
+              return (
+                <LottieComponent 
+                  animationData={animationData} 
+                  loop={true} 
+                  style={{ width: "100%", height: "100%" }} 
+                  rendererSettings={{
+                    preserveAspectRatio: "xMidYMid slice"
+                  }}
+                />
+              );
+            })()}
+          </div>
+        )}
         <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px", position: "relative", zIndex: 1 }}>
           <Logo />
         </div>
