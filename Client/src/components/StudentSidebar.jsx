@@ -5,24 +5,9 @@ import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
 import StudentChatbot from "./StudentChatbot";
 import axios from "axios";
-import Lottie from "lottie-react";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [animationData, setAnimationData] = useState(null);
-
-  useEffect(() => {
-    fetch("/sidebar-anim.json")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch animation");
-        return res.json();
-      })
-      .then((data) => setAnimationData(data))
-      .catch((err) => console.error("Error loading sidebar animation:", err));
-  }, []);
-
-
-
 
   // ── Read from cache first so sidebar never flickers on navigation ──
   const getCached = (key, fallback = false) => {
@@ -97,29 +82,12 @@ function StudentSidebar() {
       {/* Overlay for mobile */}
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
-      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
-        {animationData && (
-          <div className="sidebar-lottie-bg" style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.65 }}>
-            {(() => {
-              const LottieComponent = Lottie.default || Lottie;
-              return (
-                <LottieComponent 
-                  animationData={animationData} 
-                  loop={true} 
-                  style={{ width: "100%", height: "100%" }} 
-                  rendererSettings={{
-                    preserveAspectRatio: "xMidYMid slice"
-                  }}
-                />
-              );
-            })()}
-          </div>
-        )}
-        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px", position: "relative", zIndex: 1 }}>
+      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}>
           <Logo />
         </div>
 
-        <nav className="sidebar-nav" style={{ position: "relative", zIndex: 1 }}>
+        <nav className="sidebar-nav">
           <NavLink to="/dashboard" className="sidebar-link" onClick={() => setIsOpen(false)} end>
             <Home size={20} />
             <span>Dashboard</span>
