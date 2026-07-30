@@ -5,11 +5,22 @@ import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
 import StudentChatbot from "./StudentChatbot";
 import axios from "axios";
+import Lottie from "lottie-react";
+import sidebarAnim from "../../public/sidebar-anim.json";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasPurchasedExams, setHasPurchasedExams] = useState(false);
-  const [hasPurchasedPractice, setHasPurchasedPractice] = useState(false);
+
+
+
+  // ── Read from cache first so sidebar never flickers on navigation ──
+  const getCached = (key, fallback = false) => {
+    try { return JSON.parse(localStorage.getItem(key) ?? String(fallback)); }
+    catch { return fallback; }
+  };
+
+  const [hasPurchasedExams, setHasPurchasedExams] = useState(() => getCached("_sidebar_hasExams"));
+  const [hasPurchasedPractice, setHasPurchasedPractice] = useState(() => getCached("_sidebar_hasPractice"));
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,12 +35,12 @@ function StudentSidebar() {
   }, [isOpen]);
 
   useEffect(() => {
+    // ── Refresh in background silently — never blocks render ──
     const checkPurchases = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        // Fetch user purchases from endpoint
         const [examsRes, practiceRes] = await Promise.all([
           axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quizzes`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -42,8 +53,11 @@ function StudentSidebar() {
         const hasExams = (examsRes.data || []).some(quiz => quiz.isPurchased);
         const hasPractice = (practiceRes.data || []).some(item => item.isPurchased);
 
+        // Update state and persist to cache
         setHasPurchasedExams(hasExams);
         setHasPurchasedPractice(hasPractice);
+        localStorage.setItem("_sidebar_hasExams", JSON.stringify(hasExams));
+        localStorage.setItem("_sidebar_hasPractice", JSON.stringify(hasPractice));
       } catch (err) {
         console.error("Error checking student purchases:", err);
       }
@@ -72,12 +86,27 @@ function StudentSidebar() {
       {/* Overlay for mobile */}
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
-      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}>
+      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
+        <div className="sidebar-lottie-bg" style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.65 }}>
+          {(() => {
+            const LottieComponent = Lottie.default || Lottie;
+            return (
+              <LottieComponent 
+                animationData={sidebarAnim} 
+                loop={true} 
+                style={{ width: "100%", height: "100%" }} 
+                rendererSettings={{
+                  preserveAspectRatio: "xMidYMid slice"
+                }}
+              />
+            );
+          })()}
+        </div>
+        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px", position: "relative", zIndex: 1 }}>
           <Logo />
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" style={{ position: "relative", zIndex: 1 }}>
           <NavLink to="/dashboard" className="sidebar-link" onClick={() => setIsOpen(false)} end>
             <Home size={20} />
             <span>Dashboard</span>

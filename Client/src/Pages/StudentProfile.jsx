@@ -156,41 +156,47 @@ function StudentProfile() {
                         
                         <div className="sp-info-list">
                           <div className="sp-info-item">
-                            <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
-                            <span className="sp-info-label">Full Name</span>
-                            <span className="sp-info-colon">:</span>
+                            <div className="sp-info-label-group">
+                              <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
+                              <span className="sp-info-label">Full Name</span>
+                            </div>
                             <span className="sp-info-value">{user.fullName || user.name || "N/A"}</span>
                           </div>
                           <div className="sp-info-item">
-                            <div className="sp-icon-wrapper"><Mail className="sp-info-icon" size={16} /></div>
-                            <span className="sp-info-label">Email Address</span>
-                            <span className="sp-info-colon">:</span>
-                            <span className="sp-info-value">{user.email || "N/A"}</span>
+                            <div className="sp-info-label-group">
+                              <div className="sp-icon-wrapper"><Mail className="sp-info-icon" size={16} /></div>
+                              <span className="sp-info-label">Email</span>
+                            </div>
+                            <span className="sp-info-value" style={{ fontSize: '13px' }}>{user.email || "N/A"}</span>
                           </div>
                           <div className="sp-info-item">
-                            <div className="sp-icon-wrapper"><Phone className="sp-info-icon" size={16} /></div>
-                            <span className="sp-info-label">Phone Number</span>
-                            <span className="sp-info-colon">:</span>
+                            <div className="sp-info-label-group">
+                              <div className="sp-icon-wrapper"><Phone className="sp-info-icon" size={16} /></div>
+                              <span className="sp-info-label">Phone</span>
+                            </div>
                             <span className="sp-info-value">{user.phone || "Not Provided"}</span>
                           </div>
                           <div className="sp-info-item">
-                          <div className="sp-icon-wrapper"><Calendar className="sp-info-icon" size={16} /></div>
-                          <span className="sp-info-label">Date of Birth</span>
-                          <span className="sp-info-colon">:</span>
-                          <span className="sp-info-value">{user.dateOfBirth || "Not Provided"}</span>
-                        </div>
-                        <div className="sp-info-item">
-                          <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
-                          <span className="sp-info-label">Gender</span>
-                          <span className="sp-info-colon">:</span>
-                          <span className="sp-info-value">{user.gender || "Not Provided"}</span>
-                        </div>
-                        <div className="sp-info-item">
-                          <div className="sp-icon-wrapper"><MapPin className="sp-info-icon" size={16} /></div>
-                          <span className="sp-info-label">Location</span>
-                          <span className="sp-info-colon">:</span>
-                          <span className="sp-info-value">{user.location || "Not Provided"}</span>
-                        </div>
+                            <div className="sp-info-label-group">
+                              <div className="sp-icon-wrapper"><Calendar className="sp-info-icon" size={16} /></div>
+                              <span className="sp-info-label">Date of Birth</span>
+                            </div>
+                            <span className="sp-info-value">{user.dateOfBirth || "Not Provided"}</span>
+                          </div>
+                          <div className="sp-info-item">
+                            <div className="sp-info-label-group">
+                              <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
+                              <span className="sp-info-label">Gender</span>
+                            </div>
+                            <span className="sp-info-value">{user.gender || "Not Provided"}</span>
+                          </div>
+                          <div className="sp-info-item">
+                            <div className="sp-info-label-group">
+                              <div className="sp-icon-wrapper"><MapPin className="sp-info-icon" size={16} /></div>
+                              <span className="sp-info-label">Location</span>
+                            </div>
+                            <span className="sp-info-value">{user.location || "Not Provided"}</span>
+                          </div>
                         </div>
                       </div>
 

@@ -1,0 +1,710 @@
+/* ═══════════════════════════════════════
+   PhonePe Gateway — Full UI Stylesheet
+   ═══════════════════════════════════════ */
+
+/* ── Overlay ── */
+.pp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: ppFadeIn 0.2s ease;
+}
+
+@keyframes ppFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal shell ── */
+.pp-modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  animation: ppSlideUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  scrollbar-width: none;
+}
+.pp-modal::-webkit-scrollbar { display: none; }
+
+@keyframes ppSlideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Header ── */
+.pp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0eef8;
+  background: linear-gradient(135deg, #5f259f, #7b2ff7);
+  border-radius: 20px 20px 0 0;
+}
+
+.pp-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pp-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.pp-brand-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 1px;
+}
+
+.pp-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.pp-close:hover { background: rgba(255, 255, 255, 0.35); }
+
+/* ── Order Summary Strip ── */
+.pp-order-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #f8f5ff;
+  border-bottom: 1px solid #ece6fa;
+}
+
+.pp-order-merchant {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pp-merchant-icon {
+  font-size: 22px;
+}
+
+.pp-merchant-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.pp-merchant-item {
+  font-size: 11px;
+  color: #64748b;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pp-order-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #5f259f;
+}
+
+/* ── Body ── */
+.pp-body {
+  padding: 20px;
+}
+
+.pp-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+}
+
+/* ── UPI App grid ── */
+.pp-upi-apps-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+.pp-upi-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pp-upi-app-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #f8f5ff;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pp-upi-app-btn:hover {
+  border-color: #b794f4;
+  background: #ede9fe;
+}
+
+.pp-upi-app-selected {
+  border-color: #5f259f !important;
+  background: #ede9fe !important;
+  box-shadow: 0 0 0 2px rgba(95, 37, 159, 0.15);
+}
+
+.pp-app-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pp-app-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+}
+
+/* ── Divider ── */
+.pp-divider {
+  text-align: center;
+  position: relative;
+  margin: 4px 0 14px;
+}
+
+.pp-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.pp-divider span {
+  position: relative;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+/* ── Other methods list ── */
+.pp-other-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.pp-method-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+
+.pp-method-row:hover {
+  border-color: #b794f4;
+  background: #f5f0ff;
+}
+
+.pp-method-icon {
+  font-size: 20px;
+}
+
+.pp-method-text { flex: 1; }
+
+.pp-method-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.pp-method-sub {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.pp-chevron {
+  font-size: 20px;
+  color: #9ca3af;
+  font-weight: 300;
+}
+
+/* ── Pay button ── */
+.pp-pay-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #5f259f, #7b2ff7);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(95, 37, 159, 0.35);
+  margin-bottom: 10px;
+}
+
+.pp-pay-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(95, 37, 159, 0.45);
+}
+
+.pp-pay-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pp-secure-note {
+  text-align: center;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* ── Back button ── */
+.pp-back-btn {
+  background: none;
+  border: none;
+  color: #5f259f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── UPI ID input ── */
+.pp-upi-input-wrap {
+  margin-bottom: 16px;
+}
+
+.pp-upi-input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #1a1a2e;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.pp-upi-input:focus {
+  border-color: #5f259f;
+  box-shadow: 0 0 0 3px rgba(95, 37, 159, 0.12);
+}
+
+.pp-input-error { border-color: #ef4444 !important; }
+.pp-error-text { font-size: 12px; color: #ef4444; margin-top: 6px; font-weight: 500; }
+.pp-upi-hint { font-size: 11px; color: #9ca3af; margin-top: 6px; }
+
+.pp-upi-supported { margin-bottom: 20px; }
+
+.pp-supported-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.pp-handles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pp-handle-chip {
+  background: #f0ebff;
+  color: #5f259f;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid #d8c8f8;
+}
+
+/* ── QR Code ── */
+.pp-qr-body { text-align: center; }
+
+.pp-qr-wrap {
+  position: relative;
+  display: inline-block;
+  margin: 8px auto 16px;
+  border: 2px solid #ece6fa;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.pp-qr-overlay-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 900;
+  color: rgba(95, 37, 159, 0.18);
+  letter-spacing: 6px;
+  pointer-events: none;
+}
+
+.pp-qr-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  text-align: left;
+  background: #f8f5ff;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.pp-qr-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.pp-qr-num {
+  width: 22px;
+  height: 22px;
+  background: #5f259f;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Processing ── */
+.pp-processing-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.pp-spinner-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 24px;
+}
+
+.pp-spinner {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 4px solid #ede9fe;
+  border-top-color: #5f259f;
+  animation: ppSpin 0.9s linear infinite;
+}
+
+@keyframes ppSpin {
+  to { transform: rotate(360deg); }
+}
+
+.pp-processing-amount {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #5f259f;
+}
+
+.pp-processing-msg {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+  min-height: 22px;
+}
+
+.pp-processing-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.pp-processing-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.pp-processing-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5f259f;
+  animation: ppBounce 1.2s infinite;
+}
+.pp-processing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.pp-processing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes ppBounce {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ── Success ── */
+.pp-success-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px 24px;
+  text-align: center;
+}
+
+.pp-tick-circle {
+  margin-bottom: 20px;
+}
+
+.pp-checkmark {
+  width: 72px;
+  height: 72px;
+}
+
+.pp-checkmark-circle {
+  stroke: #10b981;
+  stroke-width: 2.5;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: ppStroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.1s forwards;
+}
+
+.pp-checkmark-check {
+  stroke: #10b981;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: ppStroke 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.65s forwards;
+}
+
+@keyframes ppStroke {
+  to { stroke-dashoffset: 0; }
+}
+
+.pp-success-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.pp-success-amount {
+  font-size: 32px;
+  font-weight: 900;
+  color: #5f259f;
+  margin-bottom: 4px;
+}
+
+.pp-success-to {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.pp-txn-card {
+  width: 100%;
+  background: #f8f5ff;
+  border: 1px solid #ece6fa;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pp-txn-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pp-txn-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.pp-txn-value {
+  font-size: 12px;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.pp-txn-status {
+  font-size: 12px;
+  color: #10b981;
+  font-weight: 700;
+  background: #d1fae5;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.pp-countdown-note {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 14px;
+}
+
+.pp-done-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.pp-done-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* ── Failed ── */
+.pp-failed-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.pp-fail-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #fef2f2;
+  border: 2px solid #fecaca;
+  color: #ef4444;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  animation: ppShake 0.5s ease;
+}
+
+@keyframes ppShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.pp-fail-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.pp-fail-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.pp-cancel-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+.pp-cancel-btn:hover { background: #f9fafb; }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .pp-modal {
+    max-height: 95vh;
+    border-radius: 20px 20px 0 0;
+  }
+  .pp-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .pp-upi-apps-grid { grid-template-columns: repeat(4, 1fr); }
+  .pp-order-amount { font-size: 18px; }
+}

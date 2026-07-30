@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { CheckCircle2, AlertTriangle, X, Play, Clock, FileText } from "lucide-react";
 import axios from "axios";
+import PhonePeGateway from "./PhonePeGateway";
 import "../css/QuizDetailsModal.css";
 
 function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
   const [activeTab, setActiveTab] = useState("Overview");
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [currency, setCurrency] = useState("INR");
-  const [purchasing, setPurchasing] = useState(false);
+  const [showGateway, setShowGateway] = useState(false);
 
   const plans = quiz.plans && quiz.plans.length > 0 
     ? quiz.plans 
@@ -20,27 +21,18 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
     }
   }, [plans, selectedPlan]);
 
-  const handleBuy = async () => {
-    try {
-      setPurchasing(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please login to purchase exams.");
-        return;
-      }
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/purchase/exam`, 
-        { examId: quiz._id, planMonths: selectedPlan?.durationMonths || 1 }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("✅ Purchase Successful! You can now attempt this exam.");
-      window.location.reload();
-    } catch (err) {
-      console.error(err);
-      alert("Purchase failed. Please try again.");
-    } finally {
-      setPurchasing(false);
+  const handleOpenGateway = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login to purchase exams.");
+      return;
     }
+    setShowGateway(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowGateway(false);
+    window.location.reload();
   };
 
   const displayPrice = currency === "USD" 
@@ -52,6 +44,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
     : `₹${Math.round((selectedPlan?.price || quiz.price || 99) * 10)}`;
 
   return (
+    <>
     <div className="qdm-overlay" onClick={onClose}>
       <div className="qdm-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header Title */}
@@ -173,17 +166,27 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                 Secured Checkout. 100% encrypted gateway.
               </div>
               <button
-                onClick={handleBuy}
-                disabled={purchasing}
+                onClick={handleOpenGateway}
                 className="qdm-buy-btn"
               >
-                {purchasing ? "Processing Payment..." : `Buy Now — ${displayPrice}`}
+                Buy Now — {displayPrice}
               </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    {showGateway && (
+      <PhonePeGateway
+        quiz={quiz}
+        amount={selectedPlan?.price || quiz.price || 99}
+        planMonths={selectedPlan?.durationMonths || 1}
+        onClose={() => setShowGateway(false)}
+        onSuccess={handlePaymentSuccess}
+      />
+    )}
+  </>
   );
 }
 

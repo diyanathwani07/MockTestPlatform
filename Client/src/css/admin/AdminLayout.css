@@ -557,6 +557,15 @@ body.dark-mode .mobile-sidebar-toggle {
     flex-wrap: nowrap;
     gap: 8px;
   }
+  .notif-panel {
+    position: fixed !important;
+    top: 60px !important;
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+  }
   .navbar-breadcrumb-row {
     font-size: 15px;
     gap: 5px;
