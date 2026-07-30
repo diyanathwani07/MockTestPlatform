@@ -164,6 +164,12 @@ const createQuiz = async (data) => {
     sections,
     questions: [],
     createdBy: data.createdBy || null,
+    isPaid: data.isPaid || false,
+    price: data.price || 0,
+    isPracticePaid: data.isPracticePaid || false,
+    practicePrice: data.practicePrice || 0,
+    detailedDescription: data.detailedDescription || "",
+    plans: data.plans || [],
   });
 };
 
@@ -226,12 +232,21 @@ const previewQuiz = async (quizId) => {
   const sortedRefs = [...quiz.sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   for (const ref of sortedRefs) {
-    const section = await Section.findById(ref.sectionId)
-      .populate("questions")
-      .populate("subsections.easy")
-      .populate("subsections.medium")
-      .populate("subsections.hard");
-    populatedSections.push(flattenSectionForClient(ref, section));
+    if (!ref || !ref.sectionId || !mongoose.Types.ObjectId.isValid(ref.sectionId)) {
+      continue;
+    }
+    try {
+      const section = await Section.findById(ref.sectionId)
+        .populate("questions")
+        .populate("subsections.easy")
+        .populate("subsections.medium")
+        .populate("subsections.hard");
+      if (section) {
+        populatedSections.push(flattenSectionForClient(ref, section));
+      }
+    } catch (e) {
+      console.error("Error populating section in previewQuiz:", ref.sectionId, e);
+    }
   }
 
   const result = quiz.toObject();
@@ -443,6 +458,10 @@ const syncToPracticeQuiz = async (quizId, publishAs) => {
     createdBy: populatedQuiz.createdBy,
     status: populatedQuiz.status,
     publishedAt: populatedQuiz.published ? new Date() : null,
+    isPaid: Boolean(populatedQuiz.isPracticePaid || populatedQuiz.isPaid),
+    price: Number(populatedQuiz.practicePrice || populatedQuiz.price || 0),
+    detailedDescription: populatedQuiz.detailedDescription || "",
+    plans: populatedQuiz.plans || [],
   };
 
   await PracticeQuiz.findOneAndUpdate(

@@ -14,6 +14,11 @@ const getPracticeQuizzes = async (req, res) => {
       filter.isDeleted = { $ne: true };
     }
 
+    // Only show published practice tests to regular students
+    if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
+      filter.status = "Published";
+    }
+
     let quizzes = await PracticeQuiz.find(filter).populate("createdBy", "fullName email").sort({ createdAt: -1 });
 
     if (req.user) {
@@ -108,7 +113,21 @@ const getPracticeQuizById = async (req, res) => {
 // @access  Private/Admin
 const createPracticeQuiz = async (req, res) => {
   try {
-    const { title, subject, description, questions, shuffleQuestions, shuffleOptions, randomSelection, questionsPerAttempt, status } = req.body;
+    const { 
+      title, 
+      subject, 
+      description, 
+      questions, 
+      shuffleQuestions, 
+      shuffleOptions, 
+      randomSelection, 
+      questionsPerAttempt, 
+      status,
+      isPaid,
+      price,
+      detailedDescription,
+      plans
+    } = req.body;
 
     const quiz = new PracticeQuiz({
       title,
@@ -124,6 +143,10 @@ const createPracticeQuiz = async (req, res) => {
       createdBy: req.user._id,
       status: status || "Draft",
       publishedAt: status === "Published" ? Date.now() : null,
+      isPaid: isPaid || false,
+      price: price || 0,
+      detailedDescription: detailedDescription || "",
+      plans: plans || [],
     });
 
     const createdQuiz = await quiz.save();
@@ -155,6 +178,11 @@ const updatePracticeQuiz = async (req, res) => {
     if (req.body.questions) {
       quiz.questions = req.body.questions;
     }
+
+    if (req.body.isPaid !== undefined) quiz.isPaid = req.body.isPaid;
+    if (req.body.price !== undefined) quiz.price = req.body.price;
+    if (req.body.detailedDescription !== undefined) quiz.detailedDescription = req.body.detailedDescription;
+    if (req.body.plans !== undefined) quiz.plans = req.body.plans;
 
     if (req.body.status) {
       if (req.body.status === "Published" && quiz.status !== "Published") {

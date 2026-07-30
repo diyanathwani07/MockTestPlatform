@@ -76,6 +76,17 @@ const quizSchema = new mongoose.Schema(
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     isPaid: { type: Boolean, default: false },
     price: { type: Number, default: 0 },
+    isPracticePaid: { type: Boolean, default: false },
+    practicePrice: { type: Number, default: 0 },
+    detailedDescription: { type: String, default: "" },
+    plans: {
+      type: [{
+        durationMonths: { type: Number, required: true },
+        price: { type: Number, required: true },
+        discountLabel: { type: String, default: "" }
+      }],
+      default: []
+    },
     thumbnail: { type: String, default: "" },
     tags: { type: [String], default: [] },
   },

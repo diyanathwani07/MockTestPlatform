@@ -95,7 +95,21 @@ exports.getSeriesById = async (req, res) => {
       $or: [{ published: true }, { status: "Published" }]
     }).sort({ createdAt: -1 });
 
-    res.json({ series, quizzes });
+    // Attach isPurchased flag if user is authenticated
+    let purchasedExamIds = [];
+    if (req.user) {
+      const User = require("../models/User");
+      const user = await User.findById(req.user._id).select("purchasedExams");
+      purchasedExamIds = (user?.purchasedExams || []).map(id => id.toString());
+    }
+
+    const quizzesWithPurchaseStatus = quizzes.map(q => {
+      const qObj = q.toObject();
+      qObj.isPurchased = purchasedExamIds.includes(qObj._id.toString());
+      return qObj;
+    });
+
+    res.json({ series, quizzes: quizzesWithPurchaseStatus });
   } catch (error) {
     console.error("Get Series By ID Error:", error);
     res.status(500).json({ message: "Failed to retrieve Exam Series details." });

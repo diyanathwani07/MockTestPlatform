@@ -17,8 +17,25 @@ const quizService = require("../services/quizService");
 // CREATE a new quiz
 const createQuiz = async (req, res) => {
   try {
+    const bodyData = { ...req.body };
+    if (bodyData.examName) {
+      const ExamSeries = require("../models/ExamSeries");
+      const slug = bodyData.examName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      let series = await ExamSeries.findOne({ $or: [{ slug }, { title: { $regex: new RegExp(`^${bodyData.examName}$`, "i") } }] });
+      if (!series) {
+        series = await ExamSeries.create({
+          title: bodyData.examName,
+          slug,
+          description: `Quizzes related to ${bodyData.examName}`,
+          category: "General",
+          isPublished: true,
+        });
+      }
+      bodyData.examSeriesId = series._id;
+    }
+
     const quiz = await quizService.createQuiz({
-      ...req.body,
+      ...bodyData,
       createdBy: req.user?._id,
     });
 
@@ -95,7 +112,39 @@ const updateQuiz = async (req, res) => {
       return res.status(404).json({ message: "Quiz not found." });
     }
 
+    console.log("updateQuiz req.body detailedDescription:", req.body.detailedDescription, "plans:", req.body.plans);
     const updateData = { ...req.body };
+
+    // Resolve examSeriesId based on examName if provided or changed
+    if (updateData.examName) {
+      const ExamSeries = require("../models/ExamSeries");
+      const slug = updateData.examName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      let series = await ExamSeries.findOne({ $or: [{ slug }, { title: { $regex: new RegExp(`^${updateData.examName}$`, "i") } }] });
+      if (!series) {
+        series = await ExamSeries.create({
+          title: updateData.examName,
+          slug,
+          description: `Quizzes related to ${updateData.examName}`,
+          category: "General",
+          isPublished: true,
+        });
+      }
+      updateData.examSeriesId = series._id;
+    } else if (updateData.examName === "") {
+      // If examName is explicitly cleared, group under Ungrouped Mocks
+      const ExamSeries = require("../models/ExamSeries");
+      let ungroupedSeries = await ExamSeries.findOne({ slug: "ungrouped-mocks" });
+      if (!ungroupedSeries) {
+        ungroupedSeries = await ExamSeries.create({
+          title: "Ungrouped Mocks",
+          slug: "ungrouped-mocks",
+          description: "Quizzes that do not belong to any specific exam series.",
+          category: "General",
+          isPublished: true,
+        });
+      }
+      updateData.examSeriesId = ungroupedSeries._id;
+    }
 
     // Resolve section references if updating sections array
     if (updateData.sections?.length > 0) {
@@ -115,10 +164,11 @@ const updateQuiz = async (req, res) => {
       updateData.questions = [];
     }
 
-    const quiz = await Quiz.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: false,
-    });
+    const quiz = await Quiz.findByIdAndUpdate(
+      req.params.id, 
+      { $set: updateData }, 
+      { new: true, runValidators: false }
+    );
 
     if (req.body.publishAs) {
       await quizService.syncToPracticeQuiz(quiz._id, req.body.publishAs);
@@ -484,35 +534,75 @@ const getDashboardStats = async (req, res) => {
 
     let chartData = [];
     try {
+      const rangeDays = parseInt(req.query.range || "7", 10);
+
+      // Build UTC start and end boundaries
+      const nowUTC = new Date();
+      const startOfRange = new Date(Date.UTC(
+        nowUTC.getUTCFullYear(),
+        nowUTC.getUTCMonth(),
+        nowUTC.getUTCDate() - (rangeDays - 1),
+        0, 0, 0, 0
+      ));
+      const endOfRange = new Date(Date.UTC(
+        nowUTC.getUTCFullYear(),
+        nowUTC.getUTCMonth(),
+        nowUTC.getUTCDate(),
+        23, 59, 59, 999
+      ));
+
+      console.log(`[Dashboard ChartData] range=${rangeDays} | startOfRange=${startOfRange.toISOString()} | endOfRange=${endOfRange.toISOString()}`);
+
+      // Build the full date key array for N days
       const dates = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
+      for (let i = rangeDays - 1; i >= 0; i--) {
+        const d = new Date(Date.UTC(
+          nowUTC.getUTCFullYear(),
+          nowUTC.getUTCMonth(),
+          nowUTC.getUTCDate() - i
+        ));
         dates.push(d);
       }
-      const startOfRange = new Date(dates[0]);
-      startOfRange.setHours(0, 0, 0, 0);
 
+      // Aggregate quizzes created by day (UTC timezone)
       const quizzesByDay = await Quiz.aggregate([
-        { $match: { createdAt: { $gte: startOfRange } } },
-        { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+        { $match: { createdAt: { $gte: startOfRange, $lte: endOfRange } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "UTC" } },
+            count: { $sum: 1 }
+          }
+        },
       ]);
+
+      // Aggregate attempts by day (UTC timezone)
       const attemptsByDay = await Result.aggregate([
-        { $match: { createdAt: { $gte: startOfRange } } },
-        { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+        { $match: { createdAt: { $gte: startOfRange, $lte: endOfRange } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "UTC" } },
+            count: { $sum: 1 }
+          }
+        },
       ]);
+
+      console.log(`[Dashboard ChartData] quizzesByDay raw:`, JSON.stringify(quizzesByDay));
+      console.log(`[Dashboard ChartData] attemptsByDay raw:`, JSON.stringify(attemptsByDay));
 
       const quizzesMap = new Map(quizzesByDay.map((item) => [item._id, item.count]));
       const attemptsMap = new Map(attemptsByDay.map((item) => [item._id, item.count]));
 
+      // Always return exactly rangeDays points (zeroed if no data)
       chartData = dates.map((date) => {
-        const key = date.toISOString().slice(0, 10);
+        const key = date.toISOString().slice(0, 10); // "YYYY-MM-DD"
         return {
-          label: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+          label: date.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }),
           quizzesCreated: quizzesMap.get(key) || 0,
           attempts: attemptsMap.get(key) || 0,
         };
       });
+
+      console.log(`[Dashboard ChartData] final chartData length=${chartData.length}, sample:`, JSON.stringify(chartData.slice(0, 3)));
     } catch (e) {
       console.error("Error creating chart data:", e);
     }

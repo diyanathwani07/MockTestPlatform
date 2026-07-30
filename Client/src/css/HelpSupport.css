@@ -1175,4 +1175,19 @@ body.dark-mode .hs-ticket-reveal button:hover {
   .hs-tab-btn {
     padding: 12px 16px;
   }
+  
+  .hs-faq-section {
+    padding: 16px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .hs-faq-question {
+    padding: 14px 16px !important;
+    font-size: 14px !important;
+  }
+  
+  .hs-faq-answer {
+    padding: 0 16px 16px 16px !important;
+    font-size: 14px !important;
+  }
 }

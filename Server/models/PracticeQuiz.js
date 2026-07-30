@@ -103,6 +103,15 @@ const practiceQuizSchema = new mongoose.Schema(
     },
     isPaid: { type: Boolean, default: false },
     price: { type: Number, default: 0 },
+    detailedDescription: { type: String, default: "" },
+    plans: {
+      type: [{
+        durationMonths: { type: Number, required: true },
+        price: { type: Number, required: true },
+        discountLabel: { type: String, default: "" }
+      }],
+      default: []
+    },
     thumbnail: { type: String, default: "" },
     category: { type: String, default: "" },
   },
