@@ -90,6 +90,27 @@ function AdminTickets() {
     }
   };
 
+  const handleReleaseTicket = async () => {
+    if (!selectedTicket) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/unassign`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        const updated = res.data.ticket;
+        setTickets(tickets.map(t => t._id === updated._id ? updated : t));
+        setSelectedTicket(updated);
+      }
+    } catch (err) {
+      console.error("Error releasing ticket:", err);
+      const errMsg = err.response?.data?.message || err.message || "Unknown error";
+      alert(`Failed to unassign ticket: ${errMsg}`);
+    }
+  };
+
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -429,13 +450,22 @@ function AdminTickets() {
                     <p className="meta-value">
                       {selectedTicket.assignedTo ? selectedTicket.assignedTo.fullName : "Unassigned"}
                     </p>
-                    {!selectedTicket.assignedTo && (
+                     {(!selectedTicket.assignedTo || 
+                      (selectedTicket.assignedTo._id ? selectedTicket.assignedTo._id.toString() : selectedTicket.assignedTo.toString()) !== currentUser.id?.toString()) ? (
                       <button 
                         className="tk-new-ticket-btn" 
                         style={{ marginTop: "8px", padding: "6px 12px", background: "#10B981" }}
                         onClick={handleAssignToMe}
                       >
                         Assign to Me
+                      </button>
+                    ) : (
+                      <button 
+                        className="tk-new-ticket-btn" 
+                        style={{ marginTop: "8px", padding: "6px 12px", background: "#EF4444" }}
+                        onClick={handleReleaseTicket}
+                      >
+                        Release Ticket (Unassign)
                       </button>
                     )}
                   </div>
