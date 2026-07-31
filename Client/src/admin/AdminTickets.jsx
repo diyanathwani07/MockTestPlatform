@@ -20,10 +20,64 @@ function AdminTickets() {
   const [replyMessage, setReplyMessage] = useState("");
   const [replying, setReplying] = useState(false);
   const [replyFile, setReplyFile] = useState(null);
+  const [currentlyViewing, setCurrentlyViewing] = useState([]);
+
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
     fetchTickets();
   }, []);
+
+  useEffect(() => {
+    if (!selectedTicket) {
+      setCurrentlyViewing([]);
+      return;
+    }
+
+    const sendHeartbeat = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/heartbeat`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.data.success) {
+          setCurrentlyViewing(res.data.currentlyViewing || []);
+        }
+      } catch (err) {
+        console.error("Heartbeat error:", err);
+      }
+    };
+
+    // Send immediately on open
+    sendHeartbeat();
+
+    // Ping every 5 seconds
+    const interval = setInterval(sendHeartbeat, 5000);
+
+    return () => clearInterval(interval);
+  }, [selectedTicket]);
+
+  const handleAssignToMe = async () => {
+    if (!selectedTicket) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/assign`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        const updated = res.data.ticket;
+        setTickets(tickets.map(t => t._id === updated._id ? updated : t));
+        setSelectedTicket(updated);
+      }
+    } catch (err) {
+      console.error("Error assigning ticket:", err);
+      alert("Failed to assign ticket.");
+    }
+  };
 
   const fetchTickets = async () => {
     try {
@@ -38,6 +92,7 @@ function AdminTickets() {
       setLoading(false);
     }
   };
+
 
   const handleStatusChange = async (newStatus) => {
     if (!selectedTicket) return;
@@ -117,11 +172,17 @@ function AdminTickets() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  // Calculate Stats
-  const totalTickets = tickets.length;
-  const openCount = tickets.filter(t => t.status === "Open").length;
-  const inProgressCount = tickets.filter(t => t.status === "In Progress").length;
-  const resolvedCount = tickets.filter(t => t.status === "Resolved").length;
+  // Calculate Stats (Filter by currently logged-in user's assignments)
+  const myTickets = tickets.filter(t => {
+    if (!t.assignedTo) return false;
+    const assignedId = t.assignedTo._id ? t.assignedTo._id.toString() : t.assignedTo.toString();
+    return assignedId === currentUser._id?.toString();
+  });
+
+  const totalTickets = myTickets.length;
+  const openCount = myTickets.filter(t => t.status === "Open").length;
+  const inProgressCount = myTickets.filter(t => t.status === "In Progress").length;
+  const resolvedCount = myTickets.filter(t => t.status === "Resolved").length;
 
   return (
     <div className="admin-layout">
@@ -140,7 +201,7 @@ function AdminTickets() {
               <div className="tk-stat-content">
                 <p className="tk-stat-label">Total Tickets</p>
                 <h3 className="tk-stat-value">{totalTickets}</h3>
-                <p className="tk-stat-desc">All time tickets</p>
+                <p className="tk-stat-desc">My assigned tickets</p>
               </div>
             </div>
 
@@ -151,7 +212,7 @@ function AdminTickets() {
               <div className="tk-stat-content">
                 <p className="tk-stat-label">Open</p>
                 <h3 className="tk-stat-value">{openCount}</h3>
-                <p className="tk-stat-desc">Awaiting response</p>
+                <p className="tk-stat-desc">My awaiting response</p>
               </div>
             </div>
 
@@ -162,7 +223,7 @@ function AdminTickets() {
               <div className="tk-stat-content">
                 <p className="tk-stat-label">In Progress</p>
                 <h3 className="tk-stat-value">{inProgressCount}</h3>
-                <p className="tk-stat-desc">Being resolved</p>
+                <p className="tk-stat-desc">My being resolved</p>
               </div>
             </div>
 
@@ -173,7 +234,7 @@ function AdminTickets() {
               <div className="tk-stat-content">
                 <p className="tk-stat-label">Resolved</p>
                 <h3 className="tk-stat-value">{resolvedCount}</h3>
-                <p className="tk-stat-desc">Successfully resolved</p>
+                <p className="tk-stat-desc">My resolved tickets</p>
               </div>
             </div>
           </div>
@@ -230,6 +291,7 @@ function AdminTickets() {
                       <th>Subject</th>
                       <th>Category</th>
                       <th>Status</th>
+                      <th>Assigned To</th>
                       <th>Created At</th>
                       <th>Last Update</th>
                       <th>Actions</th>
@@ -261,6 +323,11 @@ function AdminTickets() {
                           </span>
                         </td>
                         <td>
+                          <span className={`tk-badge ${ticket.assignedTo ? 'tk-assigned' : 'tk-unassigned'}`}>
+                            {ticket.assignedTo ? ticket.assignedTo.fullName : "Unassigned"}
+                          </span>
+                        </td>
+                        <td>
                           <div className="tk-date-cell">
                             <span className="tk-date">{new Date(ticket.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                             <span className="tk-time">{new Date(ticket.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -284,7 +351,7 @@ function AdminTickets() {
                   })}
                   {filteredTickets.length === 0 && (
                     <tr>
-                      <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>
+                      <td colSpan="8" style={{ textAlign: 'center', padding: '40px' }}>
                         No tickets found
                       </td>
                     </tr>
@@ -324,6 +391,16 @@ function AdminTickets() {
             </div>
             
             <div className="modal-body">
+              {currentlyViewing.filter(view => view.agentId && view.agentId.toString() !== currentUser._id?.toString()).length > 0 && (
+                <div className="tk-lock-warning">
+                  ⚠️ {currentlyViewing
+                    .filter(view => view.agentId && view.agentId.toString() !== currentUser._id?.toString())
+                    .map(v => v.agentName)
+                    .join(", ")}{" "}
+                  is currently viewing/editing this ticket.
+                </div>
+              )}
+
               <div className="ticket-meta">
                 <div className="meta-item">
                   <User size={16} />
@@ -331,6 +408,25 @@ function AdminTickets() {
                     <p className="meta-label">Submitted By</p>
                     <p className="meta-value">{selectedTicket.userId?.fullName || 'Unknown'}</p>
                     <p className="meta-sub">{selectedTicket.userId?.email || ''}</p>
+                  </div>
+                </div>
+
+                <div className="meta-item">
+                  <User size={16} style={{ color: '#0269A1' }} />
+                  <div>
+                    <p className="meta-label">Assigned To</p>
+                    <p className="meta-value">
+                      {selectedTicket.assignedTo ? selectedTicket.assignedTo.fullName : "Unassigned"}
+                    </p>
+                    {!selectedTicket.assignedTo && (
+                      <button 
+                        className="tk-new-ticket-btn" 
+                        style={{ marginTop: "8px", padding: "6px 12px", background: "#10B981" }}
+                        onClick={handleAssignToMe}
+                      >
+                        Assign to Me
+                      </button>
+                    )}
                   </div>
                 </div>
                 
