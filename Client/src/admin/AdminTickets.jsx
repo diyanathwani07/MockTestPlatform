@@ -187,7 +187,7 @@ function AdminTickets() {
   const myTickets = tickets.filter(t => {
     if (!t.assignedTo) return false;
     const assignedId = t.assignedTo._id ? t.assignedTo._id.toString() : t.assignedTo.toString();
-    return assignedId === currentUser._id?.toString();
+    return assignedId === currentUser.id?.toString();
   });
 
   const totalTickets = myTickets.length;
@@ -402,10 +402,10 @@ function AdminTickets() {
             </div>
             
             <div className="modal-body">
-              {currentlyViewing.filter(view => view.agentId && view.agentId.toString() !== currentUser._id?.toString()).length > 0 && (
+              {currentlyViewing.filter(view => view.agentId && view.agentId.toString() !== currentUser.id?.toString()).length > 0 && (
                 <div className="tk-lock-warning">
                   ⚠️ {currentlyViewing
-                    .filter(view => view.agentId && view.agentId.toString() !== currentUser._id?.toString())
+                    .filter(view => view.agentId && view.agentId.toString() !== currentUser.id?.toString())
                     .map(v => v.agentName)
                     .join(", ")}{" "}
                   is currently viewing/editing this ticket.
