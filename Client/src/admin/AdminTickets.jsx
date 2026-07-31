@@ -28,6 +28,16 @@ function AdminTickets() {
     fetchTickets();
   }, []);
 
+  // Lock body scroll when modal is open (prevents background from moving on mobile)
+  useEffect(() => {
+    if (selectedTicket) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [selectedTicket]);
+
   useEffect(() => {
     if (!selectedTicket) {
       setCurrentlyViewing([]);
@@ -75,7 +85,8 @@ function AdminTickets() {
       }
     } catch (err) {
       console.error("Error assigning ticket:", err);
-      alert("Failed to assign ticket.");
+      const errMsg = err.response?.data?.message || err.message || "Unknown error";
+      alert(`Failed to assign ticket: ${errMsg}`);
     }
   };
 
