@@ -463,7 +463,7 @@
   align-items: center;
   padding: 24px 30px;
   border-bottom: 1px solid #F3F4F6;
-  background: #FFFFFF;
+  background: #FFFFFF !important;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -669,6 +669,8 @@
 .dark-mode .modal-header,
 .dark-mode .ticket-message-box,
 .dark-mode .msg-icon { background: var(--bg-card); border-color: var(--border-color); }
+
+.dark-mode .modal-header { background: var(--bg-card, #1c1b2e) !important; }
 
 .dark-mode .tk-table td,
 .dark-mode .tk-toolbar,
