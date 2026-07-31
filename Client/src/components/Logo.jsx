@@ -26,12 +26,20 @@ const Logo = ({ size = "normal" }) => {
         <img 
           src="/logo.png" 
           alt="Teaching Pariksha Logo" 
-          style={{ height: current.imgHeight, width: 'auto', display: 'block' }} 
+          width={size === "large" ? "150" : "100"}
+          height={size === "large" ? "48" : "32"}
+          style={{ height: current.imgHeight, width: size === "large" ? "150px" : "100px", display: 'block' }} 
           onError={() => setImgError(true)}
         />
       ) : (
         <>
-          <img src="/logo.svg" alt="Logo" style={{ height: current.imgHeight, width: current.imgHeight, display: 'block' }} />
+          <img 
+            src="/logo.svg" 
+            alt="Logo" 
+            width={size === "large" ? "48" : "32"}
+            height={size === "large" ? "48" : "32"}
+            style={{ height: current.imgHeight, width: current.imgHeight, display: 'block' }} 
+          />
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: '1.1' }}>
             <span style={{ 
               color: '#8b5cf6', 

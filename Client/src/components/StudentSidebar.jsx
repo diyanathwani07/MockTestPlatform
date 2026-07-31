@@ -75,7 +75,7 @@ function StudentSidebar() {
   return (
     <>
       {/* Mobile Toggle Button */}
-      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={toggleSidebar}>
+      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={toggleSidebar} aria-label="Toggle Navigation Sidebar">
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 

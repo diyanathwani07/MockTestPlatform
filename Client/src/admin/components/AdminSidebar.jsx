@@ -39,7 +39,7 @@ function AdminSidebar() {
 
   return (
     <>
-      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={() => setIsOpen(!isOpen)}>
+      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={() => setIsOpen(!isOpen)} aria-label="Toggle Navigation Sidebar">
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}

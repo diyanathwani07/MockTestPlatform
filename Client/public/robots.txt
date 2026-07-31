@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mocktestplatform-lac.vercel.app/sitemap.xml
