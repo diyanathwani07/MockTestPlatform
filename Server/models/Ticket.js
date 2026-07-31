@@ -21,13 +21,25 @@ const ticketSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Open", "In Progress", "Resolved", "Closed"],
+      enum: ["Open", "In Progress", "Resolved", "Closed", "Reopened"],
       default: "Open",
     },
     attachment: {
       type: String,
       default: "",
     },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    currentlyViewing: [
+      {
+        agentId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        agentName: String,
+        lastActive: { type: Date, default: Date.now },
+      }
+    ],
     replies: [
       {
         senderType: {

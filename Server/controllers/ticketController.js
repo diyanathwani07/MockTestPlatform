@@ -58,6 +58,7 @@ const getAllTickets = async (req, res) => {
   try {
     const tickets = await Ticket.find()
       .populate("userId", "fullName email")
+      .populate("assignedTo", "fullName email")
       .sort({ createdAt: -1 }); // Newest first
     res.json(tickets);
   } catch (error) {
@@ -73,7 +74,7 @@ const updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body;
     
-    if (!["Open", "In Progress", "Resolved"].includes(status)) {
+    if (!["Open", "In Progress", "Resolved", "Reopened"].includes(status)) {
       return res.status(400).json({ message: "Invalid status." });
     }
 
@@ -211,6 +212,69 @@ const closeTicket = async (req, res) => {
   }
 };
 
+const assignTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found." });
+    }
+
+    ticket.assignedTo = req.user._id;
+    if (ticket.status === "Open") {
+      ticket.status = "In Progress";
+    }
+
+    await ticket.save();
+    await ticket.populate("assignedTo", "fullName email");
+
+    await logAction("ASSIGN_TICKET", req.user.fullName || "Admin", `Assigned ticket: ${ticket.subject} to self`, "Support", req.ip);
+
+    res.json({
+      success: true,
+      message: "Ticket assigned successfully.",
+      ticket,
+    });
+  } catch (error) {
+    console.error("Assign Ticket Error:", error);
+    res.status(500).json({ message: "Failed to assign ticket." });
+  }
+};
+
+const heartbeatViewing = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found." });
+    }
+
+    const now = Date.now();
+    const tenSecondsAgo = now - 10000;
+
+    // Filter out expired views or views by the same agent (which we will re-add/update)
+    let activeViews = ticket.currentlyViewing.filter(
+      (view) => view.lastActive && view.lastActive.getTime() > tenSecondsAgo && view.agentId.toString() !== req.user._id.toString()
+    );
+
+    // Add current agent
+    activeViews.push({
+      agentId: req.user._id,
+      agentName: req.user.fullName || "Admin",
+      lastActive: now,
+    });
+
+    ticket.currentlyViewing = activeViews;
+    await ticket.save();
+
+    res.json({
+      success: true,
+      currentlyViewing: ticket.currentlyViewing,
+    });
+  } catch (error) {
+    console.error("Heartbeat Viewing Error:", error);
+    res.status(500).json({ message: "Failed to update viewing status." });
+  }
+};
+
 module.exports = {
   createTicket,
   getMyTickets,
@@ -219,4 +283,7 @@ module.exports = {
   replyToTicket,
   reopenTicket,
   closeTicket,
+  assignTicket,
+  heartbeatViewing,
 };
+
