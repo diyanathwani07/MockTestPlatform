@@ -12,6 +12,7 @@ const {
   reopenTicket,
   closeTicket,
   assignTicket,
+  releaseTicket,
   heartbeatViewing
 } = require("../controllers/ticketController");
 
@@ -25,6 +26,7 @@ router.put("/:id/close", protect, closeTicket);
 router.get("/", protect, adminOnly, getAllTickets);
 router.put("/:id", protect, adminOnly, updateTicketStatus);
 router.put("/:id/assign", protect, adminOnly, assignTicket);
+router.put("/:id/unassign", protect, adminOnly, releaseTicket);
 router.put("/:id/heartbeat", protect, adminOnly, heartbeatViewing);
 
 

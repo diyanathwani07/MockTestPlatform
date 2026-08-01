@@ -240,6 +240,33 @@ const assignTicket = async (req, res) => {
   }
 };
 
+const releaseTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found." });
+    }
+
+    ticket.assignedTo = null;
+    if (ticket.status === "In Progress") {
+      ticket.status = "Open";
+    }
+
+    await ticket.save();
+
+    await logAction("UNASSIGN_TICKET", req.user.fullName || "Admin", `Released ticket: ${ticket.subject}`, "Support", req.ip);
+
+    res.json({
+      success: true,
+      message: "Ticket unassigned successfully.",
+      ticket,
+    });
+  } catch (error) {
+    console.error("Release Ticket Error:", error);
+    res.status(500).json({ message: "Failed to release/unassign ticket." });
+  }
+};
+
 const heartbeatViewing = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id);
@@ -284,6 +311,7 @@ module.exports = {
   reopenTicket,
   closeTicket,
   assignTicket,
+  releaseTicket,
   heartbeatViewing,
 };
 
