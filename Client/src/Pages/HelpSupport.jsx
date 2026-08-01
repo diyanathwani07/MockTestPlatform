@@ -27,6 +27,11 @@ function HelpSupport() {
   const [replying, setReplying] = useState(false);
   const [reopening, setReopening] = useState(false);
   const [closing, setClosing] = useState(false);
+  
+  // CSAT rating states
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -196,13 +201,19 @@ function HelpSupport() {
 
   const handleCloseTicket = async () => {
     if (!selectedTicket) return;
-    if (!window.confirm("Are you sure you want to close this support query?")) return;
+    setShowRatingModal(true);
+  };
+
+  const handleCloseConfirm = async () => {
     setClosing(true);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/close`,
-        {},
+        {
+          feedbackRating,
+          feedbackComment
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -211,10 +222,13 @@ function HelpSupport() {
         t._id === updatedTicket._id ? updatedTicket : t
       ));
       setSelectedTicket(updatedTicket);
-      alert("Ticket closed successfully!");
+      setShowRatingModal(false);
+      setFeedbackComment("");
+      setFeedbackRating(5);
+      alert("Feedback submitted successfully!");
     } catch (err) {
       console.error("Error closing ticket:", err);
-      alert(err.response?.data?.message || "Failed to close ticket.");
+      alert(err.response?.data?.message || "Failed to submit feedback.");
     } finally {
       setClosing(false);
     }
@@ -733,7 +747,71 @@ function HelpSupport() {
                )}
 
                {selectedTicket.status === 'Resolved' && (
-                 <div style={{ marginTop: "24px", display: "flex", justifyContent: "center" }}>
+                 <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+                   {selectedTicket.feedbackRating ? (
+                     <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "12px", padding: "16px", width: "100%", boxSizing: "border-box", textAlign: "center" }}>
+                       <p style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#10B981" }}>Your Feedback</p>
+                       <div style={{ display: "flex", justifyContent: "center", gap: "4px", marginBottom: "8px" }}>
+                         {[1, 2, 3, 4, 5].map((star) => (
+                           <span key={star} style={{ fontSize: "20px", color: star <= selectedTicket.feedbackRating ? "#F59E0B" : "#D1D5DB" }}>★</span>
+                         ))}
+                       </div>
+                       {selectedTicket.feedbackComment && (
+                         <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontStyle: "italic" }}>"{selectedTicket.feedbackComment}"</p>
+                       )}
+                     </div>
+                   ) : (
+                     <div style={{ width: "100%", background: "var(--bg-input)", border: "1.5px dashed var(--border-color)", borderRadius: "12px", padding: "20px", boxSizing: "border-box", textAlign: "center" }}>
+                       <p style={{ margin: "0 0 12px 0", fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>Rate the support agent's reply</p>
+                       <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "16px" }}>
+                         {[1, 2, 3, 4, 5].map((star) => (
+                           <button
+                             key={star}
+                             onClick={() => setFeedbackRating(star)}
+                             style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "28px", color: star <= feedbackRating ? "#F59E0B" : "#D1D5DB", outline: "none", padding: 0 }}
+                           >
+                             ★
+                           </button>
+                         ))}
+                       </div>
+                       <textarea
+                         value={feedbackComment}
+                         onChange={(e) => setFeedbackComment(e.target.value)}
+                         placeholder="Any suggestions or comments..."
+                         style={{
+                           width: "100%",
+                           minHeight: "60px",
+                           padding: "10px",
+                           borderRadius: "8px",
+                           border: "1px solid var(--border-color)",
+                           background: "var(--bg-card)",
+                           color: "var(--text-primary)",
+                           fontFamily: "inherit",
+                           fontSize: "13px",
+                           resize: "none",
+                           outline: "none",
+                           boxSizing: "border-box",
+                           marginBottom: "12px"
+                         }}
+                       />
+                       <button
+                         onClick={handleCloseConfirm}
+                         disabled={closing}
+                         style={{
+                           padding: "8px 20px",
+                           background: "var(--primary-color)",
+                           color: "#fff",
+                           border: "none",
+                           borderRadius: "8px",
+                           fontWeight: "600",
+                           fontSize: "13px",
+                           cursor: closing ? "not-allowed" : "pointer"
+                         }}
+                       >
+                         {closing ? "Submitting..." : "Submit Review"}
+                       </button>
+                     </div>
+                   )}
                    <button 
                      onClick={handleReopenTicket}
                      disabled={reopening}
@@ -759,6 +837,66 @@ function HelpSupport() {
                  </div>
                )}
              </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rating & Feedback Modal Popup when Closing */}
+      {showRatingModal && (
+        <div className="modal-overlay" style={{ background: "rgba(0, 0, 0, 0.5)", zIndex: 1100, position: "fixed", top: 0, left: 0, width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div className="ticket-modal center-modal" style={{ width: "90%", maxWidth: "420px", display: "block", background: "var(--bg-card, #FFF)", borderRadius: "16px", padding: "24px", boxSizing: "border-box" }}>
+            <h3 style={{ marginTop: 0, color: "var(--text-primary)", fontSize: "18px", fontWeight: "700" }}>Rate Your Experience</h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "20px" }}>How helpful was the admin support agent in resolving your query?</p>
+            
+            {/* Star Rating Select Widget */}
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginBottom: "20px" }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setFeedbackRating(star)}
+                  style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "32px", color: star <= feedbackRating ? "#F59E0B" : "#D1D5DB", outline: "none", padding: 0 }}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={feedbackComment}
+              onChange={(e) => setFeedbackComment(e.target.value)}
+              placeholder="Write a comment if your issue was not properly solved, or how we can improve..."
+              style={{
+                width: "100%",
+                minHeight: "80px",
+                padding: "12px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                background: "var(--bg-input)",
+                color: "var(--text-primary)",
+                fontFamily: "inherit",
+                fontSize: "14px",
+                resize: "none",
+                outline: "none",
+                boxSizing: "border-box",
+                marginBottom: "20px"
+              }}
+            />
+
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowRatingModal(false)}
+                style={{ padding: "8px 16px", background: "transparent", border: "1.5px solid var(--border-color)", color: "var(--text-secondary)", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCloseConfirm}
+                disabled={closing}
+                style={{ padding: "8px 20px", background: "var(--primary-color)", color: "#fff", border: "none", borderRadius: "8px", fontWeight: "600", cursor: closing ? "not-allowed" : "pointer" }}
+              >
+                {closing ? "Submitting..." : "Submit & Close"}
+              </button>
+            </div>
           </div>
         </div>
       )}

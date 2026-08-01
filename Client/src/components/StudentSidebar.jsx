@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
+import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
 import axios from "axios";
 

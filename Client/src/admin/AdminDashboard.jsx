@@ -283,41 +283,43 @@ function AdminDashboard() {
 
           {/* Super Admin Dashboard Selector Switch */}
           {hasGlobalAccess && (
-            <div style={{ display: "inline-flex", background: "var(--bg-input, #F9FAFB)", border: "1.5px solid var(--border-color, #E5E7EB)", borderRadius: "100px", padding: "4px", marginBottom: "28px" }}>
-              <button 
-                onClick={() => setActiveDashboardView("main")}
-                style={{ 
-                  padding: "8px 24px", 
-                  borderRadius: "100px", 
-                  fontWeight: "700", 
-                  fontSize: "13px", 
-                  cursor: "pointer", 
-                  border: "none",
-                  background: activeDashboardView === "main" ? "var(--primary-color, #6E3FF3)" : "transparent",
-                  color: activeDashboardView === "main" ? "#fff" : "var(--text-secondary, #6B7280)",
-                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                  outline: "none"
-                }}
-              >
-                Quiz & User Analytics
-              </button>
-              <button 
-                onClick={() => setActiveDashboardView("support")}
-                style={{ 
-                  padding: "8px 24px", 
-                  borderRadius: "100px", 
-                  fontWeight: "700", 
-                  fontSize: "13px", 
-                  cursor: "pointer", 
-                  border: "none",
-                  background: activeDashboardView === "support" ? "var(--primary-color, #6E3FF3)" : "transparent",
-                  color: activeDashboardView === "support" ? "#fff" : "var(--text-secondary, #6B7280)",
-                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                  outline: "none"
-                }}
-              >
-                Support Ticket Analytics
-              </button>
+            <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "28px" }}>
+              <div style={{ display: "inline-flex", background: "var(--bg-input, #F9FAFB)", border: "1.5px solid var(--border-color, #E5E7EB)", borderRadius: "100px", padding: "4px" }}>
+                <button 
+                  onClick={() => setActiveDashboardView("main")}
+                  style={{ 
+                    padding: "8px 24px", 
+                    borderRadius: "100px", 
+                    fontWeight: "700", 
+                    fontSize: "13px", 
+                    cursor: "pointer", 
+                    border: "none",
+                    background: activeDashboardView === "main" ? "var(--primary-color, #6E3FF3)" : "transparent",
+                    color: activeDashboardView === "main" ? "#fff" : "var(--text-secondary, #6B7280)",
+                    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    outline: "none"
+                  }}
+                >
+                  Quiz & User Analytics
+                </button>
+                <button 
+                  onClick={() => setActiveDashboardView("support")}
+                  style={{ 
+                    padding: "8px 24px", 
+                    borderRadius: "100px", 
+                    fontWeight: "700", 
+                    fontSize: "13px", 
+                    cursor: "pointer", 
+                    border: "none",
+                    background: activeDashboardView === "support" ? "var(--primary-color, #6E3FF3)" : "transparent",
+                    color: activeDashboardView === "support" ? "#fff" : "var(--text-secondary, #6B7280)",
+                    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    outline: "none"
+                  }}
+                >
+                  Support Ticket Analytics
+                </button>
+              </div>
             </div>
           )}
 

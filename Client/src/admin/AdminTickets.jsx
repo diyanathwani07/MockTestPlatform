@@ -507,6 +507,20 @@ function AdminTickets() {
                   </div>
                 </div>
 
+                {selectedTicket.feedbackRating && (
+                  <div style={{ marginTop: "16px", padding: "16px", background: "rgba(245, 158, 11, 0.05)", border: "1.5px solid rgba(245, 158, 11, 0.2)", borderRadius: "12px", textAlign: "center" }}>
+                    <p style={{ margin: "0 0 6px 0", fontSize: "13px", fontWeight: "700", color: "#D97706", textTransform: "uppercase", letterSpacing: "0.5px" }}>Customer Satisfaction Rating</p>
+                    <div style={{ display: "flex", justifyContent: "center", gap: "4px", marginBottom: "6px" }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span key={star} style={{ fontSize: "20px", color: star <= selectedTicket.feedbackRating ? "#F59E0B" : "#D1D5DB" }}>★</span>
+                      ))}
+                    </div>
+                    {selectedTicket.feedbackComment && (
+                      <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontStyle: "italic" }}>"{selectedTicket.feedbackComment}"</p>
+                    )}
+                  </div>
+                )}
+
                 {/* THREADED REPLIES */}
                 {selectedTicket.replies && selectedTicket.replies.length > 0 && (
                   <div className="ticket-replies" style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>

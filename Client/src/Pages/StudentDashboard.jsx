@@ -183,11 +183,29 @@ function StudentDashboard() {
           <p className="sd-hero-subtitle">Keep practicing, keep improving!</p>
         </div>
         <div className="sd-hero-graphic">
-          <div className="sd-hero-illustration">
-            <ClipboardList className="sd-ill-icon clipboard" />
-            <Clock className="sd-ill-icon clock" />
-            <Edit3 className="sd-ill-icon pencil" />
-          </div>
+          <div className="ambient-glow-circle-1"></div>
+          <div className="ambient-glow-circle-2"></div>
+          {/* Generate 20 floating particles with different styles */}
+          {Array.from({ length: 20 }).map((_, index) => {
+            const size = Math.floor(Math.random() * 3) + 2; // 2px to 4px
+            const left = Math.floor(Math.random() * 70) + 30; // 30% to 100% (right side decorative)
+            const delay = (index * 0.8).toFixed(1);
+            const duration = (15 + Math.random() * 15).toFixed(1);
+            return (
+              <div 
+                key={index} 
+                className="ambient-particle"
+                style={{
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  left: `${left}%`,
+                  bottom: `-${size}px`,
+                  animationDelay: `${delay}s`,
+                  animationDuration: `${duration}s`
+                }}
+              ></div>
+            );
+          })}
         </div>
       </div>
 
