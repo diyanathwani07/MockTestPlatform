@@ -75,10 +75,10 @@ const getQuizzes = async (req, res) => {
 
     if (req.user) {
       const user = await User.findById(req.user._id).select("purchasedExams");
-      const purchasedExamIds = user.purchasedExams.map((id) => id.toString());
+      const purchasedExamIds = (user?.purchasedExams || []).map((id) => id.toString());
       quizzes = quizzes.map((quiz) => {
         const qObj = quiz.toObject();
-        qObj.isPurchased = purchasedExamIds.includes(qObj._id.toString());
+        qObj.isPurchased = req.user.role === "admin" || req.user.role === "superadmin" || purchasedExamIds.includes(qObj._id.toString());
         return qObj;
       });
     }

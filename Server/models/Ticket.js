@@ -66,6 +66,16 @@ const ticketSchema = new mongoose.Schema(
         },
       },
     ],
+    feedbackRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null
+    },
+    feedbackComment: {
+      type: String,
+      default: ""
+    }
   },
   { timestamps: true }
 );

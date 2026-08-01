@@ -184,6 +184,7 @@ const reopenTicket = async (req, res) => {
 
 const closeTicket = async (req, res) => {
   try {
+    const { feedbackRating, feedbackComment } = req.body;
     const ticket = await Ticket.findById(req.params.id);
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found." });
@@ -197,13 +198,21 @@ const closeTicket = async (req, res) => {
     }
 
     ticket.status = "Resolved";
+    
+    if (feedbackRating) {
+      ticket.feedbackRating = Number(feedbackRating);
+    }
+    if (feedbackComment !== undefined) {
+      ticket.feedbackComment = feedbackComment;
+    }
+
     await ticket.save();
 
-    await logAction("CLOSE_TICKET", req.user.fullName || "User", `Closed ticket: ${ticket.subject}`, "Support", req.ip);
+    await logAction("CLOSE_TICKET", req.user.fullName || "User", `Closed ticket with rating ${feedbackRating || 'none'}: ${ticket.subject}`, "Support", req.ip);
 
     res.json({
       success: true,
-      message: "Ticket has been closed.",
+      message: "Ticket has been closed with feedback.",
       ticket,
     });
   } catch (error) {

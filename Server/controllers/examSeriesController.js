@@ -85,6 +85,7 @@ exports.getAllSeriesWithQuizzes = async (req, res) => {
 
 exports.getSeriesById = async (req, res) => {
   try {
+    console.log("[DEBUG] getSeriesById called with headers:", req.headers.authorization, "and user:", req.user ? req.user._id : "none");
     const series = await ExamSeries.findById(req.params.id);
     if (!series) return res.status(404).json({ message: "Exam Series not found." });
 
@@ -105,7 +106,7 @@ exports.getSeriesById = async (req, res) => {
 
     const quizzesWithPurchaseStatus = quizzes.map(q => {
       const qObj = q.toObject();
-      qObj.isPurchased = purchasedExamIds.includes(qObj._id.toString());
+      qObj.isPurchased = req.user && (req.user.role === "admin" || req.user.role === "superadmin" || purchasedExamIds.includes(qObj._id.toString()));
       return qObj;
     });
 
