@@ -61,6 +61,7 @@ function AuditLog() {
       log.module === moduleFilter ||
       (moduleFilter === "User Management" && log.module === "UserManagement") ||
       (moduleFilter === "Support" && log.module === "Support") ||
+      (moduleFilter === "Purchase" && log.module === "Purchase") ||
       (moduleFilter === "Auth" && log.module === "Auth");
     
     let matchDate = true;
@@ -76,10 +77,10 @@ function AuditLog() {
 
     let matchMode = true;
     if (viewMode === "Admin Actions") {
-      // START_QUIZ is the main student noise
-      matchMode = log.action !== "START_QUIZ";
+      // Hide student test starts and student purchases from Admin view
+      matchMode = log.action !== "START_QUIZ" && log.action !== "PURCHASE_EXAM" && log.action !== "PURCHASE_PRACTICE";
     } else if (viewMode === "Student Actions") {
-      matchMode = log.action === "START_QUIZ";
+      matchMode = log.action === "START_QUIZ" || log.action === "PURCHASE_EXAM" || log.action === "PURCHASE_PRACTICE";
     }
 
     return matchSearch && matchModule && matchDate && matchMode;
@@ -135,6 +136,7 @@ function AuditLog() {
               <option>Support</option>
               <option>Auth</option>
               <option>Results</option>
+              <option>Purchase</option>
               <option>Settings</option>
             </select>
             

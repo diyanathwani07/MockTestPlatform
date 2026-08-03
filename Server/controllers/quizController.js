@@ -720,6 +720,61 @@ const exportSectionAsQuiz = async (req, res) => {
   }
 };
 
+// POST /api/quizzes/custom
+// Generate a custom quiz for a student
+const generateCustomQuiz = async (req, res) => {
+  try {
+    const { subject, quantity } = req.body;
+    if (!subject || !quantity) {
+      return res.status(400).json({ message: "Subject and quantity are required." });
+    }
+
+    const numQuestions = parseInt(quantity, 10);
+    if (isNaN(numQuestions) || numQuestions <= 0) {
+      return res.status(400).json({ message: "Quantity must be a positive number." });
+    }
+
+    // Fetch random questions for the subject
+    const questions = await Question.aggregate([
+      { $match: { subject, isDeleted: { $ne: true } } },
+      { $sample: { size: numQuestions } }
+    ]);
+
+    if (questions.length === 0) {
+      return res.status(404).json({ message: "No questions found for the selected subject." });
+    }
+
+    // Create a new quiz document
+    const customQuiz = await Quiz.create({
+      title: `Custom Test - ${subject} (${questions.length} Qs)`,
+      subject,
+      description: `Custom practice test generated for ${subject}.`,
+      duration: questions.length, // 1 min per question approx
+      marksPerQuestion: 1,
+      negativeMarking: 0.25,
+      published: true, // Make it immediately available to the user
+      status: "Published",
+      quizType: "custom", // Add custom type if needed, or use 'practice'
+      createdBy: req.user?._id,
+      questions: questions.map(q => ({
+        questionEnglish: q.questionEnglish,
+        questionHindi: q.questionHindi,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        subject: q.subject
+      })),
+      isModular: false,
+    });
+
+    res.status(201).json(customQuiz);
+  } catch (error) {
+    console.error("Generate Custom Quiz Error:", error);
+    res.status(500).json({ message: "Failed to generate custom quiz." });
+  }
+};
+
 module.exports = {
   createQuiz,
   getQuizzes,
@@ -736,4 +791,5 @@ module.exports = {
   extractSectionHandler,
   duplicateQuizHandler,
   convertSingleToMulti,
+  generateCustomQuiz,
 };

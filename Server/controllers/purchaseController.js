@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Quiz = require("../models/Quiz");
 const PracticeQuiz = require("../models/PracticeQuiz");
+const logAction = require("../utils/logger");
 
 exports.purchaseExam = async (req, res) => {
   try {
@@ -14,6 +15,12 @@ exports.purchaseExam = async (req, res) => {
       user.purchasedExams.push(examId);
       await user.save();
     }
+
+    // Try to find the exam details for logging
+    const exam = await Quiz.findById(examId);
+    const examTitle = exam ? exam.title : `Exam ID: ${examId}`;
+
+    await logAction("PURCHASE_EXAM", user.fullName, examTitle, "Purchase", req.ip);
 
     res.status(200).json({ message: "Exam purchased successfully", success: true });
   } catch (error) {
@@ -33,6 +40,12 @@ exports.purchasePractice = async (req, res) => {
       user.purchasedPractice.push(practiceId);
       await user.save();
     }
+
+    // Try to find the practice details for logging
+    const practice = await PracticeQuiz.findById(practiceId);
+    const practiceTitle = practice ? practice.title : `Practice ID: ${practiceId}`;
+
+    await logAction("PURCHASE_PRACTICE", user.fullName, practiceTitle, "Purchase", req.ip);
 
     res.status(200).json({ message: "Practice module purchased successfully", success: true });
   } catch (error) {

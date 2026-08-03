@@ -72,6 +72,7 @@ function CreatePracticeMulti() {
   const [message, setMessage] = useState({ text: "", type: "" });
   const [isSectionPickerOpen, setIsSectionPickerOpen] = useState(false);
   const [isQuestionsVisible, setIsQuestionsVisible] = useState(true);
+  const [isGlobalSettingsCollapsed, setIsGlobalSettingsCollapsed] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -585,142 +586,163 @@ function CreatePracticeMulti() {
 
                 {/* Global Settings */}
                 <div className="form-card" style={{ padding: "20px", marginBottom: 0 }}>
-                  <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)", fontSize: "16px" }}>Global Settings</h3>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <div className="form-field">
-                      <label>Assessment Title</label>
-                      <input
-                        type="text"
-                        name="title"
-                        value={quizMeta.title}
-                        onChange={handleMetaChange}
-                        placeholder="e.g. TCS NQT 2026"
-                        className="force-quiz-input"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label>Subject Category</label>
-                      <input
-                        type="text"
-                        name="subject"
-                        value={quizMeta.subject}
-                        onChange={handleMetaChange}
-                        placeholder="e.g. Aptitude"
-                        className="force-quiz-input"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label>Exam Name</label>
-                      <input
-                        type="text"
-                        name="examName"
-                        value={quizMeta.examName}
-                        onChange={handleMetaChange}
-                        placeholder="e.g. TCS NQT"
-                        className="force-quiz-input"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label>Description (Optional)</label>
-                      <input
-                        type="text"
-                        name="description"
-                        value={quizMeta.description}
-                        onChange={handleMetaChange}
-                        placeholder="Brief info..."
-                        className="force-quiz-input"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label>Create As</label>
-                      <select
-                        name="publishAs"
-                        value={quizMeta.publishAs || "exam"}
-                        onChange={handleMetaChange}
-                        className="force-quiz-input"
-                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
-                      >
-                        <option value="exam">Exam Only</option>
-                        <option value="practice">Practice Only</option>
-                        <option value="both">Both Exam & Practice</option>
-                      </select>
-                    </div>
-                    <div className="form-field">
-                      <label>Global Duration (Optional)</label>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                        <input
-                          type="number"
-                          name="durationMin"
-                          value={quizMeta.durationMin}
-                          onChange={handleMetaChange}
-                          placeholder="Min"
-                          className="force-quiz-input"
-                        />
-                        <input
-                          type="number"
-                          name="durationSec"
-                          value={quizMeta.durationSec}
-                          onChange={handleMetaChange}
-                          placeholder="Sec"
-                          className="force-quiz-input"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-field" style={{ marginTop: "16px" }}>
-                      <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px", display: "block" }}>
-                        Learning Settings
-                      </label>
-                      <div style={{ background: "var(--bg-panel)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
-                          <input 
-                            type="checkbox"
-                            name="shuffleQuestions"
-                            checked={quizMeta.shuffleQuestions}
-                            onChange={(e) => setQuizMeta({ ...quizMeta, shuffleQuestions: e.target.checked })}
-                            style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
-                          />
-                          Shuffle Questions
-                        </label>
-
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
-                          <input 
-                            type="checkbox"
-                            name="shuffleOptions"
-                            checked={quizMeta.shuffleOptions}
-                            onChange={(e) => setQuizMeta({ ...quizMeta, shuffleOptions: e.target.checked })}
-                            style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
-                          />
-                          Shuffle Options
-                        </label>
-
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
-                          <input 
-                            type="checkbox"
-                            name="randomSelection"
-                            checked={quizMeta.randomSelection}
-                            onChange={(e) => setQuizMeta({ ...quizMeta, randomSelection: e.target.checked })}
-                            style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
-                          />
-                          Random Question Selection (Optional)
-                        </label>
-
-                        {quizMeta.randomSelection && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-                            <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>Questions per Attempt:</label>
-                            <input 
-                              type="number"
-                              min="1"
-                              value={quizMeta.questionsPerAttempt}
-                              onChange={(e) => setQuizMeta({ ...quizMeta, questionsPerAttempt: parseInt(e.target.value, 10) || 20 })}
-                              style={{ width: '70px', height: '36px', borderRadius: '8px', border: '1.5px solid var(--border-color)', padding: '0 8px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)', textAlign: 'center' }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 16px 0" }}>
+                    <h3 style={{ margin: 0, color: "var(--text-primary)", fontSize: "16px" }}>Global Settings</h3>
+                    <button 
+                      type="button" 
+                      onClick={() => setIsGlobalSettingsCollapsed(!isGlobalSettingsCollapsed)}
+                      style={{ 
+                        background: "none", 
+                        border: "none", 
+                        color: "var(--primary-color, #8B5CF6)", 
+                        cursor: "pointer", 
+                        fontSize: "13.5px", 
+                        fontWeight: "600",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      {isGlobalSettingsCollapsed ? "+ Expand" : "- Collapse"}
+                    </button>
                   </div>
+
+                  {!isGlobalSettingsCollapsed && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      <div className="form-field">
+                        <label>Assessment Title</label>
+                        <input
+                          type="text"
+                          name="title"
+                          value={quizMeta.title}
+                          onChange={handleMetaChange}
+                          placeholder="e.g. TCS NQT 2026"
+                          className="force-quiz-input"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label>Subject Category</label>
+                        <input
+                          type="text"
+                          name="subject"
+                          value={quizMeta.subject}
+                          onChange={handleMetaChange}
+                          placeholder="e.g. Aptitude"
+                          className="force-quiz-input"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label>Exam Name</label>
+                        <input
+                          type="text"
+                          name="examName"
+                          value={quizMeta.examName}
+                          onChange={handleMetaChange}
+                          placeholder="e.g. TCS NQT"
+                          className="force-quiz-input"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label>Description (Optional)</label>
+                        <input
+                          type="text"
+                          name="description"
+                          value={quizMeta.description}
+                          onChange={handleMetaChange}
+                          placeholder="Brief info..."
+                          className="force-quiz-input"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label>Create As</label>
+                        <select
+                          name="publishAs"
+                          value={quizMeta.publishAs || "exam"}
+                          onChange={handleMetaChange}
+                          className="force-quiz-input"
+                          style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
+                        >
+                          <option value="exam">Exam Only</option>
+                          <option value="practice">Practice Only</option>
+                          <option value="both">Both Exam & Practice</option>
+                        </select>
+                      </div>
+                      <div className="form-field">
+                        <label>Global Duration (Optional)</label>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                          <input
+                            type="number"
+                            name="durationMin"
+                            value={quizMeta.durationMin}
+                            onChange={handleMetaChange}
+                            placeholder="Min"
+                            className="force-quiz-input"
+                          />
+                          <input
+                            type="number"
+                            name="durationSec"
+                            value={quizMeta.durationSec}
+                            onChange={handleMetaChange}
+                            placeholder="Sec"
+                            className="force-quiz-input"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-field" style={{ marginTop: "16px" }}>
+                        <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px", display: "block" }}>
+                          Learning Settings
+                        </label>
+                        <div style={{ background: "var(--bg-panel)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "12px" }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                            <input 
+                              type="checkbox"
+                              name="shuffleQuestions"
+                              checked={quizMeta.shuffleQuestions}
+                              onChange={(e) => setQuizMeta({ ...quizMeta, shuffleQuestions: e.target.checked })}
+                              style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                            />
+                            Shuffle Questions
+                          </label>
+
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                            <input 
+                              type="checkbox"
+                              name="shuffleOptions"
+                              checked={quizMeta.shuffleOptions}
+                              onChange={(e) => setQuizMeta({ ...quizMeta, shuffleOptions: e.target.checked })}
+                              style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                            />
+                            Shuffle Options
+                          </label>
+
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', fontSize: '13.5px', cursor: 'pointer', userSelect: 'none' }}>
+                            <input 
+                              type="checkbox"
+                              name="randomSelection"
+                              checked={quizMeta.randomSelection}
+                              onChange={(e) => setQuizMeta({ ...quizMeta, randomSelection: e.target.checked })}
+                              style={{ width: '16px', height: '16px', accentColor: '#8B5CF6' }}
+                            />
+                            Random Question Selection (Optional)
+                          </label>
+
+                          {quizMeta.randomSelection && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                              <label style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>Questions per Attempt:</label>
+                              <input 
+                                type="number"
+                                min="1"
+                                value={quizMeta.questionsPerAttempt}
+                                onChange={(e) => setQuizMeta({ ...quizMeta, questionsPerAttempt: parseInt(e.target.value, 10) || 20 })}
+                                style={{ width: '70px', height: '36px', borderRadius: '8px', border: '1.5px solid var(--border-color)', padding: '0 8px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)', textAlign: 'center' }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
                     <button

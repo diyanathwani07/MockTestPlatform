@@ -11,10 +11,12 @@ const {
   deleteQuestion,
   restoreQuestion,
   permanentlyDeleteQuestion,
+  getSubjects,
 } = require("../controllers/questionController");
 
 // Public/General read queries (or protected/general student routes)
 router.get("/", protect, getQuestions);
+router.get("/subjects", protect, getSubjects);
 router.get("/:id", protect, getQuestionById);
 
 // Admin-only write endpoints

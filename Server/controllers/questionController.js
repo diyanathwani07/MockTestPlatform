@@ -199,6 +199,18 @@ const permanentlyDeleteQuestion = async (req, res) => {
   }
 };
 
+// Get distinct subjects
+const getSubjects = async (req, res) => {
+  try {
+    const subjects = await Question.distinct("subject", { isDeleted: { $ne: true } });
+    const filteredSubjects = subjects.filter(subject => subject && subject.trim() !== "");
+    res.json(filteredSubjects);
+  } catch (error) {
+    console.error("Get Subjects Error:", error);
+    res.status(500).json({ message: "Failed to fetch subjects.", error: error.message });
+  }
+};
+
 module.exports = {
   createQuestion,
   bulkCreateQuestions,
@@ -208,4 +220,5 @@ module.exports = {
   deleteQuestion,
   restoreQuestion,
   permanentlyDeleteQuestion,
+  getSubjects,
 };

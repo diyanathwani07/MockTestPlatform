@@ -20,6 +20,7 @@ const {
   convertSingleToMulti,
   restoreQuiz,
   permanentlyDeleteQuiz,
+  generateCustomQuiz,
 } = require("../controllers/quizController");
 
 // Dashboard stats — admin only
@@ -27,6 +28,9 @@ router.get("/stats/dashboard", protect, adminOnly, getDashboardStats);
 
 // Conversion utility — must be before /:id routes
 router.post("/convert-single-to-multi", protect, adminOnly, convertSingleToMulti);
+
+// Custom Quiz Generation — user route
+router.post("/custom", protect, generateCustomQuiz);
 
 // Public/general quiz listing
 router.get("/", optionalProtect, getQuizzes);
