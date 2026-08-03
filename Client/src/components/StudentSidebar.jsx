@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle } from "lucide-react";
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
@@ -114,6 +114,10 @@ function StudentSidebar() {
           <NavLink to="/dashboard/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <BookOpen size={20} />
             <span>Practice</span>
+          </NavLink>
+          <NavLink to="/dashboard/create-custom-quiz" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <PlusCircle size={20} />
+            <span>Custom Test</span>
           </NavLink>
           <NavLink to="/dashboard/results" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <LineChart size={20} />

@@ -42,6 +42,7 @@ import HelpSupport from "./Pages/HelpSupport";
 import StudentProfile from "./Pages/StudentProfile";
 import ExamsPage from "./Pages/ExamsPage";
 import PracticePage from "./Pages/PracticePage";
+import CreateCustomQuiz from "./Pages/CreateCustomQuiz";
 
 function App() {
   return (
@@ -135,6 +136,15 @@ function App() {
           element={
             <ProtectedRoute>
               <PracticePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/create-custom-quiz"
+          element={
+            <ProtectedRoute>
+              <CreateCustomQuiz />
             </ProtectedRoute>
           }
         />

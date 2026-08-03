@@ -170,13 +170,20 @@
   flex-shrink: 0;
   min-height: 180px;
   border-radius: 28px;
-  margin: 10px 24px 0px 24px;
+  margin: 10px 24px 20px 24px;
   padding: 32px 40px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   
   /* Layer 1: Dark premium gradient */
   background: linear-gradient(135deg, #15152a 0%, #201b48 45%, #2d1e63 100%);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Light Mode Override for Welcome Banner Surface */
+body:not(.dark-mode) .sd-hero {
+  background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 50%, #e0e7ff 100%);
+  border: 1px solid rgba(110, 63, 243, 0.1);
+  box-shadow: 0 10px 30px rgba(110, 63, 243, 0.05);
 }
 
 /* Layer 2 & 3: Radial glows (Purple top-right, Blue bottom-left) */
@@ -194,6 +201,10 @@
   z-index: 1;
 }
 
+body:not(.dark-mode) .sd-hero::before {
+  background: radial-gradient(circle, rgba(108, 61, 244, 0.4) 0%, transparent 70%);
+}
+
 .sd-hero::after {
   content: '';
   position: absolute;
@@ -206,6 +217,10 @@
   filter: blur(60px);
   pointer-events: none;
   z-index: 1;
+}
+
+body:not(.dark-mode) .sd-hero::after {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
 }
 
 .sd-hero-content {
@@ -237,6 +252,20 @@
   color: rgba(255, 255, 255, 0.55);
   margin: 0;
   font-weight: 400;
+}
+
+/* Light Mode Overrides for Welcome Banner Typography */
+body:not(.dark-mode) .sd-hero-greeting {
+  color: #5b21b6; /* Premium Indigo */
+}
+
+body:not(.dark-mode) .sd-hero-name {
+  color: #1e1b4b; /* Deep Ink */
+  text-shadow: none;
+}
+
+body:not(.dark-mode) .sd-hero-subtitle {
+  color: #4f46e5;
 }
 
 /* Layered Ambient CSS Animated Elements */
@@ -283,6 +312,18 @@
   background: rgba(255, 255, 255, 0.2);
   pointer-events: none;
   animation: floatParticle 22s linear infinite;
+}
+
+body:not(.dark-mode) .ambient-particle {
+  background: rgba(108, 61, 244, 0.35); /* Visible colored floating dots in light mode */
+}
+
+body:not(.dark-mode) .ambient-glow-circle-1 {
+  background: rgba(139, 92, 246, 0.25);
+}
+
+body:not(.dark-mode) .ambient-glow-circle-2 {
+  background: rgba(59, 130, 246, 0.18);
 }
 
 /* GPU-friendly Ambient Animations */
@@ -1079,4 +1120,22 @@ body.dark-mode .mobile-sidebar-toggle {
   transform: translateY(-4px);
   border-color: rgba(110, 63, 243, 0.35);
   box-shadow: 0 12px 32px -8px rgba(110, 63, 243, 0.22);
+}
+
+/* ── CUSTOM QUIZ CARD RESPONSIVENESS ── */
+.sd-custom-quiz-card {
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  .sd-custom-quiz-card {
+    padding: 24px;
+    border-radius: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sd-custom-quiz-card {
+    padding: 18px;
+  }
 }
