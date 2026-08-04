@@ -22,7 +22,8 @@ function StudentProfile() {
     if (previewMode) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+      const res = await axios.put(`${baseUrl}/api/auth/profile`, {
         avatar: avatarUrlOrBase64
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -32,7 +33,7 @@ function StudentProfile() {
       setShowAvatarPicker(false);
     } catch (error) {
       console.error("Error saving avatar", error);
-      alert("Failed to update avatar.");
+      alert(error.response?.data?.message || error.message || "Failed to update avatar.");
     }
   };
 
@@ -80,7 +81,8 @@ function StudentProfile() {
     setIsSaving(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, formData, {
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+      const res = await axios.put(`${baseUrl}/api/auth/profile`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Update local storage and state
@@ -89,7 +91,7 @@ function StudentProfile() {
       setIsEditing(false); // Flip back on success
     } catch (error) {
       console.error("Error saving profile", error);
-      alert("Failed to save profile. Please try again.");
+      alert(error.response?.data?.message || error.message || "Failed to save profile. Please try again.");
     } finally {
       setIsSaving(false);
     }

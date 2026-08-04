@@ -17,7 +17,8 @@ function AdminProfile() {
   const handleSelectAvatar = async (avatarUrlOrBase64) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+      const res = await axios.put(`${baseUrl}/api/auth/profile`, {
         avatar: avatarUrlOrBase64
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -27,7 +28,7 @@ function AdminProfile() {
       setShowAvatarPicker(false);
     } catch (error) {
       console.error("Error saving avatar", error);
-      alert("Failed to update avatar.");
+      alert(error.response?.data?.message || error.message || "Failed to update avatar.");
     }
   };
 
@@ -76,7 +77,8 @@ function AdminProfile() {
     setIsSaving(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+      const res = await axios.put(`${baseUrl}/api/auth/profile`, {
         ...formData,
         avatar: user.avatar
       }, {
@@ -87,7 +89,7 @@ function AdminProfile() {
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving profile", error);
-      alert("Failed to save profile. Please try again.");
+      alert(error.response?.data?.message || error.message || "Failed to save profile. Please try again.");
     } finally {
       setIsSaving(false);
     }

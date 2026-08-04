@@ -1237,3 +1237,40 @@ body.dark-mode .mobile-sidebar-toggle {
   }
 }
 
+/* ── SIDEBAR LOG OUT HOVER OVERRIDES ── */
+.sidebar-link.logout-btn {
+  color: var(--text-muted, #94A3B8) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: none !important;
+  width: 100% !important;
+  font-weight: 600 !important;
+}
+.sidebar-link.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+.sidebar-link.logout-btn svg {
+  transition: transform 0.25s ease, color 0.2s ease;
+}
+.sidebar-link.logout-btn:hover svg {
+  color: #ef4444 !important;
+  transform: translateX(4px);
+}
+
+/* ── LIGHT MODE SIDEBAR LINKS OVERRIDES ── */
+body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn) {
+  color: #1a1a1a !important; /* Elegant dark charcoal/black */
+}
+body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn) svg {
+  color: #1a1a1a !important;
+}
+body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: #000000 !important;
+}
+body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
+  color: #000000 !important;
+}
+

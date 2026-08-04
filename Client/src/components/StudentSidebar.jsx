@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut } from "lucide-react";
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
@@ -18,6 +18,8 @@ function StudentSidebar() {
 
   const [hasPurchasedExams, setHasPurchasedExams] = useState(() => getCached("_sidebar_hasExams"));
   const [hasPurchasedPractice, setHasPurchasedPractice] = useState(() => getCached("_sidebar_hasPractice"));
+  const [isLogoutHovered, setIsLogoutHovered] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -150,8 +152,108 @@ function StudentSidebar() {
             <LifeBuoy size={20} />
             <span>Help & Support</span>
           </NavLink>
+          
+          <button 
+            onClick={() => setShowLogoutConfirm(true)} 
+            className="sidebar-link logout-btn" 
+            style={{ 
+              marginTop: "auto", 
+              borderRadius: "12px"
+            }}
+          >
+            <LogOut size={20} />
+            <span>Log Out</span>
+          </button>
         </nav>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(10, 10, 20, 0.75)",
+          backdropFilter: "blur(10px)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 200000,
+        }}>
+          <div style={{
+            background: "var(--bg-card, #131428)",
+            border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+            borderRadius: "20px",
+            padding: "32px 28px",
+            maxWidth: "420px",
+            width: "90%",
+            textAlign: "center",
+            boxShadow: "0 24px 60px rgba(0, 0, 0, 0.4)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "20px"
+          }}>
+            <div style={{
+              width: "56px",
+              height: "56px",
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.15)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#ef4444"
+            }}>
+              <LogOut size={28} />
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <h3 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "var(--text-primary)" }}>Log Out?</h3>
+              <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                Are you sure you want to log out of your account? You will need to sign in again to continue.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "8px" }}>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{
+                  flex: 1,
+                  padding: "12px 20px",
+                  borderRadius: "30px",
+                  border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                  background: "transparent",
+                  color: "var(--text-primary)",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                style={{
+                  flex: 1,
+                  padding: "12px 20px",
+                  borderRadius: "30px",
+                  border: "none",
+                  background: "#ef4444",
+                  color: "#ffffff",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)"
+                }}
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <StudentChatbot />
     </>
   );

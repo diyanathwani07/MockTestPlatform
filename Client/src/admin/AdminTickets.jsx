@@ -21,11 +21,26 @@ function AdminTickets() {
   const [replying, setReplying] = useState(false);
   const [replyFile, setReplyFile] = useState(null);
   const [currentlyViewing, setCurrentlyViewing] = useState([]);
+  const [agents, setAgents] = useState([]);
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
     fetchTickets();
+    const fetchAgents = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/users`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const staff = res.data.filter(u => u.role === "admin" || u.role === "superadmin");
+        setAgents(staff);
+      } catch (err) {
+        console.error("Error fetching agents:", err);
+      }
+    };
+    fetchAgents();
   }, []);
 
   // Lock body scroll when modal is open (prevents background from moving on mobile)
@@ -73,8 +88,9 @@ function AdminTickets() {
     if (!selectedTicket) return;
     try {
       const token = localStorage.getItem("token");
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
       const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/assign`,
+        `${baseUrl}/api/tickets/${selectedTicket._id}/assign`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -90,12 +106,36 @@ function AdminTickets() {
     }
   };
 
+  const handleAssignToAgent = async (agentId) => {
+    if (!selectedTicket) return;
+    try {
+      const token = localStorage.getItem("token");
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+      const res = await axios.put(
+        `${baseUrl}/api/tickets/${selectedTicket._id}/assign`,
+        { assignedTo: agentId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        const updated = res.data.ticket;
+        setTickets(tickets.map(t => t._id === updated._id ? updated : t));
+        setSelectedTicket(updated);
+      }
+    } catch (err) {
+      console.error("Error assigning ticket to agent:", err);
+      const errMsg = err.response?.data?.message || err.message || "Unknown error";
+      alert(`Failed to assign ticket: ${errMsg}`);
+    }
+  };
+
+
   const handleReleaseTicket = async () => {
     if (!selectedTicket) return;
     try {
       const token = localStorage.getItem("token");
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
       const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/tickets/${selectedTicket._id}/unassign`,
+        `${baseUrl}/api/tickets/${selectedTicket._id}/unassign`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -447,27 +487,41 @@ function AdminTickets() {
                   <User size={16} style={{ color: '#0269A1' }} />
                   <div>
                     <p className="meta-label">Assigned To</p>
-                    <p className="meta-value">
-                      {selectedTicket.assignedTo ? selectedTicket.assignedTo.fullName : "Unassigned"}
-                    </p>
-                     {(!selectedTicket.assignedTo || 
-                      (selectedTicket.assignedTo._id ? selectedTicket.assignedTo._id.toString() : selectedTicket.assignedTo.toString()) !== currentUser.id?.toString()) ? (
-                      <button 
-                        className="tk-new-ticket-btn" 
-                        style={{ marginTop: "8px", padding: "6px 12px", background: "#10B981" }}
-                        onClick={handleAssignToMe}
-                      >
-                        Assign to Me
-                      </button>
-                    ) : (
-                      <button 
-                        className="tk-new-ticket-btn" 
-                        style={{ marginTop: "8px", padding: "6px 12px", background: "#EF4444" }}
-                        onClick={handleReleaseTicket}
-                      >
-                        Release Ticket (Unassign)
-                      </button>
-                    )}
+                    <select
+                      value={
+                        selectedTicket.assignedTo?._id 
+                          ? selectedTicket.assignedTo._id.toString() 
+                          : (selectedTicket.assignedTo ? selectedTicket.assignedTo.toString() : "")
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                          handleAssignToAgent(val);
+                        } else {
+                          handleReleaseTicket();
+                        }
+                      }}
+                      style={{
+                        marginTop: "8px",
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        background: "var(--bg-page, #0A0A0A)",
+                        color: "var(--text-primary, #fff)",
+                        border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                        fontSize: "13px",
+                        width: "100%",
+                        minWidth: "180px",
+                        outline: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <option value="">-- Unassigned --</option>
+                      {agents.map(agent => (
+                        <option key={agent._id} value={agent._id}>
+                          {agent.fullName} {agent._id.toString() === currentUser.id?.toString() ? "(You)" : ""}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 
