@@ -22,7 +22,7 @@ function StudentResults() {
           return;
         }
         const user = JSON.parse(userStr);
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`);
         setResults(res.data);
       } catch (error) {
         console.error("Error fetching results", error);

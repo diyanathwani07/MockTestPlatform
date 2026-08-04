@@ -11,7 +11,11 @@ const generateContentWithFallback = async (aiInstance, promptText, config = {}) 
       const response = await aiInstance.models.generateContent({
         model: model,
         contents: promptText,
-        config: config
+        config: config,
+        // Fallback for some SDK configurations that expect these properties at the root level
+        responseMimeType: config?.responseMimeType,
+        responseSchema: config?.responseSchema,
+        temperature: config?.temperature
       });
       console.log(`Successfully generated content with ${model}`);
       return response;

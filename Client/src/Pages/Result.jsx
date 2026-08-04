@@ -58,8 +58,8 @@ function Result() {
           if (routeShareId) {
             res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/by-share/${routeShareId}`);
             setData(res.data);
-          } else if (user?.id) {
-            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
+          } else if (user?.id || user?._id) {
+            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`);
             if (res.data && res.data.length > 0) {
               setData(res.data[0]);
             }
@@ -174,7 +174,8 @@ function Result() {
 
         const user = userString ? JSON.parse(userString) : null;
 
-        if (!user || !user.id) {
+        const userId = user?.id || user?._id;
+        if (!userId) {
           console.log("SAVE SKIPPED: no logged-in user found in localStorage");
           return;
         }
@@ -182,7 +183,7 @@ function Result() {
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/results/save`,
           {
-            userId: user.id,
+            userId,
             quizId: data?.quizId || null,
             quizTitle: data?.title || null,
             subject: data?.subject || null,

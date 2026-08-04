@@ -30,7 +30,7 @@ function SubjectResults() {
           if (!userStr) return navigate("/login");
           const user = JSON.parse(userStr);
 
-          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`);
           const subjectGroup = res.data.filter(
             (r) => (r.subject || r.quizTitle || r.examName || "Mock Test") === decodedSubject
           );

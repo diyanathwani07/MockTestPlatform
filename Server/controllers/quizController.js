@@ -754,7 +754,7 @@ const generateCustomQuiz = async (req, res) => {
       negativeMarking: 0.25,
       published: true, // Make it immediately available to the user
       status: "Published",
-      quizType: "custom", // Add custom type if needed, or use 'practice'
+      quizType: "practice", // Must match Mongoose enum ['exam', 'practice']
       createdBy: req.user?._id,
       questions: questions.map(q => ({
         questionEnglish: q.questionEnglish,
@@ -770,8 +770,8 @@ const generateCustomQuiz = async (req, res) => {
 
     res.status(201).json(customQuiz);
   } catch (error) {
-    console.error("Generate Custom Quiz Error:", error);
-    res.status(500).json({ message: "Failed to generate custom quiz." });
+    console.error("Generate Custom Quiz Error Trace:", error);
+    res.status(500).json({ message: error.message || "Failed to generate custom quiz." });
   }
 };
 

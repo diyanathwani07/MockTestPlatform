@@ -109,10 +109,11 @@ function StudentDashboard() {
     const fetchDashboardData = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (!user.id) return;
+        const userId = user.id || user._id;
+        if (!userId) return;
         
         // Fetch results for the user
-        const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`);
+        const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userId}`);
         setResults(resultsRes.data);
         
         // Fetch published parent Exam Series

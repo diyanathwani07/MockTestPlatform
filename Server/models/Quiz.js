@@ -7,8 +7,8 @@ const legacyQuestionSchema = new mongoose.Schema({
   options: {
     type: [String],
     validate: {
-      validator: (arr) => arr.length === 4,
-      message: "Each question must have exactly 4 options.",
+      validator: (arr) => arr.length >= 2,
+      message: "Each question must have at least 2 options.",
     },
     required: true,
   },

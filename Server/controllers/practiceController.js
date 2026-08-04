@@ -24,7 +24,7 @@ const getPracticeQuizzes = async (req, res) => {
     if (req.user) {
       const User = require("../models/User");
       const user = await User.findById(req.user._id).select("purchasedPractice");
-      const purchasedPracticeIds = user.purchasedPractice.map((id) => id.toString());
+      const purchasedPracticeIds = (user?.purchasedPractice || []).map((id) => id.toString());
       quizzes = quizzes.map((quiz) => {
         const qObj = quiz.toObject();
         qObj.isPurchased = purchasedPracticeIds.includes(qObj._id.toString());

@@ -54,6 +54,8 @@
   border: 1px solid var(--border-color, #ECE9F7);
   position: relative;
   overflow: hidden;
+  max-width: 650px;
+  width: 100%;
 }
 
 .sp-hero-left {
@@ -129,14 +131,14 @@
   margin: 0 0 4px 0;
   letter-spacing: -0.3px;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .sp-email {
   font-size: 13px;
   color: var(--text-secondary, #6B7280);
   margin: 0 0 14px 0;
-  overflow-wrap: break-word;
-  word-break: break-all;
+  white-space: nowrap;
   max-width: 100%;
 }
 
@@ -196,6 +198,8 @@
   padding: 20px 16px 24px;
   border: 1px solid var(--border-color, #ECE9F7);
   box-shadow: var(--card-shadow, 0 1px 3px rgba(0,0,0,0.04));
+  max-width: 650px;
+  width: 100%;
 }
 
 .sp-about-title {
@@ -709,6 +713,7 @@
     align-items: flex-start;
     text-align: left;
     padding: 32px;
+    gap: 32px;
   }
 
   .sp-hero-left {
@@ -732,6 +737,7 @@
 
   .sp-hero-right {
     align-items: flex-end;
+    flex-shrink: 0;
   }
 
   .sp-about-card {

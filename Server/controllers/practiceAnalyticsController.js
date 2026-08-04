@@ -386,6 +386,9 @@ const getAiTutorExplanation = async (req, res) => {
       case "incorrect-options":
         instruction = "Explain step-by-step why each of the incorrect options is wrong.";
         break;
+      case "combined-structured":
+        instruction = "Generate a JSON explanation object. Provide 'correct': a very short, single-sentence (maximum 15 words) explanation of why the correct answer is correct. Do NOT restate the option name or value in the explanation. Keep it extremely brief. Under 'incorrect', map the letters 'A', 'B', 'C', 'D' (representing the first, second, third, and fourth options respectively) to a very short, single-sentence/one-line (maximum 15 words) explanation of why that option is incorrect. Do NOT explain the correct option under incorrect.";
+        break;
       case "interview":
         instruction = "Provide a common interview question and answer related to the concept in this question.";
         break;
@@ -412,6 +415,8 @@ Correct Answer: ${question.correctAnswer}
 Provided explanations: ${JSON.stringify(question.explanations || {})}
 
 Task: ${instruction}
+
+CRITICAL: Return ONLY a valid JSON object matching the requested schema. Do NOT wrap the JSON inside markdown blocks, and do NOT add any conversational explanation or introduction. Just output raw JSON.
 `;
 
     let responseConfig = {};
@@ -429,15 +434,104 @@ Task: ${instruction}
           required: ["questionEnglish", "options", "correctAnswer", "explanation"]
         }
       };
+    } else if (mode === "combined-structured") {
+      responseConfig = {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            correct: { type: Type.STRING, description: "Strictly a single-sentence/one-line explanation of the correct answer" },
+            incorrect: {
+              type: Type.OBJECT,
+              properties: {
+                A: { type: Type.STRING, description: "Explanation for Option A (if incorrect)" },
+                B: { type: Type.STRING, description: "Explanation for Option B (if incorrect)" },
+                C: { type: Type.STRING, description: "Explanation for Option C (if incorrect)" },
+                D: { type: Type.STRING, description: "Explanation for Option D (if incorrect)" }
+              }
+            }
+          },
+          required: ["correct", "incorrect"]
+        }
+      };
     }
 
     const { generateContentWithFallback } = require("../utils/geminiHelper");
     const response = await generateContentWithFallback(ai, promptText, {
-      ...responseConfig,
-      temperature: 0.7
+      responseMimeType: mode === "combined-structured" || mode === "similar-question" ? "application/json" : undefined,
+      responseSchema: mode === "combined-structured" ? {
+        type: Type.OBJECT,
+        properties: {
+          correct: { type: Type.STRING, description: "Strictly a single-sentence/one-line explanation of the correct answer" },
+          incorrect: {
+            type: Type.OBJECT,
+            properties: {
+              A: { type: Type.STRING, description: "Explanation for Option A" },
+              B: { type: Type.STRING, description: "Explanation for Option B" },
+              C: { type: Type.STRING, description: "Explanation for Option C" },
+              D: { type: Type.STRING, description: "Explanation for Option D" }
+            }
+          }
+        },
+        required: ["correct", "incorrect"]
+      } : (mode === "similar-question" ? responseConfig.responseSchema : undefined),
+      temperature: 0.3
     });
 
-    res.json({ result: response.text });
+    let resultValue = response.text;
+    if (mode === "combined-structured") {
+      try {
+        resultValue = JSON.parse(response.text);
+      } catch (pe) {
+        console.warn("[WARNING] Failed to parse structured JSON explanation response text directly. Extracting via fallback parser:", pe);
+        
+        // Custom parser to split conversational model outputs into structured JSON correct/incorrect explanations
+        const cleanText = response.text || "";
+        let correctText = "";
+        const incorrectExplanations = {};
+        
+        // 1. Try to find the correct answer statement or summary section
+        const correctMatch = cleanText.match(/(?:correct answer is|why the correct answer|correct:)\s*([^\n]+)/i) || 
+                             cleanText.match(/(\*\*[^*]+\*\* is the correct answer[^\n]+)/i);
+        if (correctMatch) {
+          correctText = correctMatch[1].trim();
+        } else {
+          // If no specific tag, use the first paragraph or overall text as summary
+          const paragraphs = cleanText.split("\n\n").map(p => p.trim()).filter(Boolean);
+          correctText = paragraphs[0] || "This option is correct.";
+        }
+        
+        // 2. Parse option explanations mapping: search for options labels (A, B, C, D) or option texts
+        question.options.forEach((opt, idx) => {
+          const letter = ["A", "B", "C", "D"][idx];
+          if (opt === question.correctAnswer) return;
+          
+          // Try regex lookups for the option identifier:
+          // e.g., "1. String:", "**String:**", "* Home Tool...", "option A:"
+          const escapedOpt = opt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const optionRegex = new RegExp(
+            `(?:option\\s*${letter}|${idx + 1}\\.|\\*\\*${letter}\\*\\*|\\*\\s*\\*\\*${escapedOpt}\\*\\*|\\*\\s*${escapedOpt}|\\*\\*${escapedOpt}\\*\\*)[^:\\n]*[:\\-]?\\s*([^\\n]+)`,
+            "i"
+          );
+          const optMatch = cleanText.match(optionRegex);
+          if (optMatch) {
+            incorrectExplanations[letter] = optMatch[1].trim();
+          } else {
+            // Fuzzy search fallback: search for any sentence mentioning this option text
+            const sentenceRegex = new RegExp(`[^.?!]*${escapedOpt}[^.?!]*[.?!]`, "i");
+            const sentenceMatch = cleanText.match(sentenceRegex);
+            incorrectExplanations[letter] = sentenceMatch ? sentenceMatch[0].trim() : "This option is incorrect.";
+          }
+        });
+        
+        resultValue = {
+          correct: correctText,
+          incorrect: incorrectExplanations
+        };
+      }
+    }
+
+    res.json({ result: resultValue });
   } catch (error) {
     res.status(500).json({ message: "AI Tutor Error", error: error.message });
   }

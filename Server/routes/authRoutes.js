@@ -194,6 +194,8 @@ router.post("/reset-password", async (req, res) => {
 const { protect } = require("../middleware/authMiddleware");
 
 // UPDATE PROFILE
+const logAction = require("../utils/logger");
+
 router.put("/profile", protect, async (req, res) => {
   try {
     const { fullName, phone, dateOfBirth, gender, location, bio, avatar } = req.body;
@@ -204,18 +206,36 @@ router.put("/profile", protect, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (fullName !== undefined) user.fullName = fullName;
-    if (phone !== undefined) user.phone = phone;
-    if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
-    if (gender !== undefined) user.gender = gender;
-    if (location !== undefined) user.location = location;
-    if (bio !== undefined) user.bio = bio;
-    if (avatar !== undefined) {
+    const changedFields = [];
+    if (fullName !== undefined && fullName !== user.fullName) {
+      changedFields.push(`name: "${user.fullName}" -> "${fullName}"`);
+      user.fullName = fullName;
+    }
+    if (phone !== undefined && phone !== user.phone) {
+      changedFields.push(`phone: "${user.phone}" -> "${phone}"`);
+      user.phone = phone;
+    }
+    if (dateOfBirth !== undefined && dateOfBirth !== user.dateOfBirth) user.dateOfBirth = dateOfBirth;
+    if (gender !== undefined && gender !== user.gender) user.gender = gender;
+    if (location !== undefined && location !== user.location) user.location = location;
+    if (bio !== undefined && bio !== user.bio) user.bio = bio;
+    if (avatar !== undefined && avatar !== user.avatar) {
+      changedFields.push("profile picture updated");
       user.avatar = avatar;
       user.profilePicture = avatar;
     }
 
     const updatedUser = await user.save();
+
+    if (changedFields.length > 0) {
+      await logAction(
+        "UPDATE_PROFILE", 
+        updatedUser.fullName, 
+        `Updated profile fields: ${changedFields.join(", ")}`, 
+        "UserManagement", 
+        req.ip
+      );
+    }
     
     res.json({
       _id: updatedUser._id,

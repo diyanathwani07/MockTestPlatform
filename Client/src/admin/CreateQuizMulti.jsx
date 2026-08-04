@@ -61,6 +61,14 @@ function CreateQuizMulti() {
     shuffleOptions: false,
     randomSelection: false,
     questionsPerAttempt: 20,
+    isPaid: false,
+    price: 0,
+    isPracticePaid: false,
+    practicePrice: 0,
+    currency: "INR",
+    plans: [],
+    detailedDescription: "",
+    examSeriesId: "",
   });
 
   const [sections, setSections] = useState([defaultSection(0)]);
@@ -104,6 +112,14 @@ function CreateQuizMulti() {
             shuffleOptions: dbQuiz.shuffleOptions || false,
             randomSelection: dbQuiz.randomSelection || false,
             questionsPerAttempt: dbQuiz.questionsPerAttempt || 20,
+            isPaid: dbQuiz.isPaid || false,
+            price: dbQuiz.price || 0,
+            isPracticePaid: dbQuiz.isPracticePaid || false,
+            practicePrice: dbQuiz.practicePrice || 0,
+            currency: dbQuiz.currency || "INR",
+            plans: dbQuiz.plans || [],
+            detailedDescription: dbQuiz.detailedDescription || "",
+            examSeriesId: dbQuiz.examSeriesId || "",
           });
 
           if (dbQuiz.sections && dbQuiz.sections.length > 0) {
@@ -697,6 +713,151 @@ function CreateQuizMulti() {
                             />
                           </div>
                         </div>
+
+                        {quizMeta.publishAs !== "practice" && (
+                          <div className="form-field" style={{ marginTop: "8px" }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--text-primary)", fontSize: "13.5px", cursor: "pointer", userSelect: "none" }}>
+                              <input
+                                type="checkbox"
+                                checked={quizMeta.isPaid || false}
+                                onChange={(e) => setQuizMeta(prev => ({ ...prev, isPaid: e.target.checked }))}
+                                style={{ width: "16px", height: "16px", accentColor: "#8B5CF6" }}
+                              />
+                              Paid Exam (Premium)
+                            </label>
+                            {quizMeta.isPaid && (
+                              <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                                <input 
+                                  type="number" 
+                                  name="price" 
+                                  value={quizMeta.price || ""} 
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))} 
+                                  min="0" 
+                                  placeholder="Exam Price (INR)" 
+                                  className="force-quiz-input"
+                                  style={{ flex: 1 }}
+                                />
+                                <select
+                                  value={quizMeta.currency || "INR"}
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, currency: e.target.value }))}
+                                  className="force-quiz-input"
+                                  style={{ width: "80px", padding: "10px" }}
+                                >
+                                  <option value="INR">INR</option>
+                                  <option value="USD">USD</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {quizMeta.publishAs !== "exam" && (
+                          <div className="form-field" style={{ marginTop: "8px" }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--text-primary)", fontSize: "13.5px", cursor: "pointer", userSelect: "none" }}>
+                              <input
+                                type="checkbox"
+                                checked={quizMeta.isPracticePaid || false}
+                                onChange={(e) => setQuizMeta(prev => ({ ...prev, isPracticePaid: e.target.checked }))}
+                                style={{ width: "16px", height: "16px", accentColor: "#8B5CF6" }}
+                              />
+                              Paid Practice Module (Premium)
+                            </label>
+                            {quizMeta.isPracticePaid && (
+                              <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                                <input 
+                                  type="number" 
+                                  name="practicePrice" 
+                                  value={quizMeta.practicePrice || ""} 
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, practicePrice: parseFloat(e.target.value) || 0 }))} 
+                                  min="0" 
+                                  placeholder="Practice Price (INR)" 
+                                  className="force-quiz-input"
+                                  style={{ flex: 1 }}
+                                />
+                                <select
+                                  value={quizMeta.currency || "INR"}
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, currency: e.target.value }))}
+                                  className="force-quiz-input"
+                                  style={{ width: "80px", padding: "10px" }}
+                                >
+                                  <option value="INR">INR</option>
+                                  <option value="USD">USD</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {(quizMeta.isPaid || quizMeta.isPracticePaid) && (
+                          <div style={{ marginTop: "16px", padding: "16px", background: "var(--bg-panel)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                            <h4 style={{ margin: "0 0 12px 0", fontSize: "13.5px", fontWeight: "700", color: "#8B5CF6" }}>Overview & Plans</h4>
+                            
+                            <div className="form-field" style={{ marginBottom: "16px" }}>
+                              <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "6px", display: "block" }}>Detailed Description (Markdown details)</label>
+                              <textarea 
+                                name="detailedDescription" 
+                                value={quizMeta.detailedDescription || ""} 
+                                onChange={handleMetaChange} 
+                                placeholder="Describe exam features, launch offers, and terms..." 
+                                rows={4}
+                                className="force-quiz-input"
+                                style={{ width: "100%", fontFamily: "inherit" }}
+                              />
+                            </div>
+
+                            <div className="form-field">
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                                <label style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Subscription Duration Plans</label>
+                                <button 
+                                  type="button"
+                                  className="dashboard-view-all-btn"
+                                  style={{ padding: "4px 8px", fontSize: "11px", background: "rgba(139, 92, 246, 0.1)", color: "#8B5CF6", border: "1px solid rgba(139, 92, 246, 0.2)" }}
+                                  onClick={() => {
+                                    const durationVal = prompt("Enter duration in months (e.g. 1, 6, 12):");
+                                    if (!durationVal) return;
+                                    const priceVal = prompt("Enter price in INR:");
+                                    if (!priceVal) return;
+                                    const discount = prompt("Enter discount tag (optional, e.g. 90% off):") || "";
+                                    const newPlan = {
+                                      durationMonths: parseInt(durationVal, 10) || 1,
+                                      price: parseFloat(priceVal) || 0,
+                                      discountLabel: discount
+                                    };
+                                    setQuizMeta(prev => ({ 
+                                      ...prev, 
+                                      plans: [...(prev.plans || []), newPlan] 
+                                    }));
+                                  }}
+                                >
+                                  ＋ Add Plan
+                                </button>
+                              </div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                {(quizMeta.plans || []).map((plan, index) => (
+                                  <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-main)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "13px" }}>
+                                    <div style={{ flex: 1, color: "var(--text-primary)" }}>
+                                      <strong>{plan.durationMonths} Month{plan.durationMonths > 1 ? 's' : ''}</strong> — ₹{plan.price} {plan.discountLabel && <span style={{ color: "#10B981", marginLeft: "8px", fontSize: "11px" }}>({plan.discountLabel})</span>}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      style={{ background: "transparent", border: "none", color: "#EF4444", cursor: "pointer", fontSize: "12px" }}
+                                      onClick={() => {
+                                        const updated = [...quizMeta.plans];
+                                        updated.splice(index, 1);
+                                        setQuizMeta(prev => ({ ...prev, plans: updated }));
+                                      }}
+                                    >
+                                      🗑️ Remove
+                                    </button>
+                                  </div>
+                                ))}
+                                {(!quizMeta.plans || quizMeta.plans.length === 0) && (
+                                  <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No plans added. Defaulting to standard price.</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {true && (

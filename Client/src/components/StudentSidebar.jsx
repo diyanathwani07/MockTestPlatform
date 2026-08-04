@@ -5,6 +5,7 @@ import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
 import axios from "axios";
+import PixelSnow from "./shadcn-space/animations/PixelSnow";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,8 +47,8 @@ function StudentSidebar() {
           }).catch(() => ({ data: [] }))
         ]);
 
-        const hasExams = (examsRes.data || []).some(quiz => quiz.isPurchased);
-        const hasPractice = (practiceRes.data || []).some(item => item.isPurchased);
+        const hasExams = Array.isArray(examsRes?.data) ? examsRes.data.some(quiz => quiz.isPurchased) : false;
+        const hasPractice = Array.isArray(practiceRes?.data) ? practiceRes.data.some(item => item.isPurchased) : false;
 
         // Update state and persist to cache
         setHasPurchasedExams(hasExams);
@@ -82,12 +83,30 @@ function StudentSidebar() {
       {/* Overlay for mobile */}
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
-      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}>
+      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
+        {/* Animated PixelSnow Background (Winter Only) */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
+          <PixelSnow
+            color="#ffffff"
+            flakeSize={0.015}
+            minFlakeSize={1.0}
+            pixelResolution={240}
+            speed={0.4}
+            density={0.15}
+            direction={95}
+            brightness={0.85}
+            depthFade={15}
+            farPlane={15}
+            gamma={0.4545}
+            variant="round"
+          />
+        </div>
+
+        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px", position: "relative", zIndex: 2 }}>
           <Logo />
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>
           <NavLink to="/dashboard" className="sidebar-link" onClick={() => setIsOpen(false)} end>
             <Home size={20} />
             <span>Dashboard</span>

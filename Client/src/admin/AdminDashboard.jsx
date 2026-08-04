@@ -26,7 +26,7 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [hoveredPoint, setHoveredPoint] = useState(null);
 
-  const [rangeDays, setRangeDays] = useState(30);
+  const [rangeDays, setRangeDays] = useState(7);
   const [activeDashboardView, setActiveDashboardView] = useState("main"); // "main" or "support"
   const [explorerPage, setExplorerPage] = useState(1);
   const [explorerPath, setExplorerPath] = useState([]);

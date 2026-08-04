@@ -211,33 +211,39 @@ function PracticeTest() {
     setFetchingExplanation(true);
     try {
       const token = localStorage.getItem("token");
-      // Use incorrect-options mode to get per-option explanations + correct explanation
-      const [incorrectRes, correctRes] = await Promise.all([
-        axios.post(
-          `${import.meta.env.VITE_API_URL}/api/practice/ai-explain`,
-          { question, mode: "incorrect-options" },
-          { headers: { Authorization: `Bearer ${token}` } }
-        ),
-        axios.post(
-          `${import.meta.env.VITE_API_URL}/api/practice/ai-explain`,
-          { question, mode: "simple" },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-      ]);
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/practice/ai-explain`,
+        { question, mode: "combined-structured" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      // Build incorrect map from the text response
-      const incorrectText = incorrectRes.data?.result || "";
-      const correctText = correctRes.data?.result || "";
+      console.log("[DEBUG] combined-structured response raw result:", res.data?.result);
+      let parsed = {};
+      try {
+        if (res.data?.result && typeof res.data.result === "object") {
+          parsed = res.data.result;
+        } else if (typeof res.data?.result === "string") {
+          let cleanStr = res.data.result.trim();
+          if (cleanStr.startsWith("```")) {
+            cleanStr = cleanStr.replace(/^```(json)?/, "").replace(/```$/, "").trim();
+          }
+          parsed = JSON.parse(cleanStr);
+        }
+      } catch (parseErr) {
+        console.error("[DEBUG] Client failed to parse result as JSON, trying fuzzy option mapping", parseErr);
+        parsed = {};
+      }
 
-      // Parse per-option explanations: try to match option text in the response
+      const correctText = parsed.correct || (typeof res.data?.result === "string" ? res.data.result : "This option is correct.");
       const incorrectMap = {};
-      question.options.forEach(opt => {
+
+      question.options.forEach((opt, idx) => {
         if (opt === question.correctAnswer) return;
-        // Try to find the option mentioned in the response
-        const regex = new RegExp(`${opt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.]*\\.?`, 'i');
-        const match = incorrectText.match(regex);
-        incorrectMap[opt] = match ? match[0].trim() : incorrectText;
+        const letter = ["A", "B", "C", "D"][idx] || "A";
+        incorrectMap[opt] = parsed.incorrect?.[letter] || "This option is incorrect.";
       });
+
+      console.log("[DEBUG] Storing live explanations mapping:", { correctText, incorrectMap });
 
       setLiveExplanations(prev => ({
         ...prev,
@@ -564,7 +570,7 @@ function PracticeTest() {
                             ❌ Incorrect
                           </div>
                           <p style={{ margin: 0, fontSize: "14px", color: "#e2e8f0", lineHeight: 1.5 }}>
-                            {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                            {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
                           </p>
                         </div>
                       );
@@ -573,7 +579,7 @@ function PracticeTest() {
                     {isCorrectSelected && isCorrectOption && (() => {
                       const stored = currentQuestion.explanations?.correct;
                       const live = liveExplanations[currentIndex]?.correct;
-                      const text = (stored && stored.trim()) ? stored : live;
+                      const text = (stored && stored.trim()) ? stored : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : live);
                       
                       const conceptSummary = currentQuestion.explanations?.conceptSummary;
                       const didYouKnow = currentQuestion.explanations?.didYouKnow;
@@ -585,7 +591,7 @@ function PracticeTest() {
                               ☑ Correct Answer
                             </div>
                             <p style={{ margin: 0, fontSize: "14px", color: "#e2e8f0", lineHeight: 1.5 }}>
-                              {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is correct.")}
+                              {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is correct.")}
                             </p>
                           </div>
 
@@ -986,7 +992,7 @@ function PracticeTest() {
                             ❌ Incorrect
                           </div>
                           <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
-                            {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                            {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
                           </p>
                         </div>
                       );
@@ -996,7 +1002,7 @@ function PracticeTest() {
                     {isCorrectSelected && isCorrectOption && (() => {
                       const stored = currentQuestion.explanations?.correct;
                       const live = liveExplanations[currentIndex]?.correct;
-                      const text = (stored && stored.trim()) ? stored : live;
+                      const text = (stored && stored.trim()) ? stored : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : live);
                       
                       const conceptSummary = currentQuestion.explanations?.conceptSummary;
                       const didYouKnow = currentQuestion.explanations?.didYouKnow;
@@ -1009,7 +1015,7 @@ function PracticeTest() {
                               ☑ Correct Answer
                             </div>
                             <p style={{ margin: 0, fontSize: "14.5px", color: "#e2e8f0", lineHeight: 1.5, fontWeight: "500" }}>
-                              {text ? renderExplanationText(text, opt) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is correct.")}
+                              {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is correct.")}
                             </p>
                           </div>
 

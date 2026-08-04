@@ -34,7 +34,7 @@ function ExamSeriesDetails() {
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const user = JSON.parse(userStr);
-          const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id}`, { headers });
+          const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`, { headers });
           setResults(resultsRes.data);
         }
       } catch (err) {

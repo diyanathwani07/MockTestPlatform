@@ -143,7 +143,21 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                   </div>
                 </div>
                 {selectedPlan?.discountLabel && (
-                  <span className="qdm-discount-badge">{selectedPlan.discountLabel}</span>
+                  <span className="qdm-discount-badge">
+                    {(() => {
+                      const label = String(selectedPlan.discountLabel).trim();
+                      if (/^\d+(\.\d+)?$/.test(label)) {
+                        return `${label}% off`;
+                      }
+                      if (/^\d+(\.\d+)?\s*%?$/.test(label)) {
+                        return label.includes('%') ? label : `${label}%`;
+                      }
+                      if (/^\d+(\.\d+)?\s*%?\s*off$/i.test(label)) {
+                        return label.toLowerCase();
+                      }
+                      return label;
+                    })()}
+                  </span>
                 )}
               </div>
 

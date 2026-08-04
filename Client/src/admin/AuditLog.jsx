@@ -77,10 +77,16 @@ function AuditLog() {
 
     let matchMode = true;
     if (viewMode === "Admin Actions") {
-      // Hide student test starts and student purchases from Admin view
-      matchMode = log.action !== "START_QUIZ" && log.action !== "PURCHASE_EXAM" && log.action !== "PURCHASE_PRACTICE";
+      // Hide student test starts, purchases, and profile updates from Admin view
+      matchMode = log.action !== "START_QUIZ" && 
+                  log.action !== "PURCHASE_EXAM" && 
+                  log.action !== "PURCHASE_PRACTICE" &&
+                  log.action !== "UPDATE_PROFILE";
     } else if (viewMode === "Student Actions") {
-      matchMode = log.action === "START_QUIZ" || log.action === "PURCHASE_EXAM" || log.action === "PURCHASE_PRACTICE";
+      matchMode = log.action === "START_QUIZ" || 
+                  log.action === "PURCHASE_EXAM" || 
+                  log.action === "PURCHASE_PRACTICE" ||
+                  log.action === "UPDATE_PROFILE";
     }
 
     return matchSearch && matchModule && matchDate && matchMode;
