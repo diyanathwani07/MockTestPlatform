@@ -228,7 +228,8 @@ const assignTicket = async (req, res) => {
       return res.status(404).json({ message: "Ticket not found." });
     }
 
-    ticket.assignedTo = req.user._id;
+    const targetAgentId = req.body.assignedTo || req.user._id;
+    ticket.assignedTo = targetAgentId;
     if (ticket.status === "Open") {
       ticket.status = "In Progress";
     }
@@ -236,7 +237,60 @@ const assignTicket = async (req, res) => {
     await ticket.save();
     await ticket.populate("assignedTo", "fullName email");
 
-    await logAction("ASSIGN_TICKET", req.user.fullName || "Admin", `Assigned ticket: ${ticket.subject} to self`, "Support", req.ip);
+    const assignTargetName = ticket.assignedTo ? ticket.assignedTo.fullName : "Unknown";
+    await logAction(
+      "ASSIGN_TICKET", 
+      req.user.fullName || "Admin", 
+      `Assigned ticket: ${ticket.subject} to ${assignTargetName}`, 
+      "Support", 
+      req.ip
+    );
+
+    // Send email notification if assigned to another agent/admin
+    if (ticket.assignedTo && ticket.assignedTo._id.toString() !== req.user._id.toString() && ticket.assignedTo.email) {
+      try {
+        const nodemailer = require("nodemailer");
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.SMTP_EMAIL,
+            pass: process.env.SMTP_PASSWORD,
+          },
+        });
+
+        const mailOptions = {
+          from: `"Teaching Pariksha Support" <${process.env.SMTP_EMAIL}>`,
+          to: ticket.assignedTo.email,
+          subject: `Support Ticket Assigned: ${ticket.subject}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ECE9F7; border-radius: 12px; background-color: #ffffff; color: #333333;">
+              <h2 style="color: #6E3FF3; margin-top: 0; border-bottom: 2px solid #6E3FF3; padding-bottom: 10px;">Support Ticket Assigned</h2>
+              <p>Hello <strong>${ticket.assignedTo.fullName}</strong>,</p>
+              <p>You have been assigned a support ticket by <strong>${req.user.fullName || "Admin"}</strong>.</p>
+              <div style="background-color: #F8F7FF; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid rgba(110, 63, 243, 0.1);">
+                <p style="margin: 0 0 8px 0;"><strong>Ticket ID:</strong> #${ticket._id}</p>
+                <p style="margin: 0 0 8px 0;"><strong>Subject:</strong> ${ticket.subject}</p>
+                <p style="margin: 0 0 8px 0;"><strong>Category:</strong> ${ticket.category}</p>
+                <p style="margin: 0;"><strong>Status:</strong> ${ticket.status}</p>
+              </div>
+              <p>Please log in to the administrative panel to respond to this ticket and resolve the query.</p>
+              <p style="color: #777777; font-size: 12px; margin-top: 30px; border-top: 1px solid #ECE9F7; padding-top: 10px;">
+                This is an automated notification. Please do not reply directly to this email.
+              </p>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`Notification email sent to agent: ${ticket.assignedTo.email}`);
+      } catch (mailErr) {
+        console.error("Failed to send assignment notification email:", mailErr);
+        // Do not crash the response even if email delivery fails
+      }
+    }
 
     res.json({
       success: true,

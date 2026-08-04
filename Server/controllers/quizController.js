@@ -69,6 +69,15 @@ const getQuizzes = async (req, res) => {
       filter.isDeleted = { $ne: true }; // default to active quizzes only
     }
 
+    if (req.query.quizType) {
+      filter.quizType = req.query.quizType;
+      if (req.query.quizType === "custom" && req.user) {
+        filter.createdBy = req.user._id;
+      }
+    } else {
+      filter.quizType = { $ne: "custom" };
+    }
+
     let quizzes = await Quiz.find(filter)
       .populate({ path: "sections.sectionId", model: "Section" })
       .sort({ createdAt: -1 });
@@ -754,7 +763,7 @@ const generateCustomQuiz = async (req, res) => {
       negativeMarking: 0.25,
       published: true, // Make it immediately available to the user
       status: "Published",
-      quizType: "practice", // Must match Mongoose enum ['exam', 'practice']
+      quizType: "custom", // Must match Mongoose enum ['exam', 'practice', 'custom']
       createdBy: req.user?._id,
       questions: questions.map(q => ({
         questionEnglish: q.questionEnglish,
@@ -775,6 +784,29 @@ const generateCustomQuiz = async (req, res) => {
   }
 };
 
+const deleteCustomQuiz = async (req, res) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({ message: "Custom test not found." });
+    }
+
+    if (quiz.quizType !== "custom" || quiz.createdBy?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "You are not authorized to delete this quiz." });
+    }
+
+    quiz.isDeleted = true;
+    quiz.deletedAt = new Date();
+    quiz.status = "Deleted";
+    await quiz.save();
+
+    res.json({ message: "Custom quiz deleted successfully." });
+  } catch (error) {
+    console.error("Delete Custom Quiz Error:", error);
+    res.status(500).json({ message: "Failed to delete custom quiz." });
+  }
+};
+
 module.exports = {
   createQuiz,
   getQuizzes,
@@ -792,4 +824,5 @@ module.exports = {
   duplicateQuizHandler,
   convertSingleToMulti,
   generateCustomQuiz,
+  deleteCustomQuiz,
 };

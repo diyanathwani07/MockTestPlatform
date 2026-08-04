@@ -21,6 +21,7 @@ const {
   restoreQuiz,
   permanentlyDeleteQuiz,
   generateCustomQuiz,
+  deleteCustomQuiz,
 } = require("../controllers/quizController");
 
 // Dashboard stats — admin only
@@ -29,8 +30,9 @@ router.get("/stats/dashboard", protect, adminOnly, getDashboardStats);
 // Conversion utility — must be before /:id routes
 router.post("/convert-single-to-multi", protect, adminOnly, convertSingleToMulti);
 
-// Custom Quiz Generation — user route
+// Custom Quiz Generation & Deletion — user routes
 router.post("/custom", protect, generateCustomQuiz);
+router.delete("/custom/:id", protect, deleteCustomQuiz);
 
 // Public/general quiz listing
 router.get("/", optionalProtect, getQuizzes);

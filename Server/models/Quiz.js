@@ -66,7 +66,7 @@ const quizSchema = new mongoose.Schema(
     published: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
-    quizType: { type: String, enum: ["exam", "practice"], default: "exam" },
+    quizType: { type: String, enum: ["exam", "practice", "custom"], default: "exam" },
     isModular: { type: Boolean, default: false },
     // Mixed: holds either legacy embedded sections OR modular section refs
     sections: { type: [mongoose.Schema.Types.Mixed], default: [] },
