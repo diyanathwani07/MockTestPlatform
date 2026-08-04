@@ -7,6 +7,7 @@ import {
 import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
 import { useAuth } from '../../context/AuthContext';
+import PixelSnow from '../../components/shadcn-space/animations/PixelSnow';
 
 const NAV_ITEMS = [
   { to: "/admin/dashboard",      icon: LayoutDashboard, label: "Dashboard",           permission: "dashboard" },
@@ -44,9 +45,27 @@ function AdminSidebar() {
       </button>
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
 
-      <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px" }}><Logo /></div>
-        <nav className="sidebar-nav">
+      <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
+        {/* Animated PixelSnow Background (Winter) */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
+          <PixelSnow
+            color="#ffffff"
+            flakeSize={0.015}
+            minFlakeSize={1.0}
+            pixelResolution={240}
+            speed={0.4}
+            density={0.15}
+            direction={95}
+            brightness={0.85}
+            depthFade={15}
+            farPlane={15}
+            gamma={0.4545}
+            variant="round"
+          />
+        </div>
+
+        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px", position: "relative", zIndex: 2 }}><Logo /></div>
+        <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>
           {NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
             hasPermission(permission) ? (
               <NavLink
