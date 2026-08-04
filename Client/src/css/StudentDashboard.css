@@ -1131,6 +1131,7 @@ body.dark-mode .mobile-sidebar-toggle {
   .sd-custom-quiz-card {
     padding: 24px;
     border-radius: 12px !important;
+    max-width: 100% !important;
   }
 }
 
@@ -1139,3 +1140,100 @@ body.dark-mode .mobile-sidebar-toggle {
     padding: 18px;
   }
 }
+
+/* ── CUSTOM QUIZ & RESULTS LIST MOBILE RESPONSIVENESS ── */
+.custom-quiz-container {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  width: 100%;
+}
+.custom-quiz-list {
+  flex: 1;
+  min-width: 300px;
+  background: var(--bg-card, #131428);
+  border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.custom-quiz-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 16px;
+}
+.result-list-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: var(--bg-card, #131428);
+  border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  gap: 36px;
+}
+.result-item-stats {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+}
+.result-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 120px;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .custom-quiz-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .custom-quiz-list {
+    width: 100%;
+    min-width: 100%;
+  }
+  .custom-quiz-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .custom-quiz-item > div:last-child {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  .result-list-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    padding: 20px;
+  }
+  .result-item-stats {
+    justify-content: space-around;
+    width: 100%;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 16px 0;
+  }
+  .result-item-actions {
+    width: 100%;
+    flex-direction: row;
+    margin-left: 0;
+    gap: 10px;
+  }
+  .result-item-actions button {
+    flex: 1;
+  }
+}
+

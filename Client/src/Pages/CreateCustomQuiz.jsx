@@ -17,6 +17,8 @@ const CreateCustomQuiz = () => {
   const [fetchingPrevious, setFetchingPrevious] = useState(true);
   const [activeTab, setActiveTab] = useState("custom");
   const [selectedDate, setSelectedDate] = useState("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [quizToDelete, setQuizToDelete] = useState(null);
   const navigate = useNavigate();
 
   const getStableRank = (id) => {
@@ -108,16 +110,23 @@ const CreateCustomQuiz = () => {
     }
   };
 
-  const handleDelete = async (quizId) => {
-    if (!window.confirm("Are you sure you want to delete this custom test?")) return;
+  const triggerDelete = (quizId) => {
+    setQuizToDelete(quizId);
+    setShowConfirmModal(true);
+  };
+
+  const handleDelete = async () => {
+    if (!quizToDelete) return;
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
       const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
-      const url = `${baseUrl}/api/quizzes/custom/${quizId}`;
+      const url = `${baseUrl}/api/quizzes/custom/${quizToDelete}`;
       console.log("DELETE custom quiz →", url);
       await axios.delete(url, { headers });
-      setPreviousQuizzes(prev => prev.filter(q => q._id !== quizId));
+      setPreviousQuizzes(prev => prev.filter(q => q._id !== quizToDelete));
+      setShowConfirmModal(false);
+      setQuizToDelete(null);
     } catch (error) {
       console.error("Failed to delete custom quiz:", error);
       console.error("Response:", error.response?.status, error.response?.data);
@@ -186,7 +195,7 @@ const CreateCustomQuiz = () => {
           </div>
 
           {activeTab === "custom" ? (
-            <div style={{ display: "flex", gap: "32px", flexWrap: "wrap", alignItems: "flex-start", width: "100%" }}>
+            <div className="custom-quiz-container">
               {/* Creation Card */}
               <div 
                 className="sd-custom-quiz-card"
@@ -324,17 +333,7 @@ const CreateCustomQuiz = () => {
               </div>
 
               {/* Previous Custom Quizzes List */}
-              <div 
-                style={{
-                  flex: "1",
-                  minWidth: "300px",
-                  background: "var(--bg-card, #131428)",
-                  border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
-                }}
-              >
+              <div className="custom-quiz-list">
                 <h3 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
                   Your Custom Tests
                 </h3>
@@ -349,15 +348,7 @@ const CreateCustomQuiz = () => {
                     {previousQuizzes.map((quiz) => (
                       <div 
                         key={quiz._id} 
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          padding: "16px",
-                          borderRadius: "12px",
-                          background: "rgba(255, 255, 255, 0.02)",
-                          border: "1px solid rgba(255, 255, 255, 0.05)"
-                        }}
+                        className="custom-quiz-item"
                       >
                         <div>
                           <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
@@ -385,7 +376,7 @@ const CreateCustomQuiz = () => {
                             Start Test
                           </button>
                           <button
-                            onClick={() => handleDelete(quiz._id)}
+                            onClick={() => triggerDelete(quiz._id)}
                             style={{
                               padding: "8px 16px",
                               borderRadius: "20px",
@@ -493,17 +484,7 @@ const CreateCustomQuiz = () => {
                     {filteredResults.map((res) => (
                       <div 
                         key={res._id} 
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-start",
-                          alignItems: "center",
-                          padding: "20px 24px",
-                          borderRadius: "16px",
-                          background: "var(--bg-card, #131428)",
-                          border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                          gap: "36px"
-                        }}
+                        className="result-list-item"
                       >
                         {/* Left: Icon, Title, Date/Time, Status */}
                         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
@@ -543,7 +524,7 @@ const CreateCustomQuiz = () => {
                         </div>
 
                         {/* Middle: Stats (Score, Accuracy, Rank) */}
-                        <div style={{ display: "flex", gap: "32px", alignItems: "center", justifyContent: "center" }}>
+                        <div className="result-item-stats">
                           {/* Score */}
                           <div style={{ textAlign: "center", minWidth: "80px" }}>
                             <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Score</span>
@@ -565,7 +546,7 @@ const CreateCustomQuiz = () => {
                         </div>
 
                         {/* Right: Actions */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "120px", marginLeft: "auto" }}>
+                        <div className="result-item-actions">
                           <button
                             onClick={() => navigate("/result", { state: res })}
                             style={{
@@ -627,6 +608,97 @@ const CreateCustomQuiz = () => {
           )}
         </div>
       </div>
+
+      {/* Modern custom confirmation modal for deleting quiz */}
+      {showConfirmModal && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(10, 10, 20, 0.75)",
+          backdropFilter: "blur(10px)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 100000,
+          animation: "fadeIn 0.2s ease-out"
+        }}>
+          <div style={{
+            background: "var(--bg-card, #131428)",
+            border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+            borderRadius: "20px",
+            padding: "32px 28px",
+            maxWidth: "420px",
+            width: "90%",
+            textAlign: "center",
+            boxShadow: "0 24px 60px rgba(0, 0, 0, 0.4)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "20px"
+          }}>
+            <div style={{
+              width: "56px",
+              height: "56px",
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.15)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#ef4444"
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <h3 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "var(--text-primary)" }}>Delete Custom Test?</h3>
+              <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                Are you sure you want to delete this custom test? This action is permanent and cannot be undone.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "8px" }}>
+              <button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setQuizToDelete(null);
+                }}
+                style={{
+                  flex: 1,
+                  padding: "12px 20px",
+                  borderRadius: "30px",
+                  border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                  background: "transparent",
+                  color: "var(--text-primary)",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                style={{
+                  flex: 1,
+                  padding: "12px 20px",
+                  borderRadius: "30px",
+                  border: "none",
+                  background: "#ef4444",
+                  color: "#ffffff",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)"
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
