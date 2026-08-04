@@ -111,13 +111,16 @@ function AdminTickets() {
     try {
       const token = localStorage.getItem("token");
       const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+      console.log(`Sending assign request to ${baseUrl} with agentId: ${agentId}`);
       const res = await axios.put(
         `${baseUrl}/api/tickets/${selectedTicket._id}/assign`,
         { assignedTo: agentId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      console.log("Server response:", res.data);
       if (res.data.success) {
         const updated = res.data.ticket;
+        alert(`Successfully updated! Assigned to: ${updated.assignedTo?.fullName || updated.assignedTo || "Unassigned"}`);
         setTickets(tickets.map(t => t._id === updated._id ? updated : t));
         setSelectedTicket(updated);
       }
