@@ -21,9 +21,9 @@ function DocxParser({ onQuestionsLoaded }) {
   const [parsing, setParsing] = useState(false);
   const [status, setStatus] = useState("");
   const [parsedCount, setParsedCount] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
 
-  const parseDocx = async (e) => {
-    const file = e.target.files[0];
+  const processFile = async (file) => {
     if (!file) return;
 
     if (!file.name.endsWith(".docx")) {
@@ -57,14 +57,61 @@ function DocxParser({ onQuestionsLoaded }) {
       setStatus("❌ Failed to parse document. Make sure it's a valid .docx file.");
     } finally {
       setParsing(false);
-      e.target.value = "";
+    }
+  };
+
+  const parseDocx = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      await processFile(file);
+    }
+    e.target.value = "";
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      await processFile(e.dataTransfer.files[0]);
     }
   };
 
   return (
-    <div className="docx-parser-compact" style={{ padding: "10px 14px", border: "1.5px solid var(--border-color)", borderRadius: "10px", backgroundColor: "var(--bg-input)", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}>
+    <div 
+      className="docx-parser-compact" 
+      onDragEnter={handleDrag}
+      onDragOver={handleDrag}
+      onDragLeave={handleDrag}
+      onDrop={handleDrop}
+      style={{ 
+        padding: "12px 18px", 
+        border: dragActive ? "2.5px dashed var(--violet, #6E3FF3)" : "1.5px solid var(--border-color)", 
+        borderRadius: "10px", 
+        backgroundColor: dragActive ? "rgba(110, 63, 243, 0.08)" : "var(--bg-input)", 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        width: "100%", 
+        boxSizing: "border-box",
+        transition: "all 0.25s ease",
+        cursor: "pointer"
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>📄 Import Qs (.docx)</span>
+        <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>
+          {dragActive ? "🔥 Drop your .docx file here!" : "📄 Import Qs (.docx) or Drag & Drop"}
+        </span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <a
