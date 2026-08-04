@@ -352,12 +352,16 @@ const heartbeatViewing = async (req, res) => {
       lastActive: now,
     });
 
-    ticket.currentlyViewing = activeViews;
-    await ticket.save();
+    // DO AN ATOMIC UPDATE instead of ticket.save() to prevent concurrent field overwrite race conditions
+    const updatedTicket = await Ticket.findByIdAndUpdate(
+      req.params.id,
+      { $set: { currentlyViewing: activeViews } },
+      { new: true }
+    );
 
     res.json({
       success: true,
-      currentlyViewing: ticket.currentlyViewing,
+      currentlyViewing: updatedTicket.currentlyViewing,
     });
   } catch (error) {
     console.error("Heartbeat Viewing Error:", error);
