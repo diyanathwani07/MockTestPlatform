@@ -16,6 +16,7 @@ const CreateCustomQuiz = () => {
   const [results, setResults] = useState([]);
   const [fetchingPrevious, setFetchingPrevious] = useState(true);
   const [activeTab, setActiveTab] = useState("custom");
+  const [selectedDate, setSelectedDate] = useState("");
   const navigate = useNavigate();
 
   const getStableRank = (id) => {
@@ -112,13 +113,14 @@ const CreateCustomQuiz = () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quizzes/custom/${quizId}`,
-        { headers }
-      );
+      const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+      const url = `${baseUrl}/api/quizzes/custom/${quizId}`;
+      console.log("DELETE custom quiz →", url);
+      await axios.delete(url, { headers });
       setPreviousQuizzes(prev => prev.filter(q => q._id !== quizId));
     } catch (error) {
       console.error("Failed to delete custom quiz:", error);
+      console.error("Response:", error.response?.status, error.response?.data);
       alert(error.response?.data?.message || "Failed to delete quiz.");
     }
   };
@@ -420,14 +422,75 @@ const CreateCustomQuiz = () => {
             </div>
           ) : (
             /* Results Tab View (exactly matching layout from user's Image 2) */
+            /* Results Tab View (exactly matching layout from user's Image 2 with added Calendar search/filter) */
             <div style={{ width: "100%", maxWidth: "850px" }}>
+              {/* Date Filter Bar */}
+              <div 
+                style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "center", 
+                  padding: "16px 20px", 
+                  borderRadius: "12px", 
+                  background: "var(--bg-card, #131428)",
+                  border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
+                  marginBottom: "20px",
+                  gap: "16px",
+                  flexWrap: "wrap"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>Filter by Attempt Date:</span>
+                  <input 
+                    type="date" 
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "20px",
+                      background: "var(--bg-page, #0A0A0A)",
+                      color: "var(--text-primary)",
+                      border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                      fontSize: "14px",
+                      outline: "none",
+                      colorScheme: "dark"
+                    }}
+                  />
+                </div>
+                {selectedDate && (
+                  <button
+                    onClick={() => setSelectedDate("")}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "20px",
+                      border: "none",
+                      background: "rgba(239, 68, 68, 0.15)",
+                      color: "#ef4444",
+                      fontWeight: "600",
+                      fontSize: "13px",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+
               {fetchingPrevious ? (
                 <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>Loading attempt history...</div>
-              ) : results.filter(r => previousQuizzes.some(pq => pq._id.toString() === r.quizId?.toString())).length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  {results
-                    .filter(r => previousQuizzes.some(pq => pq._id.toString() === r.quizId?.toString()))
-                    .map((res) => (
+              ) : (() => {
+                const filteredResults = results
+                  .filter(r => previousQuizzes.some(pq => pq._id.toString() === r.quizId?.toString()))
+                  .filter(r => {
+                    if (!selectedDate) return true;
+                    const attemptDate = new Date(r.createdAt).toISOString().split('T')[0];
+                    return attemptDate === selectedDate;
+                  });
+
+                return filteredResults.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    {filteredResults.map((res) => (
                       <div 
                         key={res._id} 
                         style={{
@@ -548,13 +611,18 @@ const CreateCustomQuiz = () => {
                         </div>
                       </div>
                     ))}
-                </div>
-              ) : (
-                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-muted)" }}>
-                  <div style={{ fontSize: "36px", marginBottom: "8px" }}>📊</div>
-                  <p style={{ margin: 0, fontSize: "14px" }}>No attempt results found. Finish a test to view your stats here!</p>
-                </div>
-              )}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: "36px", marginBottom: "8px" }}>📊</div>
+                    <p style={{ margin: 0, fontSize: "14px" }}>
+                      {selectedDate 
+                        ? `No attempt results found for ${new Date(selectedDate).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}.`
+                        : "No attempt results found. Finish a test to view your stats here!"}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

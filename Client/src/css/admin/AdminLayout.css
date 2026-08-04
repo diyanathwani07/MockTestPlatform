@@ -8,8 +8,9 @@
 
 .admin-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
+  overflow: hidden;
   overflow-x: hidden;
   background: #FAFAFC;
 }
@@ -315,18 +316,14 @@ body.dark-mode .profile-floating-menu {
    6. SIDEBAR
    ========================================================================== */
 .admin-sidebar { 
-  width: 220px; 
+  width: 260px; 
   background: var(--bg-sidebar, #FFFFFF); 
   border-right: 1px solid var(--border-color, #E4E4E7);
   display: flex; 
   flex-direction: column; 
   flex-shrink: 0; 
-  position: fixed; 
-  top: 0; 
-  left: 0;
-  bottom: 0;
-  height: 100vh;
-  z-index: 2000;
+  height: 100%;
+  z-index: 50;
 }
 .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; height: 70px; border-bottom: 1px solid var(--border-color, #E4E4E7); }
 .logo-emoji { font-size: 20px; }
@@ -370,12 +367,7 @@ body.dark-mode .sidebar-link.active {
 /* ==========================================================================
    7. MAIN AREA & NAVBAR
    ========================================================================== */
-.admin-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-@media (min-width: 1025px) {
-  .admin-main {
-    margin-left: 220px;
-  }
-}
+.admin-main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-y: auto; }
 .admin-navbar { background: #fff; border-bottom: 1.5px solid #ECE9F7; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
 .navbar-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: #1a1a2e; word-break: break-word; }
 
