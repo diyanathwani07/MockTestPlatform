@@ -18,7 +18,6 @@ function AdminProfile() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
-        ...formData,
         avatar: avatarUrlOrBase64
       }, {
         headers: { Authorization: `Bearer ${token}` }
