@@ -1037,19 +1037,6 @@ body.dark-mode .mobile-sidebar-toggle {
 }
 
 @media (max-width: 768px) {
-  .sd-layout {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100vh !important;
-    overflow: hidden !important;
-  }
-  .sd-main-content {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
-    height: 100% !important;
-    overflow-y: auto !important;
-  }
   
   .sd-navbar { padding: 0 20px; }
   .admin-navbar { padding-left: 60px !important; }
