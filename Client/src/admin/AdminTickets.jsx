@@ -525,6 +525,28 @@ function AdminTickets() {
                         </option>
                       ))}
                     </select>
+                    {(selectedTicket.assignedTo?._id?.toString() === currentUser.id?.toString() || selectedTicket.assignedTo?.toString() === currentUser.id?.toString()) && (
+                      <button
+                        onClick={handleReleaseTicket}
+                        style={{
+                          marginTop: "10px",
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          background: "rgba(239, 68, 68, 0.1)",
+                          color: "#EF4444",
+                          border: "1.5px solid rgba(239, 68, 68, 0.3)",
+                          fontSize: "12.5px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          width: "100%",
+                          transition: "all 0.2s ease",
+                        }}
+                        onMouseEnter={e => { e.target.style.background = "rgba(239, 68, 68, 0.2)"; e.target.style.borderColor = "rgba(239, 68, 68, 0.5)"; }}
+                        onMouseLeave={e => { e.target.style.background = "rgba(239, 68, 68, 0.1)"; e.target.style.borderColor = "rgba(239, 68, 68, 0.3)"; }}
+                      >
+                        Release Ticket
+                      </button>
+                    )}
                   </div>
                 </div>
                 

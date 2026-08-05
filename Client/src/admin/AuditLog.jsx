@@ -30,10 +30,16 @@ function AuditLog() {
     fetchLogs();
   }, []);
 
-  // Reset pagination on filter changes
+  // Reset pagination and module filter when viewMode changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, moduleFilter, filterDate, viewMode]);
+    setModuleFilter("All Modules");
+  }, [viewMode]);
+
+  // Reset pagination on search, module, or date filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, moduleFilter, filterDate]);
 
   const exportToCSV = () => {
     if (filtered.length === 0) {
@@ -66,12 +72,23 @@ function AuditLog() {
       log.performedBy?.toLowerCase().includes(search.toLowerCase()) ||
       log.details?.toLowerCase().includes(search.toLowerCase());
     
-    const matchModule = moduleFilter === "All Modules" || 
-      log.module === moduleFilter ||
-      (moduleFilter === "User Management" && log.module === "UserManagement") ||
-      (moduleFilter === "Support" && log.module === "Support") ||
-      (moduleFilter === "Purchase" && log.module === "Purchase") ||
-      (moduleFilter === "Auth" && log.module === "Auth");
+    let matchModule = true;
+    if (viewMode === "Student Actions") {
+      if (moduleFilter === "Start Quiz") {
+        matchModule = log.action === "START_QUIZ";
+      } else if (moduleFilter === "Update Profile") {
+        matchModule = log.action === "UPDATE_PROFILE";
+      } else if (moduleFilter === "Exam Purchase") {
+        matchModule = log.action === "PURCHASE_EXAM" || log.action === "PURCHASE_PRACTICE";
+      }
+    } else {
+      matchModule = moduleFilter === "All Modules" || 
+        log.module === moduleFilter ||
+        (moduleFilter === "User Management" && log.module === "UserManagement") ||
+        (moduleFilter === "Support" && log.module === "Support") ||
+        (moduleFilter === "Purchase" && log.module === "Purchase") ||
+        (moduleFilter === "Auth" && log.module === "Auth");
+    }
     
     let matchDate = true;
     if (filterDate) {
@@ -149,14 +166,25 @@ function AuditLog() {
                 cursor: "pointer",
               }}
             >
-              <option>All Modules</option>
-              <option>Quiz</option>
-              <option>User Management</option>
-              <option>Support</option>
-              <option>Auth</option>
-              <option>Results</option>
-              <option>Purchase</option>
-              <option>Settings</option>
+              {viewMode === "Student Actions" ? (
+                <>
+                  <option value="All Modules">All Student Actions</option>
+                  <option value="Start Quiz">Start Quiz</option>
+                  <option value="Update Profile">Update Profile</option>
+                  <option value="Exam Purchase">Exam Purchase</option>
+                </>
+              ) : (
+                <>
+                  <option>All Modules</option>
+                  <option>Quiz</option>
+                  <option>User Management</option>
+                  <option>Support</option>
+                  <option>Auth</option>
+                  <option>Results</option>
+                  <option>Purchase</option>
+                  <option>Settings</option>
+                </>
+              )}
             </select>
             
             <select

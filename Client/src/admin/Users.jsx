@@ -34,8 +34,8 @@ function Users() {
   
   // Profile/Edit states
   const [quizzesAttempted, setQuizzesAttempted] = useState(null);
-  const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "", department: "", permissions: [] });
-  const [addForm, setAddForm] = useState({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [] });
+  const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "", department: "", permissions: [], receiveMonthlyAuditReport: false });
+  const [addForm, setAddForm] = useState({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [], receiveMonthlyAuditReport: false });
   const [showAddPassword, setShowAddPassword] = useState(false);
   const [toast, setToast] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -160,7 +160,8 @@ function Users() {
         role: user.role || 'user',
         status: user.status || 'Active',
         department: user.department || '',
-        permissions: user.permissions || []
+        permissions: user.permissions || [],
+        receiveMonthlyAuditReport: user.receiveMonthlyAuditReport || false
       });
     }
   };
@@ -181,7 +182,7 @@ function Users() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       showToast("User created successfully");
-      setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [] });
+      setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [], receiveMonthlyAuditReport: false });
       fetchUsers();
       closeModal();
     } catch (error) {
@@ -288,7 +289,7 @@ function Users() {
                 </div>
                 <button 
                   onClick={() => {
-                    setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [] });
+                    setAddForm({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [], receiveMonthlyAuditReport: false });
                     setActiveModal('add_user');
                   }}
                   style={{
@@ -722,6 +723,19 @@ function Users() {
                     <option value="Suspended">Suspended</option>
                   </select>
                 </div>
+                {editForm.role === 'superadmin' && (
+                  <label style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '8px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={editForm.receiveMonthlyAuditReport || false}
+                      onChange={e => setEditForm({...editForm, receiveMonthlyAuditReport: e.target.checked})}
+                      style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      Receive Monthly Audit Logs via Email
+                    </span>
+                  </label>
+                )}
                 {(editForm.role === 'admin' || editForm.role === 'superadmin') && (
                   <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assign Custom Permissions</label>
@@ -1308,6 +1322,20 @@ function Users() {
                       <option value="superadmin">Super Admin</option>
                     </select>
                   </div>
+
+                  {addForm.role === 'superadmin' && (
+                    <label style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '12px', marginBottom: '12px', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={addForm.receiveMonthlyAuditReport || false}
+                        onChange={e => setAddForm({...addForm, receiveMonthlyAuditReport: e.target.checked})}
+                        style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '13.5px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                        Receive Monthly Audit Logs via Email
+                      </span>
+                    </label>
+                  )}
 
                   {(addForm.role === 'admin' || addForm.role === 'superadmin') && (
                     <>
