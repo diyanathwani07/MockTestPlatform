@@ -85,7 +85,7 @@ function StudentSidebar() {
       {/* Overlay for mobile */}
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
-      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
+      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`}>
         {/* Animated PixelSnow Background (Winter Only) */}
         <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
           <PixelSnow
