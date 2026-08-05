@@ -10,6 +10,10 @@ function AuditLog() {
   const [filterDate, setFilterDate] = useState("");
   const [viewMode, setViewMode] = useState("Admin Actions"); // 'All Activity' or 'Admin Actions'
   const [expandedLogId, setExpandedLogId] = useState(null);
+  
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -25,6 +29,11 @@ function AuditLog() {
     };
     fetchLogs();
   }, []);
+
+  // Reset pagination on filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, moduleFilter, filterDate, viewMode]);
 
   const exportToCSV = () => {
     if (filtered.length === 0) {
@@ -91,6 +100,10 @@ function AuditLog() {
 
     return matchSearch && matchModule && matchDate && matchMode;
   });
+
+  // Calculate Pagination values
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const paginatedLogs = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="admin-layout">
@@ -257,7 +270,7 @@ function AuditLog() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {paginatedLogs.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
@@ -272,7 +285,7 @@ function AuditLog() {
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((log) => (
+                  paginatedLogs.map((log) => (
                     <tr
                       key={log._id}
                       style={{
@@ -353,6 +366,65 @@ function AuditLog() {
                 )}
               </tbody>
             </table>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div 
+                style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "center", 
+                  padding: "16px 24px",
+                  borderTop: "1px solid var(--border-color)",
+                  fontSize: "13px",
+                  color: "var(--text-muted)",
+                  background: "var(--bg-input)"
+                }}
+              >
+                <span>
+                  Showing <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{Math.min(currentPage * itemsPerPage, filtered.length)}</strong> of <strong>{filtered.length}</strong> entries
+                </span>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border-color)",
+                      background: currentPage === 1 ? "transparent" : "var(--bg-card)",
+                      color: currentPage === 1 ? "var(--text-muted)" : "var(--text-primary)",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      fontSize: "12px",
+                      fontWeight: "600"
+                    }}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ alignSelf: "center" }}>
+                    Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                  </span>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border-color)",
+                      background: currentPage === totalPages ? "transparent" : "var(--bg-card)",
+                      color: currentPage === totalPages ? "var(--text-muted)" : "var(--text-primary)",
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      fontSize: "12px",
+                      fontWeight: "600"
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
