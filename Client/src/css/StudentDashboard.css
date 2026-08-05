@@ -1038,18 +1038,17 @@ body.dark-mode .mobile-sidebar-toggle {
 
 @media (max-width: 768px) {
   .sd-layout {
-    display: block !important;
-    height: auto !important;
-    min-height: 100vh !important;
-    overflow: visible !important;
-    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow: hidden !important;
   }
   .sd-main-content {
-    display: block !important;
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-    flex: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    height: 100% !important;
+    overflow-y: auto !important;
   }
   
   .sd-navbar { padding: 0 20px; }
