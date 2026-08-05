@@ -1043,6 +1043,11 @@ body.dark-mode .mobile-sidebar-toggle {
     min-height: 100vh !important;
     overflow: auto !important;
   }
+  .sd-main-content {
+    flex: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
   
   .sd-navbar { padding: 0 20px; }
   .admin-navbar { padding-left: 60px !important; }
