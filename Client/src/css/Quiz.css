@@ -697,14 +697,14 @@ body {
   }
   
   .palette-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.6);
-    z-index: 999;
-    backdrop-filter: blur(3px);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0,0,0,0.6) !important;
+    z-index: 999 !important;
+    backdrop-filter: blur(3px) !important;
   }
   
   /* Palette Container */

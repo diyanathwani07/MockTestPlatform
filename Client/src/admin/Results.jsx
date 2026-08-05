@@ -319,7 +319,7 @@ function Results() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
                <div style={{ position: "relative", flex: "1", minWidth: "130px", display: "flex", alignItems: "center" }}>
-                 <input 
+                  <input 
                   type="date"
                   className="filter-date-input"
                   value={filterDate}
@@ -336,7 +336,8 @@ function Results() {
                     outline: "none",
                     cursor: "pointer",
                     position: "relative",
-                    zIndex: 5
+                    zIndex: 2,
+                    height: "44px"
                   }}
                 />
                 {!filterDate && (
@@ -344,12 +345,14 @@ function Results() {
                     style={{
                       position: "absolute",
                       left: "12px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
                       pointerEvents: "none",
                       fontSize: "12px",
                       color: "var(--text-muted, #9ca3af)",
                       fontWeight: "500",
                       fontFamily: "inherit",
-                      zIndex: 6
+                      zIndex: 3
                     }}
                   >
                     dd-mm-yyyy

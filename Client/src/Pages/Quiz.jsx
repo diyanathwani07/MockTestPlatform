@@ -518,10 +518,10 @@ function Quiz() {
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <Clock size={18} color="var(--text-secondary)" />
                 <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                  Total Quiz Time
+                  Time
                 </span>
               </div>
-              <div className="timer-render-container" style={{ display: "flex", gap: "8px" }}>
+              <div className="timer-render-container" style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
                 {formatTimeBox(timeLeft)}
               </div>
             </div>
@@ -714,7 +714,7 @@ function Quiz() {
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <Clock size={18} color="var(--text-secondary)" />
                 <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                  Total Quiz Time
+                  Time
                 </span>
               </div>
               <div className="timer-render-container" style={{ display: "flex", gap: "8px" }}>

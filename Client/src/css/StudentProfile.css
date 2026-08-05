@@ -294,12 +294,10 @@
   font-weight: 600;
   color: var(--text-primary, #1a1a2e);
   text-align: right;
+  flex: 1;
   min-width: 0;
-  max-width: 55%;
-  word-break: break-word;
+  word-break: break-all;
   overflow-wrap: break-word;
-  hyphens: auto;
-  flex-shrink: 0;
 }
 
 /* ============================================

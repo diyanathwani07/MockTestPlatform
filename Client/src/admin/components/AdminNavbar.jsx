@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
-import { Sun, Moon, Bell, User, LogOut, Eye } from "lucide-react";
+import { Sun, Moon, Bell, User, LogOut, Eye, ArrowLeft } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import "../../css/admin/AdminLayout.css";
 
@@ -51,6 +51,27 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
+        {parentLink && (
+          <button
+            onClick={() => navigate(parentLink)}
+            style={{
+              background: "rgba(110, 63, 243, 0.1)",
+              border: "none",
+              borderRadius: "6px",
+              width: "28px",
+              height: "28px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "var(--violet)",
+              marginRight: "4px"
+            }}
+            title={`Back to ${parentText}`}
+          >
+            <ArrowLeft size={16} />
+          </button>
+        )}
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"
