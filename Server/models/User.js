@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin", "superadmin"],
       default: "user",
     },
+    receiveMonthlyAuditReport: {
+      type: Boolean,
+      default: false,
+    },
     department: {
       type: String,
       enum: ["Technical Team", "Content Team", "Calling Team", "YouTube Team", "Faculty", "Operations Team", null],

@@ -33,7 +33,7 @@ router.get("/", protect, adminOnly, async (req, res) => {
 // CREATE a new user (superadmin only)
 router.post("/", protect, superAdminOnly, async (req, res) => {
   try {
-    const { fullName, email, phone, role, password, department, permissions } = req.body;
+    const { fullName, email, phone, role, password, department, permissions, receiveMonthlyAuditReport } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -51,7 +51,8 @@ router.post("/", protect, superAdminOnly, async (req, res) => {
       password: hashedPassword,
       status: "Active",
       department: (role === "admin" || role === "superadmin") ? (department || null) : null,
-      permissions: (role === "admin" || role === "superadmin") ? (permissions || []) : []
+      permissions: (role === "admin" || role === "superadmin") ? (permissions || []) : [],
+      receiveMonthlyAuditReport: (role === "superadmin") ? (!!receiveMonthlyAuditReport) : false
     });
 
     await logAction("CREATE_USER", req.user?.fullName || "Admin", `Created new user: ${user.fullName} (${user.email}) as ${user.role}`, "UserManagement", req.ip);
@@ -82,7 +83,7 @@ router.delete("/:id", protect, superAdminOnly, async (req, res) => {
 // UPDATE user (superadmin only)
 router.put("/:id", protect, superAdminOnly, async (req, res) => {
   try {
-    const { fullName, email, role, status, department, permissions } = req.body;
+    const { fullName, email, role, status, department, permissions, receiveMonthlyAuditReport } = req.body;
     const user = await User.findById(req.params.id);
     
     if (!user) {
@@ -95,6 +96,7 @@ router.put("/:id", protect, superAdminOnly, async (req, res) => {
     user.status = status !== undefined ? status : user.status;
     user.department = department !== undefined ? (department === "" ? null : department) : user.department;
     user.permissions = permissions !== undefined ? permissions : user.permissions;
+    user.receiveMonthlyAuditReport = receiveMonthlyAuditReport !== undefined ? receiveMonthlyAuditReport : user.receiveMonthlyAuditReport;
     
     await user.save();
     await logAction("UPDATE_USER", req.user?.fullName || "Admin", `Updated user details: ${user.fullName} (${user.email}) - Role: ${user.role}, Dept: ${user.department}`, "UserManagement", req.ip);

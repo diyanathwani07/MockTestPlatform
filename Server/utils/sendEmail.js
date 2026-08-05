@@ -20,6 +20,7 @@ const sendEmail = async (options) => {
       to: options.email,
       subject: options.subject,
       html: options.message, // We use 'html' instead of 'text' so you can send pretty UI cards!
+      attachments: options.attachments || []
     };
 
     // 3. Send it

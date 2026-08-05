@@ -10,6 +10,7 @@ router.get("/", protect, adminOnly, async (req, res) => {
   try {
     const results = await Result.find()
       .populate("userId", "fullName email")
+      .populate("quizId", "title subject")
       .sort({ createdAt: -1 });
 
     res.json(results);

@@ -173,6 +173,10 @@ setInterval(async () => {
   }
 }, 30000);
 
+// Initialize monthly audit log email scheduler
+const { startReportScheduler } = require("./services/reportScheduler");
+startReportScheduler();
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
