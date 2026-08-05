@@ -425,13 +425,11 @@ function PracticeQuizzes() {
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Questions</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Date Created</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Status</th>
-                    <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>AI Status</th>
                     <th style={{ padding: "16px", textAlign: "right", color: "var(--text-muted)", fontWeight: "500" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredQuizzes.map((quiz) => {
-                    const aiProgress = calculateAiProgress(quiz);
                     return (
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                         <td style={{ padding: "16px", color: "var(--text-primary)", maxWidth: "180px" }}>
@@ -500,28 +498,6 @@ function PracticeQuizzes() {
                                 {new Date(quiz.publishedAt).toLocaleDateString('en-GB').replace(/\//g, '-')}, {new Date(quiz.publishedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                               </span>
                             )}
-                          </div>
-                        </td>
-                        <td style={{ padding: "16px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <div style={{ 
-                              width: "100px", 
-                              height: "8px", 
-                              backgroundColor: "var(--border-color)", 
-                              borderRadius: "4px",
-                              overflow: "hidden"
-                            }}>
-                              <div style={{ 
-                                height: "100%", 
-                                width: `${aiProgress}%`, 
-                                backgroundColor: aiProgress === 100 ? "#4ade80" : "var(--primary-color)",
-                                borderRadius: "4px",
-                                transition: "width 0.3s ease"
-                              }}></div>
-                            </div>
-                            <span style={{ fontSize: "13px", color: aiProgress === 100 ? "#4ade80" : "var(--text-muted)" }}>
-                              {aiProgress}%
-                            </span>
                           </div>
                         </td>
                         <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>

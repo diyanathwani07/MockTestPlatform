@@ -123,7 +123,7 @@ const AdminChatbot = () => {
           {...handlers}
           style={{ touchAction: 'none' }}
         >
-          {isOpen ? <X size={24} /> : <Bot size={24} />}
+          <Bot size={24} />
         </button>
       </div>
 
@@ -142,7 +142,7 @@ const AdminChatbot = () => {
             </div>
             <button 
               onClick={() => setIsOpen(false)}
-              style={{ background: "transparent", border: "none", color: "#ffffff", opacity: 0.8, cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{ background: "transparent", border: "none", color: "var(--text-primary, #1a1a2e)", opacity: 0.8, cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", justifyContent: "center" }}
               title="Close Chat"
             >
               <X size={18} />

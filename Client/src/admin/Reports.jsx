@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
-import { BarChart3, TrendingUp, CheckSquare, XSquare, User, FileText, BookOpen } from "lucide-react";
+import { BarChart3, TrendingUp, CheckSquare, XSquare, User, FileText, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -14,6 +14,10 @@ function Reports() {
   const [searchCandidate, setSearchCandidate] = useState("");
   const [searchQuiz, setSearchQuiz] = useState("");
   const [searchSubject, setSearchSubject] = useState("");
+
+  // ── PAGINATION ──
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 50;
 
   const token = localStorage.getItem("token");
 
@@ -55,8 +59,8 @@ function Reports() {
   // ── MULTI-FILTER MATCHING LOGIC ──
   const filteredResults = results.filter((r) => {
     const candName = r.userId?.fullName || "";
-    const quizTitle = r.quizId?.title || "";
-    const subjName = r.quizId?.subject || "";
+    const quizTitle = r.quizId?.title || r.quizTitle || "";
+    const subjName = r.quizId?.subject || r.subject || "";
 
     const matchC = candName.toLowerCase().includes(searchCandidate.toLowerCase());
     const matchQ = quizTitle.toLowerCase().includes(searchQuiz.toLowerCase());
@@ -64,6 +68,18 @@ function Reports() {
 
     return matchC && matchQ && matchS;
   });
+
+  // ── PAGINATION LOGIC ──
+  const totalPages = Math.ceil(filteredResults.length / ITEMS_PER_PAGE);
+  const paginatedResults = filteredResults.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchCandidate, searchQuiz, searchSubject]);
 
   return (
     <div className="admin-layout">
@@ -91,7 +107,7 @@ function Reports() {
 
 
 
-          {/* 3. 3-WAY LIVE COMMAND BAR (Zero button bloat) */}
+          {/* 3. 3-WAY LIVE COMMAND BAR */}
           <div className="reports-filter-bar" style={{ display: "flex", gap: "8px", paddingBottom: "8px" }}>
             
             <div className="report-search-pill" style={{ flex: 1, minWidth: 0 }}>
@@ -126,7 +142,7 @@ function Reports() {
           </div>
 
 
-          {/* 4. NEW: CANDIDATE DRILL-DOWN TABLE */}
+          {/* 4. CANDIDATE DRILL-DOWN TABLE */}
           <div className="reports-table-wrapper" style={{ overflowX: "auto" }}>
             <table className="reports-analytics-table">
               <thead>
@@ -141,7 +157,7 @@ function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {filteredResults.map((r) => {
+                {paginatedResults.map((r) => {
                   const isPass = Number(r.percentage) >= 40;
 
                   return (
@@ -159,8 +175,8 @@ function Reports() {
                         </div>
                       </td>
 
-                      <td style={{ fontWeight: 600, color: "#1a1a2e", whiteSpace: "nowrap" }}>{r.quizId?.title || "Untitled Quiz"}</td>
-                      <td style={{ whiteSpace: "nowrap" }}>{r.quizId?.subject || "General"}</td>
+                      <td style={{ fontWeight: 600, color: "var(--text-primary)", whiteSpace: "nowrap" }}>{r.quizId?.title || r.quizTitle || "Untitled Quiz"}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>{r.quizId?.subject || r.subject || "General"}</td>
                       <td style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{r.score} / {r.total}</td>
                       <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{Number(r.percentage || 0).toFixed(1)}%</td>
                       
@@ -186,6 +202,95 @@ function Reports() {
               </tbody>
             </table>
           </div>
+
+          {/* 5. PAGINATION CONTROLS */}
+          {totalPages > 1 && (
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "16px 0",
+              gap: "12px",
+              flexWrap: "wrap"
+            }}>
+              <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+                Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredResults.length)} of {filteredResults.length} results
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: "34px", height: "34px", borderRadius: "8px",
+                    border: "1.5px solid var(--border-color)",
+                    background: currentPage === 1 ? "transparent" : "var(--bg-input)",
+                    color: currentPage === 1 ? "var(--text-muted)" : "var(--text-primary)",
+                    cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                    opacity: currentPage === 1 ? 0.4 : 1,
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    if (totalPages <= 7) return true;
+                    if (page === 1 || page === totalPages) return true;
+                    if (Math.abs(page - currentPage) <= 1) return true;
+                    return false;
+                  })
+                  .reduce((acc, page, idx, arr) => {
+                    if (idx > 0 && page - arr[idx - 1] > 1) {
+                      acc.push('dots-' + idx);
+                    }
+                    acc.push(page);
+                    return acc;
+                  }, [])
+                  .map((item, idx) => (
+                    typeof item === 'string' ? (
+                      <span key={item} style={{ color: "var(--text-muted)", fontSize: "13px", padding: "0 4px" }}>…</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => setCurrentPage(item)}
+                        style={{
+                          minWidth: "34px", height: "34px", borderRadius: "8px",
+                          border: currentPage === item ? "1.5px solid var(--primary-color, #6E3FF3)" : "1.5px solid var(--border-color)",
+                          background: currentPage === item ? "rgba(110, 63, 243, 0.15)" : "transparent",
+                          color: currentPage === item ? "var(--primary-color, #6E3FF3)" : "var(--text-secondary)",
+                          fontWeight: currentPage === item ? "700" : "500",
+                          fontSize: "13px",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease"
+                        }}
+                      >
+                        {item}
+                      </button>
+                    )
+                  ))
+                }
+
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: "34px", height: "34px", borderRadius: "8px",
+                    border: "1.5px solid var(--border-color)",
+                    background: currentPage === totalPages ? "transparent" : "var(--bg-input)",
+                    color: currentPage === totalPages ? "var(--text-muted)" : "var(--text-primary)",
+                    cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                    opacity: currentPage === totalPages ? 0.4 : 1,
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
