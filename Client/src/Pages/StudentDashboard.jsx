@@ -145,6 +145,30 @@ function StudentDashboard() {
   const availableCount = seriesList.length;
   const recentAvailable = [...seriesList].reverse().slice(0, 3);
 
+  const upcomingSeriesList = recentAvailable.length === 0 ? (
+    <div className="sd-empty-upcoming">
+      <Calendar size={32} color="var(--border-input)" />
+      <p>No available series right now.</p>
+    </div>
+  ) : recentAvailable.map((series) => {
+      const d = new Date(series.createdAt || new Date());
+      return (
+        <div key={series._id} className="sd-upcoming-item" onClick={() => navigate(`/student/exams/${series._id}`)}>
+          <div className="sd-upcoming-date">
+            <span className="month">{d.toLocaleString('default', { month: 'short' }).toUpperCase()}</span>
+            <span className="day">{d.getDate()}</span>
+          </div>
+          <div className="sd-upcoming-info">
+            <h4>{series.title}</h4>
+            <p style={{ marginTop: "4px" }}>
+              Category: {series.category || "General"}
+            </p>
+          </div>
+          <ChevronRight size={16} className="sd-chevron" />
+        </div>
+      );
+    });
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
