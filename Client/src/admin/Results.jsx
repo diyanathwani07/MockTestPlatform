@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
@@ -7,10 +7,173 @@ import { Users, CheckCircle, Star, GraduationCap } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ResultsDashboard.css";
 
+// Reusable Searchable & Scrollable Dropdown Component
+function SearchableDropdown({ label, options, selected, onSelect, placeholder = "Search..." }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter(opt => 
+    opt.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div ref={dropdownRef} className="searchable-dropdown-container" style={{ position: "relative", flex: "1", minWidth: "140px" }}>
+      <button
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setSearch("");
+        }}
+        type="button"
+        style={{
+          width: "100%",
+          textAlign: "left",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "8px 12px",
+          background: "var(--bg-card)",
+          color: "var(--text-primary)",
+          border: "1.5px solid var(--border-color)",
+          borderRadius: "8px",
+          height: "44px",
+          cursor: "pointer",
+          fontSize: "12px",
+          outline: "none"
+        }}
+      >
+        <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+          {selected || label}
+        </span>
+        <span style={{ fontSize: "10px", color: "var(--text-secondary, #a1a1aa)", marginLeft: "4px" }}>▼</span>
+      </button>
+
+      {isOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: "48px",
+            left: 0,
+            width: "100%",
+            minWidth: "220px",
+            background: "var(--bg-card, #1c1917)",
+            border: "1.5px solid var(--border-color, #292524)",
+            borderRadius: "8px",
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.4)",
+            zIndex: 100,
+            padding: "8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px"
+          }}
+        >
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+            style={{
+              width: "100%",
+              padding: "6px 10px",
+              borderRadius: "6px",
+              border: "1px solid var(--border-color)",
+              background: "var(--bg-page, #0A0A0A)",
+              color: "var(--text-primary)",
+              fontSize: "12px",
+              outline: "none"
+            }}
+          />
+          <div
+            className="dropdown-scroll-list"
+            style={{
+              maxHeight: "200px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "2px"
+            }}
+          >
+            <div
+              onClick={() => {
+                onSelect(label);
+                setIsOpen(false);
+              }}
+              style={{
+                padding: "6px 10px",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "12px",
+                color: selected === label ? "#fff" : "var(--text-primary)",
+                background: selected === label ? "var(--primary-color, #6E3FF3)" : "transparent",
+                transition: "background 0.15s"
+              }}
+              onMouseEnter={(e) => {
+                if (selected !== label) e.target.style.background = "var(--bg-hover, rgba(255, 255, 255, 0.05))";
+              }}
+              onMouseLeave={(e) => {
+                if (selected !== label) e.target.style.background = "transparent";
+              }}
+            >
+              {label}
+            </div>
+            {filteredOptions.map((opt, i) => (
+              <div
+                key={i}
+                onClick={() => {
+                  onSelect(opt);
+                  setIsOpen(false);
+                }}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  color: selected === opt ? "#fff" : "var(--text-primary)",
+                  background: selected === opt ? "var(--primary-color, #6E3FF3)" : "transparent",
+                  transition: "background 0.15s"
+                }}
+                onMouseEnter={(e) => {
+                  if (selected !== opt) e.target.style.background = "var(--bg-hover, rgba(255, 255, 255, 0.05))";
+                }}
+                onMouseLeave={(e) => {
+                  if (selected !== opt) e.target.style.background = "transparent";
+                }}
+              >
+                {opt}
+              </div>
+            ))}
+            {filteredOptions.length === 0 && (
+              <div style={{ padding: "6px 10px", color: "var(--text-secondary)", fontSize: "11px", textAlign: "center" }}>
+                No matches found
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function Results() {
   const [results, setResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [selectedQuiz, setSelectedQuiz] = useState("All Quizzes");
+  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [selectedUser, setSelectedUser] = useState("All Users");
+  const [selectedStatus, setSelectedStatus] = useState("All Status");
   const [perfPage, setPerfPage] = useState(1);
   const [quizPage, setQuizPage] = useState(1);
   const itemsPerPage = 5;
@@ -19,7 +182,8 @@ function Results() {
     const fetchResults = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/results`, {
+        const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+        const res = await axios.get(`${baseUrl}/api/admin/results`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setResults(res.data);
@@ -29,6 +193,17 @@ function Results() {
     };
     fetchResults();
   }, []);
+
+  // Dynamically derive filter lists from fetched results
+  const uniqueQuizzes = Array.from(
+    new Set(results.map((r) => r.quizTitle || r.subject || "Untitled Quiz").filter(Boolean))
+  );
+  const uniqueSubjects = Array.from(
+    new Set(results.map((r) => r.subject).filter(Boolean))
+  );
+  const uniqueUsers = Array.from(
+    new Set(results.map((r) => r.userId?.fullName || "Unknown User").filter(Boolean))
+  );
 
   const filteredResults = results.filter((r) => {
     const matchesSearch = r.userId?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -40,7 +215,18 @@ function Results() {
       matchesDate = rDate === filterDate;
     }
     
-    return matchesSearch && matchesDate;
+    const qName = r.quizTitle || r.subject || "Untitled Quiz";
+    const matchesQuiz = selectedQuiz === "All Quizzes" || qName === selectedQuiz;
+    const matchesSubject = selectedSubject === "All Subjects" || r.subject === selectedSubject;
+    
+    const uName = r.userId?.fullName || "Unknown User";
+    const matchesUser = selectedUser === "All Users" || uName === selectedUser;
+    
+    const percentage = r.total > 0 ? (r.score / r.total) * 100 : 0;
+    const statusVal = percentage >= 40 ? "Passed" : "Failed";
+    const matchesStatus = selectedStatus === "All Status" || statusVal === selectedStatus;
+    
+    return matchesSearch && matchesDate && matchesQuiz && matchesSubject && matchesUser && matchesStatus;
   });
 
   // Derive Statistics
@@ -163,18 +349,54 @@ function Results() {
                       color: "var(--text-muted, #9ca3af)",
                       fontWeight: "500",
                       fontFamily: "inherit",
-                      zIndex: 1
+                      zIndex: 6
                     }}
                   >
                     dd-mm-yyyy
                   </span>
                 )}
                </div>
-              <select className="filter-select"><option>Quizzes</option></select>
-              <select className="filter-select"><option>Subjects</option></select>
-              <select className="filter-select"><option>Users</option></select>
-              <select className="filter-select"><option>Status</option></select>
-              <button className="btn-reset" onClick={() => { setSearchTerm(""); setFilterDate(""); }}>↻</button>
+              <SearchableDropdown
+                label="All Quizzes"
+                options={uniqueQuizzes}
+                selected={selectedQuiz}
+                onSelect={setSelectedQuiz}
+                placeholder="Search quiz..."
+              />
+              <SearchableDropdown
+                label="All Subjects"
+                options={uniqueSubjects}
+                selected={selectedSubject}
+                onSelect={setSelectedSubject}
+                placeholder="Search subject..."
+              />
+              <SearchableDropdown
+                label="All Users"
+                options={uniqueUsers}
+                selected={selectedUser}
+                onSelect={setSelectedUser}
+                placeholder="Search student..."
+              />
+              <SearchableDropdown
+                label="All Status"
+                options={["Passed", "Failed"]}
+                selected={selectedStatus}
+                onSelect={setSelectedStatus}
+                placeholder="Search status..."
+              />
+              <button 
+                className="btn-reset" 
+                onClick={() => { 
+                  setSearchTerm(""); 
+                  setFilterDate(""); 
+                  setSelectedQuiz("All Quizzes");
+                  setSelectedSubject("All Subjects");
+                  setSelectedUser("All Users");
+                  setSelectedStatus("All Status");
+                }}
+              >
+                ↻
+              </button>
             </div>
 
             <div className="header-actions">
