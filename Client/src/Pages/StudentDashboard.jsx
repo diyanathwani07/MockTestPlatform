@@ -338,8 +338,10 @@ function StudentDashboard() {
             </div>
           </div>
 
-      </div>
-    </div>
+        </div>{/* close sd-bottom-grid */}
+      </div>{/* close sd-content */}
+      </div>{/* close sd-main-content */}
+    </div>{/* close sd-layout */}
   );
 }
 
