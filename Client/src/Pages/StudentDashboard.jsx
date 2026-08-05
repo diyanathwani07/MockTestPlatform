@@ -318,7 +318,6 @@ function StudentDashboard() {
 
       </div>
     </div>
-    </div>
   );
 }
 
