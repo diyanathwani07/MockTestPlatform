@@ -52,6 +52,7 @@
   gap: 0;
   margin-bottom: 16px;
   border: 1px solid var(--border-color, #ECE9F7);
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0,0,0,0.04));
   position: relative;
   overflow: hidden;
   max-width: 650px;
