@@ -9,6 +9,7 @@ import "../css/admin/CreateQuiz.css";
 import { saveSingleQuizModular } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
+import PaidPlanDrawer from "./components/PaidPlanDrawer";
 
 const emptyQuestion = () => ({
   questionEnglish: "",
@@ -55,6 +56,26 @@ function CreateQuiz() {
   const [includeNegative, setIncludeNegative] = useState(false);
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledDateTime, setScheduledDateTime] = useState("");
+  const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
+  const [editingPlanIndex, setEditingPlanIndex] = useState(-1);
+
+  const handleSavePlan = (planData) => {
+    setQuizMeta(prev => {
+      const updatedPlans = [...(prev.plans || [])];
+      if (editingPlanIndex >= 0) {
+        // Editing single plan
+        updatedPlans[editingPlanIndex] = planData;
+      } else if (Array.isArray(planData)) {
+        // Creating multiple plans
+        updatedPlans.push(...planData);
+      } else {
+        updatedPlans.push(planData);
+      }
+      return { ...prev, plans: updatedPlans };
+    });
+    setIsPlanDrawerOpen(false);
+    setEditingPlanIndex(-1);
+  };
 
   const [questions, setQuestions] = useState([emptyQuestion()]);
   const [expandedQuestions, setExpandedQuestions] = useState({ 0: true });
@@ -697,29 +718,8 @@ function CreateQuiz() {
                               checked={quizMeta.isPaid || false}
                               onChange={(e) => setQuizMeta(prev => ({ ...prev, isPaid: e.target.checked }))}
                             />
-                            <span>Paid Exam (Premium)</span>
+                            <span>Paid Exam</span>
                           </label>
-                          {quizMeta.isPaid && (
-                            <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
-                              <label style={{ fontSize: "10.5px" }}>Exam Price (<span>{quizMeta.currency || 'INR'}</span>)</label>
-                              <input 
-                                type="number" 
-                                name="price" 
-                                value={quizMeta.price || ""} 
-                                onChange={(e) => setQuizMeta(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))} 
-                                min="0" 
-                                placeholder="e.g. 99" 
-                              />
-                              <select
-                                value={quizMeta.currency || 'INR'}
-                                onChange={(e) => setQuizMeta(prev => ({ ...prev, currency: e.target.value }))}
-                                style={{ marginLeft: "8px", padding: "4px" }}
-                              >
-                                <option value="INR">INR</option>
-                                <option value="USD">USD</option>
-                              </select>
-                            </div>
-                          )}
                         </div>
                       )}
 
@@ -731,29 +731,8 @@ function CreateQuiz() {
                               checked={quizMeta.isPracticePaid || false}
                               onChange={(e) => setQuizMeta(prev => ({ ...prev, isPracticePaid: e.target.checked }))}
                             />
-                            <span>Paid Practice Module (Premium)</span>
+                            <span>Paid Practice Module</span>
                           </label>
-                          {quizMeta.isPracticePaid && (
-                            <div className="negative-marking-input-wrapper" style={{ marginTop: "10px" }}>
-                              <label style={{ fontSize: "10.5px" }}>Practice Price (<span>{quizMeta.currency || 'INR'}</span>)</label>
-                              <input 
-                                type="number" 
-                                name="practicePrice" 
-                                value={quizMeta.practicePrice || ""} 
-                                onChange={(e) => setQuizMeta(prev => ({ ...prev, practicePrice: parseFloat(e.target.value) || 0 }))} 
-                                min="0" 
-                                placeholder="e.g. 49" 
-                              />
-                              <select
-                                value={quizMeta.currency || 'INR'}
-                                onChange={(e) => setQuizMeta(prev => ({ ...prev, currency: e.target.value }))}
-                                style={{ marginLeft: "8px", padding: "4px" }}
-                              >
-                                <option value="INR">INR</option>
-                                <option value="USD">USD</option>
-                              </select>
-                            </div>
-                          )}
                         </div>
                       )}
 
@@ -774,59 +753,65 @@ function CreateQuiz() {
                              />
                            </div>
 
-                           <div className="form-field">
-                             <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                               <span>Subscription Duration Plans</span>
-                               <button 
-                                 type="button"
-                                 className="dashboard-view-all-btn"
-                                 style={{ padding: "4px 8px", fontSize: "11px" }}
-                                 onClick={() => {
-                                   const durationVal = prompt("Enter duration in months (e.g. 1, 6, 12):");
-                                   if (!durationVal) return;
-                                   const priceVal = prompt("Enter price in INR:");
-                                   if (!priceVal) return;
-                                   const discount = prompt("Enter discount tag (optional, e.g. 90% off):") || "";
-                                   const newPlan = {
-                                     durationMonths: parseInt(durationVal, 10) || 1,
-                                     price: parseFloat(priceVal) || 0,
-                                     discountLabel: discount
-                                   };
-                                   setQuizMeta(prev => ({ 
-                                     ...prev, 
-                                     isPaid: true,
-                                     isPracticePaid: true,
-                                     plans: [...(prev.plans || []), newPlan] 
-                                   }));
-                                 }}
-                               >
-                                 ＋ Add Plan
-                               </button>
-                             </label>
-                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                               {(quizMeta.plans || []).map((plan, index) => (
-                                 <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-main)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "13px" }}>
-                                   <div style={{ flex: 1 }}>
-                                     <strong>{plan.durationMonths} Month{plan.durationMonths > 1 ? 's' : ''}</strong> — ₹{plan.price} {plan.discountLabel && <span style={{ color: "var(--green)", marginLeft: "8px", fontSize: "11px" }}>({plan.discountLabel})</span>}
-                                   </div>
-                                   <button
-                                     type="button"
-                                     style={{ background: "transparent", border: "none", color: "var(--red)", cursor: "pointer", fontSize: "12px" }}
-                                     onClick={() => {
-                                       const updated = [...quizMeta.plans];
-                                       updated.splice(index, 1);
-                                       setQuizMeta(prev => ({ ...prev, plans: updated }));
-                                     }}
-                                   >
-                                     🗑️ Remove
-                                   </button>
-                                 </div>
-                               ))}
-                               {(!quizMeta.plans || quizMeta.plans.length === 0) && (
-                                 <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No plans added. Defaulting to standard test price ({quizMeta.price ? `₹${quizMeta.price}` : 'Free'}).</span>
-                               )}
-                             </div>
-                           </div>
+                             <div className="form-field">
+                              <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                                <span>Subscription Duration Plans</span>
+                                <button 
+                                  type="button"
+                                  className="dashboard-view-all-btn"
+                                  style={{ padding: "4px 8px", fontSize: "11px" }}
+                                  onClick={() => {
+                                    setEditingPlanIndex(-1);
+                                    setIsPlanDrawerOpen(true);
+                                  }}
+                                >
+                                  ＋ Add Plan
+                                </button>
+                              </label>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                {(quizMeta.plans || []).map((plan, index) => (
+                                  <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-main)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border-color)", fontSize: "13px" }}>
+                                    <div style={{ flex: 1, cursor: "pointer" }} onClick={() => { setEditingPlanIndex(index); setIsPlanDrawerOpen(true); }}>
+                                      <div style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName || `${plan.durationMonths} Month${plan.durationMonths > 1 ? 's' : ''} Plan`}</div>
+                                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px" }}>
+                                        {plan.originalPrice > 0 ? <span style={{ textDecoration: "line-through", marginRight: "6px" }}>₹{plan.originalPrice}</span> : null}
+                                        <strong style={{ color: "var(--violet)" }}>₹{plan.price}</strong>
+                                        {plan.discountLabel && <span style={{ color: "var(--green)", marginLeft: "8px", fontWeight: "600" }}>({plan.discountLabel})</span>}
+                                        <span style={{ marginLeft: "12px", padding: "2px 6px", borderRadius: "4px", background: plan.isActive ? "rgba(16, 185, 129, 0.1)" : "rgba(107, 114, 128, 0.1)", color: plan.isActive ? "#10B981" : "#6B7280", fontSize: "10px" }}>
+                                          {plan.isActive ? "Active" : "Inactive"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div style={{ display: "flex", gap: "10px" }}>
+                                      <button
+                                        type="button"
+                                        style={{ background: "transparent", border: "none", color: "var(--violet)", cursor: "pointer", fontSize: "12px", fontWeight: "600" }}
+                                        onClick={() => {
+                                          setEditingPlanIndex(index);
+                                          setIsPlanDrawerOpen(true);
+                                        }}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        style={{ background: "transparent", border: "none", color: "var(--red)", cursor: "pointer", fontSize: "12px" }}
+                                        onClick={() => {
+                                          const updated = [...quizMeta.plans];
+                                          updated.splice(index, 1);
+                                          setQuizMeta(prev => ({ ...prev, plans: updated }));
+                                        }}
+                                      >
+                                        🗑️ Remove
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                                {(!quizMeta.plans || quizMeta.plans.length === 0) && (
+                                  <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No plans added. Defaulting to standard test price ({quizMeta.price ? `₹${quizMeta.price}` : 'Free'}).</span>
+                                )}
+                              </div>
+                            </div>
                          </div>
                        )}
                      </div>
@@ -1240,6 +1225,18 @@ function CreateQuiz() {
           </div>
         </div>
       </div>
+      
+      {/* Paid Plan Slide-in Drawer */}
+      <PaidPlanDrawer
+        isOpen={isPlanDrawerOpen}
+        onClose={() => {
+          setIsPlanDrawerOpen(false);
+          setEditingPlanIndex(-1);
+        }}
+        onSave={handleSavePlan}
+        plan={editingPlanIndex >= 0 ? quizMeta.plans[editingPlanIndex] : null}
+        currency={quizMeta.currency}
+      />
     </div>
   );
 }

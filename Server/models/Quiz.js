@@ -81,9 +81,13 @@ const quizSchema = new mongoose.Schema(
     detailedDescription: { type: String, default: "" },
     plans: {
       type: [{
+        planName: { type: String, default: "" },
         durationMonths: { type: Number, required: true },
-        price: { type: Number, required: true },
-        discountLabel: { type: String, default: "" }
+        originalPrice: { type: Number, default: 0 },
+        discountPercent: { type: Number, default: 0 },
+        price: { type: Number, required: true }, // Selling price
+        discountLabel: { type: String, default: "" },
+        isActive: { type: Boolean, default: true }
       }],
       default: []
     },
