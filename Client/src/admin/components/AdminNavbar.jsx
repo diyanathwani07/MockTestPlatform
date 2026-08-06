@@ -7,7 +7,10 @@ import { Sun, Moon, Bell, User, LogOut, Eye, ArrowLeft } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import "../../css/admin/AdminLayout.css";
 
+import { useConfirm } from "../../context/ConfirmContext";
+
 function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard" }) {
+  const confirm = useConfirm();
   const { toggleTheme } = useTheme(); 
   const { setPreviewMode } = usePreview();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -143,7 +146,18 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
               }}>
                 <Eye size={16} style={{ marginRight: '8px' }} /> View as Student
               </div>
-              <div className="drop-link" onClick={() => { localStorage.clear(); navigate("/"); }}>
+              <div className="drop-link" onClick={async () => {
+                 const isConfirmed = await confirm({
+                   title: "Confirm Log Out",
+                   message: "Are you sure you want to log out of your administrator account?",
+                   type: "warning",
+                   confirmText: "Log Out",
+                 });
+                 if (isConfirmed) {
+                   localStorage.clear();
+                   navigate("/");
+                 }
+               }}>
                 <LogOut size={16} style={{ marginRight: '8px' }} /> Log Out
               </div>
             </div>
