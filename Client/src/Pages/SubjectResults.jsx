@@ -125,6 +125,9 @@ function SubjectResults() {
                     -webkit-appearance: none;
                   }
                   .custom-date-picker {
+                    color-scheme: light;
+                  }
+                  body.dark-mode .custom-date-picker {
                     color-scheme: dark;
                   }
                 `}
