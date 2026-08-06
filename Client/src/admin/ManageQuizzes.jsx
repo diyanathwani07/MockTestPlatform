@@ -4,8 +4,11 @@ import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
 import { Eye, Edit2, Calendar, Trash2, Copy, Search, EyeOff, UploadCloud, Tag } from "lucide-react";
+import MuiDatePicker from "../components/MuiDatePicker";
+import { useConfirm } from "../context/ConfirmContext";
 
 function ManageQuizzes() {
+  const confirm = useConfirm();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,7 +67,13 @@ function ManageQuizzes() {
   });
 
   const handleDelete = async (id, title) => {
-    if (window.confirm(`Are you sure you want to move "${title}" to the recycle bin?`)) {
+    const isConfirmed = await confirm({
+      title: "Move to Recycle Bin?",
+      message: `Are you sure you want to move "${title}" to the recycle bin?`,
+      type: "warning",
+      confirmText: "Move",
+    });
+    if (isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         await axios.delete(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}`, {
@@ -79,7 +88,13 @@ function ManageQuizzes() {
   };
 
   const handleRestore = async (id, title) => {
-    if (window.confirm(`Restore "${title}"?`)) {
+    const isConfirmed = await confirm({
+      title: "Restore Assessment?",
+      message: `Restore "${title}"?`,
+      type: "info",
+      confirmText: "Restore",
+    });
+    if (isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}/restore`, {}, {
@@ -94,7 +109,13 @@ function ManageQuizzes() {
   };
 
   const handlePermanentDelete = async (id, title) => {
-    if (window.confirm(`WARNING: Are you sure you want to PERMANENTLY delete "${title}"? This cannot be undone.`)) {
+    const isConfirmed = await confirm({
+      title: "Permanently Delete?",
+      message: `WARNING: Are you sure you want to PERMANENTLY delete "${title}"? This cannot be undone.`,
+      type: "danger",
+      confirmText: "Delete Permanently",
+    });
+    if (isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         await axios.delete(`${import.meta.env.VITE_API_URL}/api/quizzes/${id}/permanent`, {
@@ -206,62 +227,10 @@ function ManageQuizzes() {
 
               {/* Date Filter */}
               <div style={{ 
-                flex: isMobile ? "1 1 auto" : "0 1 150px",
-                minWidth: "140px",
-                display: "flex", alignItems: "center", gap: "6px", 
-                backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
-                borderRadius: "100px", padding: "6px 12px",
-                position: "relative"
+                flex: isMobile ? "1 1 auto" : "0 1 180px",
+                minWidth: "150px"
               }}>
-                <Calendar size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
-                <input 
-                  type="date"
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
-                  className="mobile-friendly-date-input"
-                  style={{ 
-                    border: "none", 
-                    background: "transparent", 
-                    outline: "none", 
-                    boxShadow: "none",
-                    fontSize: "12px", 
-                    color: filterDate ? "var(--text-primary)" : "transparent", 
-                    fontWeight: "500", 
-                    fontFamily: "inherit", 
-                    paddingRight: filterDate ? "12px" : "0",
-                    width: "100%",
-                    minHeight: "24px",
-                    cursor: "pointer",
-                    position: "relative",
-                    zIndex: 5
-                  }}
-                  required
-                />
-                {!filterDate && (
-                  <span 
-                    style={{
-                      position: "absolute",
-                      left: "28px",
-                      pointerEvents: "none",
-                      fontSize: "12px",
-                      color: "var(--text-muted, #9ca3af)",
-                      fontWeight: "500",
-                      fontFamily: "inherit",
-                      zIndex: 1
-                    }}
-                  >
-                    dd-mm-yyyy
-                  </span>
-                )}
-                {filterDate && (
-                  <span 
-                    onClick={() => setFilterDate("")}
-                    style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "11px", cursor: "pointer", fontWeight: "bold", background: "var(--bg-card)", paddingLeft: "2px" }}
-                    title="Clear date filter"
-                  >
-                    ✕
-                  </span>
-                )}
+                <MuiDatePicker value={filterDate} onChange={setFilterDate} label="mm-dd-yyyy" />
               </div>
 
               {/* Type Filter */}
@@ -525,15 +494,21 @@ function ManageQuizzes() {
                                       {quiz.status === "Published" || quiz.published ? (
                                         <div 
                                           onClick={async () => {
-                                            setActiveDropdown(null);
-                                            if (window.confirm(`Are you sure you want to unpublish "${quiz.title}"? Students will no longer see it.`)) {
-                                              try {
-                                                const token = localStorage.getItem("token");
-                                                await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: false, status: "Draft" }, { headers: { Authorization: `Bearer ${token}` }});
-                                                fetchQuizzes();
-                                              } catch (error) { console.error("Failed to unpublish", error); }
-                                            }
-                                          }}
+                                             setActiveDropdown(null);
+                                             const isConfirmed = await confirm({
+                                               title: "Unpublish Assessment?",
+                                               message: `Are you sure you want to unpublish "${quiz.title}"? Students will no longer see it.`,
+                                               type: "warning",
+                                               confirmText: "Unpublish",
+                                             });
+                                             if (isConfirmed) {
+                                               try {
+                                                 const token = localStorage.getItem("token");
+                                                 await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: false, status: "Draft" }, { headers: { Authorization: `Bearer ${token}` }});
+                                                 fetchQuizzes();
+                                               } catch (error) { console.error("Failed to unpublish", error); }
+                                             }
+                                           }}
                                           style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                           onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                           onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}

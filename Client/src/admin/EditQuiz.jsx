@@ -1111,7 +1111,7 @@ function EditQuiz() {
 
                            {/* Detailed Overview & Subscriptions Block */}
                             {quizMeta.isPaid && (
-                              <div style={{ marginTop: "20px", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                              <div style={{ gridColumn: "1 / -1", marginTop: "20px", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                 <div className="overview-plans-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                                   <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--violet)" }}>Overview & Plans</h4>
                                   <button
@@ -1181,14 +1181,14 @@ function EditQuiz() {
                                             </button>
                                             <button
                                               type="button"
-                                              style={{ background: "transparent", border: "none", color: "var(--red)", cursor: "pointer", fontSize: "12px" }}
+                                              style={{ background: "transparent", border: "none", color: "#EF4444", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px" }}
                                               onClick={() => {
                                                 const updated = [...quizMeta.plans];
                                                 updated.splice(index, 1);
                                                 setQuizMeta(prev => ({ ...prev, plans: updated }));
                                               }}
                                             >
-                                              🗑️
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                                             </button>
                                           </div>
                                         </div>

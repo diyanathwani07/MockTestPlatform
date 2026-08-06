@@ -5,6 +5,7 @@ import { FileText, BarChart3 } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse premium dashboard themes
+import MuiDatePicker from "../components/MuiDatePicker";
 
 const CreateCustomQuiz = () => {
   const [subjects, setSubjects] = useState([]);
@@ -430,42 +431,10 @@ const CreateCustomQuiz = () => {
                   flexWrap: "wrap"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>Filter by Attempt Date:</span>
-                  <input 
-                    type="date" 
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "20px",
-                      background: "var(--bg-page, #0A0A0A)",
-                      color: "var(--text-primary)",
-                      border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
-                      fontSize: "14px",
-                      outline: "none",
-                      colorScheme: "dark"
-                    }}
-                  />
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "320px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", whiteSpace: "nowrap" }}>Filter by Attempt Date:</span>
+                  <MuiDatePicker value={selectedDate} onChange={setSelectedDate} label="mm-dd-yyyy" />
                 </div>
-                {selectedDate && (
-                  <button
-                    onClick={() => setSelectedDate("")}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "20px",
-                      border: "none",
-                      background: "rgba(239, 68, 68, 0.15)",
-                      color: "#ef4444",
-                      fontWeight: "600",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                      transition: "all 0.2s"
-                    }}
-                  >
-                    Clear Filter
-                  </button>
-                )}
               </div>
 
               {fetchingPrevious ? (

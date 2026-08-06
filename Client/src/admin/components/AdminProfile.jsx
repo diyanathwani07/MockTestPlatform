@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
-import { User, Mail, Shield, Calendar, Edit3, Phone, MapPin } from "lucide-react";
+import { User, Mail, Shield, Calendar, Edit3, Phone, MapPin, Key } from "lucide-react";
 import "../../css/StudentProfile.css"; // Reuse the beautiful styling from StudentProfile
 import AvatarPickerModal from "../../components/AvatarPickerModal";
 
@@ -13,6 +13,55 @@ function AdminProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  // Change Password States
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError("All fields are required.");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/change-password`, {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPasswordSuccess("Password updated successfully!");
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordSuccess("");
+      }, 1500);
+    } catch (error) {
+      setPasswordError(error.response?.data?.message || "Failed to change password.");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   const handleSelectAvatar = async (avatarUrlOrBase64) => {
     try {
@@ -128,9 +177,38 @@ function AdminProfile() {
                     <div className="sp-user-info">
                       <h2 className="sp-name">{user.fullName || user.name || "Administrator"}</h2>
                       <p className="sp-email">{user.email || "admin@example.com"}</p>
-                      <button className="sp-edit-profile-btn" onClick={() => setIsEditing(true)}>
-                        <Edit3 size={14} /> Edit Profile
-                      </button>
+                      <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                        <button 
+                          className="sp-edit-profile-btn" 
+                          onClick={() => setIsEditing(true)}
+                          style={{ fontSize: "12px", minHeight: "36px", height: "36px", padding: "0 14px", display: "flex", alignItems: "center" }}
+                        >
+                          <Edit3 size={13} style={{ marginRight: "4px" }} /> Edit Profile
+                        </button>
+                        <button 
+                          className="sp-edit-profile-btn" 
+                          onClick={() => {
+                            setPasswordError("");
+                            setPasswordSuccess("");
+                            setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                            setShowPasswordModal(true);
+                          }}
+                          style={{ 
+                            backgroundColor: "var(--violet, #6E3FF3)", 
+                            border: "none", 
+                            color: "#ffffff",
+                            fontSize: "12px",
+                            minHeight: "36px",
+                            height: "36px",
+                            padding: "0 14px",
+                            display: "flex",
+                            alignItems: "center",
+                            boxShadow: "0 2px 10px rgba(110,63,243,0.2)"
+                          }}
+                        >
+                          <Key size={13} style={{ marginRight: "4px" }} /> Change Password
+                        </button>
+                      </div>
                     </div>
                   </div>
                   
@@ -256,6 +334,134 @@ function AdminProfile() {
           onClose={() => setShowAvatarPicker(false)} 
           onSelect={handleSelectAvatar} 
         />
+
+        {/* Change Password Modal */}
+        {showPasswordModal && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(10, 10, 20, 0.75)",
+            backdropFilter: "blur(10px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 200000,
+          }}>
+            <form 
+              onSubmit={handlePasswordSubmit}
+              style={{
+                background: "var(--bg-card, #131428)",
+                border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                borderRadius: "20px",
+                padding: "32px 28px",
+                maxWidth: "420px",
+                width: "90%",
+                boxShadow: "0 24px 60px rgba(0, 0, 0, 0.4)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "20px"
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <h3 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "var(--text-primary)" }}>Change Password</h3>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>
+                  Update your administrator account password to keep it secure.
+                </p>
+              </div>
+
+              {passwordError && (
+                <div style={{ padding: "10px 14px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", fontSize: "13px", fontWeight: "500" }}>
+                  {passwordError}
+                </div>
+              )}
+
+              {passwordSuccess && (
+                <div style={{ padding: "10px 14px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontSize: "13px", fontWeight: "500" }}>
+                  {passwordSuccess}
+                </div>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Current Password</label>
+                  <input 
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+                    placeholder="Enter current password"
+                    required
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>New Password</label>
+                  <input 
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+                    placeholder="Enter new password"
+                    required
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Confirm New Password</label>
+                  <input 
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+                    placeholder="Confirm new password"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  disabled={changingPassword}
+                  style={{
+                    flex: 1,
+                    padding: "12px 20px",
+                    borderRadius: "30px",
+                    border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                    background: "transparent",
+                    color: "var(--text-primary)",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  style={{
+                    flex: 1,
+                    padding: "12px 20px",
+                    borderRadius: "30px",
+                    border: "none",
+                    background: "var(--violet)",
+                    color: "#ffffff",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    boxShadow: "0 4px 14px rgba(110, 63, 243, 0.4)"
+                  }}
+                >
+                  {changingPassword ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   </div>

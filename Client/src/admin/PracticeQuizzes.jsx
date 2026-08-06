@@ -5,8 +5,11 @@ import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
 import DocxParser from "./components/DocxParser";
 import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, ArrowRightLeft, Search } from "lucide-react";
+import MuiDatePicker from "../components/MuiDatePicker";
+import { useConfirm } from "../context/ConfirmContext";
 
 function PracticeQuizzes() {
+  const confirm = useConfirm();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -246,7 +249,13 @@ function PracticeQuizzes() {
   });
 
   const handleDelete = async (id, title) => {
-    if (window.confirm(`Are you sure you want to move "${title}" to the recycle bin?`)) {
+    const isConfirmed = await confirm({
+      title: "Move to Recycle Bin?",
+      message: `Are you sure you want to move "${title}" to the recycle bin?`,
+      type: "warning",
+      confirmText: "Move",
+    });
+    if (isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         await axios.delete(`${import.meta.env.VITE_API_URL}/api/practice/${id}`, {
@@ -261,7 +270,13 @@ function PracticeQuizzes() {
   };
 
   const handleRestore = async (id, title) => {
-    if (window.confirm(`Restore "${title}"?`)) {
+    const isConfirmed = await confirm({
+      title: "Restore Practice Assessment?",
+      message: `Restore "${title}"?`,
+      type: "info",
+      confirmText: "Restore",
+    });
+    if (isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         await axios.put(`${import.meta.env.VITE_API_URL}/api/practice/${id}/restore`, {}, {
@@ -276,7 +291,13 @@ function PracticeQuizzes() {
   };
 
   const handlePermanentDelete = async (id, title) => {
-    if (window.confirm(`WARNING: Are you sure you want to PERMANENTLY delete "${title}"? This cannot be undone.`)) {
+    const isConfirmed = await confirm({
+      title: "Permanently Delete?",
+      message: `WARNING: Are you sure you want to PERMANENTLY delete "${title}"? This cannot be undone.`,
+      type: "danger",
+      confirmText: "Delete Permanently",
+    });
+    if (isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         await axios.delete(`${import.meta.env.VITE_API_URL}/api/practice/${id}/permanent`, {
@@ -608,7 +629,13 @@ function PracticeQuizzes() {
                                       <div
                                         onClick={async () => {
                                           setActiveDropdown(null);
-                                          if (window.confirm(`Convert "${quiz.title}" into a Real Exam? This will create a duplicate in your My Exams list.`)) {
+                                          const isConfirmed = await confirm({
+                                            title: "Convert to Real Exam?",
+                                            message: `Convert "${quiz.title}" into a Real Exam? This will create a duplicate in your My Exams list.`,
+                                            type: "info",
+                                            confirmText: "Convert",
+                                          });
+                                          if (isConfirmed) {
                                             try {
                                               const token = localStorage.getItem("token");
                                               await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/${quiz._id}/convert-to-exam`, {}, { headers: { Authorization: `Bearer ${token}` } });
@@ -708,13 +735,9 @@ function PracticeQuizzes() {
               Setting schedule for: <strong style={{ color: "var(--text-primary)" }}>{scheduleModal.title}</strong>
             </p>
 
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</label>
-            <input 
-              type="date" 
-              value={scheduleDate}
-              onChange={e => setScheduleDate(e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "14px", outline: "none", marginBottom: "16px", boxSizing: "border-box" }}
-            />
+            <div style={{ marginBottom: "16px" }}>
+              <MuiDatePicker value={scheduleDate} onChange={setScheduleDate} label="mm-dd-yyyy" />
+            </div>
 
             <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Time</label>
             <div style={{ position: "relative", marginBottom: "24px" }}>

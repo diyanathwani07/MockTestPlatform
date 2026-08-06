@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import MuiDatePicker from "../../components/MuiDatePicker";
 
 function AdminHeader({ pageTitle, totalCount, entityName = "records", onDateFilter }) {
   const [selectedDate, setSelectedDate] = useState("");
@@ -35,46 +36,15 @@ function AdminHeader({ pageTitle, totalCount, entityName = "records", onDateFilt
         </div>
 
         {/* Compact Calendar Pill */}
-        <div 
-          className={`date-picker-pill ${selectedDate ? "date-active" : ""}`}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "var(--bg-card, #1e1e2d)",
-            border: "1.5px solid var(--border-color, #2f2f3e)",
-            borderRadius: "100px",
-            padding: "6px 14px",
-            height: "38px",
-            boxSizing: "border-box",
-            position: "relative",
-            minWidth: "150px"
-          }}
-        >
-          <span style={{ fontSize: "14px" }}>📅</span>
-          <input 
-            type="date" 
-            value={selectedDate} 
-            onChange={handleDateChange} 
-            title="Filter by specific date"
-            style={{
-              border: "none",
-              background: "transparent",
-              outline: "none",
-              fontFamily: "inherit",
-              fontSize: "13px",
-              fontWeight: "600",
-              color: "var(--text-primary, #ffffff)",
-              cursor: "pointer",
-              padding: 0,
-              width: "100%"
+        <div style={{ width: "180px" }}>
+          <MuiDatePicker
+            value={selectedDate}
+            onChange={(val) => {
+              setSelectedDate(val);
+              if (onDateFilter) onDateFilter(val);
             }}
+            label="mm-dd-yyyy"
           />
-          {selectedDate && (
-            <button className="clear-date-sm-btn" onClick={clearFilter} title="Clear date filter" style={{ background: "transparent", border: "none", color: "var(--red, #ef4444)", fontSize: "16px", cursor: "pointer", fontWeight: "bold", padding: "0 4px" }}>
-              ×
-            </button>
-          )}
         </div>
 
       </div>

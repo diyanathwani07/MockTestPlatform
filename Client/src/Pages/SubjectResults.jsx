@@ -7,6 +7,7 @@ import axios from "axios";
 import "../css/StudentDashboard.css";
 import "../css/StudentResults.css";
 import "../css/Practice.css";
+import MuiDatePicker from "../components/MuiDatePicker";
 
 function SubjectResults() {
   const { subject } = useParams();
@@ -100,77 +101,8 @@ function SubjectResults() {
             </div>
 
             {/* Calendar Widget on Right */}
-            <div 
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                backgroundColor: "rgba(110, 63, 243, 0.08)",
-                border: "1px solid rgba(110, 63, 243, 0.2)",
-                padding: "10px 16px",
-                borderRadius: "12px",
-                color: "var(--text-primary)",
-                fontWeight: "600",
-                fontSize: "14px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
-                position: "relative",
-                cursor: "pointer"
-              }}
-              onClick={() => dateInputRef.current?.showPicker()}
-            >
-              <style>
-                {`
-                  .custom-date-picker::-webkit-calendar-picker-indicator {
-                    display: none;
-                    -webkit-appearance: none;
-                  }
-                  .custom-date-picker {
-                    color-scheme: light;
-                  }
-                  body.dark-mode .custom-date-picker {
-                    color-scheme: dark;
-                  }
-                `}
-              </style>
-              <Calendar size={18} style={{ color: "var(--violet)", pointerEvents: "none" }} />
-              <input
-                ref={dateInputRef}
-                type="date"
-                className="custom-date-picker"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--text-primary)",
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  outline: "none",
-                  cursor: "pointer",
-                  fontFamily: "inherit"
-                }}
-              />
-              {selectedDate && (
-                <button
-                  onClick={() => setSelectedDate("")}
-                  style={{
-                    background: "rgba(110, 63, 243, 0.1)",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "20px",
-                    height: "20px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    color: "var(--violet)",
-                    marginLeft: "4px"
-                  }}
-                  title="Clear Date Filter"
-                >
-                  &times;
-                </button>
-              )}
+            <div style={{ width: "180px" }}>
+              <MuiDatePicker value={selectedDate} onChange={setSelectedDate} label="mm-dd-yyyy" />
             </div>
 
           </div>

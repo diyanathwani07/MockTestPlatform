@@ -38,12 +38,25 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, currency = "INR" }) {
     setPlans(prev => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
-      // Auto-calculate selling price
+      
+      // Auto-calculate selling price when originalPrice or discountPercent changes
       if (field === "originalPrice" || field === "discountPercent") {
         const op = field === "originalPrice" ? value : updated[index].originalPrice;
         const dp = field === "discountPercent" ? value : updated[index].discountPercent;
         updated[index].price = Math.round(op * (1 - dp / 100));
         if (updated[index].price < 0) updated[index].price = 0;
+      }
+      
+      // Auto-calculate discount when selling price (price) changes
+      if (field === "price") {
+        const op = updated[index].originalPrice;
+        const sp = value;
+        if (op > 0) {
+          const calculatedDiscount = Math.round(((op - sp) / op) * 100);
+          updated[index].discountPercent = calculatedDiscount >= 0 && calculatedDiscount <= 100 ? calculatedDiscount : 0;
+        } else {
+          updated[index].discountPercent = 0;
+        }
       }
       return updated;
     });

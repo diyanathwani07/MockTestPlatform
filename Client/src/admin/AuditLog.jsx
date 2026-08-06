@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
+import MuiDatePicker from "../components/MuiDatePicker";
 
 function AuditLog() {
   const [logs, setLogs] = useState([]);
@@ -211,39 +212,8 @@ function AuditLog() {
             </select>
             
             {/* ── Date Filter ── */}
-            <div style={{ 
-              display: "flex", alignItems: "center", gap: "8px", 
-              backgroundColor: "var(--bg-input)", border: "1.5px solid var(--border-color)", 
-              borderRadius: "10px", padding: "10.5px 16px",
-              position: "relative", flex: "0 0 auto" 
-            }}>
-              <input 
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                style={{ 
-                  border: "none", 
-                  background: "transparent", 
-                  outline: "none", 
-                  boxShadow: "none",
-                  fontSize: "13px", 
-                  color: "var(--text-primary)", 
-                  fontWeight: "500", 
-                  fontFamily: "inherit", 
-                  paddingRight: filterDate ? "16px" : "0",
-                  WebkitAppearance: "none",
-                  cursor: "pointer"
-                }}
-              />
-              {filterDate && (
-                <span 
-                  onClick={() => setFilterDate("")}
-                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", fontWeight: "bold", background: "var(--bg-input)", paddingLeft: "4px" }}
-                  title="Clear date filter"
-                >
-                  ✕
-                </span>
-              )}
+            <div style={{ minWidth: "160px" }}>
+              <MuiDatePicker value={filterDate} onChange={setFilterDate} label="mm-dd-yyyy" />
             </div>
 
             <button

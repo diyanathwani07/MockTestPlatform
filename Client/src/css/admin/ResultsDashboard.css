@@ -30,16 +30,19 @@
 
 .btn-export {
   background: var(--bg-card);
-  border: 1.5px solid var(--border-color);
+  border: 2px solid var(--border-color);
   color: var(--text-primary);
-  padding: 10px 16px;
-  border-radius: 8px;
+  padding: 0 16px;
+  height: 38px;
+  border-radius: 100px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-export:hover {

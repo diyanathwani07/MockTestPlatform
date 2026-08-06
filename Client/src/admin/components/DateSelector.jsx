@@ -1,15 +1,9 @@
 import React from 'react';
+import MuiDatePicker from '../../components/MuiDatePicker';
 
-const DateSelector = ({ onChange }) => {
+const DateSelector = ({ value, onChange }) => {
   return (
-    <div className="pill-date-container">
-      <span className="pill-icon">📅</span>
-      <input 
-        type="date" 
-        className="pill-date-input"
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
+    <MuiDatePicker value={value} onChange={onChange} label="mm-dd-yyyy" />
   );
 };
 

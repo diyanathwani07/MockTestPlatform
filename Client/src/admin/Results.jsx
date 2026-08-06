@@ -4,6 +4,7 @@ import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { Users, CheckCircle, Star, GraduationCap } from "lucide-react";
+import MuiDatePicker from "../components/MuiDatePicker";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ResultsDashboard.css";
 
@@ -318,46 +319,8 @@ function Results() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-               <div style={{ position: "relative", flex: "1", minWidth: "130px", display: "flex", alignItems: "center" }}>
-                  <input 
-                  type="date"
-                  className="filter-date-input"
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
-                  title="Filter by date"
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1.5px solid var(--border-color)",
-                    background: "var(--bg-card)",
-                    color: filterDate ? "var(--text-primary)" : "transparent",
-                    fontSize: "12px",
-                    outline: "none",
-                    cursor: "pointer",
-                    position: "relative",
-                    zIndex: 2,
-                    height: "44px"
-                  }}
-                />
-                {!filterDate && (
-                  <span 
-                    style={{
-                      position: "absolute",
-                      left: "12px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      pointerEvents: "none",
-                      fontSize: "12px",
-                      color: "var(--text-muted, #9ca3af)",
-                      fontWeight: "500",
-                      fontFamily: "inherit",
-                      zIndex: 3
-                    }}
-                  >
-                    dd-mm-yyyy
-                  </span>
-                )}
+               <div style={{ flex: "1", minWidth: "150px" }}>
+                 <MuiDatePicker value={filterDate} onChange={setFilterDate} label="mm-dd-yyyy" />
                </div>
               <SearchableDropdown
                 label="All Quizzes"
