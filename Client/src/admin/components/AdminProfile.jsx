@@ -183,7 +183,7 @@ function AdminProfile() {
                           onClick={() => setIsEditing(true)}
                           style={{ fontSize: "12px", minHeight: "36px", height: "36px", padding: "0 14px", display: "flex", alignItems: "center" }}
                         >
-                          <Edit3 size={13} style={{ marginRight: "4px" }} /> Edit Profile
+                          <Edit3 size={13} style={{ marginRight: "4px", color: "#ffffff" }} /> Edit Profile
                         </button>
                         <button 
                           className="sp-edit-profile-btn" 
@@ -206,7 +206,7 @@ function AdminProfile() {
                             boxShadow: "0 2px 10px rgba(110,63,243,0.2)"
                           }}
                         >
-                          <Key size={13} style={{ marginRight: "4px" }} /> Change Password
+                          <Key size={13} style={{ marginRight: "4px", color: "#ffffff" }} /> Change Password
                         </button>
                       </div>
                     </div>
