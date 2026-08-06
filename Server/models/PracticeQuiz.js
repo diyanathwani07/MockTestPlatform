@@ -35,6 +35,11 @@ const practiceQuestionSchema = new mongoose.Schema({
 
 const practiceQuizSchema = new mongoose.Schema(
   {
+    examName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     title: {
       type: String,
       required: true,
@@ -48,6 +53,18 @@ const practiceQuizSchema = new mongoose.Schema(
     description: {
       type: String,
       default: "",
+    },
+    duration: {
+      type: Number,
+      default: 0,
+    },
+    marksPerQuestion: {
+      type: Number,
+      default: 1,
+    },
+    negativeMarking: {
+      type: Number,
+      default: 0,
     },
     questions: [practiceQuestionSchema],
     shuffleQuestions: {

@@ -21,18 +21,42 @@ const getPracticeQuizzes = async (req, res) => {
 
     let quizzes = await PracticeQuiz.find(filter).populate("createdBy", "fullName email").sort({ createdAt: -1 });
 
+    // Compute questionCount for each quiz (including modular sections)
+    const Section = require("../models/Section");
+    let results = [];
+    for (const quiz of quizzes) {
+      const qObj = quiz.toObject();
+      let questionCount = (qObj.questions || []).length;
+      // If modular, count questions from sections too
+      if (quiz.hasModularSections && quiz.hasModularSections()) {
+        questionCount = 0; // reset, sections hold the questions
+        for (const ref of (qObj.sections || [])) {
+          const secId = ref.sectionId || ref._id || ref;
+          if (secId) {
+            try {
+              const section = await Section.findById(secId);
+              if (section) {
+                questionCount += (section.questions || []).length;
+              }
+            } catch (e) { /* skip */ }
+          }
+        }
+      }
+      qObj.questionCount = questionCount;
+      results.push(qObj);
+    }
+
     if (req.user) {
       const User = require("../models/User");
       const user = await User.findById(req.user._id).select("purchasedPractice");
       const purchasedPracticeIds = (user?.purchasedPractice || []).map((id) => id.toString());
-      quizzes = quizzes.map((quiz) => {
-        const qObj = quiz.toObject();
+      results = results.map((qObj) => {
         qObj.isPurchased = purchasedPracticeIds.includes(qObj._id.toString());
         return qObj;
       });
     }
 
-    res.json(quizzes);
+    res.json(results);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
@@ -114,9 +138,13 @@ const getPracticeQuizById = async (req, res) => {
 const createPracticeQuiz = async (req, res) => {
   try {
     const { 
+      examName,
       title, 
       subject, 
       description, 
+      duration,
+      marksPerQuestion,
+      negativeMarking,
       questions, 
       shuffleQuestions, 
       shuffleOptions, 
@@ -130,9 +158,13 @@ const createPracticeQuiz = async (req, res) => {
     } = req.body;
 
     const quiz = new PracticeQuiz({
+      examName: examName || "",
       title,
       subject,
       description,
+      duration: duration || 0,
+      marksPerQuestion: marksPerQuestion || 1,
+      negativeMarking: negativeMarking || 0,
       questions: questions || [],
       isModular: req.body.isModular || false,
       sections: req.body.sections || [],
@@ -164,9 +196,13 @@ const updatePracticeQuiz = async (req, res) => {
     const quiz = await PracticeQuiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
+    if (req.body.examName !== undefined) quiz.examName = req.body.examName;
     quiz.title = req.body.title || quiz.title;
     quiz.subject = req.body.subject || quiz.subject;
     quiz.description = req.body.description !== undefined ? req.body.description : quiz.description;
+    if (req.body.duration !== undefined) quiz.duration = req.body.duration;
+    if (req.body.marksPerQuestion !== undefined) quiz.marksPerQuestion = req.body.marksPerQuestion;
+    if (req.body.negativeMarking !== undefined) quiz.negativeMarking = req.body.negativeMarking;
     quiz.shuffleQuestions = req.body.shuffleQuestions ?? quiz.shuffleQuestions;
     quiz.shuffleOptions = req.body.shuffleOptions ?? quiz.shuffleOptions;
     quiz.randomSelection = req.body.randomSelection ?? quiz.randomSelection;

@@ -495,7 +495,7 @@ function PracticeQuizzes() {
                           </span>
                         </td>
                         <td style={{ padding: "16px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
-                          {quiz.questions?.length || 0}
+                          {quiz.questionCount ?? quiz.questions?.length ?? 0}
                         </td>
                         <td style={{ padding: "16px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13px", whiteSpace: "nowrap" }}>
                           {new Date(quiz.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}
