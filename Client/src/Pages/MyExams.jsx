@@ -4,7 +4,7 @@ import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown } from "lucide-react";
+import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown, Loader2 } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/MyExams.css";
 
@@ -187,7 +187,11 @@ function MyExams() {
         
         <div className="me-premium-layout">
           {loading ? (
-            <div className="me-shimmer" style={{ height: '400px', borderRadius: '20px' }}></div>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '400px', gap: '16px', color: 'var(--text-secondary)' }}>
+              <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--violet)' }} />
+              <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+              <p style={{ fontSize: '15px', fontWeight: '500' }}>Loading exams...</p>
+            </div>
           ) : (
             <motion.div variants={containerVariants} initial="hidden" animate="visible">
               

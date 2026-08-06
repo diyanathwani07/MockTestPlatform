@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Lock, Unlock, ShoppingCart } from "lucide-react";
+import { Lock, Unlock, ShoppingCart, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
@@ -57,8 +57,10 @@ function ExamsPage() {
         
         <div className="me-premium-layout" style={{ padding: '24px', minHeight: 'calc(100vh - 70px)' }}>
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px', color: 'var(--text-secondary)' }}>
-              Loading...
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '16px', color: 'var(--text-secondary)' }}>
+              <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--violet)' }} />
+              <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+              <p style={{ fontSize: '15px', fontWeight: '500' }}>Loading exams...</p>
             </div>
           ) : (
             (() => {
