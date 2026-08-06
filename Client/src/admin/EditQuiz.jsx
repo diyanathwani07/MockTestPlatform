@@ -1110,93 +1110,97 @@ function EditQuiz() {
                           )}
 
                            {/* Detailed Overview & Subscriptions Block */}
-                           {quizMeta.isPaid && (
-                             <div style={{ marginTop: "20px", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-                               <div className="overview-plans-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                                 <h4 style={{ margin: 0, fontSize: "13.5px", fontWeight: "700", color: "var(--violet)" }}>Overview & Plans</h4>
-                                 <button
-                                   type="button"
-                                   className="dashboard-view-all-btn"
-                                   style={{ padding: "5px 12px", fontSize: "12px", background: "rgba(110, 63, 243, 0.12)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.25)", borderRadius: "8px", cursor: "pointer", fontWeight: "600", display: "flex", alignItems: "center", gap: "5px" }}
-                                   onClick={handleSaveOverview}
-                                 >
-                                   💾 Save 
-                                 </button>
-                               </div>
-                               
-                               <div className="form-field" style={{ marginBottom: "16px" }}>
-                                 <label>Detailed Description (Overview tab markdown details)</label>
-                                 <textarea 
-                                   name="detailedDescription" 
-                                   value={quizMeta.detailedDescription || ""} 
-                                   onChange={handleMetaChange} 
-                                   placeholder="Describe exam features, launch offers, and terms..." 
-                                   rows={5}
-                                   style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
-                                 />
-                               </div>
+                            {quizMeta.isPaid && (
+                              <div style={{ marginTop: "20px", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                                <div className="overview-plans-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                                  <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--violet)" }}>Overview & Plans</h4>
+                                  <button
+                                    type="button"
+                                    className="dashboard-view-all-btn"
+                                    style={{ padding: "5px 12px", fontSize: "12px", background: "rgba(110, 63, 243, 0.12)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.25)", borderRadius: "8px", cursor: "pointer", fontWeight: "600", display: "flex", alignItems: "center", gap: "5px" }}
+                                    onClick={handleSaveOverview}
+                                  >
+                                    💾 Save 
+                                  </button>
+                                </div>
+                                
+                                <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
+                                  {/* Left Column: Description */}
+                                  <div className="form-field" style={{ flex: 1, margin: 0 }}>
+                                    <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px", display: "block" }}>Detailed Description (Overview tab markdown details)</label>
+                                    <textarea 
+                                      name="detailedDescription" 
+                                      value={quizMeta.detailedDescription || ""} 
+                                      onChange={handleMetaChange} 
+                                      placeholder="Describe exam features, launch offers, and terms..." 
+                                      rows={6}
+                                      style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)", boxSizing: "border-box" }}
+                                    />
+                                  </div>
 
-                                        <div className="form-field">
-                                  <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                                    <span>Subscription Duration Plans</span>
-                                    <button 
-                                      type="button"
-                                      className="dashboard-view-all-btn"
-                                      style={{ padding: "4px 8px", fontSize: "11px" }}
-                                      onClick={() => {
-                                        setEditingPlanIndex(-1);
-                                        setIsPlanDrawerOpen(true);
-                                      }}
-                                    >
-                                      ＋ Add Plan
-                                    </button>
-                                  </label>
-                                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                                    {(quizMeta.plans || []).map((plan, index) => (
-                                      <div key={index} className="plan-row-item" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-main)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border-color)", fontSize: "13px" }}>
-                                        <div style={{ flex: 1, cursor: "pointer" }} onClick={() => { setEditingPlanIndex(index); setIsPlanDrawerOpen(true); }}>
-                                          <div style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName || `${plan.durationMonths} Month${plan.durationMonths > 1 ? 's' : ''} Plan`}</div>
-                                          <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                                            {plan.originalPrice > 0 ? <span style={{ textDecoration: "line-through", marginRight: "6px" }}>₹{plan.originalPrice}</span> : null}
-                                            <strong style={{ color: "var(--violet)" }}>₹{plan.price}</strong>
-                                            {plan.discountLabel && <span style={{ color: "var(--green)", marginLeft: "8px", fontWeight: "600" }}>({plan.discountLabel})</span>}
-                                            <span style={{ marginLeft: "12px", padding: "2px 6px", borderRadius: "4px", background: plan.isActive ? "rgba(16, 185, 129, 0.1)" : "rgba(107, 114, 128, 0.1)", color: plan.isActive ? "#10B981" : "#6B7280", fontSize: "10px" }}>
-                                              {plan.isActive ? "Active" : "Inactive"}
-                                            </span>
+                                  {/* Right Column: Plans */}
+                                  <div className="form-field" style={{ flex: 1, margin: 0 }}>
+                                    <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                                      <span>Subscription Duration Plans</span>
+                                      <button 
+                                        type="button"
+                                        className="dashboard-view-all-btn"
+                                        style={{ padding: "4px 8px", fontSize: "11px" }}
+                                        onClick={() => {
+                                          setEditingPlanIndex(-1);
+                                          setIsPlanDrawerOpen(true);
+                                        }}
+                                      >
+                                        ＋ Add Plan
+                                      </button>
+                                    </label>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "155px", overflowY: "auto", paddingRight: "4px" }}>
+                                      {(quizMeta.plans || []).map((plan, index) => (
+                                        <div key={index} className="plan-row-item" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-main)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border-color)", fontSize: "13px" }}>
+                                          <div style={{ flex: 1, cursor: "pointer" }} onClick={() => { setEditingPlanIndex(index); setIsPlanDrawerOpen(true); }}>
+                                            <div style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName || `${plan.durationMonths} Month${plan.durationMonths > 1 ? 's' : ''} Plan`}</div>
+                                            <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px" }}>
+                                              {plan.originalPrice > 0 ? <span style={{ textDecoration: "line-through", marginRight: "6px" }}>₹{plan.originalPrice}</span> : null}
+                                              <strong style={{ color: "var(--violet)" }}>₹{plan.price}</strong>
+                                              {plan.discountLabel && <span style={{ color: "var(--green)", marginLeft: "8px", fontWeight: "600" }}>({plan.discountLabel})</span>}
+                                              <span style={{ marginLeft: "8px", padding: "1px 4px", borderRadius: "4px", background: plan.isActive ? "rgba(16, 185, 129, 0.1)" : "rgba(107, 114, 128, 0.1)", color: plan.isActive ? "#10B981" : "#6B7280", fontSize: "9px" }}>
+                                                {plan.isActive ? "Active" : "Inactive"}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div style={{ display: "flex", gap: "10px" }}>
+                                            <button
+                                              type="button"
+                                              style={{ background: "transparent", border: "none", color: "var(--violet)", cursor: "pointer", fontSize: "12px", fontWeight: "600" }}
+                                              onClick={() => {
+                                                setEditingPlanIndex(index);
+                                                setIsPlanDrawerOpen(true);
+                                              }}
+                                            >
+                                              Edit
+                                            </button>
+                                            <button
+                                              type="button"
+                                              style={{ background: "transparent", border: "none", color: "var(--red)", cursor: "pointer", fontSize: "12px" }}
+                                              onClick={() => {
+                                                const updated = [...quizMeta.plans];
+                                                updated.splice(index, 1);
+                                                setQuizMeta(prev => ({ ...prev, plans: updated }));
+                                              }}
+                                            >
+                                              🗑️
+                                            </button>
                                           </div>
                                         </div>
-                                        <div style={{ display: "flex", gap: "10px" }}>
-                                          <button
-                                            type="button"
-                                            style={{ background: "transparent", border: "none", color: "var(--violet)", cursor: "pointer", fontSize: "12px", fontWeight: "600" }}
-                                            onClick={() => {
-                                              setEditingPlanIndex(index);
-                                              setIsPlanDrawerOpen(true);
-                                            }}
-                                          >
-                                            Edit
-                                          </button>
-                                          <button
-                                            type="button"
-                                            style={{ background: "transparent", border: "none", color: "var(--red)", cursor: "pointer", fontSize: "12px" }}
-                                            onClick={() => {
-                                              const updated = [...quizMeta.plans];
-                                              updated.splice(index, 1);
-                                              setQuizMeta(prev => ({ ...prev, plans: updated }));
-                                            }}
-                                          >
-                                            🗑️ Remove
-                                          </button>
-                                        </div>
-                                      </div>
-                                    ))}
-                                    {(!quizMeta.plans || quizMeta.plans.length === 0) && (
-                                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No plans added. Defaulting to standard test price ({quizMeta.price ? `₹${quizMeta.price}` : 'Free'}).</span>
-                                    )}
+                                      ))}
+                                      {(!quizMeta.plans || quizMeta.plans.length === 0) && (
+                                        <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No plans added. Defaulting to standard test price ({quizMeta.price ? `₹${quizMeta.price}` : 'Free'}).</span>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                             </div>
-                           )}
+                              </div>
+                            )}
 
                           <div className="form-field" style={{ marginTop: "16px" }}>
                             <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px", display: "block" }}>
