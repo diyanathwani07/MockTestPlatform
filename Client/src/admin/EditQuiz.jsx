@@ -1115,6 +1115,25 @@ function EditQuiz() {
                               <div style={{ gridColumn: "1 / -1", marginTop: "20px", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                 <div className="overview-plans-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                                   <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--violet)" }}>Overview & Plans</h4>
+                                  <button
+                                    type="button"
+                                    onClick={handleSaveOverview}
+                                    style={{
+                                      background: "var(--violet)",
+                                      color: "#FFF",
+                                      padding: "6px 14px",
+                                      borderRadius: "8px",
+                                      border: "none",
+                                      fontSize: "12px",
+                                      fontWeight: "600",
+                                      cursor: "pointer",
+                                      transition: "background 0.15s ease",
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.filter = "brightness(1.1)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.filter = "none"}
+                                  >
+                                    Save Overview & Plans
+                                  </button>
                                 </div>
                                 
                                 <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>

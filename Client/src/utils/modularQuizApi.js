@@ -5,16 +5,24 @@ const authHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
 
-export const sanitizeQuestion = (q, subject = "") => ({
-  questionEnglish: (q.questionEnglish || "").trim(),
-  questionHindi: (q.questionHindi || "").trim(),
-  options: (q.options || []).map((o) => String(o).trim()).filter(Boolean),
-  correctAnswer: (q.correctAnswer || "").trim(),
-  explanation: (q.explanation || "").trim(),
-  explanations: q.explanations || undefined,
-  difficulty: q.difficulty || "medium",
-  subject,
-});
+export const sanitizeQuestion = (q, subject = "") => {
+  const result = {
+    questionEnglish: (q.questionEnglish || "").trim(),
+    questionHindi: (q.questionHindi || "").trim(),
+    options: (q.options || []).map((o) => String(o).trim()).filter(Boolean),
+    correctAnswer: (q.correctAnswer || "").trim(),
+    explanation: (q.explanation || "").trim(),
+    explanations: q.explanations || undefined,
+    difficulty: q.difficulty || "medium",
+    subject,
+  };
+  if (q._id) {
+    result._id = q._id;
+  } else if (q.id && String(q.id).length === 24) {
+    result._id = q.id;
+  }
+  return result;
+};
 
 const filterValidQuestions = (questions = []) =>
   questions.filter(
