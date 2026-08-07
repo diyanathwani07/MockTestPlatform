@@ -3,7 +3,7 @@ import { X, ArrowLeft, Gem, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-
 import "../../css/AdminTickets.css";
 
 const emptyPlan = () => ({
-  planName: "",
+  planName: "1 Month Plan",
   durationMonths: 1,
   originalPrice: 0,
   discountPercent: 0,
@@ -11,12 +11,14 @@ const emptyPlan = () => ({
   isActive: true,
 });
 
-function PaidPlanDrawer({ isOpen, onClose, onSave, plan, currency = "INR" }) {
+function PaidPlanDrawer({ isOpen, onClose, onSave, plan, existingPlans = [], currency = "INR" }) {
   const [plans, setPlans] = useState([emptyPlan()]);
   const [expandedIndex, setExpandedIndex] = useState(0);
 
   // Sync state when plan/isOpen changes
   useEffect(() => {
+    if (!isOpen) return;
+    
     if (plan) {
       // Editing a single plan
       setPlans([{
@@ -28,15 +30,42 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, currency = "INR" }) {
         isActive: plan.isActive !== undefined ? plan.isActive : true,
       }]);
       setExpandedIndex(0);
+    } else if (existingPlans && existingPlans.length > 0) {
+      // Load all existing plans and append one empty plan
+      setPlans([
+        ...existingPlans.map(p => ({
+          planName: p.planName || "",
+          durationMonths: p.durationMonths || 1,
+          originalPrice: p.originalPrice || 0,
+          discountPercent: p.discountPercent || 0,
+          price: p.price || 0,
+          isActive: p.isActive !== undefined ? p.isActive : true,
+        })),
+        emptyPlan()
+      ]);
+      setExpandedIndex(existingPlans.length);
     } else {
       setPlans([emptyPlan()]);
       setExpandedIndex(0);
     }
-  }, [plan, isOpen]);
+  }, [plan, isOpen, existingPlans]);
 
   const updatePlan = (index, field, value) => {
     setPlans(prev => {
       const updated = [...prev];
+      
+      // Auto-update default plan name if durationMonths is changing
+      if (field === "durationMonths") {
+        const val = parseInt(value, 10) || 1;
+        const prevDuration = updated[index].durationMonths;
+        const currentName = updated[index].planName;
+        const prevDefaultName = `${prevDuration} Month${prevDuration > 1 ? 's' : ''} Plan`;
+        
+        if (!currentName || currentName === prevDefaultName || /^(\d+)\s*Months?\s*Plan$/i.test(currentName)) {
+          updated[index].planName = `${val} Month${val > 1 ? 's' : ''} Plan`;
+        }
+      }
+
       updated[index] = { ...updated[index], [field]: value };
       
       // Auto-calculate selling price when originalPrice or discountPercent changes

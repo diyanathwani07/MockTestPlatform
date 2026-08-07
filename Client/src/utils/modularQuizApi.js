@@ -174,12 +174,12 @@ export const saveModularQuiz = async ({
     questions: [],
     isModular: true,
     examSeriesId: quizMeta.examSeriesId || null,
-    isPaid: Boolean(quizMeta.isPaid || quizMeta.isPracticePaid),
-    price: Number(quizMeta.price || quizMeta.practicePrice || 0),
-    isPracticePaid: Boolean(quizMeta.isPracticePaid || quizMeta.isPaid),
-    practicePrice: Number(quizMeta.practicePrice || quizMeta.price || 0),
+    isPaid: Boolean(quizMeta.isPaid),
+    price: Number(quizMeta.price || 0),
+    isPracticePaid: Boolean(quizMeta.isPracticePaid),
+    practicePrice: Number(quizMeta.practicePrice || 0),
     detailedDescription: quizMeta.detailedDescription || "",
-    plans: quizMeta.plans || [],
+    plans: (quizMeta.isPaid || quizMeta.isPracticePaid) ? (quizMeta.plans || []) : [],
   };
 
   if (quizId) {
@@ -279,12 +279,12 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     quizType: isPractice ? "practice" : "exam",
     publishAs: quizMeta.publishAs || (isPractice ? "practice" : "exam"),
     examSeriesId: quizMeta.examSeriesId || null,
-    isPaid: Boolean(quizMeta.isPaid || quizMeta.isPracticePaid),
-    price: Number(quizMeta.price || quizMeta.practicePrice || 0),
-    isPracticePaid: Boolean(quizMeta.isPracticePaid || quizMeta.isPaid),
-    practicePrice: Number(quizMeta.practicePrice || quizMeta.price || 0),
+    isPaid: Boolean(quizMeta.isPaid),
+    price: Number(quizMeta.price || 0),
+    isPracticePaid: Boolean(quizMeta.isPracticePaid),
+    practicePrice: Number(quizMeta.practicePrice || 0),
     detailedDescription: quizMeta.detailedDescription || "",
-    plans: quizMeta.plans || [],
+    plans: (quizMeta.isPaid || quizMeta.isPracticePaid) ? (quizMeta.plans || []) : [],
   };
 
   if (quizId) {

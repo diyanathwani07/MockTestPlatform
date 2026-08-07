@@ -88,11 +88,11 @@ function EditQuiz() {
 
   const handleSavePlan = (planData) => {
     setQuizMeta(prev => {
-      const updatedPlans = [...(prev.plans || [])];
+      let updatedPlans = [...(prev.plans || [])];
       if (editingPlanIndex >= 0) {
         updatedPlans[editingPlanIndex] = planData;
       } else if (Array.isArray(planData)) {
-        updatedPlans.push(...planData);
+        updatedPlans = planData;
       } else {
         updatedPlans.push(planData);
       }
@@ -514,10 +514,10 @@ function EditQuiz() {
 
       const overviewPayload = {
         detailedDescription: quizMeta.detailedDescription || "",
-        plans: quizMeta.plans || [],
-        isPaid: Boolean(quizMeta.isPaid || quizMeta.isPracticePaid),
+        plans: (quizMeta.isPaid || quizMeta.isPracticePaid) ? (quizMeta.plans || []) : [],
+        isPaid: Boolean(quizMeta.isPaid),
         price: Number(quizMeta.price || 0),
-        isPracticePaid: Boolean(quizMeta.isPracticePaid || quizMeta.isPaid),
+        isPracticePaid: Boolean(quizMeta.isPracticePaid),
         practicePrice: Number(quizMeta.practicePrice || 0),
       };
 
@@ -1956,6 +1956,7 @@ function EditQuiz() {
         }}
         onSave={handleSavePlan}
         plan={editingPlanIndex >= 0 ? quizMeta.plans[editingPlanIndex] : null}
+        existingPlans={quizMeta.plans || []}
         currency={quizMeta.currency}
       />
     </div>

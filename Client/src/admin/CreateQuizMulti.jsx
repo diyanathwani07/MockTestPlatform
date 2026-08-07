@@ -87,11 +87,11 @@ function CreateQuizMulti() {
 
   const handleSavePlan = (planData) => {
     setQuizMeta(prev => {
-      const updatedPlans = [...(prev.plans || [])];
+      let updatedPlans = [...(prev.plans || [])];
       if (editingPlanIndex >= 0) {
         updatedPlans[editingPlanIndex] = planData;
       } else if (Array.isArray(planData)) {
-        updatedPlans.push(...planData);
+        updatedPlans = planData;
       } else {
         updatedPlans.push(planData);
       }
@@ -1421,6 +1421,7 @@ function CreateQuizMulti() {
         }}
         onSave={handleSavePlan}
         plan={editingPlanIndex >= 0 ? quizMeta.plans[editingPlanIndex] : null}
+        existingPlans={quizMeta.plans || []}
         currency={quizMeta.currency}
       />
     </div>
