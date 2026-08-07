@@ -44,6 +44,17 @@ const createQuiz = async (req, res) => {
     }
 
     await logAction("CREATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+
+    if (quiz.isPaid && quiz.plans && quiz.plans.length > 0) {
+      await logAction(
+        "CREATE_PAID_PLAN",
+        req.user?.fullName || "Admin",
+        `Created paid plans for quiz: ${quiz.title}. Plans: ${quiz.plans.map(p => `${p.planName} (₹${p.price}/${p.durationMonths}m)`).join(", ")}`,
+        "Quiz",
+        req.ip
+      );
+    }
+
     res.status(201).json(quiz);
   } catch (error) {
     console.error("Create Quiz Error:", error);
@@ -186,12 +197,66 @@ const updateQuiz = async (req, res) => {
       await quizService.syncToPracticeQuiz(quiz._id, req.body.publishAs);
     }
 
+    let hasPlanChanges = false;
+    if (req.body.plans !== undefined) {
+      const originalPlans = originalQuiz.plans || [];
+      const updatedPlans = quiz.plans || [];
+      const maxLength = Math.max(originalPlans.length, updatedPlans.length);
+
+      for (let i = 0; i < maxLength; i++) {
+        if (i >= originalPlans.length) {
+          const plan = updatedPlans[i];
+          await logAction(
+            "ADDED_PAID_PLAN",
+            req.user?.fullName || "Admin",
+            `${quiz.title} - Added plan: ${plan.planName || plan.durationMonths + " month(s)"} at ₹${plan.price}`,
+            "Quiz",
+            req.ip
+          );
+          hasPlanChanges = true;
+        } else if (i >= updatedPlans.length) {
+          const plan = originalPlans[i];
+          await logAction(
+            "REMOVED_PAID_PLAN",
+            req.user?.fullName || "Admin",
+            `${quiz.title} - Removed plan: ${plan.planName || plan.durationMonths + " month(s)"}`,
+            "Quiz",
+            req.ip
+          );
+          hasPlanChanges = true;
+        } else {
+          const p1 = originalPlans[i];
+          const p2 = updatedPlans[i];
+          if (
+            p1.planName !== p2.planName ||
+            p1.durationMonths !== p2.durationMonths ||
+            p1.originalPrice !== p2.originalPrice ||
+            p1.discountPercent !== p2.discountPercent ||
+            p1.price !== p2.price ||
+            p1.discountLabel !== p2.discountLabel ||
+            p1.isActive !== p2.isActive
+          ) {
+            await logAction(
+              "UPDATED_PAID_PLAN",
+              req.user?.fullName || "Admin",
+              `${quiz.title} - Updated plan: ${p2.planName || p2.durationMonths + " month(s)"}`,
+              "Quiz",
+              req.ip
+            );
+            hasPlanChanges = true;
+          }
+        }
+      }
+    }
+
     if (quiz.published && !originalQuiz.published) {
       await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     } else if (!quiz.published && originalQuiz.published) {
       await logAction("UNPUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     } else {
-      await logAction("UPDATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+      if (!hasPlanChanges) {
+        await logAction("UPDATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+      }
     }
 
     res.json(quiz);
@@ -780,6 +845,8 @@ const generateCustomQuiz = async (req, res) => {
       isModular: false,
     });
 
+    await logAction("CREATE_CUSTOM_TEST", req.user?.fullName || "User", `Created custom test for ${subject} with ${questions.length} questions`, "Quiz", req.ip);
+
     res.status(201).json(customQuiz);
   } catch (error) {
     console.error("Generate Custom Quiz Error Trace:", error);
@@ -802,6 +869,8 @@ const deleteCustomQuiz = async (req, res) => {
     quiz.deletedAt = new Date();
     quiz.status = "Deleted";
     await quiz.save();
+
+    await logAction("DELETE_CUSTOM_TEST", req.user?.fullName || "User", `Deleted custom test: ${quiz.title}`, "Quiz", req.ip);
 
     res.json({ message: "Custom quiz deleted successfully." });
   } catch (error) {

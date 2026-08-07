@@ -54,24 +54,68 @@ const bulkCreateQuestions = async (req, res) => {
       return res.status(400).json({ message: "An array of questions is required." });
     }
 
-    const preparedQuestions = questions.map((q) => ({
-      questionEnglish: q.questionEnglish,
-      questionHindi: q.questionHindi || "",
-      options: q.options,
-      correctAnswer: q.correctAnswer,
-      explanation: q.explanation || "",
-      explanations: q.explanations || { correct: "", incorrect: {}, conceptSummary: "", didYouKnow: "" },
-      difficulty: q.difficulty || "medium",
-      tags: q.tags || [],
-      subject: q.subject || "",
-      aiGenerated: q.aiGenerated || false,
-      questionBankId: q.questionBankId || null,
-      createdBy: req.user?._id,
-    }));
+    const resultList = [];
+    let createdCount = 0;
+    let updatedCount = 0;
 
-    const created = await Question.insertMany(preparedQuestions);
-    await logAction("BULK_CREATE_QUESTIONS", req.user?.fullName || "Admin", `Imported ${created.length} questions`, "Question", req.ip);
-    res.status(201).json(created);
+    for (const q of questions) {
+      const fields = {
+        questionEnglish: q.questionEnglish,
+        questionHindi: q.questionHindi || "",
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation || "",
+        explanations: q.explanations || { correct: "", incorrect: {}, conceptSummary: "", didYouKnow: "" },
+        difficulty: q.difficulty || "medium",
+        tags: q.tags || [],
+        subject: q.subject || "",
+        aiGenerated: q.aiGenerated || false,
+        questionBankId: q.questionBankId || null,
+        createdBy: req.user?._id,
+      };
+
+      if (q._id) {
+        const existing = await Question.findById(q._id);
+        if (existing) {
+          const isOptionsChanged = JSON.stringify(existing.options) !== JSON.stringify(fields.options);
+          const isExplanationsChanged = JSON.stringify(existing.explanations) !== JSON.stringify(fields.explanations);
+          const isTagsChanged = JSON.stringify(existing.tags) !== JSON.stringify(fields.tags);
+          const hasChanged = isOptionsChanged || isExplanationsChanged || isTagsChanged ||
+            existing.questionEnglish !== fields.questionEnglish ||
+            existing.questionHindi !== fields.questionHindi ||
+            existing.correctAnswer !== fields.correctAnswer ||
+            existing.explanation !== fields.explanation ||
+            existing.difficulty !== fields.difficulty ||
+            existing.subject !== fields.subject ||
+            String(existing.questionBankId) !== String(fields.questionBankId);
+
+          if (hasChanged) {
+            const updated = await Question.findByIdAndUpdate(q._id, { $set: fields }, { new: true });
+            resultList.push(updated);
+            updatedCount++;
+          } else {
+            resultList.push(existing);
+          }
+        } else {
+          const created = await Question.create(fields);
+          resultList.push(created);
+          createdCount++;
+        }
+      } else {
+        const created = await Question.create(fields);
+        resultList.push(created);
+        createdCount++;
+      }
+    }
+
+    if (createdCount > 0) {
+      await logAction("BULK_CREATE_QUESTIONS", req.user?.fullName || "Admin", `Imported ${createdCount} questions`, "Question", req.ip);
+    }
+    if (updatedCount > 0) {
+      await logAction("BULK_UPDATE_QUESTIONS", req.user?.fullName || "Admin", `Updated ${updatedCount} questions`, "Question", req.ip);
+    }
+
+    res.status(200).json(resultList);
   } catch (error) {
     console.error("Bulk Create Questions Error:", error);
     res.status(500).json({ message: "Failed to bulk create questions.", error: error.message });

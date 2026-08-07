@@ -1,6 +1,7 @@
 const PracticeQuiz = require("../models/PracticeQuiz");
 const PracticeSession = require("../models/PracticeSession");
 const { GoogleGenAI, Type } = require("@google/genai");
+const logAction = require("../utils/logger");
 
 // @desc    Get all practice quizzes
 // @route   GET /api/practice
@@ -196,6 +197,9 @@ const updatePracticeQuiz = async (req, res) => {
     const quiz = await PracticeQuiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
+    // Deep copy plans before modifying
+    const originalPlans = quiz.plans ? JSON.parse(JSON.stringify(quiz.plans)) : [];
+
     if (req.body.examName !== undefined) quiz.examName = req.body.examName;
     quiz.title = req.body.title || quiz.title;
     quiz.subject = req.body.subject || quiz.subject;
@@ -230,6 +234,68 @@ const updatePracticeQuiz = async (req, res) => {
     }
 
     const updatedQuiz = await quiz.save();
+
+    let hasPlanChanges = false;
+    if (req.body.plans !== undefined) {
+      const updatedPlans = updatedQuiz.plans || [];
+      const maxLength = Math.max(originalPlans.length, updatedPlans.length);
+
+      for (let i = 0; i < maxLength; i++) {
+        if (i >= originalPlans.length) {
+          const plan = updatedPlans[i];
+          await logAction(
+            "ADDED_PAID_PLAN",
+            req.user?.fullName || "Admin",
+            `${updatedQuiz.title} - Added plan: ${plan.planName || plan.durationMonths + " month(s)"} at ₹${plan.price}`,
+            "PracticeQuiz",
+            req.ip
+          );
+          hasPlanChanges = true;
+        } else if (i >= updatedPlans.length) {
+          const plan = originalPlans[i];
+          await logAction(
+            "REMOVED_PAID_PLAN",
+            req.user?.fullName || "Admin",
+            `${updatedQuiz.title} - Removed plan: ${plan.planName || plan.durationMonths + " month(s)"}`,
+            "PracticeQuiz",
+            req.ip
+          );
+          hasPlanChanges = true;
+        } else {
+          const p1 = originalPlans[i];
+          const p2 = updatedPlans[i];
+          if (
+            p1.planName !== p2.planName ||
+            p1.durationMonths !== p2.durationMonths ||
+            p1.originalPrice !== p2.originalPrice ||
+            p1.discountPercent !== p2.discountPercent ||
+            p1.price !== p2.price ||
+            p1.discountLabel !== p2.discountLabel ||
+            p1.isActive !== p2.isActive
+          ) {
+            await logAction(
+              "UPDATED_PAID_PLAN",
+              req.user?.fullName || "Admin",
+              `${updatedQuiz.title} - Updated plan: ${p2.planName || p2.durationMonths + " month(s)"}`,
+              "PracticeQuiz",
+              req.ip
+            );
+            hasPlanChanges = true;
+          }
+        }
+      }
+    }
+
+    if (!hasPlanChanges) {
+      await logAction(
+        "UPDATE_PRACTICE_QUIZ",
+        req.user?.fullName || "Admin",
+        updatedQuiz.title,
+        "PracticeQuiz",
+        req.ip
+      );
+    }
+
     res.json(updatedQuiz);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });

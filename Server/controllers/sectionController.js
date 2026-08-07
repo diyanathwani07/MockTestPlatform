@@ -119,15 +119,41 @@ const getSectionById = async (req, res) => {
 // Update a section
 const updateSection = async (req, res) => {
   try {
+    const existing = await Section.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({ message: "Section not found." });
+    }
+
+    const currentQuestions = existing.questions || [];
+    const incomingQuestions = req.body.questions || [];
+    const isQuestionsChanged = JSON.stringify(currentQuestions.map(id => String(id))) !== JSON.stringify(incomingQuestions.map(id => String(id)));
+
+    const currentSubsections = existing.subsections || { easy: [], medium: [], hard: [] };
+    const incomingSubsections = req.body.subsections || {};
+    const isSubsectionsChanged = 
+      JSON.stringify((currentSubsections.easy || []).map(id => String(id))) !== JSON.stringify((incomingSubsections.easy || []).map(id => String(id))) ||
+      JSON.stringify((currentSubsections.medium || []).map(id => String(id))) !== JSON.stringify((incomingSubsections.medium || []).map(id => String(id))) ||
+      JSON.stringify((currentSubsections.hard || []).map(id => String(id))) !== JSON.stringify((incomingSubsections.hard || []).map(id => String(id)));
+
+    const hasChanged = isQuestionsChanged || isSubsectionsChanged ||
+      (req.body.title !== undefined && existing.title !== req.body.title) ||
+      (req.body.description !== undefined && existing.description !== req.body.description) ||
+      (req.body.type !== undefined && existing.type !== req.body.type) ||
+      (req.body.duration !== undefined && existing.duration !== Number(req.body.duration)) ||
+      (req.body.marksPerQuestion !== undefined && existing.marksPerQuestion !== Number(req.body.marksPerQuestion)) ||
+      (req.body.negativeMarking !== undefined && existing.negativeMarking !== Number(req.body.negativeMarking)) ||
+      (req.body.questionLimit !== undefined && existing.questionLimit !== Number(req.body.questionLimit)) ||
+      (req.body.randomizeOptions !== undefined && existing.randomizeOptions !== Boolean(req.body.randomizeOptions)) ||
+      (req.body.isStandalone !== undefined && existing.isStandalone !== Boolean(req.body.isStandalone));
+
     const section = await Section.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
-    if (!section) {
-      return res.status(404).json({ message: "Section not found." });
-    }
 
-    await logAction("UPDATE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
+    if (hasChanged) {
+      await logAction("UPDATE_SECTION", req.user?.fullName || "Admin", `Section: ${section.title}`, "Section", req.ip);
+    }
     res.json(section);
   } catch (error) {
     console.error("Update Section Error:", error);
