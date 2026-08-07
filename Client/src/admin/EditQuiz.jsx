@@ -903,6 +903,7 @@ function EditQuiz() {
                       </div>
                       
                       {!quizConfigCollapsed && (
+                        <>
                         <div className="details-vertical-fields" style={{ marginTop: "16px" }}>
                           <div className="form-field">
                             <label>Exam</label>
@@ -1114,14 +1115,6 @@ function EditQuiz() {
                               <div style={{ gridColumn: "1 / -1", marginTop: "20px", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                 <div className="overview-plans-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                                   <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--violet)" }}>Overview & Plans</h4>
-                                  <button
-                                    type="button"
-                                    className="dashboard-view-all-btn"
-                                    style={{ padding: "5px 12px", fontSize: "12px", background: "rgba(110, 63, 243, 0.12)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.25)", borderRadius: "8px", cursor: "pointer", fontWeight: "600", display: "flex", alignItems: "center", gap: "5px" }}
-                                    onClick={handleSaveOverview}
-                                  >
-                                    💾 Save 
-                                  </button>
                                 </div>
                                 
                                 <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
@@ -1201,6 +1194,7 @@ function EditQuiz() {
                                 </div>
                               </div>
                             )}
+                          </div>
 
                           <div className="form-field" style={{ marginTop: "16px" }}>
                             <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px", display: "block" }}>
@@ -1254,7 +1248,7 @@ function EditQuiz() {
                               )}
                             </div>
                           </div>
-                        </div>
+                        </>
                       )}
                     </div>
 

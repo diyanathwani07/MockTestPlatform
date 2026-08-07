@@ -81,6 +81,8 @@ function AuditLog() {
         matchModule = log.action === "UPDATE_PROFILE";
       } else if (moduleFilter === "Exam Purchase") {
         matchModule = log.action === "PURCHASE_EXAM" || log.action === "PURCHASE_PRACTICE";
+      } else if (moduleFilter === "Custom Test") {
+        matchModule = log.action === "CREATE_CUSTOM_TEST" || log.action === "DELETE_CUSTOM_TEST";
       }
     } else {
       matchModule = moduleFilter === "All Modules" || 
@@ -104,16 +106,20 @@ function AuditLog() {
 
     let matchMode = true;
     if (viewMode === "Admin Actions") {
-      // Hide student test starts, purchases, and profile updates from Admin view
+      // Hide student test starts, purchases, profile updates, and custom tests from Admin view
       matchMode = log.action !== "START_QUIZ" && 
                   log.action !== "PURCHASE_EXAM" && 
                   log.action !== "PURCHASE_PRACTICE" &&
-                  log.action !== "UPDATE_PROFILE";
+                  log.action !== "UPDATE_PROFILE" &&
+                  log.action !== "CREATE_CUSTOM_TEST" &&
+                  log.action !== "DELETE_CUSTOM_TEST";
     } else if (viewMode === "Student Actions") {
       matchMode = log.action === "START_QUIZ" || 
                   log.action === "PURCHASE_EXAM" || 
                   log.action === "PURCHASE_PRACTICE" ||
-                  log.action === "UPDATE_PROFILE";
+                  log.action === "UPDATE_PROFILE" ||
+                  log.action === "CREATE_CUSTOM_TEST" ||
+                  log.action === "DELETE_CUSTOM_TEST";
     }
 
     return matchSearch && matchModule && matchDate && matchMode;
@@ -173,6 +179,7 @@ function AuditLog() {
                   <option value="Start Quiz">Start Quiz</option>
                   <option value="Update Profile">Update Profile</option>
                   <option value="Exam Purchase">Exam Purchase</option>
+                  <option value="Custom Test">Custom Test</option>
                 </>
               ) : (
                 <>

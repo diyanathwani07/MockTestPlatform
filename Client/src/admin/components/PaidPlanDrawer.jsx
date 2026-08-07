@@ -141,7 +141,7 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, currency = "INR" }) {
                   border: "1px solid var(--border-color)",
                   borderRadius: "14px",
                   overflow: "hidden",
-                  background: "var(--bg-panel, #fff)",
+                  background: "var(--bg-card, #fff)",
                   boxShadow: isExpanded ? "0 4px 20px rgba(110, 63, 243, 0.06)" : "none",
                 }}
               >
@@ -348,7 +348,7 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, currency = "INR" }) {
         </div>
 
         {/* Footer */}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", padding: "16px 24px", borderTop: "1px solid var(--border-color)", background: "var(--bg-panel)", flexShrink: 0 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", padding: "16px 24px", borderTop: "1px solid var(--border-color)", background: "var(--bg-card)", flexShrink: 0 }}>
           <button
             type="button"
             onClick={onClose}
