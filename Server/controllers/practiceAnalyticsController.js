@@ -20,6 +20,33 @@ const savePracticeResult = async (req, res) => {
       return res.status(404).json({ message: "Practice Quiz not found." });
     }
 
+    // Determine max questions to clamp statistics
+    let maxQuestions = (quiz.questions || []).length;
+    if (quiz.isModular && quiz.sections && quiz.sections.length > 0) {
+      const Section = require("../models/Section");
+      let modularCount = 0;
+      for (const secRef of quiz.sections) {
+        const secId = secRef.sectionId || secRef._id || secRef;
+        if (secId) {
+          try {
+            const section = await Section.findById(secId);
+            if (section) {
+              modularCount += (section.questions || []).length;
+            }
+          } catch (e) {}
+        }
+      }
+      if (modularCount > 0) {
+        maxQuestions = modularCount;
+      }
+    }
+
+    // Sanity check/clamp stats to prevent XP/streak forgery
+    const totalQuestionsClean = Math.min(stats.totalQuestions || 0, maxQuestions || 100);
+    const firstTryCorrectClean = Math.min(stats.firstTryCorrect || 0, totalQuestionsClean);
+    const multipleTriesClean = Math.min(stats.multipleTries || 0, totalQuestionsClean - firstTryCorrectClean);
+    const accuracyClean = totalQuestionsClean > 0 ? Number(((firstTryCorrectClean / totalQuestionsClean) * 100).toFixed(2)) : 0;
+
     // Save the practice result record
     const practiceResult = new PracticeResult({
       userId,
@@ -28,13 +55,13 @@ const savePracticeResult = async (req, res) => {
       subject: quiz.subject,
       difficulty: quiz.difficulty || "Medium",
       stats: {
-        totalQuestions: stats.totalQuestions,
-        firstTryCorrect: stats.firstTryCorrect,
-        multipleTries: stats.multipleTries,
-        totalWrongAttempts: stats.totalWrongAttempts,
-        totalAttemptsAll: stats.totalAttemptsAll,
-        timeSpent: stats.timeSpent,
-        accuracy: stats.accuracy,
+        totalQuestions: totalQuestionsClean,
+        firstTryCorrect: firstTryCorrectClean,
+        multipleTries: multipleTriesClean,
+        totalWrongAttempts: stats.totalWrongAttempts || 0,
+        totalAttemptsAll: stats.totalAttemptsAll || 0,
+        timeSpent: stats.timeSpent || 0,
+        accuracy: accuracyClean,
       },
       wrongQuestions: wrongQuestions || [],
     });

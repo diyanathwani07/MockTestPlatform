@@ -84,53 +84,7 @@ app.get("/", (req, res) => {
   res.send("Teaching Pariksha API Running 🚀");
 });
 
-// 🧠 THE DYNAMIC GRADER: Grades any test in the database instantly
-app.post("/submit", (req, res) => {
-  const { userAnswers, questions } = req.body;
 
-  if (!userAnswers || !questions) {
-    return res.status(400).json({
-      error: "Missing exam data packets",
-    });
-  }
-
-  let score = 0;
-  let correct = 0;
-  let incorrect = 0;
-  let unanswered = 0;
-
-  const total = questions.length;
-
-  questions.forEach((q, index) => {
-    const userAns = userAnswers[index];
-    const actualAnswer = q.correctAnswer; // <-- Pulled directly out of MongoDB's question object!
-
-    if (userAns === undefined || userAns === null || userAns === "") {
-      unanswered++;
-    } else if (
-      String(userAns).trim().toLowerCase() === String(actualAnswer).trim().toLowerCase()
-    ) {
-      score++;
-      correct++;
-    } else {
-      incorrect++;
-    }
-  });
-
-  const percentage = total > 0 ? ((score / total) * 100).toFixed(2) : "0.00";
-
-  res.json({
-    success: true,
-    score,
-    total,
-    correct,
-    incorrect,
-    unanswered,
-    percentage,
-    questions, // Already contains the real correctAnswer inside it for the Review Page!
-    userAnswers,
-  });
-});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", quizRoutes);

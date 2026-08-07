@@ -172,6 +172,12 @@ function Result() {
         const userString = localStorage.getItem("user");
         console.log("user from localStorage:", userString);
 
+        if (data?.shareId) {
+          console.log("Result already saved by server with shareId:", data.shareId);
+          setShareId(data.shareId);
+          return;
+        }
+
         const user = userString ? JSON.parse(userString) : null;
 
         const userId = user?.id || user?._id;

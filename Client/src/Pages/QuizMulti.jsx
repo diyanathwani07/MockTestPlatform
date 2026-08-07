@@ -474,30 +474,16 @@ function QuizMulti() {
       const accuratePercentage = maxPossibleMarks > 0 ? (finalScore / maxPossibleMarks) * 100 : 0;
       const totalTimeSpent = Object.values(sectionTimeSpent).reduce((a, b) => a + b, 0);
 
-      const payload = {
-        userId: storedUser.id,
-        quizId,
-        quizTitle,
-        subject: examSubject,
-        examName,
-        score: finalScore,
-        total: totalQuestions,
-        correct: totalCorrect,
-        incorrect: totalIncorrect,
-        percentage: accuratePercentage,
-        timeTaken: totalTimeSpent,
-        sectionResults,
-        difficultyBreakdown,
-        questions: sections.flatMap(sec => sec.flatQuestions),
-        userAnswers: sections.flatMap(sec =>
-          sec.flatQuestions.map((q, i) => userAnswers[sec._id]?.[i] ?? null)
-        )
-      };
+      const flatAnswers = sections.flatMap(sec =>
+        sec.flatQuestions.map((q, i) => userAnswers[sec._id]?.[i] ?? null)
+      );
 
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/results/save`, payload, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/submit`, {
+        userAnswers: flatAnswers,
+        timeTaken: totalTimeSpent
+      }, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
-
       navigate(`/student/result/${res.data.result.shareId}`, { replace: true });
     } catch (error) {
       console.error("Submit Error:", error);

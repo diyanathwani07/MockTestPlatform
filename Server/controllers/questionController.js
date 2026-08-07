@@ -105,6 +105,22 @@ const getQuestions = async (req, res) => {
     }
 
     const questions = await Question.find(filter).sort({ createdAt: -1 });
+    const isStudent = req.user && req.user.role === "user";
+    if (isStudent) {
+      const sanitized = questions.map(q => {
+        const raw = q.toObject();
+        delete raw.correctAnswer;
+        delete raw.explanation;
+        if (raw.explanations) {
+          delete raw.explanations.correct;
+          delete raw.explanations.incorrect;
+          delete raw.explanations.conceptSummary;
+          delete raw.explanations.didYouKnow;
+        }
+        return raw;
+      });
+      return res.json(sanitized);
+    }
     res.json(questions);
   } catch (error) {
     console.error("Get Questions Error:", error);
@@ -118,6 +134,19 @@ const getQuestionById = async (req, res) => {
     const question = await Question.findById(req.params.id);
     if (!question) {
       return res.status(404).json({ message: "Question not found." });
+    }
+    const isStudent = req.user && req.user.role === "user";
+    if (isStudent) {
+      const raw = question.toObject();
+      delete raw.correctAnswer;
+      delete raw.explanation;
+      if (raw.explanations) {
+        delete raw.explanations.correct;
+        delete raw.explanations.incorrect;
+        delete raw.explanations.conceptSummary;
+        delete raw.explanations.didYouKnow;
+      }
+      return res.json(raw);
     }
     res.json(question);
   } catch (error) {

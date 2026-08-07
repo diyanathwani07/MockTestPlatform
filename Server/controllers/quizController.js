@@ -102,7 +102,10 @@ const getQuizzes = async (req, res) => {
 // GET a single quiz by ID (fully populated preview)
 const getQuizById = async (req, res) => {
   try {
-    const quiz = await quizService.previewQuiz(req.params.id);
+    const isStudent = req.user && req.user.role === "user";
+    const quiz = isStudent 
+      ? await quizService.previewQuizForStudent(req.params.id)
+      : await quizService.previewQuiz(req.params.id);
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found." });
     }
@@ -807,6 +810,181 @@ const deleteCustomQuiz = async (req, res) => {
   }
 };
 
+const submitQuiz = async (req, res) => {
+  try {
+    const { userAnswers, timeTaken } = req.body;
+    if (!userAnswers) {
+      return res.status(400).json({ message: "Missing userAnswers payload" });
+    }
+
+    const quiz = await quizService.previewQuiz(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found." });
+    }
+
+    let dbQuestions = quiz.questions || [];
+    let sectionResults = [];
+
+    if (dbQuestions.length === 0 && quiz.sections && quiz.sections.length > 0) {
+      quiz.sections.forEach(sec => {
+        let qs = sec.questions || [];
+        if (sec.type === 'coding' && sec.subsections) {
+          qs = [
+            ...(sec.subsections.easy || []),
+            ...(sec.subsections.medium || []),
+            ...(sec.subsections.hard || []),
+          ];
+        }
+
+        let secCorrect = 0;
+        let secIncorrect = 0;
+        let secScore = 0;
+
+        qs.forEach((q, qIdx) => {
+          // Find the corresponding index in the overall flat answers list
+          // For multi-section, the client flattens userAnswers in the same order
+        });
+      });
+
+      // Let's perform a flat mapping first
+      const normalizedSections = quiz.sections.map(sec => {
+         let qs = sec.questions || [];
+         if (sec.type === 'coding' && sec.subsections) {
+            qs = [
+              ...(sec.subsections.easy || []),
+              ...(sec.subsections.medium || []),
+              ...(sec.subsections.hard || []),
+            ];
+         }
+         return qs.map(q => {
+            const qObj = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
+            qObj.marksPerQuestion = sec.marksPerQuestion ?? quiz.marksPerQuestion ?? 1;
+            qObj.negativeMarking = sec.negativeMarking ?? quiz.negativeMarking ?? 0;
+            qObj.sectionId = sec._id;
+            qObj.sectionTitle = sec.title;
+            return qObj;
+         });
+      });
+      dbQuestions = normalizedSections.flat();
+    } else {
+      dbQuestions = dbQuestions.map(q => {
+        const qObj = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
+        qObj.marksPerQuestion = quiz.marksPerQuestion ?? 1;
+        qObj.negativeMarking = quiz.negativeMarking ?? 0;
+        return qObj;
+      });
+    }
+
+    let score = 0;
+    let correct = 0;
+    let incorrect = 0;
+    let unanswered = 0;
+    const total = dbQuestions.length;
+
+    const difficultyBreakdown = {
+      easy: { correct: 0, total: 0 },
+      medium: { correct: 0, total: 0 },
+      hard: { correct: 0, total: 0 }
+    };
+
+    // Track stats per section for multi-section results
+    const sectionStatsMap = {};
+
+    dbQuestions.forEach((q, index) => {
+      const userAns = userAnswers[index];
+      const actualAnswer = q.correctAnswer;
+      const isCorrect = userAns !== undefined && userAns !== null && String(userAns).trim().toLowerCase() === String(actualAnswer).trim().toLowerCase();
+
+      const diff = (q.difficulty || "medium").toLowerCase();
+      if (difficultyBreakdown[diff]) {
+        difficultyBreakdown[diff].total++;
+        if (isCorrect) difficultyBreakdown[diff].correct++;
+      }
+
+      let qScore = 0;
+      if (userAns === undefined || userAns === null || userAns === "") {
+        unanswered++;
+      } else if (isCorrect) {
+        correct++;
+        qScore = q.marksPerQuestion || 1;
+        score += qScore;
+      } else {
+        incorrect++;
+        qScore = -(q.negativeMarking || 0);
+        score += qScore;
+      }
+
+      if (q.sectionId) {
+        const secIdStr = q.sectionId.toString();
+        if (!sectionStatsMap[secIdStr]) {
+          sectionStatsMap[secIdStr] = {
+            sectionId: q.sectionId,
+            sectionTitle: q.sectionTitle,
+            score: 0,
+            correct: 0,
+            incorrect: 0,
+            total: 0
+          };
+        }
+        sectionStatsMap[secIdStr].total++;
+        if (isCorrect) {
+          sectionStatsMap[secIdStr].correct++;
+          sectionStatsMap[secIdStr].score += q.marksPerQuestion || 1;
+        } else if (userAns !== undefined && userAns !== null && userAns !== "") {
+          sectionStatsMap[secIdStr].incorrect++;
+          sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+        }
+      }
+    });
+
+    if (Object.keys(sectionStatsMap).length > 0) {
+      sectionResults = Object.values(sectionStatsMap);
+    }
+
+    const percentage = total > 0 ? ((score / total) * 100).toFixed(2) : "0.00";
+
+    const Result = require("../models/Result");
+    const crypto = require("crypto");
+    const shareId = crypto.randomBytes(4).toString("hex");
+
+    const result = await Result.create({
+      userId: req.user._id,
+      quizId: quiz._id,
+      quizTitle: quiz.title,
+      subject: quiz.subject,
+      examName: quiz.examName,
+      score,
+      total,
+      correct,
+      incorrect,
+      percentage: Number(percentage),
+      timeTaken: timeTaken || 0,
+      shareId,
+      isPublic: true,
+      sectionResults,
+      difficultyBreakdown,
+      questions: dbQuestions,
+      userAnswers: userAnswers,
+    });
+
+    res.json({
+      success: true,
+      score,
+      total,
+      correct,
+      incorrect,
+      unanswered,
+      percentage,
+      questions: dbQuestions,
+      userAnswers,
+      result,
+    });
+  } catch (error) {
+    console.error("Quiz submission error:", error);
+    res.status(500).json({ message: "Submission failed.", error: error.message });
+  }
+};
+
 module.exports = {
   createQuiz,
   getQuizzes,
@@ -825,4 +1003,5 @@ module.exports = {
   convertSingleToMulti,
   generateCustomQuiz,
   deleteCustomQuiz,
+  submitQuiz,
 };

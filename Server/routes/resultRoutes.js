@@ -1,4 +1,5 @@
 const express = require("express");
+const { protect } = require("../middleware/authMiddleware");
 
 const {
   saveResult,
@@ -10,10 +11,10 @@ const {
 
 const router = express.Router();
 
-router.post("/save", saveResult);
+router.post("/save", protect, saveResult);
 router.get("/leaderboard", getLeaderboard);
 router.get("/share/:shareId", getSharedResult);
 router.get("/by-share/:shareId", getResultByShareId);
-router.get("/:userId", getUserResults);
+router.get("/:userId", protect, getUserResults);
 
 module.exports = router;

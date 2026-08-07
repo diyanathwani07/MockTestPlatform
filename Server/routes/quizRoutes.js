@@ -22,6 +22,7 @@ const {
   permanentlyDeleteQuiz,
   generateCustomQuiz,
   deleteCustomQuiz,
+  submitQuiz,
 } = require("../controllers/quizController");
 
 // Dashboard stats — admin only
@@ -37,6 +38,7 @@ router.delete("/custom/:id", protect, deleteCustomQuiz);
 // Public/general quiz listing
 router.get("/", optionalProtect, getQuizzes);
 router.get("/:id", protect, getQuizById);
+router.post("/:id/submit", protect, submitQuiz);
 
 // Admin-only write operations
 router.post("/", protect, adminOnly, createQuiz);

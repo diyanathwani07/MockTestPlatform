@@ -321,10 +321,13 @@ function Quiz() {
     const timeTaken = (initialDurationMinutes * 60) - timeLeft;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/submit`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userAnswers, questions }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ userAnswers, timeTaken }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const serverData = await res.json();
@@ -338,45 +341,17 @@ function Quiz() {
           quizId,
           title: examSubject,
           subject: examSubject,
-          questions,
-          userAnswers,
+          questions: serverData.questions || questions,
+          userAnswers: serverData.userAnswers || userAnswers,
+          shareId: serverData.result?.shareId,
           isPreview,
           timeTaken,
           duration: initialDurationMinutes
         } 
       });
     } catch (err) {
-      // Offline fallback
-      let correct = 0, incorrect = 0, unanswered = 0;
-      questions.forEach((q, i) => {
-        const ans = userAnswers[i];
-        if (ans === undefined || ans === null) unanswered++;
-        else if (ans === q.correctAnswer) correct++;
-        else incorrect++;
-      });
-      const total = questions.length;
-      
-
-      
-      navigate("/result", {
-        replace: true,
-        state: {
-          quizId,
-          title: examSubject,
-          subject: examSubject,
-          score: correct,
-          total,
-          correct,
-          incorrect,
-          unanswered,
-          percentage: total ? ((correct / total) * 100).toFixed(2) : "0.00",
-          questions,
-          userAnswers,
-          isPreview,
-          timeTaken,
-          duration: initialDurationMinutes
-        }
-      });
+      console.error(err);
+      alert("Submission failed. Please check your internet connection and try again.");
     }
   };
 

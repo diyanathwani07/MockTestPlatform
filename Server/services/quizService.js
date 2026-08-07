@@ -471,6 +471,49 @@ const syncToPracticeQuiz = async (quizId, publishAs) => {
   );
 };
 
+const stripAnswers = (quiz) => {
+  if (!quiz) return quiz;
+  const sanitized = JSON.parse(JSON.stringify(quiz));
+
+  const sanitizeQuestion = (q) => {
+    if (!q) return;
+    delete q.correctAnswer;
+    delete q.explanation;
+    if (q.explanations) {
+      delete q.explanations.correct;
+      delete q.explanations.incorrect;
+      delete q.explanations.conceptSummary;
+      delete q.explanations.didYouKnow;
+    }
+  };
+
+  if (sanitized.questions && sanitized.questions.length > 0) {
+    sanitized.questions.forEach(sanitizeQuestion);
+  }
+
+  if (sanitized.sections && sanitized.sections.length > 0) {
+    sanitized.sections.forEach(sec => {
+      if (sec.questions && sec.questions.length > 0) {
+        sec.questions.forEach(sanitizeQuestion);
+      }
+      if (sec.subsections) {
+        ["easy", "medium", "hard"].forEach(level => {
+          if (sec.subsections[level] && sec.subsections[level].length > 0) {
+            sec.subsections[level].forEach(sanitizeQuestion);
+          }
+        });
+      }
+    });
+  }
+
+  return sanitized;
+};
+
+const previewQuizForStudent = async (quizId) => {
+  const quiz = await previewQuiz(quizId);
+  return stripAnswers(quiz);
+};
+
 module.exports = {
   isModularSection,
   createQuestionFromEmbedded,
@@ -484,6 +527,8 @@ module.exports = {
   linkSectionToQuiz,
   flattenSectionForClient,
   previewQuiz,
+  previewQuizForStudent,
+  stripAnswers,
   extractSection,
   convertSingleQuizToSection,
   duplicateQuiz,

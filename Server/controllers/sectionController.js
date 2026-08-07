@@ -36,6 +36,39 @@ const getSections = async (req, res) => {
     const sections = await Section.find(filter)
       .populate("questions")
       .sort({ createdAt: -1 });
+
+    const isStudent = req.user && req.user.role === "user";
+    if (isStudent) {
+      const sanitizeSectionQuestions = (section) => {
+        if (!section) return section;
+        const sec = section.toObject();
+        const sanitizeQ = (q) => {
+          if (!q) return;
+          delete q.correctAnswer;
+          delete q.explanation;
+          if (q.explanations) {
+            delete q.explanations.correct;
+            delete q.explanations.incorrect;
+            delete q.explanations.conceptSummary;
+            delete q.explanations.didYouKnow;
+          }
+        };
+        if (sec.questions && sec.questions.length > 0) {
+          sec.questions.forEach(sanitizeQ);
+        }
+        if (sec.subsections) {
+          ["easy", "medium", "hard"].forEach(level => {
+            if (sec.subsections[level] && sec.subsections[level].length > 0) {
+              sec.subsections[level].forEach(sanitizeQ);
+            }
+          });
+        }
+        return sec;
+      };
+      const sanitized = sections.map(sanitizeSectionQuestions);
+      return res.json(sanitized);
+    }
+
     res.json(sections);
   } catch (error) {
     console.error("Get Sections Error:", error);
@@ -49,6 +82,32 @@ const getSectionById = async (req, res) => {
     const section = await quizService.populateSectionQuestions(req.params.id);
     if (!section) {
       return res.status(404).json({ message: "Section not found." });
+    }
+    const isStudent = req.user && req.user.role === "user";
+    if (isStudent) {
+      const secObj = section.toObject();
+      const sanitizeQ = (q) => {
+        if (!q) return;
+        delete q.correctAnswer;
+        delete q.explanation;
+        if (q.explanations) {
+          delete q.explanations.correct;
+          delete q.explanations.incorrect;
+          delete q.explanations.conceptSummary;
+          delete q.explanations.didYouKnow;
+        }
+      };
+      if (secObj.questions && secObj.questions.length > 0) {
+        secObj.questions.forEach(sanitizeQ);
+      }
+      if (secObj.subsections) {
+        ["easy", "medium", "hard"].forEach(level => {
+          if (secObj.subsections[level] && secObj.subsections[level].length > 0) {
+            secObj.subsections[level].forEach(sanitizeQ);
+          }
+        });
+      }
+      return res.json(secObj);
     }
     res.json(section);
   } catch (error) {

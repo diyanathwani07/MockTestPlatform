@@ -95,6 +95,15 @@ function App() {
         />
 
         <Route
+          path="/student/result/:shareId"
+          element={
+            <ProtectedRoute>
+              <Result />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/result"
           element={
             <ProtectedRoute>

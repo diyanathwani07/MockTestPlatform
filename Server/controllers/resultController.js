@@ -2,9 +2,10 @@ const Result = require("../models/Result");
 const crypto = require("crypto");
 
 const saveResult = async (req, res) => {
+  // NOTE: This is a legacy/manual path gated behind protect.
+  // Prefer using /api/quizzes/:id/submit where grading and result generation are authoritative.
   try {
     const {
-      userId,
       quizId,
       quizTitle,
       subject,
@@ -26,7 +27,7 @@ const saveResult = async (req, res) => {
     const shareId = crypto.randomBytes(4).toString("hex");
 
     const result = await Result.create({
-      userId,
+      userId: req.user._id,
       quizId,
       quizTitle,
       subject,
@@ -64,6 +65,11 @@ const saveResult = async (req, res) => {
 const getUserResults = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    if (req.user._id.toString() !== userId && !["admin", "superadmin"].includes(req.user.role)) {
+      return res.status(403).json({ message: "Access Denied: unauthorized to fetch these results." });
+    }
+
     const results = await Result.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json(results);
   } catch (error) {

@@ -17,6 +17,8 @@ const registerUser = async (req, res) => {
   adminSecretKey,
 } = req.body;
 
+    const userExists = await User.findOne({ email });
+
     // Check existing user
     if (userExists) {
       if (userExists.isDeleted) {

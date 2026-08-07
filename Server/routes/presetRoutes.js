@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Preset = require("../models/Preset");
+const { protect } = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
 
 // @route   GET /api/presets
 // @desc    Get all presets
@@ -17,7 +19,7 @@ router.get("/", async (req, res) => {
 
 // @route   POST /api/presets
 // @desc    Create a new preset
-router.post("/", async (req, res) => {
+router.post("/", protect, adminOnly, async (req, res) => {
   try {
     const { presetName, examName, duration, marksPerQuestion, negativeMarking } = req.body;
 
@@ -43,7 +45,7 @@ router.post("/", async (req, res) => {
 
 // @route   DELETE /api/presets/:id
 // @desc    Delete a preset
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protect, adminOnly, async (req, res) => {
   try {
     const preset = await Preset.findById(req.params.id);
     if (!preset) {

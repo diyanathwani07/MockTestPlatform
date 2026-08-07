@@ -48,6 +48,26 @@ const getQuestionBankById = async (req, res) => {
     // Fetch questions associated with this bank
     const questions = await Question.find({ questionBankId: questionBank._id });
 
+    const isStudent = req.user && req.user.role === "user";
+    if (isStudent) {
+      const sanitized = questions.map(q => {
+        const raw = q.toObject();
+        delete raw.correctAnswer;
+        delete raw.explanation;
+        if (raw.explanations) {
+          delete raw.explanations.correct;
+          delete raw.explanations.incorrect;
+          delete raw.explanations.conceptSummary;
+          delete raw.explanations.didYouKnow;
+        }
+        return raw;
+      });
+      return res.json({
+        questionBank,
+        questions: sanitized,
+      });
+    }
+
     res.json({
       questionBank,
       questions,
