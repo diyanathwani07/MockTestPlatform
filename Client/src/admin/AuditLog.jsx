@@ -308,10 +308,10 @@ function AuditLog() {
                           const a = log.action?.toUpperCase() || "";
                           let bg = "rgba(139, 92, 246, 0.12)";
                           let color = "#8B5CF6";
-                          if (a.includes("CREATE") || a.includes("PUBLISH") || a.includes("RESTORE")) {
+                          if (a.includes("CREATE") || a.includes("PUBLISH") || a.includes("RESTORE") || a.includes("ADD")) {
                             bg = "rgba(16, 185, 129, 0.12)";
                             color = "#10b981";
-                          } else if (a.includes("DELETE") || a.includes("SUSPEND")) {
+                          } else if (a.includes("DELETE") || a.includes("SUSPEND") || a.includes("REMOVE")) {
                             bg = "rgba(239, 68, 68, 0.12)";
                             color = "#ef4444";
                           } else if (a.includes("UPDATE") || a.includes("ROLE") || a.includes("STATUS")) {
