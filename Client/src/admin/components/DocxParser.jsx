@@ -95,7 +95,7 @@ function DocxParser({ onQuestionsLoaded }) {
       onDragLeave={handleDrag}
       onDrop={handleDrop}
       style={{ 
-        padding: "12px 18px", 
+        padding: "10px 14px", 
         border: dragActive ? "2.5px dashed var(--violet, #6E3FF3)" : "1.5px solid var(--border-color)", 
         borderRadius: "10px", 
         backgroundColor: dragActive ? "rgba(110, 63, 243, 0.08)" : "var(--bg-input)", 
@@ -105,18 +105,20 @@ function DocxParser({ onQuestionsLoaded }) {
         width: "100%", 
         boxSizing: "border-box",
         transition: "all 0.25s ease",
-        cursor: "pointer"
+        cursor: "pointer",
+        flexWrap: "wrap",
+        gap: "10px"
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1 1 auto", minWidth: "150px" }}>
+        <span style={{ fontSize: "12.5px", fontWeight: "700", color: "var(--text-primary)" }}>
           {dragActive ? "🔥 Drop your .docx file here!" : "📄 Import Qs (.docx) or Drag & Drop"}
         </span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
         <a
           href="#"
-          style={{ fontSize: "11.5px", color: "var(--violet)", fontWeight: "700", textDecoration: "none" }}
+          style={{ fontSize: "11.5px", color: "var(--violet)", fontWeight: "700", textDecoration: "none", padding: "4px 8px" }}
           onClick={(e) => {
             e.preventDefault();
             alert(
@@ -174,8 +176,8 @@ function DocxParser({ onQuestionsLoaded }) {
             display: "flex", 
             alignItems: "center", 
             gap: "6px", 
-            padding: "8px 16px", 
-            borderRadius: "8px", 
+            padding: "6px 12px", 
+            borderRadius: "6px", 
             backgroundColor: "var(--primary-color, #6E3FF3)",
             color: "#fff",
             fontSize: "12px",

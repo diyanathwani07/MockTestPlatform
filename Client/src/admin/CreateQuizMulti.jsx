@@ -765,9 +765,9 @@ function CreateQuizMulti() {
                           <div style={{ gridColumn: "1 / -1", marginTop: "16px", padding: "20px", background: "var(--bg-panel)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                             <h4 style={{ margin: "0 0 16px 0", fontSize: "13.5px", fontWeight: "700", color: "#8B5CF6" }}>Overview & Plans</h4>
                             
-                            <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                               {/* Left Column: Description */}
-                              <div className="form-field" style={{ flex: 1, margin: 0 }}>
+                              <div className="form-field" style={{ margin: 0 }}>
                                 <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "6px", display: "block" }}>Detailed Description (Markdown details)</label>
                                 <textarea 
                                   name="detailedDescription" 
@@ -781,7 +781,7 @@ function CreateQuizMulti() {
                               </div>
 
                               {/* Right Column: Plans */}
-                              <div className="form-field" style={{ flex: 1, margin: 0 }}>
+                              <div className="form-field" style={{ margin: 0 }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                                   <label style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Subscription Duration Plans</label>
                                   <button 
