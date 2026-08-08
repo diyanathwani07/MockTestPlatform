@@ -416,11 +416,14 @@ function parseQuestionsFromText(text) {
           incorrectMap[optionsPlain[2]] = expC.trim();
         }
 
+        const letterToIndex = { A: 0, B: 1, C: 2, D: 3 };
+        const resolvedCorrectAnswer = optionsPlain[letterToIndex[correctAnswer]] || optionsPlain[0];
+
         questions.push({
           questionEnglish: questionEnglishRaw,
           questionHindi: hindiLine,
           options: optionsArray,
-          correctAnswer: correctAnswer,
+          correctAnswer: resolvedCorrectAnswer,
           explanation: explanationLine,
           explanations: {
             correct: explanationLine,
@@ -485,11 +488,14 @@ function parseQuestionsFromText(text) {
           return o.english || o.hindi || "";
         });
 
+        const letterToIndex = { A: 0, B: 1, C: 2, D: 3 };
+        const resolvedCorrectAnswer = optionsPlain[letterToIndex[correctAnswer]] || optionsPlain[0];
+
         questions.push({
           questionEnglish: questionEnglishRaw,
           questionHindi: hindiLine,
           options: optionsArray,
-          correctAnswer: correctAnswer,
+          correctAnswer: resolvedCorrectAnswer,
           explanation: explanationLine,
           explanations: {
             correct: explanationLine,

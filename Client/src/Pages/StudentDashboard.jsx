@@ -104,6 +104,7 @@ function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState([]);
   const [seriesList, setSeriesList] = useState([]);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -113,7 +114,9 @@ function StudentDashboard() {
         if (!userId) return;
         
         // Fetch results for the user
-        const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userId}`);
+        const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
         setResults(resultsRes.data);
         
         // Fetch published parent Exam Series
@@ -123,6 +126,7 @@ function StudentDashboard() {
         setSeriesList(seriesRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data", error);
+        setFetchError(true);
       } finally {
         setLoading(false);
       }
@@ -236,6 +240,11 @@ function StudentDashboard() {
 
       {/* ── MAIN CONTENT ── */}
       <div className="sd-content">
+        {fetchError && (
+          <div style={{ backgroundColor: "#FEE2E2", color: "#B91C1C", border: "1px solid #FCA5A5", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
+            ⚠️ Failed to load your attempt history. Please check your network connection or log in again.
+          </div>
+        )}
         
         {/* STATS ROW */}
         <div className="sd-stats-grid">

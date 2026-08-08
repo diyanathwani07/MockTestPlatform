@@ -102,7 +102,9 @@ function Users() {
     if ((activeModal === 'profile_popup' || activeModal === 'profile_drawer' || activeModal === 'history' || activeModal === 'performance') && selectedUser) {
       setQuizzesAttempted("Loading...");
       setHistoryLoading(true);
-      axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedUser._id}`)
+      axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedUser._id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      })
         .then(res => {
           setQuizzesAttempted(res.data.length);
           setAttemptsData(res.data);

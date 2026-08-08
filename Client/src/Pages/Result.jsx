@@ -59,7 +59,9 @@ function Result() {
             res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/by-share/${routeShareId}`);
             setData(res.data);
           } else if (user?.id || user?._id) {
-            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`);
+            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+            });
             if (res.data && res.data.length > 0) {
               setData(res.data[0]);
             }
@@ -217,6 +219,9 @@ function Result() {
             timeTaken: timeTakenSecs,
             questions: data?.questions || [],
             userAnswers: data?.userAnswers || [],
+          },
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
           }
         );
 
