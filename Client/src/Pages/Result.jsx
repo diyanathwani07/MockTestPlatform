@@ -104,7 +104,15 @@ function Result() {
   useEffect(() => {
     if (data) {
       if (data.questions && data.questions.length > 0) {
-        setQuestions(data.questions);
+        const mappedQs = data.questions.map(q => {
+          let correctText = q.correctAnswer || "";
+          if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
+            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+            correctText = q.options[idxMap[correctText]] || correctText;
+          }
+          return { ...q, correctAnswer: correctText };
+        });
+        setQuestions(mappedQs);
         setUserAnswers(data.userAnswers || []);
       } else if (data.quizId) {
         const fetchQuizQuestions = async () => {
@@ -132,7 +140,15 @@ function Result() {
                return { ...sec, flatQuestions: qs };
             });
             const flatQs = normalizedSections.flatMap(sec => sec.flatQuestions);
-            setQuestions(flatQs);
+            const mappedQs = flatQs.map(q => {
+              let correctText = q.correctAnswer || "";
+              if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
+                const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+                correctText = q.options[idxMap[correctText]] || correctText;
+              }
+              return { ...q, correctAnswer: correctText };
+            });
+            setQuestions(mappedQs);
             setUserAnswers(data.userAnswers || []);
           } catch (err) {
             console.error("Failed to fetch fallback quiz questions", err);

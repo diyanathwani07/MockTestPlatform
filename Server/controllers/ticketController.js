@@ -1,5 +1,6 @@
 const Ticket = require("../models/Ticket");
 const logAction = require("../utils/logger");
+const { notifyUser } = require("../services/notificationService");
 
 // @desc    Submit a new support ticket
 // @route   POST /api/tickets
@@ -87,6 +88,16 @@ const updateTicketStatus = async (req, res) => {
     ticket.status = status;
     await ticket.save();
 
+    if (["In Progress", "Resolved", "Reopened"].includes(status)) {
+      notifyUser(ticket.userId, {
+        type: "TICKET_STATUS_CHANGE",
+        title: `Ticket ${status}`,
+        message: `Your ticket "${ticket.subject}" is now ${status}.`,
+        link: `/help-support?ticket=${ticket._id}`,
+        relatedId: ticket._id
+      });
+    }
+
     await logAction("UPDATE_TICKET", req.user.fullName || "Admin", `Status changed to ${status} for ticket: ${ticket.subject}`, "Support", req.ip);
 
     res.json({
@@ -138,6 +149,16 @@ const replyToTicket = async (req, res) => {
     }
 
     await ticket.save();
+
+    if (senderType === "Admin") {
+      notifyUser(ticket.userId, {
+        type: "TICKET_REPLY",
+        title: "New reply on your ticket",
+        message: `An admin replied to your ticket: "${ticket.subject}"`,
+        link: `/help-support?ticket=${ticket._id}`,
+        relatedId: ticket._id
+      });
+    }
 
     await logAction("TICKET_REPLY", req.user.fullName || "User", `Replied to ticket: ${ticket.subject}`, "Support", req.ip);
 

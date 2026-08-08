@@ -5,12 +5,12 @@ import { useTheme } from "../context/ThemeContext";
 import { Sun, Moon, Bell, User, LogOut, Shield } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { usePreview } from "../context/PreviewContext";
+import NotificationBell from "./NotificationBell";
 import "../css/admin/AdminLayout.css"; // Reuse admin navbar styles
 
 function StudentNavbar({ title }) {
   const { toggleTheme } = useTheme(); 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const { previewMode, setPreviewMode } = usePreview();
@@ -18,51 +18,11 @@ function StudentNavbar({ title }) {
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const candidateName = storedUser.fullName || storedUser.name || "Student";
   const initials = candidateName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
-  const [notifications, setNotifications] = useState([]);
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
   };
-
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tickets/my-tickets`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-        const tickets = res.data.tickets || [];
-        const newNotifs = [];
-
-        tickets.forEach(ticket => {
-           if (ticket.status === 'Open') {
-             newNotifs.push({ id: `${ticket._id}-open`, text: `Your ticket has been received`, subtext: ticket.subject, date: ticket.createdAt });
-           } else if (ticket.status === 'In Progress') {
-             newNotifs.push({ id: `${ticket._id}-prog`, text: `Our team is working on it`, subtext: ticket.subject, date: ticket.updatedAt });
-           } else if (ticket.status === 'Resolved') {
-             newNotifs.push({ id: `${ticket._id}-res`, text: `Your issue has been resolved`, subtext: ticket.subject, date: ticket.updatedAt });
-           } else if (ticket.status === 'Closed') {
-             newNotifs.push({ id: `${ticket._id}-cls`, text: `Ticket is closed`, subtext: ticket.subject, date: ticket.updatedAt });
-           }
-           
-           if (ticket.messages && ticket.messages.length > 0) {
-             const adminReplies = ticket.messages.filter(m => m.sender === 'admin');
-             adminReplies.forEach((reply, idx) => {
-               newNotifs.push({ id: `${ticket._id}-rep-${idx}`, text: `You have a new message from your raised query`, subtext: ticket.subject, date: reply.createdAt });
-             });
-           }
-        });
-
-        newNotifs.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setNotifications(newNotifs.slice(0, 10)); // keep top 10
-      } catch (err) {
-        console.error("Failed to fetch notifications", err);
-      }
-    };
-    fetchTickets();
-  }, []);
-
-  const unreadNotifications = notifications.length;
 
   return (
     <>
@@ -90,50 +50,14 @@ function StudentNavbar({ title }) {
           {/* Icon Group: Theme & Notifications */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <ThemeToggle />
-            
-            {/* Notifications Button */}
-            <div className="notification-bell-wrapper">
-              <button 
-                className="control-icon-btn notification-bell-neon" 
-                onClick={() => { setNotifOpen(!notifOpen); setProfileOpen(false); }}
-                style={{ padding: '8px' }}
-                title="Notifications"
-              >
-                <Bell size={18} />
-                {unreadNotifications > 0 && <span className="notification-badge-dot" />}
-              </button>
-              
-              {notifOpen && (
-                <div className="notification-floating-panel">
-                  <div className="notif-header">
-                    <h4>Notifications</h4>
-                    {unreadNotifications > 0 && <span className="notif-count">{unreadNotifications} New</span>}
-                  </div>
-                  <div className="notif-list">
-                    {notifications.length === 0 ? (
-                      <div style={{ padding: "30px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: "14px" }}>
-                        <Bell size={32} style={{ opacity: 0.2, marginBottom: "10px" }} />
-                        <div>No new notifications</div>
-                      </div>
-                    ) : (
-                      notifications.map(n => (
-                        <div key={n.id} style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", cursor: "pointer", transition: "background 0.2s" }} onClick={() => { setNotifOpen(false); navigate("/dashboard/help"); }} onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                          <div style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: "500", marginBottom: "4px" }}>{n.text}</div>
-                          <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>{n.subtext}</div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            <NotificationBell />
           </div>
 
           {/* Profile */}
           <div className="profile-dropdown-wrapper">
             <div 
               className="avatar-neon-trigger" 
-              onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+              onClick={() => { setProfileOpen(!profileOpen); }}
               style={{ overflow: 'hidden', padding: 0 }}
             >
               {storedUser.avatar ? (

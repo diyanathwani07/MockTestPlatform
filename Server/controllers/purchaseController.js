@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Quiz = require("../models/Quiz");
 const PracticeQuiz = require("../models/PracticeQuiz");
 const logAction = require("../utils/logger");
+const { notifyUser } = require("../services/notificationService");
 
 exports.purchaseExam = async (req, res) => {
   try {
@@ -22,8 +23,25 @@ exports.purchaseExam = async (req, res) => {
 
     await logAction("PURCHASE_EXAM", user.fullName, examTitle, "Purchase", req.ip);
 
+    // TODO: this currently fires on request success/failure, not a real payment gateway callback - revisit when PhonePe (or another gateway) webhook is actually integrated.
+    await notifyUser(req.user._id, {
+      type: "PAYMENT_SUCCESS",
+      title: "Purchase successful",
+      message: `You've unlocked "${examTitle}".`,
+      link: "/my-exams",
+      relatedId: exam?._id
+    });
+
     res.status(200).json({ message: "Exam purchased successfully", success: true });
   } catch (error) {
+    if (req.user && req.user._id) {
+      // TODO: this currently fires on request success/failure, not a real payment gateway callback - revisit when PhonePe (or another gateway) webhook is actually integrated.
+      await notifyUser(req.user._id, {
+        type: "PAYMENT_FAILED",
+        title: "Purchase failed",
+        message: "Your purchase could not be completed. Please try again."
+      });
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -47,8 +65,25 @@ exports.purchasePractice = async (req, res) => {
 
     await logAction("PURCHASE_PRACTICE", user.fullName, practiceTitle, "Purchase", req.ip);
 
+    // TODO: this currently fires on request success/failure, not a real payment gateway callback - revisit when PhonePe (or another gateway) webhook is actually integrated.
+    await notifyUser(req.user._id, {
+      type: "PAYMENT_SUCCESS",
+      title: "Purchase successful",
+      message: `You've unlocked "${practiceTitle}".`,
+      link: "/my-exams",
+      relatedId: practice?._id
+    });
+
     res.status(200).json({ message: "Practice module purchased successfully", success: true });
   } catch (error) {
+    if (req.user && req.user._id) {
+      // TODO: this currently fires on request success/failure, not a real payment gateway callback - revisit when PhonePe (or another gateway) webhook is actually integrated.
+      await notifyUser(req.user._id, {
+        type: "PAYMENT_FAILED",
+        title: "Purchase failed",
+        message: "Your purchase could not be completed. Please try again."
+      });
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

@@ -1,5 +1,6 @@
 const ExamSeries = require("../models/ExamSeries");
 const Quiz = require("../models/Quiz");
+const { notifyAllStudents } = require("../services/notificationService");
 
 // Create Series
 exports.createSeries = async (req, res) => {
@@ -25,6 +26,16 @@ exports.createSeries = async (req, res) => {
       createdBy: req.user?._id,
       isPublished: true, // Default to true for ease of use
     });
+
+    // TODO: broadcast to all students since User has no subject/category preference field yet - revisit if per-student targeting is added later.
+    notifyAllStudents({
+      type: "NEW_EXAM_SERIES",
+      title: "New exam series available",
+      message: `"${series.title}" is now live.`,
+      link: `/exam-series/${series._id}`,
+      relatedId: series._id
+    });
+
     res.status(201).json(series);
   } catch (error) {
     console.error("Create Series Error:", error);
@@ -124,6 +135,8 @@ exports.updateSeries = async (req, res) => {
     const series = await ExamSeries.findById(req.params.id);
     if (!series) return res.status(404).json({ message: "Exam Series not found." });
 
+    const wasPublished = series.isPublished;
+
     if (title) {
       series.title = title;
       series.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -135,6 +148,19 @@ exports.updateSeries = async (req, res) => {
     if (isPublished !== undefined) series.isPublished = isPublished;
 
     await series.save();
+
+    // Trigger notification only if transitioning from unpublished to published
+    if (!wasPublished && series.isPublished) {
+      // TODO: broadcast to all students since User has no subject/category preference field yet - revisit if per-student targeting is added later.
+      notifyAllStudents({
+        type: "NEW_EXAM_SERIES",
+        title: "New exam series available",
+        message: `"${series.title}" is now live.`,
+        link: `/exam-series/${series._id}`,
+        relatedId: series._id
+      });
+    }
+
     res.json(series);
   } catch (error) {
     console.error("Update Series Error:", error);

@@ -29,9 +29,9 @@
 }
 
 .btn-export {
-  background: var(--bg-card);
-  border: 2px solid var(--border-color);
-  color: var(--text-primary);
+  background: #6E3FF3;
+  border: none;
+  color: #FFF;
   padding: 0 16px;
   height: 38px;
   border-radius: 100px;
@@ -46,7 +46,7 @@
 }
 
 .btn-export:hover {
-  background: var(--bg-hover);
+  background: #5B2FD3;
 }
 
 .btn-filter {

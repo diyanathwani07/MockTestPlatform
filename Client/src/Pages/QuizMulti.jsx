@@ -112,6 +112,16 @@ function QuizMulti() {
               ...(sec.subsections.hard || []).map(q => ({...q, difficulty: 'hard'})),
             ];
          }
+
+         // Resolve letter correct answers to text first (e.g. "A" -> options[0])
+         qs = qs.map(q => {
+            let correctText = q.correctAnswer || "";
+            if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
+              const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+              correctText = q.options[idxMap[correctText]] || correctText;
+            }
+            return { ...q, correctAnswer: correctText };
+         });
          
          // Setup defaults in tracking state
          setUserAnswers(prev => ({ ...prev, [sec._id]: {} }));

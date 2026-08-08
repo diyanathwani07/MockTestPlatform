@@ -23,6 +23,8 @@ const questionBankRoutes = require("./routes/questionBankRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const purchaseRoutes = require("./routes/purchaseRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const Quiz = require("./models/Quiz");
 const seedDepartments = require("./seedDepartments");
 
@@ -103,6 +105,8 @@ app.use("/api/questions", questionRoutes);
 app.use("/api/sections", sectionRoutes);
 app.use("/api/question-banks", questionBankRoutes);
 app.use("/api/purchase", purchaseRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/notifications", notificationRoutes);
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
 setInterval(async () => {
   try {
