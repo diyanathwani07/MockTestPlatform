@@ -6,6 +6,7 @@ import StudentNavbar from "../components/StudentNavbar";
 import { usePreview } from "../context/PreviewContext";
 import "../css/StudentDashboard.css";
 import "../css/HelpSupport.css";
+import GrammarFixButton from "../components/GrammarFixButton";
 
 function HelpSupport() {
   const { previewMode } = usePreview();
@@ -320,7 +321,6 @@ function HelpSupport() {
               </select>
             </div>
           </div>
-
           <div className="hs-form-group">
             <label>Message <span>*</span></label>
             <textarea 
@@ -330,6 +330,7 @@ function HelpSupport() {
               value={ticket.message}
               onChange={handleChange}
             ></textarea>
+            <GrammarFixButton text={ticket.message} onApply={(corrected) => setTicket({ ...ticket, message: corrected })} />
           </div>
         </div>
 
@@ -689,6 +690,7 @@ function HelpSupport() {
                       boxSizing: "border-box"
                     }}
                   />
+                  <GrammarFixButton text={replyMessage} onApply={setReplyMessage} />
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ position: "relative" }}>
                       <input 

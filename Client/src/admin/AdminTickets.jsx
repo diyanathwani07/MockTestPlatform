@@ -4,6 +4,7 @@ import { Search, Loader2, LifeBuoy, Eye, X, MessageSquare, User, Clock, ShieldCh
 import AdminSidebar from './components/AdminSidebar';
 import AdminNavbar from './components/AdminNavbar';
 import '../css/AdminTickets.css';
+import GrammarFixButton from '../components/GrammarFixButton';
 
 function AdminTickets() {
   const [tickets, setTickets] = useState([]);
@@ -669,6 +670,7 @@ function AdminTickets() {
                       outline: "none"
                     }}
                   />
+                  <GrammarFixButton text={replyMessage} onApply={setReplyMessage} />
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ position: "relative" }}>
                       <input 
