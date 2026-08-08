@@ -101,6 +101,8 @@ function Result() {
       ? ((score / total) * 100).toFixed(2)
       : "0.00";
 
+  const passThreshold = data?.passPercentage ?? 50;
+
   const timeTakenSecs = data?.timeTaken || 0;
 
   useEffect(() => {
@@ -216,6 +218,7 @@ function Result() {
             correct,
             incorrect,
             percentage: Number(computedPercentage),
+            passPercentage: data?.passPercentage ?? 50,
             timeTaken: timeTakenSecs,
             questions: data?.questions || [],
             userAnswers: data?.userAnswers || [],
@@ -337,8 +340,8 @@ function Result() {
                   <span className="rm-score-num">{score}</span>
                   <span className="rm-score-denom">/{total}</span>
                 </h2>
-                <div className={`rm-badge ${computedPercentage >= 50 ? "badge-pass" : "badge-fail"}`}>
-                  {computedPercentage >= 50 ? "Passed 🎉" : "Failed 😢"}
+                <div className={`rm-badge ${Number(computedPercentage) >= passThreshold ? "badge-pass" : "badge-fail"}`}>
+                  {Number(computedPercentage) >= passThreshold ? "Passed 🎉" : "Failed 😢"}
                 </div>
               </div>
 
@@ -347,7 +350,7 @@ function Result() {
                   <Medal size={40} strokeWidth={1.5} />
                 </div>
                 <h4 className="rm-feedback-title">
-                  {computedPercentage >= 80 ? "Excellent Work!" : computedPercentage >= 50 ? "Good Job!" : "Keep Trying!"}
+                  {Number(computedPercentage) >= 80 ? "Excellent Work!" : Number(computedPercentage) >= passThreshold ? "Good Job!" : "Keep Trying!"}
                 </h4>
                 <p className="rm-feedback-text">
                   {computedPercentage === 0 

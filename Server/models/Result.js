@@ -64,6 +64,11 @@ const resultSchema = new mongoose.Schema(
       required: true,
     },
 
+    passPercentage: {
+      type: Number,
+      default: 50,
+    },
+
     timeTaken: {
       type: Number,
       default: 0,

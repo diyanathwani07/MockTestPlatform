@@ -21,7 +21,8 @@ const saveResult = async (req, res) => {
       sectionResults,
       difficultyBreakdown,
       questions,
-      userAnswers
+      userAnswers,
+      passPercentage
     } = req.body;
 
     const shareId = crypto.randomBytes(4).toString("hex");
@@ -39,6 +40,7 @@ const saveResult = async (req, res) => {
       correct,
       incorrect,
       percentage,
+      passPercentage: passPercentage ?? 50,
       timeTaken: timeTaken || 0,
       shareId,
       isPublic: true,

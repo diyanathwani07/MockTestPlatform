@@ -592,7 +592,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
+                    {isSelected && !isCorrectOption && (() => {
                        const stored = currentQuestion.explanations?.incorrect?.[opt];
                        const live = liveExplanations[currentIndex]?.incorrect?.[opt];
                        const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;
@@ -1020,7 +1020,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
+                    {isSelected && !isCorrectOption && (() => {
                        const stored = currentQuestion.explanations?.incorrect?.[opt];
                        const live = liveExplanations[currentIndex]?.incorrect?.[opt];
                        const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;

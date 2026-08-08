@@ -70,6 +70,7 @@ function CreateQuizMulti() {
     plans: [],
     detailedDescription: "",
     examSeriesId: "",
+    passPercentage: 50,
   });
 
   const [sections, setSections] = useState([defaultSection(0)]);
@@ -1074,6 +1075,19 @@ function CreateQuizMulti() {
                       <span style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", display: "block", width: "max-content" }}>
                         Time students must wait between finishing one section and starting the next.
                       </span>
+                    </div>
+
+                    <div style={{ marginTop: "16px", maxWidth: "300px" }}>
+                      <label>Passing Percentage (%)</label>
+                      <input
+                        type="number"
+                        className="force-quiz-input"
+                        value={quizMeta.passPercentage}
+                        onChange={(e) => setQuizMeta(prev => ({ ...prev, passPercentage: parseInt(e.target.value, 10) || 0 }))}
+                        min="0"
+                        max="100"
+                        placeholder="50"
+                      />
                     </div>
                   </div>
                 </div>

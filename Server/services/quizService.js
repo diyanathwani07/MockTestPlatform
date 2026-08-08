@@ -160,6 +160,7 @@ const createQuiz = async (data) => {
     scheduledDate: data.scheduledDate || null,
     published: data.published || false,
     quizType: data.quizType || "exam",
+    passPercentage: data.passPercentage ?? 50,
     isModular: sections.length > 0,
     sections,
     questions: [],

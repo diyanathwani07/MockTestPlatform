@@ -116,8 +116,8 @@ function SharedResult() {
               <h2 className="rm-score-fraction" style={{ fontSize: '32px' }}>
                 <span className="rm-score-num">{score}</span>
               </h2>
-              <div className={`rm-badge ${percentage >= 50 ? "badge-pass" : "badge-fail"}`}>
-                {percentage >= 50 ? "Passed 🎉" : "Failed 😢"}
+              <div className={`rm-badge ${percentage >= (data.passPercentage ?? 50) ? "badge-pass" : "badge-fail"}`}>
+                {percentage >= (data.passPercentage ?? 50) ? "Passed 🎉" : "Failed 😢"}
               </div>
             </div>
 

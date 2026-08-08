@@ -1022,6 +1022,7 @@ const submitQuiz = async (req, res) => {
       quizTitle: quiz.title,
       subject: quiz.subject,
       examName: quiz.examName,
+      passPercentage: quiz.passPercentage ?? 50,
       score,
       total,
       correct,

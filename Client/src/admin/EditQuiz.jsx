@@ -63,6 +63,7 @@ function EditQuiz() {
     practicePrice: 0,
     detailedDescription: "",
     plans: [],
+    passPercentage: 50,
   });
 
 
@@ -258,6 +259,7 @@ function EditQuiz() {
           practicePrice: dbQuiz.practicePrice !== undefined ? dbQuiz.practicePrice : (isPracticeRoute ? dbQuiz.price : 0),
           detailedDescription: dbQuiz.detailedDescription || "",
           plans: dbQuiz.plans || [],
+          passPercentage: dbQuiz.passPercentage !== undefined ? dbQuiz.passPercentage : 50,
         });
 
         const minVal = Math.floor(durationVal);
@@ -1082,6 +1084,20 @@ function EditQuiz() {
                               />
                               <span>Lock Previous Questions</span>
                             </label>
+                          </div>
+
+                          <div className="form-field" style={{ marginTop: "10px" }}>
+                            <label style={{ fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Passing Percentage (%)</label>
+                            <input
+                              type="number"
+                              name="passPercentage"
+                              value={quizMeta.passPercentage}
+                              onChange={handleMetaChange}
+                              min="0"
+                              max="100"
+                              placeholder="50"
+                              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
+                            />
                           </div>
 
                            {quizMeta.publishAs !== "practice" && (
