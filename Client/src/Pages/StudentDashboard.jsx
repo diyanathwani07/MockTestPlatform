@@ -135,7 +135,7 @@ function StudentDashboard() {
   }, []);
 
   // Compute Stats
-  const mocksAttempted = results.length;
+  const mocksAttempted = new Set(results.map(r => r.quizId?.toString()).filter(Boolean)).size;
   const averageScore = results.length > 0 
     ? Math.round(results.reduce((acc, curr) => acc + (curr.percentage || 0), 0) / results.length) 
     : 0;
