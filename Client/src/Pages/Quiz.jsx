@@ -206,9 +206,21 @@ function Quiz() {
 
         const mappedQuestions = rawQuestions.map((q, idx) => {
           let correctText = q.correctAnswer || "";
+          if (q.correctAnswerObfuscated) {
+            try {
+              correctText = atob(q.correctAnswerObfuscated);
+            } catch (e) {
+              console.error("Failed to decode obfuscated correct answer:", e);
+            }
+          }
           if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
             const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
             correctText = q.options[idxMap[correctText]] || correctText;
+          } else if (typeof correctText === "string" && correctText.startsWith("Option ") && Array.isArray(q.options)) {
+            const optNum = parseInt(correctText.replace("Option ", ""), 10);
+            if (!isNaN(optNum) && optNum >= 1 && optNum <= q.options.length) {
+              correctText = q.options[optNum - 1] || correctText;
+            }
           }
 
           return {

@@ -341,6 +341,12 @@ function CreateQuiz() {
         correctOptionIndex: correctIdx,
         correctAnswer: correctText,
         explanation: q.explanation || "",
+        explanations: q.explanations || {
+          correct: q.explanation || "",
+          incorrect: {},
+          conceptSummary: "",
+          didYouKnow: ""
+        },
         sectionName: q.sectionName,
       };
     });
@@ -477,7 +483,13 @@ function CreateQuiz() {
             questionHindi: q.questionHindi,
             options: q.options,
             correctAnswer: q.correctAnswer,
-            explanation: q.explanation || ""
+            explanation: q.explanation || "",
+            explanations: q.explanations || {
+              correct: q.explanation || "",
+              incorrect: {},
+              conceptSummary: "",
+              didYouKnow: ""
+            }
           })),
           status: submitType === "publish" ? "Published" : "Draft"
         };

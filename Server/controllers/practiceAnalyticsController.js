@@ -381,6 +381,60 @@ const getAiTutorExplanation = async (req, res) => {
       return res.status(400).json({ message: "question and mode are required." });
     }
 
+    // Fetch the original question from DB using question._id to bypass any client-side tampering / obfuscation
+    let dbQuestion = null;
+    if (question._id) {
+      const Question = require("../models/Question");
+      dbQuestion = await Question.findById(question._id);
+      if (!dbQuestion) {
+        const PracticeQuiz = require("../models/PracticeQuiz");
+        const parentQuiz = await PracticeQuiz.findOne({ "questions._id": question._id });
+        if (parentQuiz) {
+          dbQuestion = parentQuiz.questions.find(q => q._id.toString() === question._id.toString());
+        }
+      }
+    }
+
+    const finalQuestionText = (dbQuestion ? (dbQuestion.questionEnglish || dbQuestion.english) : question.questionEnglish) || "";
+    const finalQuestionHindi = (dbQuestion ? (dbQuestion.questionHindi || dbQuestion.hindi) : question.questionHindi) || "";
+    const finalOptions = (dbQuestion ? dbQuestion.options : question.options) || [];
+    let resolvedCorrectAnswer = (dbQuestion ? dbQuestion.correctAnswer : question.correctAnswer) || "";
+    
+    // Resolve letter / Option keys to actual option text
+    if (["A", "B", "C", "D"].includes(resolvedCorrectAnswer) && finalOptions.length > 0) {
+      const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+      resolvedCorrectAnswer = finalOptions[idxMap[resolvedCorrectAnswer]] || resolvedCorrectAnswer;
+    } else if (typeof resolvedCorrectAnswer === "string" && resolvedCorrectAnswer.startsWith("Option ") && finalOptions.length > 0) {
+      const optNum = parseInt(resolvedCorrectAnswer.replace("Option ", ""), 10);
+      if (!isNaN(optNum) && optNum >= 1 && optNum <= finalOptions.length) {
+        resolvedCorrectAnswer = finalOptions[optNum - 1] || resolvedCorrectAnswer;
+      }
+    } else if (typeof resolvedCorrectAnswer === "string" && resolvedCorrectAnswer.startsWith("Option") && finalOptions.length > 0) {
+      // Handle Option1, Option2, Option3, Option4 (no space)
+      const optNum = parseInt(resolvedCorrectAnswer.replace("Option", ""), 10);
+      if (!isNaN(optNum) && optNum >= 1 && optNum <= finalOptions.length) {
+        resolvedCorrectAnswer = finalOptions[optNum - 1] || resolvedCorrectAnswer;
+      }
+    } else if (question.correctAnswerObfuscated && finalOptions.length > 0) {
+      try {
+        const decoded = Buffer.from(question.correctAnswerObfuscated, "base64").toString("utf-8");
+        resolvedCorrectAnswer = decoded;
+      } catch (e) {
+        console.error("Failed to decode obfuscated correct answer in AI explain:", e);
+      }
+      
+      // Post-decode letter/Option check
+      if (["A", "B", "C", "D"].includes(resolvedCorrectAnswer)) {
+        const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+        resolvedCorrectAnswer = finalOptions[idxMap[resolvedCorrectAnswer]] || resolvedCorrectAnswer;
+      } else if (typeof resolvedCorrectAnswer === "string" && resolvedCorrectAnswer.startsWith("Option ") && finalOptions.length > 0) {
+        const optNum = parseInt(resolvedCorrectAnswer.replace("Option ", ""), 10);
+        if (!isNaN(optNum) && optNum >= 1 && optNum <= finalOptions.length) {
+          resolvedCorrectAnswer = finalOptions[optNum - 1] || resolvedCorrectAnswer;
+        }
+      }
+    }
+
     // Force Gemini AI Studio mode by temporarily clearing Google Cloud credentials env vars
     const tempCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS;
     const tempGha = process.env.GOOGLE_GHA_CREDS_PATH;
@@ -435,11 +489,11 @@ const getAiTutorExplanation = async (req, res) => {
     const promptText = `
 You are an expert tutor.
 Here is the practice question context:
-Question: ${question.questionEnglish}
-Hindi translation if available: ${question.questionHindi || "N/A"}
-Options: ${JSON.stringify(question.options)}
-Correct Answer: ${question.correctAnswer}
-Provided explanations: ${JSON.stringify(question.explanations || {})}
+Question: ${finalQuestionText}
+Hindi translation if available: ${finalQuestionHindi || "N/A"}
+Options: ${JSON.stringify(finalOptions)}
+Correct Answer: ${resolvedCorrectAnswer}
+Provided explanations: ${JSON.stringify((dbQuestion ? dbQuestion.explanations : question.explanations) || {})}
 
 Task: ${instruction}
 

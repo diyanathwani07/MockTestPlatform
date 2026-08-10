@@ -226,11 +226,24 @@ function parseQuestionsFromText(text) {
     }
 
     const questions = [];
+    // Ensure all question markers start on a newline
+    const normalizedChunk = chunkText.replace(/(?=(?:Q\d+[\.\)]|Question\s*\d+))/ig, "\n");
     // Split by Question marker: Q1., Question 1, Question 2, etc.
-    const questionBlocks = chunkText.split(/\n(?=(?:Q\d+[\.\)]|Question\s*\d+))/i).filter(Boolean);
+    const questionBlocks = normalizedChunk.split(/\n(?=(?:Q\d+[\.\)]|Question\s*\d+))/i).filter(Boolean);
 
     for (const block of questionBlocks) {
-      const lines = block
+      // Pre-process block to force newlines before option/answer/explanation markers
+      const preProcessedBlock = block
+        .replace(/(?=[A-D][\.\)]\s+)/g, "\n")
+        .replace(/(?=Correct\s+Answer\s*:)/ig, "\n")
+        .replace(/(?=Correct\s+Explanation\s*:)/ig, "\n")
+        .replace(/(?=Wrong\s+Answer\s+Explanations\s*:)/ig, "\n")
+        .replace(/(?=English\s*:)/ig, "\n")
+        .replace(/(?=Hindi\s*:)/ig, "\n")
+        .replace(/(?=\b[A-D]\s*:\s+)/g, "\n")
+        .replace(/(?=Hindi\s*:\s+)/ig, "\n");
+
+      const lines = preProcessedBlock
         .split("\n")
         .map((l) => l.trim())
         .filter(Boolean);
@@ -267,8 +280,139 @@ function parseQuestionsFromText(text) {
       //    ...
 
       const isLabeledLayout = lines.some(l => /^English\s+Question\s*:/i.test(l)) || lines.some(l => /^Option\s+[A-D]\s*:/i.test(l));
+      const isStructuredPracticeQuiz = lines.some(l => /^Correct\s+Answer\s*:/i.test(l)) && (lines.some(l => /^Correct\s+Explanation\s*:/i.test(l)) || lines.some(l => /^Wrong\s+Answer\s+Explanations\s*:/i.test(l)));
 
-      if (isLabeledLayout) {
+      if (isStructuredPracticeQuiz) {
+        let questionEnglishRaw = "";
+        let hindiLine = "";
+        let optionsArray = [];
+        let correctAnswerLetter = "";
+        let correctExpEn = "";
+        let correctExpHi = "";
+        
+        let state = "question";
+        let currentWrongOption = "";
+        const wrongExps = { A: { en: "", hi: "" }, B: { en: "", hi: "" }, C: { en: "", hi: "" }, D: { en: "", hi: "" } };
+
+        for (let idx = 0; idx < lines.length; idx++) {
+          const line = lines[idx].trim();
+          if (!line) continue;
+
+          if (/^Options\s*:/i.test(line)) {
+            state = "options";
+            continue;
+          } else if (/^Correct\s+Answer\s*:/i.test(line)) {
+            state = "correct_answer";
+            const match = line.match(/^Correct\s+Answer\s*:\s*([A-D])/i);
+            if (match) {
+              correctAnswerLetter = match[1].toUpperCase();
+            }
+            continue;
+          } else if (/^Correct\s+Explanation\s*:/i.test(line)) {
+            state = "correct_explanation";
+            continue;
+          } else if (/^Wrong\s+Answer\s+Explanations\s*:/i.test(line)) {
+            state = "wrong_explanations";
+            continue;
+          }
+
+          if (state === "question") {
+            if (/^Q\d+[\.\)]*$/i.test(line)) {
+              continue;
+            }
+            if (!questionEnglishRaw) {
+              questionEnglishRaw = line;
+            } else {
+              hindiLine = line;
+            }
+          } else if (state === "options") {
+            const optMatch = line.match(/^([A-D])[\.\)]\s*(.*)/i);
+            if (optMatch) {
+              const optLetter = optMatch[1].toUpperCase();
+              const optText = optMatch[2].trim();
+              const parts = optText.split(/\s*[\u2014\u2013\-\/]\s*/);
+              let enPart = parts[0] || "";
+              let hiPart = parts[1] || "";
+              if (parts.length > 2) {
+                enPart = parts.slice(0, Math.ceil(parts.length / 2)).join(" — ");
+                hiPart = parts.slice(Math.ceil(parts.length / 2)).join(" — ");
+              }
+              optionsArray.push({
+                letter: optLetter,
+                english: enPart.trim(),
+                hindi: hiPart.trim()
+              });
+            }
+          } else if (state === "correct_explanation") {
+            if (/^English\s*:\s*(.*)/i.test(line)) {
+              correctExpEn = line.replace(/^English\s*:\s*/i, "").trim();
+            } else if (/^Hindi\s*:\s*(.*)/i.test(line)) {
+              correctExpHi = line.replace(/^Hindi\s*:\s*/i, "").trim();
+            }
+          } else if (state === "wrong_explanations") {
+            const wrongMatch = line.match(/^([A-D])\s*[:\.]\s*(.*)/i);
+            if (wrongMatch) {
+              currentWrongOption = wrongMatch[1].toUpperCase();
+              wrongExps[currentWrongOption].en = wrongMatch[2].trim();
+            } else if (/^Hindi\s*:\s*(.*)/i.test(line) && currentWrongOption) {
+              wrongExps[currentWrongOption].hi = line.replace(/^Hindi\s*:\s*/i, "").trim();
+            }
+          }
+        }
+
+        const sortedOptions = [];
+        const letters = ["A", "B", "C", "D"];
+        letters.forEach(letter => {
+          const found = optionsArray.find(o => o.letter === letter);
+          if (found) {
+            sortedOptions.push({ english: found.english, hindi: found.hindi });
+          } else {
+            sortedOptions.push({ english: "", hindi: "" });
+          }
+        });
+
+        let explanationLine = correctExpEn;
+        if (correctExpHi) {
+          explanationLine += (explanationLine ? " / " : "") + correctExpHi;
+        }
+
+        const optionsPlain = sortedOptions.map(o => {
+          if (o.english && o.hindi) return `${o.english} / ${o.hindi}`;
+          return o.english || o.hindi || "";
+        });
+
+        const incorrectMap = {};
+        letters.forEach((letter, idx) => {
+          if (letter !== correctAnswerLetter) {
+            const exp = wrongExps[letter];
+            let expText = exp.en;
+            if (exp.hi) {
+              expText += (expText ? " / " : "") + exp.hi;
+            }
+            if (expText) {
+              incorrectMap[optionsPlain[idx]] = expText;
+            }
+          }
+        });
+
+        const letterToIndex = { A: 0, B: 1, C: 2, D: 3 };
+        const resolvedCorrectAnswer = optionsPlain[letterToIndex[correctAnswerLetter]] || optionsPlain[0];
+
+        questions.push({
+          questionEnglish: questionEnglishRaw,
+          questionHindi: hindiLine,
+          options: sortedOptions,
+          correctAnswer: resolvedCorrectAnswer,
+          explanation: explanationLine,
+          explanations: {
+            correct: explanationLine,
+            incorrect: incorrectMap,
+            conceptSummary: "",
+            didYouKnow: ""
+          }
+        });
+
+      } else if (isLabeledLayout) {
         // Parse Labeled layout
         let currentMode = ""; // "question_en", "question_hi", "opt_a", "opt_b", "opt_c", "opt_d", "answer", "exp_en", "exp_hi", "exp_a", "exp_b", "exp_c", "exp_d"
         let optA_en = "", optA_hi = "";

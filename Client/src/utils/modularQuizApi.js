@@ -12,7 +12,14 @@ export const sanitizeQuestion = (q, subject = "") => {
     options: (q.options || []).map((o) => String(o).trim()).filter(Boolean),
     correctAnswer: (q.correctAnswer || "").trim(),
     explanation: (q.explanation || "").trim(),
-    explanations: q.explanations || undefined,
+    explanations: q.explanations
+      ? { ...q.explanations, correct: (q.explanation || "").trim() }
+      : {
+          correct: (q.explanation || "").trim(),
+          incorrect: {},
+          conceptSummary: "",
+          didYouKnow: ""
+        },
     difficulty: q.difficulty || "medium",
     subject,
   };

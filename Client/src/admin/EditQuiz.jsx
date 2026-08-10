@@ -707,6 +707,13 @@ function EditQuiz() {
         options: optionsMapped,
         correctOptionIndex: correctIdx,
         correctAnswer: correctText,
+        explanation: q.explanation || "",
+        explanations: q.explanations || {
+          correct: q.explanation || "",
+          incorrect: {},
+          conceptSummary: "",
+          didYouKnow: ""
+        },
       };
     });
 

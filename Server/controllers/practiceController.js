@@ -108,6 +108,8 @@ const getPracticeQuizById = async (req, res) => {
       quizObj.sections = populatedSections;
     }
 
+    const isStudent = req.user && req.user.role === "user";
+
     // Convert Mongoose Map to plain object for explanations.incorrect
     // so frontend can access it as explanations.incorrect[optionText]
     quizObj.questions = (quizObj.questions || []).map(q => {
@@ -118,14 +120,48 @@ const getPracticeQuizById = async (req, res) => {
       } else if (incorrectRaw && typeof incorrectRaw === "object") {
         incorrectPlain = Object.fromEntries(Object.entries(incorrectRaw));
       }
-      return {
+      const mappedQ = {
         ...q,
         explanations: {
           ...q.explanations,
           incorrect: incorrectPlain
         }
       };
+
+      if (isStudent && mappedQ.correctAnswer) {
+        mappedQ.correctAnswerObfuscated = Buffer.from(mappedQ.correctAnswer).toString("base64");
+        delete mappedQ.correctAnswer;
+      }
+      return mappedQ;
     });
+
+    if (quizObj.sections && quizObj.sections.length > 0) {
+      quizObj.sections = quizObj.sections.map(sec => {
+        if (sec.questions && sec.questions.length > 0) {
+          sec.questions = sec.questions.map(q => {
+            if (isStudent && q.correctAnswer) {
+              q.correctAnswerObfuscated = Buffer.from(q.correctAnswer).toString("base64");
+              delete q.correctAnswer;
+            }
+            return q;
+          });
+        }
+        if (sec.subsections) {
+          ["easy", "medium", "hard"].forEach(level => {
+            if (sec.subsections[level] && sec.subsections[level].length > 0) {
+              sec.subsections[level] = sec.subsections[level].map(q => {
+                if (isStudent && q.correctAnswer) {
+                  q.correctAnswerObfuscated = Buffer.from(q.correctAnswer).toString("base64");
+                  delete q.correctAnswer;
+                }
+                return q;
+              });
+            }
+          });
+        }
+        return sec;
+      });
+    }
 
     res.json(quizObj);
   } catch (error) {
