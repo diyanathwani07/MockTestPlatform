@@ -476,11 +476,7 @@
     width: 100% !important;
     min-width: 0 !important;
   }
-  /* make reset button span full width if odd */
-  .btn-reset {
-    grid-column: span 2;
-    width: 100% !important;
-  }
+  /* Removed .btn-reset full width override since it's moved to header-actions */
   
   .filter-search {
     min-width: 140px;

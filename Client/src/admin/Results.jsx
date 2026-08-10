@@ -66,7 +66,7 @@ function SearchableDropdown({ label, options, selected, onSelect, placeholder = 
             top: "48px",
             left: 0,
             width: "100%",
-            minWidth: "220px",
+            minWidth: "100%",
             background: "var(--bg-card, #1c1917)",
             border: "1.5px solid var(--border-color, #292524)",
             borderRadius: "8px",
@@ -350,6 +350,9 @@ function Results() {
                 onSelect={setSelectedStatus}
                 placeholder="Search status..."
               />
+            </div>
+
+            <div className="header-actions" style={{ display: "flex", gap: "12px", alignItems: "stretch" }}>
               <button 
                 className="btn-reset" 
                 onClick={() => { 
@@ -360,13 +363,11 @@ function Results() {
                   setSelectedUser("All Users");
                   setSelectedStatus("All Status");
                 }}
+                style={{ minWidth: "48px", display: "flex", justifyContent: "center", alignItems: "center" }}
               >
                 ↻
               </button>
-            </div>
-
-            <div className="header-actions">
-              <button className="btn-export">
+              <button className="btn-export" style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Export Report
               </button>
@@ -457,48 +458,50 @@ function Results() {
             {/* TABLES SIDE BY SIDE */}
             <div className="tables-grid">
               {/* TOP PERFORMERS */}
-              <div className="section-card" style={{ overflowX: "auto" }}>
+              <div className="section-card">
               <div className="section-header">
                 <h3>Top Performers</h3>
               </div>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Student</th>
-                    <th>Quiz</th>
-                    <th>Score</th>
-                    <th>Correct</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topPerformers.map((p, idx) => {
-                    const pct = p.total > 0 ? (p.score / p.total) * 100 : 0;
-                    return (
-                      <tr key={p._id}>
-                        <td><strong>{(perfPage - 1) * itemsPerPage + idx + 1}</strong></td>
-                        <td>
-                          <div className="user-cell">
-                            <div className="avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
-                            <div>
-                              <h5>{p.userId?.fullName || "Unknown User"}</h5>
-                              <p>{p.userId?.email || "No Email"}</p>
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Student</th>
+                      <th>Quiz</th>
+                      <th>Score</th>
+                      <th>Correct</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topPerformers.map((p, idx) => {
+                      const pct = p.total > 0 ? (p.score / p.total) * 100 : 0;
+                      return (
+                        <tr key={p._id}>
+                          <td><strong>{(perfPage - 1) * itemsPerPage + idx + 1}</strong></td>
+                          <td>
+                            <div className="user-cell">
+                              <div className="avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
+                              <div>
+                                <h5>{p.userId?.fullName || "Unknown User"}</h5>
+                                <p>{p.userId?.email || "No Email"}</p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>{p.quizTitle || p.subject || "Untitled"}</td>
-                        <td><span className={`score-badge ${getScoreBadgeClass(pct)}`}>{pct.toFixed(2)}%</span></td>
-                        <td>{p.score} / {p.total}</td>
-                        <td style={{color: "var(--text-secondary)", fontSize: "12px"}}>{new Date(p.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}</td>
-                      </tr>
-                    );
-                  })}
-                  {topPerformers.length === 0 && (
-                    <tr><td colSpan="6" style={{textAlign:"center"}}>No performers found.</td></tr>
-                  )}
-                </tbody>
-              </table>
+                          </td>
+                          <td>{p.quizTitle || p.subject || "Untitled"}</td>
+                          <td><span className={`score-badge ${getScoreBadgeClass(pct)}`}>{pct.toFixed(2)}%</span></td>
+                          <td>{p.score} / {p.total}</td>
+                          <td style={{color: "var(--text-secondary)", fontSize: "12px"}}>{new Date(p.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}</td>
+                        </tr>
+                      );
+                    })}
+                    {topPerformers.length === 0 && (
+                      <tr><td colSpan="6" style={{textAlign:"center"}}>No performers found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
               <div className="table-pagination-footer">
                 <div className="pagination-info">
                   Showing {(perfPage - 1) * itemsPerPage + 1} to {Math.min(perfPage * itemsPerPage, allPerformers.length)} of {allPerformers.length} entries
@@ -512,37 +515,39 @@ function Results() {
             </div>
 
             {/* RESULTS BY QUIZ */}
-            <div className="section-card" style={{ overflowX: "auto" }}>
+            <div className="section-card">
               <div className="section-header">
                 <h3>Results by Quiz</h3>
               </div>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Quiz</th>
-                    <th>Total Attempts</th>
-                    <th>Average Score</th>
-                    <th>Highest Score</th>
-                    <th>Lowest Score</th>
-                    <th>Pass %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {quizStats.map((q, idx) => (
-                    <tr key={idx}>
-                      <td><strong>{q.name}</strong></td>
-                      <td>{q.attempts}</td>
-                      <td><span className={`score-badge ${getScoreBadgeClass(q.avgScore)}`}>{q.avgScore}%</span></td>
-                      <td>{q.highest}%</td>
-                      <td>{q.lowest}%</td>
-                      <td>{q.passPercent}%</td>
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Quiz</th>
+                      <th>Total Attempts</th>
+                      <th>Average Score</th>
+                      <th>Highest Score</th>
+                      <th>Lowest Score</th>
+                      <th>Pass %</th>
                     </tr>
-                  ))}
-                  {quizStats.length === 0 && (
-                    <tr><td colSpan="6" style={{textAlign:"center"}}>No quiz stats found.</td></tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {quizStats.map((q, idx) => (
+                      <tr key={idx}>
+                        <td><strong>{q.name}</strong></td>
+                        <td>{q.attempts}</td>
+                        <td><span className={`score-badge ${getScoreBadgeClass(q.avgScore)}`}>{q.avgScore}%</span></td>
+                        <td>{q.highest}%</td>
+                        <td>{q.lowest}%</td>
+                        <td>{q.passPercent}%</td>
+                      </tr>
+                    ))}
+                    {quizStats.length === 0 && (
+                      <tr><td colSpan="6" style={{textAlign:"center"}}>No quiz stats found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
               <div className="table-pagination-footer">
                 <div className="pagination-info">
                   Showing {(quizPage - 1) * itemsPerPage + 1} to {Math.min(quizPage * itemsPerPage, allQuizStats.length)} of {allQuizStats.length} entries
