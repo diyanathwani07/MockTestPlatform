@@ -304,7 +304,7 @@ function PracticeTest() {
   };
 
   const handleOptionClick = (optIdx) => {
-    if (isCorrectSelected || selectedOptions[optIdx]) return; // prevent re-clicking
+    if (isCorrectSelected || Object.keys(selectedOptions).length > 0) return; // prevent re-clicking
 
     // Fetch live AI explanation if not pre-generated
     fetchLiveExplanation(currentQuestion, currentIndex);
@@ -313,18 +313,16 @@ function PracticeTest() {
     const newSelected = { ...selectedOptions, [optIdx]: true };
     setSelectedOptions(newSelected);
 
+    // Lock selection and reveal explanation on any click
+    setIsCorrectSelected(true);
+    setAnsweredQuestions(prev => ({ ...prev, [currentIndex]: true }));
+
     if (isCorrect) {
-      setIsCorrectSelected(true);
-      setAnsweredQuestions(prev => ({ ...prev, [currentIndex]: true }));
-      
       // Update stats
-      const wrongCount = Object.keys(newSelected).length - 1;
       setStats(prev => ({
         ...prev,
-        firstTryCorrect: prev.firstTryCorrect + (wrongCount === 0 ? 1 : 0),
-        multipleTries: prev.multipleTries + (wrongCount > 0 ? 1 : 0),
-        totalWrongAttempts: prev.totalWrongAttempts + wrongCount,
-        totalAttemptsAll: prev.totalAttemptsAll + Object.keys(newSelected).length
+        firstTryCorrect: prev.firstTryCorrect + 1,
+        totalAttemptsAll: prev.totalAttemptsAll + 1
       }));
     } else {
       // Track wrong question for analytics
@@ -333,6 +331,11 @@ function PracticeTest() {
         next.add(currentQuestion._id);
         return next;
       });
+      setStats(prev => ({
+        ...prev,
+        totalWrongAttempts: prev.totalWrongAttempts + 1,
+        totalAttemptsAll: prev.totalAttemptsAll + 1
+      }));
     }
   };
 
@@ -1055,11 +1058,10 @@ function PracticeTest() {
                        );
                     })()}
 
-                    {/* Show explanation for the correct option once correct answer is chosen */}
                     {isCorrectSelected && isCorrectOption && (() => {
                       const stored = currentQuestion.explanations?.correct;
                       const live = liveExplanations[currentIndex]?.correct;
-                      const text = (stored && stored.trim()) ? stored : live;
+                      const text = (stored && stored.trim()) ? stored : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : live);
                       
                       const conceptSummary = currentQuestion.explanations?.conceptSummary;
                       const didYouKnow = currentQuestion.explanations?.didYouKnow;
