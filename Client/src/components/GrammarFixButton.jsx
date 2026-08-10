@@ -50,7 +50,7 @@ export default function GrammarFixButton({ text, onApply }) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px", position: "relative" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <button
           type="button"
@@ -96,13 +96,21 @@ export default function GrammarFixButton({ text, onApply }) {
       {correctedText !== null && (
         <div
           style={{
-            background: "rgba(255, 255, 255, 0.02)",
-            border: "1.5px solid var(--border-color)",
+            position: "absolute",
+            bottom: "100%",
+            left: 0,
+            marginBottom: "12px",
+            width: "100%",
+            minWidth: "300px",
+            background: "var(--bg-card, #1E1E2D)",
+            border: "1.5px solid var(--violet)",
             borderRadius: "10px",
             padding: "12px",
             display: "flex",
             flexDirection: "column",
             gap: "10px",
+            boxShadow: "0 -8px 25px rgba(0,0,0,0.4)",
+            zIndex: 100,
             animation: "slideDown 0.2s ease-out",
           }}
         >
@@ -114,7 +122,7 @@ export default function GrammarFixButton({ text, onApply }) {
               fontSize: "13px",
               color: "var(--text-primary)",
               lineHeight: "1.5",
-              background: "rgba(0,0,0,0.15)",
+              background: "rgba(0,0,0,0.2)",
               padding: "8px 10px",
               borderRadius: "6px",
               borderLeft: "3.5px solid var(--violet)",
@@ -123,7 +131,7 @@ export default function GrammarFixButton({ text, onApply }) {
           >
             {correctedText || <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>(No changes suggested)</span>}
           </div>
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
             <button
               type="button"
               onClick={handleApply}
@@ -132,11 +140,14 @@ export default function GrammarFixButton({ text, onApply }) {
                 color: "#FFF",
                 border: "none",
                 borderRadius: "6px",
-                padding: "4px 10px",
-                fontSize: "11px",
+                padding: "6px 12px",
+                fontSize: "12px",
                 fontWeight: "600",
                 cursor: "pointer",
+                transition: "background 0.2s"
               }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#5b21b6"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "var(--violet)"}
             >
               Apply Suggestion
             </button>
@@ -148,11 +159,14 @@ export default function GrammarFixButton({ text, onApply }) {
                 color: "var(--text-secondary)",
                 border: "1px solid var(--border-color)",
                 borderRadius: "6px",
-                padding: "4px 10px",
-                fontSize: "11px",
+                padding: "6px 12px",
+                fontSize: "12px",
                 fontWeight: "600",
                 cursor: "pointer",
+                transition: "background 0.2s"
               }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
             >
               Keep Original
             </button>

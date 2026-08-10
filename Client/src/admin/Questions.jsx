@@ -182,6 +182,16 @@ function Questions() {
                 }
               }
             }
+          } else if (quizType === "practice" && quiz.sections && quiz.sections.length > 0) {
+            for (const sec of quiz.sections) {
+              if (sec.questions && sec.questions.length > 0) {
+                quizQuestions = [...quizQuestions, ...sec.questions.map((q, idx) => ({
+                  questionId: q._id, qNo: quizQuestions.length + idx + 1,
+                  questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
+                  options: q.options || [], correctAnswer: q.correctAnswer,
+                }))];
+              }
+            }
           } else {
             quizQuestions = (quiz.questions || []).map((q, idx) => ({
               questionId: q._id, qNo: idx + 1,

@@ -31,8 +31,8 @@ function PracticeTest() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [palettePage, setPalettePage] = useState(0);
   const itemsPerPage = 25;
-  const [selectedOptions, setSelectedOptions] = useState({}); // { optionIndex: true }
-  const [isCorrectSelected, setIsCorrectSelected] = useState(false);
+  const [selectedOptionsMap, setSelectedOptionsMap] = useState({}); // { questionIndex: { optionIndex: true } }
+  const [isCorrectSelectedMap, setIsCorrectSelectedMap] = useState({}); // { questionIndex: true }
   const [reviewQuestions, setReviewQuestions] = useState([]); // Array of review indices
   const [answeredQuestions, setAnsweredQuestions] = useState({}); // { index: true }
   const [visitedQuestions, setVisitedQuestions] = useState([0]); // Array of visited indices
@@ -55,12 +55,13 @@ function PracticeTest() {
 
   // Timer Effect
   useEffect(() => {
+    const isCorrectSelected = isCorrectSelectedMap[currentIndex] || false;
     if (loading || !questions.length || isCorrectSelected) return;
     const timer = setInterval(() => {
       setQuestionTime(prev => prev + 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [loading, questions.length, isCorrectSelected, currentIndex]);
+  }, [loading, questions.length, isCorrectSelectedMap, currentIndex]);
 
   // Fetch Quiz & Active/New Session
   useEffect(() => {
@@ -221,6 +222,8 @@ function PracticeTest() {
   }
 
   const currentQuestion = questions[currentIndex];
+  const selectedOptions = selectedOptionsMap[currentIndex] || {};
+  const isCorrectSelected = isCorrectSelectedMap[currentIndex] || false;
 
   // Fetch AI explanation on-demand if not pre-generated in DB
   const fetchLiveExplanation = async (question, qIndex) => {
@@ -304,26 +307,33 @@ function PracticeTest() {
   };
 
   const handleOptionClick = (optIdx) => {
-    if (isCorrectSelected || Object.keys(selectedOptions).length > 0) return; // prevent re-clicking
+    if (isCorrectSelected || selectedOptions[optIdx]) return; // prevent re-clicking
 
     // Fetch live AI explanation if not pre-generated
     fetchLiveExplanation(currentQuestion, currentIndex);
 
     const isCorrect = currentQuestion.options[optIdx] === currentQuestion.correctAnswer;
     const newSelected = { ...selectedOptions, [optIdx]: true };
-    setSelectedOptions(newSelected);
-
-    // Lock selection and reveal explanation on any click
-    setIsCorrectSelected(true);
-    setAnsweredQuestions(prev => ({ ...prev, [currentIndex]: true }));
+    setSelectedOptionsMap(prev => ({ ...prev, [currentIndex]: newSelected }));
 
     if (isCorrect) {
+      setIsCorrectSelectedMap(prev => ({ ...prev, [currentIndex]: true }));
+      setAnsweredQuestions(prev => ({ ...prev, [currentIndex]: true }));
+
       // Update stats
-      setStats(prev => ({
-        ...prev,
-        firstTryCorrect: prev.firstTryCorrect + 1,
-        totalAttemptsAll: prev.totalAttemptsAll + 1
-      }));
+      if (Object.keys(selectedOptions).length === 0) {
+        setStats(prev => ({
+          ...prev,
+          firstTryCorrect: prev.firstTryCorrect + 1,
+          totalAttemptsAll: prev.totalAttemptsAll + 1
+        }));
+      } else {
+        setStats(prev => ({
+          ...prev,
+          multipleTries: prev.multipleTries + 1,
+          totalAttemptsAll: prev.totalAttemptsAll + 1
+        }));
+      }
     } else {
       // Track wrong question for analytics
       setWrongQuestionIds(prev => {
@@ -342,8 +352,6 @@ function PracticeTest() {
   const handleNext = async () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
-      setSelectedOptions({});
-      setIsCorrectSelected(false);
       setQuestionTime(0);
     } else {
       // Finish Practice Attempt
@@ -417,8 +425,6 @@ function PracticeTest() {
   const handlePrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-      setSelectedOptions({});
-      setIsCorrectSelected(false);
       setQuestionTime(0);
     }
   };
@@ -614,9 +620,11 @@ function PracticeTest() {
                        
                        const text = stored
                          ? stored
-                         : hasCorrectExplanation
-                           ? "This option is incorrect — see the explanation for the correct answer below."
-                           : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
+                         : live
+                           ? live
+                           : hasCorrectExplanation
+                             ? "This option is incorrect — see the explanation for the correct answer below."
+                             : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
                        
                        return (
                          <div style={{ padding: "12px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }}>
@@ -796,8 +804,6 @@ function PracticeTest() {
                     key={qIdx}
                     onClick={() => {
                       setCurrentIndex(qIdx);
-                      setSelectedOptions({});
-                      setIsCorrectSelected(false);
                       setQuestionTime(0);
                       setShowSidebar(false);
                     }}
@@ -894,8 +900,6 @@ function PracticeTest() {
                     key={idx} 
                     onClick={() => {
                       setCurrentIndex(sec.startIndex);
-                      setSelectedOptions({});
-                      setIsCorrectSelected(false);
                       setQuestionTime(0);
                     }}
                     style={{ 
@@ -1042,9 +1046,11 @@ function PracticeTest() {
                        
                        const text = stored
                          ? stored
-                         : hasCorrectExplanation
-                           ? "This option is incorrect — see the explanation for the correct answer below."
-                           : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
+                         : live
+                           ? live
+                           : hasCorrectExplanation
+                             ? "This option is incorrect — see the explanation for the correct answer below."
+                             : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
                        
                        return (
                          <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "8px" }}>
@@ -1190,8 +1196,6 @@ function PracticeTest() {
                       key={qIdx}
                       onClick={() => {
                         setCurrentIndex(qIdx);
-                        setSelectedOptions({});
-                        setIsCorrectSelected(false);
                         setQuestionTime(0);
                       }}
                       style={{
