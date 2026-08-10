@@ -699,7 +699,9 @@ function AdminTickets() {
                         opacity: replying || (!replyMessage.trim() && !replyFile) ? 0.6 : 1,
                         display: "flex",
                         alignItems: "center",
-                        gap: "8px"
+                        gap: "8px",
+                        width: "fit-content",
+                        flex: "none"
                       }}
                     >
                       {replying ? <Loader2 size={16} className="spinner" /> : <MessageSquare size={16} />}

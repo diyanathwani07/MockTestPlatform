@@ -738,7 +738,9 @@ function HelpSupport() {
                           opacity: replying || (!replyMessage.trim() && !replyFile) ? 0.6 : 1,
                           display: "flex",
                           alignItems: "center",
-                          gap: "8px"
+                          gap: "8px",
+                          width: "fit-content",
+                          flex: "none"
                         }}
                       >
                         {replying ? "Sending..." : "Send Reply"}
