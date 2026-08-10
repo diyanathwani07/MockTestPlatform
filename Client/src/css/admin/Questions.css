@@ -594,11 +594,21 @@ body.dark-mode .qb-pagination {
     gap: 16px;
   }
   
+  .mobile-responsive-container {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 16px;
+    padding: 20px 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .qb-middle-header {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 16px !important;
+    gap: 20px !important;
     padding-bottom: 0 !important;
     border-bottom: none !important;
     width: 100% !important;

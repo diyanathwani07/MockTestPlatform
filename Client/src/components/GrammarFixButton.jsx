@@ -114,23 +114,48 @@ export default function GrammarFixButton({ text, onApply }) {
             animation: "slideDown 0.2s ease-out",
           }}
         >
-          <div style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-secondary)" }}>
-            AI Suggestion Preview:
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", marginBottom: "4px" }}>
+                Original:
+              </div>
+              <div
+                style={{
+                  fontSize: "12.5px",
+                  color: "var(--text-secondary)",
+                  lineHeight: "1.5",
+                  background: "rgba(255,255,255,0.03)",
+                  padding: "6px 10px",
+                  borderRadius: "6px",
+                  borderLeft: "3.5px solid var(--text-muted)",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {text}
+              </div>
+            </div>
+            
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: "700", color: "var(--violet)", marginBottom: "4px" }}>
+                AI Suggestion:
+              </div>
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "var(--text-primary)",
+                  lineHeight: "1.5",
+                  background: "rgba(110, 63, 243, 0.1)",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  borderLeft: "3.5px solid var(--violet)",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {correctedText || <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>(No changes suggested)</span>}
+              </div>
+            </div>
           </div>
-          <div
-            style={{
-              fontSize: "13px",
-              color: "var(--text-primary)",
-              lineHeight: "1.5",
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px 10px",
-              borderRadius: "6px",
-              borderLeft: "3.5px solid var(--violet)",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {correctedText || <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>(No changes suggested)</span>}
-          </div>
+
           <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
             <button
               type="button"

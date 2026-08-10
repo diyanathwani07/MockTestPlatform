@@ -82,11 +82,16 @@ function QuestionCard({ q, idx, globalNo }) {
       <div className="qb-options-grid">
         {options.map((opt, oIdx) => {
           const letter = optionLabel(oIdx);
-          const isCorrect = String(correct).trim().toUpperCase() === letter;
+          const optText = opt.text || opt;
+          const isCorrect = 
+            String(correct).trim().toUpperCase() === letter || 
+            String(correct).trim() === String(optText).trim() ||
+            String(correct).trim().toLowerCase() === `option ${oIdx + 1}`;
+            
           return (
             <div key={oIdx} className={`qb-opt ${isCorrect ? "correct" : ""}`}>
               <div className="qb-opt-letter">{letter}</div>
-              <span className="qb-opt-text">{opt.text || opt}</span>
+              <span className="qb-opt-text">{optText}</span>
             </div>
           );
         })}
@@ -163,7 +168,7 @@ function Questions() {
           }
 
           let quizQuestions = [];
-          if (quizType === "exams" && quiz.sections && quiz.sections.length > 0) {
+          if (quiz.sections && quiz.sections.length > 0) {
             for (const sectionRef of quiz.sections) {
               const secId = typeof sectionRef === "object" ? sectionRef.sectionId?._id || sectionRef.sectionId : sectionRef;
               if (secId) {
@@ -180,16 +185,6 @@ function Questions() {
                 } catch (e) {
                   console.error("Error loading modular section in question bank:", secId, e);
                 }
-              }
-            }
-          } else if (quizType === "practice" && quiz.sections && quiz.sections.length > 0) {
-            for (const sec of quiz.sections) {
-              if (sec.questions && sec.questions.length > 0) {
-                quizQuestions = [...quizQuestions, ...sec.questions.map((q, idx) => ({
-                  questionId: q._id, qNo: quizQuestions.length + idx + 1,
-                  questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
-                  options: q.options || [], correctAnswer: q.correctAnswer,
-                }))];
               }
             }
           } else {
@@ -352,80 +347,82 @@ return (
         <AdminNavbar title="Questions Bank" />
         <div className="admin-content" style={{ padding: "24px", minHeight: 0 }}>
           <div className="qb-header-card">
-            <div className="qb-middle-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap", width: "100%" }}>
-              
-              {/* LEFT: Exams / Practice Toggle */}
-              <div className="qb-middle-left" style={{ display: "flex", justifyContent: "flex-start", flex: "1", minWidth: "200px" }}>
-                <div style={{ display: "flex", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "10px", border: "1px solid var(--border-color)", width: "fit-content" }}>
-                  <button
-                    onClick={() => setQuizType("exams")}
-                    style={{
-                      padding: "8px 20px",
-                      borderRadius: "8px",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      border: "none",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                      backgroundColor: quizType === "exams" ? "var(--violet)" : "transparent",
-                      color: quizType === "exams" ? "white" : "var(--text-secondary)",
-                      boxShadow: quizType === "exams" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
-                    }}
-                  >
-                    Exams
-                  </button>
-                  <button
-                    onClick={() => setQuizType("practice")}
-                    style={{
-                      padding: "8px 20px",
-                      borderRadius: "8px",
-                      backgroundColor: quizType === "practice" ? "var(--violet)" : "transparent",
-                      color: quizType === "practice" ? "white" : "var(--text-secondary)",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      border: "none",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                      boxShadow: quizType === "practice" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
-                    }}
-                  >
-                    Practice
-                  </button>
+            <div className="mobile-responsive-container">
+              <div className="qb-middle-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap", width: "100%" }}>
+                
+                {/* LEFT: Exams / Practice Toggle */}
+                <div className="qb-middle-left" style={{ display: "flex", justifyContent: "flex-start", flex: "1", minWidth: "200px" }}>
+                  <div style={{ display: "flex", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "10px", border: "1px solid var(--border-color)", width: "fit-content" }}>
+                    <button
+                      onClick={() => setQuizType("exams")}
+                      style={{
+                        padding: "8px 20px",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        border: "none",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        backgroundColor: quizType === "exams" ? "var(--violet)" : "transparent",
+                        color: quizType === "exams" ? "white" : "var(--text-secondary)",
+                        boxShadow: quizType === "exams" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                      }}
+                    >
+                      Exams
+                    </button>
+                    <button
+                      onClick={() => setQuizType("practice")}
+                      style={{
+                        padding: "8px 20px",
+                        borderRadius: "8px",
+                        backgroundColor: quizType === "practice" ? "var(--violet)" : "transparent",
+                        color: quizType === "practice" ? "white" : "var(--text-secondary)",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        border: "none",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        boxShadow: quizType === "practice" ? "0 2px 8px rgba(110, 63, 243, 0.25)" : "none"
+                      }}
+                    >
+                      Practice
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* MIDDLE: Text (Select a Quiz) */}
-              <div className="qb-middle-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: "1.5", minWidth: "250px" }}>
-                <h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>Select a Quiz</h2>
-                <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Choose a quiz to view its subjects and questions.</p>
-              </div>
-
-              {/* RIGHT: Active / Recycle Bin Toggle */}
-              <div className="qb-middle-right" style={{ display: "flex", justifyContent: "flex-end", flex: "1", minWidth: "200px" }}>
-                <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", height: "fit-content" }}>
-                  <button
-                    onClick={() => setIsRecycleBin(false)}
-                    style={{
-                      padding: "6px 12px", borderRadius: "6px", border: "none", fontSize: "13px", fontWeight: "600", cursor: "pointer",
-                      backgroundColor: !isRecycleBin ? "var(--violet)" : "transparent",
-                      color: !isRecycleBin ? "white" : "var(--text-secondary)",
-                    }}
-                  >
-                    Active
-                  </button>
-                  <button
-                    onClick={() => setIsRecycleBin(true)}
-                    style={{
-                      padding: "6px 12px", borderRadius: "6px", border: "none", fontSize: "13px", fontWeight: "600", cursor: "pointer",
-                      backgroundColor: isRecycleBin ? "var(--red)" : "transparent",
-                      color: isRecycleBin ? "white" : "var(--text-secondary)",
-                    }}
-                  >
-                    Recycle Bin
-                  </button>
+                {/* MIDDLE: Text (Select a Quiz) */}
+                <div className="qb-middle-center" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: "1.5", minWidth: "250px" }}>
+                  <h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>Select a Quiz</h2>
+                  <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Choose a quiz to view its subjects and questions.</p>
                 </div>
-              </div>
 
+                {/* RIGHT: Active / Recycle Bin Toggle */}
+                <div className="qb-middle-right" style={{ display: "flex", justifyContent: "flex-end", flex: "1", minWidth: "200px" }}>
+                  <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-card)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)", height: "fit-content" }}>
+                    <button
+                      onClick={() => setIsRecycleBin(false)}
+                      style={{
+                        padding: "6px 12px", borderRadius: "6px", border: "none", fontSize: "13px", fontWeight: "600", cursor: "pointer",
+                        backgroundColor: !isRecycleBin ? "var(--violet)" : "transparent",
+                        color: !isRecycleBin ? "white" : "var(--text-secondary)",
+                      }}
+                    >
+                      Active
+                    </button>
+                    <button
+                      onClick={() => setIsRecycleBin(true)}
+                      style={{
+                        padding: "6px 12px", borderRadius: "6px", border: "none", fontSize: "13px", fontWeight: "600", cursor: "pointer",
+                        backgroundColor: isRecycleBin ? "var(--red)" : "transparent",
+                        color: isRecycleBin ? "white" : "var(--text-secondary)",
+                      }}
+                    >
+                      Recycle Bin
+                    </button>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
 

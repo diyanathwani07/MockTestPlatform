@@ -480,11 +480,8 @@ function PracticeTest() {
             </span>
             <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
               <ThemeToggle />
-              <button onClick={() => setShowInstructions(true)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "600", minHeight: "44px", display: "flex", alignItems: "center" }}>
-                Instructions
-              </button>
-              <button onClick={() => setShowSidebar(true)} style={{ background: "#8B5CF6", border: "none", color: "#ffffff", padding: "6px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700", minHeight: "44px", display: "flex", alignItems: "center" }}>
-                📋 Questions
+              <button onClick={() => setShowSidebar(true)} style={{ background: "#8B5CF6", border: "none", color: "#ffffff", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: "700", minHeight: "44px", display: "flex", alignItems: "center", gap: "6px" }}>
+                📋 Qs & Info
               </button>
             </div>
           </div>
@@ -494,20 +491,7 @@ function PracticeTest() {
         <div style={{ flex: 1, padding: "12px 12px 88px", display: "flex", flexDirection: "column", gap: "12px", boxSizing: "border-box" }}>
           
           {/* ── PROGRESS CARD ── */}
-          <div style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "16px", padding: "12px", boxSizing: "border-box" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-              <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Progress: {currentIndex + 1} / {questions.length}</span>
-              <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)" }}>{progressPercent}%</span>
-            </div>
-            <div style={{ width: "100%", height: "6px", backgroundColor: "var(--bg-page)", borderRadius: "3px", overflow: "hidden", marginBottom: "10px" }}>
-              <div style={{ width: `${progressPercent}%`, height: "100%", backgroundColor: "#8B5CF6", transition: "width 0.3s ease" }}></div>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--text-secondary)", gap: "4px" }}>
-              <span style={{ flex: 1, textAlign: "left" }}>Answered: <strong style={{ color: "#10B981" }}>{answeredCount}</strong></span>
-              <span style={{ flex: 1, textAlign: "center" }}>Review: <strong style={{ color: "#F59E0B" }}>{reviewCount}</strong></span>
-              <span style={{ flex: 1, textAlign: "right" }}>Remaining: <strong style={{ color: "var(--text-primary)" }}>{remainingCount}</strong></span>
-            </div>
-          </div>
+          {/* Progress Card Removed for Space Optimization */}
 
           {/* ── QUESTION CARD ── */}
           <div style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "16px", padding: "16px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
@@ -613,7 +597,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {isSelected && !isCorrectOption && (() => {
+                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
                        const stored = currentQuestion.explanations?.incorrect?.[opt];
                        const live = liveExplanations[currentIndex]?.incorrect?.[opt];
                        const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;
@@ -748,7 +732,12 @@ function PracticeTest() {
             boxShadow: "0 -10px 30px rgba(0,0,0,0.3)"
           }}>
             <div style={{ width: "40px", height: "4px", backgroundColor: "var(--border-color)", borderRadius: "2px", margin: "-10px auto 16px" }} onClick={() => setShowSidebar(false)}></div>
-            <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 14px 0" }}>Question Palette</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>Question Palette</h3>
+              <button onClick={() => { setShowSidebar(false); setShowInstructions(true); }} style={{ background: "rgba(139, 92, 246, 0.1)", border: "1px solid rgba(139, 92, 246, 0.3)", color: "#8B5CF6", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: "700" }}>
+                Instructions
+              </button>
+            </div>
             
             {/* Counts inside drawer */}
             <div style={{ backgroundColor: "var(--bg-page)", borderRadius: "12px", border: "1px solid var(--border-color)", padding: "14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", textAlign: "center", marginBottom: "16px" }}>
@@ -1039,7 +1028,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {isSelected && !isCorrectOption && (() => {
+                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
                        const stored = currentQuestion.explanations?.incorrect?.[opt];
                        const live = liveExplanations[currentIndex]?.incorrect?.[opt];
                        const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;
