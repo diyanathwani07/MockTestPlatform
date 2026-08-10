@@ -69,6 +69,10 @@ const quizSchema = new mongoose.Schema(
     quizType: { type: String, enum: ["exam", "practice", "custom"], default: "exam" },
     passPercentage: { type: Number, default: 50 },
     isModular: { type: Boolean, default: false },
+    shuffleQuestions: { type: Boolean, default: false },
+    shuffleOptions: { type: Boolean, default: false },
+    randomSelection: { type: Boolean, default: false },
+    questionsPerAttempt: { type: Number, default: 20 },
     // Mixed: holds either legacy embedded sections OR modular section refs
     sections: { type: [mongoose.Schema.Types.Mixed], default: [] },
     // Legacy top-level questions (kept for backward compatibility)

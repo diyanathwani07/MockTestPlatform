@@ -402,6 +402,13 @@ function EditQuiz() {
             options,
             correctOptionIndex: correctIdx !== -1 ? correctIdx : 0,
             correctAnswer: correctIdx !== -1 ? `Option ${correctIdx + 1}` : "Option 1",
+            explanation: q.explanation || q.explanations?.correct || "",
+            explanations: q.explanations || {
+              correct: q.explanation || "",
+              incorrect: {},
+              conceptSummary: "",
+              didYouKnow: ""
+            }
           };
         });
 
