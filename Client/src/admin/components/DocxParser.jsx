@@ -227,9 +227,9 @@ function parseQuestionsFromText(text) {
 
     const questions = [];
     // Ensure all question markers start on a newline
-    const normalizedChunk = chunkText.replace(/(?=(?:Q\d+[\.\)]|Question\s*\d+))/ig, "\n");
+    const normalizedChunk = chunkText.replace(/(?=(?:\bQ\d+[\.\)]?|\bQuestion\s*\d+[\.\)]?))/ig, "\n");
     // Split by Question marker: Q1., Question 1, Question 2, etc.
-    const questionBlocks = normalizedChunk.split(/\n(?=(?:Q\d+[\.\)]|Question\s*\d+))/i).filter(Boolean);
+    const questionBlocks = normalizedChunk.split(/\n(?=(?:\bQ\d+[\.\)]?|\bQuestion\s*\d+[\.\)]?))/i).filter(Boolean);
 
     for (const block of questionBlocks) {
       // Pre-process block to force newlines before option/answer/explanation markers

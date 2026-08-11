@@ -606,6 +606,7 @@ function EditQuiz() {
     setQuestions((prev) => {
       const updated = [...prev];
       const newOptions = [...updated[qIndex].options];
+      const oldVal = newOptions[optIndex];
       newOptions[optIndex] = value;
 
       let newCorrectVal = updated[qIndex].correctAnswer;
@@ -613,10 +614,23 @@ function EditQuiz() {
         newCorrectVal = value;
       }
 
+      let newIncorrectMap = { ...(updated[qIndex].explanations?.incorrect || {}) };
+      if (oldVal && newIncorrectMap[oldVal] !== undefined) {
+        const expl = newIncorrectMap[oldVal];
+        delete newIncorrectMap[oldVal];
+        if (value) {
+          newIncorrectMap[value] = expl;
+        }
+      }
+
       updated[qIndex] = {
         ...updated[qIndex],
         options: newOptions,
         correctAnswer: newCorrectVal,
+        explanations: {
+          ...(updated[qIndex].explanations || {}),
+          incorrect: newIncorrectMap
+        }
       };
       return updated;
     });
@@ -1466,43 +1480,69 @@ function EditQuiz() {
                                                 <div 
                                                   className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`}
                                                   key={label}
+                                                  style={{ flexDirection: "column", gap: 0, padding: 0 }}
                                                 >
-                                                  <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
-                                                    {label}
+                                                  <div style={{ display: "flex", width: "100%", padding: "10px", alignItems: "center", gap: "10px" }}>
+                                                    <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
+                                                      {label}
+                                                    </div>
+                                                    <input
+                                                      type="text"
+                                                      value={q.options[optIndex]}
+                                                      onChange={(e) =>
+                                                        handleOptionChange(qIndex, optIndex, e.target.value)
+                                                      }
+                                                      placeholder="English Option / हिंदी विकल्प"
+                                                      className="option-text-field"
+                                                    />
+                                                    <div 
+                                                      className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
+                                                      onClick={() => selectCorrectOption(qIndex, optIndex)}
+                                                      title="Mark as correct answer"
+                                                      style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        width: "22px",
+                                                        height: "22px",
+                                                        borderRadius: "50%",
+                                                        border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
+                                                        backgroundColor: isCorrect ? "#10B981" : "transparent",
+                                                        color: isCorrect ? "#ffffff" : "transparent",
+                                                        cursor: "pointer",
+                                                        fontSize: "12px",
+                                                        fontWeight: "bold",
+                                                        transition: "all 0.15s ease",
+                                                        userSelect: "none",
+                                                        flexShrink: 0
+                                                      }}
+                                                    >
+                                                      ✓
+                                                    </div>
                                                   </div>
-                                                  <input
-                                                    type="text"
-                                                    value={q.options[optIndex]}
-                                                    onChange={(e) =>
-                                                      handleOptionChange(qIndex, optIndex, e.target.value)
-                                                    }
-                                                    placeholder="English Option / हिंदी विकल्प"
-                                                    className="option-text-field"
-                                                  />
-                                                  <div 
-                                                    className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
-                                                    onClick={() => selectCorrectOption(qIndex, optIndex)}
-                                                    title="Mark as correct answer"
-                                                    style={{
-                                                      display: "flex",
-                                                      alignItems: "center",
-                                                      justifyContent: "center",
-                                                      width: "22px",
-                                                      height: "22px",
-                                                      borderRadius: "50%",
-                                                      border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
-                                                      backgroundColor: isCorrect ? "#10B981" : "transparent",
-                                                      color: isCorrect ? "#ffffff" : "transparent",
-                                                      cursor: "pointer",
-                                                      fontSize: "12px",
-                                                      fontWeight: "bold",
-                                                      transition: "all 0.15s ease",
-                                                      userSelect: "none",
-                                                      flexShrink: 0
-                                                    }}
-                                                  >
-                                                    ✓
-                                                  </div>
+                                                  {!isCorrect && q.options[optIndex] && (
+                                                    <div style={{ width: "100%", padding: "0 10px 10px 10px", borderTop: "1px dashed var(--border-color)", marginTop: "0px" }}>
+                                                      <input
+                                                        type="text"
+                                                        value={q.explanations?.incorrect?.[q.options[optIndex]] || ""}
+                                                        onChange={(e) => {
+                                                          const newVal = e.target.value;
+                                                          setQuestions(prev => {
+                                                            const updated = [...prev];
+                                                            const incMap = { ...(updated[qIndex].explanations?.incorrect || {}) };
+                                                            incMap[updated[qIndex].options[optIndex]] = newVal;
+                                                            updated[qIndex].explanations = {
+                                                              ...(updated[qIndex].explanations || {}),
+                                                              incorrect: incMap
+                                                            };
+                                                            return updated;
+                                                          });
+                                                        }}
+                                                        placeholder={`Explanation if student selects ${label} (Optional)`}
+                                                        style={{ width: "100%", border: "none", background: "transparent", fontSize: "11px", color: "var(--text-secondary)", outline: "none", padding: "4px 0" }}
+                                                      />
+                                                    </div>
+                                                  )}
                                                 </div>
                                               );
                                             })}

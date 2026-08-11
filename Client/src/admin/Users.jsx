@@ -688,13 +688,15 @@ function Users() {
                 </div>
                 <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Role</label>
-                  <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value, department: (e.target.value === 'admin' || e.target.value === 'superadmin') ? (editForm.department || '') : ''})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
+                  <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value, department: (['admin', 'superadmin', 'manager', 'employee'].includes(e.target.value)) ? (editForm.department || '') : ''})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
                     <option value="user">User</option>
+                    <option value="employee">Employee</option>
+                    <option value="manager">Manager</option>
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
                   </select>
                 </div>
-                {(editForm.role === 'admin' || editForm.role === 'superadmin') && (
+                {(['admin', 'superadmin', 'manager', 'employee'].includes(editForm.role)) && (
                   <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Department</label>
                     <select 
@@ -738,7 +740,7 @@ function Users() {
                     </span>
                   </label>
                 )}
-                {(editForm.role === 'admin' || editForm.role === 'superadmin') && (
+                {(['admin', 'superadmin', 'manager', 'employee'].includes(editForm.role)) && (
                   <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assign Custom Permissions</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '180px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '8px', background: 'var(--bg-input)' }}>
@@ -1316,10 +1318,12 @@ function Users() {
                     </label>
                     <select
                       value={addForm.role}
-                      onChange={e => setAddForm({ ...addForm, role: e.target.value, department: (e.target.value === 'admin' || e.target.value === 'superadmin') ? (addForm.department || '') : '' })}
+                      onChange={e => setAddForm({ ...addForm, role: e.target.value, department: (['admin', 'superadmin', 'manager', 'employee'].includes(e.target.value)) ? (addForm.department || '') : '' })}
                       style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                     >
                       <option value="user">User / Student</option>
+                      <option value="employee">Employee</option>
+                      <option value="manager">Manager</option>
                       <option value="admin">Admin</option>
                       <option value="superadmin">Super Admin</option>
                     </select>
@@ -1339,7 +1343,7 @@ function Users() {
                     </label>
                   )}
 
-                  {(addForm.role === 'admin' || addForm.role === 'superadmin') && (
+                  {(['admin', 'superadmin', 'manager', 'employee'].includes(addForm.role)) && (
                     <>
                       <div className="input-box" style={{ marginBottom: 0 }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
