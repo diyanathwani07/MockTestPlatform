@@ -461,7 +461,7 @@ function PracticeTest() {
         <div style={{ display: "flex", flexDirection: "column", backgroundColor: "var(--bg-card)", borderBottom: "1px solid var(--border-color)", padding: "10px 12px", gap: "8px", sticky: "top", top: 0, zIndex: 100 }}>
           {/* Row 1 */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "44px" }}>
-            <button onClick={() => navigate("/dashboard/practice")} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", padding: "6px 0", minHeight: "44px" }}>
+            <button type="button" onClick={() => navigate("/dashboard/practice")} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", padding: "6px 0", minHeight: "44px" }}>
               <ArrowLeft size={16} /> Back
             </button>
             <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>Quiz</h3>
@@ -598,26 +598,49 @@ function PracticeTest() {
 
                     {/* Explanation right below the clicked choice */}
                     {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
-                       const stored = currentQuestion.explanations?.incorrect?.[opt];
-                       const live = liveExplanations[currentIndex]?.incorrect?.[opt];
-                       const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;
+                       const storedIncorrect = currentQuestion.explanations?.incorrect?.[opt];
+                       const liveIncorrect = liveExplanations[currentIndex]?.incorrect?.[opt];
+                       const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
                        
-                       const text = stored
-                         ? stored
-                         : live
-                           ? live
-                           : hasCorrectExplanation
-                             ? "This option is incorrect — see the explanation for the correct answer below."
-                             : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
+                       // Fallback to the main correct explanation if no specific incorrect explanation is provided
+                       const storedCorrect = currentQuestion.explanations?.correct;
+                       const liveCorrect = liveExplanations[currentIndex]?.correct;
+                       const fallbackCorrect = (storedCorrect && storedCorrect.trim()) ? storedCorrect : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : liveCorrect);
+                       
+                       const text = specificIncorrect ? specificIncorrect : fallbackCorrect;
+                       
+                       const conceptSummary = currentQuestion.explanations?.conceptSummary;
+                       const didYouKnow = currentQuestion.explanations?.didYouKnow;
                        
                        return (
-                         <div style={{ padding: "12px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }}>
-                           <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "13px" }}>
-                             ❌ Incorrect
+                         <div style={{ padding: "14px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "10px", marginTop: "4px" }}>
+                           <div>
+                             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "13px" }}>
+                               ❌ Incorrect
+                             </div>
+                             <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
+                               {text ? (
+                                 <>
+                                   {!specificIncorrect && <strong style={{ color: "#10B981", display: "block", marginBottom: "4px", fontSize: "13px" }}>Correct Answer Explanation:</strong>}
+                                   {renderExplanationText(text)}
+                                 </>
+                               ) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                             </p>
                            </div>
-                           <p style={{ margin: 0, fontSize: "14px", color: "#e2e8f0", lineHeight: 1.5 }}>
-                             {renderExplanationText(text)}
-                           </p>
+
+                           {conceptSummary && (
+                             <div>
+                               <div style={{ color: "#60A5FA", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>💡 Concept Summary</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(conceptSummary)}</p>
+                             </div>
+                           )}
+
+                           {didYouKnow && (
+                             <div>
+                               <div style={{ color: "#FBBF24", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>✨ Did You Know?</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(didYouKnow)}</p>
+                             </div>
+                           )}
                          </div>
                        );
                     })()}
@@ -668,6 +691,7 @@ function PracticeTest() {
         <div style={{ position: "sticky", bottom: 0, width: "100%", backgroundColor: "var(--bg-card)", borderTop: "1px solid var(--border-color)", padding: "12px 16px", boxSizing: "border-box", zIndex: 90 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", height: "48px" }}>
             <button 
+              type="button"
               onClick={handlePrev}
               disabled={currentIndex === 0}
               style={{
@@ -689,6 +713,7 @@ function PracticeTest() {
             </button>
 
             <button 
+              type="button"
               onClick={handleNext}
               disabled={!isCorrectSelected}
               style={{
@@ -1029,26 +1054,49 @@ function PracticeTest() {
 
                     {/* Explanation right below the clicked choice */}
                     {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
-                       const stored = currentQuestion.explanations?.incorrect?.[opt];
-                       const live = liveExplanations[currentIndex]?.incorrect?.[opt];
-                       const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;
+                       const storedIncorrect = currentQuestion.explanations?.incorrect?.[opt];
+                       const liveIncorrect = liveExplanations[currentIndex]?.incorrect?.[opt];
+                       const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
                        
-                       const text = stored
-                         ? stored
-                         : live
-                           ? live
-                           : hasCorrectExplanation
-                             ? "This option is incorrect — see the explanation for the correct answer below."
-                             : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
+                       // Fallback to the main correct explanation if no specific incorrect explanation is provided
+                       const storedCorrect = currentQuestion.explanations?.correct;
+                       const liveCorrect = liveExplanations[currentIndex]?.correct;
+                       const fallbackCorrect = (storedCorrect && storedCorrect.trim()) ? storedCorrect : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : liveCorrect);
+                       
+                       const text = specificIncorrect ? specificIncorrect : fallbackCorrect;
+                       
+                       const conceptSummary = currentQuestion.explanations?.conceptSummary;
+                       const didYouKnow = currentQuestion.explanations?.didYouKnow;
                        
                        return (
-                         <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "8px" }}>
-                           <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
-                             ❌ Incorrect
+                         <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+                           <div>
+                             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
+                               ❌ Incorrect
+                             </div>
+                             <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
+                               {text ? (
+                                 <>
+                                   {!specificIncorrect && <strong style={{ color: "#10B981", display: "block", marginBottom: "4px", fontSize: "13px" }}>Correct Answer Explanation:</strong>}
+                                   {renderExplanationText(text)}
+                                 </>
+                               ) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                             </p>
                            </div>
-                           <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
-                             {renderExplanationText(text)}
-                           </p>
+
+                           {conceptSummary && (
+                             <div>
+                               <div style={{ color: "#60A5FA", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>💡 Concept Summary</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(conceptSummary)}</p>
+                             </div>
+                           )}
+
+                           {didYouKnow && (
+                             <div>
+                               <div style={{ color: "#FBBF24", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>✨ Did You Know?</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(didYouKnow)}</p>
+                             </div>
+                           )}
                          </div>
                        );
                     })()}

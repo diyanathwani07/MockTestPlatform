@@ -143,7 +143,7 @@ const CreateCustomQuiz = () => {
       <div className="sd-main-content">
         <StudentNavbar title="Custom Test" />
         
-        <div className="sd-content" style={{ paddingTop: "20px" }}>
+        <div className="sd-content" style={{ paddingTop: "20px", maxWidth: "100%" }}>
           {/* Navigation Tabs */}
           <div style={{ 
             display: "flex", 

@@ -145,20 +145,6 @@ function AdminDashboard() {
       ticketsResolved: dailyStats[label].ticketsResolved
     }));
 
-    const allZero = parsedData.every(d => d.ticketsCreated === 0 && d.ticketsResolved === 0);
-    if (allZero) {
-      // Return beautiful mockup data for preview/demo when no real tickets are in range
-      return result.map((label, idx) => {
-        const mockCreated = Math.round(2 + Math.sin(idx) * 2 + (idx % 3 === 0 ? 1 : 0));
-        const mockResolved = Math.round(1 + Math.cos(idx) * 1.5 + (idx % 2 === 0 ? 1 : 0));
-        return {
-          label,
-          ticketsCreated: Math.max(0, mockCreated),
-          ticketsResolved: Math.max(0, mockResolved)
-        };
-      });
-    }
-
     return parsedData;
   };
 
@@ -855,30 +841,7 @@ function AdminDashboard() {
 
                       return (
                         <div style={{ width: "100%", height: "100%", position: "relative" }}>
-                          {allZero && (
-                            <div style={{
-                              position: "absolute",
-                              top: 0, left: 0, right: 0, bottom: 0,
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              zIndex: 5,
-                              pointerEvents: "none",
-                              background: "rgba(255, 255, 255, 0.7)",
-                              borderRadius: "12px",
-                              backdropFilter: "blur(2px)",
-                              gap: "10px",
-                            }}>
-                              <span style={{ fontSize: "40px", lineHeight: 1 }}>📊</span>
-                              <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-muted, #888)" }}>
-                                No activity in last {rangeDays} days
-                              </span>
-                              <span style={{ fontSize: "12px", color: "var(--text-muted, #aaa)" }}>
-                                Data will appear once quizzes are created or attempted
-                              </span>
-                            </div>
-                          )}
+
                           <svg viewBox="0 0 1000 250" style={{ width: "100%", height: "auto", overflow: "visible" }}>
                             <defs>
                               <linearGradient id="gradient-quizzes-chart" x1="0" y1="0" x2="0" y2="1">

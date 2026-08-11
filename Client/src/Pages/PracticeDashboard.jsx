@@ -56,7 +56,7 @@ function PracticeDashboard() {
       <StudentSidebar />
       <div className="sd-main-content">
         <StudentNavbar title="Practice Tests" />
-        <div className="sd-content" style={{ paddingTop: '20px' }}>
+        <div className="sd-content" style={{ paddingTop: '20px', maxWidth: '100%' }}>
           <div className="practice-header-actions" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '24px' }}>
             <div className="practice-search-container" style={{ position: 'relative', width: '300px', maxWidth: '100%' }}>
               <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />

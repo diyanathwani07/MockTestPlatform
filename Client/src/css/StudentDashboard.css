@@ -703,7 +703,7 @@ body:not(.dark-mode) .ambient-glow-circle-2 {
 .sd-content {
   width: 100%;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: 0 auto 0 0;
   padding: 0px 40px 60px;
 }
 
