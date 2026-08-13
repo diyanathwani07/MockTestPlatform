@@ -241,7 +241,7 @@ function HelpSupport() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!ticket.subject || !ticket.category || !ticket.message) {
+    if (!ticket.subject || !ticket.message) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -252,7 +252,7 @@ function HelpSupport() {
       
       const formData = new FormData();
       formData.append("subject", ticket.subject);
-      formData.append("category", ticket.category);
+      formData.append("category", "Support");
       formData.append("message", ticket.message);
       if (ticketFile) {
         formData.append("attachment", ticketFile);
@@ -300,8 +300,8 @@ function HelpSupport() {
       <form onSubmit={handleSubmit} className="hs-form-grid">
         <div className="hs-form-left">
           <div className="hs-form-row">
-            <div className="hs-form-group">
-              <label>Subject <span>*</span></label>
+            <div className="hs-form-group" style={{ flex: 1 }}>
+              <label>Title <span>*</span></label>
               <input 
                 type="text" 
                 name="subject" 
@@ -309,16 +309,6 @@ function HelpSupport() {
                 value={ticket.subject}
                 onChange={handleChange}
               />
-            </div>
-            <div className="hs-form-group">
-              <label>Category <span>*</span></label>
-              <select name="category" value={ticket.category} onChange={handleChange}>
-                <option value="" disabled>Select a category</option>
-                <option value="Technical Issue">Technical Issue</option>
-                <option value="Account">Account Access</option>
-                <option value="Exam Related">Exam Related</option>
-                <option value="Other">Other</option>
-              </select>
             </div>
           </div>
           <div className="hs-form-group">

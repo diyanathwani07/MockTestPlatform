@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import mammoth from "mammoth";
+
+
 
 /**
  * DocxParser Component (Bilingual Options Version)
@@ -819,4 +819,6 @@ function parseQuestionsFromText(text) {
   return sections;
 }
 
-export default DocxParser;
+
+
+module.exports = { parseQuestionsFromText };

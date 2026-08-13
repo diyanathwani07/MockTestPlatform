@@ -312,7 +312,8 @@ function PracticeTest() {
     // Fetch live AI explanation if not pre-generated
     fetchLiveExplanation(currentQuestion, currentIndex);
 
-    const isCorrect = currentQuestion.options[optIdx] === currentQuestion.correctAnswer;
+    const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+    const isCorrect = normalizeString(currentQuestion.options[optIdx]) === normalizeString(currentQuestion.correctAnswer);
     const newSelected = { ...selectedOptions, [optIdx]: true };
     setSelectedOptionsMap(prev => ({ ...prev, [currentIndex]: newSelected }));
 
@@ -519,7 +520,8 @@ function PracticeTest() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const isCorrectOption = opt === currentQuestion.correctAnswer;
+                const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+                const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
                 
                 let borderStyle = "1.5px solid var(--border-color)";
                 let backgroundStyle = "var(--bg-page)";
@@ -598,16 +600,21 @@ function PracticeTest() {
 
                     {/* Explanation right below the clicked choice */}
                     {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
-                       const storedIncorrect = currentQuestion.explanations?.incorrect?.[opt];
-                       const liveIncorrect = liveExplanations[currentIndex]?.incorrect?.[opt];
+                       const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+                       
+                       const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const storedIncorrect = storedIncorrectEntry ? storedIncorrectEntry[1] : null;
+                       
+                       const liveIncorrectEntry = Object.entries(liveExplanations[currentIndex]?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const liveIncorrect = liveIncorrectEntry ? liveIncorrectEntry[1] : null;
+                       
                        const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
                        
-                       // Fallback to the main correct explanation if no specific incorrect explanation is provided
-                       const storedCorrect = currentQuestion.explanations?.correct;
-                       const liveCorrect = liveExplanations[currentIndex]?.correct;
-                       const fallbackCorrect = (storedCorrect && storedCorrect.trim()) ? storedCorrect : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : liveCorrect);
-                       
-                       const text = specificIncorrect ? specificIncorrect : fallbackCorrect;
+                       const text = specificIncorrect; // NO FALLBACK to correct explanation
                        
                        const conceptSummary = currentQuestion.explanations?.conceptSummary;
                        const didYouKnow = currentQuestion.explanations?.didYouKnow;
@@ -619,12 +626,7 @@ function PracticeTest() {
                                ❌ Incorrect
                              </div>
                              <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
-                               {text ? (
-                                 <>
-                                   {!specificIncorrect && <strong style={{ color: "#10B981", display: "block", marginBottom: "4px", fontSize: "13px" }}>Correct Answer Explanation:</strong>}
-                                   {renderExplanationText(text)}
-                                 </>
-                               ) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                               {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
                              </p>
                            </div>
 
@@ -976,7 +978,8 @@ function PracticeTest() {
             <div className="practice-options-grid" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const isCorrectOption = opt === currentQuestion.correctAnswer;
+                const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+                const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
                 
                 // Define border & background styles based on correctness
                 let borderStyle = "1.5px solid var(--border-color)";
@@ -1054,16 +1057,21 @@ function PracticeTest() {
 
                     {/* Explanation right below the clicked choice */}
                     {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
-                       const storedIncorrect = currentQuestion.explanations?.incorrect?.[opt];
-                       const liveIncorrect = liveExplanations[currentIndex]?.incorrect?.[opt];
+                       const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+                       
+                       const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const storedIncorrect = storedIncorrectEntry ? storedIncorrectEntry[1] : null;
+                       
+                       const liveIncorrectEntry = Object.entries(liveExplanations[currentIndex]?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const liveIncorrect = liveIncorrectEntry ? liveIncorrectEntry[1] : null;
+                       
                        const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
                        
-                       // Fallback to the main correct explanation if no specific incorrect explanation is provided
-                       const storedCorrect = currentQuestion.explanations?.correct;
-                       const liveCorrect = liveExplanations[currentIndex]?.correct;
-                       const fallbackCorrect = (storedCorrect && storedCorrect.trim()) ? storedCorrect : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : liveCorrect);
-                       
-                       const text = specificIncorrect ? specificIncorrect : fallbackCorrect;
+                       const text = specificIncorrect; // NO FALLBACK to correct explanation
                        
                        const conceptSummary = currentQuestion.explanations?.conceptSummary;
                        const didYouKnow = currentQuestion.explanations?.didYouKnow;
@@ -1075,12 +1083,7 @@ function PracticeTest() {
                                ❌ Incorrect
                              </div>
                              <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
-                               {text ? (
-                                 <>
-                                   {!specificIncorrect && <strong style={{ color: "#10B981", display: "block", marginBottom: "4px", fontSize: "13px" }}>Correct Answer Explanation:</strong>}
-                                   {renderExplanationText(text)}
-                                 </>
-                               ) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                               {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
                              </p>
                            </div>
 

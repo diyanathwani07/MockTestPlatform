@@ -733,6 +733,16 @@ function Users() {
                       type="checkbox" 
                       checked={editForm.receiveMonthlyAuditReport || false}
                       onChange={e => setEditForm({...editForm, receiveMonthlyAuditReport: e.target.checked})}
+                      disabled={(() => {
+                        const storedUser = localStorage.getItem("user");
+                        if (!storedUser) return true;
+                        try {
+                          const parsed = JSON.parse(storedUser);
+                          return parsed._id !== selectedUser?._id;
+                        } catch(e) {
+                          return true;
+                        }
+                      })()}
                       style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
                     />
                     <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>
@@ -745,19 +755,22 @@ function Users() {
                     <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assign Custom Permissions</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '180px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '8px', background: 'var(--bg-input)' }}>
                       {ALL_PERMISSIONS.map(p => {
-                        const isChecked = editForm.permissions?.includes(p.key);
+                        const isSuperAdmin = editForm.role === 'superadmin';
+                        const isChecked = isSuperAdmin ? true : editForm.permissions?.includes(p.key);
                         return (
-                          <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                          <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: isSuperAdmin ? 'not-allowed' : 'pointer', opacity: isSuperAdmin ? 0.8 : 1 }}>
                             <input 
                               type="checkbox" 
                               checked={isChecked}
+                              disabled={isSuperAdmin}
                               onChange={() => {
+                                if (isSuperAdmin) return;
                                 const newPerms = isChecked
                                   ? (editForm.permissions || []).filter(x => x !== p.key)
                                   : [...(editForm.permissions || []), p.key];
                                 setEditForm({...editForm, permissions: newPerms});
                               }}
-                              style={{ width: 'auto', height: 'auto', cursor: 'pointer' }}
+                              style={{ width: 'auto', height: 'auto', cursor: isSuperAdmin ? 'not-allowed' : 'pointer' }}
                             />
                             <span>{p.label}</span>
                           </label>

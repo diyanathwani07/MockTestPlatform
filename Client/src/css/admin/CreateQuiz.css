@@ -12,9 +12,25 @@
   width: 100%;
 }
 
+.quiz-two-column-layout > .header-questions-card {
+  grid-column: 1 / -1;
+}
+
 .create-quiz-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Allow the questions builder to break out of the left column grid container and span the full width */
+.quiz-left-panel > .header-questions-card {
+  width: calc(200% + 32px); /* Spans across left column, gap (32px), and right column! */
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .quiz-left-panel > .header-questions-card {
+    width: 100%;
+  }
 }
 
 /* ==========================================================================

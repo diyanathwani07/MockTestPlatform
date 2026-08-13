@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { HelpCircle, Clock, Search } from "lucide-react";
+import { HelpCircle, Clock, Search, Pencil, SlidersHorizontal } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
@@ -64,34 +64,73 @@ const exportToJSON = (subject) => {
   URL.revokeObjectURL(url);
 };
 
-// ── Single Question Card ──
-function QuestionCard({ q, idx, globalNo }) {
+// ── Single Question Card (with inline edit) ──
+function QuestionCard({ q, idx, globalNo, onUpdateAnswer, isGlobalEdit }) {
+  const [pendingCorrect, setPendingCorrect] = useState(null);
+  const [saving, setSaving] = useState(false);
   const options = q.options || [];
-  const correct = q.correctAnswer; // e.g. "A", "B", "C", "D"
+  const correct = q.correctAnswer;
+
+  const handleSave = async () => {
+    if (!pendingCorrect || !onUpdateAnswer) return;
+    setSaving(true);
+    await onUpdateAnswer(q.questionId, pendingCorrect);
+    setSaving(false);
+    setPendingCorrect(null);
+  };
+
+  // Reset pending when edit mode is turned off globally
+  React.useEffect(() => {
+    if (!isGlobalEdit) setPendingCorrect(null);
+  }, [isGlobalEdit]);
+
+  const displayCorrect = pendingCorrect || correct;
 
   return (
-    <div className="qb-qcard" key={q.questionId || idx}>
+    <div className={`qb-qcard ${isGlobalEdit ? "qb-qcard-editing" : ""}`} key={q.questionId || idx}>
       <div className="qb-qcard-header">
         <div className="qb-qnum">{globalNo}</div>
         <div className="qb-qtext-box">
           <p className="qb-qtext-eng">{q.questionEnglish}</p>
           {q.questionHindi && <p className="qb-qtext-hin">{q.questionHindi}</p>}
         </div>
-        <div className="qb-qbadge">MCQ</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {isGlobalEdit && pendingCorrect && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                padding: "5px 14px", borderRadius: "6px", border: "none", cursor: saving ? "wait" : "pointer",
+                background: "#22c55e", color: "#fff", fontSize: "12px", fontWeight: "700",
+                opacity: saving ? 0.5 : 1, transition: "all 0.2s",
+              }}
+            >
+              {saving ? "Saving..." : "✓ Save"}
+            </button>
+          )}
+          <div className="qb-qbadge">MCQ</div>
+        </div>
       </div>
       <div className="qb-options-grid">
         {options.map((opt, oIdx) => {
           const letter = optionLabel(oIdx);
           const optText = opt.text || opt;
           const isCorrect = 
-            String(correct).trim().toUpperCase() === letter || 
-            String(correct).trim() === String(optText).trim() ||
-            String(correct).trim().toLowerCase() === `option ${oIdx + 1}`;
+            String(displayCorrect).trim().toUpperCase() === letter || 
+            String(displayCorrect).trim() === String(optText).trim() ||
+            String(displayCorrect).trim().toLowerCase() === `option ${oIdx + 1}`;
+          const isPending = pendingCorrect && String(pendingCorrect).trim() === String(optText).trim();
             
           return (
-            <div key={oIdx} className={`qb-opt ${isCorrect ? "correct" : ""}`}>
+            <div
+              key={oIdx}
+              className={`qb-opt ${isCorrect ? "correct" : ""} ${isPending ? "qb-opt-pending" : ""}`}
+              onClick={isGlobalEdit ? () => setPendingCorrect(String(optText)) : undefined}
+              style={isGlobalEdit ? { cursor: "pointer", transition: "all 0.15s" } : {}}
+            >
               <div className="qb-opt-letter">{letter}</div>
               <span className="qb-opt-text">{optText}</span>
+              {isGlobalEdit && isCorrect && <span style={{ marginLeft: "auto", fontSize: "14px" }}>✓</span>}
             </div>
           );
         })}
@@ -118,6 +157,7 @@ function Questions() {
   const [deletedSections, setDeletedSections] = useState([]);
   const [deletedQuestions, setDeletedQuestions] = useState([]);
   const [loadingDeleted, setLoadingDeleted] = useState(false);
+  const [globalEditMode, setGlobalEditMode] = useState(false);
 
   const handleCardClick = (book) => {
     setOpeningBookId(book.id);
@@ -320,6 +360,26 @@ function Questions() {
   const handleBackToSubjects = () => {
     setViewMode("subjects");
     setSelectedSubject(null);
+  };
+
+  const handleUpdateAnswer = async (questionId, newCorrectAnswer) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/questions/${questionId}`,
+        { correctAnswer: newCorrectAnswer },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Update local state so the UI reflects the change immediately
+      if (selectedSubject) {
+        const updatedQuestions = selectedSubject.questions.map(q =>
+          q.questionId === questionId ? { ...q, correctAnswer: newCorrectAnswer } : q
+        );
+        setSelectedSubject({ ...selectedSubject, questions: updatedQuestions });
+      }
+    } catch (err) {
+      console.error("Update answer error:", err);
+      alert("Failed to update answer. Please try again.");
+    }
   };
 
   // Filtered questions by search
@@ -601,7 +661,15 @@ return (
                           ↓ Export
                         </button>
                         <button className="qb-btn-filter">
-                          <span style={{ fontSize: "16px" }}>⚲</span>
+                          <SlidersHorizontal size={16} />
+                        </button>
+                        <button
+                          className={`qb-btn-edit-answers ${globalEditMode ? "active" : ""}`}
+                          onClick={() => setGlobalEditMode(!globalEditMode)}
+                          title={globalEditMode ? "Exit edit mode" : "Edit answers"}
+                        >
+                          <Pencil size={14} />
+                          {globalEditMode ? "Done" : "Edit Answers"}
                         </button>
                         {showExportMenu && (
                           <div style={{
@@ -637,11 +705,11 @@ return (
                     
                     <div className="qb-right-searchbar">
                       <div style={{ 
-                        flex: 1,
                         display: "flex", alignItems: "center", gap: "10px",
                         backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)",
                         borderRadius: "100px", padding: "8px 16px",
-                        boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)"
+                        boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)",
+                        maxWidth: "280px", width: "100%",
                       }}>
                         <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
                         <input 
@@ -666,6 +734,8 @@ return (
                           q={q}
                           idx={idx}
                           globalNo={(currentPage - 1) * questionsPerPage + idx + 1}
+                          onUpdateAnswer={handleUpdateAnswer}
+                          isGlobalEdit={globalEditMode}
                         />
                       ))
                     ) : (
