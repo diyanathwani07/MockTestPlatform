@@ -364,7 +364,7 @@ function PracticeQuizzes() {
         <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
           
           <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'nowrap', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
-            <div style={{ 
+            <div className="practice-search-pill" style={{ 
               flex: "0 1 320px",
               minWidth: '120px',
               display: "flex", alignItems: "center", gap: "6px", 

@@ -77,11 +77,22 @@ function MyExams() {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = React.useRef(null);
+  const [filterMenuLevel, setFilterMenuLevel] = useState(1);
+  const [activeFilterExam, setActiveFilterExam] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   React.useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
+        // Reset navigation level when closed
+        setFilterMenuLevel(1);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -90,13 +101,13 @@ function MyExams() {
 
   const getFilterLabel = () => {
     if (selectedFilter === "all") return "Filter By: All";
-    if (selectedFilter === "exam:all") return "All Exams";
-    if (selectedFilter === "subject:all") return "All Subjects";
     if (selectedFilter.startsWith("exam:")) {
-      return selectedFilter.replace("exam:", "");
+      const examTitle = selectedFilter.replace("exam:", "");
+      return `Filter By: ${examTitle}`;
     }
-    if (selectedFilter.startsWith("subject:")) {
-      return selectedFilter.replace("subject:", "");
+    if (selectedFilter.startsWith("exam_subject:")) {
+      const [examTitle, subjectName] = selectedFilter.replace("exam_subject:", "").split("|");
+      return `Filter By: ${examTitle} • ${subjectName}`;
     }
     return "Filter By: All";
   };
@@ -142,18 +153,13 @@ function MyExams() {
 
   // Unified Filter check
   if (selectedFilter !== "all") {
-    if (selectedFilter === "exam:all") {
-      // Show all series (no filter) — same as "All"
-      // displayedSeries stays as is
-    } else if (selectedFilter.startsWith("exam:")) {
+    if (selectedFilter.startsWith("exam:")) {
       const examTitle = selectedFilter.replace("exam:", "");
       displayedSeries = displayedSeries.filter(series => series.title === examTitle);
-    } else if (selectedFilter === "subject:all") {
-      // Show only series that have at least one subject tagged
-      displayedSeries = displayedSeries.filter(series => series.subjects && series.subjects.length > 0);
-    } else if (selectedFilter.startsWith("subject:")) {
-      const subjectName = selectedFilter.replace("subject:", "");
-      displayedSeries = displayedSeries.filter(series =>
+    } else if (selectedFilter.startsWith("exam_subject:")) {
+      const [examTitle, subjectName] = selectedFilter.replace("exam_subject:", "").split("|");
+      displayedSeries = displayedSeries.filter(series => 
+        series.title === examTitle &&
         series.subjects?.some(s => s.toLowerCase() === subjectName.toLowerCase())
       );
     }
@@ -287,7 +293,16 @@ function MyExams() {
                         <div style={{ position: "absolute", left: "16px", pointerEvents: "none", color: "var(--text-secondary)", display: "flex", alignItems: "center" }}>
                           <Filter size={18} />
                         </div>
-                        <span style={{ fontSize: "13.5px", fontWeight: "600" }}>{getFilterLabel()}</span>
+                        <span style={{ 
+                          fontSize: "13.5px", 
+                          fontWeight: "600", 
+                          whiteSpace: "nowrap", 
+                          overflow: "hidden", 
+                          textOverflow: "ellipsis",
+                          maxWidth: "180px"
+                        }}>
+                          {getFilterLabel()}
+                        </span>
                         <ChevronDown size={16} style={{ color: "var(--text-secondary)", transition: "transform 0.2s", transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
                       </button>
 
@@ -300,124 +315,177 @@ function MyExams() {
                           border: "1.5px solid var(--border-color)",
                           borderRadius: "12px",
                           boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
-                          width: "240px",
-                          maxHeight: "320px",
-                          overflowY: "auto",
-                          padding: "6px",
-                          zIndex: 1000
+                          display: "flex",
+                          flexDirection: "row",
+                          width: (!isMobile && filterMenuLevel === 2) ? "480px" : "240px",
+                          overflow: "hidden",
+                          zIndex: 1000,
+                          transition: "width 0.2s ease"
                         }}>
-                          {/* Option: Filter By: All */}
-                          <div 
-                            onClick={() => { setSelectedFilter("all"); setIsDropdownOpen(false); }}
-                            style={{
-                              padding: "8px 12px",
-                              borderRadius: "8px",
-                              fontSize: "13.5px",
-                              fontWeight: selectedFilter === "all" ? "600" : "500",
-                              color: selectedFilter === "all" ? "#FFFFFF" : "var(--text-primary)",
-                              backgroundColor: selectedFilter === "all" ? "var(--violet)" : "transparent",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                              marginBottom: "4px",
-                              textAlign: "left"
-                            }}
-                            onMouseEnter={(e) => { if (selectedFilter !== "all") e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
-                            onMouseLeave={(e) => { if (selectedFilter !== "all") e.target.style.backgroundColor = "transparent"; }}
-                          >
-                            Filter By: All
-                          </div>
+                          {/* COLUMN 1: EXAMS LIST (Level 1) */}
+                          {((isMobile && filterMenuLevel === 1) || !isMobile) && (
+                            <div style={{
+                              width: "240px",
+                              padding: "6px",
+                              maxHeight: "320px",
+                              overflowY: "auto",
+                              borderRight: (!isMobile && filterMenuLevel === 2) ? "1.5px solid var(--border-color)" : "none"
+                            }}>
+                              <div style={{ fontSize: "10px", fontWeight: "700", textTransform: "uppercase", color: "var(--violet)", padding: "8px 12px 6px 12px", letterSpacing: "0.08em", textAlign: "left", opacity: 0.8 }}>
+                                FILTER BY
+                              </div>
+                              <div 
+                                onClick={() => { setSelectedFilter("all"); setIsDropdownOpen(false); setFilterMenuLevel(1); }}
+                                style={{
+                                  padding: "10px 12px",
+                                  borderRadius: "8px",
+                                  fontSize: "13.5px",
+                                  fontWeight: selectedFilter === "all" ? "600" : "500",
+                                  color: selectedFilter === "all" ? "#FFFFFF" : "var(--text-primary)",
+                                  backgroundColor: selectedFilter === "all" ? "var(--violet)" : "transparent",
+                                  cursor: "pointer",
+                                  transition: "all 0.15s ease",
+                                  marginBottom: "4px",
+                                  textAlign: "left"
+                                }}
+                                onMouseEnter={(e) => { if (selectedFilter !== "all") e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                                onMouseLeave={(e) => { if (selectedFilter !== "all") e.target.style.backgroundColor = "transparent"; }}
+                              >
+                                All Exams
+                              </div>
 
-                          {/* EXAMS GROUP */}
-                          <div style={{ fontSize: "10px", fontWeight: "700", textTransform: "uppercase", color: "var(--violet)", padding: "8px 12px 6px 12px", letterSpacing: "0.08em", textAlign: "left", opacity: 0.8 }}>
-                            Exams
-                          </div>
-                          <div 
-                            onClick={() => { setSelectedFilter("exam:all"); setIsDropdownOpen(false); }}
-                            style={{
-                              padding: "8px 12px",
-                              borderRadius: "8px",
-                              fontSize: "13.5px",
-                              fontWeight: selectedFilter === "exam:all" ? "600" : "500",
-                              color: selectedFilter === "exam:all" ? "#FFFFFF" : "#6E3FF3",
-                              backgroundColor: selectedFilter === "exam:all" ? "var(--violet)" : "transparent",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                              marginBottom: "2px",
-                              textAlign: "left"
-                            }}
-                            onMouseEnter={(e) => { if (selectedFilter !== "exam:all") e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
-                            onMouseLeave={(e) => { if (selectedFilter !== "exam:all") e.target.style.backgroundColor = "transparent"; }}
-                          >
-                            All Exams
-                          </div>
-                          {categories.map(cat => (
-                            <div 
-                              key={`exam:${cat}`}
-                              onClick={() => { setSelectedFilter(`exam:${cat}`); setIsDropdownOpen(false); }}
-                              style={{
-                                padding: "8px 12px",
-                                borderRadius: "8px",
-                                fontSize: "13.5px",
-                                fontWeight: selectedFilter === `exam:${cat}` ? "600" : "500",
-                                color: selectedFilter === `exam:${cat}` ? "#FFFFFF" : "var(--text-primary)",
-                                backgroundColor: selectedFilter === `exam:${cat}` ? "var(--violet)" : "transparent",
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                                marginBottom: "2px",
-                                textAlign: "left"
-                              }}
-                              onMouseEnter={(e) => { if (selectedFilter !== `exam:${cat}`) e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
-                              onMouseLeave={(e) => { if (selectedFilter !== `exam:${cat}`) e.target.style.backgroundColor = "transparent"; }}
-                            >
-                              {cat}
-                            </div>
-                          ))}
+                              <div style={{ fontSize: "10px", fontWeight: "700", textTransform: "uppercase", color: "var(--violet)", padding: "8px 12px 6px 12px", letterSpacing: "0.08em", textAlign: "left", opacity: 0.8 }}>
+                                Exams
+                              </div>
 
-                          {/* SUBJECTS GROUP */}
-                          <div style={{ fontSize: "10px", fontWeight: "700", textTransform: "uppercase", color: "var(--violet)", padding: "12px 12px 6px 12px", letterSpacing: "0.08em", textAlign: "left", opacity: 0.8 }}>
-                            Subjects
-                          </div>
-                          <div 
-                            onClick={() => { setSelectedFilter("subject:all"); setIsDropdownOpen(false); }}
-                            style={{
-                              padding: "8px 12px",
-                              borderRadius: "8px",
-                              fontSize: "13.5px",
-                              fontWeight: selectedFilter === "subject:all" ? "600" : "500",
-                              color: selectedFilter === "subject:all" ? "#FFFFFF" : "#6E3FF3",
-                              backgroundColor: selectedFilter === "subject:all" ? "var(--violet)" : "transparent",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                              marginBottom: "2px",
-                              textAlign: "left"
-                            }}
-                            onMouseEnter={(e) => { if (selectedFilter !== "subject:all") e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
-                            onMouseLeave={(e) => { if (selectedFilter !== "subject:all") e.target.style.backgroundColor = "transparent"; }}
-                          >
-                            All Subjects
-                          </div>
-                          {subjectsList.map(sub => (
-                            <div 
-                              key={`subject:${sub}`}
-                              onClick={() => { setSelectedFilter(`subject:${sub}`); setIsDropdownOpen(false); }}
-                              style={{
-                                padding: "8px 12px",
-                                borderRadius: "8px",
-                                fontSize: "13.5px",
-                                fontWeight: selectedFilter === `subject:${sub}` ? "600" : "500",
-                                color: selectedFilter === `subject:${sub}` ? "#FFFFFF" : "var(--text-primary)",
-                                backgroundColor: selectedFilter === `subject:${sub}` ? "var(--violet)" : "transparent",
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                                marginBottom: "2px",
-                                textAlign: "left"
-                              }}
-                              onMouseEnter={(e) => { if (selectedFilter !== `subject:${sub}`) e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
-                              onMouseLeave={(e) => { if (selectedFilter !== `subject:${sub}`) e.target.style.backgroundColor = "transparent"; }}
-                            >
-                              {sub}
+                              {validSeriesList.map(series => {
+                                const isSelected = selectedFilter.startsWith("exam:") && selectedFilter.replace("exam:", "") === series.title;
+                                const isMenuSelected = activeFilterExam?.title === series.title;
+                                return (
+                                  <div 
+                                    key={series._id}
+                                    onClick={() => {
+                                      setActiveFilterExam(series);
+                                      setFilterMenuLevel(2);
+                                    }}
+                                    style={{
+                                      padding: "10px 12px",
+                                      borderRadius: "8px",
+                                      fontSize: "13.5px",
+                                      fontWeight: (isSelected || isMenuSelected) ? "600" : "500",
+                                      color: (isSelected || isMenuSelected) ? "#FFFFFF" : "var(--text-primary)",
+                                      backgroundColor: (isSelected || isMenuSelected) ? "var(--violet)" : "transparent",
+                                      cursor: "pointer",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      transition: "all 0.15s ease",
+                                      marginBottom: "2px",
+                                      textAlign: "left"
+                                    }}
+                                    onMouseEnter={(e) => { 
+                                      if (!isSelected && !isMenuSelected) e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; 
+                                      if (!isMobile) setActiveFilterExam(series);
+                                    }}
+                                    onMouseLeave={(e) => { 
+                                      if (!isSelected && !isMenuSelected) e.target.style.backgroundColor = "transparent"; 
+                                    }}
+                                  >
+                                    <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", marginRight: "8px" }}>
+                                      {series.title}
+                                    </span>
+                                    <ChevronRight size={14} style={{ opacity: 0.7, flexShrink: 0 }} />
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ))}
+                          )}
+
+                          {/* COLUMN 2: SUBJECTS LIST (Level 2) */}
+                          {((isMobile && filterMenuLevel === 2) || (!isMobile && filterMenuLevel === 2)) && activeFilterExam && (
+                            <div style={{
+                              width: "240px",
+                              padding: "6px",
+                              maxHeight: "320px",
+                              overflowY: "auto"
+                            }}>
+                              <div 
+                                onClick={() => {
+                                  if (isMobile) {
+                                    setFilterMenuLevel(1);
+                                  }
+                                }}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  fontSize: "11px",
+                                  fontWeight: "700",
+                                  textTransform: "uppercase",
+                                  color: "var(--violet)",
+                                  padding: "8px 12px 6px 12px",
+                                  letterSpacing: "0.08em",
+                                  textAlign: "left",
+                                  cursor: isMobile ? "pointer" : "default"
+                                }}
+                              >
+                                {isMobile ? "← " : ""}{activeFilterExam.title}
+                              </div>
+
+                              <div 
+                                onClick={() => {
+                                  setSelectedFilter(`exam:${activeFilterExam.title}`);
+                                  setIsDropdownOpen(false);
+                                }}
+                                style={{
+                                  padding: "10px 12px",
+                                  borderRadius: "8px",
+                                  fontSize: "13.5px",
+                                  fontWeight: selectedFilter === `exam:${activeFilterExam.title}` ? "600" : "500",
+                                  color: selectedFilter === `exam:${activeFilterExam.title}` ? "#FFFFFF" : "var(--text-primary)",
+                                  backgroundColor: selectedFilter === `exam:${activeFilterExam.title}` ? "var(--violet)" : "transparent",
+                                  cursor: "pointer",
+                                  transition: "all 0.15s ease",
+                                  marginBottom: "4px",
+                                  textAlign: "left"
+                                }}
+                                onMouseEnter={(e) => { if (selectedFilter !== `exam:${activeFilterExam.title}`) e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                                onMouseLeave={(e) => { if (selectedFilter !== `exam:${activeFilterExam.title}`) e.target.style.backgroundColor = "transparent"; }}
+                              >
+                                All Subjects
+                              </div>
+
+                              {activeFilterExam.subjects?.map(subject => {
+                                const filterKey = `exam_subject:${activeFilterExam.title}|${subject}`;
+                                const isSelected = selectedFilter === filterKey;
+                                return (
+                                  <div 
+                                    key={subject}
+                                    onClick={() => {
+                                      setSelectedFilter(filterKey);
+                                      setIsDropdownOpen(false);
+                                    }}
+                                    style={{
+                                      padding: "10px 12px",
+                                      borderRadius: "8px",
+                                      fontSize: "13.5px",
+                                      fontWeight: isSelected ? "600" : "500",
+                                      color: isSelected ? "#FFFFFF" : "var(--text-primary)",
+                                      backgroundColor: isSelected ? "var(--violet)" : "transparent",
+                                      cursor: "pointer",
+                                      transition: "all 0.15s ease",
+                                      marginBottom: "2px",
+                                      textAlign: "left"
+                                    }}
+                                    onMouseEnter={(e) => { if (!isSelected) e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
+                                    onMouseLeave={(e) => { if (!isSelected) e.target.style.backgroundColor = "transparent"; }}
+                                  >
+                                    {subject}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

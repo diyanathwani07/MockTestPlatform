@@ -257,3 +257,24 @@
     padding: 0 !important;
   }
 }
+
+/* ── FILTER CONTROLS INNER RECTANGLE REMOVAL ── */
+.manage-quizzes-filter-row input,
+.manage-quizzes-filter-row select,
+.manage-quizzes-filter-row .custom-date-picker-container input,
+.manage-command-bar .pill-search-container input {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.manage-quizzes-filter-row select {
+  width: 100% !important;
+  cursor: pointer !important;
+}

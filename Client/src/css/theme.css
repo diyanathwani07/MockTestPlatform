@@ -320,3 +320,15 @@ body.dark-mode .theme-pill-switch {
   background-color: #131428;
   border-color: #2D1B69;
 }
+
+/* ── UNIFIED PURPLE BORDERS FOR ALL PLATFORM SEARCH BARS ── */
+.tk-search,
+.report-search-pill,
+.qb-search-pill,
+.practice-search-pill,
+.lb-search,
+.me-search-wrapper,
+.hs-search-bar,
+.manage-quizzes-filter-row > div:first-child {
+  border: 2px solid var(--violet, #6E3FF3) !important;
+}

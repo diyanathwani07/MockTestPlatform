@@ -1076,3 +1076,30 @@ body.dark-mode .practice-inline-exp.danger {
   }
 }
 
+/* ── BRAND LOGO WATERMARK BACKGROUND ── */
+.practice-question-card {
+  position: relative;
+  z-index: 1;
+}
+
+.practice-question-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/logo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 260px auto;
+  opacity: 0.3; /* Highly visible watermark in light mode */
+  z-index: -1;
+  pointer-events: none;
+}
+
+body.dark-mode .practice-question-card::before,
+:is(.dark, .dark-mode, [data-theme='dark'], body.dark) .practice-question-card::before {
+  opacity: 0.18; /* Highly visible watermark in dark mode */
+}
+

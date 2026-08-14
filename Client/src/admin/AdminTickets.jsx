@@ -319,6 +319,7 @@ function AdminTickets() {
             {/* TOOLBAR */}
             <div className="tk-toolbar">
               <div className="tk-search">
+                <Search size={16} style={{ color: "#9ca3af", flexShrink: 0 }} />
                 <input 
                   type="text" 
                   placeholder="Search by ticket ID or subject..." 

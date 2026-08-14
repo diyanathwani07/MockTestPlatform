@@ -245,12 +245,12 @@ body:not(.dark-mode) .quiz-table td { border-bottom: 1px solid #F8F7FC !importan
 body:not(.dark-mode) .quiz-table tbody tr:hover { background-color: #F4F2FA !important; }
 
 /* Light Form Inputs */
-body:not(.dark-mode) .admin-layout input:not([type="checkbox"]), 
+body:not(.dark-mode) .admin-layout input:not([type="checkbox"]):not(.manage-quizzes-filter-row *):not(.pill-search-container *):not(.custom-date-picker-container *):not(.lb-search *):not(.me-search-wrapper *):not(.hs-search-bar *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *), 
 body:not(.dark-mode) .admin-layout textarea, 
-body:not(.dark-mode) .admin-layout select,
-body:not(.dark-mode) .admin-main input:not([type="checkbox"]), 
+body:not(.dark-mode) .admin-layout select:not(.manage-quizzes-filter-row *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *),
+body:not(.dark-mode) .admin-main input:not([type="checkbox"]):not(.manage-quizzes-filter-row *):not(.pill-search-container *):not(.custom-date-picker-container *):not(.lb-search *):not(.me-search-wrapper *):not(.hs-search-bar *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *), 
 body:not(.dark-mode) .admin-main textarea, 
-body:not(.dark-mode) .admin-main select {
+body:not(.dark-mode) .admin-main select:not(.manage-quizzes-filter-row *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *) {
   background-color: #FAFAFC !important; color: #1a1a2e !important; border: 1px solid #DCD6EC !important;
 }
 body:not(.dark-mode) .admin-layout input::placeholder, 
@@ -839,4 +839,26 @@ select option {
 body.dark-mode select option {
   background-color: #1e1b29 !important;
   color: #ffffff !important;
+}
+
+/* ── GLOBAL RESET TO REMOVE ALL INNER RECTANGLES FROM FILTERS & SEARCH BARS ── */
+.tk-search input,
+.report-search-pill input,
+.qb-search-pill input,
+.practice-search-pill input,
+.manage-quizzes-filter-row input,
+.manage-quizzes-filter-row select,
+.custom-date-picker-container input,
+.lb-search input,
+.me-search-wrapper input,
+.hs-search-bar input {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
 }

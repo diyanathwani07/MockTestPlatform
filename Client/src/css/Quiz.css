@@ -954,3 +954,30 @@ body {
     margin-top: 2px;
   }
 }
+
+/* ── BRAND LOGO WATERMARK BACKGROUND ── */
+.quiz-question-card {
+  position: relative;
+  z-index: 1;
+}
+
+.quiz-question-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/logo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 260px auto;
+  opacity: 0.3; /* Highly visible watermark in light mode */
+  z-index: -1;
+  pointer-events: none;
+}
+
+body.dark-mode .quiz-question-card::before,
+:is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-question-card::before {
+  opacity: 0.18; /* Highly visible watermark in dark mode */
+}
