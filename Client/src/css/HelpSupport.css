@@ -1087,7 +1087,18 @@ body.dark-mode .hs-ticket-reveal button:hover {
 
 @media (max-width: 768px) {
   .hs-hero {
-    padding: 30px 20px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  
+  .hs-hero-content h1 {
+    font-size: 20px !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .hs-hero-content p {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
   }
   
   .hs-hero-illustrations {

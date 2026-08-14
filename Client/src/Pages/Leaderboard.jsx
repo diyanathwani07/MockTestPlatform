@@ -237,18 +237,32 @@ function Leaderboard() {
 
               {totalPages > 1 && (
                 <div className="lb-pagination" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px" }}>
-                  <button 
+                   <button 
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #E4E4E7", background: currentPage === 1 ? "#F4F4F5" : "white", cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
+                    style={{ 
+                      padding: "8px 16px", 
+                      borderRadius: "8px", 
+                      border: "1px solid var(--border-color)", 
+                      background: currentPage === 1 ? "var(--bg-input)" : "var(--bg-card)", 
+                      color: currentPage === 1 ? "var(--text-muted)" : "var(--text-primary)", 
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer" 
+                    }}
                   >
                     Previous
                   </button>
-                  <span style={{ fontSize: "14px", color: "#71717A", fontWeight: "500" }}>Page {currentPage} of {totalPages}</span>
+                  <span style={{ fontSize: "14px", color: "var(--text-secondary)", fontWeight: "500" }}>Page {currentPage} of {totalPages}</span>
                   <button 
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #E4E4E7", background: currentPage === totalPages ? "#F4F4F5" : "white", cursor: currentPage === totalPages ? "not-allowed" : "pointer" }}
+                    style={{ 
+                      padding: "8px 16px", 
+                      borderRadius: "8px", 
+                      border: "1px solid var(--border-color)", 
+                      background: currentPage === totalPages ? "var(--bg-input)" : "var(--bg-card)", 
+                      color: currentPage === totalPages ? "var(--text-muted)" : "var(--text-primary)", 
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer" 
+                    }}
                   >
                     Next
                   </button>

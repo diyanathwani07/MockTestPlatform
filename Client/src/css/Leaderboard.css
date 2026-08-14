@@ -99,13 +99,15 @@
   gap: 8px;
   background: var(--bg-input, #ffffff);
   border: 1px solid var(--border-color, #E4E4E7);
-  border-radius: 8px;
+  border-radius: 12px; /* 12px-14px dashboard style radius */
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary, #3F3F46);
   cursor: pointer;
   outline: none;
+  height: 42px;
+  box-sizing: border-box;
 }
 
 .lb-filter-select:hover, .lb-filter-select:focus {
@@ -115,36 +117,81 @@
 .lb-search {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--bg-input, #ffffff);
+  gap: 10px;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-color, #E4E4E7);
-  border-radius: 24px;
-  padding: 10px 18px;
+  border-radius: 14px;
+  box-shadow: none;
   margin-left: auto;
   min-width: 240px;
+  box-sizing: border-box;
   transition: all 0.2s;
 }
 
-.lb-search:focus-within {
-  border-color: #C4B5FD;
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+/* Specific theme color overrides for body:not(.dark-mode) and body.dark-mode */
+body.dark-mode .lb-search {
+  background: #211f35;
+  border-color: #34314f;
 }
 
-.lb-search input {
+.lb-search:focus-within {
+  border-color: #7c4dff;
+  box-shadow: 0 0 0 2px rgba(124, 77, 255, 0.12);
+}
+
+body.dark-mode .lb-search:focus-within {
+  border-color: #7c4dff;
+  box-shadow: 0 0 0 2px rgba(124, 77, 255, 0.12);
+}
+
+.lb-search input,
+.lb-search input[type="text"],
+.lb-search input[type="search"] {
+  appearance: none;
+  -webkit-appearance: none;
+
+  background: transparent;
   border: none;
   outline: none;
-  font-size: 13px;
+  box-shadow: none;
+  border-radius: 0;
+
   width: 100%;
-  color: var(--text-primary, #3F3F46);
-  background: transparent;
+  height: 100%;
+
+  padding: 0;
+  margin: 0;
+
+  color: var(--text-primary, #1e1b4b);
+  font-size: 14px;
+}
+
+body.dark-mode .lb-search input,
+body.dark-mode .lb-search input[type="text"],
+body.dark-mode .lb-search input[type="search"] {
+  color: #ffffff;
 }
 
 .lb-search input::placeholder {
-  color: var(--text-muted, #A1A1AA);
+  color: var(--text-muted, #71717A);
+  opacity: 1;
+}
+
+body.dark-mode .lb-search input::placeholder {
+  color: #817b9f;
 }
 
 .lb-search .lb-icon {
-  color: #A1A1AA;
+  color: var(--text-muted, #71717A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.dark-mode .lb-search .lb-icon {
+  color: #817b9f;
 }
 
 /* Body Grid */
@@ -466,28 +513,63 @@
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {
   .lb-body-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .lb-left-col {
+    order: 2; /* Move cards below table/podium */
+  }
+  
+  .lb-right-col {
+    order: 1; /* Keep podium and table on top */
   }
 }
 
 @media (max-width: 768px) {
   .lb-container {
-    padding: 24px 20px;
+    padding: 12px 16px; /* Reduced container padding to save space */
   }
   
   .lb-header {
     flex-direction: column;
-    gap: 16px;
+    align-items: stretch !important;
+    gap: 0px; /* Removed margin gap on mobile header */
+    margin-bottom: 12px !important; /* Reduced bottom margin spacing */
   }
   
-  .lb-filters {
-    flex-direction: column;
-    align-items: stretch;
+  /* Hide the updates info pill on mobile */
+  .lb-info-pill {
+    display: none !important;
+  }
+  
+  /* Hide title area wrapper block completely on mobile to save vertical space */
+  .lb-title-area {
+    display: none !important;
+  }
+
+  /* Make filters container flex-row on mobile and place them side-by-side */
+  .lb-header > div:last-child {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .lb-filter-select {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    border-radius: 12px !important;
   }
   
   .lb-search {
-    margin-left: 0;
-    width: 100%;
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    border-radius: 12px !important; /* Matches dropdown border-radius */
+    padding: 10px 14px !important; /* Matches dropdown padding */
   }
   
   .lb-table-wrapper {

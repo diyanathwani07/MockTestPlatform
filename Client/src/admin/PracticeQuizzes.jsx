@@ -489,7 +489,9 @@ function PracticeQuizzes() {
                             backgroundColor: "var(--bg-input)", 
                             border: "1px solid var(--border-color)",
                             borderRadius: "20px",
-                            fontSize: "13px"
+                            fontSize: "13px",
+                            whiteSpace: "nowrap",
+                            display: "inline-block"
                           }}>
                             {quiz.subject}
                           </span>

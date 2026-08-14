@@ -123,7 +123,7 @@ function ExamsPage() {
 
                       {/* Action */}
                       <button 
-                        onClick={() => navigate(`/start-test`, { state: { quizId: exam._id } })}
+                        onClick={() => navigate(`/start-test`, { state: { quizId: exam._id, fromExamsPage: true } })}
                         className="me-btn-primary"
                         style={{ 
                           width: '100%', 

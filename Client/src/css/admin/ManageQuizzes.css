@@ -56,7 +56,9 @@
 
 /* Search Field */
 .search-input, 
-input[type="text"] {
+.manage-quizzes-view-container input[type="text"],
+.manage-users-view-container input[type="text"],
+.manage-series-view-container input[type="text"] {
   background: #ffffff;
   color: #2b2840;
   border: 1px solid #b3ace2;
@@ -211,7 +213,9 @@ input[type="text"] {
 
 /* FIX: Search Input adjustment inside Dark Mode */
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .search-input,
-:is(.dark, .dark-mode, [data-theme='dark'], body.dark) input[type="text"] {
+:is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-quizzes-view-container input[type="text"],
+:is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-users-view-container input[type="text"],
+:is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-series-view-container input[type="text"] {
   background: #1c1837 !important;
   color: #ffffff !important;
   border-color: #312a5c !important;
@@ -241,7 +245,9 @@ input[type="text"] {
   }
   
   .search-input, 
-  input[type="text"] {
+  .manage-quizzes-view-container input[type="text"],
+  .manage-users-view-container input[type="text"],
+  .manage-series-view-container input[type="text"] {
     max-width: 100%;
   }
 

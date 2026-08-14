@@ -245,10 +245,20 @@ body:not(.dark-mode) .quiz-table td { border-bottom: 1px solid #F8F7FC !importan
 body:not(.dark-mode) .quiz-table tbody tr:hover { background-color: #F4F2FA !important; }
 
 /* Light Form Inputs */
-body:not(.dark-mode) input:not([type="checkbox"]), body:not(.dark-mode) textarea, body:not(.dark-mode) select {
+body:not(.dark-mode) .admin-layout input:not([type="checkbox"]), 
+body:not(.dark-mode) .admin-layout textarea, 
+body:not(.dark-mode) .admin-layout select,
+body:not(.dark-mode) .admin-main input:not([type="checkbox"]), 
+body:not(.dark-mode) .admin-main textarea, 
+body:not(.dark-mode) .admin-main select {
   background-color: #FAFAFC !important; color: #1a1a2e !important; border: 1px solid #DCD6EC !important;
 }
-body:not(.dark-mode) input::placeholder, body:not(.dark-mode) textarea::placeholder { color: #a8a5bd !important; }
+body:not(.dark-mode) .admin-layout input::placeholder, 
+body:not(.dark-mode) .admin-layout textarea::placeholder,
+body:not(.dark-mode) .admin-main input::placeholder, 
+body:not(.dark-mode) .admin-main textarea::placeholder { 
+  color: #a8a5bd !important; 
+}
 
 
 /* ==========================================================================

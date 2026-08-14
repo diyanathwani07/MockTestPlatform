@@ -136,7 +136,7 @@ function ManageQuizzes() {
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar title={<><span className="hidden sm:inline">Manage </span>Quizzes</>} />
 
-        <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
+        <div className="admin-content manage-quizzes-view-container" style={{ flex: 1, textAlign: "left" }}>
 
           {/* ─── APEX COMMAND BAR ─── */}
           <div className="armored-admin-card manage-command-bar-card" style={{ 

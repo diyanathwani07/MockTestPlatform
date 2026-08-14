@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { HelpCircle, Clock, Search, Pencil, SlidersHorizontal } from "lucide-react";
+import { HelpCircle, Clock, Search, Pencil, SlidersHorizontal, ArrowLeft, ChevronRight, BookOpen } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
@@ -147,6 +147,7 @@ function Questions() {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [viewMode, setViewMode] = useState("quizzes"); // "quizzes" | "subjects" | "questions"
   const [searchQuery, setSearchQuery] = useState("");
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [allCollapsed, setAllCollapsed] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const questionsPerPage = 15; // More per page since we now show options
@@ -207,37 +208,20 @@ function Questions() {
             };
           }
 
-          let quizQuestions = [];
+          let quizQuestionsCount = 0;
           if (quiz.sections && quiz.sections.length > 0) {
             for (const sectionRef of quiz.sections) {
-              const secId = typeof sectionRef === "object" ? sectionRef.sectionId?._id || sectionRef.sectionId : sectionRef;
-              if (secId) {
-                try {
-                  const secRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, { headers });
-                  const secData = secRes.data;
-                  if (secData.questions && secData.questions.length > 0) {
-                    quizQuestions = [...quizQuestions, ...secData.questions.map((q, idx) => ({
-                      questionId: q._id, qNo: quizQuestions.length + idx + 1,
-                      questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
-                      options: q.options || [], correctAnswer: q.correctAnswer,
-                    }))];
-                  }
-                } catch (e) {
-                  console.error("Error loading modular section in question bank:", secId, e);
-                }
+              const sectionDoc = sectionRef.sectionId;
+              if (sectionDoc && sectionDoc.questions) {
+                quizQuestionsCount += sectionDoc.questions.length;
               }
             }
-          } else {
-            quizQuestions = (quiz.questions || []).map((q, idx) => ({
-              questionId: q._id, qNo: idx + 1,
-              questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
-              options: q.options || [], correctAnswer: q.correctAnswer,
-            }));
+          } else if (quiz.questions) {
+            quizQuestionsCount += quiz.questions.length;
           }
 
-          grouped[bookKey].subjects[subjectKey].questions.push(...quizQuestions);
-          grouped[bookKey].subjects[subjectKey].questionsCount += quizQuestions.length;
-          grouped[bookKey].totalQuestions += quizQuestions.length;
+          grouped[bookKey].subjects[subjectKey].questionsCount += quizQuestionsCount;
+          grouped[bookKey].totalQuestions += quizQuestionsCount;
           if (new Date(quiz.updatedAt || quiz.createdAt) > new Date(grouped[bookKey].publishedDate)) {
             grouped[bookKey].publishedDate = quiz.updatedAt || quiz.createdAt;
             grouped[bookKey].status = quiz.status || "Draft";
@@ -344,11 +328,73 @@ function Questions() {
     setViewMode("subjects");
   };
 
-  const handleSelectSubject = (subject) => {
-    setSelectedSubject(subject);
-    setCurrentPage(1);
-    setSearchQuery("");
-    setViewMode("questions");
+  const handleSelectSubject = async (subject) => {
+    if (subject.questions && subject.questions.length > 0) {
+      setSelectedSubject(subject);
+      setCurrentPage(1);
+      setSearchQuery("");
+      setViewMode("questions");
+      return;
+    }
+
+    setLoadingQuestions(true);
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const endpoint = quizType === "exams" 
+        ? `${import.meta.env.VITE_API_URL}/api/quizzes/${subject.quizId}` 
+        : `${import.meta.env.VITE_API_URL}/api/practice/${subject.quizId}`;
+        
+      const res = await axios.get(endpoint, { headers });
+      const quiz = res.data;
+      
+      let quizQuestions = [];
+      if (quiz.sections && quiz.sections.length > 0) {
+        for (const sectionRef of quiz.sections) {
+          const sectionDoc = sectionRef.sectionId || sectionRef;
+          if (sectionDoc && sectionDoc.questions && sectionDoc.questions.length > 0) {
+            quizQuestions = [...quizQuestions, ...sectionDoc.questions.map((q, idx) => ({
+              questionId: q._id, qNo: quizQuestions.length + idx + 1,
+              questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
+              options: q.options || [], correctAnswer: q.correctAnswer,
+            }))];
+          }
+        }
+      } else {
+        quizQuestions = (quiz.questions || []).map((q, idx) => ({
+          questionId: q._id, qNo: idx + 1,
+          questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
+          options: q.options || [], correctAnswer: q.correctAnswer,
+        }));
+      }
+
+      const updatedSubject = { ...subject, questions: quizQuestions };
+      
+      setBooks(prevBooks => prevBooks.map(b => {
+        if (b.id === selectedBook.id) {
+          return {
+            ...b,
+            subjects: b.subjects.map(s => s.subjectName === subject.subjectName ? updatedSubject : s)
+          };
+        }
+        return b;
+      }));
+
+      setSelectedBook(prevBook => ({
+        ...prevBook,
+        subjects: prevBook.subjects.map(s => s.subjectName === subject.subjectName ? updatedSubject : s)
+      }));
+
+      setSelectedSubject(updatedSubject);
+      setCurrentPage(1);
+      setSearchQuery("");
+      setViewMode("questions");
+    } catch (err) {
+      console.error("Fetch questions for quiz error:", err);
+      alert("Failed to load questions. Please try again.");
+    } finally {
+      setLoadingQuestions(false);
+    }
   };
 
   const handleBackToQuizzes = () => {
@@ -613,34 +659,44 @@ return (
               {/* ── VIEW 2: SUBJECTS ── */}
               {viewMode === "subjects" && selectedBook && (
                 <div className="qb-subjects-view">
-                  <div className="qb-view-header-with-back">
-                    <button className="qb-back-btn" onClick={handleBackToQuizzes}>←</button>
-                    <div>
-                      <h2>{selectedBook.title} - Subjects</h2>
-                      <p>Total Subjects: {selectedBook.subjects.length} • Total Questions: {selectedBook.totalQuestions}</p>
+                  {loadingQuestions ? (
+                    <div style={{ textAlign: "center", padding: "80px", color: "var(--text-secondary)", fontSize: "16px" }}>
+                      ⏳ Loading subject questions...
                     </div>
-                  </div>
-                  <div className="qb-subjects-grid">
-                    {selectedBook.subjects.map((sub, i) => {
-                      const meta = getSubjectMeta(sub.subjectName);
-                      return (
-                        <div
-                          key={i}
-                          className="qb-subject-card"
-                          onClick={() => handleSelectSubject(sub)}
-                        >
-                          <div className="qb-sub-icon" style={{ backgroundColor: meta.color, color: meta.textColor }}>
-                            {meta.emoji}
-                          </div>
-                          <div className="qb-sub-info">
-                            <h5>{sub.subjectName}</h5>
-                            <p>{sub.questionsCount} Questions</p>
-                          </div>
-                          <span className="qb-sub-arrow" style={{ color: "var(--text-muted)", fontSize: "20px" }}>›</span>
+                  ) : (
+                    <>
+                      <div className="qb-view-header-with-back">
+                        <button className="qb-back-btn" onClick={handleBackToQuizzes} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <ArrowLeft size={18} />
+                        </button>
+                        <div>
+                          <h2>{selectedBook.title} - Subjects</h2>
+                          <p>Total Subjects: {selectedBook.subjects.length} • Total Questions: {selectedBook.totalQuestions}</p>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                      <div className="qb-subjects-grid">
+                        {selectedBook.subjects.map((sub, i) => {
+                          const meta = getSubjectMeta(sub.subjectName);
+                          return (
+                            <div
+                              key={i}
+                              className="qb-subject-card"
+                              onClick={() => handleSelectSubject(sub)}
+                            >
+                              <div className="qb-sub-icon" style={{ backgroundColor: meta.color, color: meta.textColor, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', width: '48px', height: '48px' }}>
+                                <BookOpen size={20} />
+                              </div>
+                              <div className="qb-sub-info">
+                                <h5>{sub.subjectName}</h5>
+                                <p>{sub.questionsCount} Questions</p>
+                              </div>
+                              <ChevronRight size={18} style={{ color: "var(--text-muted)" }} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -650,7 +706,9 @@ return (
                   <div className="qb-right-header">
                     <div className="qb-right-top">
                       <div className="qb-right-title">
-                        <button className="qb-back-btn" onClick={handleBackToSubjects}>←</button>
+                        <button className="qb-back-btn" onClick={handleBackToSubjects} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <ArrowLeft size={18} />
+                        </button>
                         <div>
                           <h2>{selectedSubject.subjectName}</h2>
                           <p>{selectedSubject.questionsCount} Questions in {selectedBook.title}</p>

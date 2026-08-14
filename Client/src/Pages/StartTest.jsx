@@ -128,6 +128,19 @@ function StartTest() {
   const userName  = storedUser.fullName || storedUser.name || "Student";
   const userEmail = storedUser.email || "";
 
+  const fromSeriesId = location.state?.fromSeriesId || null;
+  const fromExamsPage = location.state?.fromExamsPage || false;
+
+  const handleBack = () => {
+    if (fromSeriesId) {
+      navigate(`/student/exams/${fromSeriesId}`);
+    } else if (fromExamsPage) {
+      navigate("/dashboard/exams-list");
+    } else {
+      navigate("/dashboard/exams");
+    }
+  };
+
   return (
     <div className="login-page" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 20px", overflow: "auto" }}>
 
@@ -150,8 +163,8 @@ function StartTest() {
       {/* ── Header Actions (Back & Theme Toggle) ── */}
       <div style={{ position: "fixed", top: "20px", left: "20px", zIndex: 1000 }}>
         <button 
-          onClick={() => navigate("/dashboard")} 
-          title="Back to Dashboard"
+          onClick={handleBack} 
+          title="Back to Exams"
           style={{
             background: "transparent",
             border: "none",

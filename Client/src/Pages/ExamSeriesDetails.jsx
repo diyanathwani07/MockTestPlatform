@@ -75,6 +75,7 @@ function ExamSeriesDetails() {
         quizId: quiz._id,
         quizTitle: quiz.title,
         duration: quiz.duration,
+        fromSeriesId: examSeriesId
       },
     });
   };

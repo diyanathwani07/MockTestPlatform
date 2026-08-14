@@ -111,7 +111,7 @@ function ExamSeriesManager() {
       <div className="admin-main">
         <AdminNavbar title="Exam Series Management" />
         
-        <div className="admin-content">
+        <div className="admin-content manage-series-view-container">
           <div className="manage-quizzes-container">
             
             {/* Top Toolbar Actions */}
