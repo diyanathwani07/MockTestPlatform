@@ -396,6 +396,41 @@ function CreateQuiz() {
     });
   };
 
+  const addOptionToQuestion = (qIndex) => {
+    setQuestions((prev) => {
+      const updated = [...prev];
+      if (updated[qIndex].options.length < 6) {
+        const newOptions = [...updated[qIndex].options, ""];
+        updated[qIndex] = { ...updated[qIndex], options: newOptions };
+      }
+      return updated;
+    });
+  };
+
+  const removeOptionFromQuestion = (qIndex) => {
+    setQuestions((prev) => {
+      const updated = [...prev];
+      if (updated[qIndex].options.length > 2) {
+        const newOptions = [...updated[qIndex].options];
+        const lastIndex = newOptions.length - 1;
+        let newCorrectOptionIndex = updated[qIndex].correctOptionIndex;
+        let newCorrectAnswer = updated[qIndex].correctAnswer;
+        if (newCorrectOptionIndex === lastIndex) {
+          newCorrectOptionIndex = -1;
+          newCorrectAnswer = "";
+        }
+        newOptions.pop();
+        updated[qIndex] = { 
+          ...updated[qIndex], 
+          options: newOptions, 
+          correctOptionIndex: newCorrectOptionIndex, 
+          correctAnswer: newCorrectAnswer 
+        };
+      }
+      return updated;
+    });
+  };
+
   const toggleQuestionExpand = (index) => {
     setExpandedQuestions((prev) => ({ ...prev, [index]: !prev[index] }));
   };
@@ -447,13 +482,14 @@ function CreateQuiz() {
         setMessage({ text: `Question ${i + 1}: English question text is required.`, type: "status-error" });
         return false;
       }
-      if (!q.options || q.options.length !== 4) {
-        setMessage({ text: `Question ${i + 1}: Must have exactly 4 options.`, type: "status-error" });
+      if (!q.options || q.options.length < 2 || q.options.length > 6) {
+        setMessage({ text: `Question ${i + 1}: Must have between 2 and 6 options.`, type: "status-error" });
         return false;
       }
       for (let j = 0; j < q.options.length; j++) {
         if (!q.options[j] || !String(q.options[j]).trim()) {
-          setMessage({ text: `Question ${i + 1}, Option ${["A","B","C","D"][j]}: Option text cannot be blank.`, type: "status-error" });
+          const letter = String.fromCharCode(65 + j);
+          setMessage({ text: `Question ${i + 1}, Option ${letter}: Option text cannot be blank.`, type: "status-error" });
           return false;
         }
       }
@@ -1006,14 +1042,15 @@ function CreateQuiz() {
                                         </label>
 
                                         <div className="options-grid-enhanced">
-                                          {["A", "B", "C", "D"].map((label, optIndex) => {
+                                          {q.options.map((optionValue, optIndex) => {
+                                            const label = String.fromCharCode(65 + optIndex);
                                             const isCorrect = q.correctOptionIndex === optIndex;
                                             return (
-                                              <div className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`} key={label}>
+                                              <div className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`} key={optIndex}>
                                                 <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>{label}</div>
                                                 <input
                                                   type="text"
-                                                  value={q.options[optIndex]}
+                                                  value={optionValue}
                                                   onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
                                                   placeholder="English Option / हिंदी विकल्प"
                                                   className="option-text-field"
@@ -1035,6 +1072,46 @@ function CreateQuiz() {
                                               </div>
                                             );
                                           })}
+                                        </div>
+
+                                        {/* Dynamic Add/Remove Option Buttons */}
+                                        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                                          {q.options.length < 6 && (
+                                            <button 
+                                              type="button" 
+                                              onClick={() => addOptionToQuestion(qIndex)}
+                                              style={{
+                                                padding: "6px 12px",
+                                                borderRadius: "6px",
+                                                fontSize: "12px",
+                                                fontWeight: "bold",
+                                                backgroundColor: "rgba(110, 63, 243, 0.1)",
+                                                border: "1px solid rgba(110, 63, 243, 0.2)",
+                                                color: "var(--violet, #6E3FF3)",
+                                                cursor: "pointer"
+                                              }}
+                                            >
+                                              ＋ Add Option
+                                            </button>
+                                          )}
+                                          {q.options.length > 2 && (
+                                            <button 
+                                              type="button" 
+                                              onClick={() => removeOptionFromQuestion(qIndex)}
+                                              style={{
+                                                padding: "6px 12px",
+                                                borderRadius: "6px",
+                                                fontSize: "12px",
+                                                fontWeight: "bold",
+                                                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                                                border: "1px solid rgba(239, 68, 68, 0.2)",
+                                                color: "#EF4444",
+                                                cursor: "pointer"
+                                              }}
+                                            >
+                                              － Remove Option
+                                            </button>
+                                          )}
                                         </div>
 
                                         <div className="form-field full-width" style={{ marginTop: "14px" }}>

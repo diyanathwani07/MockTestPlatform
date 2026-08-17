@@ -12,8 +12,8 @@ const practiceQuestionSchema = new mongoose.Schema({
   options: {
     type: [String],
     validate: {
-      validator: (arr) => arr.length === 4,
-      message: "Each question must have exactly 4 options.",
+      validator: (arr) => arr.length >= 2 && arr.length <= 6,
+      message: "Each question must have between 2 and 6 options.",
     },
     required: true,
   },
