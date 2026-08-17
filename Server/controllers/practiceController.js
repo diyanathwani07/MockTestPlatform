@@ -108,11 +108,16 @@ const getPracticeQuizById = async (req, res) => {
       quizObj.sections = populatedSections;
     }
 
-    const isStudent = req.user && req.user.role === "user";
+    const formatQuestionForClient = (q, isStudentUser) => {
+      if (isStudentUser) {
+        const mappedQ = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
+        delete mappedQ.correctAnswer;
+        delete mappedQ.correctAnswerObfuscated;
+        delete mappedQ.explanation;
+        delete mappedQ.explanations;
+        return mappedQ;
+      }
 
-    // Convert Mongoose Map to plain object for explanations.incorrect
-    // so frontend can access it as explanations.incorrect[optionText]
-    quizObj.questions = (quizObj.questions || []).map(q => {
       const incorrectRaw = q.explanations?.incorrect;
       let incorrectPlain = {};
       if (incorrectRaw instanceof Map) {
@@ -120,42 +125,27 @@ const getPracticeQuizById = async (req, res) => {
       } else if (incorrectRaw && typeof incorrectRaw === "object") {
         incorrectPlain = Object.fromEntries(Object.entries(incorrectRaw));
       }
-      const mappedQ = {
-        ...q,
-        explanations: {
-          ...q.explanations,
-          incorrect: incorrectPlain
-        }
+      const mappedQ = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
+      mappedQ.explanations = {
+        ...mappedQ.explanations,
+        incorrect: incorrectPlain
       };
-
-      if (isStudent && mappedQ.correctAnswer) {
-        mappedQ.correctAnswerObfuscated = Buffer.from(mappedQ.correctAnswer).toString("base64");
-        delete mappedQ.correctAnswer;
-      }
       return mappedQ;
-    });
+    };
+
+    const isStudent = req.user && req.user.role === "user";
+
+    quizObj.questions = (quizObj.questions || []).map(q => formatQuestionForClient(q, isStudent));
 
     if (quizObj.sections && quizObj.sections.length > 0) {
       quizObj.sections = quizObj.sections.map(sec => {
         if (sec.questions && sec.questions.length > 0) {
-          sec.questions = sec.questions.map(q => {
-            if (isStudent && q.correctAnswer) {
-              q.correctAnswerObfuscated = Buffer.from(q.correctAnswer).toString("base64");
-              delete q.correctAnswer;
-            }
-            return q;
-          });
+          sec.questions = sec.questions.map(q => formatQuestionForClient(q, isStudent));
         }
         if (sec.subsections) {
           ["easy", "medium", "hard"].forEach(level => {
             if (sec.subsections[level] && sec.subsections[level].length > 0) {
-              sec.subsections[level] = sec.subsections[level].map(q => {
-                if (isStudent && q.correctAnswer) {
-                  q.correctAnswerObfuscated = Buffer.from(q.correctAnswer).toString("base64");
-                  delete q.correctAnswer;
-                }
-                return q;
-              });
+              sec.subsections[level] = sec.subsections[level].map(q => formatQuestionForClient(q, isStudent));
             }
           });
         }
@@ -641,6 +631,82 @@ const convertToExam = async (req, res) => {
   }
 };
 
+// @desc    Verify practice question correct answer and explanation
+// @route   POST /api/practice/:id/questions/:questionId/verify
+// @access  Private
+const verifyPracticeQuestion = async (req, res) => {
+  try {
+    const { id, questionId } = req.params;
+    const quiz = await PracticeQuiz.findById(id);
+    if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
+
+    let question = null;
+
+    // First search in quiz.questions
+    if (quiz.questions && quiz.questions.length > 0) {
+      question = quiz.questions.id(questionId);
+    }
+
+    // If not found and modular sections, search in sections
+    if (!question && quiz.hasModularSections && quiz.hasModularSections()) {
+      const Section = require("../models/Section");
+      for (const ref of quiz.sections) {
+        const section = await Section.findById(ref.sectionId)
+          .populate("questions")
+          .populate("subsections.easy")
+          .populate("subsections.medium")
+          .populate("subsections.hard");
+        if (section) {
+          let q = section.questions.find(item => item._id.toString() === questionId);
+          if (q) {
+            question = q;
+            break;
+          }
+          if (section.type === 'coding' && section.subsections) {
+            const allCoding = [
+              ...(section.subsections.easy || []),
+              ...(section.subsections.medium || []),
+              ...(section.subsections.hard || [])
+            ];
+            q = allCoding.find(item => item._id.toString() === questionId);
+            if (q) {
+              question = q;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    // Return the correct answer and explanations
+    const qObj = question.toObject ? question.toObject() : JSON.parse(JSON.stringify(question));
+
+    const incorrectRaw = qObj.explanations?.incorrect;
+    let incorrectPlain = {};
+    if (incorrectRaw instanceof Map) {
+      incorrectPlain = Object.fromEntries(incorrectRaw);
+    } else if (incorrectRaw && typeof incorrectRaw === "object") {
+      incorrectPlain = Object.fromEntries(Object.entries(incorrectRaw));
+    }
+
+    res.json({
+      success: true,
+      correctAnswer: qObj.correctAnswer,
+      explanation: qObj.explanation || "",
+      explanations: {
+        ...qObj.explanations,
+        incorrect: incorrectPlain
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 module.exports = {
   getPracticeQuizzes,
   getPracticeQuizById,
@@ -651,5 +717,6 @@ module.exports = {
   permanentlyDeletePracticeQuiz,
   generateAIExplanations,
   getOrCreatePracticeSession,
-  convertToExam
+  convertToExam,
+  verifyPracticeQuestion
 };

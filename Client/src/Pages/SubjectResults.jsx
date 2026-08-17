@@ -154,7 +154,7 @@ function SubjectResults() {
                     <button 
                       className="sr-view-details-btn" 
                       style={{ padding: "8px 12px", fontSize: "12px", cursor: "pointer" }}
-                      onClick={() => navigate(`/student/result/${result.shareId}`, { state: result })}
+                      onClick={() => navigate(`/student/result/${result.shareId}`, { state: { ...result, fromAttempts: true } })}
                     >
                       View Details <ChevronRight size={14} />
                     </button>

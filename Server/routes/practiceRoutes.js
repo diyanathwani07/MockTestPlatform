@@ -10,7 +10,8 @@ const {
   permanentlyDeletePracticeQuiz,
   generateAIExplanations,
   getOrCreatePracticeSession,
-  convertToExam
+  convertToExam,
+  verifyPracticeQuestion
 } = require("../controllers/practiceController");
 const {
   savePracticeResult,
@@ -45,6 +46,7 @@ router.post("/ai-explain", protect, getAiTutorExplanation);
 
 router.get("/:id", protect, getPracticeQuizById);
 router.get("/:id/session", protect, getOrCreatePracticeSession);  // ✅ was missing entirely
+router.post("/:id/questions/:questionId/verify", protect, verifyPracticeQuestion);
 
 router.put("/:id", protect, adminOnly, updatePracticeQuiz);
 router.delete("/:id", protect, adminOnly, deletePracticeQuiz);

@@ -43,6 +43,8 @@ router.post("/", protect, superAdminOnly, async (req, res) => {
     const bcrypt = require("bcryptjs");
     const hashedPassword = await bcrypt.hash(password || "TempPass123!", 10);
 
+    const isStaff = ["admin", "superadmin", "manager", "employee"].includes(role);
+
     const user = await User.create({
       fullName,
       email,
@@ -50,8 +52,8 @@ router.post("/", protect, superAdminOnly, async (req, res) => {
       role: role || "user",
       password: hashedPassword,
       status: "Active",
-      department: (role === "admin" || role === "superadmin") ? (department || null) : null,
-      permissions: (role === "admin" || role === "superadmin") ? (permissions || []) : [],
+      department: isStaff ? (department || null) : null,
+      permissions: isStaff ? (permissions || []) : [],
       receiveMonthlyAuditReport: (role === "superadmin") ? (!!receiveMonthlyAuditReport) : false
     });
 
@@ -90,12 +92,14 @@ router.put("/:id", protect, superAdminOnly, async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
     
+    const isStaff = ["admin", "superadmin", "manager", "employee"].includes(role !== undefined ? role : user.role);
+
     user.fullName = fullName !== undefined ? fullName : user.fullName;
     user.email = email !== undefined ? email : user.email;
     user.role = role !== undefined ? role : user.role;
     user.status = status !== undefined ? status : user.status;
-    user.department = department !== undefined ? (department === "" ? null : department) : user.department;
-    user.permissions = permissions !== undefined ? permissions : user.permissions;
+    user.department = department !== undefined ? (isStaff ? (department === "" ? null : department) : null) : (isStaff ? user.department : null);
+    user.permissions = permissions !== undefined ? (isStaff ? permissions : []) : (isStaff ? user.permissions : []);
     user.receiveMonthlyAuditReport = receiveMonthlyAuditReport !== undefined ? receiveMonthlyAuditReport : user.receiveMonthlyAuditReport;
     
     await user.save();

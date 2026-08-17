@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import MuiDatePicker from "../components/MuiDatePicker";
@@ -11,10 +12,70 @@ function AuditLog() {
   const [filterDate, setFilterDate] = useState("");
   const [viewMode, setViewMode] = useState("Admin Actions"); // 'All Activity' or 'Admin Actions'
   const [expandedLogId, setExpandedLogId] = useState(null);
+  const [expandedIp, setExpandedIp] = useState({});
   
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
+
+  // Helper to render action badges consistently
+  const renderActionBadge = (actionName) => {
+    const a = actionName?.toUpperCase() || "";
+    let bg = "rgba(139, 92, 246, 0.12)";
+    let color = "#8B5CF6";
+    if (a.includes("CREATE") || a.includes("PUBLISH") || a.includes("RESTORE") || a.includes("ADD")) {
+      bg = "rgba(16, 185, 129, 0.12)";
+      color = "#10b981";
+    } else if (a.includes("DELETE") || a.includes("SUSPEND") || a.includes("REMOVE")) {
+      bg = "rgba(239, 68, 68, 0.12)";
+      color = "#ef4444";
+    } else if (a.includes("UPDATE") || a.includes("ROLE") || a.includes("STATUS")) {
+      bg = "rgba(245, 158, 11, 0.12)";
+      color = "#f59e0b";
+    } else if (a.includes("RESET") || a.includes("PASSWORD")) {
+      bg = "rgba(59, 130, 246, 0.12)";
+      color = "#3b82f6";
+    }
+    return (
+      <span
+        style={{
+          padding: "4px 12px",
+          borderRadius: "20px",
+          fontSize: "11px",
+          fontWeight: "700",
+          backgroundColor: bg,
+          color: color,
+          display: "inline-block",
+        }}
+      >
+        {actionName}
+      </span>
+    );
+  };
+
+  // Group logs by IP Address
+  const groupLogsByIp = (logsList) => {
+    const groups = {};
+    logsList.forEach(log => {
+      const ip = log.ipAddress || "-";
+      if (!groups[ip]) {
+        groups[ip] = [];
+      }
+      groups[ip].push(log);
+    });
+
+    Object.keys(groups).forEach(ip => {
+      groups[ip].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    });
+
+    return Object.keys(groups)
+      .map(ip => ({
+        ipAddress: ip,
+        logs: groups[ip],
+        latestDate: new Date(groups[ip][0].createdAt)
+      }))
+      .sort((a, b) => b.latestDate - a.latestDate);
+  };
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -48,9 +109,11 @@ function AuditLog() {
       return;
     }
 
-    const headers = ["User", "Action", "Target", "Date", "Time", "IP Address"];
+    const headers = ["User", "Email", "Phone", "Action", "Target", "Date", "Time", "IP Address"];
     const rows = filtered.map(log => [
       `"${log.performedBy || ''}"`,
+      `"${log.email || ''}"`,
+      `"${log.phone || ''}"`,
       `"${log.action || ''}"`,
       `"${(log.details || '').replace(/"/g, '""')}"`,
       `"${new Date(log.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}"`,
@@ -125,9 +188,12 @@ function AuditLog() {
     return matchSearch && matchModule && matchDate && matchMode;
   });
 
-  // Calculate Pagination values
-  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
-  const paginatedLogs = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  // Group filtered logs by IP
+  const groupedIps = groupLogsByIp(filtered);
+
+  // Calculate Pagination values based on grouped IPs
+  const totalPages = Math.max(1, Math.ceil(groupedIps.length / itemsPerPage));
+  const paginatedGroups = groupedIps.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="admin-layout">
@@ -266,19 +332,21 @@ function AuditLog() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "20%" }}>User</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "15%" }}>Action</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "35%" }}>Target</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "10%" }}>Date</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "10%" }}>Time</th>
-                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "10%" }}>IP Address</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "12%" }}>User</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "15%" }}>Email</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "12%" }}>Ph no.</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "12%" }}>Action</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "25%" }}>Target</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "8%" }}>Date</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "8%" }}>Time</th>
+                  <th style={{ padding: "14px 24px", fontWeight: "700", width: "8%" }}>IP Address</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedLogs.length === 0 ? (
+                {paginatedGroups.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={8}
                       style={{
                         padding: "60px 24px",
                         textAlign: "center",
@@ -290,84 +358,117 @@ function AuditLog() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedLogs.map((log) => (
-                    <tr
-                      key={log._id}
-                      style={{
-                        borderTop: "1px solid var(--border-color)",
-                        fontSize: "13px",
-                        color: "var(--text-primary)",
-                        transition: "background 0.15s ease",
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--option-hover)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <td style={{ padding: "14px 24px", fontWeight: "600", whiteSpace: "nowrap" }}>{log.performedBy}</td>
-                      <td style={{ padding: "14px 24px", whiteSpace: "nowrap" }}>
-                        {(() => {
-                          const a = log.action?.toUpperCase() || "";
-                          let bg = "rgba(139, 92, 246, 0.12)";
-                          let color = "#8B5CF6";
-                          if (a.includes("CREATE") || a.includes("PUBLISH") || a.includes("RESTORE") || a.includes("ADD")) {
-                            bg = "rgba(16, 185, 129, 0.12)";
-                            color = "#10b981";
-                          } else if (a.includes("DELETE") || a.includes("SUSPEND") || a.includes("REMOVE")) {
-                            bg = "rgba(239, 68, 68, 0.12)";
-                            color = "#ef4444";
-                          } else if (a.includes("UPDATE") || a.includes("ROLE") || a.includes("STATUS")) {
-                            bg = "rgba(245, 158, 11, 0.12)";
-                            color = "#f59e0b";
-                          } else if (a.includes("RESET") || a.includes("PASSWORD")) {
-                            bg = "rgba(59, 130, 246, 0.12)";
-                            color = "#3b82f6";
-                          }
-                          return (
-                            <span
-                              style={{
-                                padding: "4px 12px",
-                                borderRadius: "20px",
-                                fontSize: "11px",
-                                fontWeight: "700",
-                                backgroundColor: bg,
-                                color: color,
-                                display: "inline-block",
+                  paginatedGroups.map((g) => {
+                    const latestLog = g.logs[0];
+                    const hasMultiple = g.logs.length > 1;
+                    const isExpanded = !!expandedIp[g.ipAddress];
+                    
+                    return (
+                      <React.Fragment key={g.ipAddress}>
+                        <tr
+                          style={{
+                            borderTop: "1px solid var(--border-color)",
+                            fontSize: "13px",
+                            color: "var(--text-primary)",
+                            transition: "background 0.15s ease",
+                            cursor: hasMultiple ? "pointer" : "default"
+                          }}
+                          onClick={hasMultiple ? () => {
+                            setExpandedIp(prev => ({ ...prev, [g.ipAddress]: !prev[g.ipAddress] }));
+                          } : undefined}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--option-hover)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        >
+                          <td style={{ padding: "14px 24px", fontWeight: "600", whiteSpace: "nowrap" }}>{latestLog.performedBy}</td>
+                          <td style={{ padding: "14px 24px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{latestLog.email || "-"}</td>
+                          <td style={{ padding: "14px 24px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{latestLog.phone || "-"}</td>
+                          <td style={{ padding: "14px 24px", whiteSpace: "nowrap" }}>
+                            {renderActionBadge(latestLog.action)}
+                          </td>
+                          <td 
+                            onClick={(e) => {
+                              if (hasMultiple) e.stopPropagation();
+                              setExpandedLogId(expandedLogId === latestLog._id ? null : latestLog._id);
+                            }}
+                            style={{ 
+                              padding: "14px 24px", 
+                              color: "var(--text-secondary)", 
+                              whiteSpace: expandedLogId === latestLog._id ? "normal" : "nowrap", 
+                              wordBreak: "break-word", 
+                              lineHeight: "1.5",
+                              maxWidth: "280px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              cursor: "pointer"
+                            }}
+                            title={expandedLogId === latestLog._id ? "Click to collapse" : "Click to expand details"}
+                          >
+                            {latestLog.details}
+                          </td>
+                          <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                            {new Date(latestLog.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
+                          </td>
+                          <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                            {new Date(latestLog.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td style={{ padding: "14px 24px", color: "var(--text-muted)", fontFamily: "monospace", fontSize: "12px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span>{latestLog.ipAddress || "-"}</span>
+                              {hasMultiple && (
+                                <span style={{ display: "inline-flex", alignItems: "center", color: "var(--violet, #6E3FF3)" }}>
+                                  {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                        {hasMultiple && isExpanded && g.logs.slice(1).map((subLog) => (
+                          <tr
+                            key={subLog._id}
+                            style={{
+                              backgroundColor: "var(--bg-input)",
+                              borderTop: "1px solid var(--border-color)",
+                              fontSize: "12.5px",
+                              color: "var(--text-secondary)",
+                            }}
+                          >
+                            <td style={{ padding: "12px 24px", fontWeight: "600", whiteSpace: "nowrap" }}>{subLog.performedBy}</td>
+                            <td style={{ padding: "12px 24px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{subLog.email || "-"}</td>
+                            <td style={{ padding: "12px 24px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{subLog.phone || "-"}</td>
+                            <td style={{ padding: "12px 24px" }}>
+                              {renderActionBadge(subLog.action)}
+                            </td>
+                            <td 
+                              onClick={() => setExpandedLogId(expandedLogId === subLog._id ? null : subLog._id)}
+                              style={{ 
+                                padding: "12px 24px", 
+                                color: "var(--text-muted)", 
+                                whiteSpace: expandedLogId === subLog._id ? "normal" : "nowrap", 
+                                wordBreak: "break-word", 
+                                lineHeight: "1.4",
+                                maxWidth: "280px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                cursor: "pointer"
                               }}
+                              title={expandedLogId === subLog._id ? "Click to collapse" : "Click to expand details"}
                             >
-                              {log.action}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                      <td 
-                        onClick={() => {
-                          setExpandedLogId(expandedLogId === log._id ? null : log._id);
-                        }}
-                        style={{ 
-                          padding: "14px 24px", 
-                          color: "var(--text-secondary)", 
-                          whiteSpace: expandedLogId === log._id ? "normal" : "nowrap", 
-                          wordBreak: "break-word", 
-                          lineHeight: "1.5",
-                          maxWidth: "280px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          cursor: "pointer"
-                        }}
-                        title={expandedLogId === log._id ? "Click to collapse" : "Click to expand details"}
-                      >
-                        {log.details}
-                      </td>
-                      <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                        {new Date(log.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
-                      </td>
-                      <td style={{ padding: "14px 24px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                        {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td style={{ padding: "14px 24px", color: "var(--text-muted)", fontFamily: "monospace", fontSize: "12px" }}>
-                        {log.ipAddress || "-"}
-                      </td>
-                    </tr>
-                  ))
+                              {subLog.details}
+                            </td>
+                            <td style={{ padding: "12px 24px", color: "var(--text-muted)", opacity: 0.8 }}>
+                              {new Date(subLog.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
+                            </td>
+                            <td style={{ padding: "12px 24px", color: "var(--text-muted)", opacity: 0.8 }}>
+                              {new Date(subLog.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                            <td style={{ padding: "12px 24px", color: "var(--text-muted)", fontFamily: "monospace", fontSize: "12px" }}>
+                              {subLog.ipAddress || "-"}
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -387,7 +488,7 @@ function AuditLog() {
                 }}
               >
                 <span>
-                  Showing <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{Math.min(currentPage * itemsPerPage, filtered.length)}</strong> of <strong>{filtered.length}</strong> entries
+                  Showing <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{Math.min(currentPage * itemsPerPage, groupedIps.length)}</strong> of <strong>{groupedIps.length}</strong> IP groups ({filtered.length} total entries)
                 </span>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button

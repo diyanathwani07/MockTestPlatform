@@ -225,12 +225,35 @@ const flattenSectionForClient = (sectionRef, populatedSection) => {
   };
 };
 
+const formatQuestionForClient = (q) => {
+  const incorrectRaw = q.explanations?.incorrect;
+  let incorrectPlain = {};
+  if (incorrectRaw instanceof Map) {
+    incorrectPlain = Object.fromEntries(incorrectRaw);
+  } else if (incorrectRaw && typeof incorrectRaw === "object") {
+    incorrectPlain = Object.fromEntries(Object.entries(incorrectRaw));
+  }
+  return {
+    ...q,
+    explanations: {
+      ...q.explanations,
+      incorrect: incorrectPlain
+    }
+  };
+};
+
 const previewQuiz = async (quizId) => {
   const quiz = await Quiz.findById(quizId);
   if (!quiz) throw new Error("Quiz not found.");
 
+  let result = quiz.toObject();
+
+  if (result.questions && result.questions.length > 0) {
+    result.questions = result.questions.map(formatQuestionForClient);
+  }
+
   if (!quiz.hasModularSections()) {
-    return quiz.toObject();
+    return result;
   }
 
   const populatedSections = [];
@@ -247,14 +270,24 @@ const previewQuiz = async (quizId) => {
         .populate("subsections.medium")
         .populate("subsections.hard");
       if (section) {
-        populatedSections.push(flattenSectionForClient(ref, section));
+        const flattened = flattenSectionForClient(ref, section);
+        if (flattened.questions && flattened.questions.length > 0) {
+          flattened.questions = flattened.questions.map(formatQuestionForClient);
+        }
+        if (flattened.subsections) {
+          ["easy", "medium", "hard"].forEach(level => {
+            if (flattened.subsections[level] && flattened.subsections[level].length > 0) {
+              flattened.subsections[level] = flattened.subsections[level].map(formatQuestionForClient);
+            }
+          });
+        }
+        populatedSections.push(flattened);
       }
     } catch (e) {
       console.error("Error populating section in previewQuiz:", ref.sectionId, e);
     }
   }
 
-  const result = quiz.toObject();
   result.sections = populatedSections.filter(Boolean);
   return result;
 };
@@ -486,13 +519,9 @@ const stripAnswers = (quiz) => {
   const sanitizeQuestion = (q) => {
     if (!q) return;
     delete q.correctAnswer;
+    delete q.correctAnswerObfuscated;
     delete q.explanation;
-    if (q.explanations) {
-      delete q.explanations.correct;
-      delete q.explanations.incorrect;
-      delete q.explanations.conceptSummary;
-      delete q.explanations.didYouKnow;
-    }
+    delete q.explanations;
   };
 
   if (sanitized.questions && sanitized.questions.length > 0) {

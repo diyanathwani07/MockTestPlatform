@@ -50,7 +50,40 @@ async function notifyAllStudents({ type, title, message, link = "", relatedId = 
   }
 }
 
+/**
+ * Bulk inserts an in-app notification for all active managers/employees in a specific department.
+ * Wrapped in try/catch to ensure reliability.
+ */
+async function notifyDepartment(department, { type, title, message, link = "", relatedId = null }) {
+  try {
+    const staff = await User.find({ 
+      department, 
+      role: { $in: ["manager", "employee"] }, 
+      status: "Active", 
+      isDeleted: { $ne: true } 
+    }).select("_id");
+    
+    if (staff.length === 0) return [];
+
+    const notificationsToInsert = staff.map(user => ({
+      userId: user._id,
+      type,
+      title,
+      message,
+      link,
+      relatedId
+    }));
+
+    const result = await Notification.insertMany(notificationsToInsert, { ordered: false });
+    return result;
+  } catch (error) {
+    console.error(`[NotificationService] Failed to notify department ${department}:`, error);
+    return [];
+  }
+}
+
 module.exports = {
   notifyUser,
-  notifyAllStudents
+  notifyAllStudents,
+  notifyDepartment
 };

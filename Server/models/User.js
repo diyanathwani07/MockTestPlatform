@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
 
     phone: {
       type: String,
-      required: true,
+      required: false,
     },
 
     password: {
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin", "superadmin"],
+      enum: ["user", "admin", "superadmin", "manager", "employee"],
       default: "user",
     },
     receiveMonthlyAuditReport: {
@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema(
     },
     department: {
       type: String,
-      enum: ["Technical Team", "Content Team", "Calling Team", "YouTube Team", "Faculty", "Operations Team", null],
+      enum: ["Technical Team", "Content Team", "Calling Team", "YouTube Team", "Faculty", "Operations Team", "Help and Support", null],
       default: null,
     },
     permissions: {

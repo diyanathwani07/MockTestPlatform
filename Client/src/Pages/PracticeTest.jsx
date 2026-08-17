@@ -306,16 +306,70 @@ function PracticeTest() {
     }
   };
 
-  const handleOptionClick = (optIdx) => {
+  const handleOptionClick = async (optIdx) => {
     if (isCorrectSelected || selectedOptions[optIdx]) return; // prevent re-clicking
 
-    // Fetch live AI explanation if not pre-generated
-    fetchLiveExplanation(currentQuestion, currentIndex);
+    let correctText = currentQuestion.correctAnswer;
+    let explanationText = currentQuestion.explanation;
+    let explanationsObj = currentQuestion.explanations;
+
+    if (!correctText) {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/practice/${quizId}/questions/${currentQuestion._id}/verify`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.data && res.data.success) {
+          correctText = res.data.correctAnswer;
+          explanationText = res.data.explanation;
+          explanationsObj = res.data.explanations;
+
+          // Update state of questions
+          setQuestions(prev => {
+            const updated = [...prev];
+            updated[currentIndex] = {
+              ...updated[currentIndex],
+              correctAnswer: correctText,
+              explanation: explanationText,
+              explanations: explanationsObj
+            };
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error("Verification failed:", err);
+        alert("Failed to verify answer. Please check your internet connection.");
+        return;
+      }
+    }
 
     const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
-    const isCorrect = normalizeString(currentQuestion.options[optIdx]) === normalizeString(currentQuestion.correctAnswer);
+    
+    let resolvedCorrectText = correctText || "";
+    if (["A", "B", "C", "D"].includes(resolvedCorrectText) && Array.isArray(currentQuestion.options)) {
+      const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+      resolvedCorrectText = currentQuestion.options[idxMap[resolvedCorrectText]] || resolvedCorrectText;
+    } else if (typeof resolvedCorrectText === "string" && resolvedCorrectText.startsWith("Option ") && Array.isArray(currentQuestion.options)) {
+      const optNum = parseInt(resolvedCorrectText.replace("Option ", ""), 10);
+      if (!isNaN(optNum) && optNum >= 1 && optNum <= currentQuestion.options.length) {
+        resolvedCorrectText = currentQuestion.options[optNum - 1] || resolvedCorrectText;
+      }
+    }
+
+    const isCorrect = normalizeString(currentQuestion.options[optIdx]) === normalizeString(resolvedCorrectText);
     const newSelected = { ...selectedOptions, [optIdx]: true };
     setSelectedOptionsMap(prev => ({ ...prev, [currentIndex]: newSelected }));
+
+    // Fetch live AI explanation if not pre-generated
+    const updatedQuestion = {
+      ...currentQuestion,
+      correctAnswer: resolvedCorrectText,
+      explanation: explanationText,
+      explanations: explanationsObj
+    };
+    fetchLiveExplanation(updatedQuestion, currentIndex);
 
     if (isCorrect) {
       setIsCorrectSelectedMap(prev => ({ ...prev, [currentIndex]: true }));

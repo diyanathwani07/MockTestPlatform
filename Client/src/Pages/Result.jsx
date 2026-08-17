@@ -93,6 +93,20 @@ function Result() {
   const [shareId, setShareId] = useState(data?.shareId || null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [reviewFilter, setReviewFilter] = useState("all"); // "all", "correct", "incorrect", "unattempted"
+  const [isScrolledDown, setIsScrolledDown] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > document.documentElement.scrollHeight / 3) {
+        setIsScrolledDown(true);
+      } else {
+        setIsScrolledDown(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const computedPercentage =
     percentage !== undefined && percentage !== null
@@ -320,6 +334,40 @@ function Result() {
       
       {!showAnswers && (
         <div className="result-modal-overlay">
+          {/* Back button to go to previous page (e.g. Attempts list) */}
+          <button 
+            onClick={() => {
+              if (location.state?.fromAttempts) {
+                navigate(-1);
+              } else {
+                navigate("/dashboard/results");
+              }
+            }}
+            style={{
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              zIndex: 110,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "46px",
+              height: "46px",
+              borderRadius: "50%",
+              backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
+              boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
+              border: "1px solid var(--border-color, #d1d5db)",
+              color: isDark ? "#ffffff" : "#000000",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            title="Go Back"
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+          >
+            <ArrowLeft size={22} strokeWidth={2.5} />
+          </button>
+
           <div className="result-modal-card">
             
             {/* Header */}
@@ -387,18 +435,61 @@ function Result() {
 
             {/* Metrics Grid */}
             <div className="rm-metrics-grid">
-              <div className="rm-metric">
+              <div 
+                className="rm-metric"
+                onClick={() => {
+                  setReviewFilter(reviewFilter === "correct" ? "all" : "correct");
+                  setShowAnswers(true);
+                }}
+                style={{ 
+                  cursor: "pointer", 
+                  border: reviewFilter === "correct" ? "2.5px solid #22C55E" : "1.5px solid var(--border-color, #E2E8F0)",
+                  boxShadow: reviewFilter === "correct" ? "0 4px 15px rgba(34, 197, 94, 0.25)" : "none",
+                  transition: "all 0.2s ease"
+                }}
+              >
                 <div className="rm-metric-icon icon-green" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><Target size={24} /></div>
                 <div className="rm-metric-data">
                   <h4>{correct}</h4>
                   <p>Correct Answers</p>
                 </div>
               </div>
-              <div className="rm-metric">
+              <div 
+                className="rm-metric"
+                onClick={() => {
+                  setReviewFilter(reviewFilter === "incorrect" ? "all" : "incorrect");
+                  setShowAnswers(true);
+                }}
+                style={{ 
+                  cursor: "pointer", 
+                  border: reviewFilter === "incorrect" ? "2.5px solid #EF4444" : "1.5px solid var(--border-color, #E2E8F0)",
+                  boxShadow: reviewFilter === "incorrect" ? "0 4px 15px rgba(239, 68, 68, 0.25)" : "none",
+                  transition: "all 0.2s ease"
+                }}
+              >
                 <div className="rm-metric-icon icon-red" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><XCircle size={24} /></div>
                 <div className="rm-metric-data">
                   <h4>{incorrect}</h4>
                   <p>Incorrect Answers</p>
+                </div>
+              </div>
+              <div 
+                className="rm-metric"
+                onClick={() => {
+                  setReviewFilter(reviewFilter === "unattempted" ? "all" : "unattempted");
+                  setShowAnswers(true);
+                }}
+                style={{ 
+                  cursor: "pointer", 
+                  border: reviewFilter === "unattempted" ? "2.5px solid #64748B" : "1.5px solid var(--border-color, #E2E8F0)",
+                  boxShadow: reviewFilter === "unattempted" ? "0 4px 15px rgba(100, 116, 139, 0.25)" : "none",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                <div className="rm-metric-icon icon-blue" style={{ display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(100, 116, 139, 0.15)", color: "#64748B" }}><HelpCircle size={24} /></div>
+                <div className="rm-metric-data">
+                  <h4>{Math.max(0, total - (correct + incorrect))}</h4>
+                  <p>Unattempted Answers</p>
                 </div>
               </div>
               <div className="rm-metric">
@@ -406,13 +497,6 @@ function Result() {
                 <div className="rm-metric-data">
                   <h4>{formatTime(timeTakenSecs)}</h4>
                   <p>Time Taken</p>
-                </div>
-              </div>
-              <div className="rm-metric">
-                <div className="rm-metric-icon icon-blue" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><TrendingUp size={24} /></div>
-                <div className="rm-metric-data">
-                  <h4>{computedPercentage}%</h4>
-                  <p>Accuracy</p>
                 </div>
               </div>
             </div>
@@ -563,32 +647,86 @@ function Result() {
               <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#000000", textAlign: "center" }}>Answer Review - {examTitle}</h2>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px", gap: "10px" }}>
-              <button 
-                onClick={() => {
-                  const allIndices = {};
-                  questions.forEach((_, idx) => { allIndices[idx] = true; });
-                  setExpandedQuestions(allIndices);
-                }}
-                style={{ background: "transparent", border: "none", color: "#6E3FF3", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
-              >
-                Expand All
-              </button>
-              <span style={{ color: "var(--text-muted, #94A3B8)" }}>|</span>
-              <button 
-                onClick={() => setExpandedQuestions({})}
-                style={{ background: "transparent", border: "none", color: "var(--text-muted, #94A3B8)", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
-              >
-                Collapse All
-              </button>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div>
+                {reviewFilter !== "all" && (
+                  <span 
+                    onClick={() => setReviewFilter("all")}
+                    style={{ 
+                      fontSize: "13px", 
+                      backgroundColor: "rgba(110, 63, 243, 0.1)", 
+                      color: "#6E3FF3", 
+                      padding: "4px 12px", 
+                      borderRadius: "20px", 
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    Showing {reviewFilter === "correct" ? "Correct" : reviewFilter === "incorrect" ? "Incorrect" : "Unattempted"} Answers ✕
+                  </span>
+                )}
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button 
+                  onClick={() => {
+                    const allIndices = {};
+                    questions.forEach((_, idx) => { allIndices[idx] = true; });
+                    setExpandedQuestions(allIndices);
+                  }}
+                  style={{ background: "transparent", border: "none", color: "#6E3FF3", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+                >
+                  Expand All
+                </button>
+                <span style={{ color: "var(--text-muted, #94A3B8)" }}>|</span>
+                <button 
+                  onClick={() => setExpandedQuestions({})}
+                  style={{ background: "transparent", border: "none", color: "var(--text-muted, #94A3B8)", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+                >
+                  Collapse All
+                </button>
+              </div>
             </div>
 
             <div className="review-list">
-              {questions.slice(0, visibleCount).map((q, index) => {
-                const userAns = userAnswers[index];
-                const isCorrect = q.correctAnswer
-                  ? userAns === q.correctAnswer
-                  : undefined;
+              {questions
+                .map((q, idx) => ({ ...q, originalIndex: idx }))
+                .filter((q) => {
+                  const userAns = userAnswers[q.originalIndex];
+                  const isUnanswered = userAns === undefined || userAns === null || userAns === "";
+                  const isCorrect = q.correctAnswer ? userAns === q.correctAnswer : false;
+
+                  if (reviewFilter === "correct") return !isUnanswered && isCorrect;
+                  if (reviewFilter === "incorrect") return !isUnanswered && !isCorrect;
+                  if (reviewFilter === "unattempted") return isUnanswered;
+                  return true;
+                })
+                .slice(0, visibleCount)
+                .map((q) => {
+                  const index = q.originalIndex;
+                  const userAns = userAnswers[index];
+                  const isUnanswered = userAns === undefined || userAns === null || userAns === "";
+                  const isCorrect = q.correctAnswer ? userAns === q.correctAnswer : false;
+
+                // Color configuration based on answer status
+                let statusColor = "#64748B"; // grey
+                let cardBorder = "1px solid var(--border-color)";
+                let cardShadow = "0 4px 12px rgba(0,0,0,0.02)";
+
+                if (!isUnanswered) {
+                  if (isCorrect) {
+                    statusColor = "#22C55E"; // green
+                    cardBorder = "1.5px solid #22C55E";
+                    cardShadow = isDark ? "0 4px 18px rgba(34, 197, 94, 0.2)" : "0 4px 18px rgba(34, 197, 94, 0.15)";
+                  } else {
+                    statusColor = "#EF4444"; // red
+                    cardBorder = "1.5px solid #EF4444";
+                    cardShadow = isDark ? "0 4px 18px rgba(239, 68, 68, 0.2)" : "0 4px 18px rgba(239, 68, 68, 0.15)";
+                  }
+                }
+
                 const isExpanded = !!expandedQuestions[index];
 
                 return (
@@ -598,8 +736,10 @@ function Result() {
                     style={{ 
                       borderRadius: "12px", 
                       marginBottom: "16px", 
-                      border: "1px solid var(--border-color)", 
-                      overflow: "hidden" 
+                      border: cardBorder, 
+                      boxShadow: cardShadow,
+                      overflow: "hidden",
+                      transition: "all 0.25s ease"
                     }}
                   >
                     {/* Collapsible Header */}
@@ -620,9 +760,25 @@ function Result() {
                         userSelect: "none"
                       }}
                     >
-                      <div className="review-question" style={{ display: "flex", gap: "10px", alignItems: "flex-start", flex: 1, textAlign: "left" }}>
-                        <span className="q-number" style={{ minWidth: "30px", fontWeight: "700", color: "#6E3FF3" }}>Q{index + 1}.</span>
-                        <div style={{ flex: 1 }}>
+                      <div className="review-question" style={{ display: "flex", gap: "14px", alignItems: "flex-start", flex: 1, textAlign: "left" }}>
+                        {/* Rounded Status Badge for Q number */}
+                        <span className="q-number" style={{ 
+                          minWidth: "30px", 
+                          height: "30px",
+                          borderRadius: "8px",
+                          backgroundColor: statusColor,
+                          color: "#FFFFFF",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: "800",
+                          fontSize: "13px",
+                          flexShrink: 0
+                        }}>
+                          {index + 1}
+                        </span>
+                        
+                        <div style={{ flex: 1, paddingTop: "4px" }}>
                           <div style={{ fontWeight: "600", color: isDark ? "#F1F5F9" : "#1E293B", fontSize: "15px", lineHeight: "1.5" }}><MathRenderer text={q.english || q.questionEnglish} /></div>
                           {(q.hindi || q.questionHindi) && <div style={{ fontWeight: "500", color: isDark ? "#CBD5E1" : "#475569", marginTop: "4px", fontSize: "14px", lineHeight: "1.5" }}><MathRenderer text={q.hindi || q.questionHindi} /></div>}
                         </div>
@@ -757,6 +913,45 @@ function Result() {
                 Back to Dashboard
               </button>
             </div>
+            
+             {/* Floating scroll action button */}
+             <div style={{
+               position: "fixed",
+               bottom: "30px",
+               right: "30px",
+               zIndex: 1000
+             }}>
+               <button
+                 onClick={() => {
+                   if (isScrolledDown) {
+                     window.scrollTo({ top: 0, behavior: "smooth" });
+                   } else {
+                     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+                   }
+                 }}
+                 style={{
+                   width: "48px",
+                   height: "48px",
+                   borderRadius: "50%",
+                   backgroundColor: isDark ? "#6E3FF3" : "#ffffff",
+                   color: isDark ? "#ffffff" : "#6E3FF3",
+                   border: "2px solid var(--border-color, #d1d5db)",
+                   boxShadow: "0 4px 16px rgba(110, 63, 243, 0.3)",
+                   display: "flex",
+                   alignItems: "center",
+                   justifyContent: "center",
+                   cursor: "pointer",
+                   transition: "all 0.25s ease",
+                   fontSize: "16px",
+                   fontWeight: "bold"
+                 }}
+                 title={isScrolledDown ? "Scroll to Top" : "Scroll to Bottom"}
+                 onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+                 onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+               >
+                 {isScrolledDown ? "▲" : "▼"}
+               </button>
+             </div>
           </div>
         </div>
       )}

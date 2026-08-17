@@ -327,7 +327,6 @@ body.dark-mode .theme-pill-switch {
 .qb-search-pill,
 .practice-search-pill,
 .lb-search,
-.me-search-wrapper,
 .hs-search-bar,
 .manage-quizzes-filter-row > div:first-child {
   border: 2px solid var(--violet, #6E3FF3) !important;

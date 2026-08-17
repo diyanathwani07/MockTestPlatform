@@ -1,11 +1,36 @@
 const AuditLog = require("../models/AuditLog");
+const User = require("../models/User");
 const logAction = require("../utils/logger");
 
 // GET all audit logs (Admin only)
 const getAuditLogs = async (req, res) => {
   try {
-    const logs = await AuditLog.find().sort({ createdAt: -1 });
-    res.json(logs);
+    const logs = await AuditLog.find().sort({ createdAt: -1 }).lean();
+    
+    // Find all users to create a mapping of name -> email & phone
+    const users = await User.find({}, "fullName email phone").lean();
+    const userMap = {};
+    users.forEach(u => {
+      if (u.fullName) {
+        userMap[u.fullName.trim().toLowerCase()] = {
+          email: u.email,
+          phone: u.phone || ""
+        };
+      }
+    });
+
+    // Attach email and phone number to each log entry
+    const enrichedLogs = logs.map(log => {
+      const key = log.performedBy ? log.performedBy.trim().toLowerCase() : "";
+      const match = userMap[key];
+      return {
+        ...log,
+        email: match ? match.email : "-",
+        phone: match ? match.phone : "-"
+      };
+    });
+
+    res.json(enrichedLogs);
   } catch (error) {
     console.error("Get Audit Logs Error:", error);
     res.status(500).json({ message: "Failed to fetch audit logs." });

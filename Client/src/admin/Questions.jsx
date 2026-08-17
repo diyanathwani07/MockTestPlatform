@@ -483,9 +483,9 @@ function Questions() {
             <div className="qb-new-toggles-container" style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px", width: "100%" }}>
               
               {/* Select a Quiz & Info (Rendered at the top) */}
-              <div style={{ textAlign: "left", padding: "4px 0" }}>
-                <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 4px 0" }}>Select a Quiz</h2>
-                <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Manage your exam question collections</p>
+              <div style={{ textAlign: "left", padding: "4px 0", width: "100%" }}>
+                <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 4px 0", textAlign: "left" }}>Select a Quiz</h2>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, textAlign: "left" }}>Manage your exam question collections</p>
               </div>
 
               {/* Flex Row Container for Switchers */}
@@ -542,11 +542,27 @@ function Questions() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Search Input collections - MOBILE */}
+                    <div className="practice-search-pill" style={{ 
+                      display: "flex", alignItems: "center", gap: "8px", 
+                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet, #6E3FF3)", 
+                      borderRadius: "100px", padding: "10px 16px",
+                      width: "100%", boxSizing: "border-box", marginTop: "8px"
+                    }}>
+                      <Search size={16} style={{ color: "var(--violet, #6E3FF3)", flexShrink: 0 }} />
+                      <input 
+                        type="text" 
+                        placeholder="Search collections..." 
+                        value={collectionSearchTerm}
+                        onChange={(e) => setCollectionSearchTerm(e.target.value)}
+                      />
+                    </div>
                   </>
                 ) : (
-                  <>
+                  <div style={{ display: "flex", gap: "16px", alignItems: "center", width: "100%", flexWrap: "nowrap" }}>
                     {/* DESKTOP: Exams / Practice Tab Switcher */}
-                    <div style={{ flex: "1 1 280px", display: "flex", gap: "12px" }}>
+                    <div style={{ flex: "0 0 320px", display: "flex", gap: "12px" }}>
                       <button
                         onClick={() => { setQuizType("exams"); setCollectionSearchTerm(""); }}
                         style={{
@@ -562,6 +578,7 @@ function Questions() {
                           fontSize: "12.5px",
                           fontWeight: "600",
                           transition: "all 0.2s",
+                          whiteSpace: "nowrap",
                           backgroundColor: quizType === "exams" ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
                           color: quizType === "exams" ? "white" : "var(--text-primary)",
                           boxShadow: quizType === "exams" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
@@ -585,6 +602,7 @@ function Questions() {
                           fontSize: "12.5px",
                           fontWeight: "600",
                           transition: "all 0.2s",
+                          whiteSpace: "nowrap",
                           backgroundColor: quizType === "practice" ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
                           color: quizType === "practice" ? "white" : "var(--text-primary)",
                           boxShadow: quizType === "practice" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
@@ -596,7 +614,7 @@ function Questions() {
                     </div>
 
                     {/* DESKTOP: Active / Recycle Bin Toggles with Badges */}
-                    <div style={{ flex: "1 1 280px", display: "flex", gap: "12px" }}>
+                    <div style={{ flex: "0 0 320px", display: "flex", gap: "12px" }}>
                       <button
                         onClick={() => setIsRecycleBin(false)}
                         style={{
@@ -610,6 +628,7 @@ function Questions() {
                           cursor: "pointer",
                           fontSize: "12.5px",
                           fontWeight: "600",
+                          whiteSpace: "nowrap",
                           backgroundColor: !isRecycleBin ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
                           color: !isRecycleBin ? "white" : "var(--text-primary)",
                           boxShadow: !isRecycleBin ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
@@ -643,6 +662,7 @@ function Questions() {
                           cursor: "pointer",
                           fontSize: "12.5px",
                           fontWeight: "600",
+                          whiteSpace: "nowrap",
                           backgroundColor: isRecycleBin ? "var(--red, #EF4444)" : "var(--bg-card, #1E1B2E)",
                           color: isRecycleBin ? "white" : "var(--text-primary)",
                           boxShadow: isRecycleBin ? "0 4px 12px rgba(239, 68, 68, 0.2)" : "none"
@@ -663,28 +683,28 @@ function Questions() {
                         </span>
                       </button>
                     </div>
-                  </>
+
+                    {/* Search Input collections - DESKTOP (aligned to right on same row) */}
+                    <div className="practice-search-pill" style={{ 
+                      display: "flex", alignItems: "center", gap: "8px", 
+                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet, #6E3FF3)", 
+                      borderRadius: "100px", padding: "10px 16px",
+                      width: "300px", boxSizing: "border-box", marginLeft: "auto", flexShrink: 0
+                    }}>
+                      <Search size={16} style={{ color: "var(--violet, #6E3FF3)", flexShrink: 0 }} />
+                      <input 
+                        type="text" 
+                        placeholder="Search collections..." 
+                        value={collectionSearchTerm}
+                        onChange={(e) => setCollectionSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 )}
 
               </div>
-
-              {/* Search Input collections */}
-              <div className="practice-search-pill" style={{ 
-                display: "flex", alignItems: "center", gap: "8px", 
-                backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet, #6E3FF3)", 
-                borderRadius: "100px", padding: "10px 16px",
-                width: "100%", maxWidth: "320px", boxSizing: "border-box"
-              }}>
-                  <Search size={16} style={{ color: "var(--violet, #6E3FF3)", flexShrink: 0 }} />
-                  <input 
-                    type="text" 
-                    placeholder="Search collections..." 
-                    value={collectionSearchTerm}
-                    onChange={(e) => setCollectionSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
+            </div>
+          )}
 
           {(loading || loadingDeleted) ? (
             <div style={{ textAlign: "center", padding: "80px", color: "var(--text-secondary)", fontSize: "16px" }}>

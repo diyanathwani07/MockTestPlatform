@@ -41,6 +41,14 @@ function Users() {
   const [actionLoading, setActionLoading] = useState(false);
   const [departments, setDepartments] = useState([]);
   const currentUserRole = localStorage.getItem("role");
+  const [userTypeFilter, setUserTypeFilter] = useState("users");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchDepartments = async () => {
     try {
@@ -223,10 +231,16 @@ function Users() {
     }
   };
 
-  const filteredUsers = users.filter((u) => 
-    u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch = 
+      u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const isRegularUser = u.role === "user";
+    const matchesType = userTypeFilter === "users" ? isRegularUser : !isRegularUser;
+    
+    return matchesSearch && matchesType;
+  });
 
   return (
     <div className="admin-layout">
@@ -253,6 +267,60 @@ function Users() {
 
             {currentUserRole === 'superadmin' && (
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                {isMobile ? (
+                  <div 
+                    className="qb-flip-container" 
+                    onClick={() => setUserTypeFilter(userTypeFilter === 'users' ? 'staff' : 'users')}
+                    style={{ flex: "1", minWidth: "90px", height: "30px" }}
+                  >
+                    <div className={`qb-flip-card ${userTypeFilter === "staff" ? "flipped" : ""}`}>
+                      <div className="qb-flip-front" style={{ padding: "4px 8px", borderRadius: "6px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: "600" }}>Users</span>
+                      </div>
+                      <div className="qb-flip-back" style={{ padding: "4px 8px", borderRadius: "6px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: "600" }}>Staff</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.05)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <button 
+                      onClick={() => setUserTypeFilter('users')}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: userTypeFilter === 'users' ? '#6E3FF3' : 'transparent',
+                        color: userTypeFilter === 'users' ? '#FFFFFF' : 'var(--text-secondary)',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Users
+                    </button>
+                    <button 
+                      onClick={() => setUserTypeFilter('staff')}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: userTypeFilter === 'staff' ? '#6E3FF3' : 'transparent',
+                        color: userTypeFilter === 'staff' ? '#FFFFFF' : 'var(--text-secondary)',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Staff
+                    </button>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.05)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                   <button 
                     onClick={() => { setViewTab('active'); setLoading(true); }}
@@ -727,58 +795,65 @@ function Users() {
                     <option value="Suspended">Suspended</option>
                   </select>
                 </div>
-                {editForm.role === 'superadmin' && (
-                  <label style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '8px', cursor: 'pointer' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={editForm.receiveMonthlyAuditReport || false}
-                      onChange={e => setEditForm({...editForm, receiveMonthlyAuditReport: e.target.checked})}
-                      disabled={(() => {
-                        const storedUser = localStorage.getItem("user");
-                        if (!storedUser) return true;
-                        try {
-                          const parsed = JSON.parse(storedUser);
-                          return parsed._id !== selectedUser?._id;
-                        } catch(e) {
-                          return true;
-                        }
-                      })()}
-                      style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
-                    />
-                    <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>
-                      Receive Monthly Audit Logs via Email
-                    </span>
-                  </label>
-                )}
-                {(['admin', 'superadmin', 'manager', 'employee'].includes(editForm.role)) && (
-                  <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assign Custom Permissions</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '180px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '8px', background: 'var(--bg-input)' }}>
-                      {ALL_PERMISSIONS.map(p => {
-                        const isSuperAdmin = editForm.role === 'superadmin';
-                        const isChecked = isSuperAdmin ? true : editForm.permissions?.includes(p.key);
-                        return (
-                          <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: isSuperAdmin ? 'not-allowed' : 'pointer', opacity: isSuperAdmin ? 0.8 : 1 }}>
-                            <input 
-                              type="checkbox" 
-                              checked={isChecked}
-                              disabled={isSuperAdmin}
-                              onChange={() => {
-                                if (isSuperAdmin) return;
-                                const newPerms = isChecked
-                                  ? (editForm.permissions || []).filter(x => x !== p.key)
-                                  : [...(editForm.permissions || []), p.key];
-                                setEditForm({...editForm, permissions: newPerms});
-                              }}
-                              style={{ width: 'auto', height: 'auto', cursor: isSuperAdmin ? 'not-allowed' : 'pointer' }}
-                            />
-                            <span>{p.label}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {(() => {
+                  const loggedInUser = (() => {
+                    const u = localStorage.getItem("user");
+                    if (!u) return null;
+                    try { return JSON.parse(u); } catch(e) { return null; }
+                  })();
+                  const canViewPermissions = loggedInUser && (
+                    loggedInUser._id === selectedUser?._id ||
+                    (loggedInUser.role === 'superadmin' && selectedUser?.role !== 'superadmin')
+                  );
+                  if (!canViewPermissions) return null;
+                  return (
+                    <>
+                      {editForm.role === 'superadmin' && (
+                        <label style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '8px', cursor: 'pointer' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={editForm.receiveMonthlyAuditReport || false}
+                            onChange={e => setEditForm({...editForm, receiveMonthlyAuditReport: e.target.checked})}
+                            disabled={loggedInUser?._id !== selectedUser?._id}
+                            style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
+                          />
+                          <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                            Receive Monthly Audit Logs via Email
+                          </span>
+                        </label>
+                      )}
+                      {(['admin', 'superadmin', 'manager', 'employee'].includes(editForm.role)) && (
+                        <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Assign Custom Permissions</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '180px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '8px', background: 'var(--bg-input)' }}>
+                            {ALL_PERMISSIONS.map(p => {
+                              const isSuperAdmin = editForm.role === 'superadmin';
+                              const isChecked = isSuperAdmin ? true : editForm.permissions?.includes(p.key);
+                              return (
+                                <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: isSuperAdmin ? 'not-allowed' : 'pointer', opacity: isSuperAdmin ? 0.8 : 1 }}>
+                                  <input 
+                                    type="checkbox" 
+                                    checked={isChecked}
+                                    disabled={isSuperAdmin}
+                                    onChange={() => {
+                                      if (isSuperAdmin) return;
+                                      const newPerms = isChecked
+                                        ? (editForm.permissions || []).filter(x => x !== p.key)
+                                        : [...(editForm.permissions || []), p.key];
+                                      setEditForm({...editForm, permissions: newPerms});
+                                    }}
+                                    style={{ width: 'auto', height: 'auto', cursor: isSuperAdmin ? 'not-allowed' : 'pointer' }}
+                                  />
+                                  <span>{p.label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
@@ -1383,32 +1458,42 @@ function Users() {
                         </select>
                       </div>
 
-                      <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                          Assign Custom Permissions
-                        </label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '140px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '10px', background: 'var(--bg-main)' }}>
-                          {ALL_PERMISSIONS.map(p => {
-                            const isChecked = addForm.permissions?.includes(p.key);
-                            return (
-                              <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                <input 
-                                  type="checkbox" 
-                                  checked={isChecked}
-                                  onChange={() => {
-                                    const newPerms = isChecked
-                                      ? (addForm.permissions || []).filter(x => x !== p.key)
-                                      : [...(addForm.permissions || []), p.key];
-                                    setAddForm({...addForm, permissions: newPerms});
-                                  }}
-                                  style={{ width: 'auto', height: 'auto', cursor: 'pointer' }}
-                                />
-                                <span>{p.label}</span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      {(() => {
+                        const loggedInUser = (() => {
+                          const u = localStorage.getItem("user");
+                          if (!u) return null;
+                          try { return JSON.parse(u); } catch(e) { return null; }
+                        })();
+                        if (loggedInUser?.role !== 'superadmin') return null;
+                        return (
+                          <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                              Assign Custom Permissions
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '140px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '10px', background: 'var(--bg-main)' }}>
+                              {ALL_PERMISSIONS.map(p => {
+                                const isChecked = addForm.permissions?.includes(p.key);
+                                return (
+                                  <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={isChecked}
+                                      onChange={() => {
+                                        const newPerms = isChecked
+                                          ? (addForm.permissions || []).filter(x => x !== p.key)
+                                          : [...(addForm.permissions || []), p.key];
+                                        setAddForm({...addForm, permissions: newPerms});
+                                      }}
+                                      style={{ width: 'auto', height: 'auto', cursor: 'pointer' }}
+                                    />
+                                    <span>{p.label}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </>
                   )}
 

@@ -30,7 +30,18 @@ const fixGrammar = async (req, res) => {
     if (tempGha) process.env.GOOGLE_GHA_CREDS_PATH = tempGha;
     if (tempVertex) process.env.GOOGLE_GENAI_USE_VERTEXAI = tempVertex;
 
-    const promptText = `Fix only grammar, spelling, and punctuation errors in the following text. Do not change the meaning, tone, formality, or add/remove any information. Do not add explanations, greetings, or commentary. If the text is already correct, return it unchanged. Return ONLY the corrected text, nothing else.\n\nText:\n${text}`;
+    const promptText = `You are a strict grammar and spelling editor. Your task is to fix spelling, grammar, and punctuation errors in the provided text.
+CRITICAL INSTRUCTIONS:
+- Fix typos and grammar but do NOT alter the original meaning, tone, or style.
+- Do NOT hallucinate words, repeat words unnecessarily, or change the intent.
+- If the text has a simple typo (e.g., 'imaze' -> 'image'), just fix it.
+- If the text is already correct, return it exactly as is.
+- Return ONLY the corrected text without any xml tags, prefixes, or explanations.
+
+Text to fix:
+<text>
+${text}
+</text>`;
 
     const response = await generateContentWithFallback(ai, promptText, {
       temperature: 0.1,

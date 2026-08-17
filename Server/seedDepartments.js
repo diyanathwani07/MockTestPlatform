@@ -67,6 +67,14 @@ const DEFAULT_DEPARTMENTS = [
       "manage_users",
       "view_reports"
     ]
+  },
+  {
+    name: "Help and Support",
+    description: "Manage student queries and resolve support tickets.",
+    permissions: [
+      "dashboard",
+      "support_tickets"
+    ]
   }
 ];
 

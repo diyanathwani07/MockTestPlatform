@@ -961,6 +961,11 @@ body {
   z-index: 1;
 }
 
+.quiz-question-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 .quiz-question-card::before {
   content: "";
   position: absolute;
@@ -972,12 +977,19 @@ body {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 260px auto;
-  opacity: 0.3; /* Highly visible watermark in light mode */
-  z-index: -1;
+  opacity: 0.75; /* Highly visible watermark in light mode */
+  z-index: 0; /* Above card background, below children */
   pointer-events: none;
 }
 
 body.dark-mode .quiz-question-card::before,
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-question-card::before {
-  opacity: 0.18; /* Highly visible watermark in dark mode */
+  opacity: 0.55; /* Highly visible watermark in dark mode */
+}
+
+@media (max-width: 767px) {
+  .quiz-question-card::before {
+    background-size: 180px auto !important;
+    background-position: center 25% !important;
+  }
 }

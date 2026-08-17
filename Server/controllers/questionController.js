@@ -202,15 +202,43 @@ const getQuestionById = async (req, res) => {
 // Update a question
 const updateQuestion = async (req, res) => {
   try {
+    // Fetch the old question first for audit comparison
+    const oldQuestion = await Question.findById(req.params.id);
+    if (!oldQuestion) {
+      return res.status(404).json({ message: "Question not found." });
+    }
+
+    const adminName = req.user?.fullName || "Admin";
+    const qSnippet = oldQuestion.questionEnglish.substring(0, 50);
+
+    // Check if correct answer is changing
+    if (req.body.correctAnswer && req.body.correctAnswer !== oldQuestion.correctAnswer) {
+      await logAction(
+        "CHANGE_CORRECT_ANSWER",
+        adminName,
+        `Q: "${qSnippet}..." | Old Answer: "${oldQuestion.correctAnswer}" → New Answer: "${req.body.correctAnswer}"`,
+        "Question Bank",
+        req.ip
+      );
+    }
+
+    // Check if options changed
+    if (req.body.options && JSON.stringify(req.body.options) !== JSON.stringify(oldQuestion.options)) {
+      await logAction(
+        "EDIT_QUESTION_OPTIONS",
+        adminName,
+        `Q: "${qSnippet}..." | Options modified`,
+        "Question Bank",
+        req.ip
+      );
+    }
+
     const question = await Question.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
-    if (!question) {
-      return res.status(404).json({ message: "Question not found." });
-    }
 
-    await logAction("UPDATE_QUESTION", req.user?.fullName || "Admin", `Question: ${question.questionEnglish.substring(0, 30)}...`, "Question", req.ip);
+    await logAction("UPDATE_QUESTION", adminName, `Question: ${question.questionEnglish.substring(0, 30)}...`, "Question", req.ip);
     res.json(question);
   } catch (error) {
     console.error("Update Question Error:", error);

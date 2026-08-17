@@ -1,6 +1,6 @@
 const Ticket = require("../models/Ticket");
 const logAction = require("../utils/logger");
-const { notifyUser } = require("../services/notificationService");
+const { notifyUser, notifyDepartment } = require("../services/notificationService");
 
 // @desc    Submit a new support ticket
 // @route   POST /api/tickets
@@ -27,6 +27,14 @@ const createTicket = async (req, res) => {
     });
 
     await logAction("CREATE_TICKET", req.user.fullName || "User", `Ticket: ${subject}`, "Support", req.ip);
+
+    await notifyDepartment("Help and Support", { 
+      type: "NEW_DEPARTMENT_TICKET", 
+      title: "New support ticket", 
+      message: `${req.user.fullName || "User"} raised a ticket: "${subject}"`, 
+      link: `/admin/support?ticket=${ticket._id}`, 
+      relatedId: ticket._id 
+    });
 
     res.status(201).json({
       success: true,

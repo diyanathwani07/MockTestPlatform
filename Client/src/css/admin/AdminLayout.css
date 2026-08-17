@@ -850,8 +850,9 @@ body.dark-mode select option {
 .manage-quizzes-filter-row select,
 .custom-date-picker-container input,
 .lb-search input,
-.me-search-wrapper input,
-.hs-search-bar input {
+.hs-search-bar input,
+.pill-search-container input,
+.pill-search-input {
   background: transparent !important;
   background-color: transparent !important;
   border: none !important;
