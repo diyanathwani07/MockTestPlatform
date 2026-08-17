@@ -779,9 +779,8 @@ function EditQuiz() {
       if (idx > 0) expandedState[idx] = false;
     });
     setExpandedQuestions(expandedState);
-
     setMessage({
-      text: `✅ ${parsedSections.length} questions imported from Word file. Review and submit below.`,
+      text: `✅ ${mapped.length} questions imported from Word file. Review and submit below.`,
       type: "status-success",
     });
   };
@@ -1647,13 +1646,14 @@ function EditQuiz() {
                                         <div style={{ marginBottom: '16px' }}>
                                           <div style={{ fontWeight: '600', marginBottom: '4px' }}>Options:</div>
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                            {["A", "B", "C", "D"].map((label, optIndex) => {
+                                            {q.options.map((optionValue, optIndex) => {
+                                              const label = String.fromCharCode(65 + optIndex);
                                               const isCorrect = q.correctOptionIndex === optIndex;
-                                              if (!q.options[optIndex]) return null;
+                                              if (!optionValue) return null;
                                               return (
-                                                <div key={label} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                <div key={optIndex} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                   <span style={{ fontWeight: 'bold', color: isCorrect ? '#10B981' : 'var(--text-secondary)' }}>{label}.</span>
-                                                  <MathRenderer text={q.options[optIndex]} />
+                                                  <MathRenderer text={optionValue} />
                                                   {isCorrect && <span style={{ color: '#10B981', fontSize: '12px', marginLeft: '4px' }}>✓</span>}
                                                 </div>
                                               );

@@ -39,6 +39,9 @@ function DocxParser({ onQuestionsLoaded }) {
       const result = await mammoth.extractRawText({ arrayBuffer });
       const rawText = result.value;
 
+      console.log("[DocxParser] RAW TEXT (first 1000 chars):", rawText.substring(0, 1000));
+      console.log("[DocxParser] RAW TEXT total length:", rawText.length);
+
       const questions = parseQuestionsFromText(rawText);
 
       if (questions.length === 0) {
@@ -226,22 +229,37 @@ function parseQuestionsFromText(text) {
     }
 
     const questions = [];
+    
+    // Normalize line endings and ensure question markers start on new lines
+    let normalizedText = chunkText
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n");
+    
+    // Force a newline before any question number pattern that appears mid-line
+    // This handles cases where mammoth doesn't insert line breaks between questions
+    // Matches: "1." "2)" "Q1." "Question 1" etc. preceded by non-newline text
+    // Restricts digits to 1-3 to avoid splitting on years like 1974)
+    normalizedText = normalizedText.replace(/([^\n])(\n?\s*(?:\b\d{1,3}[\.\)])\s*(?:[A-Z\u0900-\u097F]))/g, "$1\n$2");
+    
+    console.log("[DocxParser] Normalized text first 500 chars:", normalizedText.substring(0, 500));
+    
     // Split by Question marker: Q1., Question 1, 1., 151. etc.
     // IMPORTANT: The regex requires the number to be at the start of a line,
-    // followed by either end-of-line (question text on next line) OR space+text.
-    // This prevents years like "1981." or "2002." inside explanation text from
-    // being mis-identified as new question markers.
-    const questionBlocks = chunkText.split(/\n(?=\s*(?:Q\d{1,4}[\.\)]|Question\s*\d{1,4}[\.\)]?|\d{1,4}[\.\)])\s*(?:\n|$|\s+\S))/i).filter(Boolean);
+    // followed by either end-of-line (question text on next line) OR any text.
+    // Supports formats like "1.Which" (no space) and "1. Which" (with space).
+    // Restricts question numbers to 1-3 digits to ignore 4-digit years.
+    const questionBlocks = normalizedText.split(/\n(?=\s*(?:Q\d{1,3}[\.\)]|Question\s*\d{1,3}[\.\)]?|\b\d{1,3}[\.\)])\s*(?:\n|$|\S))/i).filter(Boolean);
 
     console.log("[DocxParser] Total question blocks found:", questionBlocks.length);
+    console.log("[DocxParser] Block previews:", questionBlocks.map((b, i) => `Block ${i}: "${b.substring(0, 100).replace(/\n/g, '\\n')}"`));
 
     for (const block of questionBlocks) {
       // Pre-process block to force newlines before option/answer/explanation markers
       // IMPORTANT: Only insert newlines before option markers that appear at the
       // START of text or after a sentence-ending pattern, NOT mid-sentence.
       const preProcessedBlock = block
-        .replace(/^(?=[A-E][\.\)]\s+)/gm, "\n")
-        .replace(/(?=\bAnswer\s+[A-E]\b)/ig, "\n")
+        .replace(/^(?=[A-F][\.\)]\s+)/gm, "\n")
+        .replace(/(?=\bAnswer\s+[A-F]\b)/ig, "\n")
         .replace(/(?=Correct\s+Answer\s*:)/ig, "\n")
         .replace(/(?=Correct\s+Explanation\s*:)/ig, "\n")
         .replace(/(?=Wrong\s+Answer\s+Explanations\s*:)/ig, "\n")
@@ -249,7 +267,7 @@ function parseQuestionsFromText(text) {
         .replace(/(?=\bExplanation\s*:)/ig, "\n")
         .replace(/(?=^English\s*:)/igm, "\n")
         .replace(/(?=^Hindi\s*:)/igm, "\n")
-        .replace(/(?=\b[A-E]\s*:\s+)/g, "\n")
+        .replace(/(?=\b[A-F]\s*:\s+)/g, "\n")
         .replace(/(?=^Hindi\s*:\s+)/igm, "\n");
 
       const lines = preProcessedBlock
@@ -257,7 +275,7 @@ function parseQuestionsFromText(text) {
         .map((l) => l.trim())
         .filter(Boolean);
 
-      if (lines.length < 5) continue;
+      if (lines.length < 3) continue;
 
       let questionEnglishRaw = "";
       let hindiLine = "";
@@ -288,10 +306,10 @@ function parseQuestionsFromText(text) {
       //    A. Library / लाइब्रेरी
       //    ...
 
-      const isLabeledLayout = lines.some(l => /^English\s+Question\s*:/i.test(l)) || lines.some(l => /^Option\s+[A-E]\s*:/i.test(l));
+      const isLabeledLayout = lines.some(l => /^English\s+Question\s*:/i.test(l)) || lines.some(l => /^Option\s+[A-F]\s*:/i.test(l));
       const isStructuredPracticeQuiz = lines.some(l => /^Correct\s+Answer\s*:/i.test(l)) && (lines.some(l => /^Correct\s+Explanation\s*:/i.test(l)) || lines.some(l => /^Wrong\s+Answer\s+Explanations\s*:/i.test(l)));
       
-      const isFormat1 = lines.some(l => /^Solution\.?/i.test(l)) && lines.some(l => /^[A-E][\.\)]\s*/i.test(l)) && lines.some(l => /^Explanation\s*:/i.test(l));
+      const isFormat1 = lines.some(l => /^Solution\.?/i.test(l)) && lines.some(l => /^[A-F][\.\)]\s*/i.test(l)) && lines.some(l => /^Explanation\s*:/i.test(l));
       const isFormat2 = lines.some(l => /^Solution\.?/i.test(l)) && lines.some(l => /^English$/i.test(l)) && lines.some(l => /^Hindi$/i.test(l));
 
       if (isFormat1 || isFormat2) {
@@ -302,7 +320,7 @@ function parseQuestionsFromText(text) {
         
         let state = "question"; 
         
-        const wrongExps = { A: { en: "", hi: "" }, B: { en: "", hi: "" }, C: { en: "", hi: "" }, D: { en: "", hi: "" }, E: { en: "", hi: "" } };
+        const wrongExps = { A: { en: "", hi: "" }, B: { en: "", hi: "" }, C: { en: "", hi: "" }, D: { en: "", hi: "" }, E: { en: "", hi: "" }, F: { en: "", hi: "" } };
         let correctExpEn = "";
         let correctExpHi = "";
         let currentExpMode = ""; 
@@ -311,8 +329,8 @@ function parseQuestionsFromText(text) {
           const line = lines[idx].trim();
           if (!line) continue;
           
-          if (/^Answer\s+[A-E]/i.test(line) || /^Correct\s+Answer\s*:\s*[A-E]/i.test(line)) {
-            const match = line.match(/^(?:Answer|Correct\s+Answer\s*:)\s*([A-E])/i);
+          if (/^Answer\s+[A-F]/i.test(line) || /^Correct\s+Answer\s*:\s*[A-F]/i.test(line)) {
+            const match = line.match(/^(?:Answer|Correct\s+Answer\s*:)\s*([A-F])/i);
             if (match) {
               correctAnswerLetter = match[1].toUpperCase();
             }
@@ -328,8 +346,8 @@ function parseQuestionsFromText(text) {
              if (/^(?:\bQ\d+[\.\)]?|\bQuestion\s*\d+[\.\)]?|\b\d+[\.\)]\s*)$/i.test(line)) {
                continue;
              }
-             if (/^[A-E]\s*[\.\)]\s+(.*)/i.test(line)) {
-                const optMatch = line.match(/^([A-E])\s*[\.\)]\s*(.*)/i);
+             if (/^[A-F]\s*[\.\)]\s+(.*)/i.test(line)) {
+                const optMatch = line.match(/^([A-F])\s*[\.\)]\s*(.*)/i);
                 if (optMatch) {
                   const optLetter = optMatch[1].toUpperCase();
                   const optText = optMatch[2].trim();
@@ -366,8 +384,8 @@ function parseQuestionsFromText(text) {
                continue;
              }
              
-             if (/^[A-E]\)\s*(.*)/i.test(line)) {
-               const m = line.match(/^([A-E])\)\s*(.*)/i);
+             if (/^[A-F]\)\s*(.*)/i.test(line)) {
+               const m = line.match(/^([A-F])\)\s*(.*)/i);
                currentExpMode = m[1].toUpperCase();
                continue;
              }
@@ -423,7 +441,7 @@ function parseQuestionsFromText(text) {
           explanationLine += (explanationLine ? "\n" : "") + correctExpHi;
         }
 
-        const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4 };
+        const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
         const resolvedCorrectAnswer = optionsPlain[letterToIndex[correctAnswerLetter]] || optionsPlain[0];
 
         questions.push({
@@ -449,7 +467,7 @@ function parseQuestionsFromText(text) {
         
         let state = "question";
         let currentWrongOption = "";
-        const wrongExps = { A: { en: "", hi: "" }, B: { en: "", hi: "" }, C: { en: "", hi: "" }, D: { en: "", hi: "" } };
+        const wrongExps = { A: { en: "", hi: "" }, B: { en: "", hi: "" }, C: { en: "", hi: "" }, D: { en: "", hi: "" }, E: { en: "", hi: "" }, F: { en: "", hi: "" } };
 
         for (let idx = 0; idx < lines.length; idx++) {
           const line = lines[idx].trim();
@@ -460,7 +478,7 @@ function parseQuestionsFromText(text) {
             continue;
           } else if (/^Correct\s+Answer\s*:/i.test(line)) {
             state = "correct_answer";
-            const match = line.match(/^Correct\s+Answer\s*:\s*([A-D])/i);
+            const match = line.match(/^Correct\s+Answer\s*:\s*([A-F])/i);
             if (match) {
               correctAnswerLetter = match[1].toUpperCase();
             }
@@ -483,7 +501,7 @@ function parseQuestionsFromText(text) {
               hindiLine = line;
             }
           } else if (state === "options") {
-            const optMatch = line.match(/^([A-E])[\.\)]\s*(.*)/i);
+            const optMatch = line.match(/^([A-F])[\.\)]\s*(.*)/i);
             if (optMatch) {
               const optLetter = optMatch[1].toUpperCase();
               const optText = optMatch[2].trim();
@@ -507,7 +525,7 @@ function parseQuestionsFromText(text) {
               correctExpHi = line.replace(/^Hindi\s*:\s*/i, "").trim();
             }
           } else if (state === "wrong_explanations") {
-            const wrongMatch = line.match(/^([A-D])\s*[:\.]\s*(.*)/i);
+            const wrongMatch = line.match(/^([A-F])\s*[:\.]\s*(.*)/i);
             if (wrongMatch) {
               currentWrongOption = wrongMatch[1].toUpperCase();
               wrongExps[currentWrongOption].en = wrongMatch[2].trim();
@@ -518,7 +536,7 @@ function parseQuestionsFromText(text) {
         }
 
         const sortedOptions = [];
-        const letters = ["A", "B", "C", "D"];
+        const letters = ["A", "B", "C", "D", "E", "F"];
         letters.forEach(letter => {
           const found = optionsArray.find(o => o.letter === letter);
           if (found) {
@@ -552,7 +570,7 @@ function parseQuestionsFromText(text) {
           }
         });
 
-        const letterToIndex = { A: 0, B: 1, C: 2, D: 3 };
+        const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
         const resolvedCorrectAnswer = optionsPlain[letterToIndex[correctAnswerLetter]] || optionsPlain[0];
 
         questions.push({
@@ -571,13 +589,15 @@ function parseQuestionsFromText(text) {
 
       } else if (isLabeledLayout) {
         // Parse Labeled layout
-        let currentMode = ""; // "question_en", "question_hi", "opt_a", "opt_b", "opt_c", "opt_d", "answer", "exp_en", "exp_hi", "exp_a", "exp_b", "exp_c", "exp_d"
+        let currentMode = ""; // "question_en", "question_hi", "opt_a"..."opt_f", "answer", "exp_en", "exp_hi", "exp_a"..."exp_f"
         let optA_en = "", optA_hi = "";
         let optB_en = "", optB_hi = "";
         let optC_en = "", optC_hi = "";
         let optD_en = "", optD_hi = "";
+        let optE_en = "", optE_hi = "";
+        let optF_en = "", optF_hi = "";
         let expEn = "", expHi = "";
-        let expA = "", expB = "", expC = "", expD = "";
+        let expA = "", expB = "", expC = "", expD = "", expE = "", expF = "";
 
         for (let idx = 0; idx < lines.length; idx++) {
           const line = lines[idx];
@@ -600,6 +620,12 @@ function parseQuestionsFromText(text) {
           } else if (/^Option\s+D\s*:/i.test(line)) {
             currentMode = "opt_d";
             continue;
+          } else if (/^Option\s+E\s*:/i.test(line)) {
+            currentMode = "opt_e";
+            continue;
+          } else if (/^Option\s+F\s*:/i.test(line)) {
+            currentMode = "opt_f";
+            continue;
           } else if (/^Correct\s+Answer\s*:/i.test(line)) {
             currentMode = "answer";
             continue;
@@ -620,6 +646,12 @@ function parseQuestionsFromText(text) {
             continue;
           } else if (/^Explanation\s*\(Option\s*D\)\s*:/i.test(line)) {
             currentMode = "exp_d";
+            continue;
+          } else if (/^Explanation\s*\(Option\s*E\)\s*:/i.test(line)) {
+            currentMode = "exp_e";
+            continue;
+          } else if (/^Explanation\s*\(Option\s*F\)\s*:/i.test(line)) {
+            currentMode = "exp_f";
             continue;
           } else if (/^(Question\s*\d+|Q\d+)/i.test(line) && idx === 0) {
             continue; // Skip the Question 1 title line
@@ -662,8 +694,24 @@ function parseQuestionsFromText(text) {
             } else {
               optD_en += (optD_en ? " " : "") + line;
             }
+          } else if (currentMode === "opt_e") {
+            if (line.includes("/")) {
+              const pts = line.split("/");
+              optE_en += (optE_en ? " " : "") + pts[0].trim();
+              optE_hi += (optE_hi ? " " : "") + pts[1].trim();
+            } else {
+              optE_en += (optE_en ? " " : "") + line;
+            }
+          } else if (currentMode === "opt_f") {
+            if (line.includes("/")) {
+              const pts = line.split("/");
+              optF_en += (optF_en ? " " : "") + pts[0].trim();
+              optF_hi += (optF_hi ? " " : "") + pts[1].trim();
+            } else {
+              optF_en += (optF_en ? " " : "") + line;
+            }
           } else if (currentMode === "answer") {
-            correctAnswer = line.replace(/^Ans[\.\:\s]*/i, "").trim().toUpperCase().slice(0, 1);
+            correctAnswer = line.replace(/^Ans[\.\\:\s]*/i, "").trim().toUpperCase().slice(0, 1);
           } else if (currentMode === "exp_en") {
             expEn += (expEn ? " " : "") + line;
           } else if (currentMode === "exp_hi") {
@@ -676,15 +724,23 @@ function parseQuestionsFromText(text) {
             expC += (expC ? " " : "") + line;
           } else if (currentMode === "exp_d") {
             expD += (expD ? " " : "") + line;
+          } else if (currentMode === "exp_e") {
+            expE += (expE ? " " : "") + line;
+          } else if (currentMode === "exp_f") {
+            expF += (expF ? " " : "") + line;
           }
         }
 
-        optionsArray = [
+        const allLabeledOpts = [
           { english: optA_en.trim(), hindi: optA_hi.trim() },
           { english: optB_en.trim(), hindi: optB_hi.trim() },
           { english: optC_en.trim(), hindi: optC_hi.trim() },
-          { english: optD_en.trim(), hindi: optD_hi.trim() }
+          { english: optD_en.trim(), hindi: optD_hi.trim() },
+          { english: optE_en.trim(), hindi: optE_hi.trim() },
+          { english: optF_en.trim(), hindi: optF_hi.trim() }
         ];
+        // Only include options that have content
+        optionsArray = allLabeledOpts.filter(o => o.english || o.hindi);
 
         // Format explanations structure
         explanationLine = expEn.trim();
@@ -698,26 +754,16 @@ function parseQuestionsFromText(text) {
           return o.english || o.hindi || "";
         });
 
-        // Set correct option and mapping incorrect option explanations
-        if (correctAnswer === "A") {
-          incorrectMap[optionsPlain[1]] = expB.trim();
-          incorrectMap[optionsPlain[2]] = expC.trim();
-          incorrectMap[optionsPlain[3]] = expD.trim();
-        } else if (correctAnswer === "B") {
-          incorrectMap[optionsPlain[0]] = expA.trim();
-          incorrectMap[optionsPlain[2]] = expC.trim();
-          incorrectMap[optionsPlain[3]] = expD.trim();
-        } else if (correctAnswer === "C") {
-          incorrectMap[optionsPlain[0]] = expA.trim();
-          incorrectMap[optionsPlain[1]] = expB.trim();
-          incorrectMap[optionsPlain[3]] = expD.trim();
-        } else if (correctAnswer === "D") {
-          incorrectMap[optionsPlain[0]] = expA.trim();
-          incorrectMap[optionsPlain[1]] = expB.trim();
-          incorrectMap[optionsPlain[2]] = expC.trim();
-        }
+        // Set correct option and map incorrect option explanations dynamically
+        const allExpArr = [expA, expB, expC, expD, expE, expF];
+        const letterLabels = ["A", "B", "C", "D", "E", "F"];
+        letterLabels.forEach((letter, idx) => {
+          if (idx < optionsPlain.length && letter !== correctAnswer && allExpArr[idx]) {
+            incorrectMap[optionsPlain[idx]] = allExpArr[idx].trim();
+          }
+        });
 
-        const letterToIndex = { A: 0, B: 1, C: 2, D: 3 };
+        const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
         const resolvedCorrectAnswer = optionsPlain[letterToIndex[correctAnswer]] || optionsPlain[0];
 
         questions.push({
@@ -736,7 +782,7 @@ function parseQuestionsFromText(text) {
 
       } else {
         // Original compact format parse
-        questionEnglishRaw = lines[0].replace(/^Q\d+[\.\)]\s*/i, "").trim();
+        questionEnglishRaw = lines[0].replace(/^(?:Q\d+[\.\)]\s*|\d+[\.\)]\s*)/i, "").trim();
 
         let optionStartIndex = 1;
         if (/^H[\.\:]/i.test(lines[1])) {
@@ -749,8 +795,8 @@ function parseQuestionsFromText(text) {
 
         while (i < lines.length) {
           const line = lines[i];
-          if (/^[A-D][\.\)]\s+/i.test(line)) {
-            const textWithoutLetter = line.replace(/^[A-D][\.\)]\s+/i, "").trim();
+          if (/^[A-F][\.\)]\s*/i.test(line)) {
+            const textWithoutLetter = line.replace(/^[A-F][\.\)]\s*/i, "").trim();
             let englishPart = textWithoutLetter;
             let hindiPart = "";
 
@@ -764,7 +810,7 @@ function parseQuestionsFromText(text) {
               english: englishPart,
               hindi: hindiPart
             });
-          } else if (/^Ans[\.\:\s]/i.test(line)) {
+          } else if (/^(?:Ans|Answer|Correct\s+Answer)[\.\:\s]/i.test(line)) {
             ansLineText = line;
           } else if (/^Exp[\.\:\s]/i.test(line) || /^Explanation[\.\:\s]/i.test(line)) {
             explanationLine = line.replace(/^(Exp|Explanation)[\.\:\s]+/i, "").trim();
@@ -772,16 +818,16 @@ function parseQuestionsFromText(text) {
           i++;
         }
 
-        if (optionsArray.length !== 4 || !ansLineText) continue;
+        if (optionsArray.length < 2 || !ansLineText) continue;
 
-        const answerRaw = ansLineText.replace(/^Ans[\.\:\s]+/i, "").trim();
-        if (/^[A-D]$/i.test(answerRaw)) {
+        const answerRaw = ansLineText.replace(/^(?:Ans|Answer|Correct\s+Answer)[\.\:\s]+/i, "").trim();
+        if (/^[A-F]$/i.test(answerRaw)) {
           correctAnswer = answerRaw.toUpperCase();
         } else {
           const targetIndex = optionsArray.findIndex(
             (opt) => opt.english.toLowerCase() === answerRaw.toLowerCase()
           );
-          correctAnswer = targetIndex !== -1 ? ["A", "B", "C", "D"][targetIndex] : "A";
+          correctAnswer = targetIndex !== -1 ? String.fromCharCode(65 + targetIndex) : "A";
         }
 
         const optionsPlain = optionsArray.map(o => {
@@ -789,7 +835,7 @@ function parseQuestionsFromText(text) {
           return o.english || o.hindi || "";
         });
 
-        const letterToIndex = { A: 0, B: 1, C: 2, D: 3 };
+        const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
         const resolvedCorrectAnswer = optionsPlain[letterToIndex[correctAnswer]] || optionsPlain[0];
 
         questions.push({

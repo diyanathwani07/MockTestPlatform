@@ -126,8 +126,8 @@ function PracticeTest() {
               console.error("Failed to decode obfuscated correct answer:", e);
             }
           }
-          if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
-            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+          if (["A", "B", "C", "D", "E", "F"].includes(correctText) && Array.isArray(q.options)) {
+            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
             correctText = q.options[idxMap[correctText]] || correctText;
           } else if (typeof correctText === "string" && correctText.startsWith("Option ") && Array.isArray(q.options)) {
             const optNum = parseInt(correctText.replace("Option ", ""), 10);
@@ -137,7 +137,7 @@ function PracticeTest() {
           }
 
           // Handle Option Shuffling
-          const optOrder = (sessionData.optionsOrder && sessionData.optionsOrder[origIdx]) || [0, 1, 2, 3];
+          const optOrder = (sessionData.optionsOrder && sessionData.optionsOrder[origIdx]) || q.options.map((_, i) => i);
           const shuffledOptions = optOrder.map((optIdx) => q.options[optIdx]);
 
           return {
@@ -272,7 +272,7 @@ function PracticeTest() {
 
       question.options.forEach((opt, idx) => {
         if (opt === question.correctAnswer) return;
-        const letter = ["A", "B", "C", "D"][idx] || "A";
+        const letter = String.fromCharCode(65 + idx);
         incorrectMap[opt] = parsed.incorrect?.[letter] || "This option is incorrect.";
       });
 
@@ -348,8 +348,8 @@ function PracticeTest() {
     const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
     
     let resolvedCorrectText = correctText || "";
-    if (["A", "B", "C", "D"].includes(resolvedCorrectText) && Array.isArray(currentQuestion.options)) {
-      const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+    if (["A", "B", "C", "D", "E", "F"].includes(resolvedCorrectText) && Array.isArray(currentQuestion.options)) {
+      const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
       resolvedCorrectText = currentQuestion.options[idxMap[resolvedCorrectText]] || resolvedCorrectText;
     } else if (typeof resolvedCorrectText === "string" && resolvedCorrectText.startsWith("Option ") && Array.isArray(currentQuestion.options)) {
       const optNum = parseInt(resolvedCorrectText.replace("Option ", ""), 10);

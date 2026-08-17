@@ -213,8 +213,8 @@ function Quiz() {
               console.error("Failed to decode obfuscated correct answer:", e);
             }
           }
-          if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
-            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+          if (["A", "B", "C", "D", "E", "F"].includes(correctText) && Array.isArray(q.options)) {
+            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
             correctText = q.options[idxMap[correctText]] || correctText;
           } else if (typeof correctText === "string" && correctText.startsWith("Option ") && Array.isArray(q.options)) {
             const optNum = parseInt(correctText.replace("Option ", ""), 10);
