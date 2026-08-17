@@ -584,4 +584,8 @@ body.dark-mode .lb-search .lb-icon {
     transform: scale(0.8);
     transform-origin: bottom center;
   }
+
+  .lb-student-avatar {
+    display: none !important;
+  }
 }

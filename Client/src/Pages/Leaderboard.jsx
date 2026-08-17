@@ -221,7 +221,7 @@ function Leaderboard() {
                     <tr key={row.rank}>
                       <td className="rank">{row.rank}</td>
                       <td className="student">
-                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div className="lb-student-avatar" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <User size={18} color="var(--text-muted)" />
                         </div>
                         <span className={row.isYou ? 'you' : ''}>{row.name} {row.isYou && "(You)"}</span>
