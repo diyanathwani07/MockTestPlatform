@@ -22,6 +22,7 @@ function ManageQuizzes() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [showPreviewSubmenu, setShowPreviewSubmenu] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const [selectedExportQuiz, setSelectedExportQuiz] = useState(null);
   const [viewMode, setViewMode] = useState("active"); // "active" or "recycle"
@@ -441,12 +442,61 @@ function ManageQuizzes() {
                                   {viewMode === "active" ? (
                                     <>
                                       <div 
-                                        onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); }}
-                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        style={{ position: "relative" }}
+                                        onMouseEnter={() => setShowPreviewSubmenu(quiz._id)}
+                                        onMouseLeave={() => setShowPreviewSubmenu(null)}
                                       >
-                                        <Eye size={15} /> Preview
+                                        <div 
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <div style={{ display: "flex", alignItems: "center", gap: "8px", pointerEvents: "none" }}>
+                                            <Eye size={15} /> Preview
+                                          </div>
+                                          <span style={{ fontSize: "9px", color: "var(--text-secondary)", pointerEvents: "none" }}>▶</span>
+                                        </div>
+
+                                        {showPreviewSubmenu === quiz._id && (
+                                          <div style={{ 
+                                            position: "absolute", 
+                                            left: "-135px", 
+                                            top: "0px",
+                                            backgroundColor: "var(--bg-card)", 
+                                            border: "1.5px solid var(--border-color)", 
+                                            borderRadius: "10px", 
+                                            padding: "6px 0", 
+                                            minWidth: "130px", 
+                                            boxShadow: "0 8px 24px rgba(0,0,0,0.12)", 
+                                            zIndex: 99999,
+                                            textAlign: "left"
+                                          }}>
+                                            <div 
+                                              onClick={() => { 
+                                                setActiveDropdown(null); 
+                                                setShowPreviewSubmenu(null);
+                                                navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); 
+                                              }}
+                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                            >
+                                              Preview Exam
+                                            </div>
+                                            <div 
+                                              onClick={() => { 
+                                                setActiveDropdown(null); 
+                                                setShowPreviewSubmenu(null);
+                                                navigate(`/dashboard/practice/test/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); 
+                                              }}
+                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                            >
+                                              Preview Practice
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
                                       <div 
                                         onClick={() => { 
