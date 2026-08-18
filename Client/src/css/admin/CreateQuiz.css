@@ -21,16 +21,10 @@
   margin: 0 auto;
 }
 
-/* Allow the questions builder to break out of the left column grid container and span the full width */
-.quiz-left-panel > .header-questions-card {
-  width: calc(200% + 32px); /* Spans across left column, gap (32px), and right column! */
+/* The questions builder spans the full width of both columns cleanly */
+.header-questions-card {
+  width: 100%;
   box-sizing: border-box;
-}
-
-@media (max-width: 900px) {
-  .quiz-left-panel > .header-questions-card {
-    width: 100%;
-  }
 }
 
 /* ==========================================================================
@@ -85,7 +79,9 @@ input.force-quiz-input:focus {
   flex-direction: column;
   position: sticky;
   top: 10px;
-  height: max-content;
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
+  z-index: 10;
 }
 
 /* Card Normalization & Styling */
@@ -878,6 +874,7 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow: hidden;
 }
 
 .create-multi-main {

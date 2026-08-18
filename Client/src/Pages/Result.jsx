@@ -438,13 +438,15 @@ function Result() {
               <div 
                 className="rm-metric"
                 onClick={() => {
-                  setReviewFilter(reviewFilter === "correct" ? "all" : "correct");
-                  setShowAnswers(true);
+                  if (data?.showAnswerReview !== false) {
+                    setReviewFilter(reviewFilter === "correct" ? "all" : "correct");
+                    setShowAnswers(true);
+                  }
                 }}
                 style={{ 
-                  cursor: "pointer", 
-                  border: reviewFilter === "correct" ? "2.5px solid #22C55E" : "1.5px solid var(--border-color, #E2E8F0)",
-                  boxShadow: reviewFilter === "correct" ? "0 4px 15px rgba(34, 197, 94, 0.25)" : "none",
+                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
+                  border: reviewFilter === "correct" && data?.showAnswerReview !== false ? "2.5px solid #22C55E" : "1.5px solid var(--border-color, #E2E8F0)",
+                  boxShadow: reviewFilter === "correct" && data?.showAnswerReview !== false ? "0 4px 15px rgba(34, 197, 94, 0.25)" : "none",
                   transition: "all 0.2s ease"
                 }}
               >
@@ -457,13 +459,15 @@ function Result() {
               <div 
                 className="rm-metric"
                 onClick={() => {
-                  setReviewFilter(reviewFilter === "incorrect" ? "all" : "incorrect");
-                  setShowAnswers(true);
+                  if (data?.showAnswerReview !== false) {
+                    setReviewFilter(reviewFilter === "incorrect" ? "all" : "incorrect");
+                    setShowAnswers(true);
+                  }
                 }}
                 style={{ 
-                  cursor: "pointer", 
-                  border: reviewFilter === "incorrect" ? "2.5px solid #EF4444" : "1.5px solid var(--border-color, #E2E8F0)",
-                  boxShadow: reviewFilter === "incorrect" ? "0 4px 15px rgba(239, 68, 68, 0.25)" : "none",
+                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
+                  border: reviewFilter === "incorrect" && data?.showAnswerReview !== false ? "2.5px solid #EF4444" : "1.5px solid var(--border-color, #E2E8F0)",
+                  boxShadow: reviewFilter === "incorrect" && data?.showAnswerReview !== false ? "0 4px 15px rgba(239, 68, 68, 0.25)" : "none",
                   transition: "all 0.2s ease"
                 }}
               >
@@ -476,13 +480,15 @@ function Result() {
               <div 
                 className="rm-metric"
                 onClick={() => {
-                  setReviewFilter(reviewFilter === "unattempted" ? "all" : "unattempted");
-                  setShowAnswers(true);
+                  if (data?.showAnswerReview !== false) {
+                    setReviewFilter(reviewFilter === "unattempted" ? "all" : "unattempted");
+                    setShowAnswers(true);
+                  }
                 }}
                 style={{ 
-                  cursor: "pointer", 
-                  border: reviewFilter === "unattempted" ? "2.5px solid #64748B" : "1.5px solid var(--border-color, #E2E8F0)",
-                  boxShadow: reviewFilter === "unattempted" ? "0 4px 15px rgba(100, 116, 139, 0.25)" : "none",
+                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
+                  border: reviewFilter === "unattempted" && data?.showAnswerReview !== false ? "2.5px solid #64748B" : "1.5px solid var(--border-color, #E2E8F0)",
+                  boxShadow: reviewFilter === "unattempted" && data?.showAnswerReview !== false ? "0 4px 15px rgba(100, 116, 139, 0.25)" : "none",
                   transition: "all 0.2s ease"
                 }}
               >
@@ -505,10 +511,12 @@ function Result() {
 
             {/* Action Buttons */}
             <div className="rm-actions">
-              <button className="rm-btn-outline" onClick={() => setShowAnswers(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                <FileText size={18} /> Review Answers
-              </button>
-              <button className="rm-btn-solid" onClick={() => navigate("/dashboard")}>
+              {data?.showAnswerReview !== false && (
+                <button className="rm-btn-outline" onClick={() => setShowAnswers(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                  <FileText size={18} /> Review Answers
+                </button>
+              )}
+              <button className="rm-btn-solid" onClick={() => navigate("/dashboard")} style={{ marginLeft: data?.showAnswerReview === false ? 0 : undefined, width: data?.showAnswerReview === false ? "100%" : undefined }}>
                 Back to Dashboard →
               </button>
             </div>
@@ -760,7 +768,8 @@ function Result() {
                       <div className="review-options" style={{ marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
                         {q.options && q.options.length > 0 ? q.options.map((opt, optIdx) => {
                           const isSelected = userAns === opt;
-                          const isCorrectOpt = q.correctAnswer === opt;
+                          const showCorrect = data?.showCorrectAnswers !== false;
+                          const isCorrectOpt = showCorrect && q.correctAnswer === opt;
                           
                           let optBg = isDark ? "#2A273A" : "#ffffff";
                           let optBorder = isDark ? "1px solid #3F3C53" : "1px solid #E2E8F0";
@@ -772,10 +781,17 @@ function Result() {
                             optBorder = "1px solid #22c55e";
                             optColor = isDark ? "#4ade80" : "#166534";
                             optWeight = "600";
-                          } else if (isSelected && !isCorrectOpt) {
-                            optBg = isDark ? "rgba(239, 68, 68, 0.15)" : "#fee2e2";
-                            optBorder = "1px solid #ef4444";
-                            optColor = isDark ? "#f87171" : "#991b1b";
+                          } else if (isSelected) {
+                            if (showCorrect) {
+                              optBg = isDark ? "rgba(239, 68, 68, 0.15)" : "#fee2e2";
+                              optBorder = "1px solid #ef4444";
+                              optColor = isDark ? "#f87171" : "#991b1b";
+                            } else {
+                              optBg = isDark ? "rgba(110, 63, 243, 0.15)" : "#f3e8ff";
+                              optBorder = "1px solid #6e3ff3";
+                              optColor = isDark ? "#a78bfa" : "#6e3ff3";
+                              optWeight = "600";
+                            }
                           }
                           
                           return (
@@ -796,9 +812,9 @@ function Result() {
                                 width: "26px", 
                                 height: "26px", 
                                 borderRadius: "50%", 
-                                backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected && !isCorrectOpt ? "#ef4444" : (isDark ? "#3F3C53" : "#F1F5F9")),
-                                color: isCorrectOpt || (isSelected && !isCorrectOpt) ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
-                                border: isCorrectOpt || (isSelected && !isCorrectOpt) ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
+                                backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "#6e3ff3") : (isDark ? "#3F3C53" : "#F1F5F9")),
+                                color: isCorrectOpt || isSelected ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
+                                border: isCorrectOpt || isSelected ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -821,19 +837,29 @@ function Result() {
                           <strong style={{ color: "#1E293B" }}>Your Answer: </strong>
                           <span
                             className={
-                              userAns === undefined || userAns === null
+                              data?.showCorrectAnswers === false
+                                ? ""
+                                : userAns === undefined || userAns === null
                                 ? "unanswered-text"
                                 : isCorrect === false
                                 ? "wrong-text"
                                 : "correct-text"
                             }
-                            style={{ padding: "4px 10px", borderRadius: "6px", backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", fontWeight: "600", whiteSpace: "nowrap" }}
+                            style={{ 
+                              padding: "4px 10px", 
+                              borderRadius: "6px", 
+                              backgroundColor: data?.showCorrectAnswers === false ? "#F1F5F9" : undefined, 
+                              color: data?.showCorrectAnswers === false ? "#475569" : undefined, 
+                              border: "1px solid #E2E8F0", 
+                              fontWeight: "600", 
+                              whiteSpace: "nowrap" 
+                            }}
                           >
                             {(userAns !== undefined && userAns !== null) ? <MathRenderer text={userAns} /> : "Not Answered"}
                           </span>
                         </div>
                         
-                        {q.explanation && (
+                        {data?.showExplanations !== false && q.explanation && (
                           <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", borderLeft: "4px solid #6E3FF3", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "left" }}>
                             <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: isDark ? "#A78BFA" : "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
                               <span>💡</span> Explanation

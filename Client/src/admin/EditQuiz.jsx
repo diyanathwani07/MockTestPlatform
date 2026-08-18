@@ -56,6 +56,14 @@ function EditQuiz() {
     shuffleOptions: false,
     randomSelection: false,
     questionsPerAttempt: 20,
+    showResultAfterSubmission: true,
+    showCorrectAnswers: true,
+    showExplanations: true,
+    showAnswerReview: true,
+    practiceShowResultAfterSubmission: true,
+    practiceShowCorrectAnswers: true,
+    practiceShowExplanations: true,
+    practiceShowAnswerReview: true,
     examSeriesId: "",
     isPaid: false,
     price: 0,
@@ -176,6 +184,7 @@ function EditQuiz() {
   // Collapse states for builder sections
   const [quizConfigCollapsed, setQuizConfigCollapsed] = useState(false);
   const [questionsCollapsed, setQuestionsCollapsed] = useState(false);
+  const [resultSettingsCollapsed, setResultSettingsCollapsed] = useState(false);
 
   // Minutes and seconds inputs for duration
   const [durationMin, setDurationMin] = useState("");
@@ -252,6 +261,14 @@ function EditQuiz() {
           shuffleOptions: dbQuiz.shuffleOptions || false,
           randomSelection: dbQuiz.randomSelection || false,
           questionsPerAttempt: dbQuiz.questionsPerAttempt || 20,
+          showResultAfterSubmission: dbQuiz.showResultAfterSubmission !== undefined ? dbQuiz.showResultAfterSubmission : true,
+          showCorrectAnswers: dbQuiz.showCorrectAnswers !== undefined ? dbQuiz.showCorrectAnswers : true,
+          showExplanations: dbQuiz.showExplanations !== undefined ? dbQuiz.showExplanations : true,
+          showAnswerReview: dbQuiz.showAnswerReview !== undefined ? dbQuiz.showAnswerReview : true,
+          practiceShowResultAfterSubmission: dbQuiz.practiceShowResultAfterSubmission !== undefined ? dbQuiz.practiceShowResultAfterSubmission : true,
+          practiceShowCorrectAnswers: dbQuiz.practiceShowCorrectAnswers !== undefined ? dbQuiz.practiceShowCorrectAnswers : true,
+          practiceShowExplanations: dbQuiz.practiceShowExplanations !== undefined ? dbQuiz.practiceShowExplanations : true,
+          practiceShowAnswerReview: dbQuiz.practiceShowAnswerReview !== undefined ? dbQuiz.practiceShowAnswerReview : true,
           examSeriesId: dbQuiz.examSeriesId || "",
           isPaid: dbQuiz.isPaid || false,
           price: dbQuiz.price || 0,
@@ -1347,339 +1364,6 @@ function EditQuiz() {
                         </>
                       )}
                     </div>
-
-                    {/* 3. Questions Builder */}
-                    <div className="form-card header-questions-card">
-                      <div className="questions-title-row">
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Assessment Questions</h3>
-                        </div>
-                        <div className="questions-title-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              navigate(`/admin/edit-quiz-multi/${id}`);
-                            }}
-                            className="btn-primary"
-                            style={{
-                              background: "rgba(59, 130, 246, 0.1)",
-                              color: "#3B82F6",
-                              border: "1.5px solid rgba(59, 130, 246, 0.2)",
-                              borderRadius: "8px",
-                              padding: "6px 12px",
-                              fontSize: "12px",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px"
-                            }}
-                            title="Convert this single-section quiz into a multi-section quiz to add more sections."
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M4 12h16m-8-8v16" />
-                            </svg>
-                            Convert to Multi-Section
-                          </button>
-                          {questions.length > 0 && (
-                            <button 
-                              type="button" 
-                              onClick={clearAllQuestions} 
-                              className="btn-danger-compact"
-                              style={{
-                                background: "rgba(239, 68, 68, 0.1)",
-                                color: "var(--red)",
-                                border: "1.5px solid rgba(239, 68, 68, 0.2)",
-                                borderRadius: "8px",
-                                padding: "6px 12px",
-                                fontSize: "12px",
-                                fontWeight: "600",
-                                cursor: "pointer",
-                                transition: "all 0.15s ease"
-                              }}
-                            >
-                              🗑️ Delete All Questions
-                            </button>
-                          )}
-                          {questions.length > 0 && (
-                            <span style={{ fontSize: "16px", fontWeight: "bold", color: "var(--text-primary)" }}>
-                              {questions.length} Question{questions.length !== 1 ? "s" : ""}
-                            </span>
-                          )}
-                          <span
-                            onClick={(e) => { e.stopPropagation(); setQuestionsCollapsed(!questionsCollapsed); }}
-                            style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal", cursor: "pointer", userSelect: "none" }}
-                          >
-                            {questionsCollapsed ? "＋ Expand All" : "－ Collapse All"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {!questionsCollapsed && (
-                        <>
-                          <div className="questions-scrollable-container questions-grid-layout">
-                            {questions.map((q, qIndex) => {
-                              const isExpanded = !!expandedQuestions[qIndex];
-                              return (
-                                <div className={`question-block-enhanced ${isExpanded ? 'question-expanded-full-width' : ''}`} key={qIndex} style={{ minWidth: 0 }}>
-                                  {/* Question Block Header */}
-                                  <div 
-                                    className="question-block-header"
-                                    onClick={() => toggleQuestionExpand(qIndex)}
-                                    style={{ cursor: "pointer", userSelect: "none" }}
-                                  >
-                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
-                                      <span className="question-number">Question {qIndex + 1}</span>
-                                      {!isExpanded && q.questionEnglish && (
-                                        <span 
-                                          style={{ 
-                                            fontSize: "12px", 
-                                            color: "var(--text-muted)", 
-                                            whiteSpace: "nowrap", 
-                                            overflow: "hidden", 
-                                            textOverflow: "ellipsis",
-                                            fontWeight: "500",
-                                            flex: 1
-                                          }}
-                                        >
-                                          {q.questionEnglish}
-                                        </span>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="question-header-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
-                                      {questions.length > 1 && (
-                                        <button
-                                          type="button"
-                                          className="remove-btn-compact"
-                                          onClick={() => removeQuestion(qIndex)}
-                                          title="Delete Question"
-                                        >
-                                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                          </svg>
-                                          <span>Delete</span>
-                                        </button>
-                                      )}
-                                      <span 
-                                        style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600", cursor: "pointer" }}
-                                        onClick={() => toggleQuestionExpand(qIndex)}
-                                      >
-                                        {isExpanded ? "- Collapse" : "+ Expand"}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  {/* Collapsible Question Inputs */}
-                                  {isExpanded && (
-                                    <div className="question-expanded-split" style={{ marginTop: '14px' }}>
-                                      <div className="question-inputs-left">
-
-                                        <div className="question-inputs-fields">
-                                          <div className="form-field full-width">
-                                            <textarea
-                                              value={q.questionEnglish}
-                                              onChange={(e) =>
-                                                handleQuestionChange(qIndex, "questionEnglish", e.target.value)
-                                              }
-                                              rows={4}
-                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
-                                              placeholder="Enter question in English..."
-                                            />
-                                          </div>
-
-                                          <div className="form-field full-width">
-                                            <textarea
-                                              value={q.questionHindi}
-                                              onChange={(e) =>
-                                                handleQuestionChange(qIndex, "questionHindi", e.target.value)
-                                              }
-                                              rows={4}
-                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
-                                              placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..."
-                                            />
-                                          </div>
-
-                                          <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", display: "block" }}>
-                                            Options (Select correct answer using checkmark ✓ on the right)
-                                          </label>
-                                          
-                                          <div className="options-grid-enhanced">
-                                            {q.options.map((optionValue, optIndex) => {
-                                              const label = String.fromCharCode(65 + optIndex);
-                                              const isCorrect = q.correctOptionIndex === optIndex;
-                                              return (
-                                                <div 
-                                                  className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`}
-                                                  key={optIndex}
-                                                  style={{ flexDirection: "column", gap: 0, padding: 0 }}
-                                                >
-                                                  <div style={{ display: "flex", width: "100%", padding: "10px", alignItems: "center", gap: "10px" }}>
-                                                    <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
-                                                      {label}
-                                                    </div>
-                                                    <input
-                                                      type="text"
-                                                      value={optionValue}
-                                                      onChange={(e) =>
-                                                        handleOptionChange(qIndex, optIndex, e.target.value)
-                                                      }
-                                                      placeholder="English Option / हिंदी विकल्प"
-                                                      className="option-text-field"
-                                                    />
-                                                    <div 
-                                                      className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
-                                                      onClick={() => selectCorrectOption(qIndex, optIndex)}
-                                                      title="Mark as correct answer"
-                                                      style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        width: "22px",
-                                                        height: "22px",
-                                                        borderRadius: "50%",
-                                                        border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
-                                                        backgroundColor: isCorrect ? "#10B981" : "transparent",
-                                                        color: isCorrect ? "#ffffff" : "transparent",
-                                                        cursor: "pointer",
-                                                        fontSize: "12px",
-                                                        fontWeight: "bold",
-                                                        transition: "all 0.15s ease",
-                                                        userSelect: "none",
-                                                        flexShrink: 0
-                                                      }}
-                                                    >
-                                                      ✓
-                                                    </div>
-                                                  </div>
-                                                  {!isCorrect && optionValue && (
-                                                    <div style={{ width: "100%", padding: "0 10px 10px 10px", borderTop: "1px dashed var(--border-color)", marginTop: "0px" }}>
-                                                      <input
-                                                        type="text"
-                                                        value={q.explanations?.incorrect?.[optionValue] || ""}
-                                                        onChange={(e) => {
-                                                          const newVal = e.target.value;
-                                                          setQuestions(prev => {
-                                                            const updated = [...prev];
-                                                            const incMap = { ...(updated[qIndex].explanations?.incorrect || {}) };
-                                                            incMap[optionValue] = newVal;
-                                                            updated[qIndex].explanations = {
-                                                              ...(updated[qIndex].explanations || {}),
-                                                              incorrect: incMap
-                                                            };
-                                                            return updated;
-                                                          });
-                                                        }}
-                                                        placeholder={`Explanation if student selects ${label} (Optional)`}
-                                                        style={{ width: "100%", border: "none", background: "transparent", fontSize: "11px", color: "var(--text-secondary)", outline: "none", padding: "4px 0" }}
-                                                      />
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-
-                                          {/* Dynamic Add/Remove Option Buttons */}
-                                          <div style={{ display: "flex", gap: "10px", marginTop: "10px", marginBottom: "10px" }}>
-                                            {q.options.length < 6 && (
-                                              <button 
-                                                type="button" 
-                                                onClick={() => addOptionToQuestion(qIndex)}
-                                                style={{
-                                                  padding: "6px 12px",
-                                                  borderRadius: "6px",
-                                                  fontSize: "12px",
-                                                  fontWeight: "bold",
-                                                  backgroundColor: "rgba(110, 63, 243, 0.1)",
-                                                  border: "1px solid rgba(110, 63, 243, 0.2)",
-                                                  color: "var(--violet, #6E3FF3)",
-                                                  cursor: "pointer"
-                                                }}
-                                              >
-                                                ＋ Add Option
-                                              </button>
-                                            )}
-                                            {q.options.length > 2 && (
-                                              <button 
-                                                type="button" 
-                                                onClick={() => removeOptionFromQuestion(qIndex)}
-                                                style={{
-                                                  padding: "6px 12px",
-                                                  borderRadius: "6px",
-                                                  fontSize: "12px",
-                                                  fontWeight: "bold",
-                                                  backgroundColor: "rgba(239, 68, 68, 0.1)",
-                                                  border: "1px solid rgba(239, 68, 68, 0.2)",
-                                                  color: "#EF4444",
-                                                  cursor: "pointer"
-                                                }}
-                                              >
-                                                － Remove Option
-                                              </button>
-                                            )}
-                                          </div>
-
-                                          <div className="form-field full-width" style={{ marginTop: "14px" }}>
-                                            <textarea
-                                              value={q.explanation || ""}
-                                              onChange={(e) =>
-                                                handleQuestionChange(qIndex, "explanation", e.target.value)
-                                              }
-                                              rows={4}
-                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
-                                              placeholder="Answer Explanation (Optional)..."
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
-                                      
-                                      <div className="question-preview-right" style={{ background: 'var(--bg-panel)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px', lineHeight: '1.6' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>Live Preview</div>
-                                        <div style={{ marginBottom: '16px' }}>
-                                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Question:</div>
-                                          <div><MathRenderer text={q.questionEnglish || "..."} /></div>
-                                          {q.questionHindi && <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}><MathRenderer text={q.questionHindi} /></div>}
-                                        </div>
-                                        <div style={{ marginBottom: '16px' }}>
-                                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Options:</div>
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                            {q.options.map((optionValue, optIndex) => {
-                                              const label = String.fromCharCode(65 + optIndex);
-                                              const isCorrect = q.correctOptionIndex === optIndex;
-                                              if (!optionValue) return null;
-                                              return (
-                                                <div key={optIndex} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                  <span style={{ fontWeight: 'bold', color: isCorrect ? '#10B981' : 'var(--text-secondary)' }}>{label}.</span>
-                                                  <MathRenderer text={optionValue} />
-                                                  {isCorrect && <span style={{ color: '#10B981', fontSize: '12px', marginLeft: '4px' }}>✓</span>}
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-                                        </div>
-                                        {q.explanation && (
-                                          <div>
-                                            <div style={{ fontWeight: '600', marginBottom: '4px' }}>Explanation:</div>
-                                            <div><MathRenderer text={q.explanation} /></div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          <button type="button" className="add-question-btn" onClick={addQuestion}>
-                            + Add Question Manually
-                          </button>
-                        </>
-                      )}
-                    </div>
                   </div>
 
                   {/* ── RIGHT PANEL: PUBLICATION & TOOLS ── */}
@@ -2067,7 +1751,572 @@ function EditQuiz() {
                         )}
                       </div>
                     </div>
+
+                    {/* Result Settings Card */}
+                    <div className="form-card compact-card" style={{ marginTop: "24px" }}>
+                      <div 
+                        onClick={() => setResultSettingsCollapsed(!resultSettingsCollapsed)}
+                        style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: resultSettingsCollapsed ? "none" : "1px solid var(--border-color)", paddingBottom: resultSettingsCollapsed ? "0" : "10px", marginBottom: resultSettingsCollapsed ? "0" : "16px" }}
+                      >
+                        <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Result Settings</h3>
+                        <span style={{ color: "var(--violet)", fontSize: "12px", fontWeight: "600" }}>
+                          {resultSettingsCollapsed ? "＋ Expand" : "－ Collapse"}
+                        </span>
+                      </div>
+                      
+                      {!resultSettingsCollapsed && (
+                        <>
+                          {/* EXAM SETTINGS: Visible if publishAs is 'exam' or 'both' */}
+                          {(quizMeta.publishAs === "exam" || quizMeta.publishAs === "both") && (
+                            <div style={{ marginBottom: quizMeta.publishAs === "both" ? "32px" : 0 }}>
+                              {quizMeta.publishAs === "both" && (
+                                <h4 style={{ fontSize: "12px", color: "var(--violet)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "6px", fontWeight: "700" }}>
+                                  Exam Mode Settings
+                                </h4>
+                              )}
+                              <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "-6px 0 16px 0", lineHeight: "1.4" }}>
+                                Configure what students can see after submitting the **Exam** version.
+                              </p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                                {/* Setting 1: showResultAfterSubmission */}
+                                <div className="form-field" style={{ marginBottom: 0 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: "pointer" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={quizMeta.showResultAfterSubmission} 
+                                      onChange={(e) => {
+                                        const val = e.target.checked;
+                                        setQuizMeta({
+                                          ...quizMeta,
+                                          showResultAfterSubmission: val,
+                                          showCorrectAnswers: val ? true : false,
+                                          showExplanations: val ? true : false,
+                                          showAnswerReview: val ? true : false,
+                                        });
+                                      }} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Result After Submission
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to see their score and result immediately after submitting.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+
+                                {/* Setting 2: showCorrectAnswers */}
+                                <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.showResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      disabled={!quizMeta.showResultAfterSubmission}
+                                      checked={quizMeta.showCorrectAnswers} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, showCorrectAnswers: e.target.checked })} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Correct Answers
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to see the correct answers after the result is available.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+
+                                {/* Setting 3: showExplanations */}
+                                <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.showResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      disabled={!quizMeta.showResultAfterSubmission}
+                                      checked={quizMeta.showExplanations} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, showExplanations: e.target.checked })} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Answer Explanations
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to view explanations for the questions after submission.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+
+                                {/* Setting 4: showAnswerReview */}
+                                <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.showResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      disabled={!quizMeta.showResultAfterSubmission}
+                                      checked={quizMeta.showAnswerReview} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, showAnswerReview: e.target.checked })} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Answer Review
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to review their selected answers, correct answers, and unanswered questions.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* PRACTICE SETTINGS: Visible if publishAs is 'practice' or 'both' */}
+                          {(quizMeta.publishAs === "practice" || quizMeta.publishAs === "both") && (
+                            <div style={{ marginTop: quizMeta.publishAs === "both" ? "16px" : 0 }}>
+                              {quizMeta.publishAs === "both" && (
+                                <h4 style={{ fontSize: "12px", color: "var(--violet)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "6px", fontWeight: "700" }}>
+                                  Practice Mode Settings
+                                </h4>
+                              )}
+                              <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "-6px 0 16px 0", lineHeight: "1.4" }}>
+                                Configure what students can see when practicing this **Practice** module.
+                              </p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                                {/* Practice Setting 1: practiceShowResultAfterSubmission */}
+                                <div className="form-field" style={{ marginBottom: 0 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: "pointer" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={quizMeta.practiceShowResultAfterSubmission} 
+                                      onChange={(e) => {
+                                        const val = e.target.checked;
+                                        setQuizMeta({
+                                          ...quizMeta,
+                                          practiceShowResultAfterSubmission: val,
+                                          practiceShowCorrectAnswers: val ? true : false,
+                                          practiceShowExplanations: val ? true : false,
+                                          practiceShowAnswerReview: val ? true : false,
+                                        });
+                                      }} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Result After Submission
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to see their score and result immediately after submitting.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+
+                                {/* Practice Setting 2: practiceShowCorrectAnswers */}
+                                <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.practiceShowResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      disabled={!quizMeta.practiceShowResultAfterSubmission}
+                                      checked={quizMeta.practiceShowCorrectAnswers} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowCorrectAnswers: e.target.checked })} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Correct Answers
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to see the correct answers after the result is available.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+
+                                {/* Practice Setting 3: practiceShowExplanations */}
+                                <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.practiceShowResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      disabled={!quizMeta.practiceShowResultAfterSubmission}
+                                      checked={quizMeta.practiceShowExplanations} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowExplanations: e.target.checked })} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Answer Explanations
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to view explanations for the questions after submission.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+
+                                {/* Practice Setting 4: practiceShowAnswerReview */}
+                                <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                                  <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.practiceShowResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                    <input 
+                                      type="checkbox" 
+                                      disabled={!quizMeta.practiceShowResultAfterSubmission}
+                                      checked={quizMeta.practiceShowAnswerReview} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowAnswerReview: e.target.checked })} 
+                                      style={{ marginTop: "3px" }}
+                                    />
+                                    <div>
+                                      <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                        Show Answer Review
+                                      </span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                        Allow students to review their selected answers, correct answers, and unanswered questions.
+                                      </p>
+                                    </div>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
                   </div>
+                  {/* 3. Questions Builder */}
+                  <div className="form-card header-questions-card">
+                      <div className="questions-title-row">
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Assessment Questions</h3>
+                        </div>
+                        <div className="questions-title-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigate(`/admin/edit-quiz-multi/${id}`);
+                            }}
+                            className="btn-primary"
+                            style={{
+                              background: "rgba(59, 130, 246, 0.1)",
+                              color: "#3B82F6",
+                              border: "1.5px solid rgba(59, 130, 246, 0.2)",
+                              borderRadius: "8px",
+                              padding: "6px 12px",
+                              fontSize: "12px",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}
+                            title="Convert this single-section quiz into a multi-section quiz to add more sections."
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 12h16m-8-8v16" />
+                            </svg>
+                            Convert to Multi-Section
+                          </button>
+                          {questions.length > 0 && (
+                            <button 
+                              type="button" 
+                              onClick={clearAllQuestions} 
+                              className="btn-danger-compact"
+                              style={{
+                                background: "rgba(239, 68, 68, 0.1)",
+                                color: "var(--red)",
+                                border: "1.5px solid rgba(239, 68, 68, 0.2)",
+                                borderRadius: "8px",
+                                padding: "6px 12px",
+                                fontSize: "12px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease"
+                              }}
+                            >
+                              🗑️ Delete All Questions
+                            </button>
+                          )}
+                          {questions.length > 0 && (
+                            <span style={{ fontSize: "16px", fontWeight: "bold", color: "var(--text-primary)" }}>
+                              {questions.length} Question{questions.length !== 1 ? "s" : ""}
+                            </span>
+                          )}
+                          <span
+                            onClick={(e) => { e.stopPropagation(); setQuestionsCollapsed(!questionsCollapsed); }}
+                            style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal", cursor: "pointer", userSelect: "none" }}
+                          >
+                            {questionsCollapsed ? "＋ Expand All" : "－ Collapse All"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {!questionsCollapsed && (
+                        <>
+                          <div className="questions-scrollable-container questions-grid-layout">
+                            {questions.map((q, qIndex) => {
+                              const isExpanded = !!expandedQuestions[qIndex];
+                              return (
+                                <div className={`question-block-enhanced ${isExpanded ? 'question-expanded-full-width' : ''}`} key={qIndex} style={{ minWidth: 0 }}>
+                                  {/* Question Block Header */}
+                                  <div 
+                                    className="question-block-header"
+                                    onClick={() => toggleQuestionExpand(qIndex)}
+                                    style={{ cursor: "pointer", userSelect: "none" }}
+                                  >
+                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
+                                      <span className="question-number">Question {qIndex + 1}</span>
+                                      {!isExpanded && q.questionEnglish && (
+                                        <span 
+                                          style={{ 
+                                            fontSize: "12px", 
+                                            color: "var(--text-muted)", 
+                                            whiteSpace: "nowrap", 
+                                            overflow: "hidden", 
+                                            textOverflow: "ellipsis",
+                                            fontWeight: "500",
+                                            flex: 1
+                                          }}
+                                        >
+                                          {q.questionEnglish}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="question-header-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
+                                      {questions.length > 1 && (
+                                        <button
+                                          type="button"
+                                          className="remove-btn-compact"
+                                          onClick={() => removeQuestion(qIndex)}
+                                          title="Delete Question"
+                                        >
+                                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                          </svg>
+                                          <span>Delete</span>
+                                        </button>
+                                      )}
+                                      <span 
+                                        style={{ fontSize: "13px", color: "var(--primary)", padding: "0 4px", fontWeight: "600", cursor: "pointer" }}
+                                        onClick={() => toggleQuestionExpand(qIndex)}
+                                      >
+                                        {isExpanded ? "- Collapse" : "+ Expand"}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Collapsible Question Inputs */}
+                                  {isExpanded && (
+                                    <div className="question-expanded-split" style={{ marginTop: '14px' }}>
+                                      <div className="question-inputs-left">
+
+                                        <div className="question-inputs-fields">
+                                          <div className="form-field full-width">
+                                            <textarea
+                                              value={q.questionEnglish}
+                                              onChange={(e) =>
+                                                handleQuestionChange(qIndex, "questionEnglish", e.target.value)
+                                              }
+                                              rows={4}
+                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
+                                              placeholder="Enter question in English..."
+                                            />
+                                          </div>
+
+                                          <div className="form-field full-width">
+                                            <textarea
+                                              value={q.questionHindi}
+                                              onChange={(e) =>
+                                                handleQuestionChange(qIndex, "questionHindi", e.target.value)
+                                              }
+                                              rows={4}
+                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
+                                              placeholder="हिंदी में प्रश्न लिखें (वैकल्पिक)..."
+                                            />
+                                          </div>
+
+                                          <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", display: "block" }}>
+                                            Options (Select correct answer using checkmark ✓ on the right)
+                                          </label>
+                                          
+                                          <div className="options-grid-enhanced">
+                                            {q.options.map((optionValue, optIndex) => {
+                                              const label = String.fromCharCode(65 + optIndex);
+                                              const isCorrect = q.correctOptionIndex === optIndex;
+                                              return (
+                                                <div 
+                                                  className={`option-input-card-enhanced ${isCorrect ? "correct-answer-highlighted" : ""}`}
+                                                  key={optIndex}
+                                                  style={{ flexDirection: "column", gap: 0, padding: 0 }}
+                                                >
+                                                  <div style={{ display: "flex", width: "100%", padding: "10px", alignItems: "center", gap: "10px" }}>
+                                                    <div className={`option-letter-badge ${isCorrect ? "badge-correct" : ""}`}>
+                                                      {label}
+                                                    </div>
+                                                    <input
+                                                      type="text"
+                                                      value={optionValue}
+                                                      onChange={(e) =>
+                                                        handleOptionChange(qIndex, optIndex, e.target.value)
+                                                      }
+                                                      placeholder="English Option / हिंदी विकल्प"
+                                                      className="option-text-field"
+                                                    />
+                                                    <div 
+                                                      className={`option-select-tick ${isCorrect ? "tick-selected" : ""}`}
+                                                      onClick={() => selectCorrectOption(qIndex, optIndex)}
+                                                      title="Mark as correct answer"
+                                                      style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        width: "22px",
+                                                        height: "22px",
+                                                        borderRadius: "50%",
+                                                        border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
+                                                        backgroundColor: isCorrect ? "#10B981" : "transparent",
+                                                        color: isCorrect ? "#ffffff" : "transparent",
+                                                        cursor: "pointer",
+                                                        fontSize: "12px",
+                                                        fontWeight: "bold",
+                                                        transition: "all 0.15s ease",
+                                                        userSelect: "none",
+                                                        flexShrink: 0
+                                                      }}
+                                                    >
+                                                      ✓
+                                                    </div>
+                                                  </div>
+                                                  {!isCorrect && optionValue && (
+                                                    <div style={{ width: "100%", padding: "0 10px 10px 10px", borderTop: "1px dashed var(--border-color)", marginTop: "0px" }}>
+                                                      <input
+                                                        type="text"
+                                                        value={q.explanations?.incorrect?.[optionValue] || ""}
+                                                        onChange={(e) => {
+                                                          const newVal = e.target.value;
+                                                          setQuestions(prev => {
+                                                            const updated = [...prev];
+                                                            const incMap = { ...(updated[qIndex].explanations?.incorrect || {}) };
+                                                            incMap[optionValue] = newVal;
+                                                            updated[qIndex].explanations = {
+                                                              ...(updated[qIndex].explanations || {}),
+                                                              incorrect: incMap
+                                                            };
+                                                            return updated;
+                                                          });
+                                                        }}
+                                                        placeholder={`Explanation if student selects ${label} (Optional)`}
+                                                        style={{ width: "100%", border: "none", background: "transparent", fontSize: "11px", color: "var(--text-secondary)", outline: "none", padding: "4px 0" }}
+                                                      />
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+
+                                          {/* Dynamic Add/Remove Option Buttons */}
+                                          <div style={{ display: "flex", gap: "10px", marginTop: "10px", marginBottom: "10px" }}>
+                                            {q.options.length < 6 && (
+                                              <button 
+                                                type="button" 
+                                                onClick={() => addOptionToQuestion(qIndex)}
+                                                style={{
+                                                  padding: "6px 12px",
+                                                  borderRadius: "6px",
+                                                  fontSize: "12px",
+                                                  fontWeight: "bold",
+                                                  backgroundColor: "rgba(110, 63, 243, 0.1)",
+                                                  border: "1px solid rgba(110, 63, 243, 0.2)",
+                                                  color: "var(--violet, #6E3FF3)",
+                                                  cursor: "pointer"
+                                                }}
+                                              >
+                                                ＋ Add Option
+                                              </button>
+                                            )}
+                                            {q.options.length > 2 && (
+                                              <button 
+                                                type="button" 
+                                                onClick={() => removeOptionFromQuestion(qIndex)}
+                                                style={{
+                                                  padding: "6px 12px",
+                                                  borderRadius: "6px",
+                                                  fontSize: "12px",
+                                                  fontWeight: "bold",
+                                                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                                                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                                                  color: "#EF4444",
+                                                  cursor: "pointer"
+                                                }}
+                                              >
+                                                － Remove Option
+                                              </button>
+                                            )}
+                                          </div>
+
+                                          <div className="form-field full-width" style={{ marginTop: "14px" }}>
+                                            <textarea
+                                              value={q.explanation || ""}
+                                              onChange={(e) =>
+                                                handleQuestionChange(qIndex, "explanation", e.target.value)
+                                              }
+                                              rows={4}
+                                              style={{ minHeight: "90px", height: "auto", resize: "vertical" }}
+                                              placeholder="Answer Explanation (Optional)..."
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="question-preview-right" style={{ background: 'var(--bg-panel)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px', lineHeight: '1.6' }}>
+                                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>Live Preview</div>
+                                        <div style={{ marginBottom: '16px' }}>
+                                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Question:</div>
+                                          <div><MathRenderer text={q.questionEnglish || "..."} /></div>
+                                          {q.questionHindi && <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}><MathRenderer text={q.questionHindi} /></div>}
+                                        </div>
+                                        <div style={{ marginBottom: '16px' }}>
+                                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Options:</div>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            {q.options.map((optionValue, optIndex) => {
+                                              const label = String.fromCharCode(65 + optIndex);
+                                              const isCorrect = q.correctOptionIndex === optIndex;
+                                              if (!optionValue) return null;
+                                              return (
+                                                <div key={optIndex} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                  <span style={{ fontWeight: 'bold', color: isCorrect ? '#10B981' : 'var(--text-secondary)' }}>{label}.</span>
+                                                  <MathRenderer text={optionValue} />
+                                                  {isCorrect && <span style={{ color: '#10B981', fontSize: '12px', marginLeft: '4px' }}>✓</span>}
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                        {q.explanation && (
+                                          <div>
+                                            <div style={{ fontWeight: '600', marginBottom: '4px' }}>Explanation:</div>
+                                            <div><MathRenderer text={q.explanation} /></div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <button type="button" className="add-question-btn" onClick={addQuestion}>
+                            + Add Question Manually
+                          </button>
+                        </>
+                      )}
+                    </div>
+
                 </div>
 
                 {/* Bottom Actions Row */}

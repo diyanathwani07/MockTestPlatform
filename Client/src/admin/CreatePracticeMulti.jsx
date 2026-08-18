@@ -61,6 +61,10 @@ function CreatePracticeMulti() {
     shuffleOptions: false,
     randomSelection: false,
     questionsPerAttempt: 20,
+    showResultAfterSubmission: true,
+    showCorrectAnswers: true,
+    showExplanations: true,
+    showAnswerReview: true,
   });
 
   const [sections, setSections] = useState([defaultSection(0)]);
@@ -104,6 +108,10 @@ function CreatePracticeMulti() {
             shuffleOptions: dbQuiz.shuffleOptions || false,
             randomSelection: dbQuiz.randomSelection || false,
             questionsPerAttempt: dbQuiz.questionsPerAttempt || 20,
+            showResultAfterSubmission: dbQuiz.showResultAfterSubmission !== undefined ? dbQuiz.showResultAfterSubmission : true,
+            showCorrectAnswers: dbQuiz.showCorrectAnswers !== undefined ? dbQuiz.showCorrectAnswers : true,
+            showExplanations: dbQuiz.showExplanations !== undefined ? dbQuiz.showExplanations : true,
+            showAnswerReview: dbQuiz.showAnswerReview !== undefined ? dbQuiz.showAnswerReview : true,
           });
 
           if (dbQuiz.sections && dbQuiz.sections.length > 0) {
@@ -749,6 +757,92 @@ function CreatePracticeMulti() {
                       </div>
                     </div>
                   )}
+
+                  {/* Result Settings */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "16px" }}>
+                    <label style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: "0.5px" }}>
+                      Result Settings
+                    </label>
+                    <div style={{ background: "var(--bg-panel)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "16px" }}>
+                      
+                      {/* Setting 1: showResultAfterSubmission */}
+                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
+                        <input 
+                          type="checkbox"
+                          checked={quizMeta.showResultAfterSubmission}
+                          onChange={(e) => {
+                            const val = e.target.checked;
+                            setQuizMeta({
+                              ...quizMeta,
+                              showResultAfterSubmission: val,
+                              showCorrectAnswers: val ? true : false,
+                              showExplanations: val ? true : false,
+                              showAnswerReview: val ? true : false,
+                            });
+                          }}
+                          style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
+                        />
+                        <div>
+                          <span style={{ fontWeight: "600" }}>Show Result After Submission</span>
+                          <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                            Allow students to see their score and result immediately after submitting the exam.
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Setting 2: showCorrectAnswers */}
+                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.showResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                        <input 
+                          type="checkbox"
+                          disabled={!quizMeta.showResultAfterSubmission}
+                          checked={quizMeta.showCorrectAnswers}
+                          onChange={(e) => setQuizMeta({ ...quizMeta, showCorrectAnswers: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
+                        />
+                        <div>
+                          <span style={{ fontWeight: "600" }}>Show Correct Answers</span>
+                          <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                            Allow students to see the correct answers after the result is available.
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Setting 3: showExplanations */}
+                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.showResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                        <input 
+                          type="checkbox"
+                          disabled={!quizMeta.showResultAfterSubmission}
+                          checked={quizMeta.showExplanations}
+                          onChange={(e) => setQuizMeta({ ...quizMeta, showExplanations: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
+                        />
+                        <div>
+                          <span style={{ fontWeight: "600" }}>Show Answer Explanations</span>
+                          <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                            Allow students to view explanations for the questions after submission.
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Setting 4: showAnswerReview */}
+                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.showResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                        <input 
+                          type="checkbox"
+                          disabled={!quizMeta.showResultAfterSubmission}
+                          checked={quizMeta.showAnswerReview}
+                          onChange={(e) => setQuizMeta({ ...quizMeta, showAnswerReview: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
+                        />
+                        <div>
+                          <span style={{ fontWeight: "600" }}>Show Answer Review</span>
+                          <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                            Allow students to review their selected answers, correct answers, and unanswered questions.
+                          </p>
+                        </div>
+                      </label>
+
+                    </div>
+                  </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
                     <button

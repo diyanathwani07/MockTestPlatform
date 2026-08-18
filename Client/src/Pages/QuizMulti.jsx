@@ -52,7 +52,9 @@ function QuizMulti() {
   const [warningMsg, setWarningMsg] = useState("");
   const [violations, setViolations] = useState(0);
   const MAX_VIOLATIONS = 3;
-
+  const [showResultAfterSubmission, setShowResultAfterSubmission] = useState(true);
+  const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
+  
   const [showPaletteMobile, setShowPaletteMobile] = useState(false);
   // UI States imported from legacy Quiz.jsx
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
@@ -84,6 +86,7 @@ function QuizMulti() {
       setQuizTitle(data.title);
       setExamSubject(data.subject);
       setLockPreviousQuestions(data.lockPreviousQuestions || false);
+      setShowResultAfterSubmission(data.showResultAfterSubmission !== undefined ? data.showResultAfterSubmission : true);
       setEnablePerQuestionTimer(data.enablePerQuestionTimer || false);
       setTimePerQuestion(data.timePerQuestion || 0);
       setBreakBetweenSections(data.breakBetweenSections || 0);
@@ -506,7 +509,11 @@ function QuizMulti() {
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
-      navigate(`/student/result/${res.data.result.shareId}`, { replace: true });
+      if (showResultAfterSubmission) {
+        navigate(`/student/result/${res.data.result.shareId}`, { replace: true });
+      } else {
+        setIsSubmittedSuccessfully(true);
+      }
     } catch (error) {
       console.error("Submit Error:", error);
       alert("Failed to submit results. Please try again.");
@@ -514,6 +521,40 @@ function QuizMulti() {
   };
 
   if (pageLoading) return <div className="quiz-loading-screen">Loading Assessment Engine...</div>;
+
+  if (isSubmittedSuccessfully) {
+    return (
+      <div style={{
+        backgroundColor: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box"
+      }}>
+        <div style={{
+          background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
+          borderRadius: "24px", padding: "48px 32px",
+          textAlign: "center", maxWidth: "500px", width: "100%",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.2)", boxSizing: "border-box"
+        }}>
+          <div style={{ fontSize: "64px", marginBottom: "20px" }}>✅</div>
+          <h2 style={{ color: "var(--violet)", margin: "0 0 16px", fontSize: "24px", fontWeight: "800" }}>
+            Test Submitted Successfully
+          </h2>
+          <p style={{ color: "var(--text-primary)", fontSize: "16px", fontWeight: "600", margin: "0 0 12px" }}>
+            Your responses have been recorded.
+          </p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 32px", lineHeight: 1.5 }}>
+            Your result will be available later.
+          </p>
+          <button
+            onClick={() => navigate("/dashboard", { replace: true })}
+            style={{
+              background: "var(--violet)", color: "#ffffff", border: "none", borderRadius: "10px", padding: "12px 32px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "all 0.2s ease"
+            }}
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const currentSection = sections[currentSectionIndex];
   const activeQ = currentQuestions[currentQuestionIndex];

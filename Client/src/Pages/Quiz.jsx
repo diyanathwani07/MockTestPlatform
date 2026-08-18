@@ -50,6 +50,8 @@ function Quiz() {
   const [lockPreviousQuestions, setLockPreviousQuestions] = useState(false);
   const [questionTimeLeft, setQuestionTimeLeft] = useState(0);
   const [showTimerTooltip, setShowTimerTooltip] = useState(false);
+  const [showResultAfterSubmission, setShowResultAfterSubmission] = useState(true);
+  const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
 
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
@@ -249,6 +251,7 @@ function Quiz() {
         setEnablePerQuestionTimer(perQuestionTimerEnabled);
         setTimePerQuestion(timePerQ);
         setLockPreviousQuestions(response.data.lockPreviousQuestions || false);
+        setShowResultAfterSubmission(response.data.showResultAfterSubmission !== undefined ? response.data.showResultAfterSubmission : true);
         
         if (perQuestionTimerEnabled) {
           setQuestionTimeLeft(timePerQ);
@@ -346,21 +349,25 @@ function Quiz() {
       
 
       
-      navigate("/result", { 
-        replace: true,
-        state: { 
-          ...serverData,
-          quizId,
-          title: examSubject,
-          subject: examSubject,
-          questions: serverData.questions || questions,
-          userAnswers: serverData.userAnswers || userAnswers,
-          shareId: serverData.result?.shareId,
-          isPreview,
-          timeTaken,
-          duration: initialDurationMinutes
-        } 
-      });
+      if (showResultAfterSubmission) {
+        navigate("/result", { 
+          replace: true,
+          state: { 
+            ...serverData,
+            quizId,
+            title: examSubject,
+            subject: examSubject,
+            questions: serverData.questions || questions,
+            userAnswers: serverData.userAnswers || userAnswers,
+            shareId: serverData.result?.shareId,
+            isPreview,
+            timeTaken,
+            duration: initialDurationMinutes
+          } 
+        });
+      } else {
+        setIsSubmittedSuccessfully(true);
+      }
     } catch (err) {
       console.error(err);
       alert("Submission failed. Please check your internet connection and try again.");
@@ -409,6 +416,40 @@ function Quiz() {
           <div style={{ fontSize: "40px", marginBottom: "12px", animation: "spin 1s infinite" }}>⏳</div>
           <h3 style={{ margin: 0, color: "var(--text-primary)", fontFamily: "sans-serif" }}>Decrypting Exam Packet...</h3>
           <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "6px" }}>Establishing secure handshake with MongoDB</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSubmittedSuccessfully) {
+    return (
+      <div style={{
+        backgroundColor: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box"
+      }}>
+        <div style={{
+          background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
+          borderRadius: "24px", padding: "48px 32px",
+          textAlign: "center", maxWidth: "500px", width: "100%",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.2)", boxSizing: "border-box"
+        }}>
+          <div style={{ fontSize: "64px", marginBottom: "20px" }}>✅</div>
+          <h2 style={{ color: "var(--violet)", margin: "0 0 16px", fontSize: "24px", fontWeight: "800" }}>
+            Test Submitted Successfully
+          </h2>
+          <p style={{ color: "var(--text-primary)", fontSize: "16px", fontWeight: "600", margin: "0 0 12px" }}>
+            Your responses have been recorded.
+          </p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 32px", lineHeight: 1.5 }}>
+            Your result will be available later.
+          </p>
+          <button
+            onClick={() => navigate("/dashboard", { replace: true })}
+            style={{
+              background: "var(--violet)", color: "#ffffff", border: "none", borderRadius: "10px", padding: "12px 32px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "all 0.2s ease"
+            }}
+          >
+            Go to Dashboard
+          </button>
         </div>
       </div>
     );

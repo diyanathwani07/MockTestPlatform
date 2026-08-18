@@ -42,6 +42,14 @@ function CreateQuiz() {
     shuffleOptions: false,
     randomSelection: false,
     questionsPerAttempt: 20,
+    showResultAfterSubmission: true,
+    showCorrectAnswers: true,
+    showExplanations: true,
+    showAnswerReview: true,
+    practiceShowResultAfterSubmission: true,
+    practiceShowCorrectAnswers: true,
+    practiceShowExplanations: true,
+    practiceShowAnswerReview: true,
     examSeriesId: "",
     isPracticePaid: false,
     practicePrice: 0,
@@ -85,6 +93,7 @@ function CreateQuiz() {
 
   const [quizConfigCollapsed, setQuizConfigCollapsed] = useState(false);
   const [questionsCollapsed, setQuestionsCollapsed] = useState(false);
+  const [resultSettingsCollapsed, setResultSettingsCollapsed] = useState(false);
 
   const [durationMin, setDurationMin] = useState("");
   const [durationSec, setDurationSec] = useState("");
@@ -939,9 +948,387 @@ function CreateQuiz() {
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Questions Builder */}
-                <div className="form-card header-questions-card">
+              {/* ── RIGHT PANEL ── */}
+              <div className="admin-quiz-right-panel">
+
+                {/* DocxParser */}
+                <div className="form-card compact-card">
+                  <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
+                </div>
+
+                {/* Schedule Card */}
+                <div className="form-card compact-card">
+                  <h3 className="form-card-title">Publication Schedule</h3>
+                  <div className="form-field">
+                    <label className="checkbox-toggle-label">
+                      <input type="checkbox" checked={isScheduled} onChange={(e) => setIsScheduled(e.target.checked)} />
+                      <span>Schedule for Later</span>
+                    </label>
+
+                    {isScheduled && (
+                      <div className="scheduled-datetime-wrapper" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+
+                        {/* Date Picker */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                          <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Date</label>
+                          <button
+                            type="button"
+                            onClick={() => setShowDatePicker(!showDatePicker)}
+                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                          >
+                            <span>{scheduledDate ? formatDateDisplay(scheduledDate) : "Select Date"}</span>
+                            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
+                          </button>
+
+                          {showDatePicker && (
+                            <div style={{ position: "absolute", top: "105%", left: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "12px", width: "260px", boxSizing: "border-box" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                                <button type="button" onClick={() => { if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); } else { setCalendarMonth(calendarMonth - 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&lt;</button>
+                                <span style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)" }}>
+                                  {["January","February","March","April","May","June","July","August","September","October","November","December"][calendarMonth]} {calendarYear}
+                                </span>
+                                <button type="button" onClick={() => { if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); } else { setCalendarMonth(calendarMonth + 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&gt;</button>
+                              </div>
+
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", textAlign: "center" }}>
+                                {["S","M","T","W","T","F","S"].map((d, idx) => (
+                                  <span key={idx} style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)" }}>{d}</span>
+                                ))}
+                              </div>
+
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
+                                {generateCalendarDays().map((cell, idx) => {
+                                  const cellDateStr = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
+                                  const isSelected = cellDateStr === scheduledDate;
+                                  return (
+                                    <div
+                                      key={idx}
+                                      onClick={() => { setScheduledDate(cellDateStr); updateScheduledDateTime(cellDateStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }}
+                                      style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "28px", fontSize: "12px", fontWeight: isSelected ? "700" : "500", borderRadius: "50%", cursor: "pointer", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : cell.isCurrentMonth ? "var(--text-primary)" : "var(--text-muted)", border: isSelected ? "2px solid rgba(110,63,243,0.2)" : "none", boxSizing: "border-box" }}
+                                    >
+                                      {cell.day}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1.5px solid var(--border-color)", paddingTop: "8px", marginTop: "4px" }}>
+                                <button type="button" onClick={() => { setScheduledDate(""); setScheduledDateTime(""); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--red)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Clear</button>
+                                <button type="button" onClick={() => { const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth()+1).padStart(2,"0"); const dd = String(today.getDate()).padStart(2,"0"); const todayStr = `${yyyy}-${mm}-${dd}`; setScheduledDate(todayStr); setCalendarMonth(today.getMonth()); setCalendarYear(today.getFullYear()); updateScheduledDateTime(todayStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--violet)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Today</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Time Picker */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                          <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Time</label>
+                          <button
+                            type="button"
+                            onClick={() => setShowTimePicker(!showTimePicker)}
+                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                          >
+                            <span>{`${scheduledHour}:${scheduledMinute} ${scheduledPeriod}`}</span>
+                            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+                          </button>
+
+                          {showTimePicker && (
+                            <div style={{ position: "absolute", top: "105%", right: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "14px", width: "240px" }}>
+                              <div style={{ display: "flex", height: "180px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
+
+                                {/* Hours */}
+                                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", paddingRight: "4px" }} className="time-scroll-col">
+                                  {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
+                                    const isSelected = hr === scheduledHour;
+                                    return (
+                                      <div key={hr} onClick={() => { setScheduledHour(hr); updateScheduledDateTime(scheduledDate, hr, scheduledMinute, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                        {hr}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                {/* Minutes */}
+                                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }} className="time-scroll-col">
+                                  {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
+                                    const isSelected = min === scheduledMinute;
+                                    return (
+                                      <div key={min} onClick={() => { setScheduledMinute(min); updateScheduledDateTime(scheduledDate, scheduledHour, min, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                        {min}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                {/* AM/PM */}
+                                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px", justifyContent: "center" }}>
+                                  {["AM", "PM"].map(p => {
+                                    const isSelected = p === scheduledPeriod;
+                                    return (
+                                      <div key={p} onClick={() => { setScheduledPeriod(p); updateScheduledDateTime(scheduledDate, scheduledHour, scheduledMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
+                                        {p}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <button type="button" onClick={() => setShowTimePicker(false)} style={{ padding: "8px 12px", border: "1.5px solid var(--border-input)", borderRadius: "10px", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "center" }}>
+                                Select Time
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", display: "inline-block" }}>
+                          Quiz will automatically publish at this date & time.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Result Settings Card */}
+                <div className="form-card compact-card" style={{ marginTop: "24px" }}>
+                  <div 
+                    onClick={() => setResultSettingsCollapsed(!resultSettingsCollapsed)}
+                    style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: resultSettingsCollapsed ? "none" : "1px solid var(--border-color)", paddingBottom: resultSettingsCollapsed ? "0" : "10px", marginBottom: resultSettingsCollapsed ? "0" : "16px" }}
+                  >
+                    <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Result Settings</h3>
+                    <span style={{ color: "var(--violet)", fontSize: "12px", fontWeight: "600" }}>
+                      {resultSettingsCollapsed ? "＋ Expand" : "－ Collapse"}
+                    </span>
+                  </div>
+                  
+                  {!resultSettingsCollapsed && (
+                    <>
+                      {/* EXAM SETTINGS: Visible if publishAs is 'exam' or 'both' */}
+                      {(quizMeta.publishAs === "exam" || quizMeta.publishAs === "both") && (
+                        <div style={{ marginBottom: quizMeta.publishAs === "both" ? "32px" : 0 }}>
+                          {quizMeta.publishAs === "both" && (
+                            <h4 style={{ fontSize: "12px", color: "var(--violet)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "6px", fontWeight: "700" }}>
+                              Exam Mode Settings
+                            </h4>
+                          )}
+                          <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "-6px 0 16px 0", lineHeight: "1.4" }}>
+                            Configure what students can see after submitting the **Exam** version.
+                          </p>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                            {/* Setting 1: showResultAfterSubmission */}
+                            <div className="form-field" style={{ marginBottom: 0 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: "pointer" }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={quizMeta.showResultAfterSubmission} 
+                                  onChange={(e) => {
+                                    const val = e.target.checked;
+                                    setQuizMeta({
+                                      ...quizMeta,
+                                      showResultAfterSubmission: val,
+                                      showCorrectAnswers: val ? true : false,
+                                      showExplanations: val ? true : false,
+                                      showAnswerReview: val ? true : false,
+                                    });
+                                  }} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Result After Submission
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to see their score and result immediately after submitting.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+
+                            {/* Setting 2: showCorrectAnswers */}
+                            <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.showResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                <input 
+                                  type="checkbox" 
+                                  disabled={!quizMeta.showResultAfterSubmission}
+                                  checked={quizMeta.showCorrectAnswers} 
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, showCorrectAnswers: e.target.checked })} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Correct Answers
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to see the correct answers after the result is available.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+
+                            {/* Setting 3: showExplanations */}
+                            <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.showResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                <input 
+                                  type="checkbox" 
+                                  disabled={!quizMeta.showResultAfterSubmission}
+                                  checked={quizMeta.showExplanations} 
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, showExplanations: e.target.checked })} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Answer Explanations
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to view explanations for the questions after submission.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+
+                            {/* Setting 4: showAnswerReview */}
+                            <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.showResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                <input 
+                                  type="checkbox" 
+                                  disabled={!quizMeta.showResultAfterSubmission}
+                                  checked={quizMeta.showAnswerReview} 
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, showAnswerReview: e.target.checked })} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Answer Review
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to review their selected answers, correct answers, and unanswered questions.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* PRACTICE SETTINGS: Visible if publishAs is 'practice' or 'both' */}
+                      {(quizMeta.publishAs === "practice" || quizMeta.publishAs === "both") && (
+                        <div style={{ marginTop: quizMeta.publishAs === "both" ? "16px" : 0 }}>
+                          {quizMeta.publishAs === "both" && (
+                            <h4 style={{ fontSize: "12px", color: "var(--violet)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "6px", fontWeight: "700" }}>
+                              Practice Mode Settings
+                            </h4>
+                          )}
+                          <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "-6px 0 16px 0", lineHeight: "1.4" }}>
+                            Configure what students can see when practicing this **Practice** module.
+                          </p>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                            {/* Practice Setting 1: practiceShowResultAfterSubmission */}
+                            <div className="form-field" style={{ marginBottom: 0 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: "pointer" }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={quizMeta.practiceShowResultAfterSubmission} 
+                                  onChange={(e) => {
+                                    const val = e.target.checked;
+                                    setQuizMeta({
+                                      ...quizMeta,
+                                      practiceShowResultAfterSubmission: val,
+                                      practiceShowCorrectAnswers: val ? true : false,
+                                      practiceShowExplanations: val ? true : false,
+                                      practiceShowAnswerReview: val ? true : false,
+                                    });
+                                  }} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Result After Submission
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to see their score and result immediately after submitting.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+
+                            {/* Practice Setting 2: practiceShowCorrectAnswers */}
+                            <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.practiceShowResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                <input 
+                                  type="checkbox" 
+                                  disabled={!quizMeta.practiceShowResultAfterSubmission}
+                                  checked={quizMeta.practiceShowCorrectAnswers} 
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowCorrectAnswers: e.target.checked })} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Correct Answers
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to see the correct answers after the result is available.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+
+                            {/* Practice Setting 3: practiceShowExplanations */}
+                            <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.practiceShowResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                <input 
+                                  type="checkbox" 
+                                  disabled={!quizMeta.practiceShowResultAfterSubmission}
+                                  checked={quizMeta.practiceShowExplanations} 
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowExplanations: e.target.checked })} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Answer Explanations
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to view explanations for the questions after submission.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+
+                            {/* Practice Setting 4: practiceShowAnswerReview */}
+                            <div className="form-field" style={{ marginBottom: 0, opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                              <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: quizMeta.practiceShowResultAfterSubmission ? "pointer" : "not-allowed" }}>
+                                <input 
+                                  type="checkbox" 
+                                  disabled={!quizMeta.practiceShowResultAfterSubmission}
+                                  checked={quizMeta.practiceShowAnswerReview} 
+                                  onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowAnswerReview: e.target.checked })} 
+                                  style={{ marginTop: "3px" }}
+                                />
+                                <div>
+                                  <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                    Show Answer Review
+                                  </span>
+                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                                    Allow students to review their selected answers, correct answers, and unanswered questions.
+                                  </p>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                </div>
+
+              </div>
+              {/* Questions Builder */}
+              <div className="form-card header-questions-card">
                   <div
                     className="questions-title-row"
                     style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px", flexWrap: "wrap", gap: "12px" }}
@@ -1164,152 +1551,7 @@ function CreateQuiz() {
                     </>
                   )}
                 </div>
-              </div>
 
-              {/* ── RIGHT PANEL ── */}
-              <div className="admin-quiz-right-panel">
-
-                {/* DocxParser */}
-                <div className="form-card compact-card">
-                  <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
-                </div>
-
-                {/* Schedule Card */}
-                <div className="form-card compact-card">
-                  <h3 className="form-card-title">Publication Schedule</h3>
-                  <div className="form-field">
-                    <label className="checkbox-toggle-label">
-                      <input type="checkbox" checked={isScheduled} onChange={(e) => setIsScheduled(e.target.checked)} />
-                      <span>Schedule for Later</span>
-                    </label>
-
-                    {isScheduled && (
-                      <div className="scheduled-datetime-wrapper" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
-
-                        {/* Date Picker */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
-                          <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Date</label>
-                          <button
-                            type="button"
-                            onClick={() => setShowDatePicker(!showDatePicker)}
-                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
-                          >
-                            <span>{scheduledDate ? formatDateDisplay(scheduledDate) : "Select Date"}</span>
-                            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
-                          </button>
-
-                          {showDatePicker && (
-                            <div style={{ position: "absolute", top: "105%", left: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "12px", width: "260px", boxSizing: "border-box" }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                                <button type="button" onClick={() => { if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); } else { setCalendarMonth(calendarMonth - 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&lt;</button>
-                                <span style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)" }}>
-                                  {["January","February","March","April","May","June","July","August","September","October","November","December"][calendarMonth]} {calendarYear}
-                                </span>
-                                <button type="button" onClick={() => { if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); } else { setCalendarMonth(calendarMonth + 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&gt;</button>
-                              </div>
-
-                              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", textAlign: "center" }}>
-                                {["S","M","T","W","T","F","S"].map((d, idx) => (
-                                  <span key={idx} style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)" }}>{d}</span>
-                                ))}
-                              </div>
-
-                              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
-                                {generateCalendarDays().map((cell, idx) => {
-                                  const cellDateStr = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
-                                  const isSelected = cellDateStr === scheduledDate;
-                                  return (
-                                    <div
-                                      key={idx}
-                                      onClick={() => { setScheduledDate(cellDateStr); updateScheduledDateTime(cellDateStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }}
-                                      style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "28px", fontSize: "12px", fontWeight: isSelected ? "700" : "500", borderRadius: "50%", cursor: "pointer", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : cell.isCurrentMonth ? "var(--text-primary)" : "var(--text-muted)", border: isSelected ? "2px solid rgba(110,63,243,0.2)" : "none", boxSizing: "border-box" }}
-                                    >
-                                      {cell.day}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1.5px solid var(--border-color)", paddingTop: "8px", marginTop: "4px" }}>
-                                <button type="button" onClick={() => { setScheduledDate(""); setScheduledDateTime(""); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--red)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Clear</button>
-                                <button type="button" onClick={() => { const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth()+1).padStart(2,"0"); const dd = String(today.getDate()).padStart(2,"0"); const todayStr = `${yyyy}-${mm}-${dd}`; setScheduledDate(todayStr); setCalendarMonth(today.getMonth()); setCalendarYear(today.getFullYear()); updateScheduledDateTime(todayStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--violet)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Today</button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Time Picker */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
-                          <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Time</label>
-                          <button
-                            type="button"
-                            onClick={() => setShowTimePicker(!showTimePicker)}
-                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
-                          >
-                            <span>{`${scheduledHour}:${scheduledMinute} ${scheduledPeriod}`}</span>
-                            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
-                          </button>
-
-                          {showTimePicker && (
-                            <div style={{ position: "absolute", top: "105%", right: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "14px", width: "240px" }}>
-                              <div style={{ display: "flex", height: "180px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
-
-                                {/* Hours */}
-                                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", paddingRight: "4px" }} className="time-scroll-col">
-                                  {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
-                                    const isSelected = hr === scheduledHour;
-                                    return (
-                                      <div key={hr} onClick={() => { setScheduledHour(hr); updateScheduledDateTime(scheduledDate, hr, scheduledMinute, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
-                                        {hr}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-
-                                <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
-
-                                {/* Minutes */}
-                                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }} className="time-scroll-col">
-                                  {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
-                                    const isSelected = min === scheduledMinute;
-                                    return (
-                                      <div key={min} onClick={() => { setScheduledMinute(min); updateScheduledDateTime(scheduledDate, scheduledHour, min, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
-                                        {min}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-
-                                <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
-
-                                {/* AM/PM */}
-                                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px", justifyContent: "center" }}>
-                                  {["AM", "PM"].map(p => {
-                                    const isSelected = p === scheduledPeriod;
-                                    return (
-                                      <div key={p} onClick={() => { setScheduledPeriod(p); updateScheduledDateTime(scheduledDate, scheduledHour, scheduledMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
-                                        {p}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-
-                              <button type="button" onClick={() => setShowTimePicker(false)} style={{ padding: "8px 12px", border: "1.5px solid var(--border-input)", borderRadius: "10px", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "center" }}>
-                                Select Time
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", display: "inline-block" }}>
-                          Quiz will automatically publish at this date & time.
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Bottom Actions */}
