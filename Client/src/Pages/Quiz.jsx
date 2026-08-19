@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams, useSearchParams } from "react-rout
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import { usePreview } from "../context/PreviewContext";
-import { Sun, Moon, X, Clock, Bookmark, Trash2, ArrowLeft, ArrowRight, LayoutGrid, Info } from "lucide-react";
+import { Sun, Moon, X, Clock, Bookmark, Trash2, ArrowLeft, ArrowRight, LayoutGrid, Info, FileText, Calendar } from "lucide-react";
 import MathRenderer from "../components/MathRenderer";
 import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
@@ -39,6 +39,7 @@ function Quiz() {
 
   const [questions, setQuestions] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [userAnswers, setUserAnswers] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -52,6 +53,7 @@ function Quiz() {
   const [showTimerTooltip, setShowTimerTooltip] = useState(false);
   const [showResultAfterSubmission, setShowResultAfterSubmission] = useState(true);
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
+  const [finalTimeTaken, setFinalTimeTaken] = useState(0);
 
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
@@ -179,9 +181,9 @@ function Quiz() {
     // Allow re-entry for reattempts, removing the sessionStorage block
 
     const fetchLiveExam = async () => {
-      if (!quizId) {
-        alert("No Exam ID detected! Redirecting back.");
-        navigate("/start-test");
+      if (!quizId || quizId === "undefined" || quizId === "null") {
+        setError("No valid Exam ID detected. Please start the test from the dashboard.");
+        setPageLoading(false);
         return;
       }
       try {
@@ -262,11 +264,9 @@ function Quiz() {
       } catch (err) {
         console.error(err);
         if (err.response && err.response.status === 403) {
-          alert("You have already submitted this exam! You cannot take it again.");
-          navigate("/dashboard/results", { replace: true });
+          setError("You have already submitted this exam! You cannot take it again.");
         } else {
-          alert("Could not load exam packet from MongoDB.");
-          navigate("/start-test");
+          setError("Could not load exam packet from MongoDB. Please verify the exam is active and try again.");
         }
       } finally {
         setPageLoading(false);
@@ -366,6 +366,7 @@ function Quiz() {
           } 
         });
       } else {
+        setFinalTimeTaken(timeTaken);
         setIsSubmittedSuccessfully(true);
       }
     } catch (err) {
@@ -409,6 +410,35 @@ function Quiz() {
     return "unvisited";
   };
 
+  if (error) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-page)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+        <div style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "40px", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", textAlign: "center", maxWidth: "480px", width: "100%" }}>
+          <div style={{ fontSize: "50px", marginBottom: "16px" }}>⚠️</div>
+          <h3 style={{ margin: "0 0 8px 0", color: "var(--text-primary)", fontSize: "20px", fontWeight: "700" }}>Unable to Start Exam</h3>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.5", margin: "0 0 24px 0" }}>{error}</p>
+          <button 
+            onClick={() => navigate("/dashboard")}
+            style={{
+              background: "var(--violet)",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "10px",
+              padding: "12px 28px",
+              fontWeight: "700",
+              fontSize: "14px",
+              cursor: "pointer",
+              boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)",
+              transition: "all 0.2s"
+            }}
+          >
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (pageLoading) {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-page)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -422,34 +452,163 @@ function Quiz() {
   }
 
   if (isSubmittedSuccessfully) {
+    const formattedTime = (seconds) => {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}m ${s}s`;
+    };
+
+    const options = { day: "2-digit", month: "short", year: "numeric" };
+    const dateStr = new Date().toLocaleDateString("en-GB", options);
+    const timeStr = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+    const submittedOn = `${dateStr}, ${timeStr}`;
+
     return (
       <div style={{
         backgroundColor: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box"
       }}>
         <div style={{
           background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
-          borderRadius: "24px", padding: "48px 32px",
-          textAlign: "center", maxWidth: "500px", width: "100%",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.2)", boxSizing: "border-box"
+          borderRadius: "24px", padding: "40px",
+          textAlign: "center", maxWidth: "640px", width: "100%",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box"
         }}>
-          <div style={{ fontSize: "64px", marginBottom: "20px" }}>✅</div>
-          <h2 style={{ color: "var(--violet)", margin: "0 0 16px", fontSize: "24px", fontWeight: "800" }}>
-            Test Submitted Successfully
+          
+          {/* Circular green check icon with confetti style */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px", position: "relative" }}>
+            {/* Confetti pieces */}
+            <div className="confetti-piece" style={{ position: "absolute", top: "10px", left: "calc(50% - 70px)", width: "8px", height: "8px", background: "#8b5cf6", borderRadius: "2px", transform: "rotate(45deg)", animationDelay: "0s" }} />
+            <div className="confetti-piece" style={{ position: "absolute", top: "40px", left: "calc(50% - 85px)", width: "6px", height: "12px", background: "#10b981", borderRadius: "1px", transform: "rotate(-15deg)", animationDelay: "0.4s" }} />
+            <div className="confetti-piece" style={{ position: "absolute", top: "70px", left: "calc(50% - 65px)", width: "8px", height: "8px", background: "#3b82f6", borderRadius: "50%", animationDelay: "0.8s" }} />
+            
+            <div className="confetti-piece" style={{ position: "absolute", top: "15px", right: "calc(50% - 70px)", width: "8px", height: "8px", background: "#3b82f6", borderRadius: "2px", transform: "rotate(15deg)", animationDelay: "0.2s" }} />
+            <div className="confetti-piece" style={{ position: "absolute", top: "45px", right: "calc(50% - 85px)", width: "6px", height: "12px", background: "#8b5cf6", borderRadius: "1px", transform: "rotate(30deg)", animationDelay: "0.6s" }} />
+            <div className="confetti-piece" style={{ position: "absolute", top: "68px", right: "calc(50% - 65px)", width: "8px", height: "8px", background: "#10b981", borderRadius: "50%", animationDelay: "1s" }} />
+
+            <div style={{ position: "absolute", width: "160px", height: "160px", pointerEvents: "none", opacity: 0.8, background: "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)", top: "-30px" }} />
+            <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)", border: "2px solid rgba(16, 185, 129, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(16, 185, 129, 0.4)" }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
+            Test Submitted <span style={{ color: "#10B981" }}>Successfully!</span>
           </h2>
-          <p style={{ color: "var(--text-primary)", fontSize: "16px", fontWeight: "600", margin: "0 0 12px" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
             Your responses have been recorded.
           </p>
-          <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 32px", lineHeight: 1.5 }}>
-            Your result will be available later.
-          </p>
+
+          {/* Dotted border card for hidden result */}
+          <div style={{
+            background: "rgba(139, 92, 246, 0.03)",
+            border: "1.5px dashed rgba(139, 92, 246, 0.3)",
+            borderRadius: "16px",
+            padding: "20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            textAlign: "left",
+            marginBottom: "32px"
+          }}>
+            <div style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(139, 92, 246, 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
+              <Clock size={22} color="#8b5cf6" />
+            </div>
+            <div>
+              <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Result will be available later</h4>
+              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>The result for this exam will be processed and updated shortly. Please check back later.</p>
+            </div>
+          </div>
+
+          {/* Style block for responsive grid */}
+          <style>{`
+            .submitted-details-row {
+              border-top: 1.5px solid var(--border-color);
+              padding-top: 28px;
+              margin-bottom: 32px;
+              display: grid;
+              grid-template-columns: 1.2fr 1.3fr 0.9fr;
+              gap: 20px;
+              text-align: left;
+            }
+            @media (max-width: 640px) {
+              .submitted-details-row {
+                grid-template-columns: 1fr;
+                gap: 24px;
+              }
+            }
+            @keyframes confetti-drift {
+              0% { transform: translateY(0) rotate(0deg); }
+              50% { transform: translateY(-8px) translateX(3px) rotate(180deg); }
+              100% { transform: translateY(0) rotate(360deg); }
+            }
+            .confetti-piece {
+              animation: confetti-drift 4s ease-in-out infinite;
+            }
+          `}</style>
+
+          {/* Grid stats section */}
+          <div className="submitted-details-row">
+            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <div style={{ color: "#8b5cf6", marginTop: "2px" }}><FileText size={20} /></div>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Exam</span>
+                <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", lineHeight: "1.4" }}>{examSubject}</p>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <div style={{ color: "#8b5cf6", marginTop: "2px" }}><Calendar size={20} /></div>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Submitted On</span>
+                <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{submittedOn}</p>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <div style={{ color: "#8b5cf6", marginTop: "2px" }}><Clock size={20} /></div>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Time Taken</span>
+                <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{formattedTime(finalTimeTaken)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Go to Dashboard button */}
           <button
             onClick={() => navigate("/dashboard", { replace: true })}
             style={{
-              background: "var(--violet)", color: "#ffffff", border: "none", borderRadius: "10px", padding: "12px 32px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "all 0.2s ease"
+              background: "var(--violet)",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "12px",
+              padding: "14px 32px",
+              fontSize: "15px",
+              fontWeight: "700",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              margin: "0 auto",
+              boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)"
             }}
           >
             Go to Dashboard
+            <ArrowRight size={18} />
           </button>
+
         </div>
       </div>
     );
@@ -697,26 +856,26 @@ function Quiz() {
               >
                 <ArrowLeft size={18} /> Previous
               </button>
-              <button 
-                className="quiz-btn-next"
-                onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))} 
-                disabled={currentQuestion === questions.length - 1}
-                style={{ 
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                  background: "#3730A3",
-                  color: "#FFFFFF", 
-                  border: "none", 
-                  borderRadius: "10px", 
-                  padding: "12px 32px", 
-                  fontWeight: "700", 
-                  fontSize: "13px", 
-                  cursor: currentQuestion === questions.length - 1 ? "not-allowed" : "pointer",
-                  opacity: currentQuestion === questions.length - 1 ? 0.5 : 1,
-                  transition: "all 0.15s ease"
-                }}
-              >
-                Next <ArrowRight size={18} />
-              </button>
+               {currentQuestion < questions.length - 1 && (
+                <button 
+                  className="quiz-btn-next"
+                  onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))} 
+                  style={{ 
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                    background: "#3730A3",
+                    color: "#FFFFFF", 
+                    border: "none", 
+                    borderRadius: "10px", 
+                    padding: "12px 32px", 
+                    fontWeight: "700", 
+                    fontSize: "13px", 
+                    cursor: "pointer",
+                    transition: "all 0.15s ease"
+                  }}
+                >
+                  Next <ArrowRight size={18} />
+                </button>
+              )}
               {currentQuestion === questions.length - 1 && (
                 <button 
                   className="quiz-btn-submit"

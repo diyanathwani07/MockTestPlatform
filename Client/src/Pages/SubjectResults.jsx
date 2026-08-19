@@ -131,25 +131,31 @@ function SubjectResults() {
                       <span className="sr-badge-completed" style={{ fontSize: "10px", padding: "2px 8px" }}>Completed</span>
                     </div>
                   </div>
-                  <div className="sr-card-stats" style={{ gap: "16px", flex: 1.5 }}>
-                    <div className="sr-stat-group">
-                      <span className="sr-stat-label" style={{ fontSize: "11px" }}>Score</span>
-                      <span className="sr-stat-value sr-val-score" style={{ fontSize: "15px" }}>{result.score} / {result.total}</span>
-                      <span className="sr-stat-sub" style={{ fontSize: "10px" }}>{result.percentage ? result.percentage : ((result.score / (result.total || 1)) * 100).toFixed(0)}%</span>
+                  {result.showResultAfterSubmission !== false ? (
+                    <div className="sr-card-stats" style={{ gap: "16px", flex: 1.5 }}>
+                      <div className="sr-stat-group">
+                        <span className="sr-stat-label" style={{ fontSize: "11px" }}>Score</span>
+                        <span className="sr-stat-value sr-val-score" style={{ fontSize: "15px" }}>{result.score} / {result.total}</span>
+                        <span className="sr-stat-sub" style={{ fontSize: "10px" }}>{result.percentage ? result.percentage : ((result.score / (result.total || 1)) * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="sr-stat-divider" style={{ height: "28px" }}></div>
+                      <div className="sr-stat-group">
+                        <span className="sr-stat-label" style={{ fontSize: "11px" }}>Accuracy</span>
+                        <span className="sr-stat-value sr-val-accuracy" style={{ fontSize: "15px", marginBottom: "10px" }}>
+                          {result.total > 0 ? Math.round((result.correct / ((result.correct + result.incorrect) || 1)) * 100) || 0 : 0}%
+                        </span>
+                      </div>
+                      <div className="sr-stat-divider" style={{ height: "28px" }}></div>
+                      <div className="sr-stat-group">
+                        <span className="sr-stat-label" style={{ fontSize: "11px" }}>Rank</span>
+                        <span className="sr-stat-value sr-val-rank" style={{ fontSize: "15px", marginBottom: "10px" }}>#{Math.floor(Math.random() * 50) + 1}</span>
+                      </div>
                     </div>
-                    <div className="sr-stat-divider" style={{ height: "28px" }}></div>
-                    <div className="sr-stat-group">
-                      <span className="sr-stat-label" style={{ fontSize: "11px" }}>Accuracy</span>
-                      <span className="sr-stat-value sr-val-accuracy" style={{ fontSize: "15px", marginBottom: "10px" }}>
-                        {result.total > 0 ? Math.round((result.correct / ((result.correct + result.incorrect) || 1)) * 100) || 0 : 0}%
-                      </span>
+                  ) : (
+                    <div style={{ flex: 1.5, display: "flex", alignItems: "center", color: "var(--text-muted)", fontSize: "13px", fontWeight: "600" }}>
+                      Evaluation completed. Result release pending.
                     </div>
-                    <div className="sr-stat-divider" style={{ height: "28px" }}></div>
-                    <div className="sr-stat-group">
-                      <span className="sr-stat-label" style={{ fontSize: "11px" }}>Rank</span>
-                      <span className="sr-stat-value sr-val-rank" style={{ fontSize: "15px", marginBottom: "10px" }}>#{Math.floor(Math.random() * 50) + 1}</span>
-                    </div>
-                  </div>
+                  )}
                   <div className="sr-card-right" style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 0.6 }}>
                     <button 
                       className="sr-view-details-btn" 

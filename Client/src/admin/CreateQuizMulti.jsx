@@ -153,6 +153,15 @@ function CreateQuizMulti() {
             plans: dbQuiz.plans || [],
             detailedDescription: dbQuiz.detailedDescription || "",
             examSeriesId: dbQuiz.examSeriesId || "",
+            publishAs: dbQuiz.publishAs || "exam",
+            resultReleaseMode: dbQuiz.resultReleaseMode || "immediate",
+            resultReleaseDate: dbQuiz.resultReleaseDate || null,
+            practiceShowResultAfterSubmission: dbQuiz.practiceShowResultAfterSubmission !== undefined ? dbQuiz.practiceShowResultAfterSubmission : (dbQuiz.showResultAfterSubmission !== undefined ? dbQuiz.showResultAfterSubmission : true),
+            practiceShowCorrectAnswers: dbQuiz.practiceShowCorrectAnswers !== undefined ? dbQuiz.practiceShowCorrectAnswers : (dbQuiz.showCorrectAnswers !== undefined ? dbQuiz.showCorrectAnswers : true),
+            practiceShowExplanations: dbQuiz.practiceShowExplanations !== undefined ? dbQuiz.practiceShowExplanations : (dbQuiz.showExplanations !== undefined ? dbQuiz.showExplanations : true),
+            practiceShowAnswerReview: dbQuiz.practiceShowAnswerReview !== undefined ? dbQuiz.practiceShowAnswerReview : (dbQuiz.showAnswerReview !== undefined ? dbQuiz.showAnswerReview : true),
+            practiceResultReleaseMode: dbQuiz.practiceResultReleaseMode || "immediate",
+            practiceResultReleaseDate: dbQuiz.practiceResultReleaseDate || null,
           });
 
           if (dbQuiz.sections && dbQuiz.sections.length > 0) {

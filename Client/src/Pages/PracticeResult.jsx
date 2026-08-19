@@ -42,95 +42,64 @@ function PracticeResult() {
       <StudentSidebar />
       <div className="sd-main-content">
         <StudentNavbar title="Practice Complete" />
-        <div className="practice-result-container">
+        <div className="practice-result-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", maxWidth: "680px", margin: "0 auto", animation: "fadeIn 0.5s ease" }}>
           
-          <div className="pr-header">
-            <div className="pr-icon-wrapper">
-              <Trophy size={48} className="pr-trophy" />
+          {/* Confetti & Trophy wrapper */}
+          <div style={{ position: "relative", marginBottom: "32px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            {/* Dots / Confetti background decorator */}
+            <div style={{ position: "absolute", width: "160px", height: "160px", pointerEvents: "none", opacity: 0.8, background: "radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)" }} />
+            <div style={{ width: "96px", height: "96px", borderRadius: "50%", background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 25px rgba(124, 58, 237, 0.3)" }}>
+              <Trophy size={48} color="#ffffff" />
             </div>
-            <h2>Practice Session Completed!</h2>
-            <p>You have successfully finished the practice module for <strong>{title || "this subject"}</strong>.</p>
           </div>
 
-          {showResultAfterSubmission ? (
-            <div className="pr-stats-grid">
-              <div className="pr-stat-card">
-                <div className="pr-stat-icon" style={{ color: "#8B5CF6", backgroundColor: "rgba(139, 92, 246, 0.1)" }}>
-                  <Target size={24} />
-                </div>
-                <div className="pr-stat-info">
-                  <h3>{totalQuestions}</h3>
-                  <p>Total Questions</p>
-                </div>
-              </div>
+          <div className="pr-header" style={{ marginBottom: "32px", textAlign: "center" }}>
+            <h2 style={{ fontSize: "32px", fontWeight: "800", color: "#ffffff", marginBottom: "16px", letterSpacing: "-0.5px" }}>
+              Practice Session <span style={{ color: "#a78bfa" }}>Completed!</span>
+            </h2>
+            <p style={{ fontSize: "16px", color: "#94a3b8", lineHeight: "1.6", margin: 0, maxWidth: "540px" }}>
+              You have successfully finished the practice module for{" "}
+              <strong style={{ color: "#a78bfa", fontWeight: "700" }}>{title || "this subject"}</strong>.
+            </p>
+          </div>
 
-              <div className="pr-stat-card">
-                <div className="pr-stat-icon" style={{ color: "#10B981", backgroundColor: "rgba(16, 185, 129, 0.1)" }}>
-                  <CheckCircle size={24} />
-                </div>
-                <div className="pr-stat-info">
-                  <h3>{firstTryCorrect}</h3>
-                  <p>Correct on First Attempt</p>
-                </div>
-              </div>
-
-              <div className="pr-stat-card">
-                <div className="pr-stat-icon" style={{ color: "#F59E0B", backgroundColor: "rgba(245, 158, 11, 0.1)" }}>
-                  <RotateCcw size={24} />
-                </div>
-                <div className="pr-stat-info">
-                  <h3>{multipleTries}</h3>
-                  <p>Required Multiple Tries</p>
-                </div>
-              </div>
-
-              <div className="pr-stat-card">
-                <div className="pr-stat-icon" style={{ color: "#EF4444", backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
-                  <AlertTriangle size={24} />
-                </div>
-                <div className="pr-stat-info">
-                  <h3>{totalWrongAttempts}</h3>
-                  <p>Total Wrong Attempts</p>
-                </div>
-              </div>
-
-              <div className="pr-stat-card">
-                <div className="pr-stat-icon" style={{ color: "#3B82F6", backgroundColor: "rgba(59, 130, 246, 0.1)" }}>
-                  <Percent size={24} />
-                </div>
-                <div className="pr-stat-info">
-                  <h3>{accuracy}%</h3>
-                  <p>First-Try Accuracy</p>
-                </div>
-              </div>
-
-              <div className="pr-stat-card">
-                <div className="pr-stat-icon" style={{ color: "#6366F1", backgroundColor: "rgba(99, 102, 241, 0.1)" }}>
-                  <Clock size={24} />
-                </div>
-                <div className="pr-stat-info">
-                  <h3>{formatTime(timeSpent)}</h3>
-                  <p>Total Time Spent</p>
-                </div>
-              </div>
+          {/* Success card block */}
+          <div style={{ background: "rgba(30, 27, 75, 0.3)", border: "1.5px solid rgba(139, 92, 246, 0.2)", borderRadius: "20px", padding: "28px 24px", display: "flex", alignItems: "center", gap: "20px", width: "100%", boxSizing: "border-box", marginBottom: "40px" }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(139, 92, 246, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <CheckCircle size={24} color="#8b5cf6" />
             </div>
-          ) : (
-            <div className="pr-info-card" style={{ textAlign: "center", margin: "30px auto", padding: "24px", borderRadius: "14px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-color)", maxWidth: "500px" }}>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0, lineHeight: "1.6" }}>
-                🔒 Results and performance metrics for this practice module are hidden by the administrator.
-              </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <h4 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>Well done!</h4>
+              <p style={{ margin: 0, fontSize: "14px", color: "#94a3b8", lineHeight: "1.5" }}>Keep practicing to strengthen your understanding and improve your performance.</p>
             </div>
-          )}
+          </div>
 
-          <div className="pr-actions">
-            <button className="pr-btn-secondary" onClick={() => navigate(`/dashboard/practice/test/${quizId}?restart=true`)}>
+          {/* Buttons block */}
+          <div className="pr-actions" style={{ display: "flex", gap: "20px", width: "100%", justifyContent: "center", marginBottom: "40px" }}>
+            <button 
+              className="pr-btn-secondary" 
+              onClick={() => navigate(`/dashboard/practice/test/${quizId}?restart=true`)}
+              style={{ flex: 1, maxWidth: "240px", border: "1.5px solid rgba(255, 255, 255, 0.15)", color: "#ffffff", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", padding: "14px 28px", borderRadius: "14px", fontWeight: "700", cursor: "pointer", transition: "all 0.2s" }}
+            >
               <RotateCcw size={18} />
               Practice Again
             </button>
-            <button className="pr-btn-primary" onClick={() => navigate("/dashboard/practice")}>
+            <button 
+              className="pr-btn-primary" 
+              onClick={() => navigate("/dashboard/practice")}
+              style={{ flex: 1, maxWidth: "240px", background: "#7c3aed", border: "none", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", padding: "14px 28px", borderRadius: "14px", fontWeight: "700", cursor: "pointer", transition: "all 0.2s", boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)" }}
+            >
               Back to Dashboard
               <ArrowRight size={18} />
             </button>
+          </div>
+
+          {/* Quote footer */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "1.5px solid rgba(255,255,255,0.06)", paddingTop: "24px", width: "100%", justifyContent: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#8b5cf6" }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <p style={{ margin: 0, fontSize: "14px", color: "#64748b" }}>Every practice brings you one step closer to your goal.</p>
           </div>
 
         </div>

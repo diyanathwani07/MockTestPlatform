@@ -657,55 +657,101 @@ function Users() {
                 </button>
               </div>
               
-              <div className="modal-body">
-                <div className="ticket-meta">
-                  
-                  <div className="meta-item">
-                    <User size={16} style={{ marginTop: '2px' }} />
-                    <div>
-                      <p className="meta-label">User Details</p>
-                      <p className="meta-value">{selectedUser.fullName || "Unknown"}</p>
-                      <p className="meta-sub">{selectedUser.email}</p>
+              <div className="modal-body" style={{ padding: "24px 0 0 0" }}>
+                {/* Profile Header Area (Horizontal Layout) */}
+                <div style={{ display: "flex", alignItems: "center", gap: "24px", marginBottom: "28px", padding: "0 24px" }}>
+                  {selectedUser.avatar || selectedUser.profilePhoto ? (
+                    <img 
+                      src={selectedUser.avatar || selectedUser.profilePhoto} 
+                      alt="Profile" 
+                      style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", border: "4px solid rgba(124, 58, 237, 0.2)", outline: "2px solid #7c3aed" }} 
+                    />
+                  ) : (
+                    <div style={{ width: "100px", height: "100px", borderRadius: "50%", background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontSize: "40px", fontWeight: "700", border: "4px solid rgba(124, 58, 237, 0.2)", outline: "2px solid #7c3aed", textTransform: "uppercase" }}>
+                      {(selectedUser.fullName || selectedUser.name || "U")[0]}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <h2 style={{ margin: 0, fontSize: "24px", fontWeight: "700", color: "var(--text-primary)" }}>{selectedUser.fullName || "Unknown"}</h2>
+                    <div style={{ display: "flex" }}>
+                      <span style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10b981", borderRadius: "100px", padding: "4px 12px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: "600" }}>
+                        <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981" }} />
+                        {selectedUser.status || "Active"}
+                      </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Divider Line */}
+                <div style={{ height: "1.5px", background: "var(--border-color)", opacity: 0.5, marginBottom: "0", width: "100%" }} />
+
+                {/* Metadata List Stack (separated by lines, structured in 3 columns) */}
+                <div className="ticket-meta" style={{ background: "transparent", border: "none", padding: 0, gap: 0, display: "flex", flexDirection: "column" }}>
                   
-                  <div className="meta-item">
-                    <ShieldCheck size={16} style={{ marginTop: '2px' }} />
-                    <div>
-                      <p className="meta-label">Role & Status</p>
-                      <p className="meta-value" style={{ textTransform: 'capitalize' }}>
-                        {selectedUser.role || "User"} 
-                        <span style={{ margin: '0 8px', color: 'var(--text-muted)' }}>|</span> 
-                        <span style={{ color: selectedUser.status === 'Suspended' ? '#ef4444' : 'var(--green)' }}>
-                          {selectedUser.status || 'Active'}
-                        </span>
-                      </p>
+                  {/* USER DETAILS */}
+                  <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                      <User size={18} />
+                    </div>
+                    <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>User Details</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>{selectedUser.fullName || "Unknown"}</p>
+                      <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>{selectedUser.email}</p>
                     </div>
                   </div>
-                  
-                  <div className="meta-item">
-                    <Activity size={16} style={{ marginTop: '2px' }} />
-                    <div>
-                      <p className="meta-label">Mock Tests Attempted</p>
-                      <p className="meta-value">{quizzesAttempted !== null ? quizzesAttempted : "Loading..."}</p>
+                  {/* ROLE */}
+                  <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                      <ShieldCheck size={18} />
+                    </div>
+                    <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Role</span>
+                    </div>
+                    <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+                      <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)", textTransform: "capitalize" }}>{selectedUser.role || "User"}</span>
                     </div>
                   </div>
 
-                  <div className="meta-item">
-                    <Clock size={16} style={{ marginTop: '2px' }} />
-                    <div>
-                      <p className="meta-label">Joined On</p>
-                      <p className="meta-value">
+                  {/* MOCK TESTS ATTEMPTED */}
+                  <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                      <Activity size={18} />
+                    </div>
+                    <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Mock Tests Attempted</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>{quizzesAttempted !== null ? quizzesAttempted : "Loading..."}</span>
+                    </div>
+                  </div>
+
+                  {/* JOINED ON */}
+                  <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                      <Clock size={18} />
+                    </div>
+                    <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Joined On</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
                         {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "N/A"}
-                      </p>
+                      </span>
                     </div>
                   </div>
 
-                  <div className="meta-item">
-                    <Phone size={16} style={{ marginTop: '2px' }} />
-                    <div>
-                      <p className="meta-label">Phone No</p>
-                      <p className="meta-value">{selectedUser.phone || "Not provided"}</p>
+                  {/* PHONE NO */}
+                  <div style={{ display: "flex", alignItems: "center", padding: "18px 24px" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                      <Phone size={18} />
+                    </div>
+                    <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Phone No</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>{selectedUser.phone || "Not provided"}</span>
                     </div>
                   </div>
 

@@ -21,6 +21,7 @@ const CreateCustomQuiz = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [quizToDelete, setQuizToDelete] = useState(null);
+  const [filterMode, setFilterMode] = useState("all"); // "all", "practice", "exam"
   const navigate = useNavigate();
 
   const getStableRank = (id) => {
@@ -403,11 +404,34 @@ const CreateCustomQuiz = () => {
                   Access and re-take your previously generated custom practice sessions.
                 </p>
 
+                <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                  {["all", "practice", "exam"].map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setFilterMode(mode)}
+                      style={{
+                        padding: "6px 16px",
+                        borderRadius: "20px",
+                        fontSize: "12px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        textTransform: "capitalize",
+                        transition: "all 0.2s",
+                        border: filterMode === mode ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                        background: filterMode === mode ? "var(--violet)" : "transparent",
+                        color: filterMode === mode ? "#ffffff" : "var(--text-secondary)"
+                      }}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+
                 {fetchingPrevious ? (
                   <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>Loading tests...</div>
-                ) : previousQuizzes.length > 0 ? (
+                ) : previousQuizzes.filter(q => filterMode === "all" || q.publishAs === filterMode).length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    {previousQuizzes.map((quiz) => (
+                    {previousQuizzes.filter(q => filterMode === "all" || q.publishAs === filterMode).map((quiz) => (
                       <div 
                         key={quiz._id} 
                         className="custom-quiz-item"
@@ -474,7 +498,11 @@ const CreateCustomQuiz = () => {
                 ) : (
                   <div style={{ textAlign: "center", padding: "30px 0", color: "var(--text-muted)" }}>
                     <div style={{ fontSize: "36px", marginBottom: "8px" }}>📝</div>
-                    <p style={{ margin: 0, fontSize: "14px" }}>You haven't generated any custom tests yet.</p>
+                    <p style={{ margin: 0, fontSize: "14px" }}>
+                      {filterMode === "all" 
+                        ? "You haven't generated any custom tests yet." 
+                        : `You haven't generated any custom ${filterMode} tests yet.`}
+                    </p>
                   </div>
                 )}
               </div>

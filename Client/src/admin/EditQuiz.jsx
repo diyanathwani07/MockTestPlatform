@@ -924,9 +924,17 @@ function EditQuiz() {
       return true;
     }
 
-    if (!quizMeta.examName || !quizMeta.subject || !quizMeta.title || !quizMeta.duration) {
-      setMessage({ text: "Please fill in Exam, Subject, Title, and Duration.", type: "status-error" });
-      return false;
+    const isPractice = quizMeta.publishAs === "practice";
+    if (isPractice) {
+      if (!quizMeta.subject || !quizMeta.title) {
+        setMessage({ text: "Please fill in Subject and Title.", type: "status-error" });
+        return false;
+      }
+    } else {
+      if (!quizMeta.examName || !quizMeta.subject || !quizMeta.title || !quizMeta.duration) {
+        setMessage({ text: "Please fill in Exam, Subject, Title, and Duration.", type: "status-error" });
+        return false;
+      }
     }
     
     const validQuestions = questions.filter(
