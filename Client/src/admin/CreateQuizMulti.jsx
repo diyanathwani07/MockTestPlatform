@@ -945,36 +945,52 @@ function CreateQuizMulti() {
                                 </h4>
                               )}
                               
-                              {/* Setting 1: showResultAfterSubmission */}
+                              {/* Result Release Mode Selector */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                                  Result Release Mode
+                                </label>
+                                <select
+                                  value={quizMeta.resultReleaseMode || "immediate"}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setQuizMeta({
+                                      ...quizMeta,
+                                      resultReleaseMode: val,
+                                      showResultAfterSubmission: val === "immediate",
+                                      showCorrectAnswers: val === "immediate",
+                                      showExplanations: val === "immediate",
+                                      showAnswerReview: val === "immediate",
+                                    });
+                                  }}
+                                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-main)", color: "var(--text-primary)", outline: "none" }}
+                                >
+                                  <option value="immediate">Show Immediately after Submission</option>
+                                  <option value="scheduled">Release on Scheduled Date & Time</option>
+                                  <option value="manual">Hide (Manual Release by Admin)</option>
+                                </select>
+                              </div>
+
+                              {/* Scheduled Date Time Picker */}
+                              {quizMeta.resultReleaseMode === "scheduled" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                  <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                                    Release Date & Time
+                                  </label>
+                                  <input
+                                    type="datetime-local"
+                                    value={formatDateTimeLocal(quizMeta.resultReleaseDate)}
+                                    onChange={(e) => setQuizMeta({ ...quizMeta, resultReleaseDate: e.target.value })}
+                                    onClick={(e) => e.target.showPicker()}
+                                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-main)", color: "var(--text-primary)", outline: "none", boxSizing: "border-box", cursor: "pointer" }}
+                                  />
+                                </div>
+                              )}
+
+                              {/* Setting 2: showCorrectAnswers */}
                               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
                                 <input 
                                   type="checkbox"
-                                  checked={quizMeta.showResultAfterSubmission}
-                                  onChange={(e) => {
-                                    const val = e.target.checked;
-                                    setQuizMeta({
-                                      ...quizMeta,
-                                      showResultAfterSubmission: val,
-                                      showCorrectAnswers: val ? true : false,
-                                      showExplanations: val ? true : false,
-                                      showAnswerReview: val ? true : false,
-                                    });
-                                  }}
-                                  style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
-                                />
-                                <div>
-                                  <span style={{ fontWeight: "600" }}>Show Result After Submission</span>
-                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                                    Allow students to see their score and result immediately after submitting the exam.
-                                  </p>
-                                </div>
-                              </label>
-
-                              {/* Setting 2: showCorrectAnswers */}
-                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.showResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
-                                <input 
-                                  type="checkbox"
-                                  disabled={!quizMeta.showResultAfterSubmission}
                                   checked={quizMeta.showCorrectAnswers}
                                   onChange={(e) => setQuizMeta({ ...quizMeta, showCorrectAnswers: e.target.checked })}
                                   style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
@@ -988,10 +1004,9 @@ function CreateQuizMulti() {
                               </label>
 
                               {/* Setting 3: showExplanations */}
-                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.showResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
                                 <input 
                                   type="checkbox"
-                                  disabled={!quizMeta.showResultAfterSubmission}
                                   checked={quizMeta.showExplanations}
                                   onChange={(e) => setQuizMeta({ ...quizMeta, showExplanations: e.target.checked })}
                                   style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
@@ -1005,10 +1020,9 @@ function CreateQuizMulti() {
                               </label>
 
                               {/* Setting 4: showAnswerReview */}
-                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.showResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.showResultAfterSubmission ? 1 : 0.5 }}>
+                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
                                 <input 
                                   type="checkbox"
-                                  disabled={!quizMeta.showResultAfterSubmission}
                                   checked={quizMeta.showAnswerReview}
                                   onChange={(e) => setQuizMeta({ ...quizMeta, showAnswerReview: e.target.checked })}
                                   style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
@@ -1032,36 +1046,52 @@ function CreateQuizMulti() {
                                 </h4>
                               )}
 
-                              {/* Practice Setting 1 */}
+                              {/* Practice Result Release Mode Selector */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                                  Result Release Mode
+                                </label>
+                                <select
+                                  value={quizMeta.practiceResultReleaseMode || "immediate"}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setQuizMeta({
+                                      ...quizMeta,
+                                      practiceResultReleaseMode: val,
+                                      practiceShowResultAfterSubmission: val === "immediate",
+                                      practiceShowCorrectAnswers: val === "immediate",
+                                      practiceShowExplanations: val === "immediate",
+                                      practiceShowAnswerReview: val === "immediate",
+                                    });
+                                  }}
+                                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-main)", color: "var(--text-primary)", outline: "none" }}
+                                >
+                                  <option value="immediate">Show Immediately after Submission</option>
+                                  <option value="scheduled">Release on Scheduled Date & Time</option>
+                                  <option value="manual">Hide (Manual Release by Admin)</option>
+                                </select>
+                              </div>
+
+                              {/* Practice Scheduled Date Time Picker */}
+                              {quizMeta.practiceResultReleaseMode === "scheduled" && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                  <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                                    Release Date & Time
+                                  </label>
+                                  <input
+                                    type="datetime-local"
+                                    value={formatDateTimeLocal(quizMeta.practiceResultReleaseDate)}
+                                    onChange={(e) => setQuizMeta({ ...quizMeta, practiceResultReleaseDate: e.target.value })}
+                                    onClick={(e) => e.target.showPicker()}
+                                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-main)", color: "var(--text-primary)", outline: "none", boxSizing: "border-box", cursor: "pointer" }}
+                                  />
+                                </div>
+                              )}
+
+                              {/* Practice Setting 2 */}
                               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
                                 <input 
                                   type="checkbox"
-                                  checked={quizMeta.practiceShowResultAfterSubmission}
-                                  onChange={(e) => {
-                                    const val = e.target.checked;
-                                    setQuizMeta({
-                                      ...quizMeta,
-                                      practiceShowResultAfterSubmission: val,
-                                      practiceShowCorrectAnswers: val ? true : false,
-                                      practiceShowExplanations: val ? true : false,
-                                      practiceShowAnswerReview: val ? true : false,
-                                    });
-                                  }}
-                                  style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
-                                />
-                                <div>
-                                  <span style={{ fontWeight: "600" }}>Show Result After Submission</span>
-                                  <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                                    Allow students to see their score and result immediately after submitting.
-                                  </p>
-                                </div>
-                              </label>
-
-                              {/* Practice Setting 2 */}
-                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.practiceShowResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
-                                <input 
-                                  type="checkbox"
-                                  disabled={!quizMeta.practiceShowResultAfterSubmission}
                                   checked={quizMeta.practiceShowCorrectAnswers}
                                   onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowCorrectAnswers: e.target.checked })}
                                   style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
@@ -1075,10 +1105,9 @@ function CreateQuizMulti() {
                               </label>
 
                               {/* Practice Setting 3 */}
-                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.practiceShowResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
                                 <input 
                                   type="checkbox"
-                                  disabled={!quizMeta.practiceShowResultAfterSubmission}
                                   checked={quizMeta.practiceShowExplanations}
                                   onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowExplanations: e.target.checked })}
                                   style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}
@@ -1092,10 +1121,9 @@ function CreateQuizMulti() {
                               </label>
 
                               {/* Practice Setting 4 */}
-                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: quizMeta.practiceShowResultAfterSubmission ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: quizMeta.practiceShowResultAfterSubmission ? 1 : 0.5 }}>
+                              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
                                 <input 
                                   type="checkbox"
-                                  disabled={!quizMeta.practiceShowResultAfterSubmission}
                                   checked={quizMeta.practiceShowAnswerReview}
                                   onChange={(e) => setQuizMeta({ ...quizMeta, practiceShowAnswerReview: e.target.checked })}
                                   style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', marginTop: '2px', flexShrink: 0 }}

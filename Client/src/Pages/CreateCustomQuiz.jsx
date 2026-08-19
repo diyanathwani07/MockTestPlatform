@@ -11,6 +11,7 @@ const CreateCustomQuiz = () => {
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [quantity, setQuantity] = useState(10);
+  const [quizType, setQuizType] = useState("exam"); // "exam" or "practice"
   const [loading, setLoading] = useState(false);
   const [fetchingSubjects, setFetchingSubjects] = useState(true);
   const [previousQuizzes, setPreviousQuizzes] = useState([]);
@@ -95,6 +96,7 @@ const CreateCustomQuiz = () => {
         {
           subject: selectedSubject,
           quantity: parseInt(quantity, 10),
+          publishAs: quizType,
         },
         { headers }
       );
@@ -219,6 +221,65 @@ const CreateCustomQuiz = () => {
                   <p style={{ color: "var(--text-muted)", fontSize: "14px", margin: 0 }}>
                     Configure a custom practice exam by selecting your target subject and number of questions.
                   </p>
+                </div>
+
+                {/* Mode Selector */}
+                <div style={{ marginBottom: "32px" }}>
+                  <label 
+                    style={{ 
+                      display: "block", 
+                      fontSize: "14px", 
+                      fontWeight: "600", 
+                      color: "var(--text-primary)", 
+                      marginBottom: "12px" 
+                    }}
+                  >
+                    Select Test Mode
+                  </label>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setQuizType("exam")}
+                      style={{
+                        padding: "10px 0",
+                        borderRadius: "30px",
+                        fontWeight: "700",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        border: quizType === "exam" 
+                          ? "1.5px solid var(--primary-color, #6E3FF3)" 
+                          : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                        background: quizType === "exam" 
+                          ? "var(--primary-color, #6E3FF3)" 
+                          : "transparent",
+                        color: quizType === "exam" ? "#ffffff" : "var(--text-secondary)"
+                      }}
+                    >
+                      Exam Mode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setQuizType("practice")}
+                      style={{
+                        padding: "10px 0",
+                        borderRadius: "30px",
+                        fontWeight: "700",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        border: quizType === "practice" 
+                          ? "1.5px solid var(--primary-color, #6E3FF3)" 
+                          : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                        background: quizType === "practice" 
+                          ? "var(--primary-color, #6E3FF3)" 
+                          : "transparent",
+                        color: quizType === "practice" ? "#ffffff" : "var(--text-secondary)"
+                      }}
+                    >
+                      Practice Mode
+                    </button>
+                  </div>
                 </div>
 
                 {/* Subject selector */}
@@ -353,7 +414,7 @@ const CreateCustomQuiz = () => {
                       >
                         <div>
                           <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
-                            {quiz.title}
+                            {quiz.title} <span style={{ fontSize: "11px", color: quiz.publishAs === "practice" ? "#10b981" : "#8B5CF6", marginLeft: "8px", background: quiz.publishAs === "practice" ? "rgba(16, 185, 129, 0.1)" : "rgba(139, 92, 246, 0.1)", padding: "2px 8px", borderRadius: "10px", fontWeight: "700" }}>{quiz.publishAs === "practice" ? "Practice" : "Exam"}</span>
                           </h4>
                           <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
                             Created: {new Date(quiz.createdAt).toLocaleDateString()}
@@ -361,7 +422,13 @@ const CreateCustomQuiz = () => {
                         </div>
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                           <button
-                            onClick={() => navigate(`/quiz/${quiz._id}`)}
+                            onClick={() => {
+                              if (quiz.publishAs === "practice") {
+                                navigate(`/dashboard/practice/test/${quiz._id}`);
+                              } else {
+                                navigate(`/quiz/${quiz._id}`);
+                              }
+                            }}
                             style={{
                               padding: "8px 16px",
                               borderRadius: "20px",

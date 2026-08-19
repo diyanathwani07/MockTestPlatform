@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Lock, Unlock, ShoppingCart, Loader2 } from "lucide-react";
+import { Lock, Unlock, ShoppingCart, Loader2, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
@@ -10,6 +10,7 @@ function ExamsPage() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,7 +48,12 @@ function ExamsPage() {
   // My Exams: only show exams the student has purchased
   const purchasedExams = exams.filter((e) => e.isPurchased);
 
-  const filteredExams = purchasedExams;
+  const filteredExams = purchasedExams.filter((exam) => {
+    return (
+      (exam.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (exam.subject || "").toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   return (
     <div className="sd-layout">
@@ -56,6 +62,21 @@ function ExamsPage() {
         <StudentNavbar title="My Exams" />
         
         <div className="me-premium-layout" style={{ padding: '24px', minHeight: 'calc(100vh - 70px)' }}>
+          {!loading && purchasedExams.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "24px" }}>
+              <div className="me-search-wrapper" style={{ maxWidth: "320px", width: "100%", margin: 0 }}>
+                <Search className="me-search-icon" size={18} />
+                <input 
+                  type="text" 
+                  className="me-search-input" 
+                  placeholder="Search exams..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '16px', color: 'var(--text-secondary)' }}>
               <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--violet)' }} />
@@ -65,6 +86,7 @@ function ExamsPage() {
           ) : (
             (() => {
               if (filteredExams.length === 0) {
+                const isSearchActive = searchQuery.trim() !== "";
                 return (
                   <div className="sd-empty" style={{ 
                     display: 'flex', 
@@ -78,9 +100,15 @@ function ExamsPage() {
                     padding: '40px', 
                     textAlign: 'center' 
                   }}>
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary, #1a1a2e)', marginBottom: '8px' }}>No Purchased Exams</h3>
-                    <p style={{ fontSize: '14px', color: 'var(--text-secondary, #6B7280)', margin: 0 }}>Exams you purchase will appear here for you to attempt anytime.</p>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>{isSearchActive ? '🔍' : '📭'}</div>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary, #1a1a2e)', marginBottom: '8px' }}>
+                      {isSearchActive ? "No Matching Exams" : "No Purchased Exams"}
+                    </h3>
+                    <p style={{ fontSize: '14px', color: 'var(--text-secondary, #6B7280)', margin: 0 }}>
+                      {isSearchActive 
+                        ? "Try adjusting your search query or keywords." 
+                        : "Exams you purchase will appear here for you to attempt anytime."}
+                    </p>
                   </div>
                 );
               }

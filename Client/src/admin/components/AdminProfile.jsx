@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
@@ -7,6 +8,7 @@ import "../../css/StudentProfile.css"; // Reuse the beautiful styling from Stude
 import AvatarPickerModal from "../../components/AvatarPickerModal";
 
 function AdminProfile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [initials, setInitials] = useState("");
   const [adminId, setAdminId] = useState("");
@@ -382,17 +384,30 @@ function AdminProfile() {
               )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Current Password</label>
-                  <input 
-                    type="password"
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
-                    placeholder="Enter current password"
-                    required
-                  />
-                </div>
+                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                   <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Current Password</label>
+                   <input 
+                     type="password"
+                     value={passwordData.currentPassword}
+                     onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                     style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+                     placeholder="Enter current password"
+                     required
+                   />
+                   <div style={{ textAlign: "right", marginTop: "2px" }}>
+                     <span 
+                       onClick={(e) => {
+                         e.preventDefault();
+                         e.stopPropagation();
+                         setShowPasswordModal(false);
+                         navigate("/forgot-password");
+                       }}
+                       style={{ fontSize: "12.5px", color: "#6E3FF3", cursor: "pointer", fontWeight: "600" }}
+                     >
+                       Forgot Password?
+                     </span>
+                   </div>
+                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>New Password</label>

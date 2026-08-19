@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
@@ -14,6 +14,19 @@ function Leaderboard() {
   const [selectedExam, setSelectedExam] = useState("All Exams");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [examSearchQuery, setExamSearchQuery] = useState("");
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const currentUserStr = localStorage.getItem("user");
   const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
@@ -85,12 +98,139 @@ function Leaderboard() {
                 Updates every 10 mins.
               </div>
               
-              <select className="lb-filter-select" style={{ margin: 0 }} value={selectedExam} onChange={e => { setSelectedExam(e.target.value); setCurrentPage(1); }}>
-                <option value="All Exams">All Exams</option>
-                {uniqueExams.map((exam, i) => (
-                  <option key={i} value={exam}>{exam}</option>
-                ))}
-              </select>
+              {/* Searchable Custom Dropdown */}
+              <div className="lb-dropdown-container" ref={dropdownRef} style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="lb-filter-select"
+                  style={{
+                    margin: 0,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "10px",
+                    minWidth: "180px",
+                    height: "42px",
+                    textAlign: "left",
+                    background: "var(--bg-input, #ffffff)",
+                    border: "1px solid var(--border-color, #E4E4E7)",
+                    color: "var(--text-primary, #3F3F46)",
+                    borderRadius: "12px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    fontSize: "13px"
+                  }}
+                >
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "160px" }}>
+                    {selectedExam}
+                  </span>
+                  <ChevronDown size={16} style={{ flexShrink: 0, transition: "transform 0.2s", transform: isDropdownOpen ? "rotate(180deg)" : "none" }} />
+                </button>
+
+                {isDropdownOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "46px",
+                      right: 0,
+                      background: "var(--bg-card, #ffffff)",
+                      border: "1px solid var(--border-color, #E4E4E7)",
+                      borderRadius: "12px",
+                      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)",
+                      width: "250px",
+                      padding: "8px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      zIndex: 1000
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "6px 10px",
+                        border: "1px solid var(--border-color, #E4E4E7)",
+                        borderRadius: "8px",
+                        background: "var(--bg-input, #fafafa)"
+                      }}
+                    >
+                      <Search size={14} style={{ color: "var(--text-muted, #71717a)", flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        placeholder="Search exams..."
+                        value={examSearchQuery}
+                        onChange={(e) => setExamSearchQuery(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          outline: "none",
+                          width: "100%",
+                          fontSize: "13px",
+                          color: "var(--text-primary, #1e1b4b)",
+                          padding: 0
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ maxHeight: "200px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedExam("All Exams");
+                          setIsDropdownOpen(false);
+                          setExamSearchQuery("");
+                          setCurrentPage(1);
+                        }}
+                        style={{
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          border: "none",
+                          borderRadius: "6px",
+                          background: selectedExam === "All Exams" ? "rgba(139, 92, 246, 0.1)" : "transparent",
+                          color: selectedExam === "All Exams" ? "#8B5CF6" : "var(--text-primary, #1e1b4b)",
+                          fontSize: "13px",
+                          fontWeight: selectedExam === "All Exams" ? "600" : "500",
+                          cursor: "pointer"
+                        }}
+                      >
+                        All Exams
+                      </button>
+
+                      {uniqueExams
+                        .filter(exam => String(exam || "").toLowerCase().includes(examSearchQuery.toLowerCase()))
+                        .map((exam, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setSelectedExam(exam);
+                              setIsDropdownOpen(false);
+                              setExamSearchQuery("");
+                              setCurrentPage(1);
+                            }}
+                            style={{
+                              padding: "8px 12px",
+                              textAlign: "left",
+                              border: "none",
+                              borderRadius: "6px",
+                              background: selectedExam === exam ? "rgba(139, 92, 246, 0.1)" : "transparent",
+                              color: selectedExam === exam ? "#8B5CF6" : "var(--text-primary, #1e1b4b)",
+                              fontSize: "13px",
+                              fontWeight: selectedExam === exam ? "600" : "500",
+                              cursor: "pointer"
+                            }}
+                          >
+                            {exam}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               
               <div className="lb-search" style={{ margin: 0 }}>
                 <Search className="lb-icon" size={16} />

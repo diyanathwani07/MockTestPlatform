@@ -438,7 +438,7 @@ function PracticeTest() {
       try {
         const token = localStorage.getItem("token");
         // Save practice result history to server
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/history`, {
+        const historyRes = await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/history`, {
           quizId,
           stats: {
             totalQuestions: questions.length,
@@ -454,26 +454,43 @@ function PracticeTest() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
+        const serverShowResult = historyRes.data?.showResultAfterSubmission !== false;
+
         // Restart/Reset active session order for future attempts
         await axios.get(`${import.meta.env.VITE_API_URL}/api/practice/${quizId}/session?restart=true`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+
+        navigate("/practice-result", {
+          replace: true,
+          state: {
+            quizId,
+            title: quiz.title,
+            showResultAfterSubmission: serverShowResult,
+            stats: {
+              ...stats,
+              totalQuestions: questions.length,
+              timeSpent
+            }
+          }
+        });
       } catch (err) {
         console.error("Failed to save practice completion metrics:", err);
-      }
-
-      navigate("/practice-result", {
-        replace: true,
-        state: {
-          quizId,
-          title: quiz.title,
-          stats: {
-            ...stats,
-            totalQuestions: questions.length,
-            timeSpent
+        // Fallback navigation in case of error
+        navigate("/practice-result", {
+          replace: true,
+          state: {
+            quizId,
+            title: quiz.title,
+            showResultAfterSubmission: true,
+            stats: {
+              ...stats,
+              totalQuestions: questions.length,
+              timeSpent
+            }
           }
-        }
-      });
+        });
+      }
     }
   };
 

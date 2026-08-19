@@ -186,6 +186,15 @@ function App() {
         />
 
         <Route
+          path="/practice-result"
+          element={
+            <ProtectedRoute>
+              <PracticeResult />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/dashboard/results"
           element={
             <ProtectedRoute>

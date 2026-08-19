@@ -310,6 +310,13 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     plans: (quizMeta.isPaid || quizMeta.isPracticePaid) ? (quizMeta.plans || []) : [],
   };
 
+  if (isPractice) {
+    payload.showResultAfterSubmission = quizMeta.practiceShowResultAfterSubmission !== undefined ? quizMeta.practiceShowResultAfterSubmission : true;
+    payload.showCorrectAnswers = quizMeta.practiceShowCorrectAnswers !== undefined ? quizMeta.practiceShowCorrectAnswers : true;
+    payload.showExplanations = quizMeta.practiceShowExplanations !== undefined ? quizMeta.practiceShowExplanations : true;
+    payload.showAnswerReview = quizMeta.practiceShowAnswerReview !== undefined ? quizMeta.practiceShowAnswerReview : true;
+  }
+
   if (quizId) {
     console.log("[saveSingleQuizModular] PUT payload overview fields:", {
       detailedDescription: payload.detailedDescription,

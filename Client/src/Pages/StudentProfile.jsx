@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { User, Mail, Phone, Calendar, MapPin, Edit3, Key } from "lucide-react";
 import { usePreview } from "../context/PreviewContext";
@@ -10,6 +10,7 @@ import "../css/StudentProfile.css"; // Specific profile styles
 import AvatarPickerModal from "../components/AvatarPickerModal";
 
 function StudentProfile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState({});
   const { previewMode } = usePreview();
   const [initials, setInitials] = useState("");
@@ -409,6 +410,19 @@ function StudentProfile() {
                   placeholder="Enter current password"
                   required
                 />
+                <div style={{ textAlign: "right", marginTop: "2px" }}>
+                  <span 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowPasswordModal(false);
+                      navigate("/forgot-password");
+                    }}
+                    style={{ fontSize: "12.5px", color: "#6E3FF3", cursor: "pointer", fontWeight: "600" }}
+                  >
+                    Forgot Password?
+                  </span>
+                </div>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
