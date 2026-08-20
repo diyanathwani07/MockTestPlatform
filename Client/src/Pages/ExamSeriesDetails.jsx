@@ -288,17 +288,26 @@ function ExamSeriesDetails() {
                               <button 
                                 className="me-action-btn" 
                                 style={{ flex: 1, padding: "8px", background: "rgba(16, 185, 129, 0.1)", color: "#10B981", border: "1px solid #10B981", fontSize: "12px", textAlign: "center" }}
-                                onClick={() => navigate(`/student-results/${quiz._id}`)}
+                                onClick={() => {
+                                  const r = results.find(res => res.quizId === quiz._id || (res.quizId && res.quizId._id === quiz._id));
+                                  if (r && r.shareId) {
+                                    navigate(`/student/result/${r.shareId}`);
+                                  } else {
+                                    alert("Could not find the attempt results.");
+                                  }
+                                }}
                               >
                                 Result
                               </button>
-                              <button 
-                                className="me-btn-primary" 
-                                style={{ flex: 1, padding: "8px", background: "transparent", color: "var(--text-primary)", border: "1.5px solid var(--border-color)", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center" }}
-                                onClick={() => handleStartExam(quiz)}
-                              >
-                                Reattempt
-                              </button>
+                              {(quiz.quizType === "practice" || quiz.allowReattempt !== false) && (
+                                <button 
+                                  className="me-btn-primary" 
+                                  style={{ flex: 1, padding: "8px", background: "transparent", color: "var(--text-primary)", border: "1.5px solid var(--border-color)", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center" }}
+                                  onClick={() => handleStartExam(quiz)}
+                                >
+                                  Reattempt
+                                </button>
+                              )}
                             </>
                           ) : (
                             <button 

@@ -134,8 +134,8 @@
 
 .me-search-icon {
   position: absolute;
-  left: 16px;
-  color: #8B5CF6;
+  left: 12px;
+  color: var(--text-muted, #8B5CF6);
   pointer-events: none;
 }
 

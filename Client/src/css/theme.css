@@ -144,8 +144,23 @@ body {
 .stat-card,
 .review-item,
 .card {
-  background: var(--bg-card);
-  border-color: var(--border-color);
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--card-shadow) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.question-section:hover,
+.candidate-panel:hover,
+.palette:hover,
+.login-card:hover,
+.form-card:hover,
+.quiz-table-wrapper:hover,
+.stat-card:hover,
+.review-item:hover,
+.card:hover {
+  box-shadow: var(--card-hover-shadow) !important;
 }
 
 /* INPUTS */
@@ -198,15 +213,47 @@ body {
 }
 
 /* TABS */
-.top-tabs {
-  background: var(--bg-header);
-  border-bottom-color: var(--border-color);
+.top-tabs,
+.lb-tabs,
+.me-tabs,
+.hs-tabs {
+  background: var(--bg-panel, #FAFAFC) !important;
+  border: 1px solid var(--border-color, #E4E4E7) !important;
+  border-radius: 8px !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  gap: 4px !important;
 }
 
-.top-tabs button {
-  background: var(--bg-card);
-  border-color: var(--border-color);
-  color: var(--text-secondary);
+.top-tabs button,
+.lb-tab,
+.me-tab-btn,
+.hs-tab-btn {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 16px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.top-tabs button:hover,
+.lb-tab:hover,
+.me-tab-btn:hover,
+.hs-tab-btn:hover {
+  color: var(--text-primary) !important;
+}
+
+.top-tabs button.active,
+.lb-tab.active,
+.me-tab-btn.active,
+.hs-tab-btn.active {
+  background: var(--bg-card, #FFFFFF) !important;
+  color: var(--violet, #6E3FF3) !important;
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0,0,0,0.05)) !important;
 }
 
 /* TABLE */
@@ -321,13 +368,66 @@ body.dark-mode .theme-pill-switch {
   border-color: #2D1B69;
 }
 
-/* ── UNIFIED PURPLE BORDERS FOR ALL PLATFORM SEARCH BARS ── */
+/* ── UNIFIED PROFESSIONAL SEARCH BARS ── */
 .tk-search,
 .report-search-pill,
 .qb-search-pill,
 .practice-search-pill,
 .lb-search,
 .hs-search-bar,
-.manage-quizzes-filter-row > div:first-child {
-  border: 2px solid var(--violet, #6E3FF3) !important;
+.manage-quizzes-filter-row > div:first-child,
+.pill-search-container,
+.me-search-wrapper {
+  border: 1px solid var(--border-color, #E2DDF0) !important;
+  border-radius: 8px !important;
+  background-color: var(--bg-input, #FAFAFC) !important;
+  box-shadow: none !important;
+  padding: 8px 16px !important;
+  padding-left: 36px !important; /* Make room for absolute search icon */
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.tk-search:focus-within,
+.report-search-pill:focus-within,
+.qb-search-pill:focus-within,
+.practice-search-pill:focus-within,
+.lb-search:focus-within,
+.hs-search-bar:focus-within,
+.manage-quizzes-filter-row > div:first-child:focus-within,
+.pill-search-container:focus-within,
+.me-search-wrapper:focus-within {
+  border-color: var(--violet, #6E3FF3) !important;
+  box-shadow: 0 0 0 2px rgba(110, 63, 243, 0.15) !important;
+}
+
+/* Ensure inner inputs have no borders, backgrounds, or independent padding */
+.tk-search input,
+.report-search-pill input,
+.qb-search-pill input,
+.practice-search-pill input,
+.lb-search input,
+.hs-search-bar input,
+.manage-quizzes-filter-row > div:first-child input,
+.pill-search-container input,
+.me-search-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  color: var(--text-primary) !important;
+}
+
+/* ── LEADERBOARD DARK MODE PILLARS ── */
+body.dark-mode .lb-pillar {
+  background: linear-gradient(180deg, rgba(110, 63, 243, 0.15) 0%, rgba(110, 63, 243, 0) 100%) !important;
+}
+body.dark-mode .lb-spot-1 .lb-pillar {
+  background: linear-gradient(180deg, rgba(110, 63, 243, 0.25) 0%, rgba(110, 63, 243, 0) 100%) !important;
 }

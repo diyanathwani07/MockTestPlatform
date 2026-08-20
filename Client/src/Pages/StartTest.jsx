@@ -48,6 +48,53 @@ function StartTest() {
     fetchQuizzes();
   }, []);
 
+  // ── Anti-Cheat: Disable Right-Click, F12, DevTools, and Run Debugger loop ──
+  useEffect(() => {
+    // Disable Right-Click
+    const handleContextMenu = (e) => e.preventDefault();
+    document.addEventListener("contextmenu", handleContextMenu);
+
+    // Disable keyboard shortcuts
+    const handleKeyDown = (e) => {
+      if (
+        e.keyCode === 123 || // F12
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Ctrl+Shift+I, J, C
+        (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+      ) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Anti-Debugger console lock
+    const debuggerInterval = setInterval(() => {
+      try {
+        (function() {
+          (function a() {
+            try {
+              (function b(i) {
+                if (("" + i / i).length !== 1 || i % 20 === 0) {
+                  (function() {}).constructor("debugger")();
+                } else {
+                  debugger;
+                }
+                b(++i);
+              })(0);
+            } catch (e) {
+              setTimeout(a, 50);
+            }
+          })();
+        })();
+      } catch (err) {}
+    }, 200);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("keydown", handleKeyDown);
+      clearInterval(debuggerInterval);
+    };
+  }, []);
+
   // Countdown tick effect
   useEffect(() => {
     if (countdown === null) return;

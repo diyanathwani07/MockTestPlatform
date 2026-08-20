@@ -81,8 +81,8 @@ body.dark-mode .theme-pill-switch {
 .pill-search-container {
   display: flex;
   align-items: center;
-  border-radius: 100px !important;
-  padding: 10px 20px;
+  border-radius: 8px !important;
+  padding: 8px 16px;
   width: 340px;
   gap: 12px;
   margin-bottom: 24px;
@@ -111,17 +111,14 @@ body.dark-mode .theme-pill-switch {
 
 /* --- DARK MODE SEARCH STATE --- */
 body.dark-mode .pill-search-container {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  background-color: var(--bg-input, rgba(255, 255, 255, 0.05)) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+  box-shadow: none !important;
 }
 
 body.dark-mode .pill-search-container:focus-within {
-  border-color: #6E3FF3 !important;
-  background-color: rgba(255, 255, 255, 0.09) !important;
-  box-shadow: 0 0 15px rgba(110, 63, 243, 0.35) !important;
+  border-color: var(--violet, #6E3FF3) !important;
+  box-shadow: 0 0 0 2px rgba(110, 63, 243, 0.2) !important;
 }
 
 body.dark-mode .pill-search-icon { color: #94A3B8 !important; }
@@ -131,14 +128,14 @@ body.dark-mode .pill-search-container input::placeholder { color: #64748B !impor
 
 /* --- LIGHT MODE SEARCH STATE --- */
 body:not(.dark-mode) .pill-search-container {
-  background-color: #FFFFFF !important;
-  border: 1.5px solid #E2DDF0 !important; 
-  box-shadow: 0 2px 10px rgba(45, 27, 105, 0.02) !important;
+  background-color: var(--bg-input, #FAFAFC) !important;
+  border: 1px solid var(--border-color, #E2DDF0) !important; 
+  box-shadow: none !important;
 }
 
 body:not(.dark-mode) .pill-search-container:focus-within {
-  border-color: #6E3FF3 !important;
-  box-shadow: 0 0 0 4px rgba(110, 63, 243, 0.12) !important;
+  border-color: var(--violet, #6E3FF3) !important;
+  box-shadow: 0 0 0 2px rgba(110, 63, 243, 0.12) !important;
 }
 
 body:not(.dark-mode) .pill-search-container input { color: #1a1a2e !important; }
@@ -282,9 +279,9 @@ body:not(.dark-mode) .admin-main textarea::placeholder {
   width: 40px; height: 40px; border-radius: 50%;
   background-color: #00E676; color: #0B0C1A; font-weight: 700; font-size: 14px;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: 0 0 12px rgba(0, 230, 118, 0.45); transition: all 0.15s ease; user-select: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); transition: all 0.15s ease; user-select: none;
 }
-.avatar-neon-trigger:hover { transform: scale(1.06); box-shadow: 0 0 18px rgba(0, 230, 118, 0.7); }
+.avatar-neon-trigger:hover { transform: scale(1.04); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12); }
 
 .profile-floating-menu {
   position: absolute;
@@ -462,7 +459,7 @@ body.dark-mode .role-admin { border-color: #38BDF8; color: #38BDF8; background: 
 body.dark-mode .role-super { border-color: #10B981; color: #10B981; background: rgba(16, 185, 129, 0.08); }
 
 .status-active-cell { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #10B981; box-shadow: 0 0 8px #10B981; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #10B981; }
 
 .action-dots-btn { background: transparent; border: none; color: #a8a5bd; font-size: 18px; font-weight: 700; cursor: pointer; padding: 4px 10px; border-radius: 6px; }
 .action-dots-btn:hover { background: rgba(110, 63, 243, 0.1); color: #6E3FF3; }

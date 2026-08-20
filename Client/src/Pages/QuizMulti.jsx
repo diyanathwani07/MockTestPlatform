@@ -136,7 +136,18 @@ function QuizMulti() {
                  correctText = q.options[optNum - 1] || correctText;
                }
              }
-             return { ...q, correctAnswer: correctText };
+
+             let finalOptions = [...(q.options || [])];
+             if (data.markingPattern === "bpsc") {
+               if (finalOptions.length < 5) {
+                 while (finalOptions.length < 4) {
+                   finalOptions.push(`Option ${finalOptions.length + 1}`);
+                 }
+                 finalOptions.push("E — Not Attempted");
+               }
+             }
+
+             return { ...q, options: finalOptions, correctAnswer: correctText };
           });
          
          // Setup defaults in tracking state

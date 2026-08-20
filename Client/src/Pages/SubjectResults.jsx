@@ -164,7 +164,7 @@ function SubjectResults() {
                     >
                       View Details <ChevronRight size={14} />
                     </button>
-                    {result.quizId && (
+                    {result.quizId && (result.quizType === "practice" || result.allowReattempt !== false) && (
                       <button 
                         className="sr-view-details-btn" 
                         style={{ backgroundColor: "#F3F4F6", color: "#6E3FF3", border: "1px solid #E2E8F0", padding: "8px 12px", fontSize: "12px", justifyContent: "center" }}

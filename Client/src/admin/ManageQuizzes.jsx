@@ -203,11 +203,11 @@ function ManageQuizzes() {
                 minWidth: "120px",
                 maxWidth: isMobile ? "150px" : "240px",
                 display: "flex", alignItems: "center", gap: "6px", 
-                backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
-                borderRadius: "100px", padding: "6px 12px",
-                boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
+                backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)", 
+                borderRadius: "8px", padding: "6px 12px",
+                boxShadow: "none", position: "relative"
               }}>
-                <Search size={14} style={{ color: "var(--violet)", flexShrink: 0 }} />
+                <Search size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                 <input 
                   type="text" 
                   placeholder="Search..." 
@@ -240,8 +240,8 @@ function ManageQuizzes() {
                 minWidth: "120px",
                 maxWidth: "125px",
                 display: "flex", alignItems: "center", gap: "4px", 
-                backgroundColor: "var(--bg-card)", border: "2px solid var(--border-color)", 
-                borderRadius: "100px", padding: "6px 12px"
+                backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)", 
+                borderRadius: "8px", padding: "6px 12px"
               }}>
                 <Tag size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
                 <select 

@@ -243,16 +243,16 @@ const CreateCustomQuiz = () => {
                       onClick={() => setQuizType("exam")}
                       style={{
                         padding: "10px 0",
-                        borderRadius: "30px",
+                        borderRadius: "8px",
                         fontWeight: "700",
                         fontSize: "14px",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
                         border: quizType === "exam" 
-                          ? "1.5px solid var(--primary-color, #6E3FF3)" 
+                          ? "1.5px solid var(--violet, #6E3FF3)" 
                           : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                         background: quizType === "exam" 
-                          ? "var(--primary-color, #6E3FF3)" 
+                          ? "var(--violet, #6E3FF3)" 
                           : "transparent",
                         color: quizType === "exam" ? "#ffffff" : "var(--text-secondary)"
                       }}
@@ -264,16 +264,16 @@ const CreateCustomQuiz = () => {
                       onClick={() => setQuizType("practice")}
                       style={{
                         padding: "10px 0",
-                        borderRadius: "30px",
+                        borderRadius: "8px",
                         fontWeight: "700",
                         fontSize: "14px",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
                         border: quizType === "practice" 
-                          ? "1.5px solid var(--primary-color, #6E3FF3)" 
+                          ? "1.5px solid var(--violet, #6E3FF3)" 
                           : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                         background: quizType === "practice" 
-                          ? "var(--primary-color, #6E3FF3)" 
+                          ? "var(--violet, #6E3FF3)" 
                           : "transparent",
                         color: quizType === "practice" ? "#ffffff" : "var(--text-secondary)"
                       }}
@@ -301,7 +301,7 @@ const CreateCustomQuiz = () => {
                       style={{ 
                         height: "46px", 
                         background: "rgba(255,255,255,0.05)", 
-                        borderRadius: "30px", 
+                        borderRadius: "8px", 
                         animation: "pulse 1.5s infinite" 
                       }}
                     ></div>
@@ -311,9 +311,9 @@ const CreateCustomQuiz = () => {
                       onChange={(e) => setSelectedSubject(e.target.value)}
                       style={{
                         width: "100%",
-                        padding: "12px 24px",
-                        borderRadius: "30px",
-                        background: "var(--bg-page, #0A0A0A)",
+                        padding: "12px 16px",
+                        borderRadius: "8px",
+                        background: "var(--bg-input, #fafafa)",
                         color: "var(--text-primary)",
                         border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                         outline: "none",
@@ -353,16 +353,16 @@ const CreateCustomQuiz = () => {
                         onClick={() => setQuantity(qty)}
                         style={{
                           padding: "10px 0",
-                          borderRadius: "30px",
+                          borderRadius: "8px",
                           fontWeight: "700",
                           fontSize: "14px",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           border: quantity === qty 
-                            ? "1.5px solid var(--primary-color, #6E3FF3)" 
+                            ? "1.5px solid var(--violet, #6E3FF3)" 
                             : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                           background: quantity === qty 
-                            ? "var(--primary-color, #6E3FF3)" 
+                            ? "var(--violet, #6E3FF3)" 
                             : "transparent",
                           color: quantity === qty ? "#ffffff" : "var(--text-secondary)"
                         }}
@@ -380,15 +380,15 @@ const CreateCustomQuiz = () => {
                   style={{
                     width: "100%",
                     padding: "14px",
-                    borderRadius: "30px",
+                    borderRadius: "8px",
                     fontWeight: "700",
                     fontSize: "15px",
                     cursor: (loading || !selectedSubject) ? "not-allowed" : "pointer",
                     transition: "all 0.25s ease",
                     border: "none",
-                    background: (loading || !selectedSubject) ? "var(--border-color, #333)" : "var(--primary-color, #6E3FF3)",
+                    background: (loading || !selectedSubject) ? "var(--border-color, #333)" : "var(--violet, #6E3FF3)",
                     color: (loading || !selectedSubject) ? "var(--text-muted, #777)" : "#ffffff",
-                    boxShadow: (loading || !selectedSubject) ? "none" : "0 4px 14px rgba(110, 63, 243, 0.4)"
+                    boxShadow: (loading || !selectedSubject) ? "none" : "0 4px 10px rgba(110, 63, 243, 0.15)"
                   }}
                 >
                   {loading ? "Generating Practice Test..." : "Create Custom Quiz"}

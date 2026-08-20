@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import { Info } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
@@ -45,6 +46,8 @@ function EditQuiz() {
     duration: "",
     marksPerQuestion: 1,
     negativeMarking: 0,
+    markingPattern: "standard",
+    allowReattempt: true,
     published: false,
     status: "Draft",
     scheduledDate: null,
@@ -171,7 +174,8 @@ function EditQuiz() {
     if (periodVal === "PM" && hr24 < 12) hr24 += 12;
     if (periodVal === "AM" && hr24 === 12) hr24 = 0;
     const hr24Str = String(hr24).padStart(2, "0");
-    setQuizMeta(prev => ({ ...prev, resultReleaseDate: `${dateVal}T${hr24Str}:${minVal}` }));
+    const localDate = new Date(`${dateVal}T${hr24Str}:${minVal}`);
+    setQuizMeta(prev => ({ ...prev, resultReleaseDate: isNaN(localDate.getTime()) ? null : localDate.toISOString() }));
   };
 
   const updatePracticeResultReleaseDateTime = (dateVal, hrVal, minVal, periodVal) => {
@@ -183,7 +187,8 @@ function EditQuiz() {
     if (periodVal === "PM" && hr24 < 12) hr24 += 12;
     if (periodVal === "AM" && hr24 === 12) hr24 = 0;
     const hr24Str = String(hr24).padStart(2, "0");
-    setQuizMeta(prev => ({ ...prev, practiceResultReleaseDate: `${dateVal}T${hr24Str}:${minVal}` }));
+    const localDate = new Date(`${dateVal}T${hr24Str}:${minVal}`);
+    setQuizMeta(prev => ({ ...prev, practiceResultReleaseDate: isNaN(localDate.getTime()) ? null : localDate.toISOString() }));
   };
 
   const handleSavePlan = (planData) => {
@@ -341,6 +346,8 @@ function EditQuiz() {
           duration: durationVal || "",
           marksPerQuestion: dbQuiz.marksPerQuestion || 1,
           negativeMarking: dbQuiz.negativeMarking || 0,
+          markingPattern: dbQuiz.markingPattern || "standard",
+          allowReattempt: dbQuiz.allowReattempt !== undefined ? dbQuiz.allowReattempt : true,
           published: dbQuiz.published || false,
           status: dbQuiz.status || "Draft",
           scheduledDate: dbQuiz.scheduledDate || null,
@@ -623,6 +630,7 @@ function EditQuiz() {
         }
       }
 
+      const isBpsc = (selected.presetName && selected.presetName.toUpperCase().includes("BPSC")) || (selected.examName && selected.examName.toUpperCase().includes("BPSC")) || selected.markingPattern === "bpsc";
       setQuizMeta((prev) => ({
         ...prev,
         examName: selected.examName,
@@ -630,6 +638,7 @@ function EditQuiz() {
         duration: selected.duration,
         marksPerQuestion: selected.marksPerQuestion,
         negativeMarking: selected.negativeMarking,
+        markingPattern: isBpsc ? "bpsc" : "standard",
       }));
       const mins = Math.floor(selected.duration);
       const secs = Math.round((selected.duration - mins) * 60);
@@ -1083,6 +1092,7 @@ function EditQuiz() {
                             </option>
                           ))}
                         </select>
+
                       </div>
                     </div>
 
@@ -1243,6 +1253,31 @@ function EditQuiz() {
                             )}
                           </div>
 
+                          <div className="form-field toggle-negative-field">
+                            <label className="checkbox-toggle-label">
+                              <input
+                                type="checkbox"
+                                checked={quizMeta.markingPattern === "bpsc"}
+                                onChange={(e) => setQuizMeta(prev => ({ ...prev, markingPattern: e.target.checked ? "bpsc" : "standard" }))}
+                              />
+                              <span>Enable BPSC-style Option E & Blank Question Penalty</span>
+                            </label>
+                            {quizMeta.markingPattern === "bpsc" && (
+                              <div style={{
+                                marginTop: "8px",
+                                padding: "10px 12px",
+                                borderRadius: "8px",
+                                backgroundColor: "rgba(110, 63, 243, 0.08)",
+                                border: "1px solid rgba(110, 63, 243, 0.2)",
+                                fontSize: "12px",
+                                color: "var(--text-primary)",
+                                lineHeight: "1.4"
+                              }}>
+                                Option E acts as "Not Attempted" (0 marks). Leaving questions blank will penalize student with negative marking.
+                              </div>
+                            )}
+                          </div>
+
                           {/* NEW FEATURES: Per Question Timer and Lock Previous Questions */}
                           <div className="form-field toggle-negative-field">
                             <label className="checkbox-toggle-label">
@@ -1283,6 +1318,17 @@ function EditQuiz() {
                                 }}
                               />
                               <span>Lock Previous Questions</span>
+                            </label>
+                          </div>
+
+                          <div className="form-field toggle-negative-field">
+                            <label className="checkbox-toggle-label">
+                              <input
+                                type="checkbox"
+                                checked={quizMeta.allowReattempt !== false}
+                                onChange={(e) => setQuizMeta(prev => ({ ...prev, allowReattempt: e.target.checked }))}
+                              />
+                              <span>Allow Student Reattempts</span>
                             </label>
                           </div>
 
@@ -1912,10 +1958,10 @@ function EditQuiz() {
                                       setQuizMeta({
                                         ...quizMeta,
                                         resultReleaseMode: val,
-                                        showResultAfterSubmission: val === "immediate",
-                                        showCorrectAnswers: val === "immediate",
-                                        showExplanations: val === "immediate",
-                                        showAnswerReview: val === "immediate",
+                                        showResultAfterSubmission: val !== "manual",
+                                        showCorrectAnswers: val !== "manual",
+                                        showExplanations: val !== "manual",
+                                        showAnswerReview: val !== "manual",
                                       });
                                     }}
                                     style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", outline: "none" }}
@@ -2025,53 +2071,64 @@ function EditQuiz() {
                                    </div>
                                  )}
 
-                                {/* Setting 2: showCorrectAnswers */}
-                                <div className="form-field" style={{ marginBottom: 0 }}>
+                                <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "0 0 16px 0", fontStyle: "italic" }}>
+                                  {quizMeta.resultReleaseMode === "immediate" 
+                                    ? "Choose what students can see immediately after submission."
+                                    : "Result is hidden after submission. Choose what students can see before the result is fully released."}
+                                </p>
+
+                                {/* Option 1: showPassFailStatus */}
+                                <div className="form-field" style={{ marginBottom: "16px" }}>
                                   <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: "pointer" }}>
                                     <input 
                                       type="checkbox" 
-                                      checked={quizMeta.showCorrectAnswers} 
-                                      onChange={(e) => setQuizMeta({ ...quizMeta, showCorrectAnswers: e.target.checked })} 
+                                      checked={quizMeta.showPassFailStatus !== false} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, showPassFailStatus: e.target.checked })} 
                                       style={{ marginTop: "3px" }}
                                     />
                                     <div>
                                       <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
-                                        Show Correct Answers
+                                        Show Pass/Fail Status
                                       </span>
                                       <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                                        Allow students to see the correct answers after the result is available.
+                                        Students can see whether they passed or not.
                                       </p>
                                     </div>
                                   </label>
                                 </div>
 
-                                {/* Setting 3: showExplanations */}
-                                <div className="form-field" style={{ marginBottom: 0 }}>
+                                {/* Option 2: showResultAfterSubmission */}
+                                <div className="form-field" style={{ marginBottom: "16px" }}>
                                   <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: "pointer" }}>
                                     <input 
                                       type="checkbox" 
-                                      checked={quizMeta.showExplanations} 
-                                      onChange={(e) => setQuizMeta({ ...quizMeta, showExplanations: e.target.checked })} 
+                                      checked={quizMeta.showResultAfterSubmission !== false} 
+                                      onChange={(e) => setQuizMeta({ ...quizMeta, showResultAfterSubmission: e.target.checked })} 
                                       style={{ marginTop: "3px" }}
                                     />
                                     <div>
                                       <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
-                                        Show Answer Explanations
+                                        Show Score & Percentage
                                       </span>
                                       <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                                        Allow students to view explanations for the questions after submission.
+                                        Students can see their marks and percentage.
                                       </p>
                                     </div>
                                   </label>
                                 </div>
 
-                                {/* Setting 4: showAnswerReview */}
+                                {/* Option 3: showAnswerReview */}
                                 <div className="form-field" style={{ marginBottom: 0 }}>
                                   <label className="checkbox-toggle-label" style={{ display: "flex", gap: "10px", alignItems: "flex-start", cursor: "pointer" }}>
                                     <input 
                                       type="checkbox" 
-                                      checked={quizMeta.showAnswerReview} 
-                                      onChange={(e) => setQuizMeta({ ...quizMeta, showAnswerReview: e.target.checked })} 
+                                      checked={quizMeta.showAnswerReview !== false} 
+                                      onChange={(e) => setQuizMeta({ 
+                                        ...quizMeta, 
+                                        showAnswerReview: e.target.checked,
+                                        showCorrectAnswers: e.target.checked,
+                                        showExplanations: e.target.checked
+                                      })} 
                                       style={{ marginTop: "3px" }}
                                     />
                                     <div>
@@ -2079,7 +2136,7 @@ function EditQuiz() {
                                         Show Answer Review
                                       </span>
                                       <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                                        Allow students to review their selected answers, correct answers, and unanswered questions.
+                                        Students can review answers, correct answers, and explanations.
                                       </p>
                                     </div>
                                   </label>

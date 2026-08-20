@@ -325,13 +325,22 @@ function Result() {
     year: "numeric"
   });
 
+
+
   if (data && data.showResultAfterSubmission === false) {
     const submittedOn = data.createdAt ? new Date(data.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) + ", " + new Date(data.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }) : new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) + ", " + new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+    
+    const showPassFail = data.showPassFailStatus === true;
+    const isPassed = data.passed === true;
 
     return (
       <div style={{
         backgroundColor: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box"
       }}>
+        {/* Floating Theme Toggle on Top Right */}
+        <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+          <ThemeToggle />
+        </div>
         <div style={{
           background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
           borderRadius: "24px", padding: "40px",
@@ -351,49 +360,132 @@ function Result() {
             <div className="confetti-piece" style={{ position: "absolute", top: "68px", right: "calc(50% - 65px)", width: "8px", height: "8px", background: "#10b981", borderRadius: "50%", animationDelay: "1s" }} />
 
             <div style={{ position: "absolute", width: "160px", height: "160px", pointerEvents: "none", opacity: 0.8, background: "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)", top: "-30px" }} />
-            <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)", border: "2px solid rgba(16, 185, 129, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(16, 185, 129, 0.4)" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            
+            {showPassFail ? (
+              <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: isPassed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", border: isPassed ? "2px solid rgba(16, 185, 129, 0.2)" : "2px solid rgba(239, 68, 68, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: isPassed ? "#10B981" : "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: isPassed ? "0 6px 20px rgba(16, 185, 129, 0.4)" : "0 6px 20px rgba(239, 68, 68, 0.4)" }}>
+                  {isPassed ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)", border: "2px solid rgba(16, 185, 129, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(16, 185, 129, 0.4)" }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+              </div>
+            )}
           </div>
 
-          <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
-            Test Submitted <span style={{ color: "#10B981" }}>Successfully!</span>
-          </h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
-            Your responses have been recorded.
-          </p>
+          {showPassFail ? (
+            <>
+              <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
+                {isPassed ? (
+                  <>You have successfully <span style={{ color: "#10B981" }}>passed the exam!</span></>
+                ) : (
+                  <>You did not <span style={{ color: "#EF4444" }}>pass the exam.</span></>
+                )}
+              </h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
+                {isPassed ? "Well done! Your hard work has paid off." : "Keep practicing! You can do better next time."}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
+                Test Submitted <span style={{ color: "#10B981" }}>Successfully!</span>
+              </h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
+                Your responses have been recorded.
+              </p>
+            </>
+          )}
 
-          {/* Dotted border card for hidden result */}
-          <div style={{
-            background: "rgba(139, 92, 246, 0.03)",
-            border: "1.5px dashed rgba(139, 92, 246, 0.3)",
-            borderRadius: "16px",
-            padding: "20px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            textAlign: "left",
-            marginBottom: "32px"
-          }}>
+          {showPassFail ? (
+            /* Congratulations Card */
             <div style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "50%",
-              backgroundColor: "rgba(139, 92, 246, 0.1)",
+              background: isPassed ? "rgba(16, 185, 129, 0.05)" : "rgba(239, 68, 68, 0.05)",
+              border: isPassed ? "1.5px solid rgba(16, 185, 129, 0.2)" : "1.5px solid rgba(239, 68, 68, 0.2)",
+              borderRadius: "16px",
+              padding: "20px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0
+              justifyContent: "space-between",
+              gap: "16px",
+              textAlign: "left",
+              marginBottom: "32px"
             }}>
-              <Clock size={22} color="#8b5cf6" />
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  backgroundColor: isPassed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0
+                }}>
+                  {isPassed ? <Medal size={22} color="#10b981" /> : <AlertCircle size={22} color="#ef4444" />}
+                </div>
+                <div>
+                  <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                    {isPassed ? "Congratulations!" : "Result Status"}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                    {isPassed ? "You have successfully passed the exam." : "You did not meet the passing criteria."}
+                  </p>
+                </div>
+              </div>
+              <span style={{
+                background: isPassed ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                color: isPassed ? "#10B981" : "#EF4444",
+                fontWeight: "700",
+                fontSize: "12px",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                textTransform: "uppercase"
+              }}>
+                {isPassed ? "★ Passed" : "⚠ Failed"}
+              </span>
             </div>
-            <div>
-              <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Result will be available later</h4>
-              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>The result for this exam will be processed and updated shortly. Please check back later.</p>
+          ) : (
+            /* Dotted border card for hidden result */
+            <div style={{
+              background: "rgba(139, 92, 246, 0.03)",
+              border: "1.5px dashed rgba(139, 92, 246, 0.3)",
+              borderRadius: "16px",
+              padding: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              textAlign: "left",
+              marginBottom: "32px"
+            }}>
+              <div style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                backgroundColor: "rgba(139, 92, 246, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0
+              }}>
+                <Clock size={22} color="#8b5cf6" />
+              </div>
+              <div>
+                <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Result will be available later</h4>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>The result for this exam will be processed and updated shortly. Please check back later.</p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Style block for responsive grid */}
           <style>{`
@@ -402,7 +494,7 @@ function Result() {
               padding-top: 28px;
               margin-bottom: 32px;
               display: grid;
-              grid-template-columns: 1.2fr 1.3fr 0.9fr;
+              grid-template-columns: 1fr 1.3fr;
               gap: 20px;
               text-align: left;
             }
@@ -439,25 +531,11 @@ function Result() {
                 <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{submittedOn}</p>
               </div>
             </div>
-
-            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <div style={{ color: "#8b5cf6", marginTop: "2px" }}><Clock size={20} /></div>
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Time Taken</span>
-                <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{formatTime(data.timeTaken)}</p>
-              </div>
-            </div>
           </div>
 
-          {/* Go Back button */}
+          {/* Go Back / Dashboard button */}
           <button
-            onClick={() => {
-              if (location.state?.fromAttempts) {
-                navigate(-1);
-              } else {
-                navigate("/dashboard/results");
-              }
-            }}
+            onClick={() => navigate("/dashboard")}
             style={{
               background: "var(--violet)",
               color: "#ffffff",
@@ -477,7 +555,7 @@ function Result() {
             }}
           >
             <ArrowLeft size={18} />
-            Go back
+            Go to Dashboard
           </button>
 
         </div>

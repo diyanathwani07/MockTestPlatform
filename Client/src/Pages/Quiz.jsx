@@ -54,6 +54,7 @@ function Quiz() {
   const [showResultAfterSubmission, setShowResultAfterSubmission] = useState(true);
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
   const [finalTimeTaken, setFinalTimeTaken] = useState(0);
+  const [markingPattern, setMarkingPattern] = useState("standard");
 
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
@@ -227,12 +228,22 @@ function Quiz() {
             }
           }
 
+          let finalOptions = [...(q.options || [])];
+          if (response.data.markingPattern === "bpsc") {
+            if (finalOptions.length < 5) {
+              while (finalOptions.length < 4) {
+                finalOptions.push(`Option ${finalOptions.length + 1}`);
+              }
+              finalOptions.push("E — Not Attempted");
+            }
+          }
+
           return {
             id: idx + 1,
             _id: q._id,
             english: q.questionEnglish || q.english || "",
             hindi: q.questionHindi || q.hindi || "",
-            options: q.options || [],
+            options: finalOptions,
             correctAnswer: correctText,
             explanation: q.explanation || q.solution || ""
           };
@@ -254,6 +265,7 @@ function Quiz() {
         setTimePerQuestion(timePerQ);
         setLockPreviousQuestions(response.data.lockPreviousQuestions || false);
         setShowResultAfterSubmission(response.data.showResultAfterSubmission !== undefined ? response.data.showResultAfterSubmission : true);
+        setMarkingPattern(response.data.markingPattern || "standard");
         
         if (perQuestionTimerEnabled) {
           setQuestionTimeLeft(timePerQ);
