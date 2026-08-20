@@ -126,8 +126,8 @@ function PracticeTest() {
               console.error("Failed to decode obfuscated correct answer:", e);
             }
           }
-          if (["A", "B", "C", "D"].includes(correctText) && Array.isArray(q.options)) {
-            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3 };
+          if (["A", "B", "C", "D", "E", "F"].includes(correctText) && Array.isArray(q.options)) {
+            const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
             correctText = q.options[idxMap[correctText]] || correctText;
           } else if (typeof correctText === "string" && correctText.startsWith("Option ") && Array.isArray(q.options)) {
             const optNum = parseInt(correctText.replace("Option ", ""), 10);
@@ -137,7 +137,7 @@ function PracticeTest() {
           }
 
           // Handle Option Shuffling
-          const optOrder = (sessionData.optionsOrder && sessionData.optionsOrder[origIdx]) || [0, 1, 2, 3];
+          const optOrder = (sessionData.optionsOrder && sessionData.optionsOrder[origIdx]) || q.options.map((_, i) => i);
           const shuffledOptions = optOrder.map((optIdx) => q.options[optIdx]);
 
           return {
@@ -272,7 +272,7 @@ function PracticeTest() {
 
       question.options.forEach((opt, idx) => {
         if (opt === question.correctAnswer) return;
-        const letter = ["A", "B", "C", "D"][idx] || "A";
+        const letter = String.fromCharCode(65 + idx);
         incorrectMap[opt] = parsed.incorrect?.[letter] || "This option is incorrect.";
       });
 
@@ -306,15 +306,70 @@ function PracticeTest() {
     }
   };
 
-  const handleOptionClick = (optIdx) => {
+  const handleOptionClick = async (optIdx) => {
     if (isCorrectSelected || selectedOptions[optIdx]) return; // prevent re-clicking
 
-    // Fetch live AI explanation if not pre-generated
-    fetchLiveExplanation(currentQuestion, currentIndex);
+    let correctText = currentQuestion.correctAnswer;
+    let explanationText = currentQuestion.explanation;
+    let explanationsObj = currentQuestion.explanations;
 
-    const isCorrect = currentQuestion.options[optIdx] === currentQuestion.correctAnswer;
+    if (!correctText) {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/practice/${quizId}/questions/${currentQuestion._id}/verify`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.data && res.data.success) {
+          correctText = res.data.correctAnswer;
+          explanationText = res.data.explanation;
+          explanationsObj = res.data.explanations;
+
+          // Update state of questions
+          setQuestions(prev => {
+            const updated = [...prev];
+            updated[currentIndex] = {
+              ...updated[currentIndex],
+              correctAnswer: correctText,
+              explanation: explanationText,
+              explanations: explanationsObj
+            };
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error("Verification failed:", err);
+        alert("Failed to verify answer. Please check your internet connection.");
+        return;
+      }
+    }
+
+    const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+    
+    let resolvedCorrectText = correctText || "";
+    if (["A", "B", "C", "D", "E", "F"].includes(resolvedCorrectText) && Array.isArray(currentQuestion.options)) {
+      const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
+      resolvedCorrectText = currentQuestion.options[idxMap[resolvedCorrectText]] || resolvedCorrectText;
+    } else if (typeof resolvedCorrectText === "string" && resolvedCorrectText.startsWith("Option ") && Array.isArray(currentQuestion.options)) {
+      const optNum = parseInt(resolvedCorrectText.replace("Option ", ""), 10);
+      if (!isNaN(optNum) && optNum >= 1 && optNum <= currentQuestion.options.length) {
+        resolvedCorrectText = currentQuestion.options[optNum - 1] || resolvedCorrectText;
+      }
+    }
+
+    const isCorrect = normalizeString(currentQuestion.options[optIdx]) === normalizeString(resolvedCorrectText);
     const newSelected = { ...selectedOptions, [optIdx]: true };
     setSelectedOptionsMap(prev => ({ ...prev, [currentIndex]: newSelected }));
+
+    // Fetch live AI explanation if not pre-generated
+    const updatedQuestion = {
+      ...currentQuestion,
+      correctAnswer: resolvedCorrectText,
+      explanation: explanationText,
+      explanations: explanationsObj
+    };
+    fetchLiveExplanation(updatedQuestion, currentIndex);
 
     if (isCorrect) {
       setIsCorrectSelectedMap(prev => ({ ...prev, [currentIndex]: true }));
@@ -383,7 +438,7 @@ function PracticeTest() {
       try {
         const token = localStorage.getItem("token");
         // Save practice result history to server
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/history`, {
+        const historyRes = await axios.post(`${import.meta.env.VITE_API_URL}/api/practice/history`, {
           quizId,
           stats: {
             totalQuestions: questions.length,
@@ -399,26 +454,43 @@ function PracticeTest() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
+        const serverShowResult = historyRes.data?.showResultAfterSubmission !== false;
+
         // Restart/Reset active session order for future attempts
         await axios.get(`${import.meta.env.VITE_API_URL}/api/practice/${quizId}/session?restart=true`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+
+        navigate("/practice-result", {
+          replace: true,
+          state: {
+            quizId,
+            title: quiz.title,
+            showResultAfterSubmission: serverShowResult,
+            stats: {
+              ...stats,
+              totalQuestions: questions.length,
+              timeSpent
+            }
+          }
+        });
       } catch (err) {
         console.error("Failed to save practice completion metrics:", err);
-      }
-
-      navigate("/practice-result", {
-        replace: true,
-        state: {
-          quizId,
-          title: quiz.title,
-          stats: {
-            ...stats,
-            totalQuestions: questions.length,
-            timeSpent
+        // Fallback navigation in case of error
+        navigate("/practice-result", {
+          replace: true,
+          state: {
+            quizId,
+            title: quiz.title,
+            showResultAfterSubmission: true,
+            stats: {
+              ...stats,
+              totalQuestions: questions.length,
+              timeSpent
+            }
           }
-        }
-      });
+        });
+      }
     }
   };
 
@@ -461,7 +533,7 @@ function PracticeTest() {
         <div style={{ display: "flex", flexDirection: "column", backgroundColor: "var(--bg-card)", borderBottom: "1px solid var(--border-color)", padding: "10px 12px", gap: "8px", sticky: "top", top: 0, zIndex: 100 }}>
           {/* Row 1 */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "44px" }}>
-            <button onClick={() => navigate("/dashboard/practice")} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", padding: "6px 0", minHeight: "44px" }}>
+            <button type="button" onClick={() => navigate("/dashboard/practice")} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", padding: "6px 0", minHeight: "44px" }}>
               <ArrowLeft size={16} /> Back
             </button>
             <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>Quiz</h3>
@@ -519,7 +591,8 @@ function PracticeTest() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const isCorrectOption = opt === currentQuestion.correctAnswer;
+                const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+                const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
                 
                 let borderStyle = "1.5px solid var(--border-color)";
                 let backgroundStyle = "var(--bg-page)";
@@ -598,26 +671,49 @@ function PracticeTest() {
 
                     {/* Explanation right below the clicked choice */}
                     {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
-                       const stored = currentQuestion.explanations?.incorrect?.[opt];
-                       const live = liveExplanations[currentIndex]?.incorrect?.[opt];
-                       const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;
+                       const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
                        
-                       const text = stored
-                         ? stored
-                         : live
-                           ? live
-                           : hasCorrectExplanation
-                             ? "This option is incorrect — see the explanation for the correct answer below."
-                             : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
+                       const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const storedIncorrect = storedIncorrectEntry ? storedIncorrectEntry[1] : null;
+                       
+                       const liveIncorrectEntry = Object.entries(liveExplanations[currentIndex]?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const liveIncorrect = liveIncorrectEntry ? liveIncorrectEntry[1] : null;
+                       
+                       const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
+                       
+                       const text = specificIncorrect; // NO FALLBACK to correct explanation
+                       
+                       const conceptSummary = currentQuestion.explanations?.conceptSummary;
+                       const didYouKnow = currentQuestion.explanations?.didYouKnow;
                        
                        return (
-                         <div style={{ padding: "12px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }}>
-                           <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "13px" }}>
-                             ❌ Incorrect
+                         <div style={{ padding: "14px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "10px", marginTop: "4px" }}>
+                           <div>
+                             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "13px" }}>
+                               ❌ Incorrect
+                             </div>
+                             <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
+                               {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                             </p>
                            </div>
-                           <p style={{ margin: 0, fontSize: "14px", color: "#e2e8f0", lineHeight: 1.5 }}>
-                             {renderExplanationText(text)}
-                           </p>
+
+                           {conceptSummary && (
+                             <div>
+                               <div style={{ color: "#60A5FA", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>💡 Concept Summary</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(conceptSummary)}</p>
+                             </div>
+                           )}
+
+                           {didYouKnow && (
+                             <div>
+                               <div style={{ color: "#FBBF24", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>✨ Did You Know?</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(didYouKnow)}</p>
+                             </div>
+                           )}
                          </div>
                        );
                     })()}
@@ -668,6 +764,7 @@ function PracticeTest() {
         <div style={{ position: "sticky", bottom: 0, width: "100%", backgroundColor: "var(--bg-card)", borderTop: "1px solid var(--border-color)", padding: "12px 16px", boxSizing: "border-box", zIndex: 90 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", height: "48px" }}>
             <button 
+              type="button"
               onClick={handlePrev}
               disabled={currentIndex === 0}
               style={{
@@ -689,6 +786,7 @@ function PracticeTest() {
             </button>
 
             <button 
+              type="button"
               onClick={handleNext}
               disabled={!isCorrectSelected}
               style={{
@@ -951,7 +1049,8 @@ function PracticeTest() {
             <div className="practice-options-grid" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const isCorrectOption = opt === currentQuestion.correctAnswer;
+                const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
+                const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
                 
                 // Define border & background styles based on correctness
                 let borderStyle = "1.5px solid var(--border-color)";
@@ -1028,26 +1127,50 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {                       const stored = currentQuestion.explanations?.incorrect?.[opt];
-                       const live = liveExplanations[currentIndex]?.incorrect?.[opt];
-                       const hasCorrectExplanation = currentQuestion.explanations?.correct && currentQuestion.explanations.correct.trim().length > 0;
+                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
+                       const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
                        
-                       const text = stored
-                         ? stored
-                         : live
-                           ? live
-                           : hasCorrectExplanation
-                             ? "This option is incorrect — see the explanation for the correct answer below."
-                             : (fetchingExplanation ? "Generating explanation…" : "This option is incorrect.");
+                       const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const storedIncorrect = storedIncorrectEntry ? storedIncorrectEntry[1] : null;
+                       
+                       const liveIncorrectEntry = Object.entries(liveExplanations[currentIndex]?.incorrect || {}).find(
+                           ([k]) => normalizeString(k) === normalizeString(opt)
+                       );
+                       const liveIncorrect = liveIncorrectEntry ? liveIncorrectEntry[1] : null;
+                       
+                       const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
+                       
+                       const text = specificIncorrect; // NO FALLBACK to correct explanation
+                       
+                       const conceptSummary = currentQuestion.explanations?.conceptSummary;
+                       const didYouKnow = currentQuestion.explanations?.didYouKnow;
                        
                        return (
-                         <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "4px", marginTop: "8px" }}>
-                           <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
-                             ❌ Incorrect
+                         <div className="practice-inline-exp danger" style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "14px", display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+                           <div>
+                             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontWeight: "700", fontSize: "14px", marginBottom: "4px" }}>
+                               ❌ Incorrect
+                             </div>
+                             <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
+                               {text ? renderExplanationText(text) : (fetchingExplanation ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>Generating explanation…</span> : "This option is incorrect.")}
+                             </p>
                            </div>
-                           <p style={{ margin: 0, fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.5 }}>
-                             {renderExplanationText(text)}
-                           </p>
+
+                           {conceptSummary && (
+                             <div>
+                               <div style={{ color: "#60A5FA", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>💡 Concept Summary</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(conceptSummary)}</p>
+                             </div>
+                           )}
+
+                           {didYouKnow && (
+                             <div>
+                               <div style={{ color: "#FBBF24", fontWeight: "700", fontSize: "13px", marginBottom: "2px" }}>✨ Did You Know?</div>
+                               <p style={{ margin: 0, fontSize: "13.5px", color: "#cbd5e1", lineHeight: 1.5 }}>{renderExplanationText(didYouKnow)}</p>
+                             </div>
+                           )}
                          </div>
                        );
                     })()}

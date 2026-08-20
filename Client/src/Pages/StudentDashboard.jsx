@@ -104,6 +104,7 @@ function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState([]);
   const [seriesList, setSeriesList] = useState([]);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -113,7 +114,9 @@ function StudentDashboard() {
         if (!userId) return;
         
         // Fetch results for the user
-        const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userId}`);
+        const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
         setResults(resultsRes.data);
         
         // Fetch published parent Exam Series
@@ -123,6 +126,7 @@ function StudentDashboard() {
         setSeriesList(seriesRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data", error);
+        setFetchError(true);
       } finally {
         setLoading(false);
       }
@@ -131,7 +135,7 @@ function StudentDashboard() {
   }, []);
 
   // Compute Stats
-  const mocksAttempted = results.length;
+  const mocksAttempted = new Set(results.map(r => r.quizId?.toString()).filter(Boolean)).size;
   const averageScore = results.length > 0 
     ? Math.round(results.reduce((acc, curr) => acc + (curr.percentage || 0), 0) / results.length) 
     : 0;
@@ -144,6 +148,30 @@ function StudentDashboard() {
 
   const availableCount = seriesList.length;
   const recentAvailable = [...seriesList].reverse().slice(0, 3);
+
+  const upcomingSeriesList = recentAvailable.length === 0 ? (
+    <div className="sd-empty-upcoming">
+      <Calendar size={32} color="var(--border-input)" />
+      <p>No available series right now.</p>
+    </div>
+  ) : recentAvailable.map((series) => {
+      const d = new Date(series.createdAt || new Date());
+      return (
+        <div key={series._id} className="sd-upcoming-item" onClick={() => navigate(`/student/exams/${series._id}`)}>
+          <div className="sd-upcoming-date">
+            <span className="month">{d.toLocaleString('default', { month: 'short' }).toUpperCase()}</span>
+            <span className="day">{d.getDate()}</span>
+          </div>
+          <div className="sd-upcoming-info">
+            <h4>{series.title}</h4>
+            <p style={{ marginTop: "4px" }}>
+              Category: {series.category || "General"}
+            </p>
+          </div>
+          <ChevronRight size={16} className="sd-chevron" />
+        </div>
+      );
+    });
 
   const handleLogout = () => {
     localStorage.clear();
@@ -212,6 +240,11 @@ function StudentDashboard() {
 
       {/* ── MAIN CONTENT ── */}
       <div className="sd-content">
+        {fetchError && (
+          <div style={{ backgroundColor: "#FEE2E2", color: "#B91C1C", border: "1px solid #FCA5A5", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
+            ⚠️ Failed to load your attempt history. Please check your network connection or log in again.
+          </div>
+        )}
         
         {/* STATS ROW */}
         <div className="sd-stats-grid">
@@ -313,12 +346,12 @@ function StudentDashboard() {
               )}
             </div>
           </div>
+
         </div>
       </div>
+      </div>
     </div>
-  </div>
   );
-
 }
 
 export default StudentDashboard;
