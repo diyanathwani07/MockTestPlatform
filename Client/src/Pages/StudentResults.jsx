@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FileText, Calendar, ChevronDown, ChevronRight, CheckCircle, Target, Award, Trophy } from "lucide-react";
+import { FileText, CheckCircle, Target } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; 
@@ -10,7 +10,6 @@ import "../css/Practice.css";
 function StudentResults() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedExam, setSelectedExam] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,17 +34,9 @@ function StudentResults() {
     fetchResults();
   }, []);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Unknown Date";
-    return new Date(dateString).toLocaleDateString('en-GB').replace(/\//g, '-');
-  };
-
-  // Group by Exam Name or Subject
+  // Group by Exam Name only
   const examGroups = results.reduce((acc, result) => {
-    const groupKey = result.examName && result.subject 
-      ? (result.examName.trim() === result.subject.trim() ? result.examName.trim() : `${result.examName.trim()} - ${result.subject.trim()}`)
-      : (result.examName || result.subject || result.quizTitle || "Mock Tests");
-      
+    const groupKey = result.examName ? result.examName.trim() : "General Mock Tests";
     if (!acc[groupKey]) acc[groupKey] = [];
     acc[groupKey].push(result);
     return acc;
@@ -71,66 +62,60 @@ function StudentResults() {
               <p>You haven't attempted any exams yet.</p>
             </div>
           ) : (
-            <>
-
-
-              <div className="practice-grid">
-                {examNames.map((examName, index) => {
-                  const group = examGroups[examName];
-                  const count = group.length;
-                  
-                  // Compute some stats for the card
-                  const avgScore = group.reduce((sum, r) => sum + (r.percentage || ((r.score / (r.total || 1)) * 100)), 0) / count;
-                  const avgAccuracy = group.reduce((sum, r) => sum + (r.total > 0 ? ((r.correct || 0) / ((r.correct || 0) + (r.incorrect || 0) || 1)) * 100 : 0), 0) / count;
-                  
-                  const subjectColors = [
-                    { bg: "#EDE9FE", text: "#5B21B6", dot: "#7C3AED" },
-                    { bg: "#DCFCE7", text: "#166534", dot: "#16A34A" },
-                    { bg: "#FEF9C3", text: "#854D0E", dot: "#D97706" },
-                    { bg: "#FFE4E6", text: "#9F1239", dot: "#E11D48" },
-                    { bg: "#DBEAFE", text: "#1E40AF", dot: "#2563EB" },
-                    { bg: "#FCE7F3", text: "#9D174D", dot: "#DB2777" },
-                    { bg: "#F0FDF4", text: "#14532D", dot: "#15803D" },
-                  ];
-                  const color = subjectColors[index % subjectColors.length];
-                  
-                  return (
-                    <div key={examName} className="practice-card">
-                      <div className="practice-card-header">
-                        <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
-                          <span className="dot" style={{ backgroundColor: color.dot }}></span>
-                          Performance History
-                        </div>
+            <div className="practice-grid">
+              {examNames.map((examName, index) => {
+                const group = examGroups[examName];
+                const count = group.length;
+                
+                const avgScore = group.reduce((sum, r) => sum + (r.percentage || ((r.score / (r.total || 1)) * 100)), 0) / count;
+                
+                const subjectColors = [
+                  { bg: "#EDE9FE", text: "#5B21B6", dot: "#7C3AED" },
+                  { bg: "#DCFCE7", text: "#166534", dot: "#16A34A" },
+                  { bg: "#FEF9C3", text: "#854D0E", dot: "#D97706" },
+                  { bg: "#FFE4E6", text: "#9F1239", dot: "#E11D48" },
+                  { bg: "#DBEAFE", text: "#1E40AF", dot: "#2563EB" },
+                  { bg: "#FCE7F3", text: "#9D174D", dot: "#DB2777" },
+                  { bg: "#F0FDF4", text: "#14532D", dot: "#15803D" },
+                ];
+                const color = subjectColors[index % subjectColors.length];
+                
+                return (
+                  <div key={examName} className="practice-card">
+                    <div className="practice-card-header">
+                      <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
+                        <span className="dot" style={{ backgroundColor: color.dot }}></span>
+                        Performance History
                       </div>
-                      
-                      <h3 className="practice-quiz-title">{examName}</h3>
-                      <p className="practice-quiz-desc">
-                        Review your historical performance and analytics for this test.
-                      </p>
-
-                      <div className="practice-meta-grid">
-                        <div className="meta-item">
-                          <CheckCircle size={14} />
-                          <span>{count} Attempt{count !== 1 ? "s" : ""}</span>
-                        </div>
-                        <div className="meta-item">
-                          <Target size={14} />
-                          <span>Avg Score: {avgScore.toFixed(0)}%</span>
-                        </div>
-                      </div>
-
-                      <button 
-                        className="practice-start-btn"
-                        onClick={() => navigate(`/dashboard/results/${encodeURIComponent(examName)}`, { state: { group } })}
-                      >
-                        <FileText size={16} />
-                        View Details
-                      </button>
                     </div>
-                  );
-                })}
-              </div>
-            </>
+                    
+                    <h3 className="practice-quiz-title">{examName}</h3>
+                    <p className="practice-quiz-desc">
+                      Review your historical performance and analytics for this test.
+                    </p>
+
+                    <div className="practice-meta-grid">
+                      <div className="meta-item">
+                        <CheckCircle size={14} />
+                        <span>{count} Attempt{count !== 1 ? "s" : ""}</span>
+                      </div>
+                      <div className="meta-item">
+                        <Target size={14} />
+                        <span>Avg Score: {avgScore.toFixed(0)}%</span>
+                      </div>
+                    </div>
+
+                    <button 
+                      className="practice-start-btn"
+                      onClick={() => navigate(`/dashboard/results/${encodeURIComponent(examName)}`)}
+                    >
+                      <FileText size={16} />
+                      View Results &gt;
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>

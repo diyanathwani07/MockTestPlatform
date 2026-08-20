@@ -8,6 +8,151 @@ import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
 
+const FeedbackForm = ({ resultId }) => {
+  const [rating, setRating] = useState(0); // 1 to 5
+  const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const ratings = [
+    { value: 1, label: "Poor", emoji: "😡", color: "#EF4444" },
+    { value: 2, label: "Average", emoji: "😐", color: "#F59E0B" },
+    { value: 3, label: "Good", emoji: "🙂", color: "#10B981" },
+    { value: 4, label: "Very Good", emoji: "😄", color: "#3B82F6" },
+    { value: 5, label: "Excellent", emoji: "😍", color: "#8B5CF6" }
+  ];
+
+  const handleSubmit = async () => {
+    if (rating === 0) {
+      alert("Please select a rating before submitting.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/results/feedback/${resultId}`, {
+        reaction: ratings[rating - 1].label,
+        feedbackMessage: comment
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Submit feedback error:", err);
+      alert("Failed to submit feedback. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div style={{
+        background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
+        borderRadius: "24px", padding: "30px", textAlign: "center",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box"
+      }}>
+        <div style={{ fontSize: "40px", marginBottom: "16px" }}>🎉</div>
+        <h4 style={{ color: "var(--text-primary)", fontSize: "18px", fontWeight: "700", marginBottom: "8px" }}>Thank you!</h4>
+        <p style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.4", margin: 0 }}>Your feedback has been submitted successfully and helps us improve our exams.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
+      borderRadius: "24px", padding: "30px", textAlign: "left",
+      boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box",
+      width: "100%"
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "20px" }}>
+        <div style={{
+          width: "40px", height: "40px", borderRadius: "50%",
+          backgroundColor: "rgba(139, 92, 246, 0.1)", display: "flex",
+          alignItems: "center", justifyContent: "center"
+        }}>
+          <HelpCircle size={20} color="#8B5CF6" />
+        </div>
+        <div>
+          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Help us improve</h4>
+          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Your feedback helps us make exams better.</p>
+        </div>
+      </div>
+
+      {/* Q1 */}
+      <div style={{ marginBottom: "24px" }}>
+        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "12px" }}>
+          1. How would you rate this quiz?
+        </span>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
+          {ratings.map((r) => {
+            const isSelected = rating === r.value;
+            return (
+              <div 
+                key={r.value}
+                onClick={() => setRating(r.value)}
+                style={{
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
+                  cursor: "pointer", flex: 1, padding: "8px 4px", borderRadius: "12px",
+                  border: isSelected ? `1.5px solid ${r.color}` : "1.5px solid transparent",
+                  backgroundColor: isSelected ? `${r.color}10` : "transparent",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                <span style={{ fontSize: "28px", filter: isSelected ? "none" : "grayscale(30%)", transform: isSelected ? "scale(1.15)" : "scale(1)", transition: "all 0.2s" }}>{r.emoji}</span>
+                <span style={{ fontSize: "9.5px", fontWeight: isSelected ? "700" : "500", color: isSelected ? r.color : "var(--text-secondary)" }}>{r.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Q2 */}
+      <div style={{ marginBottom: "24px" }}>
+        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "8px" }}>
+          2. Any comments or suggestions? (Optional)
+        </span>
+        <textarea
+          value={comment}
+          onChange={(e) => { if (e.target.value.length <= 500) setComment(e.target.value); }}
+          placeholder="Write your feedback here..."
+          style={{
+            width: "100%", height: "100px", padding: "12px", borderRadius: "12px",
+            border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-input)",
+            color: "var(--text-primary)", fontSize: "12.5px", outline: "none", resize: "none",
+            boxSizing: "border-box"
+          }}
+        />
+        <div style={{ textAlign: "right", fontSize: "10.5px", color: "var(--text-muted)", marginTop: "4px" }}>
+          {comment.length}/500
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        style={{
+          width: "100%", padding: "12px 20px", borderRadius: "12px", border: "none",
+          backgroundColor: rating === 0 ? "var(--border-color)" : "var(--violet)",
+          color: rating === 0 ? "var(--text-muted)" : "#ffffff", fontWeight: "700",
+          fontSize: "13.5px", cursor: rating === 0 || loading ? "not-allowed" : "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+          transition: "all 0.2s",
+          boxShadow: rating === 0 ? "none" : "0 4px 15px rgba(124, 58, 237, 0.2)"
+        }}
+      >
+        <span>Submit Feedback</span>
+      </button>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "12px", color: "var(--text-muted)", fontSize: "10px" }}>
+        <span>🔒 Your feedback is anonymous</span>
+      </div>
+    </div>
+  );
+};
+
 function Result() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -86,8 +231,8 @@ function Result() {
   const percentage = data?.percentage;
   const [questions, setQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]);
-  // Read subject from navigation state (set by Quiz.jsx), then localStorage, then fallback
   const examTitle = data?.subject || data?.title || localStorage.getItem("lastExamTaken") || "Examination";
+  const isExam = data?.quizType !== "practice";
 
   const [visibleCount, setVisibleCount] = useState(10);
   const [shareId, setShareId] = useState(data?.shareId || null);
@@ -335,229 +480,242 @@ function Result() {
 
     return (
       <div style={{
-        backgroundColor: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box"
+        backgroundColor: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "40px 20px", boxSizing: "border-box"
       }}>
         {/* Floating Theme Toggle on Top Right */}
         <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
           <ThemeToggle />
         </div>
-        <div style={{
-          background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
-          borderRadius: "24px", padding: "40px",
-          textAlign: "center", maxWidth: "640px", width: "100%",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box"
-        }}>
-          
-          {/* Circular green check icon with confetti style */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px", position: "relative" }}>
-            {/* Confetti pieces */}
-            <div className="confetti-piece" style={{ position: "absolute", top: "10px", left: "calc(50% - 70px)", width: "8px", height: "8px", background: "#8b5cf6", borderRadius: "2px", transform: "rotate(45deg)", animationDelay: "0s" }} />
-            <div className="confetti-piece" style={{ position: "absolute", top: "40px", left: "calc(50% - 85px)", width: "6px", height: "12px", background: "#10b981", borderRadius: "1px", transform: "rotate(-15deg)", animationDelay: "0.4s" }} />
-            <div className="confetti-piece" style={{ position: "absolute", top: "70px", left: "calc(50% - 65px)", width: "8px", height: "8px", background: "#3b82f6", borderRadius: "50%", animationDelay: "0.8s" }} />
-            
-            <div className="confetti-piece" style={{ position: "absolute", top: "15px", right: "calc(50% - 70px)", width: "8px", height: "8px", background: "#3b82f6", borderRadius: "2px", transform: "rotate(15deg)", animationDelay: "0.2s" }} />
-            <div className="confetti-piece" style={{ position: "absolute", top: "45px", right: "calc(50% - 85px)", width: "6px", height: "12px", background: "#8b5cf6", borderRadius: "1px", transform: "rotate(30deg)", animationDelay: "0.6s" }} />
-            <div className="confetti-piece" style={{ position: "absolute", top: "68px", right: "calc(50% - 65px)", width: "8px", height: "8px", background: "#10b981", borderRadius: "50%", animationDelay: "1s" }} />
 
-            <div style={{ position: "absolute", width: "160px", height: "160px", pointerEvents: "none", opacity: 0.8, background: "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)", top: "-30px" }} />
+        <div style={{
+          display: "flex", gap: "30px", maxWidth: isExam ? "1100px" : "640px", width: "100%", justifyContent: "center", alignItems: "flex-start", boxSizing: "border-box", flexWrap: "wrap", margin: "0 auto"
+        }}>
+          {/* Left Column: Main Card */}
+          <div style={{
+            background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
+            borderRadius: "24px", padding: "40px",
+            textAlign: "center", flex: 1.2, minWidth: "320px", maxWidth: "640px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box"
+          }}>
             
-            {showPassFail ? (
-              <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: isPassed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", border: isPassed ? "2px solid rgba(16, 185, 129, 0.2)" : "2px solid rgba(239, 68, 68, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: isPassed ? "#10B981" : "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: isPassed ? "0 6px 20px rgba(16, 185, 129, 0.4)" : "0 6px 20px rgba(239, 68, 68, 0.4)" }}>
-                  {isPassed ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  )}
+            {/* Circular green check icon with confetti style */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px", position: "relative" }}>
+              {/* Confetti pieces */}
+              <div className="confetti-piece" style={{ position: "absolute", top: "10px", left: "calc(50% - 70px)", width: "8px", height: "8px", background: "#8b5cf6", borderRadius: "2px", transform: "rotate(45deg)", animationDelay: "0s" }} />
+              <div className="confetti-piece" style={{ position: "absolute", top: "40px", left: "calc(50% - 85px)", width: "6px", height: "12px", background: "#10b981", borderRadius: "1px", transform: "rotate(-15deg)", animationDelay: "0.4s" }} />
+              <div className="confetti-piece" style={{ position: "absolute", top: "70px", left: "calc(50% - 65px)", width: "8px", height: "8px", background: "#3b82f6", borderRadius: "50%", animationDelay: "0.8s" }} />
+              
+              <div className="confetti-piece" style={{ position: "absolute", top: "15px", right: "calc(50% - 70px)", width: "8px", height: "8px", background: "#3b82f6", borderRadius: "2px", transform: "rotate(15deg)", animationDelay: "0.2s" }} />
+              <div className="confetti-piece" style={{ position: "absolute", top: "45px", right: "calc(50% - 85px)", width: "6px", height: "12px", background: "#8b5cf6", borderRadius: "1px", transform: "rotate(30deg)", animationDelay: "0.6s" }} />
+              <div className="confetti-piece" style={{ position: "absolute", top: "68px", right: "calc(50% - 65px)", width: "8px", height: "8px", background: "#10b981", borderRadius: "50%", animationDelay: "1s" }} />
+
+              <div style={{ position: "absolute", width: "160px", height: "160px", pointerEvents: "none", opacity: 0.8, background: "radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)", top: "-30px" }} />
+              
+              {showPassFail ? (
+                <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: isPassed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", border: isPassed ? "2px solid rgba(16, 185, 129, 0.2)" : "2px solid rgba(239, 68, 68, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: isPassed ? "#10B981" : "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: isPassed ? "0 6px 20px rgba(16, 185, 129, 0.4)" : "0 6px 20px rgba(239, 68, 68, 0.4)" }}>
+                    {isPassed ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    )}
+                  </div>
                 </div>
+              ) : (
+                <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)", border: "2px solid rgba(16, 185, 129, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(16, 185, 129, 0.4)" }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {showPassFail ? (
+              <>
+                <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
+                  {isPassed ? (
+                    <>You have successfully <span style={{ color: "#10B981" }}>passed the exam!</span></>
+                  ) : (
+                    <>You did not <span style={{ color: "#EF4444" }}>pass the exam.</span></>
+                  )}
+                </h2>
+                <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
+                  {isPassed ? "Well done! Your hard work has paid off." : "Keep practicing! You can do better next time."}
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
+                  Test Submitted <span style={{ color: "#10B981" }}>Successfully!</span>
+                </h2>
+                <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
+                  Your responses have been recorded.
+                </p>
+              </>
+            )}
+
+            {showPassFail ? (
+              /* Congratulations Card */
+              <div style={{
+                background: isPassed ? "rgba(16, 185, 129, 0.05)" : "rgba(239, 68, 68, 0.05)",
+                border: isPassed ? "1.5px solid rgba(16, 185, 129, 0.2)" : "1.5px solid rgba(239, 68, 68, 0.2)",
+                borderRadius: "16px",
+                padding: "20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "16px",
+                textAlign: "left",
+                marginBottom: "32px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <div style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    backgroundColor: isPassed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}>
+                    {isPassed ? <Medal size={22} color="#10b981" /> : <AlertCircle size={22} color="#ef4444" />}
+                  </div>
+                  <div>
+                    <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                      {isPassed ? "Congratulations!" : "Result Status"}
+                    </h4>
+                    <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                      {isPassed ? "You have successfully passed the exam." : "You did not meet the passing criteria."}
+                    </p>
+                  </div>
+                </div>
+                <span style={{
+                  background: isPassed ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                  color: isPassed ? "#10B981" : "#EF4444",
+                  fontWeight: "700",
+                  fontSize: "12px",
+                  padding: "6px 12px",
+                  borderRadius: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  textTransform: "uppercase"
+                }}>
+                  {isPassed ? "★ Passed" : "⚠ Failed"}
+                </span>
               </div>
             ) : (
-              <div style={{ width: "84px", height: "84px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)", border: "2px solid rgba(16, 185, 129, 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(16, 185, 129, 0.4)" }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {showPassFail ? (
-            <>
-              <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
-                {isPassed ? (
-                  <>You have successfully <span style={{ color: "#10B981" }}>passed the exam!</span></>
-                ) : (
-                  <>You did not <span style={{ color: "#EF4444" }}>pass the exam.</span></>
-                )}
-              </h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
-                {isPassed ? "Well done! Your hard work has paid off." : "Keep practicing! You can do better next time."}
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 style={{ color: "var(--text-primary)", margin: "0 0 12px", fontSize: "28px", fontWeight: "800", letterSpacing: "-0.5px" }}>
-                Test Submitted <span style={{ color: "#10B981" }}>Successfully!</span>
-              </h2>
-              <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: "500", margin: "0 0 28px" }}>
-                Your responses have been recorded.
-              </p>
-            </>
-          )}
-
-          {showPassFail ? (
-            /* Congratulations Card */
-            <div style={{
-              background: isPassed ? "rgba(16, 185, 129, 0.05)" : "rgba(239, 68, 68, 0.05)",
-              border: isPassed ? "1.5px solid rgba(16, 185, 129, 0.2)" : "1.5px solid rgba(239, 68, 68, 0.2)",
-              borderRadius: "16px",
-              padding: "20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "16px",
-              textAlign: "left",
-              marginBottom: "32px"
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              /* Dotted border card for hidden result */
+              <div style={{
+                background: "rgba(139, 92, 246, 0.03)",
+                border: "1.5px dashed rgba(139, 92, 246, 0.3)",
+                borderRadius: "16px",
+                padding: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                textAlign: "left",
+                marginBottom: "32px"
+              }}>
                 <div style={{
                   width: "48px",
                   height: "48px",
                   borderRadius: "50%",
-                  backgroundColor: isPassed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                  backgroundColor: "rgba(139, 92, 246, 0.1)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0
                 }}>
-                  {isPassed ? <Medal size={22} color="#10b981" /> : <AlertCircle size={22} color="#ef4444" />}
+                  <Clock size={22} color="#8b5cf6" />
                 </div>
                 <div>
-                  <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
-                    {isPassed ? "Congratulations!" : "Result Status"}
-                  </h4>
-                  <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                    {isPassed ? "You have successfully passed the exam." : "You did not meet the passing criteria."}
-                  </p>
+                  <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Result will be available later</h4>
+                  <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>The result for this exam will be processed and updated shortly. Please check back later.</p>
                 </div>
               </div>
-              <span style={{
-                background: isPassed ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
-                color: isPassed ? "#10B981" : "#EF4444",
-                fontWeight: "700",
-                fontSize: "12px",
-                padding: "6px 12px",
-                borderRadius: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                textTransform: "uppercase"
-              }}>
-                {isPassed ? "★ Passed" : "⚠ Failed"}
-              </span>
+            )}
+
+            {/* Style block for responsive grid */}
+            <style>{`
+              .submitted-details-row {
+                border-top: 1.5px solid var(--border-color);
+                padding-top: 28px;
+                margin-bottom: 32px;
+                display: grid;
+                grid-template-columns: 1fr 1.3fr;
+                gap: 20px;
+                text-align: left;
+              }
+              @media (max-width: 640px) {
+                .submitted-details-row {
+                  grid-template-columns: 1fr;
+                  gap: 24px;
+                }
+              }
+              @keyframes confetti-drift {
+                0% { transform: translateY(0) rotate(0deg); }
+                50% { transform: translateY(-8px) translateX(3px) rotate(180deg); }
+                100% { transform: translateY(0) rotate(360deg); }
+              }
+              .confetti-piece {
+                animation: confetti-drift 4s ease-in-out infinite;
+              }
+            `}</style>
+
+            {/* Grid stats section */}
+            <div className="submitted-details-row">
+              <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                <div style={{ color: "#8b5cf6", marginTop: "2px" }}><FileText size={20} /></div>
+                <div>
+                  <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Exam</span>
+                  <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", lineHeight: "1.4" }}>{examTitle}</p>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                <div style={{ color: "#8b5cf6", marginTop: "2px" }}><CalendarDays size={20} /></div>
+                <div>
+                  <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Submitted On</span>
+                  <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{submittedOn}</p>
+                </div>
+              </div>
             </div>
-          ) : (
-            /* Dotted border card for hidden result */
-            <div style={{
-              background: "rgba(139, 92, 246, 0.03)",
-              border: "1.5px dashed rgba(139, 92, 246, 0.3)",
-              borderRadius: "16px",
-              padding: "20px",
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              textAlign: "left",
-              marginBottom: "32px"
-            }}>
-              <div style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "50%",
-                backgroundColor: "rgba(139, 92, 246, 0.1)",
+
+            {/* Go Back / Dashboard button */}
+            <button
+              onClick={() => navigate("/dashboard")}
+              style={{
+                background: "var(--violet)",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "12px",
+                padding: "14px 32px",
+                fontSize: "15px",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                flexShrink: 0
-              }}>
-                <Clock size={22} color="#8b5cf6" />
-              </div>
-              <div>
-                <h4 style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Result will be available later</h4>
-                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.4" }}>The result for this exam will be processed and updated shortly. Please check back later.</p>
-              </div>
-            </div>
-          )}
+                gap: "8px",
+                margin: "0 auto",
+                boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)"
+              }}
+            >
+              <ArrowLeft size={18} />
+              Go to Dashboard
+            </button>
 
-          {/* Style block for responsive grid */}
-          <style>{`
-            .submitted-details-row {
-              border-top: 1.5px solid var(--border-color);
-              padding-top: 28px;
-              margin-bottom: 32px;
-              display: grid;
-              grid-template-columns: 1fr 1.3fr;
-              gap: 20px;
-              text-align: left;
-            }
-            @media (max-width: 640px) {
-              .submitted-details-row {
-                grid-template-columns: 1fr;
-                gap: 24px;
-              }
-            }
-            @keyframes confetti-drift {
-              0% { transform: translateY(0) rotate(0deg); }
-              50% { transform: translateY(-8px) translateX(3px) rotate(180deg); }
-              100% { transform: translateY(0) rotate(360deg); }
-            }
-            .confetti-piece {
-              animation: confetti-drift 4s ease-in-out infinite;
-            }
-          `}</style>
-
-          {/* Grid stats section */}
-          <div className="submitted-details-row">
-            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <div style={{ color: "#8b5cf6", marginTop: "2px" }}><FileText size={20} /></div>
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Exam</span>
-                <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", lineHeight: "1.4" }}>{examTitle}</p>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <div style={{ color: "#8b5cf6", marginTop: "2px" }}><CalendarDays size={20} /></div>
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Submitted On</span>
-                <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{submittedOn}</p>
-              </div>
-            </div>
           </div>
 
-          {/* Go Back / Dashboard button */}
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={{
-              background: "var(--violet)",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "12px",
-              padding: "14px 32px",
-              fontSize: "15px",
-              fontWeight: "700",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              margin: "0 auto",
-              boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)"
-            }}
-          >
-            <ArrowLeft size={18} />
-            Go to Dashboard
-          </button>
-
+          {/* Right Column: Feedback Card */}
+          {isExam && data && data._id && (
+            <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
+              <FeedbackForm resultId={data._id} />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -570,6 +728,9 @@ function Result() {
         <ThemeToggle />
       </div>
       
+
+            
+            {/* Header */}
       {!showAnswers && (
         <div className="result-modal-overlay">
           {/* Back button to go to previous page (e.g. Attempts list) */}
@@ -606,10 +767,11 @@ function Result() {
             <ArrowLeft size={22} strokeWidth={2.5} />
           </button>
 
-          <div className="result-modal-card">
-            
-            {/* Header */}
-            <div className="rm-header">
+          <div style={{
+            display: "flex", gap: "30px", maxWidth: isExam ? "1100px" : "650px", width: "100%", justifyContent: "center", alignItems: "flex-start", boxSizing: "border-box", flexWrap: "wrap", margin: "0 auto"
+          }}>
+            <div className="result-modal-card" style={{ margin: 0, flex: 1.2, minWidth: "320px", maxWidth: "650px" }}>
+              <div className="rm-header">
               <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px", color: "#F59E0B" }}>
                 <Trophy size={64} strokeWidth={1.5} />
               </div>
@@ -793,8 +955,16 @@ function Result() {
               )}
             </div>
           </div>
+
+          {/* Right Column: Feedback Card */}
+          {isExam && data && data._id && (
+            <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
+              <FeedbackForm resultId={data._id} />
+            </div>
+          )}
         </div>
-      )}
+      </div>
+    )}
 
       {showAnswers && (
         <div className="result-review-container">
