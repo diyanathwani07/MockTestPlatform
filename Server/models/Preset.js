@@ -25,6 +25,11 @@ const presetSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    markingPattern: {
+      type: String,
+      enum: ["standard", "bpsc"],
+      default: "standard"
+    },
   },
   { timestamps: true }
 );

@@ -33,9 +33,11 @@ const createQuiz = async (req, res) => {
       }
       bodyData.examSeriesId = series._id;
     }
+    const isBpsc = (bodyData.examName && bodyData.examName.toUpperCase().includes("BPSC")) || (bodyData.title && bodyData.title.toUpperCase().includes("BPSC")) || bodyData.markingPattern === "bpsc";
 
     const quiz = await quizService.createQuiz({
       ...bodyData,
+      markingPattern: isBpsc ? "bpsc" : (bodyData.markingPattern || "standard"),
       createdBy: req.user?._id,
     });
 
@@ -177,8 +179,10 @@ const updateQuiz = async (req, res) => {
           isPublished: true,
         });
       }
-      updateData.examSeriesId = ungroupedSeries._id;
     }
+
+    const isBpsc = (updateData.examName && updateData.examName.toUpperCase().includes("BPSC")) || (updateData.title && updateData.title.toUpperCase().includes("BPSC")) || updateData.markingPattern === "bpsc";
+    updateData.markingPattern = isBpsc ? "bpsc" : (updateData.markingPattern || originalQuiz.markingPattern || "standard");
 
     // Resolve section references if updating sections array
     if (updateData.sections?.length > 0) {
@@ -260,12 +264,38 @@ const updateQuiz = async (req, res) => {
       }
     }
 
+    const settingsChanges = [];
+    if (originalQuiz.resultReleaseMode !== quiz.resultReleaseMode) {
+      settingsChanges.push(`Release Mode: ${originalQuiz.resultReleaseMode} -> ${quiz.resultReleaseMode}`);
+    }
+    if (originalQuiz.showPassFailStatus !== quiz.showPassFailStatus) {
+      settingsChanges.push(`Show Pass/Fail: ${originalQuiz.showPassFailStatus} -> ${quiz.showPassFailStatus}`);
+    }
+    if (originalQuiz.showResultAfterSubmission !== quiz.showResultAfterSubmission) {
+      settingsChanges.push(`Show Score & %: ${originalQuiz.showResultAfterSubmission} -> ${quiz.showResultAfterSubmission}`);
+    }
+    if (originalQuiz.showAnswerReview !== quiz.showAnswerReview) {
+      settingsChanges.push(`Show Answer Review: ${originalQuiz.showAnswerReview} -> ${quiz.showAnswerReview}`);
+    }
+
+    let hasSettingsChanges = false;
+    if (settingsChanges.length > 0) {
+      await logAction(
+        "CHANGE_RESULT_SETTINGS",
+        req.user?.fullName || "Admin",
+        `${quiz.title} - Changed result settings: [${settingsChanges.join(", ")}]`,
+        "Quiz",
+        req.ip
+      );
+      hasSettingsChanges = true;
+    }
+
     if (quiz.published && !originalQuiz.published) {
       await logAction("PUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     } else if (!quiz.published && originalQuiz.published) {
       await logAction("UNPUBLISH_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
     } else {
-      if (!hasPlanChanges) {
+      if (!hasPlanChanges && !hasSettingsChanges) {
         await logAction("UPDATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
       }
     }
@@ -969,10 +999,13 @@ const submitQuiz = async (req, res) => {
     // Track stats per section for multi-section results
     const sectionStatsMap = {};
 
+    const isBpsc = quiz.markingPattern === "bpsc";
+
     dbQuestions.forEach((q, index) => {
       const userAns = userAnswers[index];
       const actualAnswer = q.correctAnswer;
       const isCorrect = userAns !== undefined && userAns !== null && String(userAns).trim().toLowerCase() === String(actualAnswer).trim().toLowerCase();
+      const isNotAttemptedOption = userAns && (String(userAns).trim().toUpperCase() === "E" || String(userAns).trim().toLowerCase().includes("not attempted"));
 
       const diff = (q.difficulty || "medium").toLowerCase();
       if (difficultyBreakdown[diff]) {
@@ -981,16 +1014,37 @@ const submitQuiz = async (req, res) => {
       }
 
       let qScore = 0;
-      if (userAns === undefined || userAns === null || userAns === "") {
-        unanswered++;
-      } else if (isCorrect) {
-        correct++;
-        qScore = q.marksPerQuestion || 1;
-        score += qScore;
+      if (isBpsc) {
+        if (userAns === undefined || userAns === null || userAns === "") {
+          // Blank answers in BPSC mode get negative marking penalty
+          incorrect++;
+          qScore = -(q.negativeMarking || 0);
+          score += qScore;
+        } else if (isNotAttemptedOption) {
+          // Explicitly choosing E (Not Attempted) gets 0 marks with no penalty
+          unanswered++;
+        } else if (isCorrect) {
+          correct++;
+          qScore = q.marksPerQuestion || 1;
+          score += qScore;
+        } else {
+          // Incorrect A-D options get negative marking penalty
+          incorrect++;
+          qScore = -(q.negativeMarking || 0);
+          score += qScore;
+        }
       } else {
-        incorrect++;
-        qScore = -(q.negativeMarking || 0);
-        score += qScore;
+        if (userAns === undefined || userAns === null || userAns === "") {
+          unanswered++;
+        } else if (isCorrect) {
+          correct++;
+          qScore = q.marksPerQuestion || 1;
+          score += qScore;
+        } else {
+          incorrect++;
+          qScore = -(q.negativeMarking || 0);
+          score += qScore;
+        }
       }
 
       if (q.sectionId) {
@@ -1009,9 +1063,19 @@ const submitQuiz = async (req, res) => {
         if (isCorrect) {
           sectionStatsMap[secIdStr].correct++;
           sectionStatsMap[secIdStr].score += q.marksPerQuestion || 1;
-        } else if (userAns !== undefined && userAns !== null && userAns !== "") {
-          sectionStatsMap[secIdStr].incorrect++;
-          sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+        } else if (isBpsc) {
+          if (isNotAttemptedOption) {
+            // Option E is neutral
+          } else {
+            // Blank or wrong gets penalized
+            sectionStatsMap[secIdStr].incorrect++;
+            sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+          }
+        } else {
+          if (userAns !== undefined && userAns !== null && userAns !== "") {
+            sectionStatsMap[secIdStr].incorrect++;
+            sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+          }
         }
       }
     });
@@ -1061,9 +1125,15 @@ const submitQuiz = async (req, res) => {
         success: true,
         message: "Your exam has been submitted successfully.",
         showResultAfterSubmission: false,
+        showPassFailStatus: quiz.showPassFailStatus === true,
+        passed: percentage >= (quiz.passPercentage || 50),
         showCorrectAnswers: false,
         showExplanations: false,
         showAnswerReview: false,
+        createdAt: new Date(),
+        examName: quiz.examName,
+        quizTitle: quiz.title,
+        shareId: shareId
       });
     }
 

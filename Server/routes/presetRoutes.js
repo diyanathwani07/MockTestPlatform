@@ -27,12 +27,15 @@ router.post("/", protect, adminOnly, async (req, res) => {
       return res.status(400).json({ message: "Preset name, exam name, and duration are required." });
     }
 
+    const isBpsc = (presetName && presetName.toUpperCase().includes("BPSC")) || (examName && examName.toUpperCase().includes("BPSC"));
+
     const newPreset = new Preset({
       presetName,
       examName,
       duration,
       marksPerQuestion: marksPerQuestion || 1,
       negativeMarking: negativeMarking || 0,
+      markingPattern: isBpsc ? "bpsc" : "standard"
     });
 
     const savedPreset = await newPreset.save();

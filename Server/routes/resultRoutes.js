@@ -6,12 +6,14 @@ const {
   getUserResults,
   getLeaderboard,
   getSharedResult,
-  getResultByShareId
+  getResultByShareId,
+  updateResultFeedback
 } = require("../controllers/resultController");
 
 const router = express.Router();
 
 router.post("/save", protect, saveResult);
+router.put("/feedback/:resultId", protect, updateResultFeedback);
 router.get("/leaderboard", getLeaderboard);
 router.get("/share/:shareId", getSharedResult);
 router.get("/by-share/:shareId", getResultByShareId);

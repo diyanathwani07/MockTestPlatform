@@ -70,6 +70,8 @@ const sanitizeResult = (result, quiz, userRole) => {
   }
   
   const resultObj = result.toObject ? result.toObject() : JSON.parse(JSON.stringify(result));
+  resultObj.allowReattempt = quiz ? (quiz.allowReattempt !== false) : true;
+  resultObj.quizType = quiz ? quiz.quizType : "exam";
   
   if (quiz) {
     let resultsReleased = true;
@@ -79,51 +81,83 @@ const sanitizeResult = (result, quiz, userRole) => {
       resultsReleased = false;
     }
 
-    if (quiz.showResultAfterSubmission === false || !resultsReleased) {
-      resultObj.score = 0;
-      resultObj.correct = 0;
-      resultObj.incorrect = 0;
-      resultObj.unanswered = 0;
-      resultObj.percentage = 0;
-      resultObj.questions = [];
-      resultObj.userAnswers = [];
-      resultObj.sectionResults = [];
-      resultObj.showResultAfterSubmission = false;
-      resultObj.showCorrectAnswers = false;
-      resultObj.showExplanations = false;
-      resultObj.showAnswerReview = false;
-      return resultObj;
-    }
-    
-    if (quiz.showCorrectAnswers === false) {
-      if (Array.isArray(resultObj.questions)) {
-        resultObj.questions = resultObj.questions.map(q => {
-          delete q.correctAnswer;
-          delete q.correctAnswerObfuscated;
-          return q;
-        });
+    if (resultsReleased) {
+      resultObj.showResultAfterSubmission = quiz.showResultAfterSubmission !== false;
+      resultObj.showPassFailStatus = quiz.showPassFailStatus !== false;
+      resultObj.showAnswerReview = quiz.showAnswerReview !== false;
+      resultObj.passed = result.percentage >= (quiz.passPercentage || 50);
+
+      if (quiz.showAnswerReview === false) {
+        resultObj.questions = [];
+        resultObj.userAnswers = [];
       }
-      resultObj.showCorrectAnswers = false;
-    }
-    
-    if (quiz.showExplanations === false) {
-      if (Array.isArray(resultObj.questions)) {
-        resultObj.questions = resultObj.questions.map(q => {
-          delete q.explanation;
-          delete q.solution;
-          return q;
-        });
+      if (quiz.showCorrectAnswers === false) {
+        if (Array.isArray(resultObj.questions)) {
+          resultObj.questions = resultObj.questions.map(q => {
+            delete q.correctAnswer;
+            delete q.correctAnswerObfuscated;
+            return q;
+          });
+        }
       }
-      resultObj.showExplanations = false;
+      if (quiz.showExplanations === false) {
+        if (Array.isArray(resultObj.questions)) {
+          resultObj.questions = resultObj.questions.map(q => {
+            delete q.explanation;
+            delete q.solution;
+            return q;
+          });
+        }
+      }
+    } else {
+      // NOT YET RELEASED (Scheduled pending or Manual Hide):
+      const showPassFail = quiz.showPassFailStatus === true;
+      const showScore = quiz.showResultAfterSubmission === true;
+      const showReview = quiz.showAnswerReview === true;
+
+      resultObj.showPassFailStatus = showPassFail;
+      resultObj.showResultAfterSubmission = showScore;
+      resultObj.showAnswerReview = showReview;
+      resultObj.passed = result.percentage >= (quiz.passPercentage || 50);
+
+      // If score is hidden, zero out score values
+      if (!showScore) {
+        resultObj.score = 0;
+        resultObj.correct = 0;
+        resultObj.incorrect = 0;
+        resultObj.unanswered = 0;
+        resultObj.percentage = 0;
+        resultObj.sectionResults = [];
+        if (!showPassFail) {
+          delete resultObj.passed;
+        }
+      }
+
+      // If answer review is hidden, clear questions/answers
+      if (!showReview) {
+        resultObj.questions = [];
+        resultObj.userAnswers = [];
+      } else {
+        if (quiz.showCorrectAnswers === false) {
+          if (Array.isArray(resultObj.questions)) {
+            resultObj.questions = resultObj.questions.map(q => {
+              delete q.correctAnswer;
+              delete q.correctAnswerObfuscated;
+              return q;
+            });
+          }
+        }
+        if (quiz.showExplanations === false) {
+          if (Array.isArray(resultObj.questions)) {
+            resultObj.questions = resultObj.questions.map(q => {
+              delete q.explanation;
+              delete q.solution;
+              return q;
+            });
+          }
+        }
+      }
     }
-    
-    if (quiz.showAnswerReview === false) {
-      resultObj.questions = [];
-      resultObj.userAnswers = [];
-      resultObj.showAnswerReview = false;
-    }
-    
-    resultObj.showResultAfterSubmission = quiz.showResultAfterSubmission ?? true;
   }
   
   return resultObj;
@@ -232,4 +266,27 @@ const getResultByShareId = async (req, res) => {
   }
 };
 
-module.exports = { saveResult, getUserResults, getLeaderboard, getSharedResult, getResultByShareId };
+const updateResultFeedback = async (req, res) => {
+  try {
+    const { resultId } = req.params;
+    const { reaction, feedbackMessage } = req.body;
+
+    const result = await Result.findById(resultId);
+    if (!result) {
+      return res.status(404).json({ message: "Result not found" });
+    }
+
+
+
+    result.reaction = reaction;
+    result.feedbackMessage = feedbackMessage;
+    await result.save();
+
+    res.status(200).json({ success: true, message: "Feedback updated successfully", result });
+  } catch (error) {
+    console.error("UPDATE FEEDBACK ERROR:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+module.exports = { saveResult, getUserResults, getLeaderboard, getSharedResult, getResultByShareId, updateResultFeedback };
