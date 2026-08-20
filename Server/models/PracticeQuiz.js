@@ -106,6 +106,12 @@ const practiceQuizSchema = new mongoose.Schema(
       enum: ["Draft", "Published"],
       default: "Draft",
     },
+    showResultAfterSubmission: { type: Boolean, default: true },
+    showCorrectAnswers: { type: Boolean, default: true },
+    showExplanations: { type: Boolean, default: true },
+    showAnswerReview: { type: Boolean, default: true },
+    practiceResultReleaseMode: { type: String, enum: ["immediate", "scheduled", "manual"], default: "immediate" },
+    practiceResultReleaseDate: { type: Date, default: null },
     publishedAt: {
       type: Date,
       default: null,

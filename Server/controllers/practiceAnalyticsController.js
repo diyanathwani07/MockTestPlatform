@@ -15,7 +15,11 @@ const savePracticeResult = async (req, res) => {
       return res.status(400).json({ message: "quizId and stats are required." });
     }
 
-    const quiz = await PracticeQuiz.findById(quizId);
+    let quiz = await PracticeQuiz.findById(quizId);
+    if (!quiz) {
+      const Quiz = require("../models/Quiz");
+      quiz = await Quiz.findById(quizId);
+    }
     if (!quiz) {
       return res.status(404).json({ message: "Practice Quiz not found." });
     }
@@ -100,6 +104,21 @@ const savePracticeResult = async (req, res) => {
 
       user.lastPracticeDate = now;
       await user.save();
+    }
+
+    let resultsReleased = true;
+    if (quiz.practiceResultReleaseMode === "scheduled" && quiz.practiceResultReleaseDate) {
+      resultsReleased = new Date() >= new Date(quiz.practiceResultReleaseDate);
+    } else if (quiz.practiceResultReleaseMode === "manual") {
+      resultsReleased = false;
+    }
+
+    if (quiz.showResultAfterSubmission === false || !resultsReleased) {
+      return res.status(201).json({
+        success: true,
+        message: "Practice session recorded successfully.",
+        showResultAfterSubmission: false
+      });
     }
 
     res.status(201).json({ success: true, practiceResult });
@@ -388,7 +407,11 @@ const getAiTutorExplanation = async (req, res) => {
       dbQuestion = await Question.findById(question._id);
       if (!dbQuestion) {
         const PracticeQuiz = require("../models/PracticeQuiz");
-        const parentQuiz = await PracticeQuiz.findOne({ "questions._id": question._id });
+        let parentQuiz = await PracticeQuiz.findOne({ "questions._id": question._id });
+        if (!parentQuiz) {
+          const Quiz = require("../models/Quiz");
+          parentQuiz = await Quiz.findOne({ "questions._id": question._id });
+        }
         if (parentQuiz) {
           dbQuestion = parentQuiz.questions.find(q => q._id.toString() === question._id.toString());
         }
@@ -468,7 +491,7 @@ const getAiTutorExplanation = async (req, res) => {
         instruction = "Explain step-by-step why each of the incorrect options is wrong.";
         break;
       case "combined-structured":
-        instruction = "Generate a JSON explanation object. Provide 'correct': a very short, single-sentence (maximum 15 words) explanation of why the correct answer is correct. Do NOT restate the option name or value in the explanation. Keep it extremely brief. Under 'incorrect', map the letters 'A', 'B', 'C', 'D' (representing the first, second, third, and fourth options respectively) to a very short, single-sentence/one-line (maximum 15 words) explanation of why that option is incorrect. Do NOT explain the correct option under incorrect.";
+        instruction = "Generate a JSON explanation object. Provide 'correct': a very short, single-sentence (maximum 15 words) explanation of why the correct answer is correct. Do NOT restate the option name or value in the explanation. Keep it extremely brief. Under 'incorrect', map the letters 'A', 'B', 'C', 'D', 'E', 'F' (representing the first, second, third, fourth, fifth, and sixth options respectively) to a very short, single-sentence/one-line (maximum 15 words) explanation of why that option is incorrect. Do NOT explain the correct option under incorrect.";
         break;
       case "interview":
         instruction = "Provide a common interview question and answer related to the concept in this question.";
@@ -528,7 +551,9 @@ CRITICAL: Return ONLY a valid JSON object matching the requested schema. Do NOT 
                 A: { type: Type.STRING, description: "Explanation for Option A (if incorrect)" },
                 B: { type: Type.STRING, description: "Explanation for Option B (if incorrect)" },
                 C: { type: Type.STRING, description: "Explanation for Option C (if incorrect)" },
-                D: { type: Type.STRING, description: "Explanation for Option D (if incorrect)" }
+                D: { type: Type.STRING, description: "Explanation for Option D (if incorrect)" },
+                E: { type: Type.STRING, description: "Explanation for Option E (if incorrect)" },
+                F: { type: Type.STRING, description: "Explanation for Option F (if incorrect)" }
               }
             }
           },
@@ -550,7 +575,9 @@ CRITICAL: Return ONLY a valid JSON object matching the requested schema. Do NOT 
               A: { type: Type.STRING, description: "Explanation for Option A" },
               B: { type: Type.STRING, description: "Explanation for Option B" },
               C: { type: Type.STRING, description: "Explanation for Option C" },
-              D: { type: Type.STRING, description: "Explanation for Option D" }
+              D: { type: Type.STRING, description: "Explanation for Option D" },
+              E: { type: Type.STRING, description: "Explanation for Option E" },
+              F: { type: Type.STRING, description: "Explanation for Option F" }
             }
           }
         },

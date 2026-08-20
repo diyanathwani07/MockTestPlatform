@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const Quiz = require("./models/Quiz");
-const Result = require("./models/Result");
+const Quiz = require("../models/Quiz");
+const Result = require("../models/Result");
 
 async function run() {
   try {

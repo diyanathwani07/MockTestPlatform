@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { GoogleGenAI } = require("@google/genai");
-const { generateContentWithFallback } = require("./utils/geminiHelper");
+const { generateContentWithFallback } = require("../utils/geminiHelper");
 
 const test = async () => {
   try {

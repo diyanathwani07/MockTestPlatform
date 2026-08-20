@@ -1,8 +1,8 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
-const Ticket = require("./models/Ticket");
-const User = require("./models/User");
-const logAction = require("./utils/logger");
+const Ticket = require("../models/Ticket");
+const User = require("../models/User");
+const logAction = require("../utils/logger");
 
 async function run() {
   try {

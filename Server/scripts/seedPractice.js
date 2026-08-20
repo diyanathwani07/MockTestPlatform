@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
-const PracticeQuiz = require('./models/PracticeQuiz');
-const User = require('./models/User');
-const connectDB = require('./config/db');
+const PracticeQuiz = require('../models/PracticeQuiz');
+const User = require('../models/User');
+const connectDB = require('../config/db');
 
 async function seed() {
   await connectDB();

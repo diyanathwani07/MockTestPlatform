@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { chatSupport } = require('./controllers/chatController');
+const { chatSupport } = require('../controllers/chatController');
 
 async function test() {
   const req = {

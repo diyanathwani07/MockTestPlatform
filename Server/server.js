@@ -26,7 +26,7 @@ const purchaseRoutes = require("./routes/purchaseRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const Quiz = require("./models/Quiz");
-const seedDepartments = require("./seedDepartments");
+const seedDepartments = require("./scripts/seedDepartments");
 
 const express = require("express");
 const cors = require("cors");

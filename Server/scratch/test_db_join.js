@@ -3,8 +3,8 @@ const dotenv = require('dotenv');
 const path = require('path');
 dotenv.config();
 
-const Quiz = require('./models/Quiz');
-const ExamSeries = require('./models/ExamSeries');
+const Quiz = require('../models/Quiz');
+const ExamSeries = require('../models/ExamSeries');
 
 const dbUri = process.env.MONGO_URI;
 

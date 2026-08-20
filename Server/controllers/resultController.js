@@ -64,6 +64,71 @@ const saveResult = async (req, res) => {
   }
 };
 
+const sanitizeResult = (result, quiz, userRole) => {
+  if (["admin", "superadmin"].includes(userRole)) {
+    return result;
+  }
+  
+  const resultObj = result.toObject ? result.toObject() : JSON.parse(JSON.stringify(result));
+  
+  if (quiz) {
+    let resultsReleased = true;
+    if (quiz.resultReleaseMode === "scheduled" && quiz.resultReleaseDate) {
+      resultsReleased = new Date() >= new Date(quiz.resultReleaseDate);
+    } else if (quiz.resultReleaseMode === "manual") {
+      resultsReleased = false;
+    }
+
+    if (quiz.showResultAfterSubmission === false || !resultsReleased) {
+      resultObj.score = 0;
+      resultObj.correct = 0;
+      resultObj.incorrect = 0;
+      resultObj.unanswered = 0;
+      resultObj.percentage = 0;
+      resultObj.questions = [];
+      resultObj.userAnswers = [];
+      resultObj.sectionResults = [];
+      resultObj.showResultAfterSubmission = false;
+      resultObj.showCorrectAnswers = false;
+      resultObj.showExplanations = false;
+      resultObj.showAnswerReview = false;
+      return resultObj;
+    }
+    
+    if (quiz.showCorrectAnswers === false) {
+      if (Array.isArray(resultObj.questions)) {
+        resultObj.questions = resultObj.questions.map(q => {
+          delete q.correctAnswer;
+          delete q.correctAnswerObfuscated;
+          return q;
+        });
+      }
+      resultObj.showCorrectAnswers = false;
+    }
+    
+    if (quiz.showExplanations === false) {
+      if (Array.isArray(resultObj.questions)) {
+        resultObj.questions = resultObj.questions.map(q => {
+          delete q.explanation;
+          delete q.solution;
+          return q;
+        });
+      }
+      resultObj.showExplanations = false;
+    }
+    
+    if (quiz.showAnswerReview === false) {
+      resultObj.questions = [];
+      resultObj.userAnswers = [];
+      resultObj.showAnswerReview = false;
+    }
+    
+    resultObj.showResultAfterSubmission = quiz.showResultAfterSubmission ?? true;
+  }
+  
+  return resultObj;
+};
+
 const getUserResults = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -72,8 +137,29 @@ const getUserResults = async (req, res) => {
       return res.status(403).json({ message: "Access Denied: unauthorized to fetch these results." });
     }
 
+    const Quiz = require("../models/Quiz");
+    const PracticeQuiz = require("../models/PracticeQuiz");
     const results = await Result.find({ userId }).sort({ createdAt: -1 });
-    res.status(200).json(results);
+    
+    const quizIds = [...new Set(results.map(r => r.quizId).filter(Boolean))];
+    
+    // Batch fetch from both collections concurrently
+    const [quizzes, practiceQuizzes] = await Promise.all([
+      Quiz.find({ _id: { $in: quizIds } }),
+      PracticeQuiz.find({ _id: { $in: quizIds } })
+    ]);
+    
+    const quizMap = new Map();
+    quizzes.forEach(q => quizMap.set(q._id.toString(), q));
+    practiceQuizzes.forEach(pq => quizMap.set(pq._id.toString(), pq));
+    
+    const sanitizedResults = [];
+    for (const r of results) {
+      const quiz = r.quizId ? quizMap.get(r.quizId.toString()) : null;
+      sanitizedResults.push(sanitizeResult(r, quiz, req.user?.role));
+    }
+    
+    res.status(200).json(sanitizedResults);
   } catch (error) {
     console.error("GET RESULTS ERROR", error);
     res.status(500).json({ message: "Server Error" });
@@ -136,7 +222,10 @@ const getResultByShareId = async (req, res) => {
     if (!result) {
       return res.status(404).json({ message: "Result not found" });
     }
-    res.status(200).json(result);
+    const Quiz = require("../models/Quiz");
+    const quiz = await Quiz.findById(result.quizId);
+    const sanitized = sanitizeResult(result, quiz, req.user?.role);
+    res.status(200).json(sanitized);
   } catch (error) {
     console.error("GET RESULT BY SHARE ID ERROR", error);
     res.status(500).json({ message: "Server Error" });

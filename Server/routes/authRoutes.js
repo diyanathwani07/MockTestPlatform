@@ -58,19 +58,22 @@ router.post("/forgot-password", async (req, res) => {
     console.log(`OTP for ${email}: ${otp}`); // (for testing/debug)
 
     try {
-      // Send OTP email
-      await transporter.sendMail({
+      // Send OTP email with timeout protection
+      const emailPromise = transporter.sendMail({
         from: `Teaching Pariksha <${process.env.SMTP_EMAIL}>`,
         to: email,
         subject: "Teaching Pariksha - Password Reset OTP",
         html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
-            <div style="background: white; border-radius: 12px; padding: 32px; text-align: center;">
-              <h2 style="color: #1e293b; margin-bottom: 8px;">🎓 Teaching Pariksha</h2>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
+            <div style="background: white; border-radius: 12px; padding: 24px 16px; text-align: center;">
+              <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <img src="${req.protocol}://${req.get('host')}/uploads/logo.png" alt="Teaching Pariksha Logo" style="height: 36px; width: auto; vertical-align: middle;" />
+                <span style="color: #1e293b; font-size: 22px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; vertical-align: middle;">Teaching Pariksha</span>
+              </div>
               <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Password Reset Request</p>
-              <div style="background: #f1f5f9; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+              <div style="background: #f1f5f9; border-radius: 8px; padding: 20px 8px; margin-bottom: 24px;">
                 <p style="color: #64748b; font-size: 12px; margin-bottom: 8px;">Your OTP Code</p>
-                <h1 style="color: #6E3FF3; font-size: 36px; letter-spacing: 8px; margin: 0;">${otp}</h1>
+                <h1 style="color: #6E3FF3; font-size: 32px; letter-spacing: 4px; margin: 0; white-space: nowrap; display: inline-block;">${otp}</h1>
               </div>
               <p style="color: #94a3b8; font-size: 12px;">This code is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
             </div>
@@ -78,11 +81,17 @@ router.post("/forgot-password", async (req, res) => {
         `,
       });
 
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("SMTP Connection or Send Timeout")), 6000)
+      );
+
+      await Promise.race([emailPromise, timeoutPromise]);
+
       res.json({
         message: "OTP sent to your email.",
       });
     } catch (mailError) {
-      console.warn("Mail Send Failed, falling back to mock mode:", mailError);
+      console.warn("Mail Send Failed or Timed Out, falling back to mock mode:", mailError);
       // Fallback: set the OTP to 123456 so they can bypass
       otpStore.set(email, { otp: "123456", expiresAt });
       res.json({

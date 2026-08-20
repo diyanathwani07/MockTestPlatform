@@ -24,6 +24,26 @@ const getPracticeQuizzes = async (req, res) => {
 
     // Compute questionCount for each quiz (including modular sections)
     const Section = require("../models/Section");
+    
+    // Gather all section IDs from modular quizzes to batch fetch
+    const sectionIds = [];
+    for (const quiz of quizzes) {
+      if (quiz.hasModularSections && quiz.hasModularSections()) {
+        for (const ref of (quiz.sections || [])) {
+          const secId = ref.sectionId || ref._id || ref;
+          if (secId) sectionIds.push(secId);
+        }
+      }
+    }
+    
+    // Batch fetch all sections in one query
+    const sections = sectionIds.length > 0 
+      ? await Section.find({ _id: { $in: sectionIds } }).select("questions") 
+      : [];
+    const sectionQuestionCountMap = new Map(
+      sections.map(s => [s._id.toString(), (s.questions || []).length])
+    );
+
     let results = [];
     for (const quiz of quizzes) {
       const qObj = quiz.toObject();
@@ -34,12 +54,8 @@ const getPracticeQuizzes = async (req, res) => {
         for (const ref of (qObj.sections || [])) {
           const secId = ref.sectionId || ref._id || ref;
           if (secId) {
-            try {
-              const section = await Section.findById(secId);
-              if (section) {
-                questionCount += (section.questions || []).length;
-              }
-            } catch (e) { /* skip */ }
+            const count = sectionQuestionCountMap.get(secId.toString()) || 0;
+            questionCount += count;
           }
         }
       }
@@ -68,7 +84,11 @@ const getPracticeQuizzes = async (req, res) => {
 // @access  Private
 const getPracticeQuizById = async (req, res) => {
   try {
-    const quiz = await PracticeQuiz.findById(req.params.id);
+    let quiz = await PracticeQuiz.findById(req.params.id);
+    if (!quiz) {
+      const Quiz = require("../models/Quiz");
+      quiz = await Quiz.findById(req.params.id);
+    }
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
     let quizObj = quiz.toObject();
@@ -206,6 +226,12 @@ const createPracticeQuiz = async (req, res) => {
       price: price || 0,
       detailedDescription: detailedDescription || "",
       plans: plans || [],
+      showResultAfterSubmission: req.body.showResultAfterSubmission !== undefined ? req.body.showResultAfterSubmission : true,
+      showCorrectAnswers: req.body.showCorrectAnswers !== undefined ? req.body.showCorrectAnswers : true,
+      showExplanations: req.body.showExplanations !== undefined ? req.body.showExplanations : true,
+      showAnswerReview: req.body.showAnswerReview !== undefined ? req.body.showAnswerReview : true,
+      practiceResultReleaseMode: req.body.practiceResultReleaseMode || "immediate",
+      practiceResultReleaseDate: req.body.practiceResultReleaseDate || null,
     });
 
     const createdQuiz = await quiz.save();
@@ -220,6 +246,14 @@ const createPracticeQuiz = async (req, res) => {
 // @access  Private/Admin
 const updatePracticeQuiz = async (req, res) => {
   try {
+    console.log("[updatePracticeQuiz] req.body result settings:", {
+      showResultAfterSubmission: req.body.showResultAfterSubmission,
+      showCorrectAnswers: req.body.showCorrectAnswers,
+      showExplanations: req.body.showExplanations,
+      showAnswerReview: req.body.showAnswerReview,
+      practiceResultReleaseMode: req.body.practiceResultReleaseMode,
+      practiceResultReleaseDate: req.body.practiceResultReleaseDate
+    });
     const quiz = await PracticeQuiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
@@ -238,6 +272,13 @@ const updatePracticeQuiz = async (req, res) => {
     quiz.randomSelection = req.body.randomSelection ?? quiz.randomSelection;
     quiz.questionsPerAttempt = req.body.questionsPerAttempt ?? quiz.questionsPerAttempt;
     
+    if (req.body.showResultAfterSubmission !== undefined) quiz.showResultAfterSubmission = req.body.showResultAfterSubmission;
+    if (req.body.showCorrectAnswers !== undefined) quiz.showCorrectAnswers = req.body.showCorrectAnswers;
+    if (req.body.showExplanations !== undefined) quiz.showExplanations = req.body.showExplanations;
+    if (req.body.showAnswerReview !== undefined) quiz.showAnswerReview = req.body.showAnswerReview;
+    if (req.body.practiceResultReleaseMode !== undefined) quiz.practiceResultReleaseMode = req.body.practiceResultReleaseMode;
+    if (req.body.practiceResultReleaseDate !== undefined) quiz.practiceResultReleaseDate = req.body.practiceResultReleaseDate;
+
     if (req.body.isModular !== undefined) quiz.isModular = req.body.isModular;
     if (req.body.sections) quiz.sections = req.body.sections;
 
@@ -519,7 +560,11 @@ const getOrCreatePracticeSession = async (req, res) => {
     const { restart } = req.query;
     const userId = req.user._id;
 
-    const quiz = await PracticeQuiz.findById(id);
+    let quiz = await PracticeQuiz.findById(id);
+    if (!quiz) {
+      const Quiz = require("../models/Quiz");
+      quiz = await Quiz.findById(id);
+    }
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
     let allQuestions = [];
@@ -637,7 +682,11 @@ const convertToExam = async (req, res) => {
 const verifyPracticeQuestion = async (req, res) => {
   try {
     const { id, questionId } = req.params;
-    const quiz = await PracticeQuiz.findById(id);
+    let quiz = await PracticeQuiz.findById(id);
+    if (!quiz) {
+      const Quiz = require("../models/Quiz");
+      quiz = await Quiz.findById(id);
+    }
     if (!quiz) return res.status(404).json({ message: "Practice Quiz not found" });
 
     let question = null;
@@ -693,14 +742,24 @@ const verifyPracticeQuestion = async (req, res) => {
       incorrectPlain = Object.fromEntries(Object.entries(incorrectRaw));
     }
 
+    let resultsReleased = true;
+    if (quiz.practiceResultReleaseMode === "scheduled" && quiz.practiceResultReleaseDate) {
+      resultsReleased = new Date() >= new Date(quiz.practiceResultReleaseDate);
+    } else if (quiz.practiceResultReleaseMode === "manual") {
+      resultsReleased = false;
+    }
+
+    const showCorrect = quiz.showCorrectAnswers !== false && resultsReleased;
+    const showExps = quiz.showExplanations !== false && resultsReleased;
+
     res.json({
       success: true,
-      correctAnswer: qObj.correctAnswer,
-      explanation: qObj.explanation || "",
-      explanations: {
+      correctAnswer: showCorrect ? qObj.correctAnswer : "",
+      explanation: showExps ? (qObj.explanation || "") : "",
+      explanations: showExps ? {
         ...qObj.explanations,
         incorrect: incorrectPlain
-      }
+      } : { correct: "", incorrect: {}, conceptSummary: "", didYouKnow: "" }
     });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });

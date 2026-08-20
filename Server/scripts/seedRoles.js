@@ -1,4 +1,4 @@
-const Role = require("./models/Role");
+const Role = require("../models/Role");
 
 const ALL_PERMISSIONS = [
   "dashboard","manage_users","create_quiz","edit_quiz","delete_quiz","manage_questions","question_bank","practice_tests","manage_results","view_reports","audit_logs","support_tickets","manage_subjects","manage_notifications","manage_videos","upload_videos","ai_chat_settings","website_settings","system_settings","manage_roles","manage_faculty","manage_students","preview_as_student","publish_quiz","export_reports","import_questions","manage_practice_tests","view_analytics","manage_banners","manage_faqs","student_dashboard","my_exams","results","leaderboard","help_support"

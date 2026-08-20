@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const User = require("./models/User");
-const Quiz = require("./models/Quiz");
-const PracticeQuiz = require("./models/PracticeQuiz");
-const AuditLog = require("./models/AuditLog");
+const User = require("../models/User");
+const Quiz = require("../models/Quiz");
+const PracticeQuiz = require("../models/PracticeQuiz");
+const AuditLog = require("../models/AuditLog");
 
 const runMigration = async () => {
   try {

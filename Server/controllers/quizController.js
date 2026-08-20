@@ -120,6 +120,17 @@ const getQuizById = async (req, res) => {
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found." });
     }
+
+    if (isStudent && quiz) {
+      let resultsReleased = true;
+      if (quiz.resultReleaseMode === "scheduled" && quiz.resultReleaseDate) {
+        resultsReleased = new Date() >= new Date(quiz.resultReleaseDate);
+      } else if (quiz.resultReleaseMode === "manual") {
+        resultsReleased = false;
+      }
+      quiz.showResultAfterSubmission = (quiz.showResultAfterSubmission !== false) && resultsReleased;
+    }
+
     res.json(quiz);
   } catch (error) {
     console.error("Get Quiz Error:", error);
@@ -135,7 +146,7 @@ const updateQuiz = async (req, res) => {
       return res.status(404).json({ message: "Quiz not found." });
     }
 
-    console.log("updateQuiz req.body detailedDescription:", req.body.detailedDescription, "plans:", req.body.plans);
+    console.log("=== UPDATE QUIZ REQUEST BODY ===", JSON.stringify(req.body, null, 2));
     const updateData = { ...req.body };
 
     // Resolve examSeriesId based on examName if provided or changed
@@ -797,11 +808,9 @@ const exportSectionAsQuiz = async (req, res) => {
   }
 };
 
-// POST /api/quizzes/custom
-// Generate a custom quiz for a student
 const generateCustomQuiz = async (req, res) => {
   try {
-    const { subject, quantity } = req.body;
+    const { subject, quantity, publishAs } = req.body;
     if (!subject || !quantity) {
       return res.status(400).json({ message: "Subject and quantity are required." });
     }
@@ -832,6 +841,7 @@ const generateCustomQuiz = async (req, res) => {
       published: true, // Make it immediately available to the user
       status: "Published",
       quizType: "custom", // Must match Mongoose enum ['exam', 'practice', 'custom']
+      publishAs: publishAs || "exam",
       createdBy: req.user?._id,
       questions: questions.map(q => ({
         questionEnglish: q.questionEnglish,
@@ -1037,6 +1047,45 @@ const submitQuiz = async (req, res) => {
       userAnswers: userAnswers,
     });
 
+    let resultsReleased = true;
+    if (quiz.resultReleaseMode === "scheduled" && quiz.resultReleaseDate) {
+      resultsReleased = new Date() >= new Date(quiz.resultReleaseDate);
+    } else if (quiz.resultReleaseMode === "manual") {
+      resultsReleased = false;
+    }
+
+    const showResult = (quiz.showResultAfterSubmission !== false) && resultsReleased;
+
+    if (!showResult) {
+      return res.json({
+        success: true,
+        message: "Your exam has been submitted successfully.",
+        showResultAfterSubmission: false,
+        showCorrectAnswers: false,
+        showExplanations: false,
+        showAnswerReview: false,
+      });
+    }
+
+    let responseQuestions = dbQuestions.map(q => {
+      const sanitizedQ = { ...q };
+      if (quiz.showCorrectAnswers === false) {
+        delete sanitizedQ.correctAnswer;
+        delete sanitizedQ.correctAnswerObfuscated;
+      }
+      if (quiz.showExplanations === false) {
+        delete sanitizedQ.explanation;
+        delete sanitizedQ.solution;
+      }
+      return sanitizedQ;
+    });
+
+    let responseUserAnswers = userAnswers;
+    if (quiz.showAnswerReview === false) {
+      responseQuestions = [];
+      responseUserAnswers = [];
+    }
+
     res.json({
       success: true,
       score,
@@ -1045,9 +1094,17 @@ const submitQuiz = async (req, res) => {
       incorrect,
       unanswered,
       percentage,
-      questions: dbQuestions,
-      userAnswers,
-      result,
+      questions: responseQuestions,
+      userAnswers: responseUserAnswers,
+      showResultAfterSubmission: quiz.showResultAfterSubmission ?? true,
+      showCorrectAnswers: quiz.showCorrectAnswers ?? true,
+      showExplanations: quiz.showExplanations ?? true,
+      showAnswerReview: quiz.showAnswerReview ?? true,
+      result: {
+        ...result.toObject(),
+        questions: responseQuestions,
+        userAnswers: responseUserAnswers,
+      }
     });
   } catch (error) {
     console.error("Quiz submission error:", error);
