@@ -7,6 +7,8 @@ import "../css/Practice.css";
 import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 
+const normalizeString = (str) => String(str || "").replace(/\./g, "").replace(/\s+/g, " ").trim().toLowerCase();
+
 function PracticeTest() {
   const { quizId } = useParams();
   const navigate = useNavigate();
@@ -345,8 +347,6 @@ function PracticeTest() {
       }
     }
 
-    const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
-    
     let resolvedCorrectText = correctText || "";
     if (["A", "B", "C", "D", "E", "F"].includes(resolvedCorrectText) && Array.isArray(currentQuestion.options)) {
       const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
@@ -591,7 +591,6 @@ function PracticeTest() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
                 const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
                 
                 let borderStyle = "1.5px solid var(--border-color)";
@@ -671,8 +670,6 @@ function PracticeTest() {
 
                     {/* Explanation right below the clicked choice */}
                     {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
-                       const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
-                       
                        const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
                            ([k]) => normalizeString(k) === normalizeString(opt)
                        );
@@ -1049,7 +1046,6 @@ function PracticeTest() {
             <div className="practice-options-grid" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
                 const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
                 
                 // Define border & background styles based on correctness
@@ -1128,8 +1124,6 @@ function PracticeTest() {
 
                     {/* Explanation right below the clicked choice */}
                     {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
-                       const normalizeString = (str) => String(str || "").replace(/\s+/g, " ").trim().toLowerCase();
-                       
                        const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
                            ([k]) => normalizeString(k) === normalizeString(opt)
                        );

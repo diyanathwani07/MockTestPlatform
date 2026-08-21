@@ -7,6 +7,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
 import MathRenderer from "../components/MathRenderer";
 
+import AIQuestionGenerator from "./components/AIQuestionGenerator";
 import { saveSingleQuizModular } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
@@ -281,6 +282,7 @@ function EditQuiz() {
   const [quizConfigCollapsed, setQuizConfigCollapsed] = useState(false);
   const [questionsCollapsed, setQuestionsCollapsed] = useState(false);
   const [resultSettingsCollapsed, setResultSettingsCollapsed] = useState(false);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
 
   // Minutes and seconds inputs for duration
   const [durationMin, setDurationMin] = useState("");
@@ -859,7 +861,7 @@ function EditQuiz() {
     }
   };
 
-  const handleQuestionsLoaded = (parsedSections) => {
+  const handleQuestionsLoaded = (parsedSections, sourceInfo, promptText) => {
     let flatQuestions = [];
     if (parsedSections && parsedSections.length > 0) {
       parsedSections.forEach(sec => {
@@ -891,12 +893,16 @@ function EditQuiz() {
         correctText = optionsMapped[correctIdx] || "";
       } else {
         correctIdx = optionsMapped.indexOf(q.correctAnswer);
-        correctText = q.correctAnswer;
+        if (correctIdx !== -1) {
+          correctText = q.correctAnswer;
+        } else {
+          correctText = q.correctAnswer;
+        }
       }
 
       return {
         questionEnglish: q.questionEnglish,
-        questionHindi: q.questionHindi,
+        questionHindi: q.questionHindi || "",
         options: optionsMapped,
         correctOptionIndex: correctIdx,
         correctAnswer: correctText,
@@ -910,7 +916,13 @@ function EditQuiz() {
       };
     });
 
-    setQuestions(mapped);
+    setQuestions(prev => {
+      const isFirstEmpty = prev.length === 1 && 
+                           !prev[0].questionEnglish.trim() && 
+                           !prev[0].questionHindi.trim();
+      const existingQs = isFirstEmpty ? [] : prev;
+      return [...existingQs, ...mapped];
+    });
     
     // Build expanded object: first question is expanded (0: true), rest collapsed
     const expandedState = { 0: true };
@@ -918,10 +930,26 @@ function EditQuiz() {
       if (idx > 0) expandedState[idx] = false;
     });
     setExpandedQuestions(expandedState);
-    setMessage({
-      text: `✅ ${mapped.length} questions imported from Word file. Review and submit below.`,
-      type: "status-success",
-    });
+
+    if (promptText) {
+      setQuizMeta(prev => ({
+        ...prev,
+        description: promptText,
+        detailedDescription: promptText
+      }));
+    }
+
+    if (sourceInfo) {
+      setMessage({
+        text: `✅ ${mapped.length} questions generated from ${sourceInfo}`,
+        type: "status-success"
+      });
+    } else {
+      setMessage({
+        text: `✅ ${mapped.length} questions imported from Word file. Review and submit below.`,
+        type: "status-success",
+      });
+    }
   };
 
   const validateForm = (isDraft = false) => {
@@ -1537,9 +1565,40 @@ function EditQuiz() {
                   {/* ── RIGHT PANEL: PUBLICATION & TOOLS ── */}
                   <div className="admin-quiz-right-panel">
                     {/* 4. Docx Parser Card */}
-                    <div className="form-card compact-card">
+                    <div className="form-card compact-card" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                       <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
+                      <button
+                        type="button"
+                        onClick={() => setAiPanelOpen(!aiPanelOpen)}
+                        style={{
+                          padding: "10px 14px",
+                          border: "none",
+                          borderRadius: "10px",
+                          backgroundColor: "var(--primary-color, #6E3FF3)",
+                          color: "#fff",
+                          fontSize: "12.5px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          height: "40px",
+                          boxSizing: "border-box",
+                          transition: "all 0.2s ease",
+                          boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                        }}
+                      >
+                        ✨ AI Generate
+                      </button>
                     </div>
+
+                    {aiPanelOpen && (
+                      <AIQuestionGenerator
+                        quizMeta={quizMeta}
+                        onQuestionsAdded={handleQuestionsLoaded}
+                        onClose={() => setAiPanelOpen(false)}
+                      />
+                    )}
 
                     {/* 5. Schedule Card */}
                     <div className="form-card compact-card">

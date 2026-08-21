@@ -19,6 +19,14 @@ const departmentSchema = new mongoose.Schema(
       type: String,
       default: "#6E3FF3",
     },
+    slackWebhookUrl: {
+      type: String,
+      default: "",
+    },
+    slackNotificationsPaused: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

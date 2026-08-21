@@ -5,6 +5,7 @@ import { Info } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
+import AIQuestionGenerator from "./components/AIQuestionGenerator";
 import MathRenderer from "../components/MathRenderer";
 import "../css/admin/CreateQuiz.css";
 import { saveSingleQuizModular } from "../utils/modularQuizApi";
@@ -87,6 +88,7 @@ function CreateQuiz() {
   const [scheduledDateTime, setScheduledDateTime] = useState("");
   const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
   const [editingPlanIndex, setEditingPlanIndex] = useState(-1);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
 
   const handleSavePlan = (planData) => {
     setQuizMeta(prev => {
@@ -420,7 +422,7 @@ function CreateQuiz() {
     }
   };
 
-  const handleQuestionsLoaded = (parsedSections) => {
+  const handleQuestionsLoaded = (parsedSections, sourceInfo, promptText) => {
     let flatQuestions = [];
     if (parsedSections && parsedSections.length > 0) {
       parsedSections.forEach(sec => {
@@ -451,12 +453,16 @@ function CreateQuiz() {
         correctText = optionsMapped[correctIdx] || "";
       } else {
         correctIdx = optionsMapped.indexOf(q.correctAnswer);
-        correctText = q.correctAnswer;
+        if (correctIdx !== -1) {
+          correctText = q.correctAnswer;
+        } else {
+          correctText = q.correctAnswer;
+        }
       }
 
       return {
         questionEnglish: q.questionEnglish,
-        questionHindi: q.questionHindi,
+        questionHindi: q.questionHindi || "",
         options: optionsMapped,
         correctOptionIndex: correctIdx,
         correctAnswer: correctText,
@@ -479,10 +485,26 @@ function CreateQuiz() {
       return [...existingQs, ...mapped];
     });
     setExpandedQuestions({ 0: true });
-    setMessage({
-      text: `✅ ${mapped.length} questions imported from Word file. Review and submit below.`,
-      type: "status-success",
-    });
+
+    if (promptText) {
+      setQuizMeta(prev => ({
+        ...prev,
+        description: promptText,
+        detailedDescription: promptText
+      }));
+    }
+
+    if (sourceInfo) {
+      setMessage({
+        text: `✅ ${mapped.length} questions generated from ${sourceInfo}`,
+        type: "status-success"
+      });
+    } else {
+      setMessage({
+        text: `✅ ${mapped.length} questions imported from Word file. Review and submit below.`,
+        type: "status-success",
+      });
+    }
   };
 
   const handleQuestionChange = (index, field, value) => {
@@ -1111,9 +1133,41 @@ function CreateQuiz() {
               <div className="admin-quiz-right-panel">
 
                 {/* DocxParser */}
-                <div className="form-card compact-card">
+                <div className="form-card compact-card" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                   <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
+                  <button
+                    type="button"
+                    onClick={() => setAiPanelOpen(!aiPanelOpen)}
+                    style={{
+                      padding: "10px 14px",
+                      border: "none",
+                      borderRadius: "10px",
+                      backgroundColor: "var(--primary-color, #6E3FF3)",
+                      color: "#fff",
+                      fontSize: "12.5px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      height: "40px",
+                      boxSizing: "border-box",
+                      transition: "all 0.2s ease",
+                      boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                    }}
+                  >
+                    ✨ AI Generate
+                  </button>
                 </div>
+
+                {aiPanelOpen && (
+                  <AIQuestionGenerator
+                    quizMeta={quizMeta}
+                    activeSection={{ marksPerQuestion: quizMeta.marksPerQuestion || 1, negativeMarking: quizMeta.negativeMarking || 0 }}
+                    onQuestionsAdded={handleQuestionsLoaded}
+                    onClose={() => setAiPanelOpen(false)}
+                  />
+                )}
 
                 {/* Schedule Card */}
                 <div className="form-card compact-card">

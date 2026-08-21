@@ -44,7 +44,7 @@ exports.getDepartment = async (req, res) => {
 // POST create department
 exports.createDepartment = async (req, res) => {
   try {
-    const { name, description, permissions, color } = req.body;
+    const { name, description, permissions, color, slackWebhookUrl, slackNotificationsPaused } = req.body;
     if (!name) return res.status(400).json({ message: "Name is required." });
     
     const exists = await Department.findOne({ name });
@@ -54,7 +54,9 @@ exports.createDepartment = async (req, res) => {
       name,
       description: description || "",
       permissions: permissions || [],
-      color: color || "#6E3FF3"
+      color: color || "#6E3FF3",
+      slackWebhookUrl: slackWebhookUrl || "",
+      slackNotificationsPaused: slackNotificationsPaused || false
     });
     
     await logAction(
@@ -78,13 +80,23 @@ exports.updateDepartment = async (req, res) => {
     const dept = await Department.findById(req.params.id);
     if (!dept) return res.status(404).json({ message: "Department not found." });
     
-    const { name, description, permissions, color } = req.body;
+    const { name, description, permissions, color, slackWebhookUrl, slackNotificationsPaused } = req.body;
     const oldName = dept.name;
     
+    const slackChanges = [];
+    if (slackWebhookUrl !== undefined && slackWebhookUrl !== dept.slackWebhookUrl) {
+      slackChanges.push(`Slack Webhook URL: "${dept.slackWebhookUrl || "None"}" -> "${slackWebhookUrl || "None"}"`);
+    }
+    if (slackNotificationsPaused !== undefined && slackNotificationsPaused !== dept.slackNotificationsPaused) {
+      slackChanges.push(`Slack Notifications Paused: ${dept.slackNotificationsPaused} -> ${slackNotificationsPaused}`);
+    }
+
     if (name) dept.name = name;
     if (description !== undefined) dept.description = description;
     if (permissions) dept.permissions = permissions;
     if (color) dept.color = color;
+    if (slackWebhookUrl !== undefined) dept.slackWebhookUrl = slackWebhookUrl;
+    if (slackNotificationsPaused !== undefined) dept.slackNotificationsPaused = slackNotificationsPaused;
     
     await dept.save();
     
@@ -93,10 +105,17 @@ exports.updateDepartment = async (req, res) => {
       await User.updateMany({ department: oldName }, { department: name });
     }
     
+    let detailMsg = `Updated department: ${dept.name}`;
+    if (slackChanges.length > 0) {
+      detailMsg += ` — Slack changes: [${slackChanges.join(", ")}]`;
+    } else {
+      detailMsg += ` — permissions count: ${permissions?.length || 0}`;
+    }
+
     await logAction(
       "UPDATE_DEPARTMENT",
       req.user?.fullName || "Admin",
-      `Updated department: ${dept.name} — permissions count: ${permissions?.length || 0}`,
+      detailMsg,
       "DepartmentManagement",
       req.ip
     );

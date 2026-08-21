@@ -23,7 +23,7 @@ const PANEL_PERMISSIONS = [
 
 const COLORS = ["#6E3FF3", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
 
-const EMPTY_FORM = { name: "", description: "", permissions: [], color: "#6E3FF3" };
+const EMPTY_FORM = { name: "", description: "", permissions: [], color: "#6E3FF3", slackWebhookUrl: "", slackNotificationsPaused: false };
 
 function RolesPermissions() {
   const [departments, setDepartments] = useState([]);
@@ -64,7 +64,9 @@ function RolesPermissions() {
       name: dept.name,
       description: dept.description || "",
       permissions: [...(dept.permissions || [])],
-      color: dept.color || "#6E3FF3"
+      color: dept.color || "#6E3FF3",
+      slackWebhookUrl: dept.slackWebhookUrl || "",
+      slackNotificationsPaused: dept.slackNotificationsPaused || false
     });
     setDrawerOpen(true);
   };
@@ -229,6 +231,30 @@ function RolesPermissions() {
               {/* Description */}
               <label style={labelStyle}>Description</label>
               <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={{ ...inputStyle, height: "80px", resize: "vertical" }} placeholder="What does this department do?" />
+
+              {/* Slack Notifications Section */}
+              <div style={{ border: "1px solid var(--border-color)", borderRadius: "12px", padding: "16px", marginBottom: "20px", background: "rgba(255, 255, 255, 0.01)" }}>
+                <h4 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "var(--text-primary)", fontWeight: "600" }}>Slack Notifications Integration</h4>
+                
+                <label style={labelStyle}>Incoming Webhook URL</label>
+                <input 
+                  type="text"
+                  value={form.slackWebhookUrl} 
+                  onChange={e => setForm({ ...form, slackWebhookUrl: e.target.value })} 
+                  style={{ ...inputStyle, marginBottom: "12px" }} 
+                  placeholder="https://hooks.slack.com/services/..." 
+                />
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: "500" }}>Pause Notifications</span>
+                  <div 
+                    onClick={() => setForm({ ...form, slackNotificationsPaused: !form.slackNotificationsPaused })} 
+                    style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.slackNotificationsPaused ? "#EF4444" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+                  >
+                    <div style={{ position: "absolute", top: "2px", left: form.slackNotificationsPaused ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+                  </div>
+                </div>
+              </div>
 
               {/* Accent Color */}
               <label style={labelStyle}>Accent Color</label>

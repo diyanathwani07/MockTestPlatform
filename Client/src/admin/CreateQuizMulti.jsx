@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
+import AIQuestionGenerator from "./components/AIQuestionGenerator";
 import SectionPickerModal from "./components/SectionPickerModal";
 import MathRenderer from "../components/MathRenderer";
 
@@ -84,6 +85,7 @@ function CreateQuizMulti() {
   const [sections, setSections] = useState([defaultSection(0)]);
   const [activeSectionId, setActiveSectionId] = useState(sections[0].id);
   const [activeDifficulty, setActiveDifficulty] = useState("easy");
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
 
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [loading, setLoading] = useState(false);
@@ -368,8 +370,16 @@ function CreateQuizMulti() {
     });
   };
 
-  const handleDocxImport = (parsedSections) => {
+  const handleDocxImport = (parsedSections, sourceInfo, promptText) => {
     if (!parsedSections || parsedSections.length === 0) return;
+
+    if (promptText) {
+      setQuizMeta(prev => ({
+        ...prev,
+        description: promptText,
+        detailedDescription: promptText
+      }));
+    }
 
     if (parsedSections.length === 1 && parsedSections[0].sectionTitle === "Default") {
       const mappedQs = mapParsedQuestions(parsedSections[0].questions);
@@ -379,7 +389,12 @@ function CreateQuizMulti() {
                            !activeQs[0].questionHindi.trim();
       const existingQs = isFirstEmpty ? [] : activeQs;
       setActiveQuestions([...existingQs, ...mappedQs]);
-      setMessage({ text: `Imported ${mappedQs.length} questions into the active section.`, type: "success" });
+
+      if (sourceInfo) {
+        setMessage({ text: `✅ ${mappedQs.length} questions generated from ${sourceInfo}`, type: "success" });
+      } else {
+        setMessage({ text: `Imported ${mappedQs.length} questions into the active section.`, type: "success" });
+      }
       return;
     }
 
@@ -423,10 +438,18 @@ function CreateQuizMulti() {
 
     setSections(newSections);
     setActiveSectionId(newSections[newSections.length - 1].id);
-    setMessage({
-      text: `Imported ${totalImported} questions across ${parsedSections.length} section(s).`,
-      type: "success"
-    });
+
+    if (sourceInfo) {
+      setMessage({
+        text: `✅ ${totalImported} questions generated from ${sourceInfo}`,
+        type: "success"
+      });
+    } else {
+      setMessage({
+        text: `Imported ${totalImported} questions across ${parsedSections.length} section(s).`,
+        type: "success"
+      });
+    }
   };
 
   const handleAddExistingSection = (picked, mode) => {
@@ -1405,10 +1428,42 @@ function CreateQuizMulti() {
                         {Object.keys(expandedQuestions).length === getActiveQuestions().length && getActiveQuestions().length > 0 ? "- Collapse All" : "+ Expand All"}
                       </button>
                     </div>
-                    <div style={{ width: "350px", flexShrink: 0 }}>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0 }}>
                       <DocxParser onQuestionsLoaded={handleDocxImport} />
+                      <button
+                        type="button"
+                        onClick={() => setAiPanelOpen(!aiPanelOpen)}
+                        style={{
+                          padding: "10px 14px",
+                          border: "none",
+                          borderRadius: "10px",
+                          backgroundColor: "var(--primary-color, #6E3FF3)",
+                          color: "#fff",
+                          fontSize: "12.5px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          height: "40px",
+                          boxSizing: "border-box",
+                          transition: "all 0.2s ease",
+                          boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                        }}
+                      >
+                        ✨ AI Generate
+                      </button>
                     </div>
                   </div>
+
+                  {aiPanelOpen && (
+                    <AIQuestionGenerator
+                      quizMeta={quizMeta}
+                      activeSection={activeSection}
+                      onQuestionsAdded={handleDocxImport}
+                      onClose={() => setAiPanelOpen(false)}
+                    />
+                  )}
 
                   {isQuestionsVisible && (
                     <>

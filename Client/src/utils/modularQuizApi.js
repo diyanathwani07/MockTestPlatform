@@ -6,20 +6,25 @@ const authHeaders = () => ({
 });
 
 export const sanitizeQuestion = (q, subject = "") => {
+  const cleanIncorrect = {};
+  const incorrectSource = q.explanations?.incorrect || {};
+  Object.entries(incorrectSource).forEach(([key, val]) => {
+    const cleanKey = key.replace(/\./g, "");
+    cleanIncorrect[cleanKey] = val;
+  });
+
   const result = {
     questionEnglish: (q.questionEnglish || "").trim(),
     questionHindi: (q.questionHindi || "").trim(),
     options: (q.options || []).map((o) => String(o).trim()).filter(Boolean),
     correctAnswer: (q.correctAnswer || "").trim(),
     explanation: (q.explanation || "").trim(),
-    explanations: q.explanations
-      ? { ...q.explanations, correct: (q.explanation || "").trim() }
-      : {
-          correct: (q.explanation || "").trim(),
-          incorrect: {},
-          conceptSummary: "",
-          didYouKnow: ""
-        },
+    explanations: {
+      correct: (q.explanation || "").trim(),
+      incorrect: cleanIncorrect,
+      conceptSummary: q.explanations?.conceptSummary || "",
+      didYouKnow: q.explanations?.didYouKnow || ""
+    },
     difficulty: q.difficulty || "medium",
     subject,
   };

@@ -82,8 +82,28 @@ async function notifyDepartment(department, { type, title, message, link = "", r
   }
 }
 
+async function notifyContentTeamSlack(text) {
+  try {
+    const Department = require("../models/Department");
+    const { sendSlackMessage } = require("./slackService");
+
+    const dept = await Department.findOne({ name: "Content Team" });
+    if (!dept) {
+      console.warn("[NotificationService] 'Content Team' department not found for Slack notification.");
+      return;
+    }
+
+    if (dept.slackWebhookUrl && !dept.slackNotificationsPaused) {
+      await sendSlackMessage(dept.slackWebhookUrl, text);
+    }
+  } catch (error) {
+    console.error("[NotificationService] Failed to send Slack notification to Content Team:", error);
+  }
+}
+
 module.exports = {
   notifyUser,
   notifyAllStudents,
-  notifyDepartment
+  notifyDepartment,
+  notifyContentTeamSlack
 };

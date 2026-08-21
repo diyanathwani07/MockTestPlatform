@@ -3,6 +3,7 @@ const Question = require("../models/Question");
 const User = require("../models/User");
 const Result = require("../models/Result");
 const logAction = require("../utils/logger");
+const { notifyAllStudents, notifyContentTeamSlack } = require("../services/notificationService");
 const {
   createQuiz: createModularQuiz,
   linkSectionToQuiz,
@@ -46,6 +47,17 @@ const createQuiz = async (req, res) => {
     }
 
     await logAction("CREATE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
+
+    if (quiz.status === "Published" || quiz.published === true) {
+      notifyAllStudents({
+        type: "NEW_QUIZ_PUBLISHED",
+        title: "New quiz available",
+        message: `A new quiz "${quiz.title}" (${quiz.subject}) has just been published — go check it out!`,
+        link: "/dashboard",
+        relatedId: quiz._id
+      });
+      notifyContentTeamSlack(`📚 New quiz published: "${quiz.title}" (${quiz.subject})`);
+    }
 
     if (quiz.isPaid && quiz.plans && quiz.plans.length > 0) {
       await logAction(
@@ -288,6 +300,20 @@ const updateQuiz = async (req, res) => {
         req.ip
       );
       hasSettingsChanges = true;
+    }
+
+    const wasPublished = originalQuiz.status === "Published" || originalQuiz.published === true;
+    const isNowPublished = quiz.status === "Published" || quiz.published === true;
+
+    if (!wasPublished && isNowPublished) {
+      notifyAllStudents({
+        type: "NEW_QUIZ_PUBLISHED",
+        title: "New quiz available",
+        message: `A new quiz "${quiz.title}" (${quiz.subject}) has just been published — go check it out!`,
+        link: "/dashboard",
+        relatedId: quiz._id
+      });
+      notifyContentTeamSlack(`📚 New quiz published: "${quiz.title}" (${quiz.subject})`);
     }
 
     if (quiz.published && !originalQuiz.published) {

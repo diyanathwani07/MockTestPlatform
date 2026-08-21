@@ -110,6 +110,7 @@ app.use("/api/sections", sectionRoutes);
 app.use("/api/question-banks", questionBankRoutes);
 app.use("/api/purchase", purchaseRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/ai/questions", require("./routes/aiQuestionRoutes"));
 app.use("/api/notifications", notificationRoutes);
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
 setInterval(async () => {

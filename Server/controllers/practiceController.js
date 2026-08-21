@@ -2,6 +2,7 @@ const PracticeQuiz = require("../models/PracticeQuiz");
 const PracticeSession = require("../models/PracticeSession");
 const { GoogleGenAI, Type } = require("@google/genai");
 const logAction = require("../utils/logger");
+const { notifyAllStudents, notifyContentTeamSlack } = require("../services/notificationService");
 
 // @desc    Get all practice quizzes
 // @route   GET /api/practice
@@ -235,6 +236,16 @@ const createPracticeQuiz = async (req, res) => {
     });
 
     const createdQuiz = await quiz.save();
+    if (createdQuiz.status === "Published") {
+      notifyAllStudents({
+        type: "NEW_PRACTICE_PUBLISHED",
+        title: "New practice quiz available",
+        message: `A new practice quiz "${createdQuiz.title}" (${createdQuiz.subject}) is now available to practice!`,
+        link: "/practice",
+        relatedId: createdQuiz._id
+      });
+      notifyContentTeamSlack(`📝 New practice quiz published: "${createdQuiz.title}" (${createdQuiz.subject})`);
+    }
     res.status(201).json(createdQuiz);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -294,6 +305,14 @@ const updatePracticeQuiz = async (req, res) => {
     if (req.body.status) {
       if (req.body.status === "Published" && quiz.status !== "Published") {
         quiz.publishedAt = Date.now();
+        notifyAllStudents({
+          type: "NEW_PRACTICE_PUBLISHED",
+          title: "New practice quiz available",
+          message: `A new practice quiz "${quiz.title}" (${quiz.subject}) is now available to practice!`,
+          link: "/practice",
+          relatedId: quiz._id
+        });
+        notifyContentTeamSlack(`📝 New practice quiz published: "${quiz.title}" (${quiz.subject})`);
       } else if (req.body.status === "Draft") {
         quiz.publishedAt = null;
       }
