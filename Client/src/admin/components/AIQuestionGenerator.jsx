@@ -15,6 +15,7 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
   const [successPrompt, setSuccessPrompt] = useState('');
   const [successFileUrl, setSuccessFileUrl] = useState(null);
   const [successFileType, setSuccessFileType] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -73,6 +74,11 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
       }
     }
     setFile(selectedFile);
+  };
+
+  const handleClearFile = (e) => {
+    e.stopPropagation();
+    setFile(null);
   };
 
   const addQuestionsToQuizDirectly = (qs, sourceInfo, promptText) => {
@@ -262,12 +268,12 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
                   <img 
                     src={successFileUrl} 
                     alt="Uploaded source" 
-                    onClick={() => window.open(successFileUrl, '_blank')}
-                    style={{ maxWidth: '80px', maxHeight: '80px', borderRadius: '6px', border: '1.5px solid var(--border-color)', cursor: 'pointer', transition: 'transform 0.2s' }}
+                    onClick={() => setPreviewUrl(successFileUrl)}
+                    style={{ maxWidth: '80px', maxHeight: '80px', borderRadius: '6px', border: '1.5px solid var(--border-color)', cursor: 'zoom-in', transition: 'transform 0.2s' }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   />
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>🔍 Click to view full image</span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>🔍 Click to zoom</span>
                 </div>
               )}
 
@@ -377,13 +383,47 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
                     accept={mode === 'image' ? 'image/*' : 'video/*'} 
                     style={{ display: 'none' }} 
                   />
-                  {mode === 'image' ? <Image size={28} style={{ color: 'var(--text-muted)' }} /> : <Video size={28} style={{ color: 'var(--text-muted)' }} />}
-                  <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                    {file ? file.name : (dragActive ? 'Drop file to upload' : 'Click to upload or Drag & Drop file')}
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {mode === 'image' ? 'Supports PNG, JPG, JPEG, WEBP (Max 10MB)' : 'Supports MP4, WEBM (Max 100MB, Max 10 mins)'}
-                  </span>
+                  {file && mode === 'image' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <img 
+                        src={URL.createObjectURL(file)} 
+                        alt="Upload preview" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewUrl(URL.createObjectURL(file));
+                        }}
+                        style={{ maxWidth: '140px', maxHeight: '140px', borderRadius: '8px', objectFit: 'contain', border: '1.5px solid var(--border-color)', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', cursor: 'zoom-in' }} 
+                      />
+                      <span 
+                        onClick={handleClearFile} 
+                        style={{ display: 'inline-block', background: 'rgba(239, 68, 68, 0.12)', color: '#EF4444', border: 'none', borderRadius: '4px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontWeight: '700', textTransform: 'uppercase' }}
+                      >
+                        Remove Image
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      {mode === 'image' ? <Image size={28} style={{ color: 'var(--text-muted)' }} /> : <Video size={28} style={{ color: 'var(--text-muted)' }} />}
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', wordBreak: 'break-all', padding: '0 10px' }}>
+                        {file ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                            <span>{file.name}</span>
+                            <span 
+                              onClick={handleClearFile} 
+                              style={{ display: 'inline-block', background: 'rgba(239, 68, 68, 0.12)', color: '#EF4444', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', cursor: 'pointer', fontWeight: '700', textTransform: 'uppercase' }}
+                            >
+                              Remove
+                            </span>
+                          </span>
+                        ) : (
+                          dragActive ? 'Drop file to upload' : 'Click to upload or Drag & Drop file'
+                        )}
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {mode === 'image' ? 'Supports PNG, JPG, JPEG, WEBP (Max 10MB)' : 'Supports MP4, WEBM (Max 100MB, Max 10 mins)'}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -437,6 +477,60 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
             </button>
           </div>
         )}
+        </div>
+      )}
+      {previewUrl && (
+        <div 
+          onClick={() => setPreviewUrl(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100000,
+            cursor: 'zoom-out'
+          }}
+        >
+          <img 
+            src={previewUrl} 
+            alt="Full size preview" 
+            style={{
+              maxWidth: '90%',
+              maxHeight: '90%',
+              borderRadius: '8px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+              cursor: 'default'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            type="button"
+            onClick={() => setPreviewUrl(null)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              color: '#fff',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: '700'
+            }}
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>
