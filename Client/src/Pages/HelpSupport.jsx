@@ -508,56 +508,39 @@ function HelpSupport() {
             </div>
           </div>
 
-          {/* AI CHATBOT SECTION */}
-          <div className="hs-chat-section">
-            <div className="hs-chat-header">
-              <div className="hs-chat-bot-info">
-                <div className="hs-chat-avatar">
-                  <MessageCircle size={20} />
-                </div>
-                <div>
-                  <h3>AI Support Assistant</h3>
-                  <p>Ask me anything about the platform</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="hs-chat-messages">
-              {messages.map((msg, idx) => (
-                <div key={idx} className={`hs-chat-bubble-wrapper ${msg.sender}`}>
-                  <div className={`hs-chat-bubble ${msg.sender}`}>
-                    {msg.text}
-                  </div>
-                  {msg.offerTicket && !showTicketForm && (
-                    <button className="hs-chat-ticket-btn" onClick={() => setShowTicketForm(true)}>
-                      Submit a Ticket
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isTyping && (
-                <div className="hs-chat-bubble-wrapper bot">
-                  <div className="hs-chat-bubble bot typing">
-                    <span></span><span></span><span></span>
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-            
-            <form onSubmit={handleChatSubmit} className="hs-chat-input-area">
-              <input 
-                type="text" 
-                placeholder="Type your question here..." 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                disabled={isTyping}
-              />
-              <button type="submit" disabled={isTyping || !chatInput.trim()}>
-                <Send size={18} />
-              </button>
-            </form>
+          {/* Still Need Help? Support Ticket CTA Card */}
+          <div className="hs-ticket-cta-card" style={{
+            background: 'var(--bg-card)',
+            border: '1.5px solid var(--border-color)',
+            borderRadius: '12px',
+            padding: '24px',
+            textAlign: 'center',
+            marginTop: '24px'
+          }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>Still need help?</h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>If you cannot find the answer in our FAQs, you can submit a support ticket directly to our team.</p>
+            <button 
+              type="button"
+              onClick={() => setShowTicketForm(!showTicketForm)} 
+              className="hs-new-ticket-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--primary-color, #6E3FF3)',
+                color: '#fff',
+                border: 'none',
+                fontWeight: '700',
+                cursor: 'pointer',
+                fontSize: '13px'
+              }}
+            >
+              <Plus size={16} /> {showTicketForm ? 'Close Ticket Form' : 'Submit a Support Ticket'}
+            </button>
           </div>
+
           {ticketFormJSX}
           </>
           )}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
-import { Users, User, ClipboardList, HelpCircle, Trophy, TrendingUp, Plus, BookOpen, Ban, Edit3, ArrowRight, FileText, Package, CalendarDays, GraduationCap, Library, File, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
+import { Users, User, ClipboardList, HelpCircle, Trophy, TrendingUp, Plus, BookOpen, Ban, Edit3, ArrowRight, FileText, Package, CalendarDays, GraduationCap, Library, File, AlertCircle, Clock, CheckCircle2, Trash2 } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -158,11 +158,11 @@ function AdminDashboard() {
   const questionsCount = stats.totalQuestions || 5389;
   const attemptsCount = stats.totalAttempts || 8742;
   const averageScoreCount = stats.averageScore ? `${stats.averageScore.toFixed(2)}%` : "72.45%";
-
-  const publishedQuizzes = stats.quizzesPublished || quizzes.filter(q => q.status === "Published" || q.published).length || 178;
-  const draftQuizzes = quizzes.filter(q => q.status === "Draft" || (!q.published && q.status !== "Scheduled")).length || 45;
-  const scheduledQuizzes = quizzes.filter(q => q.status === "Scheduled").length || 6;
-  const archivedQuizzes = quizzes.filter(q => q.status === "Archived").length || 12;
+  const hasQuizzes = quizzes && quizzes.length > 0;
+  const publishedQuizzes = hasQuizzes ? quizzes.filter(q => q.status === "Published" || q.published).length : 178;
+  const draftQuizzes = hasQuizzes ? quizzes.filter(q => q.status === "Draft" || (!q.published && q.status !== "Scheduled" && q.status !== "Deleted")).length : 45;
+  const scheduledQuizzes = hasQuizzes ? quizzes.filter(q => q.status === "Scheduled").length : 6;
+  const deletedQuizzes = hasQuizzes ? quizzes.filter(q => q.status === "Deleted" || q.isDeleted).length : 12;
 
   // Real-data aggregates with mockup fallbacks
   const activities = stats.activities && stats.activities.length > 0 ? stats.activities : [
@@ -969,10 +969,10 @@ function AdminDashboard() {
                         </div>
                       </div>
                       <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", background: "rgba(139, 92, 246, 0.1)", color: "#8B5CF6", borderRadius: "8px" }}><Package size={16} strokeWidth={2.5} /></span>
+                        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", background: "rgba(239, 68, 68, 0.1)", color: "#EF4444", borderRadius: "8px" }}><Trash2 size={16} strokeWidth={2.5} /></span>
                         <div>
-                          <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Archived</p>
-                          <p style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>{archivedQuizzes}</p>
+                          <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Deleted</p>
+                          <p style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>{deletedQuizzes}</p>
                         </div>
                       </div>
                       <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>

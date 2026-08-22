@@ -17,6 +17,27 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
   const [successFileType, setSuccessFileType] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  React.useEffect(() => {
+    if (quizMeta && quizMeta.aiSourceType) {
+      if (quizMeta.aiSourceType === 'prompt') {
+        setSuccessPrompt(quizMeta.aiSourcePrompt || quizMeta.description || '');
+        setSuccessFileUrl(null);
+        setSuccessFileType(null);
+        setSuccessMsg('Questions were successfully generated from this AI Prompt.');
+      } else if (quizMeta.aiSourceType === 'image') {
+        setSuccessPrompt('uploaded Image');
+        setSuccessFileUrl(quizMeta.aiSourceUrl || null);
+        setSuccessFileType('image');
+        setSuccessMsg('Questions were successfully generated from this uploaded Image.');
+      } else if (quizMeta.aiSourceType === 'video') {
+        setSuccessPrompt('uploaded Video');
+        setSuccessFileUrl(quizMeta.aiSourceUrl || null);
+        setSuccessFileType('video');
+        setSuccessMsg('Questions were successfully generated from this uploaded Video.');
+      }
+    }
+  }, [quizMeta]);
+
   const fileInputRef = useRef(null);
 
   // Caps
@@ -81,7 +102,7 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
     setFile(null);
   };
 
-  const addQuestionsToQuizDirectly = (qs, sourceInfo, promptText) => {
+  const addQuestionsToQuizDirectly = (qs, sourceInfo, promptText, sourceUrl) => {
     onQuestionsAdded([{
       sectionTitle: 'Default',
       questions: qs.map(q => ({
@@ -97,7 +118,7 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
           didYouKnow: ''
         }
       }))
-    }], sourceInfo, promptText);
+    }], sourceInfo, promptText, sourceUrl);
     
     if (sourceInfo === 'AI Prompt') {
       setSuccessPrompt(promptText);
@@ -105,7 +126,10 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
       setSuccessFileType(null);
     } else {
       setSuccessPrompt(sourceInfo);
-      if (file) {
+      if (sourceUrl) {
+        setSuccessFileUrl(sourceUrl);
+        setSuccessFileType(mode);
+      } else if (file) {
         setSuccessFileUrl(URL.createObjectURL(file));
         setSuccessFileType(mode);
       }
@@ -174,7 +198,7 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
         });
 
         if (res.data && res.data.questions) {
-          addQuestionsToQuizDirectly(res.data.questions, 'uploaded Image', null);
+          addQuestionsToQuizDirectly(res.data.questions, 'uploaded Image', null, res.data.sourceUrl);
         }
       } else if (mode === 'video') {
         if (!file) {
@@ -211,7 +235,7 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
     const interval = setInterval(async () => {
       try {
         const res = await axios.get(`${apiBase}/api/ai/questions/from-video/status/${jobId}`, config);
-        const { status, resultQuestions, errorMessage } = res.data;
+        const { status, resultQuestions, videoCloudinaryUrl, errorMessage } = res.data;
 
         if (status === 'uploading') {
           setStatusText('Uploading video to server & Cloudinary...');
@@ -221,7 +245,7 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
           setStatusText('Generating structured questions using Gemini AI...');
         } else if (status === 'done') {
           clearInterval(interval);
-          addQuestionsToQuizDirectly(resultQuestions, 'uploaded Video', null);
+          addQuestionsToQuizDirectly(resultQuestions, 'uploaded Video', null, videoCloudinaryUrl);
           setLoading(false);
         } else if (status === 'failed') {
           clearInterval(interval);
@@ -288,6 +312,32 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
               )}
             </div>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setSuccessMsg('');
+              setSuccessPrompt('');
+              setSuccessFileUrl(null);
+              setSuccessFileType(null);
+              setFile(null);
+            }}
+            style={{
+              marginTop: '16px',
+              padding: '8px 14px',
+              background: 'rgba(110, 63, 243, 0.1)',
+              color: 'var(--violet, #6E3FF3)',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: '700',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            🔄 Generate More / Change Source
+          </button>
         </div>
       ) : (
         <div>
@@ -501,7 +551,8 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
             alt="Full size preview" 
             style={{
               maxWidth: '90%',
-              maxHeight: '90%',
+              maxHeight: '82vh',
+              objectFit: 'contain',
               borderRadius: '8px',
               boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
               cursor: 'default'

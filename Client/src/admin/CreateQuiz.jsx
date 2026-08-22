@@ -77,6 +77,9 @@ function CreateQuiz() {
     resultReleaseDate: null,
     practiceResultReleaseMode: "immediate",
     practiceResultReleaseDate: null,
+    aiSourceType: "",
+    aiSourcePrompt: "",
+    aiSourceUrl: "",
   });
 
   const [seriesList, setSeriesList] = useState([]);

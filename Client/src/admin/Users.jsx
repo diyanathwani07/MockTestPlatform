@@ -5,7 +5,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
-import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar } from 'lucide-react';
+import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar, Medal, Mail, ExternalLink, Shield, ChevronDown, FileText, Target, BookOpen } from 'lucide-react';
 
 const ALL_PERMISSIONS = [
   { key: "dashboard",             label: "Dashboard" },
@@ -31,6 +31,7 @@ function Users() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeModal, setActiveModal] = useState(null); // 'profile', 'edit', 'performance', 'history', 'tickets', 'suspend', 'role', 'reset', 'delete'
   const [selectedUser, setSelectedUser] = useState(null);
+  const [viewedProfileUser, setViewedProfileUser] = useState(null);
   
   // Profile/Edit states
   const [quizzesAttempted, setQuizzesAttempted] = useState(null);
@@ -43,6 +44,7 @@ function Users() {
   const currentUserRole = localStorage.getItem("role");
   const [userTypeFilter, setUserTypeFilter] = useState("users");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [profileActionsOpen, setProfileActionsOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -105,12 +107,13 @@ function Users() {
   const [userTickets, setUserTickets] = useState([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
 
-  // Fetch quizzes attempted & attempts details for profile/history/performance modals
+  // Fetch quizzes attempted & attempts details for profile/history/performance/viewedProfileUser
   useEffect(() => {
-    if ((activeModal === 'profile_popup' || activeModal === 'profile_drawer' || activeModal === 'history' || activeModal === 'performance') && selectedUser) {
+    const userToFetch = viewedProfileUser || selectedUser;
+    if (userToFetch && (viewedProfileUser || activeModal === 'profile_popup' || activeModal === 'profile_drawer' || activeModal === 'history' || activeModal === 'performance')) {
       setQuizzesAttempted("Loading...");
       setHistoryLoading(true);
-      axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedUser._id}`, {
+      axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userToFetch._id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       })
         .then(res => {
@@ -128,7 +131,7 @@ function Users() {
       setQuizzesAttempted(null);
       setAttemptsData([]);
     }
-  }, [activeModal, selectedUser]);
+  }, [activeModal, selectedUser, viewedProfileUser]);
 
   // Fetch user support tickets
   useEffect(() => {
@@ -249,8 +252,360 @@ function Users() {
         <AdminNavbar title="Manage Users" />
 
         <div className="admin-content manage-users-view-container">
-          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'nowrap', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
-            <div className="pill-search-container" style={{ marginBottom: 0, flex: "0 1 320px", minWidth: '120px', maxWidth: '320px' }}>
+          {viewedProfileUser ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', color: 'var(--text-primary)' }}>
+              
+              {/* Top Navigation Bar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button 
+                  onClick={() => setViewedProfileUser(null)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}
+                >
+                  <ArrowLeft size={16} /> Back to Users
+                </button>
+                
+                {/* Actions Dropdown */}
+                <div style={{ position: 'relative' }}>
+                  <button 
+                    onClick={() => setProfileActionsOpen(!profileActionsOpen)}
+                    className="create-quiz-pill-btn"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 16px' }}
+                  >
+                    Actions <ChevronDown size={14} />
+                  </button>
+                  
+                  {profileActionsOpen && (
+                    <>
+                      <div 
+                        onClick={() => setProfileActionsOpen(false)}
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: 'transparent' }}
+                      />
+                      <div style={{ position: 'absolute', right: 0, top: '40px', backgroundColor: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '10px', padding: '6px 0', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', zIndex: 100, textAlign: 'left' }}>
+                        {currentUserRole === 'superadmin' && (
+                          <div 
+                            onClick={() => { setProfileActionsOpen(false); openModal('edit', viewedProfileUser); }}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', transition: 'background 0.15s', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <Edit size={15} /> Edit User
+                          </div>
+                        )}
+                        <div 
+                          onClick={() => { setProfileActionsOpen(false); openModal('tickets', viewedProfileUser); }}
+                          style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', transition: 'background 0.15s', display: 'flex', alignItems: 'center', gap: '8px' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <Ticket size={15} /> Support Tickets
+                        </div>
+                        {currentUserRole === 'superadmin' && (
+                          <>
+                            <div 
+                              onClick={() => { setProfileActionsOpen(false); openModal('suspend', viewedProfileUser); }}
+                              style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', transition: 'background 0.15s', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              {(viewedProfileUser.status || 'Active') === 'Active' ? <><UserMinus size={15} /> Suspend</> : <><UserCheck size={15} /> Activate</>}
+                            </div>
+                            <div 
+                              onClick={() => { setProfileActionsOpen(false); openModal('reset', viewedProfileUser); }}
+                              style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', transition: 'background 0.15s', display: 'flex', alignItems: 'center', gap: '8px' }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <Key size={15} /> Reset Password
+                            </div>
+                            <div 
+                              onClick={() => { setProfileActionsOpen(false); openModal('delete', viewedProfileUser); }}
+                              style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--red, #ef4444)', transition: 'background 0.15s', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(226, 67, 107, 0.08)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <Trash2 size={15} /> Delete User
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* User Profile Header Card */}
+              <div style={{ display: 'flex', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '24px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  {viewedProfileUser.avatar || viewedProfileUser.profilePhoto ? (
+                    <img 
+                      src={viewedProfileUser.avatar || viewedProfileUser.profilePhoto} 
+                      alt="Profile" 
+                      style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(110, 63, 243, 0.2)' }} 
+                    />
+                  ) : (
+                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '32px', fontWeight: '700', textTransform: 'uppercase' }}>
+                      {viewedProfileUser.fullName?.[0] || 'U'}
+                    </div>
+                  )}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)' }}>{viewedProfileUser.fullName || 'Unknown'}</h2>
+                      <span style={{ background: viewedProfileUser.status === 'Suspended' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: viewedProfileUser.status === 'Suspended' ? '#ef4444' : '#10b981', borderRadius: '100px', padding: '2px 10px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewedProfileUser.status === 'Suspended' ? '#ef4444' : '#10b981' }} />
+                        {viewedProfileUser.status || 'Active'}
+                      </span>
+                    </div>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)', textTransform: 'capitalize', fontWeight: '600' }}>{viewedProfileUser.role || 'User'}</p>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Joined on {viewedProfileUser.createdAt ? new Date(viewedProfileUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}</p>
+                  </div>
+                </div>
+                
+                {/* Horizontal Metadata Area */}
+                <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                      <Mail size={16} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Email Address</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileUser.email || 'N/A'}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                      <Phone size={16} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Phone No.</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileUser.phone || 'N/A'}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                      <Clock size={16} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Joined On</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileUser.createdAt ? new Date(viewedProfileUser.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + new Date(viewedProfileUser.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Four Metric Cards Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                    <Activity size={22} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Tests Attempted</span>
+                    <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{quizzesAttempted !== 'Loading' && quizzesAttempted !== 'Error' ? quizzesAttempted : '0'}</h3>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Total Tests</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                    <BarChart2 size={22} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Total Quizzes</span>
+                    <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{quizzesAttempted !== 'Loading' && quizzesAttempted !== 'Error' ? quizzesAttempted : '0'}</h3>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Total Quizzes</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(139, 92, 246, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                    <Medal size={22} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Exams Purchased</span>
+                    <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{((viewedProfileUser.purchasedExams?.length || 0) + (viewedProfileUser.purchasedPractice?.length || 0))}</h3>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Total Exams</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
+                    <Settings size={22} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Average Score</span>
+                    <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                      {attemptsData.length > 0 ? (attemptsData.reduce((acc, curr) => acc + (curr.total > 0 ? (curr.score / curr.total) * 100 : 0), 0) / attemptsData.length).toFixed(2) : '0.00'}%
+                    </h3>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Overall Average</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Attempted Subjects & Purchased Exams Side-by-Side */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                
+                {/* Attempted Subjects */}
+                <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                  <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>Attempted Subjects</h3>
+                  <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+                    {attemptsData.length > 0 ? (
+                      (() => {
+                        const subjectStats = {};
+                        attemptsData.forEach(att => {
+                          const sub = att.subject || "General Studies";
+                          if (!subjectStats[sub]) {
+                            subjectStats[sub] = { count: 0, scoreSum: 0 };
+                          }
+                          subjectStats[sub].count++;
+                          subjectStats[sub].scoreSum += att.total > 0 ? (att.score / att.total) * 100 : 0;
+                        });
+                        const subjectStatsList = Object.keys(subjectStats).map(name => ({
+                          name,
+                          count: subjectStats[name].count,
+                          avgScore: (subjectStats[name].scoreSum / subjectStats[name].count).toFixed(2)
+                        }));
+                        
+                        return subjectStatsList.map((stat, idx) => (
+                          <div key={idx} style={{ flex: '0 0 180px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                                <FileText size={14} />
+                              </div>
+                              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stat.name}</span>
+                            </div>
+                            <div>
+                              <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--violet)' }}>{stat.avgScore}%</h4>
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stat.count} Tests | Avg. Score</span>
+                            </div>
+                          </div>
+                        ));
+                      })()
+                    ) : (
+                      <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No attempts yet</p>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Purchased Exams */}
+                <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                  <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>Purchased Exams</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '144px', overflowY: 'auto' }}>
+                    {((viewedProfileUser.purchasedExams?.length || 0) > 0 || (viewedProfileUser.purchasedPractice?.length || 0) > 0) ? (
+                      <>
+                        {viewedProfileUser.purchasedExams?.map((ex, idx) => (
+                          <div key={`ex-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.04)', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                                <Medal size={14} />
+                              </div>
+                              <div>
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>{ex.title || 'Untitled Exam'}</span>
+                                <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Exam Series</span>
+                                <span style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>Purchased: {new Date(viewedProfileUser.createdAt || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                              </div>
+                            </div>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px', padding: '2px 8px', fontSize: '10px', fontWeight: '700' }}>Active</span>
+                          </div>
+                        ))}
+                        {viewedProfileUser.purchasedPractice?.map((pr, idx) => (
+                          <div key={`pr-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.04)', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                                <Medal size={14} />
+                              </div>
+                              <div>
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>{pr.title || 'Untitled Practice Set'}</span>
+                                <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Practice Set</span>
+                                <span style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>Purchased: {new Date(viewedProfileUser.createdAt || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                              </div>
+                            </div>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px', padding: '2px 8px', fontSize: '10px', fontWeight: '700' }}>Active</span>
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No purchased modules yet</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Recent Test Activity */}
+              <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>Recent Test Activity</h3>
+                  <button 
+                    onClick={() => openModal('history', viewedProfileUser)}
+                    style={{ background: 'rgba(110, 63, 243, 0.08)', border: 'none', color: 'var(--violet)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                  >
+                    View All
+                  </button>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '16px' }}>
+                  
+                  {/* Grid Header */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr 1fr 2fr 1fr', padding: '0 16px 8px 16px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div>Test / Quiz Name</div>
+                    <div>Subject</div>
+                    <div>Score</div>
+                    <div>Date</div>
+                    <div style={{ textAlign: 'center' }}>Status</div>
+                  </div>
+
+                  {/* Grid Rows */}
+                  {attemptsData.slice(0, 3).map((att, idx) => {
+                    const pct = att.total > 0 ? (att.score / att.total) * 100 : 0;
+                    return (
+                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: '3fr 2fr 1fr 2fr 1fr', alignItems: 'center', padding: '16px 0', borderBottom: idx === attemptsData.slice(0, 3).length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px' }}>
+                        
+                        {/* Test Name with Round Colored Icon */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '8px',
+                            background: idx % 3 === 0 ? 'rgba(239, 68, 68, 0.1)' : (idx % 3 === 1 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(110, 63, 243, 0.1)'),
+                            color: idx % 3 === 0 ? '#ef4444' : (idx % 3 === 1 ? '#10b981' : 'var(--violet)'),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            {idx % 3 === 0 ? <Clock size={15} /> : (idx % 3 === 1 ? <Target size={15} /> : <BookOpen size={15} />)}
+                          </div>
+                          <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{att.quizTitle || 'Untitled'}</span>
+                        </div>
+
+                        {/* Subject */}
+                        <div style={{ color: 'var(--text-secondary)' }}>{att.subject || 'N/A'}</div>
+
+                        {/* Score */}
+                        <div style={{ fontWeight: '700', color: 'var(--violet)' }}>{pct.toFixed(0)} %</div>
+
+                        {/* Date */}
+                        <div style={{ color: 'var(--text-secondary)' }}>{new Date(att.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+
+                        {/* Status */}
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px', padding: '4px 12px', fontSize: '11px', fontWeight: '700' }}>Completed</span>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+
+                  {attemptsData.length === 0 && (
+                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '13px' }}>
+                      No recent activity.
+                    </div>
+                  )}
+
+                </div>
+              </div>
+              
+            </div>
+          ) : (
+            <>
+              <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'nowrap', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
+                <div className="pill-search-container" style={{ marginBottom: 0, flex: "0 1 320px", minWidth: '120px', maxWidth: '320px' }}>
               <svg width="14" height="14" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -377,7 +732,7 @@ function Users() {
           </div>
 
           <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column', overflow: 'visible' }}>
-            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '180px' }}>
+            <div style={{ width: '100%', overflowX: isMobile ? 'auto' : 'visible', WebkitOverflowScrolling: 'touch', paddingBottom: '180px', position: 'relative', zIndex: 5 }}>
               <table className="quiz-table">
               <thead>
                 <tr>
@@ -513,7 +868,7 @@ function Users() {
                                    textAlign: "left"
                                  }}>
                                   <div 
-                                    onClick={() => { setActiveDropdown(null); openModal('profile_drawer', u); }}
+                                    onClick={() => { setActiveDropdown(null); setViewedProfileUser(u); }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
@@ -601,7 +956,7 @@ function Users() {
             </table>
             </div>
 
-            <div className="table-pagination-footer" style={{ marginTop: '-180px', position: 'relative', background: '#FAFAFC' }}>
+            <div className="table-pagination-footer" style={{ marginTop: '-180px', position: 'relative', background: '#FAFAFC', zIndex: 1 }}>
               <span className="pagination-info">
                 Showing 1 to {filteredUsers.length} of {filteredUsers.length} users
               </span>
@@ -613,6 +968,8 @@ function Users() {
             </div>
 
           </div>
+          </>
+          )}
         </div>
       </div>
 
@@ -629,7 +986,7 @@ function Users() {
           
           {/* PROFILE MODAL */}
           {(activeModal === 'profile_popup' || activeModal === 'profile_drawer') && selectedUser && (
-            <div className={`ticket-modal ${activeModal === 'profile_popup' ? 'center-modal' : ''}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`ticket-modal ${activeModal === 'profile_popup' ? 'center-modal' : ''}`} onClick={(e) => e.stopPropagation()} style={{ maxWidth: activeModal === 'profile_drawer' ? '700px' : '500px', width: activeModal === 'profile_drawer' ? '700px' : '90%' }}>
               <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 {activeModal === 'profile_drawer' && (
                   <button 
@@ -715,16 +1072,76 @@ function Users() {
                   </div>
 
                   {/* MOCK TESTS ATTEMPTED */}
-                  <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
-                      <Activity size={18} />
+                  <div style={{ display: "flex", flexDirection: "column", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                        <Activity size={18} />
+                      </div>
+                      <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
+                        <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Mock Tests Attempted</span>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          {quizzesAttempted !== null ? quizzesAttempted : "Loading..."}
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
-                      <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Mock Tests Attempted</span>
+                    {/* Attempted Quizzes List */}
+                    {attemptsData && attemptsData.length > 0 && (
+                      <div style={{ marginTop: "12px", background: "var(--bg-input)", borderRadius: "8px", border: "1px solid var(--border-color)", padding: "10px", maxHeight: "150px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {attemptsData.map((att, idx) => (
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", borderBottom: idx === attemptsData.length - 1 ? "none" : "1px solid var(--border-color)", paddingBottom: "6px", paddingTop: idx === 0 ? "0" : "6px" }}>
+                            <div>
+                              <p style={{ margin: 0, fontWeight: "700", color: "var(--text-primary)" }}>{att.quizTitle || att.subject || "Untitled Quiz"}</p>
+                              <span style={{ fontSize: "10.5px", color: "var(--text-muted)" }}>{new Date(att.createdAt).toLocaleDateString("en-GB").replace(/\//g, '-')}</span>
+                            </div>
+                            <span style={{ fontWeight: "700", color: "var(--violet)" }}>{att.score}/{att.total}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PURCHASED MODULES */}
+                  <div style={{ display: "flex", flexDirection: "column", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(16, 185, 129, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#10B981" }}>
+                        <Medal size={18} />
+                      </div>
+                      <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
+                        <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Purchased Exams</span>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          {((selectedUser.purchasedExams?.length || 0) + (selectedUser.purchasedPractice?.length || 0))} Modules
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>{quizzesAttempted !== null ? quizzesAttempted : "Loading..."}</span>
-                    </div>
+                    {/* Purchased Modules List */}
+                    {((selectedUser.purchasedExams?.length || 0) > 0 || (selectedUser.purchasedPractice?.length || 0) > 0) ? (
+                      <div style={{ marginTop: "12px", background: "var(--bg-input)", borderRadius: "8px", border: "1px solid var(--border-color)", padding: "10px", maxHeight: "150px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {selectedUser.purchasedExams?.map((ex, idx) => (
+                          <div key={`ex-${idx}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", borderBottom: (idx === selectedUser.purchasedExams.length - 1 && (!selectedUser.purchasedPractice || selectedUser.purchasedPractice.length === 0)) ? "none" : "1px solid var(--border-color)", paddingBottom: "6px" }}>
+                            <div>
+                              <span style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "700", color: "#10B981", display: "block" }}>Exam Series</span>
+                              <p style={{ margin: 0, fontWeight: "700", color: "var(--text-primary)" }}>{ex.title}</p>
+                            </div>
+                            {ex.price > 0 && <span style={{ fontWeight: "700", color: "var(--text-secondary)" }}>₹{ex.price}</span>}
+                          </div>
+                        ))}
+                        {selectedUser.purchasedPractice?.map((pr, idx) => (
+                          <div key={`pr-${idx}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", borderBottom: idx === selectedUser.purchasedPractice.length - 1 ? "none" : "1px solid var(--border-color)", paddingBottom: "6px" }}>
+                            <div>
+                              <span style={{ fontSize: "9px", textTransform: "uppercase", fontWeight: "700", color: "#3B82F6", display: "block" }}>Practice Set</span>
+                              <p style={{ margin: 0, fontWeight: "700", color: "var(--text-primary)" }}>{pr.title}</p>
+                            </div>
+                            {pr.price > 0 && <span style={{ fontWeight: "700", color: "var(--text-secondary)" }}>₹{pr.price}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ margin: "8px 0 0 56px", fontSize: "12.5px", color: "var(--text-muted)", fontStyle: "italic" }}>No purchased modules</p>
+                    )}
                   </div>
 
                   {/* JOINED ON */}
@@ -848,8 +1265,8 @@ function Users() {
                     try { return JSON.parse(u); } catch(e) { return null; }
                   })();
                   const canViewPermissions = loggedInUser && (
-                    loggedInUser._id === selectedUser?._id ||
-                    (loggedInUser.role === 'superadmin' && selectedUser?.role !== 'superadmin')
+                    loggedInUser.role === 'superadmin' ||
+                    loggedInUser._id === selectedUser?._id
                   );
                   if (!canViewPermissions) return null;
                   return (
@@ -1096,7 +1513,7 @@ function Users() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              <div className="modal-body" style={{ flex: 1, overflowY: 'auto', padding: '24px 30px' }}>
                 <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>
                   Exam attempts for <strong>{selectedUser?.fullName}</strong>:
                 </p>
@@ -1109,32 +1526,34 @@ function Users() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {attemptsData.map((attempt) => (
-                      <div key={attempt._id} style={{ 
-                        background: 'rgba(255, 255, 255, 0.03)', 
-                        border: '1px solid var(--border-color)', 
-                        borderRadius: '12px', 
-                        padding: '16px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '12px'
-                      }}>
-                        <div>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--text-primary)' }}>{attempt.quizTitle || 'Mock Test'}</h4>
-                          <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)' }}>
-                            Subject: {attempt.subject || 'N/A'} • {new Date(attempt.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontWeight: '700', color: '#6E3FF3', fontSize: '15px' }}>
-                              {attempt.score}/{attempt.totalMarks}
-                            </div>
-                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-                              {(attempt.percentage || 0).toFixed(1)}%
-                            </div>
+                    {attemptsData.map((attempt) => {
+                      const pct = attempt.total > 0 ? (attempt.score / attempt.total) * 100 : 0;
+                      return (
+                        <div key={attempt._id} style={{ 
+                          background: 'rgba(255, 255, 255, 0.03)', 
+                          border: '1px solid var(--border-color)', 
+                          borderRadius: '12px', 
+                          padding: '16px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '12px'
+                        }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--text-primary)' }}>{attempt.quizTitle || 'Mock Test'}</h4>
+                            <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                              Subject: {attempt.subject || 'N/A'} • {new Date(attempt.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontWeight: '700', color: '#6E3FF3', fontSize: '15px' }}>
+                                {attempt.score}/{attempt.total}
+                              </div>
+                              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                                {pct.toFixed(1)}%
+                              </div>
+                            </div>
                           {attempt.shareId && (
                             <a 
                               href={`/student/result/${attempt.shareId}`} 
@@ -1157,7 +1576,8 @@ function Users() {
                           )}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -462,53 +462,64 @@ function Results() {
               <div className="section-header">
                 <h3>Top Performers</h3>
               </div>
-              <div className="data-table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Student</th>
-                      <th>Quiz</th>
-                      <th>Score</th>
-                      <th>Correct</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topPerformers.map((p, idx) => {
-                      const pct = p.total > 0 ? (p.score / p.total) * 100 : 0;
-                      return (
-                        <tr key={p._id}>
-                          <td><strong>{(perfPage - 1) * itemsPerPage + idx + 1}</strong></td>
-                          <td>
-                            <div className="user-cell">
-                              <div className="avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
-                              <div>
-                                <h5>{p.userId?.fullName || "Unknown User"}</h5>
-                                <p>{p.userId?.email || "No Email"}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td>{p.quizTitle || p.subject || "Untitled"}</td>
-                          <td><span className={`score-badge ${getScoreBadgeClass(pct)}`}>{pct.toFixed(2)}%</span></td>
-                          <td>{p.score} / {p.total}</td>
-                          <td style={{color: "var(--text-secondary)", fontSize: "12px"}}>{new Date(p.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}</td>
-                        </tr>
-                      );
-                    })}
-                    {topPerformers.length === 0 && (
-                      <tr><td colSpan="6" style={{textAlign:"center"}}>No performers found.</td></tr>
-                    )}
-                  </tbody>
-                </table>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                {/* Header */}
+                <div style={{ display: 'grid', gridTemplateColumns: '0.8fr 3fr 3fr 2fr 2fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <div>Rank</div>
+                  <div>Student</div>
+                  <div>Quiz</div>
+                  <div>Score</div>
+                  <div>Correct</div>
+                  <div>Date</div>
+                </div>
+                {/* Rows */}
+                {topPerformers.map((p, idx) => {
+                  const pct = p.total > 0 ? (p.score / p.total) * 100 : 0;
+                  return (
+                    <div key={p._id} style={{ display: 'grid', gridTemplateColumns: '0.8fr 3fr 3fr 2fr 2fr 2fr', alignItems: 'center', padding: '12px 16px', borderBottom: idx === topPerformers.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                      <div><strong>{(perfPage - 1) * itemsPerPage + idx + 1}</strong></div>
+                      <div className="user-cell">
+                        <div className="avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
+                        <div>
+                          <h5 style={{ margin: 0, fontSize: '13px', fontWeight: '600' }}>{p.userId?.fullName || "Unknown User"}</h5>
+                          <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>{p.userId?.email || "No Email"}</p>
+                        </div>
+                      </div>
+                      <div>{p.quizTitle || p.subject || "Untitled"}</div>
+                      <div><span className={`score-badge ${getScoreBadgeClass(pct)}`}>{pct.toFixed(2)}%</span></div>
+                      <div>{p.score} / {p.total}</div>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "12px" }}>{new Date(p.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}</div>
+                    </div>
+                  );
+                })}
+                {topPerformers.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontStyle: 'italic', fontSize: '13px' }}>No performers found.</div>
+                )}
               </div>
-              <div className="table-pagination-footer">
+              <div className="table-pagination-footer transparent-footer" style={{ padding: '16px 0 0 0', borderTop: '1px solid var(--border-color)' }}>
                 <div className="pagination-info">
-                  Showing {(perfPage - 1) * itemsPerPage + 1} to {Math.min(perfPage * itemsPerPage, allPerformers.length)} of {allPerformers.length} entries
+                  Showing {(perfPage - 1) * itemsPerPage + 1}–{Math.min(perfPage * itemsPerPage, allPerformers.length)} of {allPerformers.length} results
                 </div>
                 <div className="pagination-controls">
                   <button className="page-nav-btn" onClick={() => setPerfPage(Math.max(1, perfPage - 1))} disabled={perfPage === 1}>&lt;</button>
-                  <button className="page-nav-btn active-page">{perfPage}</button>
+                  {(() => {
+                    let startPage = Math.max(1, perfPage - 2);
+                    let endPage = Math.min(totalPerfPages, startPage + 4);
+                    if (endPage - startPage < 4) {
+                      startPage = Math.max(1, endPage - 4);
+                    }
+                    const pages = [];
+                    for (let i = startPage; i <= endPage; i++) { pages.push(i); }
+                    return pages.map((pageNum) => (
+                      <button 
+                        key={pageNum} 
+                        className={`page-nav-btn ${perfPage === pageNum ? 'active-page' : ''}`}
+                        onClick={() => setPerfPage(pageNum)}
+                      >
+                        {pageNum}
+                      </button>
+                    ));
+                  })()}
                   <button className="page-nav-btn" onClick={() => setPerfPage(Math.min(totalPerfPages, perfPage + 1))} disabled={perfPage === totalPerfPages}>&gt;</button>
                 </div>
               </div>
@@ -519,46 +530,119 @@ function Results() {
               <div className="section-header">
                 <h3>Results by Quiz</h3>
               </div>
-              <div className="data-table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Quiz</th>
-                      <th>Total Attempts</th>
-                      <th>Average Score</th>
-                      <th>Highest Score</th>
-                      <th>Lowest Score</th>
-                      <th>Pass %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {quizStats.map((q, idx) => (
-                      <tr key={idx}>
-                        <td><strong>{q.name}</strong></td>
-                        <td>{q.attempts}</td>
-                        <td><span className={`score-badge ${getScoreBadgeClass(q.avgScore)}`}>{q.avgScore}%</span></td>
-                        <td>{q.highest}%</td>
-                        <td>{q.lowest}%</td>
-                        <td>{q.passPercent}%</td>
-                      </tr>
-                    ))}
-                    {quizStats.length === 0 && (
-                      <tr><td colSpan="6" style={{textAlign:"center"}}>No quiz stats found.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="table-pagination-footer">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                {/* Header */}
+                <div style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 2fr 2fr 2fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <div>Quiz</div>
+                  <div>Total Attempts</div>
+                  <div>Average Score</div>
+                  <div>Highest Score</div>
+                  <div>Lowest Score</div>
+                  <div>Pass %</div>
+                </div>
+                {/* Rows */}
+                {quizStats.map((q, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 2fr 2fr 2fr 2fr', alignItems: 'center', padding: '12px 16px', borderBottom: idx === quizStats.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                    <div><strong>{q.name}</strong></div>
+                    <div>{q.attempts}</div>
+                    <div><span className={`score-badge ${getScoreBadgeClass(q.avgScore)}`}>{q.avgScore}%</span></div>
+                    <div>{q.highest}%</div>
+                    <div>{q.lowest}%</div>
+                    <div>{q.passPercent}%</div>
+                  </div>
+                ))}
+                {quizStats.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontStyle: 'italic', fontSize: '13px' }}>No quiz stats found.</div>
+                )}
+                <div className="table-pagination-footer transparent-footer" style={{ padding: '16px 0 0 0', borderTop: '1px solid var(--border-color)' }}>
                 <div className="pagination-info">
-                  Showing {(quizPage - 1) * itemsPerPage + 1} to {Math.min(quizPage * itemsPerPage, allQuizStats.length)} of {allQuizStats.length} entries
+                  Showing {(quizPage - 1) * itemsPerPage + 1}–{Math.min(quizPage * itemsPerPage, allQuizStats.length)} of {allQuizStats.length} results
                 </div>
                 <div className="pagination-controls">
                   <button className="page-nav-btn" onClick={() => setQuizPage(Math.max(1, quizPage - 1))} disabled={quizPage === 1}>&lt;</button>
-                  <button className="page-nav-btn active-page">{quizPage}</button>
+                  {(() => {
+                    let startPage = Math.max(1, quizPage - 2);
+                    let endPage = Math.min(totalQuizPages, startPage + 4);
+                    if (endPage - startPage < 4) {
+                      startPage = Math.max(1, endPage - 4);
+                    }
+                    const pages = [];
+                    for (let i = startPage; i <= endPage; i++) { pages.push(i); }
+                    return pages.map((pageNum) => (
+                      <button 
+                        key={pageNum} 
+                        className={`page-nav-btn ${quizPage === pageNum ? 'active-page' : ''}`}
+                        onClick={() => setQuizPage(pageNum)}
+                      >
+                        {pageNum}
+                      </button>
+                    ));
+                  })()}
                   <button className="page-nav-btn" onClick={() => setQuizPage(Math.min(totalQuizPages, quizPage + 1))} disabled={quizPage === totalQuizPages}>&gt;</button>
                 </div>
               </div>
             </div>
+            </div>
+            </div>
+
+            {/* STUDENT FEEDBACK CARD */}
+            <div className="section-card" style={{ marginTop: "24px" }}>
+              <div className="section-header">
+                <h3>Student Feedback & Ratings</h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                {/* Header */}
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 3fr 2.5fr 4fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <div>Student</div>
+                  <div>Quiz</div>
+                  <div>Rating / Reaction</div>
+                  <div>Comment / Feedback</div>
+                  <div>Date</div>
+                </div>
+                {/* Rows */}
+                {filteredResults.filter(r => r.reaction || r.feedbackMessage).map((fb, idx, arr) => (
+                  <div key={fb._id} style={{ display: 'grid', gridTemplateColumns: '3fr 3fr 2.5fr 4fr 2fr', alignItems: 'center', padding: '16px', borderBottom: idx === arr.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                    <div className="user-cell">
+                      <div className="avatar">{fb.userId?.fullName?.charAt(0) || "?"}</div>
+                      <div>
+                        <h5 style={{ margin: 0, fontSize: '13px', fontWeight: '600' }}>{fb.userId?.fullName || "Anonymous Student"}</h5>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>{fb.userId?.email || ""}</p>
+                      </div>
+                    </div>
+                    <div>{fb.quizTitle || fb.subject || "Untitled"}</div>
+                    <div>
+                      <span style={{ 
+                        padding: "4px 8px", 
+                        borderRadius: "6px", 
+                        fontSize: "12px", 
+                        fontWeight: "700",
+                        backgroundColor: fb.reaction === "Excellent" ? "rgba(139, 92, 246, 0.1)" :
+                                         fb.reaction === "Very Good" ? "rgba(59, 130, 246, 0.1)" :
+                                         fb.reaction === "Good" ? "rgba(16, 185, 129, 0.1)" :
+                                         fb.reaction === "Average" ? "rgba(245, 158, 11, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                        color: fb.reaction === "Excellent" ? "#8B5CF6" :
+                               fb.reaction === "Very Good" ? "#3B82F6" :
+                               fb.reaction === "Good" ? "#10B981" :
+                               fb.reaction === "Average" ? "#F59E0B" : "#EF4444"
+                      }}>
+                        {fb.reaction === "Excellent" ? "😍 Excellent" :
+                         fb.reaction === "Very Good" ? "😄 Very Good" :
+                         fb.reaction === "Good" ? "🙂 Good" :
+                         fb.reaction === "Average" ? "😐 Average" : "😡 Poor"}
+                      </span>
+                    </div>
+                    <div style={{ maxWidth: "300px", whiteSpace: "normal", wordBreak: "break-word" }}>
+                      {fb.feedbackMessage || <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No comment left</span>}
+                    </div>
+                    <div style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                      {new Date(fb.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')}
+                    </div>
+                  </div>
+                ))}
+                {filteredResults.filter(r => r.reaction || r.feedbackMessage).length === 0 && (
+                  <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontStyle: 'italic', fontSize: '13px' }}>No student feedback found.</div>
+                )}
+              </div>
             </div>
 
         </div>

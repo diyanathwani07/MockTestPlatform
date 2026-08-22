@@ -80,6 +80,9 @@ function CreateQuizMulti() {
     detailedDescription: "",
     examSeriesId: "",
     passPercentage: 50,
+    aiSourceType: "",
+    aiSourcePrompt: "",
+    aiSourceUrl: "",
   });
 
   const [sections, setSections] = useState([defaultSection(0)]);
@@ -370,16 +373,26 @@ function CreateQuizMulti() {
     });
   };
 
-  const handleDocxImport = (parsedSections, sourceInfo, promptText) => {
+  const handleDocxImport = (parsedSections, sourceInfo, promptText, sourceUrl) => {
     if (!parsedSections || parsedSections.length === 0) return;
 
-    if (promptText) {
-      setQuizMeta(prev => ({
-        ...prev,
-        description: promptText,
-        detailedDescription: promptText
-      }));
+    let aiType = "";
+    if (sourceInfo === "AI Prompt") {
+      aiType = "prompt";
+    } else if (sourceInfo === "uploaded Image") {
+      aiType = "image";
+    } else if (sourceInfo === "uploaded Video") {
+      aiType = "video";
     }
+
+    setQuizMeta(prev => ({
+      ...prev,
+      aiSourceType: aiType || prev.aiSourceType,
+      aiSourcePrompt: promptText || prev.aiSourcePrompt,
+      aiSourceUrl: sourceUrl || prev.aiSourceUrl,
+      description: promptText || prev.description,
+      detailedDescription: promptText || prev.detailedDescription
+    }));
 
     if (parsedSections.length === 1 && parsedSections[0].sectionTitle === "Default") {
       const mappedQs = mapParsedQuestions(parsedSections[0].questions);

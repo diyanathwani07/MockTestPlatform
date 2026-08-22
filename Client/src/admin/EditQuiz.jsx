@@ -80,6 +80,9 @@ function EditQuiz() {
     resultReleaseDate: null,
     practiceResultReleaseMode: "immediate",
     practiceResultReleaseDate: null,
+    aiSourceType: "",
+    aiSourcePrompt: "",
+    aiSourceUrl: "",
   });
 
 
@@ -381,6 +384,9 @@ function EditQuiz() {
           resultReleaseDate: dbQuiz.resultReleaseDate || null,
           practiceResultReleaseMode: dbQuiz.practiceResultReleaseMode || "immediate",
           practiceResultReleaseDate: dbQuiz.practiceResultReleaseDate || null,
+          aiSourceType: dbQuiz.aiSourceType || "",
+          aiSourcePrompt: dbQuiz.aiSourcePrompt || "",
+          aiSourceUrl: dbQuiz.aiSourceUrl || "",
         });
 
         if (dbQuiz.resultReleaseDate) {
@@ -861,7 +867,7 @@ function EditQuiz() {
     }
   };
 
-  const handleQuestionsLoaded = (parsedSections, sourceInfo, promptText) => {
+  const handleQuestionsLoaded = (parsedSections, sourceInfo, promptText, sourceUrl) => {
     let flatQuestions = [];
     if (parsedSections && parsedSections.length > 0) {
       parsedSections.forEach(sec => {
@@ -931,13 +937,23 @@ function EditQuiz() {
     });
     setExpandedQuestions(expandedState);
 
-    if (promptText) {
-      setQuizMeta(prev => ({
-        ...prev,
-        description: promptText,
-        detailedDescription: promptText
-      }));
+    let aiType = "";
+    if (sourceInfo === "AI Prompt") {
+      aiType = "prompt";
+    } else if (sourceInfo === "uploaded Image") {
+      aiType = "image";
+    } else if (sourceInfo === "uploaded Video") {
+      aiType = "video";
     }
+
+    setQuizMeta(prev => ({
+      ...prev,
+      aiSourceType: aiType || prev.aiSourceType,
+      aiSourcePrompt: promptText || prev.aiSourcePrompt,
+      aiSourceUrl: sourceUrl || prev.aiSourceUrl,
+      description: promptText || prev.description,
+      detailedDescription: promptText || prev.detailedDescription
+    }));
 
     if (sourceInfo) {
       setMessage({

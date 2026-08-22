@@ -93,13 +93,13 @@
 
 .stat-card {
   border-radius: 12px;
-  padding: 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 110px;
+  min-height: 80px;
 }
 
 /* Match colors with performance boxes */
@@ -112,7 +112,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   font-size: 13px;
   font-weight: 600;
   width: 100%;
@@ -278,7 +278,7 @@
 
 .perf-box {
   border-radius: 12px;
-  padding: 12px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
 }
@@ -292,7 +292,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   font-size: 13px;
   font-weight: 600;
 }
@@ -584,4 +584,9 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+body.dark-mode .table-pagination-footer.transparent-footer,
+.table-pagination-footer.transparent-footer {
+  background: transparent !important;
 }
