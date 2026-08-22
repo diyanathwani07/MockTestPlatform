@@ -55,6 +55,7 @@ function Quiz() {
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
   const [finalTimeTaken, setFinalTimeTaken] = useState(0);
   const [markingPattern, setMarkingPattern] = useState("standard");
+  const [attemptId, setAttemptId] = useState(null);
 
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [visitedQuestions, setVisitedQuestions] = useState([0]);
@@ -191,6 +192,9 @@ function Quiz() {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
+        if (response.data.attemptId) {
+          setAttemptId(response.data.attemptId);
+        }
         let rawQuestions = response.data.questions || [];
         
         // If the quiz is section-based, flatten questions from all sections
@@ -348,7 +352,10 @@ function Quiz() {
     const timeTaken = (initialDurationMinutes * 60) - timeLeft;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/submit`, {
+      const submitUrl = attemptId 
+        ? `${import.meta.env.VITE_API_URL}/api/quizzes/attempts/${attemptId}/submit`
+        : `${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/submit`;
+      const res = await fetch(submitUrl, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

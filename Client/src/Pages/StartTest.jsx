@@ -66,32 +66,44 @@ function StartTest() {
     };
     document.addEventListener("keydown", handleKeyDown);
 
-    // Anti-Debugger console lock
-    const debuggerInterval = setInterval(() => {
-      try {
-        (function() {
-          (function a() {
-            try {
-              (function b(i) {
-                if (("" + i / i).length !== 1 || i % 20 === 0) {
-                  (function() {}).constructor("debugger")();
-                } else {
-                  debugger;
+    let isMounted = true;
+    let debuggerInterval;
+    let timeoutId;
+
+    if (import.meta.env.VITE_ENABLE_ANTI_DEBUGGER === "true") {
+      // Anti-Debugger console lock
+      debuggerInterval = setInterval(() => {
+        if (!isMounted) return;
+        try {
+          (function() {
+            (function a() {
+              if (!isMounted) return;
+              try {
+                (function b(i) {
+                  if (("" + i / i).length !== 1 || i % 20 === 0) {
+                    (function() {}).constructor("debugger")();
+                  } else {
+                    debugger;
+                  }
+                  b(++i);
+                })(0);
+              } catch (e) {
+                if (isMounted) {
+                  timeoutId = setTimeout(a, 50);
                 }
-                b(++i);
-              })(0);
-            } catch (e) {
-              setTimeout(a, 50);
-            }
+              }
+            })();
           })();
-        })();
-      } catch (err) {}
-    }, 200);
+        } catch (err) {}
+      }, 200);
+    }
 
     return () => {
+      isMounted = false;
       document.removeEventListener("contextmenu", handleContextMenu);
       document.removeEventListener("keydown", handleKeyDown);
-      clearInterval(debuggerInterval);
+      if (debuggerInterval) clearInterval(debuggerInterval);
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, []);
 

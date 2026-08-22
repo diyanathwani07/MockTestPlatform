@@ -682,7 +682,7 @@ function PracticeTest() {
                        
                        const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
                        
-                       const text = specificIncorrect; // NO FALLBACK to correct explanation
+                       const text = (specificIncorrect && specificIncorrect.trim()) ? specificIncorrect : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : null);
                        
                        const conceptSummary = currentQuestion.explanations?.conceptSummary;
                        const didYouKnow = currentQuestion.explanations?.didYouKnow;
@@ -1136,7 +1136,7 @@ function PracticeTest() {
                        
                        const specificIncorrect = (storedIncorrect && storedIncorrect.trim()) ? storedIncorrect : liveIncorrect;
                        
-                       const text = specificIncorrect; // NO FALLBACK to correct explanation
+                       const text = (specificIncorrect && specificIncorrect.trim()) ? specificIncorrect : (currentQuestion.explanation && currentQuestion.explanation.trim() ? currentQuestion.explanation : null);
                        
                        const conceptSummary = currentQuestion.explanations?.conceptSummary;
                        const didYouKnow = currentQuestion.explanations?.didYouKnow;

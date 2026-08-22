@@ -69,6 +69,7 @@ function QuizMulti() {
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [breakTimeLeft, setBreakTimeLeft] = useState(0);
   const [showTimerTooltip, setShowTimerTooltip] = useState(false);
+  const [attemptId, setAttemptId] = useState(null);
 
   useEffect(() => {
     if (location.state?.subject) {
@@ -82,6 +83,9 @@ function QuizMulti() {
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
+      if (response.data.attemptId) {
+        setAttemptId(response.data.attemptId);
+      }
       const data = response.data;
       setExamName(data.examName || data.subject);
       setQuizTitle(data.title);
@@ -515,7 +519,10 @@ function QuizMulti() {
         sec.flatQuestions.map((q, i) => userAnswers[sec._id]?.[i] ?? null)
       );
 
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/submit`, {
+      const submitUrl = attemptId 
+        ? `${import.meta.env.VITE_API_URL}/api/quizzes/attempts/${attemptId}/submit`
+        : `${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/submit`;
+      const res = await axios.post(submitUrl, {
         userAnswers: flatAnswers,
         timeTaken: totalTimeSpent
       }, {
