@@ -22,7 +22,11 @@ const transporter = nodemailer.createTransport({
 // GET all users (admin only)
 router.get("/", protect, adminOnly, async (req, res) => {
   try {
-    const users = await User.find({ isDeleted: { $ne: true } }).select("-password").sort({ createdAt: -1 });
+    const users = await User.find({ isDeleted: { $ne: true } })
+      .select("-password")
+      .populate("purchasedExams", "title subject price")
+      .populate("purchasedPractice", "title subject price")
+      .sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
     console.error("Get Users Error:", error);

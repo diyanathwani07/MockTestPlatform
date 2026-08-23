@@ -107,7 +107,7 @@ const userSchema = new mongoose.Schema(
         }
       }
     ],
-    purchasedExams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Quiz" }],
+    purchasedExams: [{ type: mongoose.Schema.Types.ObjectId, ref: "ExamSeries" }],
     purchasedPractice: [{ type: mongoose.Schema.Types.ObjectId, ref: "PracticeQuiz" }],
   },
   {

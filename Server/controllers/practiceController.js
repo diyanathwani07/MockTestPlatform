@@ -768,8 +768,8 @@ const verifyPracticeQuestion = async (req, res) => {
       resultsReleased = false;
     }
 
-    const showCorrect = quiz.showCorrectAnswers !== false && resultsReleased;
-    const showExps = quiz.showExplanations !== false && resultsReleased;
+    const showCorrect = (quiz.practiceShowCorrectAnswers !== undefined ? quiz.practiceShowCorrectAnswers : quiz.showCorrectAnswers) !== false && resultsReleased;
+    const showExps = (quiz.practiceShowExplanations !== undefined ? quiz.practiceShowExplanations : quiz.showExplanations) !== false && resultsReleased;
 
     res.json({
       success: true,

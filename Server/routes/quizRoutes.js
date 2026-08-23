@@ -39,6 +39,7 @@ router.delete("/custom/:id", protect, deleteCustomQuiz);
 router.get("/", optionalProtect, getQuizzes);
 router.get("/:id", protect, getQuizById);
 router.post("/:id/submit", protect, submitQuiz);
+router.post("/attempts/:attemptId/submit", protect, submitQuiz);
 
 // Admin-only write operations
 router.post("/", protect, adminOnly, createQuiz);

@@ -79,6 +79,21 @@ const generateQuestionsFromImage = async (req, res) => {
 
     const { count, subject, optionCount } = req.body;
 
+    // Upload source image to Cloudinary
+    const cloudinaryResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'ai-images',
+          resource_type: 'image'
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      streamifier.createReadStream(req.file.buffer).pipe(stream);
+    });
+
     const questions = await aiService.generateFromImage({
       imageBuffer: req.file.buffer,
       mimeType: req.file.mimetype,
@@ -96,7 +111,7 @@ const generateQuestionsFromImage = async (req, res) => {
       req.ip
     );
 
-    res.json({ success: true, questions });
+    res.json({ success: true, questions, sourceUrl: cloudinaryResult.secure_url });
   } catch (error) {
     console.error('[AI Gen Controller Image] Error:', error);
     res.status(500).json({ message: classifyError(error) });
@@ -250,6 +265,7 @@ const getVideoGenerationStatus = async (req, res) => {
       success: true,
       status: job.status,
       resultQuestions: job.resultQuestions,
+      videoCloudinaryUrl: job.videoCloudinaryUrl,
       errorMessage: job.errorMessage
     });
   } catch (error) {

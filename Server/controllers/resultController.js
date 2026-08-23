@@ -173,7 +173,7 @@ const getUserResults = async (req, res) => {
 
     const Quiz = require("../models/Quiz");
     const PracticeQuiz = require("../models/PracticeQuiz");
-    const results = await Result.find({ userId }).sort({ createdAt: -1 });
+    const results = await Result.find({ userId, status: "submitted" }).sort({ createdAt: -1 });
     
     const quizIds = [...new Set(results.map(r => r.quizId).filter(Boolean))];
     
@@ -219,7 +219,7 @@ const getLeaderboard = async (req, res) => {
 const getSharedResult = async (req, res) => {
   try {
     const { shareId } = req.params;
-    const result = await Result.findOne({ shareId })
+    const result = await Result.findOne({ shareId, status: "submitted" })
       .populate("userId", "fullName name");
       
     if (!result) {
@@ -252,7 +252,7 @@ const getSharedResult = async (req, res) => {
 const getResultByShareId = async (req, res) => {
   try {
     const { shareId } = req.params;
-    const result = await Result.findOne({ shareId }).populate("userId", "fullName name email");
+    const result = await Result.findOne({ shareId, status: "submitted" }).populate("userId", "fullName name email");
     if (!result) {
       return res.status(404).json({ message: "Result not found" });
     }

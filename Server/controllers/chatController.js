@@ -97,34 +97,51 @@ const chatSupport = async (req, res) => {
 
     const latestMessage = messages[messages.length - 1].text;
 
-    // 3. Call Gemini API with Structured Outputs (JSON Schema)
+    // 3. Call Gemma 4 API
+    const CHAT_MODEL = "gemma-4-27b-it";
     console.log(`[Chatbot Debug] Initiating API call in chatController.js`);
     console.log(`  -> API Key Loaded: ${apiKey ? "true" : "false"}`);
-    console.log(`  -> Model Name: gemini-2.5-flash`);
-    console.log(`  -> SDK Version: @google/genai (v2.11.0)`);
-    console.log(`  -> Authentication Mode: Gemini Developer API Key`);
-    console.log(`  -> API Endpoint: https://generativelanguage.googleapis.com (Google AI Studio)`);
-    console.log(`  -> Request Configuration: { model: "gemini-2.5-flash", config: { responseMimeType: "application/json" } }`);
-    console.log(`  -> Source: chatController.js:108`);
+    console.log(`  -> Model Name: ${CHAT_MODEL}`);
+    console.log(`  -> Authentication Mode: Google AI Studio API Key`);
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        ...formattedHistory,
-        { role: "user", parts: [{ text: latestMessage }] }
-      ],
-      config: {
-        systemInstruction: systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: responseSchema
-      }
-    });
+    let response;
+    try {
+      // Try with structured JSON output first
+      response = await ai.models.generateContent({
+        model: CHAT_MODEL,
+        contents: [
+          ...formattedHistory,
+          { role: "user", parts: [{ text: latestMessage }] }
+        ],
+        config: {
+          systemInstruction: systemInstruction,
+          responseMimeType: "application/json",
+          responseSchema: responseSchema
+        }
+      });
+    } catch (structuredError) {
+      // Fallback: Gemma may not support structured JSON output, so request plain text
+      console.warn(`[Chatbot] Structured output failed for ${CHAT_MODEL}, falling back to plain text mode:`, structuredError.message);
+      const fallbackInstruction = systemInstruction + "\n\nIMPORTANT: You MUST respond with valid JSON only. No markdown, no code fences, no explanation outside the JSON.";
+      response = await ai.models.generateContent({
+        model: CHAT_MODEL,
+        contents: [
+          ...formattedHistory,
+          { role: "user", parts: [{ text: latestMessage }] }
+        ],
+        config: {
+          systemInstruction: fallbackInstruction,
+        }
+      });
+    }
 
     console.log(`[Chatbot Debug] API call successful. Content generated.`);
-    console.log(`  -> SDK Response structure: ${response && response.text ? "Text Present" : "Empty Response"}`);
 
     // 4. Parse the structured JSON response
-    const result = JSON.parse(response.text);
+    let rawText = response.text || "";
+    // Strip markdown code fences if present
+    rawText = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+    const result = JSON.parse(rawText);
 
     res.json({
       success: true,
@@ -133,8 +150,7 @@ const chatSupport = async (req, res) => {
   } catch (error) {
     console.error("[Chatbot Error] An error occurred while generating content:");
     console.error(`  -> Source File: chatController.js`);
-    console.error(`  -> Model Name: gemini-2.5-flash`);
-    console.error(`  -> SDK Version: @google/genai (v2.11.0)`);
+    console.error(`  -> Model: gemma-4-27b-it`);
     if (error.message && error.message.includes("API key")) {
       console.error("  -> Type: Authentication Error (Invalid/Expired API Key)");
     } else if (error.message && error.message.includes("model")) {

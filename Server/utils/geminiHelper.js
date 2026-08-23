@@ -2,16 +2,13 @@ const { GoogleGenAI, Type } = require("@google/genai");
 
 // Helper to generate content trying models in priority order
 const generateContentWithFallback = async (aiInstance, promptText, config = {}) => {
-  const models = [
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash",
-    "gemini-2.5-flash",
-    "gemini-3.5-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
-    "gemini-2.5-pro",
-    "gemini-2.0-pro-exp-02-05"
-  ];
+  const isMultimodal = Array.isArray(promptText) && promptText.some(part => typeof part === "object" && (part.inlineData || part.fileData));
+  const requiresStructuredOutput = config.responseSchema || config.responseMimeType === "application/json";
+  
+  const models = (isMultimodal || requiresStructuredOutput)
+    ? ["gemini-2.5-flash", "gemini-2.0-flash"]
+    : ["gemma-4-27b-it", "gemma-4-12b-it", "gemini-2.5-flash", "gemini-2.0-flash"];
+
   let lastError = null;
 
   for (const model of models) {

@@ -41,27 +41,33 @@ const resultSchema = new mongoose.Schema(
 
     score: {
       type: Number,
-      required: true,
+      default: 0,
     },
 
     total: {
       type: Number,
-      required: true,
+      default: 0,
     },
 
     correct: {
       type: Number,
-      required: true,
+      default: 0,
     },
 
     incorrect: {
       type: Number,
-      required: true,
+      default: 0,
     },
 
     percentage: {
       type: Number,
-      required: true,
+      default: 0,
+    },
+
+    status: {
+      type: String,
+      enum: ["active", "submitted"],
+      default: "active",
     },
 
     passPercentage: {

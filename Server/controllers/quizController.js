@@ -143,6 +143,18 @@ const getQuizById = async (req, res) => {
         resultsReleased = false;
       }
       quiz.showResultAfterSubmission = (quiz.showResultAfterSubmission !== false) && resultsReleased;
+
+      // Automatically create an active attempt record for this user and quiz
+      const Result = require("../models/Result");
+      const attempt = await Result.create({
+        userId: req.user._id,
+        quizId: quiz._id || quiz.id,
+        quizTitle: quiz.title,
+        subject: quiz.subject,
+        examName: quiz.examName,
+        status: "active",
+      });
+      quiz.attemptId = attempt._id;
     }
 
     res.json(quiz);
@@ -952,7 +964,25 @@ const submitQuiz = async (req, res) => {
       return res.status(400).json({ message: "Missing userAnswers payload" });
     }
 
-    const quiz = await quizService.previewQuiz(req.params.id);
+    let quizId = req.params.id;
+    let existingAttempt = null;
+
+    if (req.params.attemptId) {
+      const Result = require("../models/Result");
+      existingAttempt = await Result.findById(req.params.attemptId);
+      if (!existingAttempt) {
+        return res.status(404).json({ message: "Attempt not found." });
+      }
+      if (existingAttempt.status === "submitted") {
+        return res.status(400).json({ message: "This attempt has already been submitted." });
+      }
+      if (existingAttempt.userId.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: "Unauthorized access to this attempt." });
+      }
+      quizId = existingAttempt.quizId;
+    }
+
+    const quiz = await quizService.previewQuiz(quizId);
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found." });
     }
@@ -1116,26 +1146,59 @@ const submitQuiz = async (req, res) => {
     const crypto = require("crypto");
     const shareId = crypto.randomBytes(4).toString("hex");
 
-    const result = await Result.create({
-      userId: req.user._id,
-      quizId: quiz._id,
-      quizTitle: quiz.title,
-      subject: quiz.subject,
-      examName: quiz.examName,
-      passPercentage: quiz.passPercentage ?? 50,
-      score,
-      total,
-      correct,
-      incorrect,
-      percentage: Number(percentage),
-      timeTaken: timeTaken || 0,
-      shareId,
-      isPublic: true,
-      sectionResults,
-      difficultyBreakdown,
-      questions: dbQuestions,
-      userAnswers: userAnswers,
-    });
+    if (!existingAttempt) {
+      const { attemptId } = req.body;
+      if (attemptId) {
+        existingAttempt = await Result.findById(attemptId);
+      }
+    }
+    if (!existingAttempt) {
+      existingAttempt = await Result.findOne({
+        userId: req.user._id,
+        quizId: quiz._id,
+        status: "active"
+      }).sort({ createdAt: -1 });
+    }
+
+    let result;
+    if (existingAttempt) {
+      existingAttempt.score = score;
+      existingAttempt.total = total;
+      existingAttempt.correct = correct;
+      existingAttempt.incorrect = incorrect;
+      existingAttempt.percentage = Number(percentage);
+      existingAttempt.timeTaken = timeTaken || 0;
+      existingAttempt.shareId = shareId;
+      existingAttempt.isPublic = true;
+      existingAttempt.sectionResults = sectionResults;
+      existingAttempt.difficultyBreakdown = difficultyBreakdown;
+      existingAttempt.questions = dbQuestions;
+      existingAttempt.userAnswers = userAnswers;
+      existingAttempt.status = "submitted";
+      result = await existingAttempt.save();
+    } else {
+      result = await Result.create({
+        userId: req.user._id,
+        quizId: quiz._id,
+        quizTitle: quiz.title,
+        subject: quiz.subject,
+        examName: quiz.examName,
+        passPercentage: quiz.passPercentage ?? 50,
+        score,
+        total,
+        correct,
+        incorrect,
+        percentage: Number(percentage),
+        timeTaken: timeTaken || 0,
+        shareId,
+        isPublic: true,
+        sectionResults,
+        difficultyBreakdown,
+        questions: dbQuestions,
+        userAnswers,
+        status: "submitted"
+      });
+    }
 
     let resultsReleased = true;
     if (quiz.resultReleaseMode === "scheduled" && quiz.resultReleaseDate) {
