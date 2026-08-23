@@ -739,6 +739,61 @@ function CreateQuiz() {
 
         <div className="admin-content">
           <div className="create-quiz-page">
+            <style>{`
+              .import-container-mobile-only {
+                display: none !important;
+              }
+              .import-container-desktop-only {
+                display: flex !important;
+              }
+              @media (max-width: 768px) {
+                .import-container-mobile-only {
+                  display: flex !important;
+                  margin-bottom: 20px;
+                }
+                .import-container-desktop-only {
+                  display: none !important;
+                }
+              }
+            `}</style>
+
+            <div className="form-card compact-card import-container-mobile-only" style={{ gap: "10px", alignItems: "center" }}>
+              <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
+              <button
+                type="button"
+                onClick={() => setAiPanelOpen(!aiPanelOpen)}
+                style={{
+                  padding: "10px 14px",
+                  border: "none",
+                  borderRadius: "10px",
+                  backgroundColor: "var(--primary-color, #6E3FF3)",
+                  color: "#fff",
+                  fontSize: "12.5px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  height: "40px",
+                  boxSizing: "border-box",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                }}
+              >
+                ✨ AI Generate
+              </button>
+            </div>
+
+            {aiPanelOpen && (
+              <div className="import-container-mobile-only" style={{ width: "100%" }}>
+                <AIQuestionGenerator
+                  quizMeta={quizMeta}
+                  activeSection={{ marksPerQuestion: quizMeta.marksPerQuestion || 1, negativeMarking: quizMeta.negativeMarking || 0 }}
+                  onQuestionsAdded={handleQuestionsLoaded}
+                  onClose={() => setAiPanelOpen(false)}
+                />
+              </div>
+            )}
 
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
               <div style={{ display: "flex", background: "var(--bg-input)", padding: "4px", borderRadius: "12px", border: "1.5px solid var(--border-input)" }}>
@@ -1136,7 +1191,7 @@ function CreateQuiz() {
               <div className="admin-quiz-right-panel">
 
                 {/* DocxParser */}
-                <div className="form-card compact-card" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div className="form-card compact-card import-container-desktop-only" style={{ gap: "10px", alignItems: "center" }}>
                   <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
                   <button
                     type="button"
@@ -1164,12 +1219,14 @@ function CreateQuiz() {
                 </div>
 
                 {aiPanelOpen && (
-                  <AIQuestionGenerator
-                    quizMeta={quizMeta}
-                    activeSection={{ marksPerQuestion: quizMeta.marksPerQuestion || 1, negativeMarking: quizMeta.negativeMarking || 0 }}
-                    onQuestionsAdded={handleQuestionsLoaded}
-                    onClose={() => setAiPanelOpen(false)}
-                  />
+                  <div className="import-container-desktop-only" style={{ width: "100%" }}>
+                    <AIQuestionGenerator
+                      quizMeta={quizMeta}
+                      activeSection={{ marksPerQuestion: quizMeta.marksPerQuestion || 1, negativeMarking: quizMeta.negativeMarking || 0 }}
+                      onQuestionsAdded={handleQuestionsLoaded}
+                      onClose={() => setAiPanelOpen(false)}
+                    />
+                  </div>
                 )}
 
                 {/* Schedule Card */}

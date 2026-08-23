@@ -543,6 +543,64 @@ function CreateQuizMulti() {
         />
 
         <div className="admin-content create-quiz-page">
+          <style>{`
+            .import-container-mobile-only {
+              display: none !important;
+            }
+            .import-container-desktop-only {
+              display: flex !important;
+            }
+            @media (max-width: 768px) {
+              .import-container-mobile-only {
+                display: flex !important;
+                margin-bottom: 20px;
+              }
+              .import-container-desktop-only {
+                display: none !important;
+              }
+            }
+          `}</style>
+
+          {activeSection && (
+            <div className="form-card compact-card import-container-mobile-only" style={{ gap: "10px", alignItems: "center", margin: "0 auto 20px auto", maxWidth: "1200px", width: "calc(100% - 48px)", boxSizing: "border-box" }}>
+              <DocxParser onQuestionsLoaded={handleDocxImport} />
+              <button
+                type="button"
+                onClick={() => setAiPanelOpen(!aiPanelOpen)}
+                style={{
+                  padding: "10px 14px",
+                  border: "none",
+                  borderRadius: "10px",
+                  backgroundColor: "var(--primary-color, #6E3FF3)",
+                  color: "#fff",
+                  fontSize: "12.5px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  height: "40px",
+                  boxSizing: "border-box",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                }}
+              >
+                ✨ AI Generate
+              </button>
+            </div>
+          )}
+
+          {activeSection && aiPanelOpen && (
+            <div className="import-container-mobile-only" style={{ margin: "0 auto 20px auto", maxWidth: "1200px", width: "calc(100% - 48px)", boxSizing: "border-box" }}>
+              <AIQuestionGenerator
+                quizMeta={quizMeta}
+                activeSection={activeSection}
+                onQuestionsAdded={handleDocxImport}
+                onClose={() => setAiPanelOpen(false)}
+              />
+            </div>
+          )}
+
           <div
             className="create-quiz-container animate-fade-in"
             style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}
@@ -1441,7 +1499,7 @@ function CreateQuizMulti() {
                         {Object.keys(expandedQuestions).length === getActiveQuestions().length && getActiveQuestions().length > 0 ? "- Collapse All" : "+ Expand All"}
                       </button>
                     </div>
-                    <div style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0 }}>
+                     <div className="import-container-desktop-only" style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0 }}>
                       <DocxParser onQuestionsLoaded={handleDocxImport} />
                       <button
                         type="button"
@@ -1470,12 +1528,14 @@ function CreateQuizMulti() {
                   </div>
 
                   {aiPanelOpen && (
-                    <AIQuestionGenerator
-                      quizMeta={quizMeta}
-                      activeSection={activeSection}
-                      onQuestionsAdded={handleDocxImport}
-                      onClose={() => setAiPanelOpen(false)}
-                    />
+                    <div className="import-container-desktop-only" style={{ width: "100%" }}>
+                      <AIQuestionGenerator
+                        quizMeta={quizMeta}
+                        activeSection={activeSection}
+                        onQuestionsAdded={handleDocxImport}
+                        onClose={() => setAiPanelOpen(false)}
+                      />
+                    </div>
                   )}
 
                   {isQuestionsVisible && (

@@ -264,7 +264,7 @@ export default function AIQuestionGenerator({ quizMeta, activeSection, onQuestio
   const inputStyle = { width: '100%', height: '42px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '10px 14px', outline: 'none', background: 'var(--bg-input)', color: 'var(--text-primary)', boxSizing: 'border-box', fontSize: '13.5px', marginBottom: '16px' };
 
   return (
-    <div style={{ marginTop: '16px', marginBottom: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '12px', padding: '20px', position: 'relative' }}>
+    <div style={{ marginTop: '16px', marginBottom: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '12px', padding: '16px', position: 'relative', width: '100%', boxSizing: 'border-box' }}>
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
