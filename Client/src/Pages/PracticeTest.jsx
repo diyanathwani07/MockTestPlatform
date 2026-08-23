@@ -611,17 +611,11 @@ function PracticeTest() {
                   badgeBorder = "2px solid #EF4444";
                   badgeBg = "#EF4444";
                   badgeText = "#ffffff";
-                } else if (isCorrectSelected && isCorrectOption) {
+                } else if (Object.keys(selectedOptions).length > 0 && isCorrectOption) {
                   borderStyle = "2.5px solid #10B981";
                   backgroundStyle = "rgba(16, 185, 129, 0.08)";
                   badgeBorder = "2px solid #10B981";
                   badgeBg = "#10B981";
-                  badgeText = "#ffffff";
-                } else if (isCorrectSelected && !isCorrectOption) {
-                  borderStyle = "2.5px solid #EF4444";
-                  backgroundStyle = "rgba(239, 68, 68, 0.08)";
-                  badgeBorder = "2px solid #EF4444";
-                  badgeBg = "#EF4444";
                   badgeText = "#ffffff";
                 }
 
@@ -669,7 +663,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
+                    {isSelected && !isCorrectOption && (() => {
                        const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
                            ([k]) => normalizeString(k) === normalizeString(opt)
                        );
@@ -1067,17 +1061,11 @@ function PracticeTest() {
                   badgeBorder = "2px solid #EF4444";
                   badgeBg = "#EF4444";
                   badgeText = "#ffffff";
-                } else if (isCorrectSelected && isCorrectOption) {
+                } else if (Object.keys(selectedOptions).length > 0 && isCorrectOption) {
                   borderStyle = "2.5px solid #10B981";
                   backgroundStyle = "rgba(16, 185, 129, 0.08)";
                   badgeBorder = "2px solid #10B981";
                   badgeBg = "#10B981";
-                  badgeText = "#ffffff";
-                } else if (isCorrectSelected && !isCorrectOption) {
-                  borderStyle = "2.5px solid #EF4444";
-                  backgroundStyle = "rgba(239, 68, 68, 0.08)";
-                  badgeBorder = "2px solid #EF4444";
-                  badgeBg = "#EF4444";
                   badgeText = "#ffffff";
                 }
 
@@ -1123,7 +1111,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {(isSelected || isCorrectSelected) && !isCorrectOption && (() => {
+                    {isSelected && !isCorrectOption && (() => {
                        const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
                            ([k]) => normalizeString(k) === normalizeString(opt)
                        );

@@ -845,7 +845,7 @@ function Result() {
                 }}
                 style={{ 
                   cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
-                  border: reviewFilter === "correct" && data?.showAnswerReview !== false ? "2.5px solid #22C55E" : "1.5px solid var(--border-color, #E2E8F0)",
+                  border: reviewFilter === "correct" && data?.showAnswerReview !== false ? "2.5px solid #22C55E" : "1.5px solid transparent",
                   boxShadow: reviewFilter === "correct" && data?.showAnswerReview !== false ? "0 4px 15px rgba(34, 197, 94, 0.25)" : "none",
                   transition: "all 0.2s ease"
                 }}
@@ -866,7 +866,7 @@ function Result() {
                 }}
                 style={{ 
                   cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
-                  border: reviewFilter === "incorrect" && data?.showAnswerReview !== false ? "2.5px solid #EF4444" : "1.5px solid var(--border-color, #E2E8F0)",
+                  border: reviewFilter === "incorrect" && data?.showAnswerReview !== false ? "2.5px solid #EF4444" : "1.5px solid transparent",
                   boxShadow: reviewFilter === "incorrect" && data?.showAnswerReview !== false ? "0 4px 15px rgba(239, 68, 68, 0.25)" : "none",
                   transition: "all 0.2s ease"
                 }}
@@ -887,7 +887,7 @@ function Result() {
                 }}
                 style={{ 
                   cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
-                  border: reviewFilter === "unattempted" && data?.showAnswerReview !== false ? "2.5px solid #64748B" : "1.5px solid var(--border-color, #E2E8F0)",
+                  border: reviewFilter === "unattempted" && data?.showAnswerReview !== false ? "2.5px solid #64748B" : "1.5px solid transparent",
                   boxShadow: reviewFilter === "unattempted" && data?.showAnswerReview !== false ? "0 4px 15px rgba(100, 116, 139, 0.25)" : "none",
                   transition: "all 0.2s ease"
                 }}

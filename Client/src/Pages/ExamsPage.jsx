@@ -63,7 +63,7 @@ function ExamsPage() {
         
         <div className="me-premium-layout" style={{ padding: '24px', minHeight: 'calc(100vh - 70px)' }}>
           {!loading && purchasedExams.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "24px" }}>
               <div className="me-search-wrapper" style={{ maxWidth: "320px", width: "100%", margin: 0 }}>
                 <Search className="me-search-icon" size={18} />
                 <input 

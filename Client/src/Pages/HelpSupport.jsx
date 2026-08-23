@@ -521,7 +521,10 @@ function HelpSupport() {
             <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>If you cannot find the answer in our FAQs, you can submit a support ticket directly to our team.</p>
             <button 
               type="button"
-              onClick={() => setShowTicketForm(!showTicketForm)} 
+              onClick={() => {
+                setActiveTab("My Tickets");
+                setShowTicketForm(true);
+              }} 
               className="hs-new-ticket-btn"
               style={{
                 display: 'inline-flex',
@@ -537,11 +540,9 @@ function HelpSupport() {
                 fontSize: '13px'
               }}
             >
-              <Plus size={16} /> {showTicketForm ? 'Close Ticket Form' : 'Submit a Support Ticket'}
+              <Plus size={16} /> Submit a Support Ticket
             </button>
           </div>
-
-          {ticketFormJSX}
           </>
           )}
 
