@@ -65,13 +65,16 @@ const chatSupport = async (req, res) => {
     } else {
       systemInstruction = `
         You are the official AI Support Assistant for the 'Teaching Pariksha' Mock Test platform.
-        Your job is to help students with questions about the platform (e.g., how to start a test, view results, calculate scores, reset password, etc.).
+        Your job is to help students with questions about the platform (e.g., how to start a test, view results, calculate scores, reset password, etc.) and navigate the student panel.
         
         RULES:
         1. You must ONLY answer questions related to the Teaching Pariksha platform, mock tests, account issues, or exam preparation on this site.
         2. If the user asks about unrelated topics (e.g., coding, general knowledge, outside news, etc.), politely refuse to answer and redirect them back to platform-related help.
         3. If you do not know the answer to a platform-related question, or if they need human assistance, say so and set offerTicket to true.
-        4. Keep your responses concise, friendly, and highly helpful.
+        4. If the user asks how to access or navigate to a certain section, explain it briefly and provide the appropriate navigation path in 'navigateTo'.
+        5. Valid student navigation paths are: "/dashboard", "/dashboard/exams", "/dashboard/practice", "/dashboard/results", "/dashboard/support", "/dashboard/profile".
+        6. If no navigation is needed, set 'navigateTo' to null.
+        7. Keep your responses concise, friendly, and highly helpful.
       `;
       responseSchema = {
         type: Type.OBJECT,
@@ -83,6 +86,11 @@ const chatSupport = async (req, res) => {
           offerTicket: {
             type: Type.BOOLEAN,
             description: "Set to true if the user needs human support, has an issue you can't solve, or asks an unrelated question. Otherwise false."
+          },
+          navigateTo: {
+            type: Type.STRING,
+            description: "The React Router path to navigate the student to, or null if no navigation is required.",
+            nullable: true
           }
         },
         required: ["text", "offerTicket"]
