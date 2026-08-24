@@ -43,8 +43,8 @@
   --card-hover-shadow: 0 12px 24px -8px rgba(26, 26, 46, 0.10);
 
   /* Option cards */
-  --option-bg:      rgba(252, 251, 255, 0.88);
-  --option-hover:   rgba(245, 242, 255, 0.92);
+  --option-bg:      rgba(252, 251, 255, 0.45);
+  --option-hover:   rgba(245, 242, 255, 0.70);
 
   /* Scrollbar */
   --scrollbar-bg:   #FAFAFC;
@@ -83,8 +83,8 @@
   --card-hover-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
 
   /* Option cards */
-  --option-bg:      rgba(28, 27, 46, 0.88);
-  --option-hover:   rgba(37, 36, 56, 0.92);
+  --option-bg:      rgba(28, 27, 46, 0.45);
+  --option-hover:   rgba(37, 36, 56, 0.70);
 
   /* Scrollbar */
   --scrollbar-bg:   #0f0e17;

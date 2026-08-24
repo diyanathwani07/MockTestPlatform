@@ -634,7 +634,7 @@ function PracticeTest() {
                 const isCorrectOption = normalizeString(opt) === normalizeString(resolvedCorrectText);
                 
                 let borderStyle = "1.5px solid var(--border-color)";
-                let backgroundStyle = "var(--bg-page)";
+                let backgroundStyle = "var(--option-bg)";
                 let badgeBorder = "2px solid rgba(139, 92, 246, 0.4)";
                 let badgeBg = "transparent";
                 let badgeText = "#8B5CF6";
@@ -1112,7 +1112,7 @@ function PracticeTest() {
                 
                 // Define border & background styles based on correctness
                 let borderStyle = "1.5px solid var(--border-color)";
-                let backgroundStyle = "var(--bg-page)";
+                let backgroundStyle = "var(--option-bg)";
                 let badgeBorder = "2px solid rgba(139, 92, 246, 0.4)";
                 let badgeBg = "transparent";
                 let badgeText = "#8B5CF6";
