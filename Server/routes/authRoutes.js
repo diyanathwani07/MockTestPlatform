@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
 const User = require("../models/User");
+const sendEmail = require("../utils/sendEmail");
 
 const {
   registerUser,
@@ -13,21 +13,6 @@ const router = express.Router();
 // store OTP temporarily (for now in memory) with expiry
 // Format: { email: { otp: string, expiresAt: number } }
 const otpStore = new Map();
-
-// Configure nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
 
 // REGISTER
 router.post("/register", registerUser);
@@ -59,11 +44,10 @@ router.post("/forgot-password", async (req, res) => {
 
     try {
       // Send OTP email with timeout protection
-      const emailPromise = transporter.sendMail({
-        from: `Teaching Pariksha <${process.env.SMTP_EMAIL}>`,
-        to: email,
+      const emailPromise = sendEmail({
+        email,
         subject: "Teaching Pariksha - Password Reset OTP",
-        html: `
+        message: `
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
             <div style="background: white; border-radius: 12px; padding: 24px 16px; text-align: center;">
               <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -78,7 +62,7 @@ router.post("/forgot-password", async (req, res) => {
               <p style="color: #94a3b8; font-size: 12px;">This code is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
             </div>
           </div>
-        `,
+        `
       });
 
       const timeoutPromise = new Promise((_, reject) =>

@@ -5,19 +5,7 @@ const { protect } = require("../middleware/authMiddleware");
 const { adminOnly, superAdminOnly } = require("../middleware/adminMiddleware");
 const User = require("../models/User");
 const logAction = require("../utils/logger");
-const nodemailer = require("nodemailer");
-
-// Configure nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+const sendEmail = require("../utils/sendEmail");
 
 // GET all users (admin only)
 router.get("/", protect, adminOnly, async (req, res) => {
@@ -174,11 +162,10 @@ router.post("/:id/reset-password", protect, superAdminOnly, async (req, res) => 
     user.password = await bcrypt.hash(tempPassword, 10);
     await user.save();
     
-    await transporter.sendMail({
-      from: `Teaching Pariksha <${process.env.SMTP_EMAIL}>`,
-      to: user.email,
+    await sendEmail({
+      email: user.email,
       subject: "Teaching Pariksha - Account Password Reset",
-      html: `
+      message: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
           <div style="background: white; border-radius: 12px; padding: 32px; text-align: center;">
             <h2 style="color: #1e293b; margin-bottom: 8px;">🎓 Teaching Pariksha</h2>

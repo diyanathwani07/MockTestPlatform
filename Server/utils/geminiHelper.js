@@ -7,7 +7,7 @@ const generateContentWithFallback = async (aiInstance, promptText, config = {}) 
   
   const models = (isMultimodal || requiresStructuredOutput)
     ? ["gemini-2.5-flash", "gemini-2.0-flash"]
-    : ["gemma-4-27b-it", "gemma-4-12b-it", "gemini-2.5-flash", "gemini-2.0-flash"];
+    : ["gemma-2-27b-it", "gemma-2-9b-it", "gemini-2.5-flash", "gemini-2.0-flash"];
 
   let lastError = null;
 

@@ -278,23 +278,11 @@ const assignTicket = async (req, res) => {
     // Send email notification if assigned to another agent/admin
     if (ticket.assignedTo && ticket.assignedTo._id.toString() !== req.user._id.toString() && ticket.assignedTo.email) {
       try {
-        const nodemailer = require("nodemailer");
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          host: "smtp.gmail.com",
-          port: 465,
-          secure: true,
-          auth: {
-            user: process.env.SMTP_EMAIL,
-            pass: process.env.SMTP_PASSWORD,
-          },
-        });
-
-        const mailOptions = {
-          from: `"Teaching Pariksha Support" <${process.env.SMTP_EMAIL}>`,
-          to: ticket.assignedTo.email,
+        const sendEmail = require("../utils/sendEmail");
+        await sendEmail({
+          email: ticket.assignedTo.email,
           subject: `Support Ticket Assigned: ${ticket.subject}`,
-          html: `
+          message: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ECE9F7; border-radius: 12px; background-color: #ffffff; color: #333333;">
               <h2 style="color: #6E3FF3; margin-top: 0; border-bottom: 2px solid #6E3FF3; padding-bottom: 10px;">Support Ticket Assigned</h2>
               <p>Hello <strong>${ticket.assignedTo.fullName}</strong>,</p>
@@ -311,9 +299,7 @@ const assignTicket = async (req, res) => {
               </p>
             </div>
           `,
-        };
-
-        await transporter.sendMail(mailOptions);
+        });
         console.log(`Notification email sent to agent: ${ticket.assignedTo.email}`);
       } catch (mailErr) {
         console.error("Failed to send assignment notification email:", mailErr);
