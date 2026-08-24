@@ -1,4 +1,6 @@
 require("dotenv").config();
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
 
 console.log("=== STARTUP DEBUG LOGS ===");
 console.log("GEMINI_API_KEY Exists:", !!process.env.GEMINI_API_KEY);
@@ -37,7 +39,6 @@ const ExamSeries = require("./models/ExamSeries");
 
 const app = express();
 const PORT = 5000;
-const dns = require("dns");
 const path = require("path");
 
 // Trust proxy to properly capture real IP addresses behind load balancers/reverse proxies (e.g., AWS, Heroku, Nginx)
