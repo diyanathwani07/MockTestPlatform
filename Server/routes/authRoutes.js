@@ -50,9 +50,8 @@ router.post("/forgot-password", async (req, res) => {
         message: `
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
             <div style="background: white; border-radius: 12px; padding: 24px 16px; text-align: center;">
-              <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">
                 <img src="${req.protocol}://${req.get('host')}/uploads/logo.png" alt="Teaching Pariksha Logo" style="height: 36px; width: auto; vertical-align: middle;" />
-                <span style="color: #1e293b; font-size: 22px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; vertical-align: middle;">Teaching Pariksha</span>
               </div>
               <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Password Reset Request</p>
               <div style="background: #f1f5f9; border-radius: 8px; padding: 20px 8px; margin-bottom: 24px;">
@@ -66,7 +65,7 @@ router.post("/forgot-password", async (req, res) => {
       });
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("SMTP Connection or Send Timeout")), 6000)
+        setTimeout(() => reject(new Error("SMTP Connection or Send Timeout")), 15000)
       );
 
       await Promise.race([emailPromise, timeoutPromise]);
