@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Bot, Send, X } from "lucide-react";
 import "../css/admin/AdminChatbot.css"; // Reuse the same CSS since layout is identical
@@ -28,6 +29,7 @@ const StudentChatbot = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
   const { position, wasDragged, handlers } = useDraggable(30, 30);
 
   const scrollToBottom = () => {
@@ -59,9 +61,15 @@ const StudentChatbot = () => {
       );
 
       if (res.data.success) {
-        const { text, offerTicket } = res.data.data;
+        const { text, offerTicket, navigateTo } = res.data.data;
         
         setMessages(prev => [...prev, { sender: "bot", text }]);
+        
+        if (navigateTo) {
+          setTimeout(() => {
+            navigate(navigateTo);
+          }, 3500); // 3.5 seconds delay so student can read
+        }
         
         if (offerTicket) {
            setTimeout(() => {
