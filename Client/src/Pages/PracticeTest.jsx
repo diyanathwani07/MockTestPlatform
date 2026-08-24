@@ -348,13 +348,30 @@ function PracticeTest() {
     }
 
     let resolvedCorrectText = correctText || "";
-    if (["A", "B", "C", "D", "E", "F"].includes(resolvedCorrectText) && Array.isArray(currentQuestion.options)) {
-      const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
-      resolvedCorrectText = currentQuestion.options[idxMap[resolvedCorrectText]] || resolvedCorrectText;
-    } else if (typeof resolvedCorrectText === "string" && resolvedCorrectText.startsWith("Option ") && Array.isArray(currentQuestion.options)) {
-      const optNum = parseInt(resolvedCorrectText.replace("Option ", ""), 10);
-      if (!isNaN(optNum) && optNum >= 1 && optNum <= currentQuestion.options.length) {
-        resolvedCorrectText = currentQuestion.options[optNum - 1] || resolvedCorrectText;
+    if (currentQuestion && Array.isArray(currentQuestion.options)) {
+      let originalCorrectIdx = -1;
+      if (["A", "B", "C", "D", "E", "F"].includes(resolvedCorrectText.toUpperCase())) {
+        const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
+        originalCorrectIdx = idxMap[resolvedCorrectText.toUpperCase()];
+      } else if (typeof resolvedCorrectText === "string" && resolvedCorrectText.startsWith("Option ")) {
+        const optNum = parseInt(resolvedCorrectText.replace("Option ", ""), 10);
+        if (!isNaN(optNum)) {
+          originalCorrectIdx = optNum - 1;
+        }
+      }
+
+      if (originalCorrectIdx !== -1) {
+        const mapping = currentQuestion.optionIndicesMapping;
+        if (Array.isArray(mapping)) {
+          const shuffledIdx = mapping.indexOf(originalCorrectIdx);
+          if (shuffledIdx !== -1) {
+            resolvedCorrectText = currentQuestion.options[shuffledIdx] || resolvedCorrectText;
+          } else {
+            resolvedCorrectText = currentQuestion.options[originalCorrectIdx] || resolvedCorrectText;
+          }
+        } else {
+          resolvedCorrectText = currentQuestion.options[originalCorrectIdx] || resolvedCorrectText;
+        }
       }
     }
 
@@ -591,7 +608,30 @@ function PracticeTest() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
+                const resolvedCorrectText = (() => {
+                  let resolved = currentQuestion.correctAnswer || "";
+                  if (["A", "B", "C", "D", "E", "F"].includes(resolved.toUpperCase()) && Array.isArray(currentQuestion.options)) {
+                    const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
+                    const originalCorrectIdx = idxMap[resolved.toUpperCase()];
+                    if (Array.isArray(currentQuestion.optionIndicesMapping)) {
+                      const shuffledIdx = currentQuestion.optionIndicesMapping.indexOf(originalCorrectIdx);
+                      if (shuffledIdx !== -1) return currentQuestion.options[shuffledIdx] || resolved;
+                    }
+                    return currentQuestion.options[originalCorrectIdx] || resolved;
+                  } else if (typeof resolved === "string" && resolved.startsWith("Option ")) {
+                    const optNum = parseInt(resolved.replace("Option ", ""), 10);
+                    if (!isNaN(optNum)) {
+                      const originalCorrectIdx = optNum - 1;
+                      if (Array.isArray(currentQuestion.optionIndicesMapping)) {
+                        const shuffledIdx = currentQuestion.optionIndicesMapping.indexOf(originalCorrectIdx);
+                        if (shuffledIdx !== -1) return currentQuestion.options[shuffledIdx] || resolved;
+                      }
+                      return currentQuestion.options[originalCorrectIdx] || resolved;
+                    }
+                  }
+                  return resolved;
+                })();
+                const isCorrectOption = normalizeString(opt) === normalizeString(resolvedCorrectText);
                 
                 let borderStyle = "1.5px solid var(--border-color)";
                 let backgroundStyle = "var(--bg-page)";
@@ -599,24 +639,29 @@ function PracticeTest() {
                 let badgeBg = "transparent";
                 let badgeText = "#8B5CF6";
                 
-                if (isSelected && isCorrectOption) {
-                  borderStyle = "2.5px solid #10B981";
-                  backgroundStyle = "rgba(16, 185, 129, 0.08)";
-                  badgeBorder = "2px solid #10B981";
-                  badgeBg = "#10B981";
-                  badgeText = "#ffffff";
-                } else if (isSelected && !isCorrectOption) {
-                  borderStyle = "2.5px solid #EF4444";
-                  backgroundStyle = "rgba(239, 68, 68, 0.08)";
-                  badgeBorder = "2px solid #EF4444";
-                  badgeBg = "#EF4444";
-                  badgeText = "#ffffff";
-                } else if (Object.keys(selectedOptions).length > 0 && isCorrectOption) {
-                  borderStyle = "2.5px solid #10B981";
-                  backgroundStyle = "rgba(16, 185, 129, 0.08)";
-                  badgeBorder = "2px solid #10B981";
-                  badgeBg = "#10B981";
-                  badgeText = "#ffffff";
+                const hasCorrectAnswer = !!currentQuestion.correctAnswer;
+                if (isSelected) {
+                  if (hasCorrectAnswer) {
+                    if (isCorrectOption) {
+                      borderStyle = "2.5px solid #10B981";
+                      backgroundStyle = "rgba(16, 185, 129, 0.08)";
+                      badgeBorder = "2px solid #10B981";
+                      badgeBg = "#10B981";
+                      badgeText = "#ffffff";
+                    } else {
+                      borderStyle = "2.5px solid #EF4444";
+                      backgroundStyle = "rgba(239, 68, 68, 0.08)";
+                      badgeBorder = "2px solid #EF4444";
+                      badgeBg = "#EF4444";
+                      badgeText = "#ffffff";
+                    }
+                  } else {
+                    borderStyle = "2.5px solid #8B5CF6";
+                    backgroundStyle = "rgba(139, 92, 246, 0.08)";
+                    badgeBorder = "2px solid #8B5CF6";
+                    badgeBg = "#8B5CF6";
+                    badgeText = "#ffffff";
+                  }
                 }
 
                 return (
@@ -663,7 +708,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {isSelected && !isCorrectOption && (() => {
+                    {(isSelected || isCorrectSelected) && currentQuestion.correctAnswer && !isCorrectOption && (() => {
                        const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
                            ([k]) => normalizeString(k) === normalizeString(opt)
                        );
@@ -1040,7 +1085,30 @@ function PracticeTest() {
             <div className="practice-options-grid" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {currentQuestion.options.map((opt, idx) => {
                 const isSelected = selectedOptions[idx];
-                const isCorrectOption = normalizeString(opt) === normalizeString(currentQuestion.correctAnswer);
+                const resolvedCorrectText = (() => {
+                  let resolved = currentQuestion.correctAnswer || "";
+                  if (["A", "B", "C", "D", "E", "F"].includes(resolved.toUpperCase()) && Array.isArray(currentQuestion.options)) {
+                    const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
+                    const originalCorrectIdx = idxMap[resolved.toUpperCase()];
+                    if (Array.isArray(currentQuestion.optionIndicesMapping)) {
+                      const shuffledIdx = currentQuestion.optionIndicesMapping.indexOf(originalCorrectIdx);
+                      if (shuffledIdx !== -1) return currentQuestion.options[shuffledIdx] || resolved;
+                    }
+                    return currentQuestion.options[originalCorrectIdx] || resolved;
+                  } else if (typeof resolved === "string" && resolved.startsWith("Option ")) {
+                    const optNum = parseInt(resolved.replace("Option ", ""), 10);
+                    if (!isNaN(optNum)) {
+                      const originalCorrectIdx = optNum - 1;
+                      if (Array.isArray(currentQuestion.optionIndicesMapping)) {
+                        const shuffledIdx = currentQuestion.optionIndicesMapping.indexOf(originalCorrectIdx);
+                        if (shuffledIdx !== -1) return currentQuestion.options[shuffledIdx] || resolved;
+                      }
+                      return currentQuestion.options[originalCorrectIdx] || resolved;
+                    }
+                  }
+                  return resolved;
+                })();
+                const isCorrectOption = normalizeString(opt) === normalizeString(resolvedCorrectText);
                 
                 // Define border & background styles based on correctness
                 let borderStyle = "1.5px solid var(--border-color)";
@@ -1049,24 +1117,29 @@ function PracticeTest() {
                 let badgeBg = "transparent";
                 let badgeText = "#8B5CF6";
                 
-                if (isSelected && isCorrectOption) {
-                  borderStyle = "2.5px solid #10B981";
-                  backgroundStyle = "rgba(16, 185, 129, 0.08)";
-                  badgeBorder = "2px solid #10B981";
-                  badgeBg = "#10B981";
-                  badgeText = "#ffffff";
-                } else if (isSelected && !isCorrectOption) {
-                  borderStyle = "2.5px solid #EF4444";
-                  backgroundStyle = "rgba(239, 68, 68, 0.08)";
-                  badgeBorder = "2px solid #EF4444";
-                  badgeBg = "#EF4444";
-                  badgeText = "#ffffff";
-                } else if (Object.keys(selectedOptions).length > 0 && isCorrectOption) {
-                  borderStyle = "2.5px solid #10B981";
-                  backgroundStyle = "rgba(16, 185, 129, 0.08)";
-                  badgeBorder = "2px solid #10B981";
-                  badgeBg = "#10B981";
-                  badgeText = "#ffffff";
+                const hasCorrectAnswer = !!currentQuestion.correctAnswer;
+                if (isSelected) {
+                  if (hasCorrectAnswer) {
+                    if (isCorrectOption) {
+                      borderStyle = "2.5px solid #10B981";
+                      backgroundStyle = "rgba(16, 185, 129, 0.08)";
+                      badgeBorder = "2px solid #10B981";
+                      badgeBg = "#10B981";
+                      badgeText = "#ffffff";
+                    } else {
+                      borderStyle = "2.5px solid #EF4444";
+                      backgroundStyle = "rgba(239, 68, 68, 0.08)";
+                      badgeBorder = "2px solid #EF4444";
+                      badgeBg = "#EF4444";
+                      badgeText = "#ffffff";
+                    }
+                  } else {
+                    borderStyle = "2.5px solid #8B5CF6";
+                    backgroundStyle = "rgba(139, 92, 246, 0.08)";
+                    badgeBorder = "2px solid #8B5CF6";
+                    badgeBg = "#8B5CF6";
+                    badgeText = "#ffffff";
+                  }
                 }
 
                 return (
@@ -1111,7 +1184,7 @@ function PracticeTest() {
                     </button>
 
                     {/* Explanation right below the clicked choice */}
-                    {isSelected && !isCorrectOption && (() => {
+                    {(isSelected || isCorrectSelected) && currentQuestion.correctAnswer && !isCorrectOption && (() => {
                        const storedIncorrectEntry = Object.entries(currentQuestion.explanations?.incorrect || {}).find(
                            ([k]) => normalizeString(k) === normalizeString(opt)
                        );
