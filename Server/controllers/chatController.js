@@ -97,8 +97,8 @@ const chatSupport = async (req, res) => {
 
     const latestMessage = messages[messages.length - 1].text;
 
-    // 3. Call Gemma 2 API
-    const CHAT_MODEL = "gemma-2-27b-it";
+    // 3. Call Gemini API
+    const CHAT_MODEL = "gemini-2.5-flash";
     console.log(`[Chatbot Debug] Initiating API call in chatController.js`);
     console.log(`  -> API Key Loaded: ${apiKey ? "true" : "false"}`);
     console.log(`  -> Model Name: ${CHAT_MODEL}`);
@@ -150,7 +150,7 @@ const chatSupport = async (req, res) => {
   } catch (error) {
     console.error("[Chatbot Error] An error occurred while generating content:");
     console.error(`  -> Source File: chatController.js`);
-    console.error(`  -> Model: gemma-2-27b-it`);
+    console.error(`  -> Model: gemini-2.5-flash`);
     if (error.message && error.message.includes("API key")) {
       console.error("  -> Type: Authentication Error (Invalid/Expired API Key)");
     } else if (error.message && error.message.includes("model")) {
