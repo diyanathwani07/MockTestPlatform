@@ -75,12 +75,23 @@ router.post("/forgot-password", async (req, res) => {
         message: "OTP sent to your email.",
       });
     } catch (mailError) {
-      console.warn("Mail Send Failed or Timed Out, falling back to mock mode:", mailError);
-      // Fallback: set the OTP to 123456 so they can bypass
-      otpStore.set(email, { otp: "123456", expiresAt });
-      res.json({
-        message: "OTP generated. (Gmail SMTP error: Please enter 123456 to bypass).",
-      });
+      console.warn("Mail Send Failed or Timed Out:", mailError.message);
+      
+      const isProduction = process.env.NODE_ENV === "production" || !process.env.NODE_ENV;
+      
+      if (isProduction) {
+        // Fail-safe: clear the in-memory OTP record since email delivery failed
+        otpStore.delete(email);
+        return res.status(500).json({
+          message: "We couldn't send the reset email right now. Please try again in a few minutes or contact support."
+        });
+      } else {
+        // Dev mode: preserve generated OTP in store, log to console, and send mock response
+        console.warn(`[DEV ONLY] SMTP Failed. Use OTP from console to test: ${otp}`);
+        return res.json({
+          message: "OTP generated. (Development Mode: Check server terminal for OTP)."
+        });
+      }
     }
 
   } catch (error) {
@@ -112,14 +123,10 @@ router.post("/verify-otp", async (req, res) => {
       });
     }
 
-    if (record.otp !== otp && otp !== "123456") {
+    if (record.otp !== otp) {
       return res.status(400).json({
         message: "Invalid OTP. Please check and try again.",
       });
-    }
-
-    if (otp === "123456") {
-      record.otp = "123456"; // align stored record to bypass for subsequent reset-password call
     }
 
     // Don't delete yet — we still need it for reset-password step
