@@ -1326,7 +1326,7 @@ function Users() {
                             type="checkbox" 
                             checked={editForm.receiveMonthlyAuditReport || false}
                             onChange={e => setEditForm({...editForm, receiveMonthlyAuditReport: e.target.checked})}
-                            disabled={loggedInUser?._id !== selectedUser?._id}
+                            disabled={(loggedInUser?.id || loggedInUser?._id) !== (selectedUser?._id || selectedUser?.id)}
                             style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
                           />
                           <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' }}>
