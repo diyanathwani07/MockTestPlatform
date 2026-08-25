@@ -291,7 +291,7 @@ function ExamSeriesDetails() {
                                 onClick={() => {
                                   const r = results.find(res => res.quizId === quiz._id || (res.quizId && res.quizId._id === quiz._id));
                                   if (r && r.shareId) {
-                                    navigate(`/student/result/${r.shareId}`);
+                                    navigate(`/student/result/${r.shareId}`, { state: { fromAttempts: true } });
                                   } else {
                                     alert("Could not find the attempt results.");
                                   }

@@ -1606,7 +1606,7 @@ function Users() {
                           {attempt.shareId && (
                             <button 
                               onClick={() => {
-                                navigate(`/student/result/${attempt.shareId}`);
+                                navigate(`/student/result/${attempt.shareId}`, { state: { fromAttempts: true } });
                               }}
                               style={{ 
                                 display: 'flex', 
