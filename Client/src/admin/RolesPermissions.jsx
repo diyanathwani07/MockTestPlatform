@@ -180,7 +180,9 @@ function RolesPermissions() {
 
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "14px" }}>
                       <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Slack:</span>
-                      {dept.slackNotificationsPaused ? (
+                      {!dept.slackWebhookUrl ? (
+                        <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "4px", background: "rgba(148, 163, 184, 0.12)", color: "var(--text-muted)", fontWeight: "700" }}>OFF</span>
+                      ) : dept.slackNotificationsPaused ? (
                         <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "4px", background: "rgba(239, 68, 68, 0.12)", color: "#EF4444", fontWeight: "700" }}>Paused</span>
                       ) : (
                         <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "4px", background: "rgba(16, 185, 129, 0.12)", color: "#10B981", fontWeight: "700" }}>ON</span>
