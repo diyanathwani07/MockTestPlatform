@@ -862,6 +862,102 @@ function parseQuestionsFromText(text) {
     }
   }
 
+  return postProcessQuestions(sections);
+}
+
+function splitEnglishHindi(text) {
+  if (!text) return { english: "", hindi: "" };
+  
+  // Search for the first Devanagari character
+  const devanagariIndex = text.search(/[\u0900-\u097F]/);
+  if (devanagariIndex === -1) {
+    return { english: text.trim(), hindi: "" };
+  }
+  
+  // Find if there is an opening parenthesis/bracket/slash before the Devanagari index
+  let startOfHindi = devanagariIndex;
+  for (let i = devanagariIndex - 1; i >= Math.max(0, devanagariIndex - 3); i--) {
+    if (text[i] === '(' || text[i] === '[' || text[i] === '{' || text[i] === '/') {
+      startOfHindi = i;
+      break;
+    }
+  }
+  
+  let englishPart = text.substring(0, startOfHindi).trim();
+  let hindiPart = text.substring(startOfHindi).trim();
+  
+  // Clean up enclosing parentheses/brackets/slashes from hindiPart if present
+  let cleanHindi = hindiPart;
+  if (
+    (cleanHindi.startsWith('(') && cleanHindi.endsWith(')')) ||
+    (cleanHindi.startsWith('[') && cleanHindi.endsWith(']')) ||
+    (cleanHindi.startsWith('{') && cleanHindi.endsWith('}'))
+  ) {
+    cleanHindi = cleanHindi.substring(1, cleanHindi.length - 1).trim();
+  } else if (cleanHindi.startsWith('/')) {
+    cleanHindi = cleanHindi.substring(1).trim();
+  }
+  
+  // Also clean trailing characters from englishPart
+  if (englishPart.endsWith('/')) {
+    englishPart = englishPart.substring(0, englishPart.length - 1).trim();
+  }
+  
+  return { english: englishPart, hindi: cleanHindi };
+}
+
+function postProcessQuestions(sections) {
+  for (const sec of sections) {
+    for (const q of sec.questions) {
+      // 1. Post-process the Question
+      if (/[\u0900-\u097F]/.test(q.questionEnglish)) {
+        const qSplit = splitEnglishHindi(q.questionEnglish);
+        q.questionEnglish = qSplit.english;
+        // Merge with existing hindi text if any
+        q.questionHindi = (q.questionHindi || "").trim();
+        if (qSplit.hindi) {
+          q.questionHindi = q.questionHindi 
+            ? `${q.questionHindi} ${qSplit.hindi}`
+            : qSplit.hindi;
+        }
+      }
+      
+      // Keep track of the original correct answer value to find its index
+      const originalCorrectAnswer = q.correctAnswer;
+      let correctAnswerIndex = q.options.findIndex(opt => opt === originalCorrectAnswer);
+      if (correctAnswerIndex === -1) correctAnswerIndex = 0;
+
+      // 2. Post-process the Options
+      q.options = q.options.map(opt => {
+        if (/[\u0900-\u097F]/.test(opt)) {
+          // If it already has " / ", it's already split
+          if (opt.includes(" / ")) return opt;
+          
+          const optSplit = splitEnglishHindi(opt);
+          if (optSplit.hindi) {
+            return `${optSplit.english} / ${optSplit.hindi}`;
+          }
+        }
+        return opt;
+      });
+      
+      // Update correctAnswer to match the newly formatted option
+      q.correctAnswer = q.options[correctAnswerIndex];
+
+      // 3. Post-process the Explanation
+      if (q.explanation && /[\u0900-\u097F]/.test(q.explanation)) {
+        if (!q.explanation.includes(" / ")) {
+          const expSplit = splitEnglishHindi(q.explanation);
+          if (expSplit.hindi) {
+            q.explanation = `${expSplit.english} / ${expSplit.hindi}`;
+          }
+        }
+      }
+      if (q.explanations) {
+        q.explanations.correct = q.explanation;
+      }
+    }
+  }
   return sections;
 }
 
