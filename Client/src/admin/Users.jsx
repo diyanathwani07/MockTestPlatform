@@ -832,8 +832,8 @@ function Users() {
                       <td className="user-email-text" style={{ whiteSpace: "nowrap" }}>{u.email}</td>
 
                       <td>
-                        <span className={`role-outline-badge ${isUser ? 'role-user' : u.role === 'superadmin' ? 'role-super' : 'role-admin'}`}>
-                          {u.role === 'superadmin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'User'}
+                        <span className={`role-outline-badge ${u.role === 'user' ? 'role-user' : u.role === 'superadmin' ? 'role-super' : 'role-admin'}`}>
+                          {u.role === 'superadmin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : u.role === 'manager' ? 'Manager' : u.role === 'employee' ? 'Employee' : 'User'}
                         </span>
                       </td>
 
