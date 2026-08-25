@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Search, Loader2, LifeBuoy, Eye, X, MessageSquare, User, Clock, ShieldCheck, FileText, CheckCircle2, Clock4, AlertCircle, Calendar as CalendarIcon, Plus, Image as ImageIcon } from 'lucide-react';
 import AdminSidebar from './components/AdminSidebar';
@@ -17,6 +18,34 @@ function AdminTickets() {
   
   // Modal state
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const { ticketId } = useParams();
+  const navigate = useNavigate();
+
+  // Route-driven ticket selection
+  useEffect(() => {
+    if (ticketId) {
+      // If tickets are already loaded in state, find local first to avoid extra API request
+      const localFound = tickets.find(t => t._id === ticketId);
+      if (localFound) {
+        setSelectedTicket(localFound);
+      } else {
+        const token = localStorage.getItem("token");
+        axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/tickets/${ticketId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => {
+          setSelectedTicket(res.data);
+        })
+        .catch(err => {
+          console.error("Failed to fetch ticket by ID:", err);
+          setSelectedTicket(null);
+        });
+      }
+    } else {
+      setSelectedTicket(null);
+    }
+  }, [ticketId, tickets]);
+
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [replyMessage, setReplyMessage] = useState("");
   const [replying, setReplying] = useState(false);
@@ -418,7 +447,7 @@ function AdminTickets() {
                         </td>
                         <td>
                           <div className="tk-actions-cell">
-                            <button className="tk-icon-btn" onClick={() => setSelectedTicket(ticket)}>
+                             <button className="tk-icon-btn" onClick={() => navigate("/admin/tickets/" + ticket._id)}>
                               <Eye size={16} />
                             </button>
                           </div>
@@ -458,11 +487,11 @@ function AdminTickets() {
 
       {/* TICKET DETAILS MODAL */}
       {selectedTicket && (
-        <div className="modal-overlay" onClick={() => setSelectedTicket(null)}>
+        <div className="modal-overlay" onClick={() => navigate("/admin/tickets")}>
           <div className="ticket-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Ticket Details</h3>
-              <button className="close-btn" onClick={() => setSelectedTicket(null)}>
+              <button className="close-btn" onClick={() => navigate("/admin/tickets")}>
                 <X size={20} />
               </button>
             </div>

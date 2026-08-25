@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -32,6 +33,38 @@ function Users() {
   const [activeModal, setActiveModal] = useState(null); // 'profile', 'edit', 'performance', 'history', 'tickets', 'suspend', 'role', 'reset', 'delete'
   const [selectedUser, setSelectedUser] = useState(null);
   const [viewedProfileUser, setViewedProfileUser] = useState(null);
+  const [userNotFound, setUserNotFound] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const { userId } = useParams();
+  const navigate = useNavigate();
+
+  // Fetch viewedProfileUser details when userId param is present
+  useEffect(() => {
+    const fetchProfileDetails = async () => {
+      if (!userId) {
+        setViewedProfileUser(null);
+        setUserNotFound(false);
+        setProfileLoading(false);
+        return;
+      }
+      setProfileLoading(true);
+      setUserNotFound(false);
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setViewedProfileUser(res.data);
+      } catch (err) {
+        console.error("Fetch profile user error:", err);
+        setViewedProfileUser(null);
+        setUserNotFound(true);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    fetchProfileDetails();
+  }, [userId]);
   
   // Profile/Edit states
   const [quizzesAttempted, setQuizzesAttempted] = useState(null);
@@ -252,13 +285,29 @@ function Users() {
         <AdminNavbar title="Manage Users" />
 
         <div className="admin-content manage-users-view-container">
-          {viewedProfileUser ? (
+          {profileLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', width: '100%' }}>
+              <div className="practice-loading-spinner" />
+            </div>
+          ) : userNotFound ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px', color: 'var(--text-secondary)', width: '100%', textAlign: 'center' }}>
+              <AlertTriangle size={48} style={{ color: '#ef4444' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '700', margin: 0 }}>User Not Found</h3>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>The user you are looking for does not exist or has been deleted.</p>
+              <button 
+                onClick={() => navigate("/admin/users")}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--violet)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', marginTop: '8px' }}
+              >
+                <ArrowLeft size={16} /> Back to Users
+              </button>
+            </div>
+          ) : viewedProfileUser ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', color: 'var(--text-primary)' }}>
               
               {/* Top Navigation Bar */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button 
-                  onClick={() => setViewedProfileUser(null)}
+                  onClick={() => navigate("/admin/users")}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}
                 >
                   <ArrowLeft size={16} /> Back to Users
@@ -758,7 +807,7 @@ function Users() {
                       <td style={{ whiteSpace: "nowrap" }}>
                         <div 
                           className="user-info-cell" 
-                          onClick={() => openModal('profile_popup', u)} 
+                          onClick={() => navigate("/admin/users/" + u._id)} 
                           style={{ cursor: "pointer", transition: "opacity 0.2s" }}
                           onMouseOver={(e) => e.currentTarget.style.opacity = "0.8"}
                           onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
@@ -868,7 +917,7 @@ function Users() {
                                    textAlign: "left"
                                  }}>
                                   <div 
-                                    onClick={() => { setActiveDropdown(null); setViewedProfileUser(u); }}
+                                    onClick={() => { setActiveDropdown(null); navigate("/admin/users/" + u._id); }}
                                     style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}

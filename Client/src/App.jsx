@@ -280,6 +280,15 @@ function App() {
         />
 
         <Route
+          path="/admin/quizzes/:quizId/edit"
+          element={
+            <AdminRoute>
+              <EditQuiz />
+            </AdminRoute>
+          }
+        />
+
+        <Route
           path="/admin/create-quiz-multi"
           element={
             <AdminRoute>
@@ -290,6 +299,15 @@ function App() {
 
         <Route
           path="/admin/edit-quiz-multi/:id"
+          element={
+            <AdminRoute>
+              <CreateQuizMulti />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/quizzes/:quizId/edit-multi"
           element={
             <AdminRoute>
               <CreateQuizMulti />
@@ -354,6 +372,15 @@ function App() {
         />
 
         <Route
+          path="/admin/users/:userId"
+          element={
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+
+        <Route
           path="/admin/results"
           element={
             <AdminRoute>
@@ -404,6 +431,42 @@ function App() {
           element={
             <AdminRoute>
               <AdminTickets />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/tickets/:ticketId"
+          element={
+            <AdminRoute>
+              <AdminTickets />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/exams"
+          element={
+            <AdminRoute>
+              <ExamSeriesManager />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/exams/:examId"
+          element={
+            <AdminRoute>
+              <ExamSeriesManager />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/exams/:examId/edit"
+          element={
+            <AdminRoute>
+              <ExamSeriesManager />
             </AdminRoute>
           }
         />

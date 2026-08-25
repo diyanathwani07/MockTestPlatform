@@ -1298,28 +1298,17 @@ function EditQuiz() {
                           </div>
 
                           <div className="form-field toggle-negative-field">
-                            <label className="checkbox-toggle-label">
+                            <label className="checkbox-toggle-label" title='Option E acts as "Not Attempted" (0 marks). Leaving questions blank will penalize student with negative marking.' style={{ cursor: "help" }}>
                               <input
                                 type="checkbox"
                                 checked={quizMeta.markingPattern === "bpsc"}
                                 onChange={(e) => setQuizMeta(prev => ({ ...prev, markingPattern: e.target.checked ? "bpsc" : "standard" }))}
                               />
-                              <span>Enable BPSC-style Option E & Blank Question Penalty</span>
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                Enable Option E Penalty
+                                <span style={{ fontSize: "11px", opacity: 0.6, cursor: "help" }}>ⓘ</span>
+                              </span>
                             </label>
-                            {quizMeta.markingPattern === "bpsc" && (
-                              <div style={{
-                                marginTop: "8px",
-                                padding: "10px 12px",
-                                borderRadius: "8px",
-                                backgroundColor: "rgba(110, 63, 243, 0.08)",
-                                border: "1px solid rgba(110, 63, 243, 0.2)",
-                                fontSize: "12px",
-                                color: "var(--text-primary)",
-                                lineHeight: "1.4"
-                              }}>
-                                Option E acts as "Not Attempted" (0 marks). Leaving questions blank will penalize student with negative marking.
-                              </div>
-                            )}
                           </div>
 
                           {/* NEW FEATURES: Per Question Timer and Lock Previous Questions */}
