@@ -4,19 +4,22 @@ const sendEmail = async (options) => {
   try {
     // 1. Create the "Postman" (Transporter)
     const transporter = nodemailer.createTransport({
-      service: "gmail",
       host: "smtp.gmail.com",
       port: 465,
-      secure: true, // true for 465, false for other ports
+      secure: true,
+      family: 4, // Force IPv4
+      tls: {
+        rejectUnauthorized: false,
+      },
       auth: {
-        user: process.env.SMTP_EMAIL,     // Your Gmail address
-        pass: process.env.SMTP_PASSWORD,  // Your App Password (NOT your real Gmail password)
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
       },
     });
 
     // 2. Define the letter
     const mailOptions = {
-      from: `Teaching Pariksha <${process.env.SMTP_EMAIL}>`,
+      from: `Teaching Pariksha <${process.env.MAIL_USER}>`,
       to: options.email,
       subject: options.subject,
       html: options.message, // We use 'html' instead of 'text' so you can send pretty UI cards!

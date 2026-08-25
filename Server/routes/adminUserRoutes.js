@@ -216,4 +216,26 @@ router.put("/:id/restore", protect, superAdminOnly, async (req, res) => {
   }
 });
 
+// GET a specific user's details (admin only)
+router.get("/:id", protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id, isDeleted: { $ne: true } })
+      .select("-password")
+      .populate("purchasedExams", "title subject price")
+      .populate("purchasedPractice", "title subject price");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Get User Details Error:", error);
+    if (error.kind === "ObjectId") {
+      return res.status(404).json({ message: "User not found." });
+    }
+    res.status(500).json({ message: "Failed to fetch user details." });
+  }
+});
+
 module.exports = router;

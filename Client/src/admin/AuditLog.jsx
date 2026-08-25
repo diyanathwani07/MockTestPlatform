@@ -415,9 +415,14 @@ function AuditLog() {
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                               <span>{latestLog.ipAddress || "-"}</span>
                               {hasMultiple && (
-                                <span style={{ display: "inline-flex", alignItems: "center", color: "var(--violet, #6E3FF3)" }}>
-                                  {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                </span>
+                                <>
+                                  <span style={{ fontSize: "11px", color: "var(--text-secondary)", padding: "2px 6px", borderRadius: "100px", background: "rgba(110, 63, 243, 0.15)", fontWeight: "700" }}>
+                                    {g.logs.length}
+                                  </span>
+                                  <span style={{ display: "inline-flex", alignItems: "center", color: "var(--violet, #6E3FF3)" }}>
+                                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                  </span>
+                                </>
                               )}
                             </div>
                           </td>
