@@ -1604,10 +1604,10 @@ function Users() {
                               </div>
                             </div>
                           {attempt.shareId && (
-                            <a 
-                              href={`/student/result/${attempt.shareId}`} 
-                              target="_blank" 
-                              rel="noreferrer"
+                            <button 
+                              onClick={() => {
+                                navigate(`/student/result/${attempt.shareId}`);
+                              }}
                               style={{ 
                                 display: 'flex', 
                                 alignItems: 'center', 
@@ -1616,12 +1616,14 @@ function Users() {
                                 color: '#6E3FF3', 
                                 padding: '8px', 
                                 borderRadius: '8px',
-                                textDecoration: 'none'
+                                textDecoration: 'none',
+                                border: 'none',
+                                cursor: 'pointer'
                               }}
                               title="View Result Page"
                             >
                               <Eye size={16} />
-                            </a>
+                            </button>
                           )}
                         </div>
                       </div>
