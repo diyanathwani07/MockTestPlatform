@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "../components/Logo";
-import { Sun, Moon, Mail, Key, Lock, ArrowLeft } from "lucide-react";
+import { Sun, Moon, Mail, Key, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import BorderGlow from "../components/BorderGlow";
 import "../css/Forgotpassword.css"; 
@@ -17,6 +17,7 @@ const ForgotPassword = () => {
   const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const API_BASE = `${import.meta.env.VITE_API_URL}/api/auth`;
 
@@ -292,14 +293,35 @@ const ForgotPassword = () => {
                 </span>
                 New Password
               </label>
-              <input 
-                type="password" 
-                id="new-pwd" 
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="At least 6 characters" 
-                required 
-              />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  id="new-pwd" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 6 characters" 
+                  required 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <button type="submit" disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Password"}
