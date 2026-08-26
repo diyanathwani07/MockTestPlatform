@@ -77,6 +77,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
+    },
     practiceStreak: {
       type: Number,
       default: 0,

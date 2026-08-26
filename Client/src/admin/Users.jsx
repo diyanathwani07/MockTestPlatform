@@ -71,6 +71,14 @@ function Users() {
   const [editForm, setEditForm] = useState({ fullName: "", email: "", role: "", status: "", department: "", permissions: [], receiveMonthlyAuditReport: false });
   const [addForm, setAddForm] = useState({ fullName: "", email: "", phone: "", role: "user", password: "", department: "", permissions: [], receiveMonthlyAuditReport: false });
   const [showAddPassword, setShowAddPassword] = useState(false);
+  const [addMode, setAddMode] = useState('manual'); // 'manual' | 'csv'
+  const [csvFile, setCsvFile] = useState(null);
+  const [csvParsed, setCsvParsed] = useState([]); // parsed rows
+  const [csvStep, setCsvStep] = useState('upload'); // 'upload' | 'preview' | 'result'
+  const [csvImporting, setCsvImporting] = useState(false);
+  const [csvResult, setCsvResult] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const csvInputRef = useRef(null);
   const [toast, setToast] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [departments, setDepartments] = useState([]);
@@ -215,6 +223,213 @@ function Users() {
   const closeModal = () => {
     setActiveModal(null);
     setSelectedUser(null);
+    setAddMode('manual');
+    setCsvFile(null);
+    setCsvParsed([]);
+    setCsvStep('upload');
+    setCsvImporting(false);
+    setCsvResult(null);
+    setDragOver(false);
+  };
+
+  const parseCSVText = (text) => {
+    const lines = [];
+    let row = [""];
+    let insideQuote = false;
+    
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const nextChar = text[i + 1];
+      
+      if (char === '"') {
+        if (insideQuote && nextChar === '"') {
+          row[row.length - 1] += '"';
+          i++;
+        } else {
+          insideQuote = !insideQuote;
+        }
+      } else if (char === ',' && !insideQuote) {
+        row.push("");
+      } else if ((char === '\r' || char === '\n') && !insideQuote) {
+        if (char === '\r' && nextChar === '\n') {
+          i++;
+        }
+        lines.push(row);
+        row = [""];
+      } else {
+        row[row.length - 1] += char;
+      }
+    }
+    if (row.length > 1 || row[0] !== "") {
+      lines.push(row);
+    }
+    return lines;
+  };
+
+  const downloadTemplate = (formatType) => {
+    let content = "";
+    let filename = "";
+    if (formatType === 'name_email_password') {
+      content = "name,email,password\nRahul Sharma,rahul@example.com,Temp@12345\nPriya Patil,priya@example.com,Welcome@456";
+      filename = "users_name_email_password.csv";
+    } else {
+      content = "email,password\nrahul@example.com,Temp@12345\npriya@example.com,Welcome@456";
+      filename = "users_email_password.csv";
+    }
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCSVFileSelected = async (file) => {
+    if (!file) return;
+    setCsvFile(file);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
+      const rawLines = parseCSVText(text);
+      if (rawLines.length < 2) {
+        alert("CSV must contain at least headers and one data row.");
+        return;
+      }
+      const headers = rawLines[0].map(h => h.trim().toLowerCase());
+      const nameIdx = headers.indexOf("name");
+      const emailIdx = headers.indexOf("email");
+      const passwordIdx = headers.indexOf("password");
+
+      if (emailIdx === -1 || passwordIdx === -1) {
+        alert("CSV must contain at least 'email' and 'password' columns.");
+        return;
+      }
+
+      const dataRows = [];
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const batchEmails = [];
+
+      for (let i = 1; i < rawLines.length; i++) {
+        const row = rawLines[i];
+        if (row.length === 1 && row[0].trim() === "") continue;
+
+        const email = row[emailIdx]?.trim();
+        const password = row[passwordIdx]?.trim();
+        let name = nameIdx !== -1 ? row[nameIdx]?.trim() : "";
+
+        if ((nameIdx === -1 || !name) && email) {
+          const prefix = email.split('@')[0];
+          const parts = prefix.split(/[\._-]/);
+          name = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+          if (!name) name = "User";
+        }
+
+        let status = "valid";
+        let reason = "";
+
+        if (!email || !emailRegex.test(email)) {
+          status = "error";
+          reason = "Invalid email format";
+        } else if (!password) {
+          status = "error";
+          reason = "Password is required";
+        } else if (batchEmails.includes(email.toLowerCase())) {
+          status = "error";
+          reason = "Duplicate email in CSV";
+        } else {
+          batchEmails.push(email.toLowerCase());
+        }
+
+        dataRows.push({
+          name,
+          email,
+          password,
+          status,
+          reason,
+          rawIndex: i
+        });
+      }
+
+      try {
+        const token = localStorage.getItem("token");
+        const validEmailsOnly = dataRows.filter(r => r.status === "valid").map(r => r.email);
+        if (validEmailsOnly.length > 0) {
+          const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/users/validate-emails`, 
+            { emails: validEmailsOnly },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          
+          const existingEmails = new Set(res.data.existingEmails.map(e => e.toLowerCase()));
+          dataRows.forEach(row => {
+            if (row.status === "valid" && existingEmails.has(row.email.toLowerCase())) {
+              row.status = "warning";
+              row.reason = "Email already exists";
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Validation error:", err);
+      }
+
+      setCsvParsed(dataRows);
+      setCsvStep('preview');
+    };
+    reader.readAsText(file);
+  };
+
+  const handleCSVImportSubmit = async () => {
+    const importable = csvParsed.filter(r => r.status === "valid");
+    if (importable.length === 0) {
+      alert("No valid users to import.");
+      return;
+    }
+
+    setCsvImporting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/users/import-csv`, 
+        { users: importable },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setCsvResult({
+        imported: res.data.created ? res.data.created.length : 0,
+        skipped: (res.data.skipped ? res.data.skipped.length : 0) + csvParsed.filter(r => r.status === "warning").length,
+        errors: (res.data.errors ? res.data.errors.length : 0) + csvParsed.filter(r => r.status === "error").length,
+        details: [...(res.data.errors || []), ...(res.data.skipped || []), ...csvParsed.filter(r => r.status !== "valid").map(r => ({
+          row: r.rawIndex,
+          email: r.email || "(empty)",
+          reason: r.reason
+        }))].sort((a, b) => (a.row || 0) - (b.row || 0))
+      });
+      setCsvStep('result');
+      fetchUsers();
+    } catch (err) {
+      console.error("Import error:", err);
+      showToast(err.response?.data?.message || "Failed to import CSV", "error");
+    } finally {
+      setCsvImporting(false);
+    }
+  };
+
+  const handleDownloadErrorsCSV = () => {
+    if (!csvResult || !csvResult.details) return;
+    let content = "row,email,reason\n";
+    csvResult.details.forEach(d => {
+      content += `"${d.row}","${d.email.replace(/"/g, '""')}","${d.reason.replace(/"/g, '""')}"\n`;
+    });
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "import_errors.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleAddUserSubmit = async (e) => {
@@ -1828,200 +2043,466 @@ function Users() {
 
           {/* ADD USER MODAL */}
           {activeModal === 'add_user' && (
-            <div className="ticket-modal center-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
-              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <h3 style={{ margin: 0 }}>Add New User</h3>
+            <div className="ticket-modal center-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '540px', width: '90%' }}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px", borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
+                <h3 style={{ margin: 0 }}>Add Users</h3>
                 <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
                   <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleAddUserSubmit} autoComplete="off">
-                <div className="modal-body" style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  
-                  <div className="input-box" style={{ marginBottom: 0 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
-                      Full Name
-                    </label>
-                    <input 
-                      type="text" 
-                      required 
-                      placeholder="Enter full name"
-                      value={addForm.fullName}
-                      onChange={e => setAddForm({ ...addForm, fullName: e.target.value })}
-                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
-                    />
-                  </div>
 
-                  <div className="input-box" style={{ marginBottom: 0 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
-                      Email Address
-                    </label>
-                    <input 
-                      type="email" 
-                      required 
-                      placeholder="Enter email address"
-                      value={addForm.email}
-                      onChange={e => setAddForm({ ...addForm, email: e.target.value })}
-                      autoComplete="new-email"
-                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
-                    />
-                  </div>
+              {csvStep === 'upload' && (
+                <div style={{ display: 'flex', gap: '8px', padding: '16px 30px 0' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAddMode('manual')}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1.5px solid ' + (addMode === 'manual' ? '#6E3FF3' : 'var(--border-color)'),
+                      background: addMode === 'manual' ? 'rgba(110, 63, 243, 0.15)' : 'transparent',
+                      color: addMode === 'manual' ? '#FFFFFF' : 'var(--text-secondary)',
+                      fontWeight: '600',
+                      fontSize: '12.5px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Add User Manually
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAddMode('csv')}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1.5px solid ' + (addMode === 'csv' ? '#6E3FF3' : 'var(--border-color)'),
+                      background: addMode === 'csv' ? 'rgba(110, 63, 243, 0.15)' : 'transparent',
+                      color: addMode === 'csv' ? '#FFFFFF' : 'var(--text-secondary)',
+                      fontWeight: '600',
+                      fontSize: '12.5px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Import Users from CSV
+                  </button>
+                </div>
+              )}
 
-                  <div className="input-box" style={{ marginBottom: 0 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
-                      Phone Number (Optional)
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="Enter phone number"
-                      value={addForm.phone}
-                      onChange={e => setAddForm({ ...addForm, phone: e.target.value })}
-                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
-                    />
-                  </div>
-
-                  <div className="input-box" style={{ marginBottom: 0 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
-                      Password
-                    </label>
-                    <div style={{ position: 'relative', width: '100%' }}>
+              {addMode === 'manual' ? (
+                <form onSubmit={handleAddUserSubmit} autoComplete="off">
+                  <div className="modal-body" style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    
+                    <div className="input-box" style={{ marginBottom: 0 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                        Full Name
+                      </label>
                       <input 
-                        type={showAddPassword ? "text" : "password"} 
+                        type="text" 
                         required 
-                        placeholder="Enter password (min 6 characters)"
-                        value={addForm.password}
-                        onChange={e => setAddForm({ ...addForm, password: e.target.value })}
-                        autoComplete="new-password"
-                        style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 46px 0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                        placeholder="Enter full name"
+                        value={addForm.fullName}
+                        onChange={e => setAddForm({ ...addForm, fullName: e.target.value })}
+                        style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowAddPassword(!showAddPassword)}
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--text-muted)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '6px'
-                        }}
-                      >
-                        {showAddPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
                     </div>
-                  </div>
 
-                  <div className="input-box" style={{ marginBottom: 0 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
-                      Assign Role
-                    </label>
-                    <select
-                      value={addForm.role}
-                      onChange={e => setAddForm({ ...addForm, role: e.target.value, department: (['admin', 'superadmin', 'manager', 'employee'].includes(e.target.value)) ? (addForm.department || '') : '' })}
-                      style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
-                    >
-                      <option value="user">User / Student</option>
-                      <option value="employee">Employee</option>
-                      <option value="manager">Manager</option>
-                      <option value="admin">Admin</option>
-                      <option value="superadmin">Super Admin</option>
-                    </select>
-                  </div>
-
-                  {addForm.role === 'superadmin' && (
-                    <label style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '12px', marginBottom: '12px', cursor: 'pointer' }}>
+                    <div className="input-box" style={{ marginBottom: 0 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                        Email Address
+                      </label>
                       <input 
-                        type="checkbox" 
-                        checked={addForm.receiveMonthlyAuditReport || false}
-                        onChange={e => setAddForm({...addForm, receiveMonthlyAuditReport: e.target.checked})}
-                        style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
+                        type="email" 
+                        required 
+                        placeholder="Enter email address"
+                        value={addForm.email}
+                        onChange={e => setAddForm({ ...addForm, email: e.target.value })}
+                        autoComplete="new-email"
+                        style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                       />
-                      <span style={{ fontSize: '13.5px', fontWeight: '500', color: 'var(--text-primary)' }}>
-                        Receive Monthly Audit Logs via Email
-                      </span>
-                    </label>
-                  )}
+                    </div>
 
-                  {(['admin', 'superadmin', 'manager', 'employee'].includes(addForm.role)) && (
-                    <>
-                      <div className="input-box" style={{ marginBottom: 0 }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
-                          Department
-                        </label>
-                        <select
-                          value={addForm.department || ''}
-                          onChange={e => {
-                            const deptName = e.target.value;
-                            const selectedDept = departments.find(d => d.name === deptName);
-                            const defaultPermissions = selectedDept ? (selectedDept.permissions || []) : [];
-                            setAddForm({
-                              ...addForm,
-                              department: deptName,
-                              permissions: defaultPermissions
-                            });
+                    <div className="input-box" style={{ marginBottom: 0 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                        Phone Number (Optional)
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="Enter phone number"
+                        value={addForm.phone}
+                        onChange={e => setAddForm({ ...addForm, phone: e.target.value })}
+                        style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+
+                    <div className="input-box" style={{ marginBottom: 0 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                        Password
+                      </label>
+                      <div style={{ position: 'relative', width: '100%' }}>
+                        <input 
+                          type={showAddPassword ? "text" : "password"} 
+                          required 
+                          placeholder="Enter password (min 6 characters)"
+                          value={addForm.password}
+                          onChange={e => setAddForm({ ...addForm, password: e.target.value })}
+                          autoComplete="new-password"
+                          style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 46px 0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowAddPassword(!showAddPassword)}
+                          style={{
+                            position: 'absolute',
+                            right: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '6px'
                           }}
-                          style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
                         >
-                          <option value="">None</option>
-                          {departments.map(d => (
-                            <option key={d._id} value={d.name}>{d.name}</option>
-                          ))}
-                        </select>
+                          {showAddPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="input-box" style={{ marginBottom: 0 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                        Assign Role
+                      </label>
+                      <select
+                        value={addForm.role}
+                        onChange={e => setAddForm({ ...addForm, role: e.target.value, department: (['admin', 'superadmin', 'manager', 'employee'].includes(e.target.value)) ? (addForm.department || '') : '' })}
+                        style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                      >
+                        <option value="user">User / Student</option>
+                        <option value="employee">Employee</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                        <option value="superadmin">Super Admin</option>
+                      </select>
+                    </div>
+
+                    {addForm.role === 'superadmin' && (
+                      <label style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '12px', marginBottom: '12px', cursor: 'pointer' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={addForm.receiveMonthlyAuditReport || false}
+                          onChange={e => setAddForm({...addForm, receiveMonthlyAuditReport: e.target.checked})}
+                          style={{ width: '16px', height: '16px', minWidth: '16px', cursor: 'pointer' }}
+                        />
+                        <span style={{ fontSize: '13.5px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                          Receive Monthly Audit Logs via Email
+                        </span>
+                      </label>
+                    )}
+
+                    {(['admin', 'superadmin', 'manager', 'employee'].includes(addForm.role)) && (
+                      <>
+                        <div className="input-box" style={{ marginBottom: 0 }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                            Department
+                          </label>
+                          <select
+                            value={addForm.department || ''}
+                            onChange={e => {
+                              const deptName = e.target.value;
+                              const selectedDept = departments.find(d => d.name === deptName);
+                              const defaultPermissions = selectedDept ? (selectedDept.permissions || []) : [];
+                              setAddForm({
+                                ...addForm,
+                                department: deptName,
+                                permissions: defaultPermissions
+                              });
+                            }}
+                            style={{ width: '100%', height: '46px', borderRadius: '10px', border: '1.5px solid var(--border-color)', padding: '0 16px', outline: 'none', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+                          >
+                            <option value="">None</option>
+                            {departments.map(d => (
+                              <option key={d._id} value={d.name}>{d.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {(() => {
+                          const loggedInUser = (() => {
+                            const u = localStorage.getItem("user");
+                            if (!u) return null;
+                            try { return JSON.parse(u); } catch(e) { return null; }
+                          })();
+                          if (loggedInUser?.role !== 'superadmin') return null;
+                          return (
+                            <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                                Assign Custom Permissions
+                              </label>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '140px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '10px', background: 'var(--bg-main)' }}>
+                                {ALL_PERMISSIONS.map(p => {
+                                  const isChecked = addForm.permissions?.includes(p.key);
+                                  return (
+                                    <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                                      <input 
+                                        type="checkbox" 
+                                        checked={isChecked}
+                                        onChange={() => {
+                                          const newPerms = isChecked
+                                            ? (addForm.permissions || []).filter(x => x !== p.key)
+                                            : [...(addForm.permissions || []), p.key];
+                                          setAddForm({...addForm, permissions: newPerms});
+                                        }}
+                                        style={{ width: 'auto', height: 'auto', cursor: 'pointer' }}
+                                      />
+                                      <span>{p.label}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </>
+                    )}
+
+                  </div>
+                  <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
+                    <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
+                    <button type="submit" className="create-quiz-pill-btn" style={{ minHeight: '38px', padding: '0 24px', fontSize: '13.5px' }} disabled={actionLoading}>
+                      {actionLoading ? "Creating..." : "Create User"}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div>
+                  {csvStep === 'upload' && (
+                    <>
+                      <div style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div
+                          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                          onDragLeave={() => setDragOver(false)}
+                          onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleCSVFileSelected(e.dataTransfer.files[0]); }}
+                          style={{
+                            border: '2px dashed ' + (dragOver ? '#6E3FF3' : 'var(--border-color)'),
+                            borderRadius: '12px',
+                            padding: '40px 20px',
+                            textAlign: 'center',
+                            background: dragOver ? 'rgba(110, 63, 243, 0.05)' : 'rgba(255, 255, 255, 0.01)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onClick={() => csvInputRef.current?.click()}
+                        >
+                          <input
+                            type="file"
+                            ref={csvInputRef}
+                            style={{ display: 'none' }}
+                            accept=".csv"
+                            onChange={(e) => { if (e.target.files[0]) handleCSVFileSelected(e.target.files[0]); }}
+                          />
+                          <div style={{ fontSize: '32px', marginBottom: '12px' }}>📄</div>
+                          <p style={{ margin: 0, fontWeight: '600', color: 'var(--text-primary)', fontSize: '14px' }}>
+                            Drag & drop CSV here
+                          </p>
+                          <p style={{ margin: '8px 0', color: 'var(--text-muted)', fontSize: '12px' }}>or</p>
+                          <button
+                            type="button"
+                            className="create-quiz-pill-btn"
+                            style={{ minHeight: '34px', padding: '0 16px', fontSize: '12.5px' }}
+                          >
+                            Choose CSV File
+                          </button>
+                        </div>
+
+                        <div>
+                          <label style={{ fontWeight: '700', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                            Required columns
+                          </label>
+                          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-primary)', fontWeight: '600', background: 'rgba(255,255,255,0.03)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                            name, email, password
+                          </p>
+                          <p style={{ margin: '8px 0 0', fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                            Also supported: <code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 4px', borderRadius: '3px', color: 'var(--text-primary)' }}>email, password</code> (name will be auto-derived)
+                          </p>
+                        </div>
+
+                        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                          <label style={{ fontWeight: '700', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                            Download CSV Template
+                          </label>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => downloadTemplate('name_email_password')}
+                              style={{
+                                flex: 1,
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border-color)',
+                                background: 'rgba(255, 255, 255, 0.02)',
+                                color: 'var(--text-primary)',
+                                fontWeight: '600',
+                                fontSize: '11.5px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Download Name + Email + Password Template
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => downloadTemplate('email_password')}
+                              style={{
+                                flex: 1,
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border-color)',
+                                background: 'rgba(255, 255, 255, 0.02)',
+                                color: 'var(--text-primary)',
+                                fontWeight: '600',
+                                fontSize: '11.5px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Download Email + Password Template
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
-                      {(() => {
-                        const loggedInUser = (() => {
-                          const u = localStorage.getItem("user");
-                          if (!u) return null;
-                          try { return JSON.parse(u); } catch(e) { return null; }
-                        })();
-                        if (loggedInUser?.role !== 'superadmin') return null;
-                        return (
-                          <div className="form-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                              Assign Custom Permissions
-                            </label>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '140px', overflowY: 'auto', border: '1.5px solid var(--border-color)', padding: '12px', borderRadius: '10px', background: 'var(--bg-main)' }}>
-                              {ALL_PERMISSIONS.map(p => {
-                                const isChecked = addForm.permissions?.includes(p.key);
-                                return (
-                                  <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                                    <input 
-                                      type="checkbox" 
-                                      checked={isChecked}
-                                      onChange={() => {
-                                        const newPerms = isChecked
-                                          ? (addForm.permissions || []).filter(x => x !== p.key)
-                                          : [...(addForm.permissions || []), p.key];
-                                        setAddForm({...addForm, permissions: newPerms});
-                                      }}
-                                      style={{ width: 'auto', height: 'auto', cursor: 'pointer' }}
-                                    />
-                                    <span>{p.label}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })()}
+                      <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
+                        <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
+                        <button type="button" className="create-quiz-pill-btn" style={{ minHeight: '38px', padding: '0 24px', fontSize: '13.5px', opacity: 0.5 }} disabled>
+                          Import Users
+                        </button>
+                      </div>
                     </>
                   )}
 
+                  {csvStep === 'preview' && (
+                    <>
+                      <div style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Import Preview</h4>
+                        <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--bg-main)' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+                            <thead>
+                              <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-color)' }}>
+                                <th style={{ padding: '8px 12px', textAlign: 'left', color: 'var(--text-muted)' }}>Status</th>
+                                <th style={{ padding: '8px 12px', textAlign: 'left', color: 'var(--text-muted)' }}>Name</th>
+                                <th style={{ padding: '8px 12px', textAlign: 'left', color: 'var(--text-muted)' }}>Email</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {csvParsed.map((row, idx) => (
+                                <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                  <td style={{ padding: '8px 12px', whiteSpace: 'nowrap' }}>
+                                    {row.status === 'valid' && <span style={{ color: '#22c55e' }}>✓ Ready</span>}
+                                    {row.status === 'warning' && <span style={{ color: '#eab308' }} title={row.reason}>⚠ {row.reason}</span>}
+                                    {row.status === 'error' && <span style={{ color: '#ef4444' }} title={row.reason}>✕ {row.reason}</span>}
+                                  </td>
+                                  <td style={{ padding: '8px 12px', color: 'var(--text-primary)' }}>{row.name}</td>
+                                  <td style={{ padding: '8px 12px', color: 'var(--text-secondary)' }}>{row.email}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '15px', padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Ready to import</span>
+                            <strong style={{ fontSize: '16px', color: '#22c55e' }}>{csvParsed.filter(r => r.status === 'valid').length}</strong>
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Skipped (Existing)</span>
+                            <strong style={{ fontSize: '16px', color: '#eab308' }}>{csvParsed.filter(r => r.status === 'warning').length}</strong>
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Errors</span>
+                            <strong style={{ fontSize: '16px', color: '#ef4444' }}>{csvParsed.filter(r => r.status === 'error').length}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
+                        <button type="button" className="btn-secondary" onClick={() => setCsvStep('upload')}>Back</button>
+                        <button
+                          type="button"
+                          onClick={handleCSVImportSubmit}
+                          className="create-quiz-pill-btn"
+                          style={{ minHeight: '38px', padding: '0 24px', fontSize: '13.5px' }}
+                          disabled={csvImporting || csvParsed.filter(r => r.status === 'valid').length === 0}
+                        >
+                          {csvImporting ? "Importing..." : "Confirm Import"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {csvStep === 'result' && (
+                    <>
+                      <div style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Import Complete</h4>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', textAlign: 'center' }}>
+                          <div style={{ padding: '12px', background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '8px' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Imported</span>
+                            <strong style={{ fontSize: '20px', color: '#22c55e' }}>{csvResult?.imported}</strong>
+                          </div>
+                          <div style={{ padding: '12px', background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.2)', borderRadius: '8px' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Skipped</span>
+                            <strong style={{ fontSize: '20px', color: '#eab308' }}>{csvResult?.skipped}</strong>
+                          </div>
+                          <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Errors</span>
+                            <strong style={{ fontSize: '20px', color: '#ef4444' }}>{csvResult?.errors}</strong>
+                          </div>
+                        </div>
+
+                        {csvResult?.details && csvResult.details.length > 0 && (
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                              <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: '600' }}>SKIPPED & ERROR DETAILS:</span>
+                              <button
+                                type="button"
+                                onClick={handleDownloadErrorsCSV}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#6E3FF3',
+                                  fontSize: '11.5px',
+                                  fontWeight: '700',
+                                  cursor: 'pointer',
+                                  padding: 0
+                                }}
+                              >
+                                Download Failures CSV
+                              </button>
+                            </div>
+                            <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', background: 'var(--bg-main)', fontSize: '12px' }}>
+                              {csvResult.details.map((d, idx) => (
+                                <div key={idx} style={{ marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                                  Row {d.row}: <strong style={{ color: 'var(--text-primary)' }}>{d.email}</strong> — <span style={{ color: '#ef4444' }}>{d.reason}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
+                        <button type="button" className="btn-secondary" onClick={closeModal} style={{ width: '100%' }}>Close</button>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
-                  <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
-                  <button type="submit" className="create-quiz-pill-btn" style={{ minHeight: '38px', padding: '0 24px', fontSize: '13.5px' }} disabled={actionLoading}>
-                    {actionLoading ? "Creating..." : "Create User"}
-                  </button>
-                </div>
-              </form>
+              )}
             </div>
           )}
 

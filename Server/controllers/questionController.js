@@ -233,6 +233,13 @@ const updateQuestion = async (req, res) => {
       );
     }
 
+    if (req.body.explanation !== undefined) {
+      req.body.explanations = {
+        ...(oldQuestion.explanations?.toObject ? oldQuestion.explanations.toObject() : (oldQuestion.explanations || {})),
+        correct: req.body.explanation
+      };
+    }
+
     const question = await Question.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,

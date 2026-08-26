@@ -34,6 +34,23 @@ const formatDate = (dateString) => {
 // Option label A/B/C/D
 const optionLabel = (idx) => String.fromCharCode(65 + idx);
 
+const splitBilingualText = (text) => {
+  if (!text) return [""];
+  if (text.includes(" / ")) {
+    return text.split(" / ");
+  }
+  const match = /[\u0900-\u097F]/.exec(text);
+  if (match) {
+    const hindiStartIndex = match.index;
+    const englishPart = text.slice(0, hindiStartIndex).trim();
+    const hindiPart = text.slice(hindiStartIndex).trim();
+    if (englishPart && hindiPart) {
+      return [englishPart, hindiPart];
+    }
+  }
+  return [text];
+};
+
 // ── Export helpers ──
 const exportToCSV = (subject) => {
   const headers = ["Q.No", "Question (English)", "Question (Hindi)", "Option A", "Option B", "Option C", "Option D", "Correct Answer"];
@@ -69,8 +86,10 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
   const [editEnglish, setEditEnglish] = useState('');
   const [editHindi, setEditHindi] = useState('');
   const [editOptions, setEditOptions] = useState([]);
+  const [editExplanation, setEditExplanation] = useState('');
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showExp, setShowExp] = useState(false);
   const options = q.options || [];
   const correct = q.correctAnswer;
 
@@ -80,6 +99,7 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
       setEditEnglish(q.questionEnglish || '');
       setEditHindi(q.questionHindi || '');
       setEditOptions(options.map(opt => opt.text || opt));
+      setEditExplanation(q.explanation || '');
       setPendingCorrect(null);
       setHasChanges(false);
     } else {
@@ -88,13 +108,15 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
     }
   }, [isGlobalEdit]);
 
-  const checkChanges = (newEng, newHin, newOpts, newCorrect) => {
+  const checkChanges = (newEng, newHin, newOpts, newCorrect, newExp) => {
     const origOpts = options.map(opt => opt.text || opt);
+    const currentExp = newExp !== undefined ? newExp : editExplanation;
     const changed = 
       newEng !== (q.questionEnglish || '') ||
       newHin !== (q.questionHindi || '') ||
       JSON.stringify(newOpts) !== JSON.stringify(origOpts) ||
-      (newCorrect && newCorrect !== correct);
+      (newCorrect && newCorrect !== correct) ||
+      currentExp !== (q.explanation || '');
     setHasChanges(changed);
   };
 
@@ -110,6 +132,9 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
     }
     if (pendingCorrect && pendingCorrect !== correct) {
       updateData.correctAnswer = pendingCorrect;
+    }
+    if (editExplanation !== (q.explanation || '')) {
+      updateData.explanation = editExplanation;
     }
     await onUpdateQuestion(q.questionId, updateData);
     setSaving(false);
@@ -135,14 +160,14 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
             <>
               <textarea
                 value={editEnglish}
-                onChange={(e) => { setEditEnglish(e.target.value); checkChanges(e.target.value, editHindi, editOptions, pendingCorrect); }}
+                onChange={(e) => { setEditEnglish(e.target.value); checkChanges(e.target.value, editHindi, editOptions, pendingCorrect, editExplanation); }}
                 style={{ ...inputStyle, minHeight: '48px' }}
                 placeholder="Question (English)"
                 rows={2}
               />
               <textarea
                 value={editHindi}
-                onChange={(e) => { setEditHindi(e.target.value); checkChanges(editEnglish, e.target.value, editOptions, pendingCorrect); }}
+                onChange={(e) => { setEditHindi(e.target.value); checkChanges(editEnglish, e.target.value, editOptions, pendingCorrect, editExplanation); }}
                 style={{ ...inputStyle, minHeight: '36px', marginTop: '6px', fontSize: '12px' }}
                 placeholder="Question (Hindi) - optional"
                 rows={1}
@@ -152,15 +177,6 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
             <>
               <p className="qb-qtext-eng">{q.questionEnglish}</p>
               {q.questionHindi && <p className="qb-qtext-hin">{q.questionHindi}</p>}
-              {q.createdAt && (
-                <span style={{ 
-                  fontSize: "10.5px", color: "var(--text-secondary, #94A3B8)", 
-                  marginTop: "6px", display: "inline-flex", alignItems: "center", 
-                  gap: "4px", opacity: 0.8
-                }}>
-                  📅 Published: {new Date(q.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </span>
-              )}
             </>
           )}
         </div>
@@ -195,7 +211,7 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
             <div
               key={oIdx}
               className={`qb-opt ${isCorrect ? "correct" : ""} ${isPending ? "qb-opt-pending" : ""}`}
-              onClick={isGlobalEdit ? () => { setPendingCorrect(String(optText)); checkChanges(editEnglish, editHindi, editOptions, String(optText)); } : undefined}
+              onClick={isGlobalEdit ? () => { setPendingCorrect(String(optText)); checkChanges(editEnglish, editHindi, editOptions, String(optText), editExplanation); } : undefined}
               style={isGlobalEdit ? { cursor: "pointer", transition: "all 0.15s" } : {}}
             >
               <div className="qb-opt-letter">{letter}</div>
@@ -208,7 +224,7 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
                     const newOpts = [...editOptions];
                     newOpts[oIdx] = e.target.value;
                     setEditOptions(newOpts);
-                    checkChanges(editEnglish, editHindi, newOpts, pendingCorrect);
+                    checkChanges(editEnglish, editHindi, newOpts, pendingCorrect, editExplanation);
                   }}
                   style={{ ...inputStyle, padding: '4px 8px', fontSize: '12px', flex: 1 }}
                 />
@@ -220,6 +236,52 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
           );
         })}
       </div>
+
+      {isGlobalEdit ? (
+        <div style={{ marginTop: '12px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', textTransform: 'uppercase' }}>Explanation</label>
+          <textarea
+            value={editExplanation}
+            onChange={(e) => { setEditExplanation(e.target.value); checkChanges(editEnglish, editHindi, editOptions, pendingCorrect, e.target.value); }}
+            style={{ ...inputStyle, minHeight: '60px' }}
+            placeholder="Add an explanation for the correct answer..."
+            rows={2}
+          />
+        </div>
+      ) : q.explanation ? (
+        <>
+          <button 
+            onClick={() => setShowExp(!showExp)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#6E3FF3',
+              fontWeight: '600',
+              fontSize: '11.5px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '12px',
+              padding: '0'
+            }}
+          >
+            {showExp ? 'Hide Explanation ▲' : 'Show Explanation ▼'}
+          </button>
+          {showExp && (
+            <div style={{ marginTop: '8px', padding: '10px 12px', background: 'rgba(110, 63, 243, 0.05)', borderRadius: '6px', borderLeft: '3px solid #6E3FF3' }}>
+              <strong style={{ fontSize: '11px', color: '#6E3FF3', display: 'block', marginBottom: '4px', textTransform: 'uppercase' }}>Explanation:</strong>
+              <div style={{ fontSize: '12.5px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.45 }}>
+                {splitBilingualText(q.explanation).map((part, pIdx) => (
+                  <p key={pIdx} style={{ margin: 0, marginTop: pIdx > 0 ? '6px' : 0 }}>
+                    {part.trim()}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      ) : null}
     </div>
   );
 }
@@ -450,6 +512,7 @@ function Questions() {
               questionId: q._id, qNo: quizQuestions.length + idx + 1,
               questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
               options: q.options || [], correctAnswer: q.correctAnswer,
+              explanation: q.explanation || '', createdAt: q.createdAt,
             }))];
           }
         }
@@ -458,6 +521,7 @@ function Questions() {
           questionId: q._id, qNo: idx + 1,
           questionEnglish: q.questionEnglish, questionHindi: q.questionHindi,
           options: q.options || [], correctAnswer: q.correctAnswer,
+          explanation: q.explanation || '', createdAt: q.createdAt,
         }));
       }
 
@@ -517,6 +581,7 @@ function Questions() {
           if (updateData.questionHindi !== undefined) updated.questionHindi = updateData.questionHindi;
           if (updateData.options) updated.options = updateData.options;
           if (updateData.correctAnswer) updated.correctAnswer = updateData.correctAnswer;
+          if (updateData.explanation !== undefined) updated.explanation = updateData.explanation;
           return updated;
         });
         setSelectedSubject({ ...selectedSubject, questions: updatedQuestions });

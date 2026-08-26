@@ -238,4 +238,83 @@ router.get("/:id", protect, adminOnly, async (req, res) => {
   }
 });
 
+// BULK IMPORT users from CSV (superadmin only)
+router.post("/import-csv", protect, superAdminOnly, async (req, res) => {
+  try {
+    const { users } = req.body;
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      return res.status(400).json({ message: "No users provided." });
+    }
+
+    const bcrypt = require("bcryptjs");
+    const results = { created: [], skipped: [], errors: [] };
+
+    for (const u of users) {
+      try {
+        const email = (u.email || "").trim().toLowerCase();
+        const password = (u.password || "").trim();
+        const name = (u.name || "").trim();
+
+        if (!email || !password) {
+          results.errors.push({ email: email || "(empty)", reason: "Missing email or password" });
+          continue;
+        }
+
+        // Check if user already exists
+        const existing = await User.findOne({ email, isDeleted: { $ne: true } });
+        if (existing) {
+          results.skipped.push({ email, reason: "Already exists" });
+          continue;
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({
+          fullName: name || email.split("@")[0],
+          email,
+          password: hashedPassword,
+          role: "user",
+          mustChangePassword: true,
+        });
+        await newUser.save();
+        results.created.push({ email, name: newUser.fullName });
+
+        await logAction(
+          req.user._id,
+          "CREATE_USER_CSV",
+          `Bulk imported user: ${newUser.fullName} (${email})`,
+          req
+        );
+      } catch (err) {
+        results.errors.push({ email: u.email || "(unknown)", reason: err.message });
+      }
+    }
+
+    res.status(200).json({
+      message: `Import complete: ${results.created.length} created, ${results.skipped.length} skipped, ${results.errors.length} errors.`,
+      ...results,
+    });
+  } catch (error) {
+    console.error("CSV import error:", error);
+    res.status(500).json({ message: "Failed to import users." });
+  }
+});
+
+// Validate emails before import (check which already exist)
+router.post("/validate-emails", protect, superAdminOnly, async (req, res) => {
+  try {
+    const { emails } = req.body;
+    if (!emails || !Array.isArray(emails)) {
+      return res.status(400).json({ message: "No emails provided." });
+    }
+    const existing = await User.find({
+      email: { $in: emails.map(e => e.toLowerCase()) },
+      isDeleted: { $ne: true },
+    }).select("email");
+    const existingSet = new Set(existing.map(u => u.email.toLowerCase()));
+    res.json({ existing: [...existingSet] });
+  } catch (error) {
+    res.status(500).json({ message: "Validation failed." });
+  }
+});
+
 module.exports = router;
