@@ -64,51 +64,108 @@ const exportToJSON = (subject) => {
   URL.revokeObjectURL(url);
 };
 
-// ── Single Question Card (with inline edit) ──
-function QuestionCard({ q, idx, globalNo, onUpdateAnswer, isGlobalEdit }) {
+function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
   const [pendingCorrect, setPendingCorrect] = useState(null);
+  const [editEnglish, setEditEnglish] = useState('');
+  const [editHindi, setEditHindi] = useState('');
+  const [editOptions, setEditOptions] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const options = q.options || [];
   const correct = q.correctAnswer;
 
-  const handleSave = async () => {
-    if (!pendingCorrect || !onUpdateAnswer) return;
-    setSaving(true);
-    await onUpdateAnswer(q.questionId, pendingCorrect);
-    setSaving(false);
-    setPendingCorrect(null);
-  };
-
-  // Reset pending when edit mode is turned off globally
+  // Initialize edit fields when entering edit mode
   React.useEffect(() => {
-    if (!isGlobalEdit) setPendingCorrect(null);
+    if (isGlobalEdit) {
+      setEditEnglish(q.questionEnglish || '');
+      setEditHindi(q.questionHindi || '');
+      setEditOptions(options.map(opt => opt.text || opt));
+      setPendingCorrect(null);
+      setHasChanges(false);
+    } else {
+      setPendingCorrect(null);
+      setHasChanges(false);
+    }
   }, [isGlobalEdit]);
 
+  const checkChanges = (newEng, newHin, newOpts, newCorrect) => {
+    const origOpts = options.map(opt => opt.text || opt);
+    const changed = 
+      newEng !== (q.questionEnglish || '') ||
+      newHin !== (q.questionHindi || '') ||
+      JSON.stringify(newOpts) !== JSON.stringify(origOpts) ||
+      (newCorrect && newCorrect !== correct);
+    setHasChanges(changed);
+  };
+
+  const handleSave = async () => {
+    if (!onUpdateQuestion || !hasChanges) return;
+    setSaving(true);
+    const updateData = {};
+    if (editEnglish !== (q.questionEnglish || '')) updateData.questionEnglish = editEnglish;
+    if (editHindi !== (q.questionHindi || '')) updateData.questionHindi = editHindi;
+    const origOpts = options.map(opt => opt.text || opt);
+    if (JSON.stringify(editOptions) !== JSON.stringify(origOpts)) {
+      updateData.options = editOptions.map(text => ({ text }));
+    }
+    if (pendingCorrect && pendingCorrect !== correct) {
+      updateData.correctAnswer = pendingCorrect;
+    }
+    await onUpdateQuestion(q.questionId, updateData);
+    setSaving(false);
+    setPendingCorrect(null);
+    setHasChanges(false);
+  };
+
   const displayCorrect = pendingCorrect || correct;
+
+  const inputStyle = {
+    width: '100%', background: 'var(--bg-input, rgba(255,255,255,0.05))',
+    border: '1px solid var(--border-color, #312a5c)', borderRadius: '6px',
+    padding: '8px 10px', color: 'var(--text-primary, #fff)', fontSize: '13px',
+    outline: 'none', resize: 'vertical', fontFamily: 'inherit',
+  };
 
   return (
     <div className={`qb-qcard ${isGlobalEdit ? "qb-qcard-editing" : ""}`} key={q.questionId || idx}>
       <div className="qb-qcard-header">
         <div className="qb-qnum">{globalNo}</div>
-        <div className="qb-qtext-box">
-          <p className="qb-qtext-eng">{q.questionEnglish}</p>
-          {q.questionHindi && <p className="qb-qtext-hin">{q.questionHindi}</p>}
-          {q.createdAt && (
-            <span style={{ 
-              fontSize: "10.5px", 
-              color: "var(--text-secondary, #94A3B8)", 
-              marginTop: "6px", 
-              display: "inline-flex", 
-              alignItems: "center", 
-              gap: "4px",
-              opacity: 0.8
-            }}>
-              📅 Published: {new Date(q.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </span>
+        <div className="qb-qtext-box" style={{ flex: 1 }}>
+          {isGlobalEdit ? (
+            <>
+              <textarea
+                value={editEnglish}
+                onChange={(e) => { setEditEnglish(e.target.value); checkChanges(e.target.value, editHindi, editOptions, pendingCorrect); }}
+                style={{ ...inputStyle, minHeight: '48px' }}
+                placeholder="Question (English)"
+                rows={2}
+              />
+              <textarea
+                value={editHindi}
+                onChange={(e) => { setEditHindi(e.target.value); checkChanges(editEnglish, e.target.value, editOptions, pendingCorrect); }}
+                style={{ ...inputStyle, minHeight: '36px', marginTop: '6px', fontSize: '12px' }}
+                placeholder="Question (Hindi) - optional"
+                rows={1}
+              />
+            </>
+          ) : (
+            <>
+              <p className="qb-qtext-eng">{q.questionEnglish}</p>
+              {q.questionHindi && <p className="qb-qtext-hin">{q.questionHindi}</p>}
+              {q.createdAt && (
+                <span style={{ 
+                  fontSize: "10.5px", color: "var(--text-secondary, #94A3B8)", 
+                  marginTop: "6px", display: "inline-flex", alignItems: "center", 
+                  gap: "4px", opacity: 0.8
+                }}>
+                  📅 Published: {new Date(q.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              )}
+            </>
           )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {isGlobalEdit && pendingCorrect && (
+          {isGlobalEdit && hasChanges && (
             <button
               onClick={handleSave}
               disabled={saving}
@@ -125,24 +182,39 @@ function QuestionCard({ q, idx, globalNo, onUpdateAnswer, isGlobalEdit }) {
         </div>
       </div>
       <div className="qb-options-grid">
-        {options.map((opt, oIdx) => {
+        {(isGlobalEdit ? editOptions : options.map(opt => opt.text || opt)).map((optText, oIdx) => {
           const letter = optionLabel(oIdx);
-          const optText = opt.text || opt;
+          const rawOptText = isGlobalEdit ? optText : (options[oIdx]?.text || options[oIdx]);
           const isCorrect = 
             String(displayCorrect).trim().toUpperCase() === letter || 
-            String(displayCorrect).trim() === String(optText).trim() ||
+            String(displayCorrect).trim() === String(rawOptText).trim() ||
             String(displayCorrect).trim().toLowerCase() === `option ${oIdx + 1}`;
-          const isPending = pendingCorrect && String(pendingCorrect).trim() === String(optText).trim();
+          const isPending = pendingCorrect && String(pendingCorrect).trim() === String(rawOptText).trim();
             
           return (
             <div
               key={oIdx}
               className={`qb-opt ${isCorrect ? "correct" : ""} ${isPending ? "qb-opt-pending" : ""}`}
-              onClick={isGlobalEdit ? () => setPendingCorrect(String(optText)) : undefined}
+              onClick={isGlobalEdit ? () => { setPendingCorrect(String(optText)); checkChanges(editEnglish, editHindi, editOptions, String(optText)); } : undefined}
               style={isGlobalEdit ? { cursor: "pointer", transition: "all 0.15s" } : {}}
             >
               <div className="qb-opt-letter">{letter}</div>
-              <span className="qb-opt-text">{optText}</span>
+              {isGlobalEdit ? (
+                <input
+                  type="text"
+                  value={optText}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const newOpts = [...editOptions];
+                    newOpts[oIdx] = e.target.value;
+                    setEditOptions(newOpts);
+                    checkChanges(editEnglish, editHindi, newOpts, pendingCorrect);
+                  }}
+                  style={{ ...inputStyle, padding: '4px 8px', fontSize: '12px', flex: 1 }}
+                />
+              ) : (
+                <span className="qb-opt-text">{rawOptText}</span>
+              )}
               {isGlobalEdit && isCorrect && <span style={{ marginLeft: "auto", fontSize: "14px" }}>✓</span>}
             </div>
           );
@@ -429,23 +501,29 @@ function Questions() {
     setSelectedSubject(null);
   };
 
-  const handleUpdateAnswer = async (questionId, newCorrectAnswer) => {
+  const handleUpdateQuestion = async (questionId, updateData) => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(`${import.meta.env.VITE_API_URL}/api/questions/${questionId}`,
-        { correctAnswer: newCorrectAnswer },
+        updateData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Update local state so the UI reflects the change immediately
       if (selectedSubject) {
-        const updatedQuestions = selectedSubject.questions.map(q =>
-          q.questionId === questionId ? { ...q, correctAnswer: newCorrectAnswer } : q
-        );
+        const updatedQuestions = selectedSubject.questions.map(q => {
+          if (q.questionId !== questionId) return q;
+          const updated = { ...q };
+          if (updateData.questionEnglish !== undefined) updated.questionEnglish = updateData.questionEnglish;
+          if (updateData.questionHindi !== undefined) updated.questionHindi = updateData.questionHindi;
+          if (updateData.options) updated.options = updateData.options;
+          if (updateData.correctAnswer) updated.correctAnswer = updateData.correctAnswer;
+          return updated;
+        });
         setSelectedSubject({ ...selectedSubject, questions: updatedQuestions });
       }
     } catch (err) {
-      console.error("Update answer error:", err);
-      alert("Failed to update answer. Please try again.");
+      console.error("Update question error:", err);
+      alert("Failed to update question. Please try again.");
     }
   };
 
@@ -956,10 +1034,10 @@ function Questions() {
                         <button
                           className={`qb-btn-edit-answers ${globalEditMode ? "active" : ""}`}
                           onClick={() => setGlobalEditMode(!globalEditMode)}
-                          title={globalEditMode ? "Exit edit mode" : "Edit answers"}
+                          title={globalEditMode ? "Exit edit mode" : "Edit questions"}
                         >
                           <Pencil size={14} />
-                          {globalEditMode ? "Done" : "Edit Answers"}
+                          {globalEditMode ? "Done" : "Edit Questions"}
                         </button>
                         {showExportMenu && (
                           <div style={{
@@ -1024,7 +1102,7 @@ function Questions() {
                           q={q}
                           idx={idx}
                           globalNo={(currentPage - 1) * questionsPerPage + idx + 1}
-                          onUpdateAnswer={handleUpdateAnswer}
+                          onUpdateQuestion={handleUpdateQuestion}
                           isGlobalEdit={globalEditMode}
                         />
                       ))

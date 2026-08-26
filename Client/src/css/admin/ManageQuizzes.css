@@ -59,11 +59,11 @@
 .manage-quizzes-view-container input[type="text"],
 .manage-users-view-container input[type="text"],
 .manage-series-view-container input[type="text"] {
-  background: #ffffff;
-  color: #2b2840;
-  border: 1px solid #b3ace2;
-  padding: 10px 16px;
-  border-radius: 30px;
+  background: transparent;
+  color: var(--text-primary, #2b2840);
+  border: none;
+  padding: 0;
+  border-radius: 0;
   width: 100%;
   max-width: 320px;
   outline: none;
@@ -216,9 +216,9 @@
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-quizzes-view-container input[type="text"],
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-users-view-container input[type="text"],
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-series-view-container input[type="text"] {
-  background: #1c1837 !important;
+  background: transparent !important;
   color: #ffffff !important;
-  border-color: #312a5c !important;
+  border: none !important;
 }
 
 /* Badges high-contrast visibility */
