@@ -286,8 +286,10 @@ function ManageQuizzes() {
   }, [viewMode]);
 
   const checkIsMine = (quiz) => {
-    const creator = quiz.createdBy?._id || quiz.createdBy;
-    return currentUser && creator && String(creator) === String(currentUser._id);
+    const creatorId = quiz.createdBy?._id || quiz.createdBy?.id || quiz.createdBy;
+    const currentUserId = currentUser?._id || currentUser?.id;
+    if (!creatorId || !currentUserId) return false;
+    return String(creatorId) === String(currentUserId);
   };
 
   const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
