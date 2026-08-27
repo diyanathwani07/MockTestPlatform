@@ -143,6 +143,26 @@ function Users() {
     }
   };
 
+  const [permanentDeleteConfirm, setPermanentDeleteConfirm] = useState(null);
+
+  const handlePermanentDelete = async (userId) => {
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}/permanent`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      showToast("User permanently deleted");
+      setPermanentDeleteConfirm(null);
+      fetchUsers();
+    } catch (error) {
+      console.error("Permanent Delete Error:", error);
+      showToast(error.response?.data?.message || "Failed to permanently delete user", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const [attemptsData, setAttemptsData] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [userTickets, setUserTickets] = useState([]);
@@ -1079,25 +1099,47 @@ function Users() {
 
                       <td style={{ textAlign: 'center' }}>
                         {viewTab === 'archived' ? (
-                          <button 
-                            className="btn-primary" 
-                            style={{ 
-                              padding: '6px 12px', 
-                              borderRadius: '6px', 
-                              fontSize: '12.5px', 
-                              background: '#22c55e', 
-                              border: 'none', 
-                              cursor: 'pointer',
-                              color: '#FFFFFF',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              fontWeight: '600'
-                            }}
-                            onClick={() => handleRestoreUser(u._id)}
-                          >
-                            <UserCheck size={14} /> Restore
-                          </button>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                            <button 
+                              className="btn-primary" 
+                              title="Restore User"
+                              style={{ 
+                                padding: '6px 10px', 
+                                borderRadius: '6px', 
+                                fontSize: '12px', 
+                                background: '#22c55e', 
+                                border: 'none', 
+                                cursor: 'pointer',
+                                color: '#FFFFFF',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontWeight: '600'
+                              }}
+                              onClick={() => handleRestoreUser(u._id)}
+                            >
+                              <UserCheck size={13} /> Restore
+                            </button>
+                            <button 
+                              title="Permanently Delete"
+                              style={{ 
+                                padding: '6px 10px', 
+                                borderRadius: '6px', 
+                                fontSize: '12px', 
+                                background: '#ef4444', 
+                                border: 'none', 
+                                cursor: 'pointer',
+                                color: '#FFFFFF',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontWeight: '600'
+                              }}
+                              onClick={() => setPermanentDeleteConfirm(u)}
+                            >
+                              <Trash2 size={13} /> Delete
+                            </button>
+                          </div>
                         ) : (
                           <div className="action-dropdown-container" style={{ position: 'relative' }}>
                             <button 
@@ -2274,8 +2316,8 @@ function Users() {
 
                   </div>
                   <div className="modal-footer" style={{ padding: '20px 30px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)' }}>
-                    <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
-                    <button type="submit" className="create-quiz-pill-btn" style={{ minHeight: '38px', padding: '0 24px', fontSize: '13.5px' }} disabled={actionLoading}>
+                    <button type="button" className="btn-secondary" onClick={closeModal} style={{ flex: '1', minHeight: '38px' }}>Cancel</button>
+                    <button type="submit" className="create-quiz-pill-btn" style={{ flex: '1', minHeight: '38px', padding: '0 24px', fontSize: '13.5px', maxWidth: '50%' }} disabled={actionLoading}>
                       {actionLoading ? "Creating..." : "Create User"}
                     </button>
                   </div>
@@ -2506,6 +2548,44 @@ function Users() {
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* PERMANENT DELETE CONFIRMATION MODAL */}
+      {permanentDeleteConfirm && (
+        <div className="modal-overlay" style={{ justifyContent: 'center', zIndex: 10000 }} onClick={() => setPermanentDeleteConfirm(null)}>
+          <div className="ticket-modal center-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '420px', width: '90%' }}>
+            <div className="modal-header" style={{ borderBottom: 'none', padding: '24px 24px 8px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AlertTriangle size={20} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>Confirm Permanent Delete</h3>
+              </div>
+              <button className="close-btn" onClick={() => setPermanentDeleteConfirm(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body" style={{ padding: '0 24px 24px 24px' }}>
+              <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                Are you sure you want to permanently delete <strong>{permanentDeleteConfirm.fullName || permanentDeleteConfirm.email}</strong>? 
+                This action is irreversible and will delete the user account entirely from the database.
+              </p>
+            </div>
+            <div className="modal-footer" style={{ padding: '16px 24px 24px 24px', display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: 'none' }}>
+              <button type="button" className="btn-secondary" onClick={() => setPermanentDeleteConfirm(null)} style={{ flex: '1', minHeight: '38px' }}>
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                style={{ flex: '1', minHeight: '38px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }} 
+                onClick={() => handlePermanentDelete(permanentDeleteConfirm._id)}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Deleting..." : "Permanently Delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

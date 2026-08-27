@@ -23,6 +23,7 @@ const {
   generateCustomQuiz,
   deleteCustomQuiz,
   submitQuiz,
+  bulkImportQuizzes,
 } = require("../controllers/quizController");
 
 // Dashboard stats — admin only
@@ -42,6 +43,7 @@ router.post("/:id/submit", protect, submitQuiz);
 router.post("/attempts/:attemptId/submit", protect, submitQuiz);
 
 // Admin-only write operations
+router.post("/bulk-import", protect, adminOnly, bulkImportQuizzes);
 router.post("/", protect, adminOnly, createQuiz);
 router.post("/export-section", protect, adminOnly, exportSectionAsQuiz);
 router.post("/:id/add-section", protect, adminOnly, addSectionToQuiz);

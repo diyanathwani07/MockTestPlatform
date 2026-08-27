@@ -216,6 +216,27 @@ router.put("/:id/restore", protect, superAdminOnly, async (req, res) => {
   }
 });
 
+// PERMANENTLY DELETE a user (superadmin only) - removes from database
+router.delete("/:id/permanent", protect, superAdminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    if (!user.isDeleted) {
+      return res.status(400).json({ message: "User must be archived before permanent deletion." });
+    }
+    const userName = user.fullName;
+    const userEmail = user.email;
+    await User.findByIdAndDelete(req.params.id);
+    await logAction("PERMANENT_DELETE_USER", req.user?.fullName || "Admin", `Permanently deleted user: ${userName} (${userEmail})`, "UserManagement", req.ip);
+    res.json({ message: "User permanently deleted." });
+  } catch (error) {
+    console.error("Permanent Delete Error:", error);
+    res.status(500).json({ message: "Failed to permanently delete user." });
+  }
+});
+
 // GET a specific user's details (admin only)
 router.get("/:id", protect, adminOnly, async (req, res) => {
   try {
@@ -260,8 +281,8 @@ router.post("/import-csv", protect, superAdminOnly, async (req, res) => {
           continue;
         }
 
-        // Check if user already exists
-        const existing = await User.findOne({ email, isDeleted: { $ne: true } });
+        // Check if user already exists (including soft-deleted, due to unique index)
+        const existing = await User.findOne({ email });
         if (existing) {
           results.skipped.push({ email, reason: "Already exists" });
           continue;

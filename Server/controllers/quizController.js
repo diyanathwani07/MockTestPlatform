@@ -105,6 +105,7 @@ const getQuizzes = async (req, res) => {
 
     let quizzes = await Quiz.find(filter)
       .populate({ path: "sections.sectionId", model: "Section" })
+      .populate({ path: "createdBy", select: "fullName avatar profilePhoto" })
       .sort({ createdAt: -1 });
 
     if (req.user) {
@@ -225,6 +226,9 @@ const updateQuiz = async (req, res) => {
       updateData.isModular = true;
       updateData.questions = [];
     }
+
+    // Whenever quiz is updated, it is configured
+    updateData.needsConfiguration = false;
 
     const quiz = await Quiz.findByIdAndUpdate(
       req.params.id, 
@@ -1271,6 +1275,196 @@ const submitQuiz = async (req, res) => {
   }
 };
 
+// BULK IMPORT exams from CSV
+const bulkImportQuizzes = async (req, res) => {
+  try {
+    const { exams, mode } = req.body; // mode: 'skip' | 'update'
+    if (!exams || !Array.isArray(exams)) {
+      return res.status(400).json({ message: "No exams data provided." });
+    }
+
+    const Section = require("../models/Section");
+    const ExamSeries = require("../models/ExamSeries");
+    const results = { created: [], updated: [], skipped: [] };
+
+    for (const exam of exams) {
+      const { examName, examCode, sectionMode, rows } = exam;
+
+      // Check if exam code already exists
+      const existingQuiz = await Quiz.findOne({ examCode, isDeleted: { $ne: true } });
+
+      if (existingQuiz) {
+        if (mode === "skip") {
+          results.skipped.push({ examCode, examName, reason: "Exam code already exists (Skipped)" });
+          continue;
+        }
+      }
+
+      // Group subjects/sections from rows
+      let examSeriesId = null;
+      if (examName) {
+        const slug = examName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        let series = await ExamSeries.findOne({ $or: [{ slug }, { title: { $regex: new RegExp(`^${examName}$`, "i") } }] });
+        if (!series) {
+          series = await ExamSeries.create({
+            title: examName,
+            slug,
+            description: `Quizzes related to ${examName}`,
+            category: "General",
+            isPublished: true,
+          });
+        }
+        examSeriesId = series._id;
+      }
+
+      const subjectsList = [...new Set(rows.map(r => r.subject).filter(Boolean))];
+      const mergedSubject = subjectsList.join(", ");
+
+      const sectionRefs = [];
+      const isModular = sectionMode === "multi";
+
+      // Helper to create valid questions from rows
+      const createQuestionsFromRows = async (rowsToProcess) => {
+        const questionIds = [];
+        for (const row of rowsToProcess) {
+          const hasQuestionData = row.questionEnglish || row.optionA || row.optionB || row.optionC || row.optionD || row.correctAnswer;
+          if (!hasQuestionData) continue;
+
+          const englishText = (row.questionEnglish || "").trim();
+          const ansLetter = (row.correctAnswer || "").trim().toUpperCase();
+          const optionA = (row.optionA || "").trim();
+          const optionB = (row.optionB || "").trim();
+          const optionC = (row.optionC || "").trim();
+          const optionD = (row.optionD || "").trim();
+
+          if (!englishText || !ansLetter) continue;
+
+          const options = [optionA, optionB, optionC, optionD].filter(Boolean);
+          if (options.length < 2) continue;
+
+          let correctAnswerText = "";
+          if (ansLetter === "A") correctAnswerText = optionA;
+          else if (ansLetter === "B") correctAnswerText = optionB;
+          else if (ansLetter === "C") correctAnswerText = optionC;
+          else if (ansLetter === "D") correctAnswerText = optionD;
+
+          if (!correctAnswerText) continue;
+
+          const QuestionModel = require("../models/Question");
+          const newQ = await QuestionModel.create({
+            questionEnglish: englishText,
+            questionHindi: (row.questionHindi || "").trim(),
+            options,
+            correctAnswer: correctAnswerText,
+            explanation: (row.explanation || "").trim(),
+            explanations: { correct: (row.explanation || "").trim(), incorrect: {}, conceptSummary: "", didYouKnow: "" },
+            difficulty: "medium",
+            subject: row.subject,
+            createdBy: req.user?._id,
+          });
+          questionIds.push(newQ._id);
+        }
+        return questionIds;
+      };
+
+      if (!isModular) {
+        // Single section mode: one section containing merged subjects & all questions
+        const sectionName = rows[0]?.sectionName || "General";
+        const questionIds = await createQuestionsFromRows(rows);
+        const newSec = await Section.create({
+          title: sectionName,
+          description: `Section for ${mergedSubject}`,
+          type: "standard",
+          duration: 1800, // 30 mins default
+          marksPerQuestion: 1,
+          negativeMarking: 0,
+          questions: questionIds,
+          isStandalone: true,
+          createdBy: req.user?._id,
+        });
+        sectionRefs.push({
+          sectionId: newSec._id,
+          mode: "linked",
+          order: 0,
+        });
+      } else {
+        // Multi section mode: group rows by subject
+        const subjectsMap = {};
+        rows.forEach(r => {
+          if (!subjectsMap[r.subject]) {
+            subjectsMap[r.subject] = [];
+          }
+          subjectsMap[r.subject].push(r);
+        });
+
+        const sortedSubjects = Object.keys(subjectsMap);
+        for (let i = 0; i < sortedSubjects.length; i++) {
+          const sub = sortedSubjects[i];
+          const subRows = subjectsMap[sub];
+          const questionIds = await createQuestionsFromRows(subRows);
+          const firstRow = subRows[0];
+          const newSec = await Section.create({
+            title: firstRow.sectionName || sub || `Section ${i + 1}`,
+            description: `Subject section: ${sub}`,
+            type: "standard",
+            duration: 600, // 10 mins default per section
+            marksPerQuestion: 1,
+            negativeMarking: 0,
+            questions: questionIds,
+            isStandalone: true,
+            createdBy: req.user?._id,
+          });
+          sectionRefs.push({
+            sectionId: newSec._id,
+            mode: "linked",
+            order: i,
+          });
+        }
+      }
+
+      if (existingQuiz && mode === "update") {
+        // Update existing quiz
+        existingQuiz.title = examName;
+        existingQuiz.subject = mergedSubject;
+        existingQuiz.examName = examName;
+        existingQuiz.isModular = isModular;
+        existingQuiz.sections = sectionRefs;
+        existingQuiz.examSeriesId = examSeriesId;
+        existingQuiz.needsConfiguration = true;
+        existingQuiz.status = "Draft";
+        await existingQuiz.save();
+        results.updated.push({ examCode, examName, _id: existingQuiz._id });
+      } else {
+        // Create new quiz
+        const newQuiz = await Quiz.create({
+          title: examName,
+          subject: mergedSubject,
+          examName: examName,
+          examCode: examCode,
+          description: `Imported Exam Series: ${examName}`,
+          duration: isModular ? rows.length * 10 : 30, // in minutes
+          marksPerQuestion: 1,
+          isModular: isModular,
+          sections: sectionRefs,
+          examSeriesId,
+          needsConfiguration: true,
+          status: "Draft",
+          createdBy: req.user?._id,
+        });
+        results.created.push({ examCode, examName, _id: newQuiz._id });
+      }
+    }
+
+    res.status(200).json({
+      message: `Import complete: ${results.created.length} created, ${results.updated.length} updated, ${results.skipped.length} skipped.`,
+      ...results,
+    });
+  } catch (error) {
+    console.error("Bulk import error:", error);
+    res.status(500).json({ message: "Failed to import exam series.", error: error.message });
+  }
+};
+
 module.exports = {
   createQuiz,
   getQuizzes,
@@ -1290,4 +1484,5 @@ module.exports = {
   generateCustomQuiz,
   deleteCustomQuiz,
   submitQuiz,
+  bulkImportQuizzes,
 };
