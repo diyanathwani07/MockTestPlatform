@@ -1042,7 +1042,7 @@ function ManageQuizzes() {
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--bg-page)", borderBottom: "1.5px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
-                    <th style={{ padding: "18px 28px", fontWeight: "700" }}>Created By</th>
+                    {ownershipTab !== "mine" && <th style={{ padding: "18px 28px", fontWeight: "700" }}>Created By</th>}
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Exam</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Subject</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Title</th>
@@ -1057,38 +1057,40 @@ function ManageQuizzes() {
                     filteredQuizzes.map((quiz) => (
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "14px" }}>
                         
-                        <td style={{ padding: "18px 28px", whiteSpace: "nowrap" }}>
-                          {(() => {
-                            const isMine = checkIsMine(quiz);
-                            const creatorName = quiz.createdBy?.fullName || "System Admin";
-                            const firstLetter = creatorName.charAt(0).toUpperCase();
-                            const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
-                            const charCode = creatorName.charCodeAt(0) || 0;
-                            const bgColor = colors[charCode % colors.length];
-                            return (
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <div style={{
-                                  width: "26px",
-                                  height: "26px",
-                                  borderRadius: "50%",
-                                  backgroundColor: bgColor,
-                                  color: "#fff",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  fontSize: "12px",
-                                  fontWeight: "bold",
-                                  textTransform: "uppercase"
-                                }}>
-                                  {firstLetter}
+                        {ownershipTab !== "mine" && (
+                          <td style={{ padding: "18px 28px", whiteSpace: "nowrap" }}>
+                            {(() => {
+                              const isMine = checkIsMine(quiz);
+                              const creatorName = quiz.createdBy?.fullName || "System Admin";
+                              const firstLetter = creatorName.charAt(0).toUpperCase();
+                              const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+                              const charCode = creatorName.charCodeAt(0) || 0;
+                              const bgColor = colors[charCode % colors.length];
+                              return (
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <div style={{
+                                    width: "26px",
+                                    height: "26px",
+                                    borderRadius: "50%",
+                                    backgroundColor: bgColor,
+                                    color: "#fff",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "12px",
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase"
+                                  }}>
+                                    {firstLetter}
+                                  </div>
+                                  <span style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "13.5px" }}>
+                                    {isMine ? "You" : creatorName}
+                                  </span>
                                 </div>
-                                <span style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "13.5px" }}>
-                                  {isMine ? "You" : creatorName}
-                                </span>
-                              </div>
-                            );
-                          })()}
-                        </td>
+                              );
+                            })()}
+                          </td>
+                        )}
 
                         <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
                           {quiz.examName || "—"}
