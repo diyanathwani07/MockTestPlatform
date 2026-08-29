@@ -176,16 +176,9 @@
   padding: 32px 40px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   
-  /* Layer 1: Dark premium gradient */
-  background: linear-gradient(135deg, #15152a 0%, #201b48 45%, #2d1e63 100%);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
-}
-
-/* Light Mode Override for Welcome Banner Surface */
-body:not(.dark-mode) .sd-hero {
-  background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 50%, #e0e7ff 100%);
-  border: 1px solid rgba(110, 63, 243, 0.1);
-  box-shadow: 0 10px 30px rgba(110, 63, 243, 0.05);
+  /* Layer 1: Theme gradient background */
+  background: var(--hero-bg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
 }
 
 /* Layer 2 & 3: Radial glows (Purple top-right, Blue bottom-left) */

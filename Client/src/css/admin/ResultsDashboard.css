@@ -29,7 +29,7 @@
 }
 
 .btn-export {
-  background: #6E3FF3;
+  background: var(--violet);
   border: none;
   color: #FFF;
   padding: 0 16px;
@@ -50,7 +50,7 @@
 }
 
 .btn-filter {
-  background: #6E3FF3;
+  background: var(--violet);
   border: none;
   color: white;
   padding: 10px 16px;
@@ -124,7 +124,7 @@
   margin: 0;
 }
 
-.stat-card:nth-child(1) .stat-card-header { color: #6E3FF3; }
+.stat-card:nth-child(1) .stat-card-header { color: var(--violet); }
 .stat-card:nth-child(2) .stat-card-header { color: #10B981; }
 .stat-card:nth-child(3) .stat-card-header { color: #F59E0B; }
 .stat-card:nth-child(4) .stat-card-header { color: #3B82F6; }
@@ -152,7 +152,7 @@
   line-height: 1.1;
 }
 
-.stat-card:nth-child(1) .stat-card-body .trend { color: #6E3FF3; }
+.stat-card:nth-child(1) .stat-card-body .trend { color: var(--violet); }
 .stat-card:nth-child(2) .stat-card-body .trend { color: #10B981; }
 .stat-card:nth-child(3) .stat-card-body .trend { color: #F59E0B; }
 .stat-card:nth-child(4) .stat-card-body .trend { color: #3B82F6; }
@@ -263,7 +263,7 @@
 }
 
 .view-all-link {
-  color: #6E3FF3;
+  color: var(--violet);
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;

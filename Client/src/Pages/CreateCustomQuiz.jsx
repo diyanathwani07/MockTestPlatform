@@ -581,7 +581,7 @@ const CreateCustomQuiz = () => {
                     </div>
                     <button
                       type="button"
-                      onClick={() => alert("Redirecting to Premium Plan Purchases...")}
+                      onClick={() => navigate("/dashboard/pricing")}
                       style={{
                         padding: "12px",
                         borderRadius: "8px",

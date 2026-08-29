@@ -115,6 +115,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/ai/questions", require("./routes/aiQuestionRoutes"));
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/ai-tests", aiTestRoutes);
+app.use("/api/admin/ai-plans", require("./routes/aiPlanRoutes"));
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
 setInterval(async () => {
   try {

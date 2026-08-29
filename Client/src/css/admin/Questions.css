@@ -569,8 +569,8 @@
 }
 
 .qb-page-btn.active {
-  background: #8B5CF6;
-  border-color: #8B5CF6;
+  background: var(--violet);
+  border-color: var(--violet);
   color: #fff;
 }
 
@@ -581,30 +581,30 @@
 
 /* Dark Mode Overrides */
 body.dark-mode .qb-questions-view {
-  background: #1B1B29;
-  border-color: #2b2b3d;
+  background: var(--bg-card);
+  border-color: var(--border-color);
 }
 
 body.dark-mode .qb-book-card,
 body.dark-mode .qb-subject-card,
 body.dark-mode .qb-qcard {
-  background: #222235;
-  border-color: #2b2b3d;
+  background: var(--bg-input);
+  border-color: var(--border-color);
 }
 
 body.dark-mode .qb-book-card.active,
 body.dark-mode .qb-subject-card.active {
-  background: var(--sidebar-active-bg, #4F22C5);
-  border-color: #8B5CF6;
+  background: var(--sidebar-active-bg);
+  border-color: var(--violet);
 }
 
 body.dark-mode .qb-book-card.active .qb-book-info h4 {
-  color: var(--sidebar-active-text, #ffffff);
+  color: var(--sidebar-active-text);
 }
 
 body.dark-mode .qb-opt {
-  background: #1B1B29;
-  border-color: #2b2b3d;
+  background: var(--bg-page);
+  border-color: var(--border-color);
 }
 
 body.dark-mode .qb-opt.correct {
@@ -615,7 +615,7 @@ body.dark-mode .qb-opt.correct {
 body.dark-mode .qb-middle-header,
 body.dark-mode .qb-right-header,
 body.dark-mode .qb-pagination {
-  border-color: #2b2b3d;
+  border-color: var(--border-color);
 }
 
 /* ── RESPONSIVE DESIGN FOR QUESTIONS BANK (Mobile First & Enterprise) ── */

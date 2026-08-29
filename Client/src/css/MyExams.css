@@ -232,7 +232,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #6E3FF3, #9333EA);
+  background: var(--violet, #6E3FF3);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -316,7 +316,7 @@
 }
 
 .me-btn-primary {
-  background: linear-gradient(135deg, #6E3FF3 0%, #9333EA 100%);
+  background: var(--violet, #6E3FF3);
   color: #fff;
   border: none;
   padding: 10px 20px;

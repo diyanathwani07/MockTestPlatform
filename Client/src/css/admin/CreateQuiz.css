@@ -516,8 +516,8 @@ input.force-quiz-input:focus {
 body.dark-mode .create-quiz-page .form-card,
 body.dark-mode .create-quiz-page .question-block-enhanced,
 body.dark-mode .create-quiz-page .option-input-card-enhanced {
-  background-color: #131428 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
 }
 
 body.dark-mode .create-quiz-page .form-card-title,
@@ -526,37 +526,37 @@ body.dark-mode .create-quiz-page .checkbox-toggle-label {
 }
 
 body.dark-mode .create-quiz-page .question-number {
-  background-color: #1E1F38 !important;
-  border-color: #2D1B69 !important;
-  color: #A882FF !important;
+  background-color: var(--bg-page) !important;
+  border-color: var(--border-color) !important;
+  color: var(--violet) !important;
 }
 
 body.dark-mode .create-quiz-page .form-field input:not([type="checkbox"]),
 body.dark-mode .create-quiz-page .form-field select,
 body.dark-mode .create-quiz-page .form-field textarea,
 body.dark-mode .create-quiz-page .option-text-field {
-  background-color: #080914 !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  color: #FFFFFF !important;
+  background-color: var(--bg-input) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
 }
 
 body.dark-mode .create-quiz-page .form-field input:focus,
 body.dark-mode .create-quiz-page .form-field select:focus,
 body.dark-mode .create-quiz-page .form-field textarea:focus,
 body.dark-mode .create-quiz-page .option-text-field:focus {
-  border-color: #6E3FF3 !important;
+  border-color: var(--violet) !important;
   box-shadow: 0 0 10px rgba(110, 63, 243, 0.4) !important;
-  background-color: #05060E !important;
+  background-color: var(--bg-input) !important;
 }
 
 body.dark-mode .create-quiz-page .form-field label {
-  color: #94A3B8 !important;
+  color: var(--text-secondary) !important;
 }
 
 body.dark-mode .create-quiz-page .option-letter-badge {
-  background-color: #1E1F38 !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  color: #c4bfe8 !important;
+  background-color: var(--bg-page) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
 }
 
 body.dark-mode .create-quiz-page .option-letter-badge:hover {

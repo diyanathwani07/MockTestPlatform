@@ -403,10 +403,10 @@ body.dark-mode .lb-search .lb-icon {
 .lb-pillar {
   width: 100%;
   border-radius: 8px 8px 0 0;
-  background: linear-gradient(180deg, #E9E3FE 0%, rgba(233, 227, 254, 0) 100%);
+  background: linear-gradient(180deg, var(--border-color, #E4E4E7) 0%, transparent 100%);
 }
 
-.lb-spot-1 .lb-pillar { height: 120px; background: linear-gradient(180deg, #DDD6FE 0%, rgba(221, 214, 254, 0) 100%); }
+.lb-spot-1 .lb-pillar { height: 120px; }
 .lb-spot-2 .lb-pillar { height: 80px; }
 .lb-spot-3 .lb-pillar { height: 60px; }
 

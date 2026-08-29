@@ -14,10 +14,10 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6E3FF3, #4F22C5);
+  background: var(--violet, #6E3FF3);
   color: white;
   border: none;
-  box-shadow: 0 4px 20px rgba(110, 63, 243, 0.4);
+  box-shadow: 0 4px 20px rgba(110, 63, 243, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;

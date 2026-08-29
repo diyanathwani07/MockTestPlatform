@@ -115,6 +115,8 @@ const userSchema = new mongoose.Schema(
     purchasedPractice: [{ type: mongoose.Schema.Types.ObjectId, ref: "PracticeQuiz" }],
     isPremium: { type: Boolean, default: false },
     aiCredits: { type: Number, default: 100 },
+    premiumExpiresAt: { type: Date },
+    activePlan: { type: mongoose.Schema.Types.ObjectId, ref: "AiPlan" },
   },
   {
     timestamps: true,

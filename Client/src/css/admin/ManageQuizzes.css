@@ -11,7 +11,7 @@
 
 .manage-count {
   font-size: 13.5px;
-  color: #6b6880;
+  color: var(--text-muted);
   font-weight: 500;
   margin-bottom: 18px;
 }
@@ -36,8 +36,8 @@
 /* Containers */
 .quiz-table-wrapper,
 .admin-content > div:first-child {
-  background: #ffffff;
-  border: 1px solid #F1EFFA;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   overflow: hidden;
   margin-bottom: 24px;
@@ -49,7 +49,7 @@
 }
 
 .admin-content h2 {
-  color: #2D1B69;
+  color: var(--text-primary);
   margin-bottom: 12px;
   font-weight: 700;
 }
@@ -77,8 +77,8 @@
 }
 
 .quiz-table thead {
-  background: #FCFBFF;
-  border-bottom: 1.5px solid #ECE9F7;
+  background: var(--bg-input);
+  border-bottom: 1.5px solid var(--border-color);
 }
 
 .quiz-table th {
@@ -86,7 +86,7 @@
   padding: 14px 20px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #a8a5bd;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -99,8 +99,8 @@
 .quiz-table td {
   padding: 16px 20px;
   font-size: 14px;
-  color: #2b2840;
-  border-bottom: 1px solid #F5F3FB;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .quiz-table tbody tr:last-child td {
@@ -108,7 +108,7 @@
 }
 
 .quiz-table tbody tr:hover {
-  background: #FCFBFF;
+  background: var(--bg-input);
 }
 
 /* FIXED: Prevents buttons from expanding horizontally */
@@ -136,8 +136,8 @@
 }
 
 .edit-btn {
-  background: #F1EFFA;
-  color: #2D1B69;
+  background: var(--option-bg, #F1EFFA);
+  color: var(--text-primary);
 }
 
 .delete-btn {
@@ -161,7 +161,7 @@
 
 .status-published { background: #E1F5EE; color: #085041; }
 .status-draft { background: #FAEEDA; color: #633806; }
-.empty-row { text-align: center; padding: 40px 20px; color: #a8a5bd; font-size: 14px; }
+.empty-row { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
 
 
 /* ==========================================================================
@@ -170,45 +170,45 @@
 
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-table-wrapper,
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .admin-content > div:first-child {
-  background: #141125 !important;
-  border-color: #252044 !important;
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
 }
 
 /* FIX: Forces the bright white table header row to go dark */
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-table thead,
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-table th {
-  background: #1a1632 !important;
-  color: #837fa2 !important;
+  background: var(--bg-page) !important;
+  color: var(--text-secondary) !important;
 }
 
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-table thead {
-  border-bottom: 1.5px solid #28224b !important;
+  border-bottom: 1.5px solid var(--border-color) !important;
 }
 
-/* FIX: Changes title text color to clean white */
+/* FIX: Changes title text color to theme-aware */
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .admin-content h2,
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) h2 {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-count {
-  color: #928eb9;
+  color: var(--text-muted);
 }
 
 /* FIX: Table row background adjustments */
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-table td {
-  color: #e2e0f0 !important;
-  border-bottom: 1px solid #1c1837 !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .quiz-table tbody tr:hover {
-  background: #1c1837 !important;
+  background: var(--option-hover) !important;
 }
 
 /* FIX: View Quiz button custom styling inside Dark Mode */
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .edit-btn {
-  background: #251c4a !important;
-  color: #bfaeff !important;
+  background: var(--option-bg) !important;
+  color: var(--text-primary) !important;
 }
 
 /* FIX: Search Input adjustment inside Dark Mode */
@@ -217,7 +217,7 @@
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-users-view-container input[type="text"],
 :is(.dark, .dark-mode, [data-theme='dark'], body.dark) .manage-series-view-container input[type="text"] {
   background: transparent !important;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   border: none !important;
 }
 

@@ -158,7 +158,7 @@ function ExamsPage() {
                           padding: '12px', 
                           fontSize: '14px', 
                           fontWeight: '600',
-                          background: 'linear-gradient(135deg, #6E3FF3, #3B82F6)',
+                          background: 'var(--violet, #6E3FF3)',
                           color: '#ffffff',
                           border: 'none',
                           borderRadius: '8px',

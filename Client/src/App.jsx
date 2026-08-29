@@ -43,6 +43,10 @@ import StudentProfile from "./Pages/StudentProfile";
 import ExamsPage from "./Pages/ExamsPage";
 import PracticePage from "./Pages/PracticePage";
 import CreateCustomQuiz from "./Pages/CreateCustomQuiz";
+import PricingPlans from "./Pages/PricingPlans";
+import AdminAiPlans from "./admin/AiPlans";
+import ThemeButton from "./components/ThemeButton";
+import ThemePicker from "./components/ThemePicker";
 
 function App() {
   return (
@@ -239,7 +243,25 @@ function App() {
           }
         />
 
+        <Route
+          path="/dashboard/pricing"
+          element={
+            <ProtectedRoute>
+              <PricingPlans />
+            </ProtectedRoute>
+          }
+        />
+
         {/* ================= ADMIN ROUTES ================= */}
+
+        <Route
+          path="/admin/ai-plans"
+          element={
+            <AdminRoute>
+              <AdminAiPlans />
+            </AdminRoute>
+          }
+        />
 
         {/* DOOR 1: Catches people typing /admin */}
         <Route
@@ -481,6 +503,8 @@ function App() {
         />
 
       </Routes>
+      <ThemeButton />
+      <ThemePicker />
     </BrowserRouter>
   );
 }

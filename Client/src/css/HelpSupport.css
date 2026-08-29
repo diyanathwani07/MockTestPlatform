@@ -9,7 +9,7 @@
 
 .hs-hero {
   position: relative;
-  background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+  background: var(--hero-bg);
   border-radius: 16px;
   padding: 50px 60px;
   display: flex;
@@ -17,10 +17,6 @@
   justify-content: center;
   overflow: hidden;
   margin-bottom: 30px;
-}
-
-body.dark-mode .hs-hero {
-  background: linear-gradient(135deg, #1E1B4B 0%, #2D1B69 100%);
 }
 
 .hs-hero-content {
@@ -108,7 +104,7 @@ body.dark-mode .hs-search-bar {
 .hs-bubble-primary {
   width: 80px;
   height: 60px;
-  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+  background: var(--violet, #6E3FF3);
   border-radius: 20px 20px 0 20px;
   display: flex;
   align-items: center;
@@ -772,7 +768,7 @@ body.dark-mode .hs-attachment-icon-wrapper {
 }
 
 .hs-submit-btn {
-  background: #6E3FF3;
+  background: var(--violet, #6E3FF3);
   color: #fff;
   border: none;
   padding: 8px 16px;
@@ -837,7 +833,7 @@ body.dark-mode .hs-chat-header {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6E3FF3, #4F22C5);
+  background: var(--violet, #6E3FF3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -901,7 +897,7 @@ body.dark-mode .hs-chat-header {
 }
 
 .hs-chat-bubble.user {
-  background: #6E3FF3;
+  background: var(--violet, #6E3FF3);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -944,8 +940,8 @@ body.dark-mode .hs-chat-bubble.bot {
 .hs-chat-ticket-btn {
   margin-top: 8px;
   background: transparent;
-  border: 1.5px solid #6E3FF3;
-  color: #6E3FF3;
+  border: 1.5px solid var(--violet, #6E3FF3);
+  color: var(--violet, #6E3FF3);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 13px;
@@ -955,7 +951,7 @@ body.dark-mode .hs-chat-bubble.bot {
 }
 
 .hs-chat-ticket-btn:hover {
-  background: #6E3FF3;
+  background: var(--violet, #6E3FF3);
   color: #fff;
 }
 
@@ -998,7 +994,7 @@ body.dark-mode .hs-chat-input-area {
 }
 
 .hs-chat-input-area button {
-  background: #6E3FF3;
+  background: var(--violet, #6E3FF3);
   color: #fff;
   border: none;
   width: 40px;

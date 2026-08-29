@@ -6,6 +6,7 @@ import { PreviewProvider } from "./context/PreviewContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
 import "./css/theme.css";
+import "./css/themes.css";
 import "katex/dist/katex.min.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

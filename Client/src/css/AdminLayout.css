@@ -33,7 +33,7 @@ body { background-color: #FAFAFC; }
 .admin-layout { display: flex; min-height: 100vh; width: 100%; }
 .admin-sidebar { width: 260px; background: #1a1a2e; display: flex; flex-direction: column; height: 100%; flex-shrink: 0; z-index: 50; }
 .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a8a5bd; text-decoration: none; transition: 0.15s; font-size: 14px; }
-.sidebar-link.active { background: linear-gradient(135deg, #2D1B69, #6E3FF3); color: #fff; font-weight: 600; }
+.sidebar-link.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: 600; }
 
 .admin-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background-color: #FAFAFC; }
 .admin-navbar { background: #fff; border-bottom: 1.5px solid #ECE9F7; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
@@ -94,13 +94,13 @@ body { background-color: #FAFAFC; }
 /* ==========================================================================
    5. MASTER OBSIDIAN DARK MODE OVERRIDES
    ========================================================================== */
-body.dark-mode { background-color: #0B0C1A !important; color: #E2E8F0 !important; }
+body.dark-mode { background-color: var(--bg-page) !important; color: var(--text-primary) !important; }
 
-body.dark-mode .admin-main { background-color: #0B0C1A !important; }
+body.dark-mode .admin-main { background-color: var(--bg-page) !important; }
 body.dark-mode .admin-navbar, body.dark-mode .admin-sidebar,
 body.dark-mode .armored-stat-card, body.dark-mode .armored-admin-card,
 body.dark-mode .drill-input-box {
-  background-color: #131428 !important; border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--bg-card) !important; border-color: var(--border-color) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important; color: #FFFFFF !important;
 }
 
