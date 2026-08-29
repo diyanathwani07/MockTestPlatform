@@ -113,6 +113,8 @@ const userSchema = new mongoose.Schema(
     ],
     purchasedExams: [{ type: mongoose.Schema.Types.ObjectId, ref: "ExamSeries" }],
     purchasedPractice: [{ type: mongoose.Schema.Types.ObjectId, ref: "PracticeQuiz" }],
+    isPremium: { type: Boolean, default: false },
+    aiCredits: { type: Number, default: 100 },
   },
   {
     timestamps: true,
