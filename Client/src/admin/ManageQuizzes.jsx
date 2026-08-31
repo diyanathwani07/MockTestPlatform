@@ -16,6 +16,7 @@ function ManageQuizzes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterType, setFilterType] = useState("All");
+  const [expandedQuizTitles, setExpandedQuizTitles] = useState({});
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -1100,13 +1101,36 @@ function ManageQuizzes() {
                           {quiz.subject}
                         </td>
                         
-                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)", whiteSpace: "nowrap" }}>
+                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            {quiz.title}
+                            {(() => {
+                              const title = quiz.title || "";
+                              const limit = 25;
+                              const isLong = title.length > limit;
+                              const isExpanded = !!expandedQuizTitles[quiz._id];
+                              const displayTitle = isLong && !isExpanded ? `${title.substring(0, limit)}...` : title;
+                              return (
+                                <span 
+                                  onClick={() => {
+                                    if (isLong) {
+                                      setExpandedQuizTitles(prev => ({ ...prev, [quiz._id]: !prev[quiz._id] }));
+                                    }
+                                  }}
+                                  style={{
+                                    cursor: isLong ? "pointer" : "default",
+                                    whiteSpace: isExpanded ? "normal" : "nowrap",
+                                    wordBreak: "break-word"
+                                  }}
+                                  title={isLong ? (isExpanded ? "Click to collapse" : "Click to expand") : undefined}
+                                >
+                                  {displayTitle}
+                                </span>
+                              );
+                            })()}
                             {(quiz.sections && quiz.sections.length > 1) ? (
-                              <span style={{ fontSize: "10px", backgroundColor: "rgba(59, 130, 246, 0.2)", color: "#3B82F6", border: "1px solid #3B82F6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase" }}>Multi</span>
+                              <span style={{ fontSize: "10px", backgroundColor: "rgba(59, 130, 246, 0.2)", color: "#3B82F6", border: "1px solid #3B82F6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>Multi</span>
                             ) : (
-                              <span style={{ fontSize: "10px", backgroundColor: "rgba(139, 92, 246, 0.2)", color: "#8B5CF6", border: "1px solid #8B5CF6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase" }}>Single</span>
+                              <span style={{ fontSize: "10px", backgroundColor: "rgba(139, 92, 246, 0.2)", color: "#8B5CF6", border: "1px solid #8B5CF6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>Single</span>
                             )}
                           </div>
                         </td>
