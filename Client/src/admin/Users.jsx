@@ -6,7 +6,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
-import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar, Medal, Mail, ExternalLink, Shield, ChevronDown, FileText, Target, BookOpen } from 'lucide-react';
+import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar, Medal, Mail, ExternalLink, Shield, ChevronDown, FileText, Target, BookOpen, Sparkles } from 'lucide-react';
 
 const ALL_PERMISSIONS = [
   { key: "dashboard",             label: "Dashboard" },
@@ -121,9 +121,23 @@ function Users() {
     }
   };
 
+  const [aiPlans, setAiPlans] = useState([]);
+  const fetchAiPlans = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/ai-plans`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAiPlans(res.data.filter(p => p.status === "active"));
+    } catch (e) {
+      console.error("Failed to fetch AI plans:", e);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchDepartments();
+    fetchAiPlans();
   }, [viewTab]);
 
   const handleRestoreUser = async (userId) => {
@@ -215,6 +229,29 @@ function Users() {
       setUserTickets([]);
     }
   }, [activeModal, selectedUser]);
+
+  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [aiActionLoading, setAiActionLoading] = useState(false);
+  
+  const handleManageAiSubscription = async (action) => {
+    setAiActionLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/admin/users/${selectedUser._id}/ai-subscription`,
+        { action, planId: selectedPlanId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      showToast(action === "cancel" ? "AI plan subscription cancelled successfully" : "AI plan subscription updated successfully");
+      fetchUsers();
+      closeModal();
+    } catch (e) {
+      console.error("Manage AI subscription error:", e);
+      showToast(e.response?.data?.message || "Failed to update AI subscription.", "error");
+    } finally {
+      setAiActionLoading(false);
+    }
+  };
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -1215,6 +1252,14 @@ function Users() {
                                   >
                                     <Ticket size={15} /> Support Tickets
                                   </div>
+                                  <div 
+                                    onClick={() => { setActiveDropdown(null); openModal('ai-subscription', u); }}
+                                    style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                  >
+                                    <Sparkles size={15} style={{ color: "var(--violet)" }} /> Manage AI Plan
+                                  </div>
                                   {currentUserRole === 'superadmin' && (
                                     <>
                                       <div 
@@ -1262,7 +1307,7 @@ function Users() {
             </table>
             </div>
 
-            <div className="table-pagination-footer" style={{ marginTop: '-180px', position: 'relative', background: '#FAFAFC', zIndex: 1 }}>
+            <div className="table-pagination-footer" style={{ marginTop: '-180px', position: 'relative', zIndex: 1 }}>
               <span className="pagination-info">
                 Showing 1 to {filteredUsers.length} of {filteredUsers.length} users
               </span>
@@ -1788,6 +1833,91 @@ function Users() {
               <div className="modal-footer" style={{ padding: '24px 30px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
                 <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button className="btn-danger" onClick={() => handleAction('', 'DELETE', {}, 'User deleted successfully')} disabled={actionLoading}>{actionLoading ? 'Deleting...' : 'Delete User'}</button>
+              </div>
+            </div>
+          )}
+
+          {/* AI SUBSCRIPTION MANAGEMENT MODAL */}
+          {activeModal === 'ai-subscription' && selectedUser && (
+            <div className="ticket-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', width: '90%' }}>
+              <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button 
+                  className="close-btn" 
+                  onClick={handleBackToPanel}
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    background: "transparent", 
+                    border: "1px solid var(--border-color)", 
+                    borderRadius: "8px", 
+                    padding: "6px", 
+                    cursor: "pointer",
+                    color: "var(--text-secondary)"
+                  }}
+                  title="Back to Actions"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h3 style={{ margin: 0 }}>Manage AI Subscription</h3>
+                <button className="close-btn" onClick={closeModal} style={{ marginLeft: "auto" }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body" style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "20px 30px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px" }}>Selected Student</label>
+                  <strong style={{ fontSize: "15px", color: "var(--text-primary)" }}>{selectedUser.fullName}</strong>
+                  <span style={{ display: "block", fontSize: "12.5px", color: "var(--text-secondary)" }}>{selectedUser.email}</span>
+                </div>
+
+                <div style={{ padding: "10px 14px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Current AI Status:</span>
+                  <span style={{ 
+                    fontSize: "12px", 
+                    fontWeight: "800", 
+                    padding: "4px 8px", 
+                    borderRadius: "4px", 
+                    background: selectedUser.isPremium ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                    color: selectedUser.isPremium ? "#10B981" : "#EF4444" 
+                  }}>
+                    {selectedUser.isPremium ? "Active Premium" : "No Active Plan"}
+                  </span>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Select New Plan to Upgrade / Assign</label>
+                  <select 
+                    value={selectedPlanId}
+                    onChange={(e) => setSelectedPlanId(e.target.value)}
+                    style={{ width: "100%", padding: "10px", border: "1.5px solid var(--border-color)", borderRadius: "8px", background: "var(--bg-input)", color: "var(--text-primary)", outline: "none" }}
+                  >
+                    <option value="">-- Choose AI Plan --</option>
+                    {aiPlans.map(plan => (
+                      <option key={plan._id} value={plan._id}>{plan.name} (₹{plan.sellingPrice} - {plan.durationValue} {plan.durationUnit})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="modal-footer" style={{ padding: '16px 30px', borderTop: '1px solid var(--border-color)', display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                {selectedUser.isPremium && (
+                  <button 
+                    className="btn-danger" 
+                    onClick={() => handleManageAiSubscription("cancel")} 
+                    disabled={aiActionLoading}
+                    style={{ marginRight: "auto" }}
+                  >
+                    {aiActionLoading ? "Processing..." : "Cancel Subscription"}
+                  </button>
+                )}
+                <button className="btn-secondary" onClick={closeModal}>Cancel</button>
+                <button 
+                  className="btn-primary" 
+                  onClick={() => handleManageAiSubscription("upgrade")} 
+                  disabled={aiActionLoading || !selectedPlanId}
+                >
+                  {aiActionLoading ? "Upgrading..." : "Upgrade / Assign"}
+                </button>
               </div>
             </div>
           )}

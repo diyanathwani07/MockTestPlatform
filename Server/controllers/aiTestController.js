@@ -12,7 +12,8 @@ const getPremiumStatus = async (req, res) => {
     }
     res.json({
       isPremium: !!user.isPremium,
-      aiCredits: user.aiCredits || 0
+      aiCredits: user.aiCredits || 0,
+      activePlan: user.activePlan || null
     });
   } catch (error) {
     console.error("Get Premium Status Error:", error);

@@ -327,7 +327,7 @@ function AdminAiPlans() {
                       <th style={{ textAlign: "left", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>Plan Name</th>
                       <th style={{ textAlign: "left", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>Pricing</th>
                       <th style={{ textAlign: "left", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>Duration</th>
-                      <th style={{ textAlign: "left", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>AI Credits</th>
+                      <th style={{ textAlign: "left", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>Max AI Tests</th>
                       <th style={{ textAlign: "left", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>Status</th>
                       <th style={{ textAlign: "center", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>Actions</th>
                     </tr>
@@ -367,7 +367,7 @@ function AdminAiPlans() {
                           {plan.durationValue} {plan.durationUnit}
                         </td>
                         <td style={{ padding: "14px 20px", color: "var(--text-primary)", fontWeight: "600" }}>
-                          {plan.aiCredits} Credits
+                          {plan.maxAITests || "Unlimited"} Tests
                         </td>
                         <td style={{ padding: "14px 20px" }}>
                           <select 
@@ -537,17 +537,8 @@ function AdminAiPlans() {
                     </div>
                   </div>
 
-                  {/* AI Credits & Test limits */}
+                  {/* Test limits */}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>AI Credits *</label>
-                      <input 
-                        type="number" 
-                        value={form.aiCredits}
-                        onChange={(e) => setForm({ ...form, aiCredits: parseInt(e.target.value) || 0 })}
-                        style={{ width: "100%", padding: "10px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "rgba(255,255,255,0.03)", color: "var(--text-primary)" }}
-                      />
-                    </div>
                     <div>
                       <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Max AI Tests</label>
                       <input 
@@ -557,6 +548,7 @@ function AdminAiPlans() {
                         style={{ width: "100%", padding: "10px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "rgba(255,255,255,0.03)", color: "var(--text-primary)" }}
                       />
                     </div>
+                    <div />
                   </div>
 
                   {/* Features checklist */}
@@ -716,7 +708,6 @@ function AdminAiPlans() {
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                     <span style={{ fontSize: "12.5px", color: "var(--text-secondary)", fontWeight: "600" }}>Valid for {form.durationValue} {form.durationUnit}</span>
-                    <span style={{ fontSize: "12.5px", color: "var(--violet, #6E3FF3)", fontWeight: "700" }}>{form.aiCredits} AI Credits</span>
                   </div>
 
                   {form.maxAITests > 0 && (

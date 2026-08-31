@@ -599,10 +599,30 @@ const CreateCustomQuiz = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Entitlement Metrics */}
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "20px", background: "rgba(144, 97, 249, 0.08)", padding: "8px 12px", borderRadius: "8px", border: "1px dashed rgba(144, 97, 249, 0.2)" }}>
-                      <span>Status: <strong>Active Premium</strong></span>
-                      <span>AI Credits: <strong>{premiumStatus.aiCredits} remaining</strong></span>
+
+                    {/* Active Premium Plan Header */}
+                    <div style={{ 
+                      display: "flex", 
+                      justifyContent: "space-between", 
+                      alignItems: "center", 
+                      fontSize: "12.5px", 
+                      color: "var(--text-secondary)", 
+                      background: "rgba(110, 63, 243, 0.06)", 
+                      padding: "10px 14px", 
+                      borderRadius: "8px", 
+                      border: "1.5px solid var(--border-color)",
+                      marginBottom: "8px" 
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10B981", display: "inline-block" }}></span>
+                        <span>AI status: <strong>Active Premium</strong></span>
+                      </div>
+                      <span 
+                        onClick={() => navigate("/dashboard/pricing")}
+                        style={{ color: "var(--violet, #6E3FF3)", fontWeight: "700", cursor: "pointer", textDecoration: "underline" }}
+                      >
+                        Upgrade / Renew Plan
+                      </span>
                     </div>
 
                     {/* AI Configuration Form */}

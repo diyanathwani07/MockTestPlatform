@@ -584,6 +584,56 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* ── Hide avatar circles on mobile to save space ── */
+  .mobile-hide-avatar {
+    display: none !important;
+  }
+
+  /* ── Top Performers: compact 6-column to mobile-friendly layout ── */
+  .top-perf-grid-header,
+  .top-perf-grid-row {
+    grid-template-columns: 0.5fr 2.5fr 2.5fr 1.5fr 1.5fr 1.5fr !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+    gap: 4px;
+  }
+
+  .top-perf-grid-header {
+    font-size: 9px !important;
+  }
+
+  /* ── Results by Quiz: proper proportional columns ── */
+  .quiz-stats-grid-header,
+  .quiz-stats-grid-row {
+    grid-template-columns: 2.5fr 1.2fr 1.2fr 1.2fr 1.2fr 1fr !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+    gap: 2px;
+  }
+
+  .quiz-stats-grid-header {
+    font-size: 9px !important;
+  }
+
+  /* ── Student Feedback: merge comment into reaction, compact layout ── */
+  .feedback-grid-header,
+  .feedback-grid-row {
+    grid-template-columns: 2fr 2.5fr 2fr 2fr !important;
+    padding: 10px !important;
+    font-size: 11px !important;
+    gap: 4px;
+  }
+
+  /* Hide the Comment/Feedback column on mobile (4th column) */
+  .feedback-grid-header > div:nth-child(4),
+  .feedback-grid-row > div:nth-child(4) {
+    display: none !important;
+  }
+
+  .feedback-grid-header {
+    font-size: 9px !important;
+  }
 }
 
 body.dark-mode .table-pagination-footer.transparent-footer,

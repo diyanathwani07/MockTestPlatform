@@ -267,7 +267,7 @@ const subscribeToPlan = async (req, res) => {
     await notifyUser(user._id, {
       type: "PAYMENT_SUCCESS",
       title: "Plan unlocked successfully!",
-      message: `You have successfully subscribed to "${plan.name}". ${plan.aiCredits} credits have been added to your account.`,
+      message: `You have successfully subscribed to "${plan.name}". You can now generate up to ${plan.maxAITests} AI tests.`,
       link: "/dashboard/create-custom-quiz"
     });
 

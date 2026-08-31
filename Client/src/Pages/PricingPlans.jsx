@@ -5,6 +5,7 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { Sparkles, Check, Loader2, ArrowRight } from "lucide-react";
 import "../css/StudentDashboard.css";
+import PhonePeGateway from "../components/PhonePeGateway";
 
 function PricingPlans() {
   const navigate = useNavigate();
@@ -13,10 +14,26 @@ function PricingPlans() {
   const [purchasingPlanId, setPurchasingPlanId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showGateway, setShowGateway] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [premiumStatus, setPremiumStatus] = useState(null);
 
   useEffect(() => {
     fetchActivePlans();
+    fetchPremiumStatus();
   }, []);
+
+  const fetchPremiumStatus = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/ai-tests/premium-status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPremiumStatus(res.data);
+    } catch (err) {
+      console.error("Fetch premium status error:", err);
+    }
+  };
 
   const fetchActivePlans = async () => {
     setLoading(true);
@@ -34,35 +51,21 @@ function PricingPlans() {
     }
   };
 
-  const handleSubscribe = async (planId) => {
-    setPurchasingPlanId(planId);
-    setError("");
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribe`,
-        { planId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  const handleSubscribeClick = (plan) => {
+    setSelectedPlan(plan);
+    setShowGateway(true);
+  };
 
-      if (res.data.success) {
-        setSuccess(true);
-        // Update user state stored locally
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        user.isPremium = true;
-        user.aiCredits = res.data.user.aiCredits;
-        localStorage.setItem("user", JSON.stringify(user));
-        
-        setTimeout(() => {
-          navigate("/dashboard/create-custom-quiz");
-        }, 2000);
-      }
-    } catch (err) {
-      console.error("Subscribe plan error:", err);
-      setError(err.response?.data?.message || "Failed to complete purchase. Please try again.");
-    } finally {
-      setPurchasingPlanId(null);
-    }
+  const handlePaymentSuccess = () => {
+    setShowGateway(false);
+    setSuccess(true);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    user.isPremium = true;
+    localStorage.setItem("user", JSON.stringify(user));
+    
+    setTimeout(() => {
+      navigate("/dashboard/create-custom-quiz");
+    }, 2000);
   };
 
   return (
@@ -75,10 +78,7 @@ function PricingPlans() {
           
           {/* Header Description */}
           <div style={{ textAlign: "center", marginBottom: "40px" }}>
-            <h2 style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 8px 0" }}>Unlock Premium AI Features</h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: "15px", maxWidth: "600px", margin: "0 auto", lineHeight: "1.6" }}>
-              Get access to personalized exam builder questions, Hindi/English pattern matching, and detailed explanations written by Gemini AI.
-            </p>
+            <h2 style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: "0" }}>Unlock AI Features</h2>
           </div>
 
           {error && (
@@ -163,11 +163,16 @@ function PricingPlans() {
                         )}
                       </div>
 
-                      {/* Duration / credits info */}
+                      {/* Duration info */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid var(--border-color)", marginTop: "16px" }}>
                         <span style={{ fontSize: "12.5px", color: "var(--text-secondary)", fontWeight: "600" }}>Valid for {plan.durationValue} {plan.durationUnit}</span>
-                        <span style={{ fontSize: "12.5px", color: "var(--violet, #6E3FF3)", fontWeight: "700" }}>{plan.aiCredits} Credits</span>
                       </div>
+
+                      {plan.maxAITests > 0 && (
+                        <div style={{ fontSize: "12.5px", color: "var(--text-secondary)", marginTop: "10px" }}>
+                          ⚡ Includes up to <strong>{plan.maxAITests} AI tests</strong>
+                        </div>
+                      )}
 
                       {/* Features */}
                       <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "18px", marginTop: "20px" }}>
@@ -184,36 +189,32 @@ function PricingPlans() {
                     </div>
 
                     {/* Action Button */}
-                    <button 
-                      onClick={() => handleSubscribe(plan._id)}
-                      disabled={purchasingPlanId !== null || success}
-                      style={{
-                        width: "100%",
-                        padding: "14px",
-                        borderRadius: "8px",
-                        border: "none",
-                        background: "var(--violet, #6E3FF3)",
-                        color: "#fff",
-                        fontWeight: "700",
-                        fontSize: "14px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "8px",
-                        opacity: purchasingPlanId === plan._id ? 0.75 : 1
-                      }}
-                    >
-                      {purchasingPlanId === plan._id ? (
-                        <>
-                          <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Unlocking...
-                        </>
-                      ) : (
-                        <>
-                          Subscribe Now <ArrowRight size={16} />
-                        </>
-                      )}
-                    </button>
+                    {(() => {
+                      const isActive = premiumStatus?.isPremium && String(premiumStatus?.activePlan) === String(plan._id);
+                      return (
+                        <button 
+                          onClick={() => !isActive && handleSubscribeClick(plan)}
+                          disabled={success || isActive}
+                          style={{
+                            width: "100%",
+                            padding: "14px",
+                            borderRadius: "8px",
+                            border: "none",
+                            background: isActive ? "#10B981" : "var(--violet, #6E3FF3)",
+                            color: "#fff",
+                            fontWeight: "700",
+                            fontSize: "14px",
+                            cursor: isActive ? "default" : "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          {isActive ? "Active Plan" : <>Unlock Now <ArrowRight size={16} /></>}
+                        </button>
+                      );
+                    })()}
                   </div>
                 );
               })}
@@ -222,6 +223,16 @@ function PricingPlans() {
 
         </div>
       </div>
+
+      {showGateway && selectedPlan && (
+        <PhonePeGateway
+          type="ai-plan"
+          planId={selectedPlan._id}
+          amount={selectedPlan.sellingPrice}
+          onClose={() => setShowGateway(false)}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }

@@ -39,11 +39,26 @@ const splitBilingualText = (text) => {
   if (text.includes(" / ")) {
     return text.split(" / ");
   }
+  if (text.includes("\n")) {
+    return text.split("\n").map(t => t.trim()).filter(Boolean);
+  }
   const match = /[\u0900-\u097F]/.exec(text);
   if (match) {
     const hindiStartIndex = match.index;
-    const englishPart = text.slice(0, hindiStartIndex).trim();
-    const hindiPart = text.slice(hindiStartIndex).trim();
+    let englishPart = text.slice(0, hindiStartIndex).trim();
+    let hindiPart = text.slice(hindiStartIndex).trim();
+    
+    // Clean up parenthesis wrapper if present
+    if (englishPart.endsWith("(")) {
+      englishPart = englishPart.slice(0, -1).trim();
+    }
+    if (hindiPart.endsWith(")")) {
+      hindiPart = hindiPart.slice(0, -1).trim();
+    }
+    if (hindiPart.startsWith("(")) {
+      hindiPart = hindiPart.slice(1).trim();
+    }
+    
     if (englishPart && hindiPart) {
       return [englishPart, hindiPart];
     }
@@ -96,10 +111,30 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
   // Initialize edit fields when entering edit mode
   React.useEffect(() => {
     if (isGlobalEdit) {
-      setEditEnglish(q.questionEnglish || '');
-      setEditHindi(q.questionHindi || '');
+      const engText = q.questionEnglish || '';
+      const hinText = q.questionHindi || '';
+      
+      if (!hinText) {
+        const parts = splitBilingualText(engText);
+        if (parts.length > 1) {
+          setEditEnglish(parts[0]);
+          setEditHindi(parts[1]);
+        } else {
+          setEditEnglish(engText);
+          setEditHindi('');
+        }
+      } else {
+        setEditEnglish(engText);
+        setEditHindi(hinText);
+      }
+      
       setEditOptions(options.map(opt => opt.text || opt));
-      setEditExplanation(q.explanation || '');
+      
+      // Split explanation text and join with double newline for clean editing
+      const expText = q.explanation || '';
+      const expParts = splitBilingualText(expText);
+      setEditExplanation(expParts.join("\n\n"));
+      
       setPendingCorrect(null);
       setHasChanges(false);
     } else {
@@ -145,10 +180,30 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
   const displayCorrect = pendingCorrect || correct;
 
   const inputStyle = {
-    width: '100%', background: 'var(--bg-input, rgba(255,255,255,0.05))',
-    border: '1px solid var(--border-color, #312a5c)', borderRadius: '6px',
-    padding: '8px 10px', color: 'var(--text-primary, #fff)', fontSize: '13px',
-    outline: 'none', resize: 'vertical', fontFamily: 'inherit',
+    width: '100%', 
+    background: 'transparent',
+    border: 'none', 
+    borderBottom: '1.5px dashed var(--border-color)', 
+    borderRadius: '0px',
+    padding: '8px 0', 
+    color: 'var(--text-primary, #fff)', 
+    fontSize: '14.5px',
+    outline: 'none', 
+    resize: 'vertical', 
+    fontFamily: 'inherit',
+    lineHeight: '1.5'
+  };
+
+  const optionInputStyle = {
+    width: '100%',
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text-primary, #fff)',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    outline: 'none',
+    fontFamily: 'inherit',
+    padding: '2px 0',
   };
 
   return (
@@ -161,16 +216,16 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
               <textarea
                 value={editEnglish}
                 onChange={(e) => { setEditEnglish(e.target.value); checkChanges(e.target.value, editHindi, editOptions, pendingCorrect, editExplanation); }}
-                style={{ ...inputStyle, minHeight: '48px' }}
+                style={{ ...inputStyle, minHeight: '100px', fontSize: '14.5px', lineHeight: '1.5' }}
                 placeholder="Question (English)"
-                rows={2}
+                rows={4}
               />
               <textarea
                 value={editHindi}
                 onChange={(e) => { setEditHindi(e.target.value); checkChanges(editEnglish, e.target.value, editOptions, pendingCorrect, editExplanation); }}
-                style={{ ...inputStyle, minHeight: '36px', marginTop: '6px', fontSize: '12px' }}
+                style={{ ...inputStyle, minHeight: '100px', marginTop: '12px', fontSize: '14.5px', lineHeight: '1.6' }}
                 placeholder="Question (Hindi) - optional"
-                rows={1}
+                rows={4}
               />
             </>
           ) : (
@@ -226,7 +281,7 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
                     setEditOptions(newOpts);
                     checkChanges(editEnglish, editHindi, newOpts, pendingCorrect, editExplanation);
                   }}
-                  style={{ ...inputStyle, padding: '4px 8px', fontSize: '12px', flex: 1 }}
+                  style={{ ...optionInputStyle, flex: 1 }}
                 />
               ) : (
                 <span className="qb-opt-text">{rawOptText}</span>
@@ -243,9 +298,9 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
           <textarea
             value={editExplanation}
             onChange={(e) => { setEditExplanation(e.target.value); checkChanges(editEnglish, editHindi, editOptions, pendingCorrect, e.target.value); }}
-            style={{ ...inputStyle, minHeight: '60px' }}
+            style={{ ...inputStyle, minHeight: '100px' }}
             placeholder="Add an explanation for the correct answer..."
-            rows={2}
+            rows={4}
           />
         </div>
       ) : q.explanation ? (
@@ -255,28 +310,64 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
             style={{
               background: 'none',
               border: 'none',
-              color: '#6E3FF3',
-              fontWeight: '600',
-              fontSize: '11.5px',
+              color: 'var(--violet, #6E3FF3)',
+              fontWeight: '800',
+              fontSize: '13px',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '6px',
               marginTop: '12px',
-              padding: '0'
+              padding: '4px 0',
+              outline: 'none',
+              textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+              letterSpacing: '0.3px'
             }}
           >
             {showExp ? 'Hide Explanation ▲' : 'Show Explanation ▼'}
           </button>
           {showExp && (
-            <div style={{ marginTop: '8px', padding: '10px 12px', background: 'rgba(110, 63, 243, 0.05)', borderRadius: '6px', borderLeft: '3px solid #6E3FF3' }}>
-              <strong style={{ fontSize: '11px', color: '#6E3FF3', display: 'block', marginBottom: '4px', textTransform: 'uppercase' }}>Explanation:</strong>
-              <div style={{ fontSize: '12.5px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.45 }}>
-                {splitBilingualText(q.explanation).map((part, pIdx) => (
-                  <p key={pIdx} style={{ margin: 0, marginTop: pIdx > 0 ? '6px' : 0 }}>
-                    {part.trim()}
-                  </p>
-                ))}
+            <div style={{ 
+              marginTop: '10px', 
+              padding: '12px 16px', 
+              background: 'var(--bg-input, rgba(110, 63, 243, 0.04))', 
+              borderRadius: '8px', 
+              borderLeft: '4px solid var(--violet, #6E3FF3)',
+              borderTop: '1px solid var(--border-color)',
+              borderRight: '1px solid var(--border-color)',
+              borderBottom: '1px solid var(--border-color)'
+            }}>
+              <strong style={{ 
+                fontSize: '11.5px', 
+                color: 'var(--violet, #6E3FF3)', 
+                display: 'block', 
+                marginBottom: '6px', 
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontWeight: '800'
+              }}>Explanation:</strong>
+              <div style={{ margin: 0 }}>
+                {(() => {
+                  const parts = splitBilingualText(q.explanation);
+                  return parts.map((part, pIdx) => {
+                    const isHindi = /[\u0900-\u097F]/.test(part);
+                    return (
+                      <p 
+                        key={pIdx} 
+                        style={{ 
+                          margin: 0, 
+                          marginTop: pIdx > 0 ? '8px' : 0,
+                          fontSize: isHindi ? '13.5px' : '13px',
+                          color: isHindi ? 'var(--text-secondary)' : 'var(--text-primary)',
+                          lineHeight: isHindi ? '1.6' : '1.5',
+                          fontWeight: isHindi ? '500' : '400'
+                        }}
+                      >
+                        {part.trim()}
+                      </p>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}

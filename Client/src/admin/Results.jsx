@@ -464,7 +464,7 @@ function Results() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                 {/* Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '0.8fr 3fr 3fr 2fr 2fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div className="top-perf-grid-header" style={{ display: 'grid', gridTemplateColumns: '0.8fr 3fr 3fr 2fr 2fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   <div>Rank</div>
                   <div>Student</div>
                   <div>Quiz</div>
@@ -476,10 +476,10 @@ function Results() {
                 {topPerformers.map((p, idx) => {
                   const pct = p.total > 0 ? (p.score / p.total) * 100 : 0;
                   return (
-                    <div key={p._id} style={{ display: 'grid', gridTemplateColumns: '0.8fr 3fr 3fr 2fr 2fr 2fr', alignItems: 'center', padding: '12px 16px', borderBottom: idx === topPerformers.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                    <div key={p._id} className="top-perf-grid-row" style={{ display: 'grid', gridTemplateColumns: '0.8fr 3fr 3fr 2fr 2fr 2fr', alignItems: 'center', padding: '12px 16px', borderBottom: idx === topPerformers.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
                       <div><strong>{(perfPage - 1) * itemsPerPage + idx + 1}</strong></div>
                       <div className="user-cell">
-                        <div className="avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
+                        <div className="avatar mobile-hide-avatar">{p.userId?.fullName?.charAt(0) || "?"}</div>
                         <div>
                           <h5 style={{ margin: 0, fontSize: '13px', fontWeight: '600' }}>{p.userId?.fullName || "Unknown User"}</h5>
                           <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>{p.userId?.email || "No Email"}</p>
@@ -532,7 +532,7 @@ function Results() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                 {/* Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 2fr 2fr 2fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div className="quiz-stats-grid-header" style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 2fr 2fr 2fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   <div>Quiz</div>
                   <div>Total Attempts</div>
                   <div>Average Score</div>
@@ -542,7 +542,7 @@ function Results() {
                 </div>
                 {/* Rows */}
                 {quizStats.map((q, idx) => (
-                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 2fr 2fr 2fr 2fr', alignItems: 'center', padding: '12px 16px', borderBottom: idx === quizStats.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                  <div key={idx} className="quiz-stats-grid-row" style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 2fr 2fr 2fr 2fr', alignItems: 'center', padding: '12px 16px', borderBottom: idx === quizStats.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
                     <div><strong>{q.name}</strong></div>
                     <div>{q.attempts}</div>
                     <div><span className={`score-badge ${getScoreBadgeClass(q.avgScore)}`}>{q.avgScore}%</span></div>
@@ -592,7 +592,7 @@ function Results() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                 {/* Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '3fr 3fr 2.5fr 4fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div className="feedback-grid-header" style={{ display: 'grid', gridTemplateColumns: '3fr 3fr 2.5fr 4fr 2fr', padding: '0 16px 8px 16px', borderBottom: '1.5px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   <div>Student</div>
                   <div>Quiz</div>
                   <div>Rating / Reaction</div>
@@ -601,9 +601,9 @@ function Results() {
                 </div>
                 {/* Rows */}
                 {filteredResults.filter(r => r.reaction || r.feedbackMessage).map((fb, idx, arr) => (
-                  <div key={fb._id} style={{ display: 'grid', gridTemplateColumns: '3fr 3fr 2.5fr 4fr 2fr', alignItems: 'center', padding: '16px', borderBottom: idx === arr.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
+                  <div key={fb._id} className="feedback-grid-row" style={{ display: 'grid', gridTemplateColumns: '3fr 3fr 2.5fr 4fr 2fr', alignItems: 'center', padding: '16px', borderBottom: idx === arr.length - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-primary)' }}>
                     <div className="user-cell">
-                      <div className="avatar">{fb.userId?.fullName?.charAt(0) || "?"}</div>
+                      <div className="avatar mobile-hide-avatar">{fb.userId?.fullName?.charAt(0) || "?"}</div>
                       <div>
                         <h5 style={{ margin: 0, fontSize: '13px', fontWeight: '600' }}>{fb.userId?.fullName || "Anonymous Student"}</h5>
                         <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>{fb.userId?.email || ""}</p>

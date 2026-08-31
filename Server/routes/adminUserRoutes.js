@@ -188,7 +188,55 @@ router.post("/:id/reset-password", protect, superAdminOnly, async (req, res) => 
   }
 });
 
-// GET all deleted users (superadmin only)
+// UPDATE user's AI subscription plan (adminOnly)
+router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
+  try {
+    const { action, planId } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (action === "cancel") {
+      user.isPremium = false;
+      user.activePlan = null;
+      user.premiumExpiresAt = null;
+      await user.save();
+      await logAction("CANCEL_USER_AI_PLAN", req.user?.fullName || "Admin", `Cancelled AI plan for user: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
+      return res.json({ message: "AI plan subscription cancelled successfully." });
+    }
+
+    if (action === "upgrade") {
+      const AiPlan = require("../models/AiPlan");
+      const plan = await AiPlan.findById(planId);
+      if (!plan) {
+        return res.status(404).json({ message: "AI Plan not found." });
+      }
+
+      // Calculate expiry
+      const expiryDate = new Date();
+      if (plan.durationUnit === "months") {
+        expiryDate.setMonth(expiryDate.getMonth() + plan.durationValue);
+      } else {
+        expiryDate.setDate(expiryDate.getDate() + plan.durationValue);
+      }
+
+      user.isPremium = true;
+      user.activePlan = plan._id;
+      user.premiumExpiresAt = expiryDate;
+      
+      await user.save();
+      await logAction("UPGRADE_USER_AI_PLAN", req.user?.fullName || "Admin", `Upgraded user: ${user.fullName} (${user.email}) to AI Plan: ${plan.name}`, "UserManagement", req.ip);
+      return res.json({ message: `AI plan successfully upgraded to ${plan.name}.`, user });
+    }
+
+    res.status(400).json({ message: "Invalid action. Use 'upgrade' or 'cancel'." });
+  } catch (error) {
+    console.error("Manage User AI Subscription Error:", error);
+    res.status(500).json({ message: "Failed to update user AI subscription." });
+  }
+});
+
 router.get("/deleted", protect, superAdminOnly, async (req, res) => {
   try {
     const users = await User.find({ isDeleted: true }).select("-password").sort({ updatedAt: -1 });

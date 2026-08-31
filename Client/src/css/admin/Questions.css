@@ -237,20 +237,16 @@
 
 /* ── VIEW 3: QUESTIONS (Uses existing right-col logic but full width) ── */
 .qb-questions-view {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
   display: flex;
   flex-direction: column;
   height: calc(100vh - 168px); /* Fixed height to enable internal scrolling */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
   animation: fadeIn 0.3s ease;
   overflow: hidden;
 }
 
 .qb-right-header {
-  padding: 24px 24px 16px 24px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 0 16px 0;
+  border-bottom: none;
 }
 
 .qb-right-top {
@@ -395,19 +391,30 @@
   height: 40px;
   padding: 0 16px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   background: var(--bg-input);
   color: var(--text-primary);
+  font-weight: 600;
   font-size: 13px;
   outline: none;
   cursor: pointer;
+}
+
+.qb-type-select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+.qb-search-pill input::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.8 !important;
 }
 
 
 .qb-questions-list {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 16px 0 0 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   align-items: start;
@@ -430,17 +437,18 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .qb-qnum {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(139, 92, 246, 0.1);
-  color: #8B5CF6;
-  font-size: 13px;
-  font-weight: 700;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  color: var(--violet);
+  font-size: 13.5px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -453,24 +461,26 @@
 
 .qb-qtext-eng {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
   line-height: 1.5;
 }
 
 .qb-qtext-hin {
-  font-size: 14px;
+  font-size: 14.5px;
   color: var(--text-secondary);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 .qb-qbadge {
   font-size: 11px;
-  font-weight: 700;
-  color: #8B5CF6;
-  background: rgba(139, 92, 246, 0.1);
+  font-weight: 800;
+  color: var(--violet);
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
   padding: 4px 8px;
   border-radius: 6px;
 }
@@ -479,7 +489,9 @@
 .qb-options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 14px;
+  margin-top: 18px;
+  margin-bottom: 18px;
 }
 
 .qb-opt {
@@ -498,9 +510,9 @@
 }
 
 .qb-opt-letter {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .qb-opt.correct .qb-opt-letter {
@@ -510,7 +522,7 @@
 .qb-opt-text {
   font-size: 14px;
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* Edit mode styles */
@@ -580,10 +592,6 @@
 }
 
 /* Dark Mode Overrides */
-body.dark-mode .qb-questions-view {
-  background: var(--bg-card);
-  border-color: var(--border-color);
-}
 
 body.dark-mode .qb-book-card,
 body.dark-mode .qb-subject-card,

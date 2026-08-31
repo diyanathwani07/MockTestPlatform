@@ -190,8 +190,8 @@ function Leaderboard() {
                           textAlign: "left",
                           border: "none",
                           borderRadius: "6px",
-                          background: selectedExam === "All Exams" ? "rgba(139, 92, 246, 0.1)" : "transparent",
-                          color: selectedExam === "All Exams" ? "#8B5CF6" : "var(--text-primary, #1e1b4b)",
+                          background: selectedExam === "All Exams" ? "var(--option-hover)" : "transparent",
+                          color: selectedExam === "All Exams" ? "var(--violet, #6E3FF3)" : "var(--text-primary, #1e1b4b)",
                           fontSize: "13px",
                           fontWeight: selectedExam === "All Exams" ? "600" : "500",
                           cursor: "pointer"
@@ -217,8 +217,8 @@ function Leaderboard() {
                               textAlign: "left",
                               border: "none",
                               borderRadius: "6px",
-                              background: selectedExam === exam ? "rgba(139, 92, 246, 0.1)" : "transparent",
-                              color: selectedExam === exam ? "#8B5CF6" : "var(--text-primary, #1e1b4b)",
+                              background: selectedExam === exam ? "var(--option-hover)" : "transparent",
+                              color: selectedExam === exam ? "var(--violet, #6E3FF3)" : "var(--text-primary, #1e1b4b)",
                               fontSize: "13px",
                               fontWeight: selectedExam === exam ? "600" : "500",
                               cursor: "pointer"

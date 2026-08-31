@@ -49,7 +49,7 @@
 }
 
 .lb-info-icon {
-  color: #8B5CF6;
+  color: var(--violet, #6E3FF3);
 }
 
 /* Tabs & Filters */
@@ -77,7 +77,7 @@
 
 .lb-tab.active {
   background: white;
-  color: #6E3FF3;
+  color: var(--violet, #6E3FF3);
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
@@ -111,7 +111,7 @@
 }
 
 .lb-filter-select:hover, .lb-filter-select:focus {
-  border-color: #8B5CF6;
+  border-color: var(--violet, #6E3FF3);
 }
 
 .lb-search {
@@ -285,12 +285,12 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-stat-value.purple {
-  color: #6E3FF3;
+  color: var(--violet, #6E3FF3);
 }
 
 .lb-btn-primary {
   width: 100%;
-  background: #6E3FF3;
+  background: var(--violet, #6E3FF3);
   color: white;
   border: none;
   border-radius: 8px;
@@ -306,7 +306,8 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-btn-primary:hover {
-  background: #5B21B6;
+  background: var(--violet-hover, #5B21B6);
+  opacity: 0.95;
 }
 
 /* Right Column (Podium & Table) */
@@ -396,7 +397,7 @@ body.dark-mode .lb-search .lb-icon {
 .lb-podium-score {
   font-weight: 700;
   font-size: 13px;
-  color: #6E3FF3;
+  color: var(--violet, #6E3FF3);
   margin-bottom: 16px;
 }
 
@@ -458,12 +459,12 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-table td.student .you {
-  color: #6E3FF3;
+  color: var(--violet, #6E3FF3);
 }
 
 .lb-table td.score {
   font-weight: 700;
-  color: #6E3FF3;
+  color: var(--violet, #6E3FF3);
 }
 
 .lb-table td.accuracy {
@@ -473,7 +474,7 @@ body.dark-mode .lb-search .lb-icon {
 
 .lb-table td.percentile {
   font-weight: 700;
-  color: #6E3FF3;
+  color: var(--violet, #6E3FF3);
 }
 
 .lb-view-more {

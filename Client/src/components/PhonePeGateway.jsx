@@ -80,7 +80,7 @@ const UPI_APPS = [
   { name: "BHIM", color: "#004C8F", icon: "B" },
 ];
 
-function PhonePeGateway({ quiz, amount, planMonths, onClose, onSuccess }) {
+function PhonePeGateway({ quiz, amount, planMonths, onClose, onSuccess, type = "exam", planId }) {
   const [step, setStep] = useState("options"); // options | upi-id | qr | processing | success | failed
   const [selectedUpiApp, setSelectedUpiApp] = useState(null);
   const [upiId, setUpiId] = useState("");
@@ -112,11 +112,19 @@ function PhonePeGateway({ quiz, amount, planMonths, onClose, onSuccess }) {
       clearInterval(interval);
       try {
         const token = localStorage.getItem("token");
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/purchase/exam`,
-          { examId: quiz._id, planMonths: planMonths || 1 },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        if (type === "ai-plan") {
+          await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribe`,
+            { planId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } else {
+          await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/purchase/exam`,
+            { examId: quiz?._id, planMonths: planMonths || 1 },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
         setTxnId(genTxnId());
         setStep("success");
       } catch (err) {
@@ -173,7 +181,7 @@ function PhonePeGateway({ quiz, amount, planMonths, onClose, onSuccess }) {
             <span className="pp-merchant-icon">🎓</span>
             <div>
               <div className="pp-merchant-name">{merchantName}</div>
-              <div className="pp-merchant-item">{quiz.title}</div>
+              <div className="pp-merchant-item">{type === "ai-plan" ? "AI Subscription Plan" : quiz?.title}</div>
             </div>
           </div>
           <div className="pp-order-amount">{displayAmount}</div>
