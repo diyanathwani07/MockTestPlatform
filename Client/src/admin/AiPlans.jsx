@@ -454,10 +454,10 @@ function AdminAiPlans() {
             </div>
 
             {/* Modal Body with form on left and live preview on right */}
-            <div style={{ display: "flex", overflowY: "auto", flex: 1, flexDirection: window.innerWidth < 768 ? "column" : "row" }}>
+            <div style={{ display: "flex", overflowY: "auto", flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
               
               {/* Form Side */}
-              <form onSubmit={handleSubmit} style={{ flex: 1, padding: "24px", borderRight: "1px solid var(--border-color)" }}>
+              <form onSubmit={handleSubmit} style={{ flex: "1 1 450px", minWidth: "280px", padding: "24px", borderRight: "1px solid var(--border-color)", borderBottom: "1px solid var(--border-color)" }}>
                 {formError && (
                   <div style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid #EF4444", borderRadius: "8px", padding: "10px 14px", color: "#EF4444", marginBottom: "16px", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "8px" }}>
                     <ShieldAlert size={16} />
@@ -492,7 +492,7 @@ function AdminAiPlans() {
                   </div>
 
                   {/* Pricing Row */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
                     <div>
                       <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Original Price (₹) *</label>
                       <input 
@@ -514,7 +514,7 @@ function AdminAiPlans() {
                   </div>
 
                   {/* Duration Row */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
                     <div>
                       <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Duration Value *</label>
                       <input 
@@ -538,7 +538,7 @@ function AdminAiPlans() {
                   </div>
 
                   {/* AI Credits & Test limits */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
                     <div>
                       <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>AI Credits *</label>
                       <input 
@@ -562,7 +562,7 @@ function AdminAiPlans() {
                   {/* Features checklist */}
                   <div>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>Features Included</label>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px" }}>
                       {AVAILABLE_FEATURES.map(feat => (
                         <label key={feat} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px", color: "var(--text-secondary)", cursor: "pointer" }}>
                           <input 
@@ -589,7 +589,7 @@ function AdminAiPlans() {
                         {form.allowedExamIds.length === exams.length ? "Deselect All" : "Select All"}
                       </button>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", maxHeight: "100px", overflowY: "auto", padding: "6px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "rgba(255,255,255,0.01)" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px", maxHeight: "100px", overflowY: "auto", padding: "6px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "rgba(255,255,255,0.01)" }}>
                       {exams.map(exam => (
                         <label key={exam._id} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px", color: "var(--text-secondary)", cursor: "pointer" }}>
                           <input 
@@ -610,7 +610,7 @@ function AdminAiPlans() {
                   </div>
 
                   {/* recommended & status row */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", alignItems: "center" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", alignItems: "center" }}>
                     <div>
                       <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Status</label>
                       <select 
