@@ -351,19 +351,14 @@ export default function MySubscriptions() {
                   overflow: "hidden"
                 }}>
                   {/* Top Bar */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px", marginBottom: "18px" }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                        <Badge variant="success" className="gap-1 font-bold text-xs py-1 px-2.5">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> ACTIVE MEMBERSHIP
-                        </Badge>
-                        <span style={{ fontSize: "11.5px", color: "var(--text-muted)", fontFamily: "monospace" }}>
-                          #{activeSubscription.purchaseId}
-                        </span>
-                      </div>
-                      <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: "4px 0 0 0" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "18px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                      <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: 0, lineHeight: 1.2 }}>
                         {activeSubscription.planNameSnapshot || activeSubscription.planId?.name || "AI Subscription Plan"}
                       </h2>
+                      <Badge variant="success" className="gap-1 font-bold text-xs py-1 px-2.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> ACTIVE MEMBERSHIP
+                      </Badge>
                     </div>
 
                     <button
