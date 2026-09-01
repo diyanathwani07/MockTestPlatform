@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Bell, CheckSquare } from "lucide-react";
+import { useSocket } from "../context/SocketContext";
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -9,8 +10,9 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { socket, isConnected } = useSocket();
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -30,18 +32,50 @@ export default function NotificationBell() {
     } catch (error) {
       console.error("[NotificationBell] Failed to fetch notifications:", error);
     }
-  };
+  }, []);
 
+  // Initial load
   useEffect(() => {
     fetchNotifications();
+  }, [fetchNotifications]);
 
-    // Poll every 45 seconds
+  // Real-time Socket.IO notification listener
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewNotification = (newNotification) => {
+      if (!newNotification) return;
+
+      console.log("[NotificationBell] Real-time notification received 🔔:", newNotification);
+
+      setNotifications((prev) => {
+        // Prevent duplicate notifications
+        if (newNotification._id && prev.some((n) => n._id === newNotification._id)) {
+          return prev;
+        }
+        return [newNotification, ...prev.slice(0, 19)];
+      });
+
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    socket.on("notification", handleNewNotification);
+
+    return () => {
+      socket.off("notification", handleNewNotification);
+    };
+  }, [socket]);
+
+  // Fallback refresh: if socket is disconnected, poll every 60s
+  useEffect(() => {
+    if (isConnected) return;
+
     const interval = setInterval(() => {
       fetchNotifications();
-    }, 45000);
+    }, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isConnected, fetchNotifications]);
 
   // Handle clicking outside to close dropdown
   useEffect(() => {
@@ -57,23 +91,31 @@ export default function NotificationBell() {
   const handleMarkAsRead = async (id, link) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.patch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/notifications/${id}/read`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      if (id) {
+        await axios.patch(
+          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/notifications/${id}/read`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+      
+      // Update local state immediately for instant feedback
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
       );
-      // Refresh list
-      fetchNotifications();
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+
       setIsOpen(false);
       if (link) {
         navigate(link);
       }
     } catch (error) {
       console.error("[NotificationBell] Failed to mark as read:", error);
+      fetchNotifications();
     }
   };
 
@@ -89,13 +131,16 @@ export default function NotificationBell() {
           },
         }
       );
-      fetchNotifications();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
     } catch (error) {
       console.error("[NotificationBell] Failed to mark all as read:", error);
+      fetchNotifications();
     }
   };
 
   const formatRelativeTime = (dateString) => {
+    if (!dateString) return "Just now";
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now - date;
@@ -130,6 +175,7 @@ export default function NotificationBell() {
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+        title={unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}` : "Notifications"}
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -231,7 +277,7 @@ export default function NotificationBell() {
             ) : (
               notifications.map((n) => (
                 <div
-                  key={n._id}
+                  key={n._id || n.id || `${n.title}-${n.createdAt}`}
                   onClick={() => handleMarkAsRead(n._id, n.link)}
                   style={{
                     padding: "12px 16px",
@@ -284,10 +330,10 @@ export default function NotificationBell() {
                       marginBottom: "4px",
                     }}
                   >
-                    {n.message}
+                    {n.message || n.text}
                   </div>
                   <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>
-                    {formatRelativeTime(n.createdAt)}
+                    {formatRelativeTime(n.createdAt || n.date)}
                   </div>
                 </div>
               ))

@@ -1899,22 +1899,71 @@ function Users() {
                   </select>
                 </div>
               </div>
-              <div className="modal-footer" style={{ padding: '16px 30px', borderTop: '1px solid var(--border-color)', display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <div 
+                className="modal-footer" 
+                style={{ 
+                  padding: '12px 20px', 
+                  borderTop: '1px solid var(--border-color)', 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "flex-end", 
+                  gap: "8px",
+                  flexWrap: "nowrap"
+                }}
+              >
                 {selectedUser.isPremium && (
                   <button 
-                    className="btn-danger" 
                     onClick={() => handleManageAiSubscription("cancel")} 
                     disabled={aiActionLoading}
-                    style={{ marginRight: "auto" }}
+                    style={{ 
+                      marginRight: "auto",
+                      padding: "6px 12px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      borderRadius: "6px",
+                      background: "rgba(239, 68, 68, 0.15)",
+                      color: "#EF4444",
+                      border: "1px solid rgba(239, 68, 68, 0.3)",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      transition: "all 0.2s ease"
+                    }}
                   >
                     {aiActionLoading ? "Processing..." : "Cancel Subscription"}
                   </button>
                 )}
-                <button className="btn-secondary" onClick={closeModal}>Cancel</button>
                 <button 
-                  className="btn-primary" 
+                  onClick={closeModal}
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    borderRadius: "6px",
+                    background: "rgba(255, 255, 255, 0.06)",
+                    color: "var(--text-secondary)",
+                    border: "1px solid var(--border-color)",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
                   onClick={() => handleManageAiSubscription("upgrade")} 
                   disabled={aiActionLoading || !selectedPlanId}
+                  style={{
+                    padding: "6px 14px",
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    borderRadius: "6px",
+                    background: selectedPlanId ? "var(--violet, #6E3FF3)" : "rgba(110, 63, 243, 0.3)",
+                    color: "#ffffff",
+                    border: "none",
+                    cursor: selectedPlanId ? "pointer" : "not-allowed",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.2s ease"
+                  }}
                 >
                   {aiActionLoading ? "Upgrading..." : "Upgrade / Assign"}
                 </button>

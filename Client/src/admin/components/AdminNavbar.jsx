@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
-import { Sun, Moon, Bell, User, LogOut, Eye, ArrowLeft } from "lucide-react";
+import { Sun, Moon, User, LogOut, Eye, ArrowLeft } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
+import NotificationBell from "../../components/NotificationBell";
 import "../../css/admin/AdminLayout.css";
-
 import { useConfirm } from "../../context/ConfirmContext";
 
 function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard" }) {
@@ -14,47 +13,11 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   const { toggleTheme } = useTheme(); 
   const { setPreviewMode } = usePreview();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tickets`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-        const tickets = res.data.tickets || [];
-        const newNotifs = [];
-
-        tickets.forEach(ticket => {
-           if (ticket.status === 'Open') {
-             newNotifs.push({ id: `${ticket._id}-open`, text: `New Support Ticket raised`, subtext: ticket.subject, date: ticket.createdAt });
-           }
-           
-           if (ticket.messages && ticket.messages.length > 0) {
-             const studentReplies = ticket.messages.filter(m => m.sender === 'user');
-             studentReplies.forEach((reply, idx) => {
-               newNotifs.push({ id: `${ticket._id}-rep-${idx}`, text: `New message from student`, subtext: ticket.subject, date: reply.createdAt });
-             });
-           }
-        });
-
-        newNotifs.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setNotifications(newNotifs.slice(0, 10)); // keep top 10
-      } catch (err) {
-        console.error("Failed to fetch notifications", err);
-      }
-    };
-    fetchTickets();
-  }, []);
-
-  const unreadNotifications = notifications.length;
 
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
-
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"
@@ -69,51 +32,11 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
       </div>
 
       <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        
         {/* Theme Toggle Button */}
         <ThemeToggle />
 
-        {/* Notification Bell */}
-        <div className="profile-dropdown-wrapper">
-          <button 
-            className="nav-bell-btn" 
-            title={unreadNotifications > 0 ? "Notifications" : "No notifications"} 
-            onClick={() => { 
-              setNotifOpen(!notifOpen); 
-              setProfileOpen(false); 
-            }}
-            style={{ 
-              cursor: "pointer",
-              opacity: 1 
-            }}
-          >
-            <Bell size={20} />
-            {unreadNotifications > 0 && <span className="bell-badge">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}
-          </button>
-          {notifOpen && (
-            <div className="profile-floating-menu notif-panel" style={{ width: "320px", maxWidth: "calc(100vw - 24px)", right: "0", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-              <div style={{ padding: "16px", borderBottom: "1px solid var(--border-color)", fontWeight: "600", color: "var(--text-primary)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span>Notifications</span>
-                <span style={{ fontSize: "12px", background: "var(--violet)", color: "white", padding: "2px 8px", borderRadius: "10px" }}>{unreadNotifications} New</span>
-              </div>
-              <div style={{ maxHeight: "360px", overflowY: "auto" }}>
-                {notifications.length === 0 ? (
-                  <div style={{ padding: "30px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: "14px" }}>
-                    <Bell size={32} style={{ opacity: 0.2, marginBottom: "10px" }} />
-                    <div>No new notifications</div>
-                  </div>
-                ) : (
-                  notifications.map(n => (
-                    <div key={n.id} style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", cursor: "pointer", transition: "background 0.2s" }} onClick={() => { setNotifOpen(false); navigate("/admin/tickets"); }} onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                      <div style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: "500", marginBottom: "4px" }}>{n.text}</div>
-                      <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>{n.subtext}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Real-time Notification Bell */}
+        <NotificationBell />
 
         {/* Profile */}
         <div className="profile-dropdown-wrapper">
@@ -124,7 +47,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
             return (
               <div 
                 className="avatar-neon-trigger" 
-                onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+                onClick={() => { setProfileOpen(!profileOpen); }}
                 style={{ overflow: 'hidden', padding: 0 }}
               >
                 {storedUser.avatar ? (
@@ -136,30 +59,48 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
             );
           })()}
           {profileOpen && (
-            <div className="profile-floating-menu">
-              <div className="drop-link" onClick={() => navigate("/admin/profile")}>
-                <User size={16} style={{ marginRight: '8px' }} /> My Profile
+            <div className="profile-floating-menu" style={{ width: "240px", right: "0" }}>
+              <div className="pf-item pf-info-card">
+                <p className="pf-name">{JSON.parse(localStorage.getItem("user") || "{}").name || JSON.parse(localStorage.getItem("user") || "{}").fullName || "Administrator"}</p>
+                <p className="pf-role">{JSON.parse(localStorage.getItem("user") || "{}").role || "Admin"}</p>
               </div>
-              <div className="drop-link" onClick={() => {
-                setPreviewMode(true);
-                navigate("/dashboard");
-              }}>
-                <Eye size={16} style={{ marginRight: '8px' }} /> View as Student
-              </div>
-              <div className="drop-link" onClick={async () => {
-                 const isConfirmed = await confirm({
-                   title: "Confirm Log Out",
-                   message: "Are you sure you want to log out of your administrator account?",
-                   type: "warning",
-                   confirmText: "Log Out",
-                 });
-                 if (isConfirmed) {
-                   localStorage.clear();
-                   navigate("/");
-                 }
-               }}>
-                <LogOut size={16} style={{ marginRight: '8px' }} /> Log Out
-              </div>
+              <hr className="pf-divider" />
+              <button 
+                className="pf-item pf-action-btn"
+                onClick={() => { setProfileOpen(false); navigate("/admin/profile"); }}
+              >
+                <User size={16} /> Admin Profile
+              </button>
+              <button 
+                className="pf-item pf-action-btn"
+                onClick={() => {
+                  setProfileOpen(false);
+                  setPreviewMode(true);
+                  navigate("/dashboard");
+                }}
+              >
+                <Eye size={16} /> Student Preview
+              </button>
+              <button 
+                className="pf-item pf-action-btn pf-logout-btn"
+                onClick={async () => {
+                  setProfileOpen(false);
+                  const isConfirmed = await confirm({
+                    title: "Logout Admin",
+                    message: "Are you sure you want to securely end your administrative session?",
+                    confirmText: "Logout",
+                    cancelText: "Cancel",
+                    type: "danger"
+                  });
+                  if (isConfirmed) {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    window.location.href = "/login";
+                  }
+                }}
+              >
+                <LogOut size={16} /> Logout
+              </button>
             </div>
           )}
         </div>

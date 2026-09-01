@@ -50,11 +50,13 @@ import RevenueDashboard from "./admin/RevenueDashboard";
 import AiSubscribers from "./admin/AiSubscribers";
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
+import { SocketProvider } from "./context/SocketContext";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <SocketProvider>
+        <Routes>
 
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -535,6 +537,7 @@ function App() {
       </Routes>
       <ThemeButton />
       <ThemePicker />
+      </SocketProvider>
     </BrowserRouter>
   );
 }
