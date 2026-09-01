@@ -1,6 +1,7 @@
 const Subscription = require("../models/Subscription");
 const AiPlan = require("../models/AiPlan");
 const User = require("../models/User");
+const { syncLegacySubscriptions } = require("../utils/subscriptionUtils");
 
 /**
  * GET /api/admin/revenue/analytics
@@ -8,6 +9,7 @@ const User = require("../models/User");
  */
 const getRevenueAnalytics = async (req, res) => {
   try {
+    await syncLegacySubscriptions();
     const { period = "monthly", from, to } = req.query;
 
     // Date filter on startDate

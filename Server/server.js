@@ -33,6 +33,8 @@ const revenueRoutes = require("./routes/revenueRoutes");
 const Quiz = require("./models/Quiz");
 const seedDepartments = require("./scripts/seedDepartments");
 const { startSubscriptionExpiryCron } = require("./services/subscriptionExpiryCron");
+const http = require("http");
+const { initSocket } = require("./services/socketService");
 
 const express = require("express");
 const cors = require("cors");
@@ -42,6 +44,8 @@ const examSeriesRoutes = require("./routes/examSeriesRoutes");
 const ExamSeries = require("./models/ExamSeries");
 
 const app = express();
+const httpServer = http.createServer(app);
+const io = initSocket(httpServer);
 const PORT = 5000;
 const path = require("path");
 
@@ -55,6 +59,8 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 connectDB().then(async () => {
   seedDepartments();
   startSubscriptionExpiryCron();
+  const { syncLegacySubscriptions } = require("./utils/subscriptionUtils");
+  syncLegacySubscriptions();
 
   // One-time database migration backfill: Group existing unlinked quizzes under a default 'Ungrouped Mocks' parent series
   try {
@@ -151,6 +157,6 @@ const { startReportScheduler } = require("./services/reportScheduler");
 startReportScheduler();
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} with Socket.IO initialized 🚀`);
 });

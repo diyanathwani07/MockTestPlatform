@@ -391,15 +391,6 @@ export default function MySubscriptions() {
                     borderTop: "1px solid rgba(110,63,243,0.2)",
                     borderBottom: "1px solid rgba(110,63,243,0.2)"
                   }}>
-                    <div>
-                      <div style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: "0.5px" }}>
-                        AI CREDITS AVAILABLE
-                      </div>
-                      <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)", marginTop: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Zap className="w-4 h-4 text-amber-400" />
-                        <span>{userProfile?.aiCredits ?? activeSubscription.aiCreditsGranted ?? 0}</span>
-                      </div>
-                    </div>
 
                     <div>
                       <div style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: "0.5px" }}>

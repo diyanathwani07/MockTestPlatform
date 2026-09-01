@@ -260,6 +260,7 @@ JSON Schema format:
       published: true,
       status: "Published",
       quizType: "custom",
+      isAiGenerated: true,
       publishAs: "exam",
       createdBy: req.user._id,
       questions: finalQuestions.map(q => ({

@@ -1,8 +1,9 @@
 const Notification = require("../models/Notification");
 const User = require("../models/User");
+const { emitToUser, emitToAdmin, emitToDepartment } = require("./socketService");
 
 /**
- * Creates and saves an in-app notification for a single user.
+ * Creates and saves an in-app notification for a single user, then emits a real-time event.
  * Wrapped in try/catch to prevent errors from blocking main controller operations.
  */
 async function notifyUser(userId, { type, title, message, link = "", relatedId = null }) {
@@ -16,6 +17,10 @@ async function notifyUser(userId, { type, title, message, link = "", relatedId =
       link,
       relatedId
     });
+
+    // Real-time WebSocket delivery
+    emitToUser(userId, "notification", notification);
+
     return notification;
   } catch (error) {
     console.error(`[NotificationService] Failed to notify user ${userId}:`, error);
@@ -24,12 +29,11 @@ async function notifyUser(userId, { type, title, message, link = "", relatedId =
 }
 
 /**
- * Bulk inserts an in-app notification for all active students.
+ * Bulk inserts an in-app notification for all active students, then emits real-time events.
  * Wrapped in try/catch to ensure reliability.
  */
 async function notifyAllStudents({ type, title, message, link = "", relatedId = null }) {
   try {
-    // TODO: broadcast to all students since User has no subject/category preference field yet - revisit if per-student targeting is added later.
     const activeStudents = await User.find({ role: "user", status: "Active", isDeleted: { $ne: true } }).select("_id");
     if (activeStudents.length === 0) return [];
 
@@ -43,6 +47,12 @@ async function notifyAllStudents({ type, title, message, link = "", relatedId = 
     }));
 
     const result = await Notification.insertMany(notificationsToInsert, { ordered: false });
+
+    // Real-time WebSocket delivery to all active students
+    result.forEach(n => {
+      emitToUser(n.userId, "notification", n);
+    });
+
     return result;
   } catch (error) {
     console.error("[NotificationService] Failed to bulk-notify students:", error);
@@ -51,14 +61,14 @@ async function notifyAllStudents({ type, title, message, link = "", relatedId = 
 }
 
 /**
- * Bulk inserts an in-app notification for all active managers/employees in a specific department.
+ * Bulk inserts an in-app notification for all active managers/employees in a specific department, then emits real-time events.
  * Wrapped in try/catch to ensure reliability.
  */
 async function notifyDepartment(department, { type, title, message, link = "", relatedId = null }) {
   try {
     const staff = await User.find({ 
       department, 
-      role: { $in: ["manager", "employee"] }, 
+      role: { $in: ["manager", "employee", "admin", "superadmin"] }, 
       status: "Active", 
       isDeleted: { $ne: true } 
     }).select("_id");
@@ -75,6 +85,21 @@ async function notifyDepartment(department, { type, title, message, link = "", r
     }));
 
     const result = await Notification.insertMany(notificationsToInsert, { ordered: false });
+
+    // Real-time delivery to each user & the department room
+    result.forEach(n => {
+      emitToUser(n.userId, "notification", n);
+    });
+    emitToDepartment(department, "notification", {
+      type,
+      title,
+      message,
+      link,
+      relatedId,
+      department,
+      createdAt: new Date()
+    });
+
     return result;
   } catch (error) {
     console.error(`[NotificationService] Failed to notify department ${department}:`, error);
