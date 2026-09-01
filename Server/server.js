@@ -28,8 +28,11 @@ const purchaseRoutes = require("./routes/purchaseRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const aiTestRoutes = require("./routes/aiTestRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
+const revenueRoutes = require("./routes/revenueRoutes");
 const Quiz = require("./models/Quiz");
 const seedDepartments = require("./scripts/seedDepartments");
+const { startSubscriptionExpiryCron } = require("./services/subscriptionExpiryCron");
 
 const express = require("express");
 const cors = require("cors");
@@ -51,6 +54,7 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 // MongoDB Connection
 connectDB().then(async () => {
   seedDepartments();
+  startSubscriptionExpiryCron();
 
   // One-time database migration backfill: Group existing unlinked quizzes under a default 'Ungrouped Mocks' parent series
   try {
@@ -116,6 +120,8 @@ app.use("/api/ai/questions", require("./routes/aiQuestionRoutes"));
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/ai-tests", aiTestRoutes);
 app.use("/api/admin/ai-plans", require("./routes/aiPlanRoutes"));
+app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/admin/revenue", revenueRoutes);
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
 setInterval(async () => {
   try {

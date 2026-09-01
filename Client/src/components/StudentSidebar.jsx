@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard } from "lucide-react";
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
@@ -16,8 +16,20 @@ function StudentSidebar() {
     catch { return fallback; }
   };
 
+  const getInitialSubscriptionStatus = () => {
+    try {
+      const cached = localStorage.getItem("_sidebar_hasSubscription");
+      if (cached !== null) return JSON.parse(cached);
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      return !!user.isPremium || !!user.activePlan;
+    } catch {
+      return false;
+    }
+  };
+
   const [hasPurchasedExams, setHasPurchasedExams] = useState(() => getCached("_sidebar_hasExams"));
   const [hasPurchasedPractice, setHasPurchasedPractice] = useState(() => getCached("_sidebar_hasPractice"));
+  const [hasSubscription, setHasSubscription] = useState(getInitialSubscriptionStatus);
   const [isLogoutHovered, setIsLogoutHovered] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
@@ -40,23 +52,27 @@ function StudentSidebar() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const [examsRes, practiceRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quizzes`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }).catch(() => ({ data: [] })),
-          axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/practice`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }).catch(() => ({ data: [] }))
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [examsRes, practiceRes, subRes, premiumRes] = await Promise.all([
+          axios.get(`${apiUrl}/api/quizzes`, { headers }).catch(() => ({ data: [] })),
+          axios.get(`${apiUrl}/api/practice`, { headers }).catch(() => ({ data: [] })),
+          axios.get(`${apiUrl}/api/subscription/my`, { headers }).catch(() => ({ data: [] })),
+          axios.get(`${apiUrl}/api/ai-tests/premium-status`, { headers }).catch(() => ({ data: null }))
         ]);
 
         const hasExams = Array.isArray(examsRes?.data) ? examsRes.data.some(quiz => quiz.isPurchased) : false;
         const hasPractice = Array.isArray(practiceRes?.data) ? practiceRes.data.some(item => item.isPurchased) : false;
+        const hasSub = (Array.isArray(subRes?.data) && subRes.data.length > 0) || !!premiumRes?.data?.isPremium;
 
         // Update state and persist to cache
         setHasPurchasedExams(hasExams);
         setHasPurchasedPractice(hasPractice);
+        setHasSubscription(hasSub);
         localStorage.setItem("_sidebar_hasExams", JSON.stringify(hasExams));
         localStorage.setItem("_sidebar_hasPractice", JSON.stringify(hasPractice));
+        localStorage.setItem("_sidebar_hasSubscription", JSON.stringify(hasSub));
       } catch (err) {
         console.error("Error checking student purchases:", err);
       }
@@ -125,6 +141,13 @@ function StudentSidebar() {
             <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
               <BookOpen size={20} />
               <span>My Practice</span>
+            </NavLink>
+          )}
+
+          {hasSubscription && (
+            <NavLink to="/dashboard/subscriptions" className="sidebar-link" onClick={() => setIsOpen(false)}>
+              <CreditCard size={20} />
+              <span>My Subscriptions</span>
             </NavLink>
           )}
 
@@ -198,54 +221,75 @@ function StudentSidebar() {
               height: "56px",
               borderRadius: "50%",
               background: "rgba(239, 68, 68, 0.15)",
+              color: "#ef4444",
               display: "flex",
-              justifyContent: "center",
               alignItems: "center",
-              color: "#ef4444"
+              justifyContent: "center"
             }}>
               <LogOut size={28} />
             </div>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <h3 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "var(--text-primary)" }}>Log Out?</h3>
-              <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                Are you sure you want to log out of your account? You will need to sign in again to continue.
+
+            <div>
+              <h3 style={{
+                fontSize: "20px",
+                fontWeight: "700",
+                color: "#ffffff",
+                marginBottom: "8px"
+              }}>
+                Ready to leave?
+              </h3>
+              <p style={{
+                fontSize: "14px",
+                color: "rgba(255, 255, 255, 0.6)",
+                lineHeight: "1.5"
+              }}>
+                Are you sure you want to log out of your account? You will need to sign back in to access your tests.
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "8px" }}>
+            <div style={{
+              display: "flex",
+              gap: "12px",
+              width: "100%",
+              marginTop: "8px"
+            }}>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 style={{
                   flex: 1,
-                  padding: "12px 20px",
-                  borderRadius: "30px",
-                  border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
-                  background: "transparent",
-                  color: "var(--text-primary)",
-                  fontWeight: "600",
+                  padding: "12px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  background: "rgba(255, 255, 255, 0.05)",
+                  color: "#ffffff",
                   fontSize: "14px",
+                  fontWeight: "600",
                   cursor: "pointer",
                   transition: "all 0.2s"
                 }}
+                onMouseOver={(e) => e.target.style.background = "rgba(255, 255, 255, 0.1)"}
+                onMouseOut={(e) => e.target.style.background = "rgba(255, 255, 255, 0.05)"}
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleLogout}
                 style={{
                   flex: 1,
-                  padding: "12px 20px",
-                  borderRadius: "30px",
+                  padding: "12px",
+                  borderRadius: "12px",
                   border: "none",
                   background: "#ef4444",
                   color: "#ffffff",
-                  fontWeight: "600",
                   fontSize: "14px",
+                  fontWeight: "600",
                   cursor: "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)"
+                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)",
+                  transition: "all 0.2s"
                 }}
+                onMouseOver={(e) => e.target.style.background = "#dc2626"}
+                onMouseOut={(e) => e.target.style.background = "#ef4444"}
               >
                 Log Out
               </button>
@@ -254,6 +298,7 @@ function StudentSidebar() {
         </div>
       )}
 
+      {/* Embedded Floating AI Chatbot */}
       <StudentChatbot />
     </>
   );

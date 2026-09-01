@@ -77,8 +77,27 @@ function PricingPlans() {
         <div style={{ padding: "32px 24px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
           
           {/* Header Description */}
-          <div style={{ textAlign: "center", marginBottom: "40px" }}>
+          <div style={{ textAlign: "center", marginBottom: "36px" }}>
             <h2 style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-primary)", margin: "0" }}>Unlock AI Features</h2>
+            <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: "8px 0 12px 0" }}>
+              Generate personalized quizzes, get weak-topic analysis, and boost your exam scores.
+            </p>
+            <button
+              onClick={() => navigate("/dashboard/subscriptions")}
+              style={{
+                background: "rgba(110,63,243,0.08)",
+                border: "1px solid rgba(110,63,243,0.25)",
+                borderRadius: "20px",
+                padding: "6px 16px",
+                fontSize: "12.5px",
+                fontWeight: "600",
+                color: "var(--violet, #6E3FF3)",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+            >
+              Already subscribed? View My Subscriptions →
+            </button>
           </div>
 
           {error && (

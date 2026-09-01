@@ -197,7 +197,15 @@ router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
+    const Subscription = require("../models/Subscription");
+
     if (action === "cancel") {
+      // Cancel any active subscriptions
+      await Subscription.updateMany(
+        { studentId: user._id, status: "active" },
+        { $set: { status: "cancelled" } }
+      );
+
       user.isPremium = false;
       user.activePlan = null;
       user.premiumExpiresAt = null;
@@ -220,6 +228,30 @@ router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
       } else {
         expiryDate.setDate(expiryDate.getDate() + plan.durationValue);
       }
+
+      // Cancel any existing active subscriptions
+      await Subscription.updateMany(
+        { studentId: user._id, status: "active" },
+        { $set: { status: "cancelled" } }
+      );
+
+      // Create new admin_grant subscription
+      const crypto = require("crypto");
+      const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+      await Subscription.create({
+        studentId: user._id,
+        planId: plan._id,
+        planNameSnapshot: plan.name,
+        purchaseId,
+        amount: plan.sellingPrice || 0,
+        currency: plan.currency || "INR",
+        aiCreditsGranted: plan.aiCredits || 0,
+        startDate: new Date(),
+        expiryDate,
+        status: "active",
+        paymentGateway: "admin_grant",
+        gatewayTxnId: null
+      });
 
       user.isPremium = true;
       user.activePlan = plan._id;

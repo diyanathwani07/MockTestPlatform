@@ -12,6 +12,16 @@ const {
   subscribeToPlan,
   getDashboardMetrics
 } = require("../controllers/aiPlanController");
+const {
+  getSubscribersOverview,
+  getSubscribersList,
+  getSubscriberHistory
+} = require("../controllers/subscribersController");
+
+// Subscribers Analytics & Listing Endpoints (Admin-only)
+router.get("/subscribers", protect, adminOnly, getSubscribersOverview);
+router.get("/subscribers/list", protect, adminOnly, getSubscribersList);
+router.get("/subscribers/:studentId", protect, adminOnly, getSubscriberHistory);
 
 // Student/Admin listing endpoints
 router.get("/", protect, getAiPlans);

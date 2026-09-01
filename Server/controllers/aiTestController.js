@@ -2,14 +2,21 @@ const { GoogleGenAI } = require("@google/genai");
 const { generateContentWithFallback } = require("../utils/geminiHelper");
 const Quiz = require("../models/Quiz");
 const User = require("../models/User");
+const { enforceExpiry } = require("../utils/subscriptionUtils");
 
 // 1. Get Premium Status
 const getPremiumStatus = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+
+    const flipped = await enforceExpiry(user);
+    if (flipped) {
+      user = await User.findById(user._id);
+    }
+
     res.json({
       isPremium: !!user.isPremium,
       aiCredits: user.aiCredits || 0,
@@ -88,6 +95,8 @@ const generateAITest = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+
+    await enforceExpiry(user);
 
     if (!user.isPremium) {
       return res.status(403).json({

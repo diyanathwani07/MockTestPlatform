@@ -219,13 +219,15 @@ const deleteAiPlan = async (req, res) => {
 };
 
 const User = require("../models/User");
+const Subscription = require("../models/Subscription");
 const logAction = require("../utils/logger");
 const { notifyUser } = require("../services/notificationService");
+const crypto = require("crypto");
 
 // SUBSCRIBE/unlock a plan (Simulated payment callback flow)
 const subscribeToPlan = async (req, res) => {
   try {
-    const { planId } = req.body;
+    const { planId, gatewayTxnId } = req.body;
     if (!planId) {
       return res.status(400).json({ message: "planId is required." });
     }
@@ -244,7 +246,7 @@ const subscribeToPlan = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Calculate expiry
+    // Calculate expiry (starts/restarts from now)
     const expiryDate = new Date();
     if (plan.durationUnit === "months") {
       expiryDate.setMonth(expiryDate.getMonth() + plan.durationValue);
@@ -252,7 +254,30 @@ const subscribeToPlan = async (req, res) => {
       expiryDate.setDate(expiryDate.getDate() + plan.durationValue);
     }
 
-    // Grant premium access and credits
+    // Cancel any existing active subscriptions (renewal / supersede)
+    await Subscription.updateMany(
+      { studentId: user._id, status: "active" },
+      { $set: { status: "cancelled" } }
+    );
+
+    // Create Subscription record
+    const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+    await Subscription.create({
+      studentId: user._id,
+      planId: plan._id,
+      planNameSnapshot: plan.name,
+      purchaseId,
+      amount: plan.sellingPrice || 0,
+      currency: plan.currency || "INR",
+      aiCreditsGranted: plan.aiCredits || 0,
+      startDate: new Date(),
+      expiryDate,
+      status: "active",
+      paymentGateway: "phonepe", // Matches the gateway currently used
+      gatewayTxnId: gatewayTxnId || null
+    });
+
+    // Grant premium access and credits (derived cache on User)
     user.isPremium = true;
     user.aiCredits = (user.aiCredits || 0) + plan.aiCredits;
     user.premiumExpiresAt = expiryDate;
@@ -260,8 +285,8 @@ const subscribeToPlan = async (req, res) => {
 
     await user.save();
 
-    // Audit logs
-    await logAction("SUBSCRIBE_AI_PLAN", user.fullName, `${plan.name} (Granted ${plan.aiCredits} credits)`, "Purchase", req.ip);
+    // Audit logs including purchaseId
+    await logAction("SUBSCRIBE_AI_PLAN", user.fullName, `${plan.name} (Granted ${plan.aiCredits} credits, Purchase ID: ${purchaseId})`, "Purchase", req.ip);
 
     // Send in-app notification
     await notifyUser(user._id, {

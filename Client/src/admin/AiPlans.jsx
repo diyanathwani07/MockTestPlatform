@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -20,6 +21,7 @@ const AVAILABLE_FEATURES = [
 ];
 
 function AdminAiPlans() {
+  const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [exams, setExams] = useState([]);
   const [metrics, setMetrics] = useState({
@@ -260,8 +262,23 @@ function AdminAiPlans() {
                 {metricsLoading ? "..." : metrics.activePlansCount}
               </h3>
             </div>
-            <div className="armored-stat-card" style={{ background: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>Total Subscribers</p>
+            <div 
+              className="armored-stat-card" 
+              onClick={() => navigate("/admin/ai-subscribers")}
+              style={{ 
+                background: "var(--bg-card)", 
+                padding: "20px", 
+                borderRadius: "12px", 
+                border: "1px solid var(--border-color)",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+              title="Click to view all AI Subscribers"
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>Total Subscribers</p>
+                <span style={{ fontSize: "11px", color: "var(--violet)", fontWeight: "600" }}>View Subscribers →</span>
+              </div>
               <h3 style={{ margin: "8px 0 0 0", fontSize: "28px", fontWeight: "800", color: "var(--text-primary)" }}>
                 {metricsLoading ? "..." : metrics.totalSubscribers}
               </h3>
@@ -272,8 +289,23 @@ function AdminAiPlans() {
                 {metricsLoading ? "..." : metrics.aiTestsGenerated}
               </h3>
             </div>
-            <div className="armored-stat-card" style={{ background: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>Active Revenue</p>
+            <div 
+              className="armored-stat-card" 
+              onClick={() => navigate("/admin/revenue")}
+              style={{ 
+                background: "var(--bg-card)", 
+                padding: "20px", 
+                borderRadius: "12px", 
+                border: "1px solid var(--border-color)",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+              title="Click to view full Revenue Analytics Dashboard"
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>Active Revenue</p>
+                <span style={{ fontSize: "11px", color: "var(--violet)", fontWeight: "600" }}>View Analytics →</span>
+              </div>
               <h3 style={{ margin: "8px 0 0 0", fontSize: "28px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
                 {metricsLoading ? "..." : `₹${metrics.activeRevenue}`}
               </h3>

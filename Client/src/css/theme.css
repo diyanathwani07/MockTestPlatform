@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@config "../../tailwind.config.js";
+@source "../**/*.{js,jsx,ts,tsx}";
 
 /* ============================================
    TEACHING PARIKSHA — THEME VARIABLES
@@ -37,6 +39,28 @@
   --gold:           #F4C842;
   --green:          #1aa971;
   --red:            #e2436b;
+
+  /* shadcn/ui Theme Variables mapped to App Theme */
+  --background:     var(--bg-page);
+  --foreground:     var(--text-primary);
+  --card:           var(--bg-card);
+  --card-foreground: var(--text-primary);
+  --popover:        var(--bg-card);
+  --popover-foreground: var(--text-primary);
+  --primary:        var(--violet);
+  --primary-foreground: #ffffff;
+  --secondary:      var(--bg-input);
+  --secondary-foreground: var(--text-primary);
+  --muted:          var(--bg-input);
+  --muted-foreground: var(--text-muted);
+  --accent:         var(--option-hover);
+  --accent-foreground: var(--text-primary);
+  --destructive:    var(--red);
+  --destructive-foreground: #ffffff;
+  --border:         var(--border-color);
+  --input:          var(--border-color);
+  --ring:           var(--violet);
+  --radius:         0.5rem;
 
   /* Cards */
   --card-shadow:    0 1px 3px rgba(26, 26, 46, 0.04);

@@ -44,7 +44,10 @@ import ExamsPage from "./Pages/ExamsPage";
 import PracticePage from "./Pages/PracticePage";
 import CreateCustomQuiz from "./Pages/CreateCustomQuiz";
 import PricingPlans from "./Pages/PricingPlans";
+import MySubscriptions from "./Pages/MySubscriptions";
 import AdminAiPlans from "./admin/AiPlans";
+import RevenueDashboard from "./admin/RevenueDashboard";
+import AiSubscribers from "./admin/AiSubscribers";
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
 
@@ -252,6 +255,15 @@ function App() {
           }
         />
 
+        <Route
+          path="/dashboard/subscriptions"
+          element={
+            <ProtectedRoute>
+              <MySubscriptions />
+            </ProtectedRoute>
+          }
+        />
+
         {/* ================= ADMIN ROUTES ================= */}
 
         <Route
@@ -259,6 +271,24 @@ function App() {
           element={
             <AdminRoute>
               <AdminAiPlans />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/revenue"
+          element={
+            <AdminRoute>
+              <RevenueDashboard />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/ai-subscribers"
+          element={
+            <AdminRoute>
+              <AiSubscribers />
             </AdminRoute>
           }
         />
