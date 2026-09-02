@@ -54,6 +54,7 @@ const ThemePicker = () => {
         bottom: "84px",
         right: "24px",
         width: "300px",
+        maxWidth: "calc(100vw - 48px)",
         maxHeight: "500px",
         backgroundColor: "var(--bg-card, #131428)",
         border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",

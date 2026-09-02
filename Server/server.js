@@ -89,8 +89,27 @@ connectDB().then(async () => {
 });
 
 // Middleware
+const helmet = require("helmet");
+app.use(helmet());
+
+const { apiLimiter } = require("./middleware/rateLimiter");
+app.use(apiLimiter);
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: true,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 }));

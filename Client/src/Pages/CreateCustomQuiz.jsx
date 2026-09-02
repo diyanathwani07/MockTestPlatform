@@ -916,7 +916,7 @@ const CreateCustomQuiz = () => {
                   flexWrap: "wrap"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "320px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", maxWidth: "320px" }}>
                   <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", whiteSpace: "nowrap" }}>Filter by Attempt Date:</span>
                   <MuiDatePicker value={selectedDate} onChange={setSelectedDate} label="mm-dd-yyyy" />
                 </div>

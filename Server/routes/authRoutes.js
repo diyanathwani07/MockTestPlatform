@@ -10,18 +10,20 @@ const {
 
 const router = express.Router();
 
+const { authLimiter, passwordRecoveryLimiter } = require("../middleware/rateLimiter");
+
 // store OTP temporarily (for now in memory) with expiry
 // Format: { email: { otp: string, expiresAt: number } }
 const otpStore = new Map();
 
 // REGISTER
-router.post("/register", registerUser);
+router.post("/register", authLimiter, registerUser);
 
 // LOGIN
-router.post("/login", loginUser);
+router.post("/login", authLimiter, loginUser);
 
 // FORGOT PASSWORD (SEND OTP)
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", passwordRecoveryLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -102,7 +104,7 @@ router.post("/forgot-password", async (req, res) => {
 });
 
 // VERIFY OTP
-router.post("/verify-otp", async (req, res) => {
+router.post("/verify-otp", passwordRecoveryLimiter, async (req, res) => {
   try {
     const { email, otp } = req.body;
 
@@ -142,7 +144,7 @@ router.post("/verify-otp", async (req, res) => {
 });
 
 // RESET PASSWORD
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", passwordRecoveryLimiter, async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 

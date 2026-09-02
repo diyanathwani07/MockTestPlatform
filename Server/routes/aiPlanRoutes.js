@@ -23,9 +23,11 @@ router.get("/subscribers", protect, adminOnly, getSubscribersOverview);
 router.get("/subscribers/list", protect, adminOnly, getSubscribersList);
 router.get("/subscribers/:studentId", protect, adminOnly, getSubscriberHistory);
 
+const { paymentLimiter } = require("../middleware/rateLimiter");
+
 // Student/Admin listing endpoints
 router.get("/", protect, getAiPlans);
-router.post("/subscribe", protect, subscribeToPlan);
+router.post("/subscribe", protect, paymentLimiter, subscribeToPlan);
 router.get("/dashboard-metrics", protect, adminOnly, getDashboardMetrics);
 router.get("/:id", protect, getAiPlanById);
 
