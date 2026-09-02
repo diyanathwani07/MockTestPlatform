@@ -59,30 +59,25 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
             );
           })()}
           {profileOpen && (
-            <div className="profile-floating-menu" style={{ width: "240px", right: "0" }}>
-              <div className="pf-item pf-info-card">
-                <p className="pf-name">{JSON.parse(localStorage.getItem("user") || "{}").name || JSON.parse(localStorage.getItem("user") || "{}").fullName || "Administrator"}</p>
-                <p className="pf-role">{JSON.parse(localStorage.getItem("user") || "{}").role || "Admin"}</p>
-              </div>
-              <hr className="pf-divider" />
-              <button 
-                className="pf-item pf-action-btn"
+            <div className="profile-floating-menu">
+              <div 
+                className="drop-link"
                 onClick={() => { setProfileOpen(false); navigate("/admin/profile"); }}
               >
-                <User size={16} /> Admin Profile
-              </button>
-              <button 
-                className="pf-item pf-action-btn"
+                <User size={16} style={{ marginRight: "8px" }} /> Admin Profile
+              </div>
+              <div 
+                className="drop-link"
                 onClick={() => {
                   setProfileOpen(false);
                   setPreviewMode(true);
                   navigate("/dashboard");
                 }}
               >
-                <Eye size={16} /> Student Preview
-              </button>
-              <button 
-                className="pf-item pf-action-btn pf-logout-btn"
+                <Eye size={16} style={{ marginRight: "8px" }} /> Student Preview
+              </div>
+              <div 
+                className="drop-link"
                 onClick={async () => {
                   setProfileOpen(false);
                   const isConfirmed = await confirm({
@@ -99,8 +94,8 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
                   }
                 }}
               >
-                <LogOut size={16} /> Logout
-              </button>
+                <LogOut size={16} style={{ marginRight: "8px" }} /> Logout
+              </div>
             </div>
           )}
         </div>
