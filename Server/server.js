@@ -89,15 +89,10 @@ connectDB().then(async () => {
 });
 
 // Middleware
-const helmet = require("helmet");
-app.use(helmet());
-
-const { apiLimiter } = require("./middleware/rateLimiter");
-app.use(apiLimiter);
-
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
+  "https://mocktestplatform-lac.vercel.app",
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL
 ].filter(Boolean);
@@ -113,6 +108,14 @@ app.use(cors({
   credentials: true,
   optionsSuccessStatus: 200
 }));
+
+const helmet = require("helmet");
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+const { apiLimiter } = require("./middleware/rateLimiter");
+app.use(apiLimiter);
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
