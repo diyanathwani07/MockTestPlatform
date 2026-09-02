@@ -314,9 +314,9 @@ function PhonePeGateway({ quiz, amount, planMonths, onClose, onSuccess, type = "
         {step === "success" && (
           <div className="pp-body pp-success-body">
             <AnimatedTick />
-            <div className="pp-success-title">Payment Successful!</div>
+            <div className="pp-success-title">Payment Submitted</div>
             <div className="pp-success-amount">{displayAmount}</div>
-            <div className="pp-success-to">Paid to {merchantName}</div>
+            <div className="pp-success-to" style={{ color: "#F59E0B", fontWeight: "bold", marginTop: "4px" }}>Awaiting Server Verification</div>
 
             <div className="pp-txn-card">
               <div className="pp-txn-row">
@@ -325,7 +325,7 @@ function PhonePeGateway({ quiz, amount, planMonths, onClose, onSuccess, type = "
               </div>
               <div className="pp-txn-row">
                 <span className="pp-txn-label">Status</span>
-                <span className="pp-txn-status">Success</span>
+                <span className="pp-txn-status" style={{ color: "#F59E0B" }}>Pending Verification</span>
               </div>
               <div className="pp-txn-row">
                 <span className="pp-txn-label">Date & Time</span>

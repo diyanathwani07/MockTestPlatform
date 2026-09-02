@@ -79,12 +79,20 @@ function SharedResult() {
       <div className="result-modal-overlay" style={{ position: "relative", backgroundColor: "transparent" }}>
         <div className="result-modal-card">
           
+          <div style={{ textAlign: "center", marginBottom: "16px", color: "var(--violet)", fontWeight: "800", letterSpacing: "2px", fontSize: "18px" }}>
+            MOCKTESTPLATFORM
+          </div>
+          
           <div className="rm-header">
-            <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px", color: "#F59E0B" }}>
-              <Trophy size={64} strokeWidth={1.5} />
+            <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "12px", color: "#F59E0B" }}>
+              <Trophy size={56} strokeWidth={1.5} />
             </div>
-            <h2>Quiz Result</h2>
-            <p><strong>{studentName}</strong> has completed the quiz.</p>
+            {data.isVerified && (
+              <h2 style={{ color: "#10B981", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "22px", marginBottom: "12px" }}>
+                ✓ VERIFIED RESULT
+              </h2>
+            )}
+            <p style={{ fontSize: "16px" }}>Candidate Name: <strong>{studentName}</strong></p>
           </div>
 
           <div className="rm-info-card">
@@ -121,11 +129,20 @@ function SharedResult() {
               </div>
             </div>
 
-            <div className="rm-score-right" style={{ justifyContent: 'center' }}>
-               <p className="rm-feedback-text" style={{ fontSize: '16px', fontWeight: '500' }}>
-                 This is a publicly shared result link.
+            <div className="rm-score-right" style={{ justifyContent: 'center', textAlign: 'center', padding: '0 16px' }}>
+               <p className="rm-feedback-text" style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                 Result ID / Verification ID
+               </p>
+               <p style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 'bold', color: 'var(--text-primary)', wordBreak: 'break-all' }}>
+                 {data.resultId}
                </p>
             </div>
+          </div>
+
+          <div style={{ marginTop: '24px', padding: '16px', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)', textAlign: 'center' }}>
+            <p style={{ color: '#10B981', fontWeight: '600', fontSize: '14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <ShieldAlert size={18} /> This result was verified from the platform's records.
+            </p>
           </div>
 
           <div className="rm-metrics-grid">

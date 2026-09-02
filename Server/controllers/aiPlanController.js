@@ -254,12 +254,6 @@ const subscribeToPlan = async (req, res) => {
       expiryDate.setDate(expiryDate.getDate() + plan.durationValue);
     }
 
-    // Cancel any existing active subscriptions (renewal / supersede)
-    await Subscription.updateMany(
-      { studentId: user._id, status: "active" },
-      { $set: { status: "cancelled" } }
-    );
-
     // Create Subscription record
     const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
     await Subscription.create({
@@ -272,38 +266,26 @@ const subscribeToPlan = async (req, res) => {
       aiCreditsGranted: plan.aiCredits || 0,
       startDate: new Date(),
       expiryDate,
-      status: "active",
+      status: "pending_payment",
       paymentGateway: "phonepe", // Matches the gateway currently used
       gatewayTxnId: gatewayTxnId || null
     });
 
-    // Grant premium access and credits (derived cache on User)
-    user.isPremium = true;
-    user.aiCredits = (user.aiCredits || 0) + plan.aiCredits;
-    user.premiumExpiresAt = expiryDate;
-    user.activePlan = plan._id;
-
-    await user.save();
-
     // Audit logs including purchaseId
-    await logAction("SUBSCRIBE_AI_PLAN", user.fullName, `${plan.name} (Granted ${plan.aiCredits} credits, Purchase ID: ${purchaseId})`, "Purchase", req.ip);
+    await logAction("SUBSCRIBE_AI_PLAN_PENDING", user.fullName, `${plan.name} (Requested, Purchase ID: ${purchaseId})`, "Purchase", req.ip);
 
     // Send in-app notification
     await notifyUser(user._id, {
-      type: "PAYMENT_SUCCESS",
-      title: "Plan unlocked successfully!",
-      message: `You have successfully subscribed to "${plan.name}". You can now generate up to ${plan.maxAITests} AI tests.`,
-      link: "/dashboard/create-custom-quiz"
+      type: "PAYMENT_PENDING",
+      title: "Plan purchase initiated",
+      message: `Your request to subscribe to "${plan.name}" has been recorded and is pending confirmation.`,
+      link: "/dashboard/pricing"
     });
 
     res.json({
-      message: "Subscribed successfully.",
+      message: "Order created and awaiting confirmation.",
       success: true,
-      user: {
-        isPremium: user.isPremium,
-        aiCredits: user.aiCredits,
-        premiumExpiresAt: user.premiumExpiresAt
-      }
+      pending: true
     });
   } catch (error) {
     console.error("Subscribe to AI Plan Error:", error);

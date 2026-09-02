@@ -1,3 +1,6 @@
+require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") });
+// WARNING: Scripts under Server/scripts/ must NEVER hardcode credentials. 
+// Always read secrets from process.env using dotenv as shown above.
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const Quiz = require("../models/Quiz");
@@ -7,7 +10,7 @@ const AuditLog = require("../models/AuditLog");
 const runMigration = async () => {
   try {
     console.log("Connecting to Database...");
-    await mongoose.connect("mongodb+srv://diyanathwani_db_user:9876543210@cluster1.5j2chbp.mongodb.net/?appName=Cluster1");
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected Successfully!");
 
     const users = await User.find();

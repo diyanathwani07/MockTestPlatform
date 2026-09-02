@@ -18,11 +18,6 @@ function PricingPlans() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [premiumStatus, setPremiumStatus] = useState(null);
 
-  useEffect(() => {
-    fetchActivePlans();
-    fetchPremiumStatus();
-  }, []);
-
   const fetchPremiumStatus = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -51,6 +46,11 @@ function PricingPlans() {
     }
   };
 
+  useEffect(() => {
+    fetchActivePlans();
+    fetchPremiumStatus();
+  }, []);
+
   const handleSubscribeClick = (plan) => {
     setSelectedPlan(plan);
     setShowGateway(true);
@@ -59,13 +59,10 @@ function PricingPlans() {
   const handlePaymentSuccess = () => {
     setShowGateway(false);
     setSuccess(true);
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    user.isPremium = true;
-    localStorage.setItem("user", JSON.stringify(user));
     
     setTimeout(() => {
-      navigate("/dashboard/create-custom-quiz");
-    }, 2000);
+      navigate("/dashboard/subscriptions");
+    }, 3000);
   };
 
   return (
@@ -108,7 +105,7 @@ function PricingPlans() {
 
           {success && (
             <div style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "10px", padding: "16px", color: "#10B981", fontSize: "15px", fontWeight: "600", textAlign: "center", marginBottom: "24px" }}>
-              🎉 Subscription successful! Granting premium credits and redirecting to Custom Test...
+              ✅ Order submitted! Your payment is awaiting confirmation by an admin. Redirecting...
             </div>
           )}
 

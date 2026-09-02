@@ -54,7 +54,8 @@ const saveResult = async (req, res) => {
         hard: { correct: 0, total: 0 }
       },
       questions: questions || [],
-      userAnswers: userAnswers || []
+      userAnswers: userAnswers || [],
+      status: "submitted"
     });
 
     res.status(201).json({
@@ -222,7 +223,7 @@ const getLeaderboard = async (req, res) => {
 const getSharedResult = async (req, res) => {
   try {
     const { shareId } = req.params;
-    const result = await Result.findOne({ shareId, status: { $ne: "active" } })
+    const result = await Result.findOne({ shareId })
       .populate("userId", "fullName name");
       
     if (!result) {
@@ -243,6 +244,9 @@ const getSharedResult = async (req, res) => {
       timeTaken: result.timeTaken,
       createdAt: result.createdAt,
       studentName: result.userId ? (result.userId.name || result.userId.fullName) : "Student",
+      isVerified: true,
+      resultId: result._id,
+      shareId: result.shareId
     };
 
     res.status(200).json(safeResult);
@@ -255,7 +259,7 @@ const getSharedResult = async (req, res) => {
 const getResultByShareId = async (req, res) => {
   try {
     const { shareId } = req.params;
-    const result = await Result.findOne({ shareId, status: { $ne: "active" } }).populate("userId", "fullName name email");
+    const result = await Result.findOne({ shareId }).populate("userId", "fullName name email");
     if (!result) {
       return res.status(404).json({ message: "Result not found" });
     }
@@ -281,7 +285,7 @@ const getResultById = async (req, res) => {
 
     // Fallback: Check by shareId if not found by ObjectId
     if (!result) {
-      result = await Result.findOne({ shareId: resultId, status: { $ne: "active" } }).populate("userId", "fullName name email");
+      result = await Result.findOne({ shareId: resultId }).populate("userId", "fullName name email");
     }
 
     if (!result) {

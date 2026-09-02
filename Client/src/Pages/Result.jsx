@@ -812,7 +812,7 @@ function Result() {
           {isExam && (effectiveResultId || data?._id || data?.result?._id || data?.resultId) && (
             <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
               <FeedbackForm
-                resultId={effectiveResultId || data?._id || data?.result?._id || data?.resultId}
+                resultId={data?.result?._id || data?._id || data?.resultId || (resultId && resultId.length === 24 ? resultId : null)}
                 initialReaction={data?.reaction}
                 initialComment={data?.feedbackMessage}
               />
@@ -1053,7 +1053,7 @@ function Result() {
           {isExam && (effectiveResultId || data?._id || data?.result?._id || data?.resultId) && (
             <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
               <FeedbackForm
-                resultId={effectiveResultId || data?._id || data?.result?._id || data?.resultId}
+                resultId={data?.result?._id || data?._id || data?.resultId || (resultId && resultId.length === 24 ? resultId : null)}
                 initialReaction={data?.reaction}
                 initialComment={data?.feedbackMessage}
               />
