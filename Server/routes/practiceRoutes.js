@@ -21,7 +21,8 @@ const {
   resolveWrongQuestion,
   toggleBookmark,
   getBookmarks,
-  getAiTutorExplanation
+  getAiTutorExplanation,
+  getPracticeResultById
 } = require("../controllers/practiceAnalyticsController");
 const { protect, optionalProtect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
@@ -41,6 +42,7 @@ router.post("/wrong-questions/resolve", protect, resolveWrongQuestion);
 router.post("/bookmarks", protect, toggleBookmark);
 router.get("/bookmarks", protect, getBookmarks);
 router.post("/ai-explain", protect, getAiTutorExplanation);
+router.get("/result/:resultId", protect, getPracticeResultById);
 
 // ── DYNAMIC :id ROUTES AFTER (so static routes above are not swallowed) ──
 

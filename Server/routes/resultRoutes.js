@@ -7,6 +7,7 @@ const {
   getLeaderboard,
   getSharedResult,
   getResultByShareId,
+  getResultById,
   updateResultFeedback
 } = require("../controllers/resultController");
 
@@ -17,6 +18,8 @@ router.put("/feedback/:resultId", protect, updateResultFeedback);
 router.get("/leaderboard", getLeaderboard);
 router.get("/share/:shareId", getSharedResult);
 router.get("/by-share/:shareId", getResultByShareId);
+router.get("/detail/:resultId", protect, getResultById);
+router.get("/id/:resultId", protect, getResultById);
 router.get("/:userId", protect, getUserResults);
 
 module.exports = router;

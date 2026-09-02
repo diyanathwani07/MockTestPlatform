@@ -271,7 +271,10 @@ function SubjectResults() {
                         {/* Bottom Action buttons */}
                         <div style={{ display: "flex", gap: "10px" }}>
                           <button 
-                            onClick={() => navigate(`/student/result/${result.shareId}`, { state: { ...result, fromAttempts: true } })}
+                            onClick={() => {
+                              const targetId = result._id || result.shareId;
+                              navigate(targetId ? `/result/${targetId}` : "/result", { state: { ...result, fromAttempts: true } });
+                            }}
                             style={{ flex: 1, padding: "10px", background: "transparent", color: "#6E3FF3", border: "1.5px solid #6E3FF3", borderRadius: "10px", fontSize: "13px", fontWeight: "700", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center" }}
                           >
                             Result

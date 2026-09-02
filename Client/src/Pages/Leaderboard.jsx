@@ -280,7 +280,8 @@ function Leaderboard() {
                   className="lb-btn-primary"
                   onClick={() => {
                     if (userStat) {
-                      navigate("/result", { state: userStat });
+                      const targetId = userStat._id || userStat.shareId;
+                      navigate(targetId ? `/result/${targetId}` : "/result", { state: userStat });
                     }
                   }}
                   disabled={!userStat}

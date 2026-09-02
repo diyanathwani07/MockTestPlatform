@@ -1226,7 +1226,13 @@ const submitQuiz = async (req, res) => {
         createdAt: new Date(),
         examName: quiz.examName,
         quizTitle: quiz.title,
-        shareId: shareId
+        shareId: shareId,
+        resultId: result._id,
+        _id: result._id,
+        result: {
+          _id: result._id,
+          shareId: shareId
+        }
       });
     }
 

@@ -1,4 +1,7 @@
 const Result = require("../models/Result");
+const User = require("../models/User");
+const Quiz = require("../models/Quiz");
+const PracticeQuiz = require("../models/PracticeQuiz");
 const crypto = require("crypto");
 
 const saveResult = async (req, res) => {
@@ -266,6 +269,52 @@ const getResultByShareId = async (req, res) => {
   }
 };
 
+const getResultById = async (req, res) => {
+  try {
+    const { resultId } = req.params;
+    const mongoose = require("mongoose");
+
+    let result = null;
+    if (mongoose.Types.ObjectId.isValid(resultId)) {
+      result = await Result.findById(resultId).populate("userId", "fullName name email");
+    }
+
+    // Fallback: Check by shareId if not found by ObjectId
+    if (!result) {
+      result = await Result.findOne({ shareId: resultId, status: { $ne: "active" } }).populate("userId", "fullName name email");
+    }
+
+    if (!result) {
+      return res.status(404).json({ message: "Result not found." });
+    }
+
+    // Authorization Security: Student can only view their own result unless admin/superadmin
+    const userRole = req.user?.role;
+    const isOwner = result.userId && (result.userId._id ? result.userId._id.toString() : result.userId.toString()) === req.user._id.toString();
+    const isAdmin = ["admin", "superadmin"].includes(userRole);
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "You are not authorized to view this result." });
+    }
+
+    const Quiz = require("../models/Quiz");
+    const PracticeQuiz = require("../models/PracticeQuiz");
+    let quiz = null;
+    if (result.quizId) {
+      quiz = await Quiz.findById(result.quizId);
+      if (!quiz) {
+        quiz = await PracticeQuiz.findById(result.quizId);
+      }
+    }
+
+    const sanitized = sanitizeResult(result, quiz, userRole);
+    res.status(200).json(sanitized);
+  } catch (error) {
+    console.error("GET RESULT BY ID ERROR:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 const updateResultFeedback = async (req, res) => {
   try {
     const { resultId } = req.params;
@@ -276,7 +325,12 @@ const updateResultFeedback = async (req, res) => {
       return res.status(404).json({ message: "Result not found" });
     }
 
-
+    // Ownership check: only the test taker or admin can submit/update feedback
+    const isOwner = result.userId.toString() === req.user._id.toString();
+    const isAdmin = ["admin", "superadmin"].includes(req.user?.role);
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "You are not authorized to submit feedback for this result." });
+    }
 
     result.reaction = reaction;
     result.feedbackMessage = feedbackMessage;
@@ -289,4 +343,12 @@ const updateResultFeedback = async (req, res) => {
   }
 };
 
-module.exports = { saveResult, getUserResults, getLeaderboard, getSharedResult, getResultByShareId, updateResultFeedback };
+module.exports = {
+  saveResult,
+  getUserResults,
+  getLeaderboard,
+  getSharedResult,
+  getResultByShareId,
+  getResultById,
+  updateResultFeedback
+};

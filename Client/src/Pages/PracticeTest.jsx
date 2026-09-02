@@ -472,25 +472,42 @@ function PracticeTest() {
         });
 
         const serverShowResult = historyRes.data?.showResultAfterSubmission !== false;
+        const practiceResultId = historyRes.data?.practiceResult?._id;
 
         // Restart/Reset active session order for future attempts
         await axios.get(`${import.meta.env.VITE_API_URL}/api/practice/${quizId}/session?restart=true`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        navigate("/practice-result", {
-          replace: true,
-          state: {
-            quizId,
-            title: quiz.title,
-            showResultAfterSubmission: serverShowResult,
-            stats: {
-              ...stats,
-              totalQuestions: questions.length,
-              timeSpent
+        if (practiceResultId) {
+          navigate(`/practice-result/${practiceResultId}`, {
+            replace: true,
+            state: {
+              quizId,
+              title: quiz.title,
+              showResultAfterSubmission: serverShowResult,
+              stats: {
+                ...stats,
+                totalQuestions: questions.length,
+                timeSpent
+              }
             }
-          }
-        });
+          });
+        } else {
+          navigate("/practice-result", {
+            replace: true,
+            state: {
+              quizId,
+              title: quiz.title,
+              showResultAfterSubmission: serverShowResult,
+              stats: {
+                ...stats,
+                totalQuestions: questions.length,
+                timeSpent
+              }
+            }
+          });
+        }
       } catch (err) {
         console.error("Failed to save practice completion metrics:", err);
         // Fallback navigation in case of error

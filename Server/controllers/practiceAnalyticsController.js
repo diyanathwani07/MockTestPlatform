@@ -645,6 +645,29 @@ CRITICAL: Return ONLY a valid JSON object matching the requested schema. Do NOT 
   }
 };
 
+// @desc    Get practice result by ID
+// @route   GET /api/practice/result/:resultId
+// @access  Private
+const getPracticeResultById = async (req, res) => {
+  try {
+    const { resultId } = req.params;
+    const userId = req.user._id;
+
+    const result = await PracticeResult.findById(resultId);
+    if (!result) {
+      return res.status(404).json({ message: "Practice result not found." });
+    }
+
+    if (result.userId.toString() !== userId.toString() && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied." });
+    }
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 module.exports = {
   savePracticeResult,
   getPracticeHistory,
@@ -653,5 +676,6 @@ module.exports = {
   resolveWrongQuestion,
   toggleBookmark,
   getBookmarks,
-  getAiTutorExplanation
+  getAiTutorExplanation,
+  getPracticeResultById
 };

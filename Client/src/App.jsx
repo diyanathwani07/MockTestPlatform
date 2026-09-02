@@ -38,6 +38,7 @@ import PracticeResult from "./Pages/PracticeResult";
 import StudentResults from "./Pages/StudentResults";
 import SubjectResults from "./Pages/SubjectResults";
 import Leaderboard from "./Pages/Leaderboard";
+import SharedResult from "./Pages/SharedResult";
 import HelpSupport from "./Pages/HelpSupport";
 import StudentProfile from "./Pages/StudentProfile";
 import ExamsPage from "./Pages/ExamsPage";
@@ -99,6 +100,24 @@ function App() {
           element={
             <ProtectedRoute>
               <Quiz />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/result/:resultId"
+          element={
+            <ProtectedRoute>
+              <Result />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/results/:resultId"
+          element={
+            <ProtectedRoute>
+              <Result />
             </ProtectedRoute>
           }
         />
@@ -186,7 +205,7 @@ function App() {
         />
 
         <Route
-          path="/dashboard/practice/result/:id"
+          path="/dashboard/practice/result/:resultId"
           element={
             <ProtectedRoute>
               <PracticeResult />
@@ -195,12 +214,17 @@ function App() {
         />
 
         <Route
-          path="/practice-result"
+          path="/practice-result/:resultId"
           element={
             <ProtectedRoute>
               <PracticeResult />
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="/share-result/:shareId"
+          element={<SharedResult />}
         />
 
         <Route

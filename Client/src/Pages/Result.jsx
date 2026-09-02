@@ -8,12 +8,7 @@ import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
 
-const FeedbackForm = ({ resultId }) => {
-  const [rating, setRating] = useState(0); // 1 to 5
-  const [comment, setComment] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   const ratings = [
     { value: 1, label: "Poor", emoji: "😡", color: "#EF4444" },
     { value: 2, label: "Average", emoji: "😐", color: "#F59E0B" },
@@ -21,6 +16,28 @@ const FeedbackForm = ({ resultId }) => {
     { value: 4, label: "Very Good", emoji: "😄", color: "#3B82F6" },
     { value: 5, label: "Excellent", emoji: "😍", color: "#8B5CF6" }
   ];
+
+  const [rating, setRating] = useState(() => {
+    if (initialReaction) {
+      const match = ratings.find(r => r.label.toLowerCase() === initialReaction.toLowerCase());
+      return match ? match.value : 0;
+    }
+    return 0;
+  });
+  const [comment, setComment] = useState(initialComment || "");
+  const [submitted, setSubmitted] = useState(Boolean(initialReaction || initialComment));
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialReaction || initialComment) {
+      if (initialReaction) {
+        const match = ratings.find(r => r.label.toLowerCase() === initialReaction.toLowerCase());
+        if (match) setRating(match.value);
+      }
+      if (initialComment) setComment(initialComment);
+      setSubmitted(true);
+    }
+  }, [initialReaction, initialComment]);
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -39,7 +56,7 @@ const FeedbackForm = ({ resultId }) => {
       setSubmitted(true);
     } catch (err) {
       console.error("Submit feedback error:", err);
-      alert("Failed to submit feedback. Please try again.");
+      alert(err.response?.data?.message || "Failed to submit feedback. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -156,23 +173,32 @@ const FeedbackForm = ({ resultId }) => {
 function Result() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { shareId: routeShareId } = useParams();
+  const { resultId, shareId: routeShareId } = useParams();
+  const effectiveResultId = resultId || routeShareId;
   const { isDark } = useTheme();
 
-  // data is sent via navigate("/result", { state: data }) from Quiz.jsx
+  const [error, setError] = useState(null);
+
+  // Initialize data from location.state if it matches the current URL ID
   const [data, setData] = useState(() => {
     let initialData = location.state;
-    if (!initialData && !routeShareId) {
+    if (initialData) {
+      const stateId = initialData._id || initialData.result?._id || initialData.resultId || initialData.shareId;
+      if (!effectiveResultId || stateId === effectiveResultId) {
+        return initialData;
+      }
+    }
+    if (!effectiveResultId) {
       const stored = localStorage.getItem("lastQuizResult");
       if (stored && stored !== "undefined") {
         try {
-          initialData = JSON.parse(stored);
+          return JSON.parse(stored);
         } catch (e) {
           console.error("Failed to parse cached result data", e);
         }
       }
     }
-    return initialData;
+    return null;
   });
 
   let user = { name: "User" };
@@ -184,7 +210,8 @@ function Result() {
   } catch (e) {
     console.error("Failed to parse user from localStorage", e);
   }
-  const [loadingLatest, setLoadingLatest] = useState(!data || (routeShareId && data.shareId !== routeShareId));
+
+  const [loadingLatest, setLoadingLatest] = useState(!data);
 
   useEffect(() => {
     if (data) {
@@ -193,35 +220,59 @@ function Result() {
   }, [data]);
 
   useEffect(() => {
-    const needsFetch = !data || (routeShareId && data.shareId !== routeShareId);
-
-    if (needsFetch) {
+    const fetchResultData = async () => {
+      const token = localStorage.getItem("token");
       setLoadingLatest(true);
-      const fetchResultData = async () => {
-        try {
-          let res;
-          if (routeShareId) {
-            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/by-share/${routeShareId}`);
-            setData(res.data);
-          } else if (user?.id || user?._id) {
-            res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`, {
-              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-            });
-            if (res.data && res.data.length > 0) {
-              setData(res.data[0]);
-            }
+      setError(null);
+      try {
+        let res;
+        if (effectiveResultId) {
+          res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/detail/${effectiveResultId}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          setData(res.data);
+        } else if (user?.id || user?._id) {
+          res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          if (res.data && res.data.length > 0) {
+            setData(res.data[0]);
           }
-        } catch (err) {
-          console.error("Failed to fetch result data", err);
-        } finally {
-          setLoadingLatest(false);
         }
-      };
+      } catch (err) {
+        console.error("Failed to fetch result data", err);
+        if (err.response?.status === 403) {
+          setError({
+            type: "UNAUTHORIZED",
+            title: "Access Denied",
+            message: "You are not authorized to view this result."
+          });
+        } else if (err.response?.status === 404) {
+          setError({
+            type: "NOT_FOUND",
+            title: "Result Not Found",
+            message: "The requested quiz result could not be found or has expired."
+          });
+        } else {
+          setError({
+            type: "ERROR",
+            title: "Unable to Load Result",
+            message: err.response?.data?.message || "Failed to load result. Please check your internet connection."
+          });
+        }
+      } finally {
+        setLoadingLatest(false);
+      }
+    };
+
+    // If data is not in state or URL effectiveResultId doesn't match loaded state, fetch from server
+    const currentLoadedId = data?._id || data?.result?._id || data?.resultId || data?.shareId;
+    if (!data || (effectiveResultId && currentLoadedId !== effectiveResultId)) {
       fetchResultData();
     } else {
       setLoadingLatest(false);
     }
-  }, [routeShareId, user?.id]);
+  }, [effectiveResultId]);
 
   const score = data?.score ?? 0;
   const total = data?.total ?? 0;
@@ -429,6 +480,53 @@ function Result() {
     saveResult();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (error) {
+    return (
+      <div className="result-page-new">
+        <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+          <ThemeToggle />
+        </div>
+        <div className="result-modal-overlay">
+          <div className="result-modal-card" style={{ textAlign: "center", alignItems: "center", padding: "48px 32px", maxWidth: "520px" }}>
+            <div style={{
+              width: "64px",
+              height: "64px",
+              borderRadius: "50%",
+              background: error.type === "UNAUTHORIZED" ? "rgba(239, 68, 68, 0.1)" : "rgba(110, 63, 243, 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "16px",
+              color: error.type === "UNAUTHORIZED" ? "#EF4444" : "#6E3FF3"
+            }}>
+              <AlertCircle size={36} />
+            </div>
+            <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 8px" }}>{error.title}</h2>
+            <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: "0 0 24px", lineHeight: "1.5" }}>{error.message}</p>
+            <button
+              onClick={() => navigate("/dashboard")}
+              style={{
+                background: "var(--violet)",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "12px",
+                padding: "12px 28px",
+                fontSize: "14px",
+                fontWeight: "700",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px"
+              }}
+            >
+              <ArrowLeft size={16} /> Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loadingLatest) {
     return (
@@ -711,9 +809,13 @@ function Result() {
           </div>
 
           {/* Right Column: Feedback Card */}
-          {isExam && data && data._id && (
+          {isExam && (effectiveResultId || data?._id || data?.result?._id || data?.resultId) && (
             <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
-              <FeedbackForm resultId={data._id} />
+              <FeedbackForm
+                resultId={effectiveResultId || data?._id || data?.result?._id || data?.resultId}
+                initialReaction={data?.reaction}
+                initialComment={data?.feedbackMessage}
+              />
             </div>
           )}
         </div>
@@ -844,10 +946,7 @@ function Result() {
                   }
                 }}
                 style={{ 
-                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
-                  border: reviewFilter === "correct" && data?.showAnswerReview !== false ? "2.5px solid #22C55E" : "1.5px solid transparent",
-                  boxShadow: reviewFilter === "correct" && data?.showAnswerReview !== false ? "0 4px 15px rgba(34, 197, 94, 0.25)" : "none",
-                  transition: "all 0.2s ease"
+                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default"
                 }}
               >
                 <div className="rm-metric-icon icon-green" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><Target size={24} /></div>
@@ -865,10 +964,7 @@ function Result() {
                   }
                 }}
                 style={{ 
-                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
-                  border: reviewFilter === "incorrect" && data?.showAnswerReview !== false ? "2.5px solid #EF4444" : "1.5px solid transparent",
-                  boxShadow: reviewFilter === "incorrect" && data?.showAnswerReview !== false ? "0 4px 15px rgba(239, 68, 68, 0.25)" : "none",
-                  transition: "all 0.2s ease"
+                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default"
                 }}
               >
                 <div className="rm-metric-icon icon-red" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><XCircle size={24} /></div>
@@ -886,10 +982,7 @@ function Result() {
                   }
                 }}
                 style={{ 
-                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default", 
-                  border: reviewFilter === "unattempted" && data?.showAnswerReview !== false ? "2.5px solid #64748B" : "1.5px solid transparent",
-                  boxShadow: reviewFilter === "unattempted" && data?.showAnswerReview !== false ? "0 4px 15px rgba(100, 116, 139, 0.25)" : "none",
-                  transition: "all 0.2s ease"
+                  cursor: (data?.showAnswerReview !== false) ? "pointer" : "default"
                 }}
               >
                 <div className="rm-metric-icon icon-blue" style={{ display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(100, 116, 139, 0.15)", color: "#64748B" }}><HelpCircle size={24} /></div>
@@ -957,9 +1050,13 @@ function Result() {
           </div>
 
           {/* Right Column: Feedback Card */}
-          {isExam && data && data._id && (
+          {isExam && (effectiveResultId || data?._id || data?.result?._id || data?.resultId) && (
             <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
-              <FeedbackForm resultId={data._id} />
+              <FeedbackForm
+                resultId={effectiveResultId || data?._id || data?.result?._id || data?.resultId}
+                initialReaction={data?.reaction}
+                initialComment={data?.feedbackMessage}
+              />
             </div>
           )}
         </div>

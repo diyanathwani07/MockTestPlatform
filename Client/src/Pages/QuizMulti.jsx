@@ -529,7 +529,8 @@ function QuizMulti() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       if (showResultAfterSubmission) {
-        navigate(`/student/result/${res.data.result.shareId}`, { replace: true });
+        const targetId = res.data.result?._id || res.data.result?.shareId || res.data._id;
+        navigate(`/result/${targetId}`, { replace: true, state: res.data.result });
       } else {
         setFinalTimeTaken(totalTimeSpent);
         setIsSubmittedSuccessfully(true);

@@ -1002,7 +1002,7 @@ const CreateCustomQuiz = () => {
                         {/* Right: Actions */}
                         <div className="result-item-actions">
                           <button
-                            onClick={() => navigate("/result", { state: res })}
+                            onClick={() => navigate(res._id ? `/result/${res._id}` : "/result", { state: res })}
                             style={{
                               width: "100%",
                               padding: "8px 16px",
@@ -1224,7 +1224,6 @@ const CreateCustomQuiz = () => {
               textAlign: "center"
             }}>
               <div>⚡ <strong>{aiQuantity} AI credits</strong> will be consumed</div>
-              <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>AI Credits Remaining: {premiumStatus.aiCredits} → {premiumStatus.aiCredits - aiQuantity}</div>
             </div>
 
             <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "8px" }}>

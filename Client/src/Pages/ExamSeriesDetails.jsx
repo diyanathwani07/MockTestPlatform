@@ -290,8 +290,9 @@ function ExamSeriesDetails() {
                                 style={{ flex: 1, padding: "8px", background: "rgba(16, 185, 129, 0.1)", color: "#10B981", border: "1px solid #10B981", fontSize: "12px", textAlign: "center" }}
                                 onClick={() => {
                                   const r = results.find(res => res.quizId === quiz._id || (res.quizId && res.quizId._id === quiz._id));
-                                  if (r && r.shareId) {
-                                    navigate(`/student/result/${r.shareId}`, { state: { fromAttempts: true } });
+                                  if (r) {
+                                    const targetId = r._id || r.shareId;
+                                    navigate(targetId ? `/result/${targetId}` : "/result", { state: { ...r, fromAttempts: true } });
                                   } else {
                                     alert("Could not find the attempt results.");
                                   }

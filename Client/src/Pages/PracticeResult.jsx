@@ -1,5 +1,6 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { Trophy, Clock, Target, AlertTriangle, ArrowRight, RotateCcw, CheckCircle, Percent } from "lucide-react";
@@ -7,10 +8,88 @@ import "../css/StudentDashboard.css";
 import "../css/Practice.css";
 
 function PracticeResult() {
+  const { resultId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   
-  const { quizId, title, stats, showResultAfterSubmission = true } = location.state || {};
+  const [loading, setLoading] = useState(!!resultId);
+  const [error, setError] = useState("");
+  const [resultData, setResultData] = useState(null);
+
+  const activeData = resultData || location.state || {};
+  const { quizId, title, stats, showResultAfterSubmission = true } = activeData;
+
+  useEffect(() => {
+    if (!resultId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchResult = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/practice/result/${resultId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        const data = res.data;
+        setResultData({
+          quizId: data.practiceQuizId,
+          title: data.title,
+          stats: {
+            totalQuestions: data.stats.totalQuestions,
+            firstTryCorrect: data.stats.firstTryCorrect,
+            multipleTries: data.stats.multipleTries,
+            totalWrongAttempts: data.stats.totalWrongAttempts,
+            timeSpent: data.stats.timeSpent
+          },
+          showResultAfterSubmission: true
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch practice result:", err);
+        if (err.response?.status === 403) {
+           setError("You do not have permission to view this result.");
+        } else if (err.response?.status === 404) {
+           setError("Practice result not found.");
+        } else {
+           setError("An error occurred while fetching the result.");
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchResult();
+  }, [resultId]);
+
+  if (loading) {
+    return (
+      <div className="sd-layout">
+        <StudentSidebar />
+        <div className="sd-main-content">
+          <StudentNavbar title="Practice Complete" />
+          <div className="sd-empty" style={{ marginTop: "100px" }}>
+             <p style={{ color: "#a78bfa" }}>Loading your result...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="sd-layout">
+        <StudentSidebar />
+        <div className="sd-main-content">
+          <StudentNavbar title="Practice Complete" />
+          <div className="sd-empty" style={{ marginTop: "100px" }}>
+            <h3 style={{ color: "#EF4444", marginBottom: "16px" }}>{error}</h3>
+            <button className="practice-btn-primary" onClick={() => navigate("/dashboard/practice")}>Go to Dashboard</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!stats) {
     return (
@@ -19,7 +98,7 @@ function PracticeResult() {
         <div className="sd-main-content">
           <StudentNavbar title="Practice Complete" />
           <div className="sd-empty" style={{ marginTop: "100px" }}>
-            <h3>No result data found.</h3>
+            <h3 style={{ marginBottom: "16px" }}>No result data found.</h3>
             <button className="practice-btn-primary" onClick={() => navigate("/dashboard/practice")}>Go to Dashboard</button>
           </div>
         </div>

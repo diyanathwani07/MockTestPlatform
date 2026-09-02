@@ -2042,8 +2042,9 @@ function Users() {
                           {attempt.shareId && (
                             <button 
                               onClick={() => {
-                                navigate(`/student/result/${attempt.shareId}`, { state: { fromAttempts: true } });
-                              }}
+                                  const targetId = attempt._id || attempt.shareId;
+                                  navigate(targetId ? `/result/${targetId}` : "/result", { state: { ...attempt, fromAttempts: true } });
+                                }}
                               style={{ 
                                 display: 'flex', 
                                 alignItems: 'center', 

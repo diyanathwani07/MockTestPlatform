@@ -369,10 +369,13 @@ function Quiz() {
 
       
       if (showResultAfterSubmission) {
-        navigate("/result", { 
+        const targetResultId = serverData.result?._id || serverData._id || serverData.resultId;
+        const targetUrl = targetResultId ? `/result/${targetResultId}` : "/result";
+        navigate(targetUrl, { 
           replace: true,
           state: { 
             ...serverData,
+            _id: targetResultId,
             quizId,
             title: examSubject,
             subject: examSubject,
