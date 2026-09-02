@@ -205,6 +205,24 @@ function AdminAiPlans() {
     }
   };
 
+  const handleDeleteExam = async (examId, title) => {
+    if (!window.confirm(`Are you sure you want to delete the exam category "${title}"?`)) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/exam-series/${examId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setExams(exams.filter(e => e._id !== examId));
+      setForm(prev => ({ 
+        ...prev, 
+        allowedExamIds: prev.allowedExamIds.filter(id => id !== examId) 
+      }));
+    } catch (err) {
+      console.error("Delete exam error:", err);
+      alert(err.response?.data?.message || "Failed to delete exam.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -641,15 +659,25 @@ function AdminAiPlans() {
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px", maxHeight: "100px", overflowY: "auto", padding: "6px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "rgba(255,255,255,0.01)" }}>
                       {exams.map(exam => (
-                        <label key={exam._id} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px", color: "var(--text-secondary)", cursor: "pointer" }}>
-                          <input 
-                            type="checkbox" 
-                            checked={form.allowedExamIds.includes(exam._id)}
-                            onChange={() => handleExamToggle(exam._id)}
-                            style={{ accentColor: "var(--violet, #6E3FF3)" }}
-                          />
-                          <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{exam.title}</span>
-                        </label>
+                        <div key={exam._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "4px" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px", color: "var(--text-secondary)", cursor: "pointer", flex: 1, minWidth: 0 }}>
+                            <input 
+                              type="checkbox" 
+                              checked={form.allowedExamIds.includes(exam._id)}
+                              onChange={() => handleExamToggle(exam._id)}
+                              style={{ accentColor: "var(--violet, #6E3FF3)" }}
+                            />
+                            <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }} title={exam.title}>{exam.title}</span>
+                          </label>
+                          <button 
+                            type="button" 
+                            onClick={() => handleDeleteExam(exam._id, exam.title)} 
+                            title="Delete Exam Category"
+                            style={{ background: "transparent", border: "none", color: "#C51414", cursor: "pointer", fontSize: "18px", lineHeight: "1", padding: "0 4px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >
+                            ×
+                          </button>
+                        </div>
                       ))}
                     </div>
                     {form.allowedExamIds.length === 0 && (
