@@ -179,6 +179,32 @@ function AdminAiPlans() {
     }
   };
 
+  const [newExamTitle, setNewExamTitle] = useState("");
+  const [addingExam, setAddingExam] = useState(false);
+
+  const handleQuickAddExam = async () => {
+    if (!newExamTitle.trim()) return;
+    setAddingExam(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+        title: newExamTitle.trim()
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const newExam = res.data;
+      setExams([...exams, newExam]);
+      setForm(prev => ({ ...prev, allowedExamIds: [...prev.allowedExamIds, newExam._id] }));
+      setNewExamTitle("");
+    } catch (err) {
+      console.error("Quick add exam error:", err);
+      alert(err.response?.data?.message || "Failed to add exam.");
+    } finally {
+      setAddingExam(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -631,6 +657,29 @@ function AdminAiPlans() {
                         No restrictions. Available for <strong>All Exams</strong>.
                       </p>
                     )}
+                    <div style={{ display: "flex", gap: "8px", marginTop: "12px", alignItems: "center" }}>
+                      <input 
+                        type="text" 
+                        placeholder="Add missing exam category..."
+                        value={newExamTitle}
+                        onChange={(e) => setNewExamTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleQuickAddExam();
+                          }
+                        }}
+                        style={{ flex: 1, padding: "8px 12px", border: "1px solid var(--border-color)", borderRadius: "6px", background: "rgba(255,255,255,0.03)", color: "var(--text-primary)", fontSize: "12.5px" }}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={handleQuickAddExam}
+                        disabled={addingExam || !newExamTitle.trim()}
+                        style={{ padding: "8px 14px", background: "var(--violet, #6E3FF3)", color: "white", border: "none", borderRadius: "6px", fontSize: "12.5px", fontWeight: "600", cursor: addingExam || !newExamTitle.trim() ? "not-allowed" : "pointer", opacity: addingExam || !newExamTitle.trim() ? 0.6 : 1 }}
+                      >
+                        {addingExam ? "Adding..." : "Add"}
+                      </button>
+                    </div>
                   </div>
 
                   {/* recommended & status row */}
