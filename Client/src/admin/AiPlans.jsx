@@ -181,6 +181,7 @@ function AdminAiPlans() {
 
   const [newExamTitle, setNewExamTitle] = useState("");
   const [addingExam, setAddingExam] = useState(false);
+  const [isEditingExams, setIsEditingExams] = useState(false);
 
   const handleQuickAddExam = async () => {
     if (!newExamTitle.trim()) return;
@@ -649,13 +650,22 @@ function AdminAiPlans() {
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                       <label style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}>Available for Exams</label>
-                      <button 
-                        type="button" 
-                        onClick={handleSelectAllExams}
-                        style={{ background: "none", border: "none", color: "var(--violet, #6E3FF3)", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}
-                      >
-                        {form.allowedExamIds.length === exams.length ? "Deselect All" : "Select All"}
-                      </button>
+                      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                        <button 
+                          type="button" 
+                          onClick={() => setIsEditingExams(!isEditingExams)}
+                          style={{ background: "none", border: "none", color: isEditingExams ? "#10B981" : "var(--text-secondary)", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}
+                        >
+                          {isEditingExams ? "Done Editing" : "Edit List"}
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={handleSelectAllExams}
+                          style={{ background: "none", border: "none", color: "var(--violet, #6E3FF3)", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}
+                        >
+                          {form.allowedExamIds.length === exams.length ? "Deselect All" : "Select All"}
+                        </button>
+                      </div>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px", maxHeight: "100px", overflowY: "auto", padding: "6px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "rgba(255,255,255,0.01)" }}>
                       {exams.map(exam => (
@@ -669,14 +679,16 @@ function AdminAiPlans() {
                             />
                             <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }} title={exam.title}>{exam.title}</span>
                           </label>
-                          <button 
-                            type="button" 
-                            onClick={() => handleDeleteExam(exam._id, exam.title)} 
-                            title="Delete Exam Category"
-                            style={{ background: "transparent", border: "none", color: "#C51414", cursor: "pointer", fontSize: "18px", lineHeight: "1", padding: "0 4px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                          >
-                            ×
-                          </button>
+                          {isEditingExams && (
+                            <button 
+                              type="button" 
+                              onClick={() => handleDeleteExam(exam._id, exam.title)} 
+                              title="Delete Exam Category"
+                              style={{ background: "transparent", border: "none", color: "#C51414", cursor: "pointer", fontSize: "18px", lineHeight: "1", padding: "0 4px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                            >
+                              ×
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -178,9 +178,21 @@ exports.deleteSeries = async (req, res) => {
     await Quiz.updateMany({ examSeriesId: series._id }, { $set: { examSeriesId: null } });
 
     await ExamSeries.findByIdAndDelete(req.params.id);
+
+    // Create Audit Log
+    const AuditLog = require("../models/AuditLog");
+    await AuditLog.create({
+      action: "Deleted Exam Category",
+      performedBy: req.user?.email || "Admin",
+      details: `Deleted Exam Series: ${series.title}`,
+      ipAddress: req.ip || req.connection.remoteAddress,
+      module: "ExamSeries",
+    });
+
     res.json({ message: "Exam Series deleted successfully." });
   } catch (error) {
     console.error("Delete Series Error:", error);
     res.status(500).json({ message: "Failed to delete Exam Series." });
   }
 };
+
