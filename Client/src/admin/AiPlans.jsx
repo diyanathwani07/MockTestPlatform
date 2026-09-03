@@ -16,6 +16,7 @@ const AVAILABLE_FEATURES = [
   "Exam Pattern Matching",
   "English + Hindi",
   "AI Explanations",
+  "Practice & Exam Modes",
   "Difficulty Selection",
   "Weak Topic Recommendations"
 ];
@@ -48,7 +49,7 @@ function AdminAiPlans() {
     durationUnit: "days",
     aiCredits: 500,
     maxAITests: 20,
-    features: ["AI Test Builder", "Personalized Questions", "Exam Pattern Matching", "English + Hindi", "AI Explanations"],
+    features: ["AI Test Builder", "Personalized Questions", "Exam Pattern Matching", "English + Hindi", "AI Explanations", "Practice & Exam Modes"],
     allowedExamIds: [],
     isFeatured: false,
     status: "draft",
@@ -123,7 +124,7 @@ function AdminAiPlans() {
       durationUnit: "days",
       aiCredits: 500,
       maxAITests: 20,
-      features: ["AI Test Builder", "Personalized Questions", "Exam Pattern Matching", "English + Hindi", "AI Explanations"],
+      features: ["AI Test Builder", "Personalized Questions", "Exam Pattern Matching", "English + Hindi", "AI Explanations", "Practice & Exam Modes"],
       allowedExamIds: [],
       isFeatured: false,
       status: "draft",
