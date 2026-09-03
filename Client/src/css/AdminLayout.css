@@ -137,9 +137,9 @@ body.dark-mode .simple-date-pill input[type="date"]::-webkit-calendar-picker-ind
 }
 
 body.dark-mode .mobile-sidebar-toggle {
-  background: #1a1b2e !important;
-  color: #FFFFFF !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: var(--bg-card, #1a1b2e) !important;
+  color: var(--text-primary, #FFFFFF) !important;
+  border-color: var(--border-color, rgba(255, 255, 255, 0.1)) !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
 }
 
