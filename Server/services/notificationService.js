@@ -112,7 +112,7 @@ async function notifyDepartment(department, { type, title, message, link = "", r
       if (deptDoc && deptDoc.slackWebhookUrl && !deptDoc.slackNotificationsPaused) {
         let slackText = `*${title}*\n${message}`;
         if (link) {
-          slackText += `\n<${process.env.FRONTEND_URL || "http://localhost:5173"}${link}|View Details>`;
+          slackText += `\n<${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}${link}|View Details>`;
         }
         
         await logAction("SLACK_DEBUG", "System", `Sending to: ${deptDoc.slackWebhookUrl}`, "Support", "127.0.0.1");
