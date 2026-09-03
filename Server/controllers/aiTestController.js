@@ -87,7 +87,8 @@ const generateAITest = async (req, res) => {
       difficulty,
       language,
       followExamPattern,
-      includeExplanations
+      includeExplanations,
+      quizType
     } = req.body;
 
     // Validate entitlement
@@ -290,7 +291,7 @@ JSON Schema format:
         status: "Published",
         quizType: "custom",
         isAiGenerated: true,
-        publishAs: "exam",
+        publishAs: quizType || "exam",
         createdBy: req.user._id,
         questions: finalQuestions.map(q => ({
           questionEnglish: q.questionEnglish,

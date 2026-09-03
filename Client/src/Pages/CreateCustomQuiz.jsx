@@ -36,6 +36,7 @@ const CreateCustomQuiz = () => {
   const [aiQuantity, setAiQuantity] = useState(10);
   const [aiDifficulty, setAiDifficulty] = useState("medium");
   const [aiLanguage, setAiLanguage] = useState("English + Hindi");
+  const [aiQuizType, setAiQuizType] = useState("exam"); // "exam" or "practice"
   const [followExamPattern, setFollowExamPattern] = useState(true);
   const [includeExplanations, setIncludeExplanations] = useState(true);
   const [showAiConfirmModal, setShowAiConfirmModal] = useState(false);
@@ -208,7 +209,8 @@ const CreateCustomQuiz = () => {
           difficulty: aiDifficulty,
           language: aiLanguage,
           followExamPattern,
-          includeExplanations
+          includeExplanations,
+          quizType: aiQuizType
         },
         { headers }
       );
@@ -628,6 +630,55 @@ const CreateCustomQuiz = () => {
                     {/* AI Configuration Form */}
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                       
+                      {/* Test Mode Selector */}
+                      <div>
+                        <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>Select Test Mode</label>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                          <button
+                            type="button"
+                            onClick={() => setAiQuizType("exam")}
+                            style={{
+                              padding: "10px 0",
+                              borderRadius: "8px",
+                              fontWeight: "700",
+                              fontSize: "14px",
+                              cursor: "pointer",
+                              transition: "all 0.2s ease",
+                              border: aiQuizType === "exam" 
+                                ? "1.5px solid var(--violet, #6E3FF3)" 
+                                : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                              background: aiQuizType === "exam" 
+                                ? "var(--violet, #6E3FF3)" 
+                                : "transparent",
+                              color: aiQuizType === "exam" ? "#ffffff" : "var(--text-secondary)"
+                            }}
+                          >
+                            Exam Mode
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAiQuizType("practice")}
+                            style={{
+                              padding: "10px 0",
+                              borderRadius: "8px",
+                              fontWeight: "700",
+                              fontSize: "14px",
+                              cursor: "pointer",
+                              transition: "all 0.2s ease",
+                              border: aiQuizType === "practice" 
+                                ? "1.5px solid var(--violet, #6E3FF3)" 
+                                : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                              background: aiQuizType === "practice" 
+                                ? "var(--violet, #6E3FF3)" 
+                                : "transparent",
+                              color: aiQuizType === "practice" ? "#ffffff" : "var(--text-secondary)"
+                            }}
+                          >
+                            Practice Mode
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Exam Select */}
                       <div>
                         <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Select Exam</label>
