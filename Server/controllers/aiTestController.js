@@ -321,7 +321,271 @@ JSON Schema format:
   }
 };
 
+
+const { extractMaterialContent } = require("../utils/materialHelper");
+
+// 3. Generate AI Test from Material
+const generateFromMaterial = async (req, res) => {
+  try {
+    const {
+      examName,
+      subject,
+      quantity,
+      difficulty,
+      language,
+      followExamPattern,
+      includeExplanations,
+      quizType
+    } = req.body;
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "No material file provided." });
+    }
+
+    // Validate entitlement
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    await enforceExpiry(user);
+
+    const questionCount = parseInt(quantity, 10) || 10;
+    if (![10, 20, 30, 50].includes(questionCount)) {
+      return res.status(400).json({ message: "Invalid question count requested." });
+    }
+
+    // Extract material
+    let extractedText = "";
+    let multimodalParts = [];
+    try {
+      const result = await extractMaterialContent(file);
+      extractedText = result.extractedText;
+      multimodalParts = result.multimodalParts;
+    } catch (err) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    // Atomic credit reservation
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: req.user._id,
+        isPremium: true,
+        aiCredits: { $gte: questionCount }
+      },
+      {
+        $inc: { aiCredits: -questionCount }
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      const checkUser = await User.findById(req.user._id);
+      if (!checkUser) return res.status(404).json({ message: "User not found." });
+      if (!checkUser.isPremium) {
+        return res.status(403).json({ message: "Premium access required.", code: "PREMIUM_REQUIRED" });
+      }
+      return res.status(402).json({ message: `Insufficient AI credits. You need ${questionCount}.`, code: "INSUFFICIENT_CREDITS" });
+    }
+
+    let creditsReserved = true;
+    const creditsDeducted = questionCount;
+
+    const refundCredits = async () => {
+      if (creditsReserved) {
+        await User.findByIdAndUpdate(req.user._id, { $inc: { aiCredits: creditsDeducted } });
+        creditsReserved = false;
+      }
+    };
+
+    try {
+      // Set defaults
+      let marksPerQuestion = 1;
+      let negativeMarking = 0.25;
+      let duration = questionCount; 
+      let markingPattern = "standard";
+
+      if (followExamPattern === "true" || followExamPattern === true) {
+        if (examName) {
+          const matchQuiz = await Quiz.findOne({ examName: examName, isDeleted: { $ne: true } });
+          if (matchQuiz) {
+            marksPerQuestion = matchQuiz.marksPerQuestion || 1;
+            negativeMarking = matchQuiz.negativeMarking || 0;
+            markingPattern = matchQuiz.markingPattern || "standard";
+            if (matchQuiz.duration) {
+              const baseQty = matchQuiz.questions?.length || 20;
+              duration = Math.max(5, Math.round((matchQuiz.duration / baseQty) * questionCount));
+            }
+          }
+        }
+      }
+
+      const optionsCount = 4;
+      const tempCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      if (tempCreds) process.env.GOOGLE_APPLICATION_CREDENTIALS = tempCreds;
+
+      const langRule = language === "hindi"
+        ? "All questions, options, and explanations must be written in Hindi. Copy the Hindi question text to questionEnglish so both fields contain Hindi content."
+        : language === "English + Hindi"
+        ? "Bilingual format: questionEnglish must be written in English. questionHindi must be written in Hindi. Options and explanations should contain both languages or be written in a bilingual format where appropriate."
+        : "All questions, options, and explanations must be written in English. Leave questionHindi blank.";
+
+      let promptTemplate = `You are an expert exam question generator for competitive teacher recruitment and recruitment exams such as BPSC, CTET, and UPTET.
+Generate a structured exam test with EXACTLY ${questionCount} multiple-choice questions BASED ONLY ON THE PROVIDED STUDY MATERIAL CONTENT.
+
+Target Exam: ${examName || "Competitive Exam"}
+Difficulty Level: ${difficulty || "medium"}
+Explanations Required: ${includeExplanations === "true" || includeExplanations === true ? "YES" : "NO"}
+Options count per question: ${optionsCount}
+
+Language constraints:
+${langRule}
+
+CRITICAL RULES:
+1. Return ONLY a valid JSON object matching the schema below.
+2. Do NOT wrap JSON in \`\`\`json block.
+3. Every question must have exactly ${optionsCount} options.
+4. correctAnswer must EXACTLY match the text of one option inside the options array.
+5. Do NOT generate duplicate questions.
+6. Make questions professional, pedagogical, and syllabus-based rather than general trivia.
+7. ONLY base your questions on the provided study material content. Do not hallucinate external knowledge unless it is common knowledge strictly related to the material.
+
+STUDY MATERIAL CONTENT:
+"""
+${extractedText || "(Use the provided image(s) as the study material)"}
+"""
+
+JSON Schema format:
+{
+  "questions": [
+    {
+      "questionEnglish": "...",
+      "questionHindi": "...",
+      "options": ["...", "...", "...", "..."],
+      "correctAnswer": "...",
+      "explanation": "..."
+    }
+  ]
+}`;
+
+      let finalPrompt = [{ text: promptTemplate }];
+      if (multimodalParts.length > 0) {
+        finalPrompt.push(...multimodalParts);
+      }
+
+      const response = await generateContentWithFallback(ai, finalPrompt, {
+        responseMimeType: "application/json",
+        temperature: 0.2 // Lower temp for factual extraction
+      });
+
+      let rawText = response.text || "";
+      rawText = rawText.trim();
+      if (rawText.startsWith("```")) {
+        rawText = rawText.replace(/^```(json)?/i, "").replace(/```$/i, "").trim();
+      }
+
+      let resultJson;
+      try {
+        resultJson = JSON.parse(rawText);
+      } catch (e) {
+        await refundCredits();
+        return res.status(502).json({ message: "Failed to parse AI question output. Please try again." });
+      }
+
+      if (!resultJson.questions || !Array.isArray(resultJson.questions)) {
+        await refundCredits();
+        return res.status(502).json({ message: "Invalid JSON format returned by AI." });
+      }
+
+      let validatedQuestions = [];
+      for (const q of resultJson.questions) {
+        if (!q.questionEnglish && !q.questionHindi) continue;
+        if (!q.options || !Array.isArray(q.options) || q.options.length < 2) continue;
+        if (!q.correctAnswer) continue;
+
+        const cleanOptions = q.options.map(opt => String(opt).trim());
+        let matchIndex = cleanOptions.findIndex(opt => opt.toLowerCase() === String(q.correctAnswer).trim().toLowerCase());
+        
+        if (matchIndex === -1) {
+          const correctText = String(q.correctAnswer).trim();
+          const letterLabels = ["a)", "b)", "c)", "d)", "e)"];
+          const labelMatch = letterLabels.findIndex(l => l.toLowerCase() === correctText.toLowerCase());
+          if (labelMatch !== -1 && labelMatch < cleanOptions.length) {
+            q.correctAnswer = cleanOptions[labelMatch];
+          } else {
+            continue;
+          }
+        } else {
+          q.correctAnswer = cleanOptions[matchIndex];
+        }
+
+        if (includeExplanations === "true" || includeExplanations === true) {
+           if (!q.explanation || typeof q.explanation !== "string" || q.explanation.trim() === "") {
+             continue;
+           }
+        }
+
+        validatedQuestions.push(q);
+      }
+
+      if (validatedQuestions.length < questionCount) {
+        await refundCredits();
+        return res.status(502).json({ message: `AI generated ${validatedQuestions.length} valid questions but you requested ${questionCount}. Please try again.` });
+      }
+
+      const finalQuestions = validatedQuestions.slice(0, questionCount);
+
+      const customQuiz = await Quiz.create({
+        title: `AI Test from Material: ${file.originalname}`,
+        subject: subject || "Custom Material",
+        examName: examName || "AI Generated Test",
+        description: `AI generated custom test extracted from ${file.originalname}.`,
+        duration,
+        marksPerQuestion,
+        negativeMarking,
+        markingPattern,
+        published: true,
+        status: "Published",
+        quizType: "custom",
+        isAiGenerated: true,
+        publishAs: quizType || "exam",
+        createdBy: req.user._id,
+        questions: finalQuestions.map(q => ({
+          questionEnglish: q.questionEnglish,
+          questionHindi: q.questionHindi || "",
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation || "",
+          difficulty: difficulty || "medium",
+          subject: subject || "Custom Material"
+        })),
+        isModular: false
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "AI Test generated successfully from material!",
+        quizId: customQuiz._id,
+        creditsRemaining: updatedUser.aiCredits
+      });
+    } catch (innerError) {
+      await refundCredits();
+      throw innerError;
+    }
+  } catch (error) {
+    console.error("AI Material Generation Error:", error);
+    res.status(500).json({ message: error.message || "Failed to generate test from material." });
+  }
+};
+
+
+
 module.exports = {
   getPremiumStatus,
-  generateAITest
+  generateAITest,
+  generateFromMaterial
 };
+

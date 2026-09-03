@@ -43,8 +43,10 @@ const CreateCustomQuiz = () => {
   const [showAiConfirmModal, setShowAiConfirmModal] = useState(false);
   const [aiLoadingSteps, setAiLoadingSteps] = useState({
     active: false,
-    step: 0, // 0: preparando pattern, 1: generating, 2: validating
+    step: 0, // 0: preparing pattern, 1: generating, 2: validating
   });
+  const [aiInputSource, setAiInputSource] = useState("topic"); // "topic" or "material"
+  const [aiFile, setAiFile] = useState(null);
 
   const getStableRank = (id) => {
     if (!id) return 1;
@@ -200,21 +202,46 @@ const CreateCustomQuiz = () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/ai-tests/generate`,
-        {
-          examName: selectedExam,
-          subject: selectedAiSubject,
-          topic: aiTopic,
-          quantity: aiQuantity,
-          difficulty: aiDifficulty,
-          language: aiLanguage,
-          followExamPattern,
-          includeExplanations,
-          quizType: aiQuizType
-        },
-        { headers }
-      );
+      let response;
+      if (aiInputSource === "material") {
+        if (!aiFile) {
+          alert("Please upload a file.");
+          setAiLoadingSteps({ active: false, step: 0 });
+          return;
+        }
+        const formData = new FormData();
+        formData.append("material", aiFile);
+        formData.append("examName", selectedExam);
+        formData.append("subject", selectedAiSubject || "Custom Material");
+        formData.append("quantity", aiQuantity);
+        formData.append("difficulty", aiDifficulty);
+        formData.append("language", aiLanguage);
+        formData.append("followExamPattern", followExamPattern);
+        formData.append("includeExplanations", includeExplanations);
+        formData.append("quizType", aiQuizType);
+        
+        response = await axios.post(
+          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/ai-tests/generate-from-material`,
+          formData,
+          { headers: { ...headers, "Content-Type": "multipart/form-data" } }
+        );
+      } else {
+        response = await axios.post(
+          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/ai-tests/generate`,
+          {
+            examName: selectedExam,
+            subject: selectedAiSubject,
+            topic: aiTopic,
+            quantity: aiQuantity,
+            difficulty: aiDifficulty,
+            language: aiLanguage,
+            followExamPattern,
+            includeExplanations,
+            quizType: aiQuizType
+          },
+          { headers }
+        );
+      }
       
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -707,17 +734,76 @@ const CreateCustomQuiz = () => {
                         </select>
                       </div>
 
-                      {/* Topic Input */}
+                      {/* Input Source Toggle */}
                       <div>
-                        <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Topic</label>
-                        <input
-                          type="text"
-                          value={aiTopic}
-                          onChange={(e) => setAiTopic(e.target.value)}
-                          placeholder="e.g. Fundamental Rights"
-                          style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--bg-input, #fafafa)", color: "var(--text-primary)", border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))", outline: "none", fontSize: "14px" }}
-                        />
+                        <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>Generate Questions From</label>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "16px" }}>
+                          <button
+                            type="button"
+                            onClick={() => setAiInputSource("topic")}
+                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "topic" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "topic" ? "rgba(110, 63, 243, 0.1)" : "transparent", color: aiInputSource === "topic" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                          >
+                            Topic / Existing Flow
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAiInputSource("material")}
+                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "material" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "material" ? "rgba(110, 63, 243, 0.1)" : "transparent", color: aiInputSource === "material" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                          >
+                            📄 Upload Study Material
+                          </button>
+                        </div>
                       </div>
+
+                      {aiInputSource === "topic" ? (
+                        {/* Topic Input */}
+                        <div>
+                          <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Topic</label>
+                          <input
+                            type="text"
+                            value={aiTopic}
+                            onChange={(e) => setAiTopic(e.target.value)}
+                            placeholder="e.g. Fundamental Rights"
+                            style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--bg-input, #fafafa)", color: "var(--text-primary)", border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))", outline: "none", fontSize: "14px" }}
+                          />
+                        </div>
+                      ) : (
+                        {/* Material Upload */}
+                        <div>
+                          <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Study Material (PDF, DOC, DOCX, Image)</label>
+                          <div style={{ padding: "20px", border: "2px dashed var(--border-color, rgba(255,255,255,0.2))", borderRadius: "8px", background: "var(--bg-card, rgba(0,0,0,0.02))", textAlign: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+                            <input 
+                              type="file" 
+                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                              onChange={(e) => { 
+                                const file = e.target.files[0];
+                                if(file) {
+                                  if(file.size > 10 * 1024 * 1024) {
+                                    alert("File size exceeds 10MB limit.");
+                                  } else {
+                                    setAiFile(file);
+                                  }
+                                }
+                              }}
+                              style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", zIndex: 10 }}
+                            />
+                            {!aiFile ? (
+                              <>
+                                <div style={{ fontSize: "24px", marginBottom: "8px" }}>📄</div>
+                                <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)" }}>Upload PDF, DOC, DOCX or Image</div>
+                                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>Questions will be generated from your uploaded material.</div>
+                              </>
+                            ) : (
+                              <div style={{ position: "relative", zIndex: 20 }}>
+                                <div style={{ fontSize: "24px", marginBottom: "8px", color: "#10b981" }}>✅</div>
+                                <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", wordBreak: "break-all" }}>{aiFile.name}</div>
+                                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>{(aiFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAiFile(null); }} style={{ marginTop: "10px", background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", cursor: "pointer" }}>Remove</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       {/* AI Question Count */}
                       <div>
