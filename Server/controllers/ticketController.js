@@ -32,7 +32,7 @@ const createTicket = async (req, res) => {
       type: "NEW_DEPARTMENT_TICKET", 
       title: "New support ticket", 
       message: `${req.user.fullName || "User"} raised a ticket: "${subject}"`, 
-      link: `/admin/support?ticket=${ticket._id}`, 
+      link: `/admin/tickets/${ticket._id}`, 
       relatedId: ticket._id 
     });
 

@@ -553,7 +553,7 @@ function HelpSupport() {
       {/* TICKET DETAILS MODAL */}
       {selectedTicket && (
         <div className="modal-overlay" onClick={() => setSelectedTicket(null)} style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <div className="ticket-modal" onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", width: "100%", maxWidth: "600px", borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "90vh" }}>
+          <div className="ticket-modal" onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", width: "100%", maxWidth: "600px", borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column", height: "fit-content", maxHeight: "90vh" }}>
             <div className="modal-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-card)" }}>
               <h3 style={{ margin: 0, color: "var(--text-main)", fontSize: "18px" }}>Ticket Details</h3>
               <button onClick={() => setSelectedTicket(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>

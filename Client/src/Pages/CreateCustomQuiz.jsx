@@ -743,7 +743,7 @@ const CreateCustomQuiz = () => {
                             onClick={() => setAiInputSource("topic")}
                             style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "topic" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "topic" ? "rgba(110, 63, 243, 0.1)" : "transparent", color: aiInputSource === "topic" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
                           >
-                            Topic / Existing Flow
+                            Topic
                           </button>
                           <button
                             type="button"
@@ -756,7 +756,6 @@ const CreateCustomQuiz = () => {
                       </div>
 
                       {aiInputSource === "topic" ? (
-                        {/* Topic Input */}
                         <div>
                           <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Topic</label>
                           <input
@@ -768,7 +767,6 @@ const CreateCustomQuiz = () => {
                           />
                         </div>
                       ) : (
-                        {/* Material Upload */}
                         <div>
                           <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Study Material (PDF, DOC, DOCX, Image)</label>
                           <div style={{ padding: "20px", border: "2px dashed var(--border-color, rgba(255,255,255,0.2))", borderRadius: "8px", background: "var(--bg-card, rgba(0,0,0,0.02))", textAlign: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}>

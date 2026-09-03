@@ -100,6 +100,34 @@ async function notifyDepartment(department, { type, title, message, link = "", r
       createdAt: new Date()
     });
 
+    // --- NEW: Send Slack Notification ---
+    try {
+      const Department = require("../models/Department");
+      const { sendSlackMessage } = require("./slackService");
+      const logAction = require("../utils/logger");
+      
+      await logAction("SLACK_DEBUG", "System", `Starting Slack logic for dept: ${department}`, "Support", "127.0.0.1");
+
+      const deptDoc = await Department.findOne({ name: department });
+      if (deptDoc && deptDoc.slackWebhookUrl && !deptDoc.slackNotificationsPaused) {
+        let slackText = `*${title}*\n${message}`;
+        if (link) {
+          slackText += `\n<${process.env.FRONTEND_URL || "http://localhost:5173"}${link}|View Details>`;
+        }
+        
+        await logAction("SLACK_DEBUG", "System", `Sending to: ${deptDoc.slackWebhookUrl}`, "Support", "127.0.0.1");
+        
+        const slackRes = await sendSlackMessage(deptDoc.slackWebhookUrl, slackText);
+        
+        await logAction("SLACK_DEBUG", "System", `Slack Success: ${slackRes}`, "Support", "127.0.0.1");
+      } else {
+        await logAction("SLACK_DEBUG", "System", `Condition failed. Found Dept: ${!!deptDoc}, URL: ${deptDoc ? deptDoc.slackWebhookUrl : 'none'}, Paused: ${deptDoc ? deptDoc.slackNotificationsPaused : 'N/A'}`, "Support", "127.0.0.1");
+      }
+    } catch (slackErr) {
+      const logAction = require("../utils/logger");
+      await logAction("SLACK_ERROR", "System", `Error: ${slackErr.message}\nStack: ${slackErr.stack}`, "Support", "127.0.0.1");
+    }
+
     return result;
   } catch (error) {
     console.error(`[NotificationService] Failed to notify department ${department}:`, error);
