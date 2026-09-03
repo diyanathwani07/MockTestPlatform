@@ -22,6 +22,7 @@ const CreateCustomQuiz = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [quizToDelete, setQuizToDelete] = useState(null);
   const [filterMode, setFilterMode] = useState("all"); // "all", "practice", "exam"
+  const [expandedItems, setExpandedItems] = useState({});
   const navigate = useNavigate();
 
   // AI Test Builder States
@@ -876,16 +877,41 @@ const CreateCustomQuiz = () => {
                       <div 
                         key={quiz._id} 
                         className="custom-quiz-item"
+                        style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}
                       >
-                        <div>
-                          <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
-                            {quiz.title} <span style={{ fontSize: "11px", color: quiz.publishAs === "practice" ? "#10b981" : "#8B5CF6", marginLeft: "8px", background: quiz.publishAs === "practice" ? "rgba(16, 185, 129, 0.1)" : "rgba(139, 92, 246, 0.1)", padding: "2px 8px", borderRadius: "10px", fontWeight: "700" }}>{quiz.publishAs === "practice" ? "Practice" : "Exam"}</span>
-                          </h4>
-                          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                        <div style={{ flex: "1 1 200px", minWidth: 0 }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                            <h4 style={{ 
+                                margin: 0, 
+                                fontSize: "15px", 
+                                fontWeight: "600", 
+                                color: "var(--text-primary)",
+                                display: expandedItems[quiz._id] ? "block" : "-webkit-box",
+                                WebkitLineClamp: expandedItems[quiz._id] ? "unset" : 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                wordBreak: "break-word"
+                              }}>
+                              {quiz.title}
+                            </h4>
+                            <span style={{ fontSize: "11px", color: quiz.publishAs === "practice" ? "#10b981" : "#8B5CF6", background: quiz.publishAs === "practice" ? "rgba(16, 185, 129, 0.1)" : "rgba(139, 92, 246, 0.1)", padding: "2px 8px", borderRadius: "10px", fontWeight: "700", whiteSpace: "nowrap" }}>
+                              {quiz.publishAs === "practice" ? "Practice" : "Exam"}
+                            </span>
+                          </div>
+                          {quiz.title && quiz.title.length > 55 && (
+                            <div 
+                              onClick={() => setExpandedItems(prev => ({ ...prev, [quiz._id]: !prev[quiz._id] }))}
+                              style={{ fontSize: "11px", color: "var(--violet, #6E3FF3)", cursor: "pointer", fontWeight: "600", marginBottom: "4px" }}
+                            >
+                              {expandedItems[quiz._id] ? "Show less" : "Read more"}
+                            </div>
+                          )}
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
                             Created: {new Date(quiz.createdAt).toLocaleDateString()}
-                          </span>
+                          </div>
                         </div>
-                        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0 }}>
                           <button
                             onClick={() => {
                               if (quiz.publishAs === "practice") {
