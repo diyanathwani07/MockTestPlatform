@@ -524,7 +524,7 @@ function MyExams() {
                             style={{ cursor: "pointer" }}
                           >
                             {/* Top row: subject badge + completion status */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                               {series.subjects && series.subjects.length > 0 ? (
                                 <span style={{
                                   background: "rgba(110, 63, 243, 0.15)",
@@ -534,7 +534,7 @@ function MyExams() {
                                   padding: "4px 10px",
                                   borderRadius: "100px",
                                   letterSpacing: "0.3px",
-                                  maxWidth: "60%",
+                                  maxWidth: "100%",
                                   overflow: "hidden",
                                   textOverflow: "ellipsis",
                                   whiteSpace: "nowrap"
@@ -554,7 +554,7 @@ function MyExams() {
                                 </span>
                               )}
                               {isCompleted && (
-                                <span style={{ color: "#10B981", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
+                                <span style={{ color: "#10B981", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
                                   <CheckCircle2 size={13} /> Completed
                                 </span>
                               )}

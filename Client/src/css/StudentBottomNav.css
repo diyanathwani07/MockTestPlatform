@@ -5,18 +5,9 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: var(--bg-card);
-  border-top: 1px solid var(--border-color);
   z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.dark-mode .student-bottom-nav,
-:is(.dark) .student-bottom-nav,
-html[class*="theme-"] body.dark-mode .student-bottom-nav {
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
 }
 
 @media (max-width: 768px) {
@@ -27,8 +18,18 @@ html[class*="theme-"] body.dark-mode .student-bottom-nav {
     height: 70px;
     padding-left: 10px;
     padding-right: 10px;
+    /* Create the circular cutout in the center */
+    background: radial-gradient(circle at 50% 0px, transparent 38px, var(--bg-card) 39px);
+    /* Use drop-shadow instead of box-shadow because of the transparent cutout */
+    filter: drop-shadow(0 -4px 10px rgba(0, 0, 0, 0.08));
   }
   
+  .dark-mode .student-bottom-nav,
+  :is(.dark) .student-bottom-nav,
+  html[class*="theme-"] body.dark-mode .student-bottom-nav {
+    filter: drop-shadow(0 -4px 15px rgba(0, 0, 0, 0.4));
+  }
+
   /* Add padding to page content so it doesn't get hidden */
   .sd-content {
     padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
@@ -46,9 +47,11 @@ html[class*="theme-"] body.dark-mode .student-bottom-nav {
   font-weight: 500;
   flex: 1;
   height: 100%;
-  gap: 4px;
+  gap: 6px;
   transition: all 0.2s ease;
   position: relative;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .bottom-nav-item:active {
@@ -69,28 +72,30 @@ html[class*="theme-"] body.dark-mode .student-bottom-nav {
 /* Central Exam Button Wrapper */
 .bottom-nav-item.center-action {
   position: relative;
-  top: -15px; /* Elevate it above the bar */
+  top: -20px; /* Elevate it above the bar to fit the curve */
   flex: 1.2;
+  justify-content: flex-start;
+  gap: 8px; /* space between circle and text */
 }
 
 /* Elevated Circular Button */
 .bottom-nav-item.center-action .exam-btn-circle {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light, #9061F9));
   color: var(--primary-foreground, #fff);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 2px;
+  margin-top: -6px; /* pull up into the curve perfectly */
 }
 
 .dark-mode .bottom-nav-item.center-action .exam-btn-circle,
 :is(.dark) .bottom-nav-item.center-action .exam-btn-circle {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .bottom-nav-item.center-action:active .exam-btn-circle {
