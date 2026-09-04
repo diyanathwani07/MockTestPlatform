@@ -4,7 +4,7 @@ import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
-import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight } from "lucide-react";
+import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info } from "lucide-react";
 import "../css/StudentDashboard.css";
 
 const ScoreTrendChart = ({ data }) => {
@@ -105,6 +105,7 @@ function StudentDashboard() {
   const [results, setResults] = useState([]);
   const [seriesList, setSeriesList] = useState([]);
   const [fetchError, setFetchError] = useState(false);
+  const [showAverageInfo, setShowAverageInfo] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -248,7 +249,7 @@ function StudentDashboard() {
         
         {/* STATS ROW */}
         <div className="sd-stats-grid">
-          <div className="sd-stat-card">
+          <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/results")}>
             <div className="sd-stat-icon-wrapper purple">
               <BookOpen size={24} />
             </div>
@@ -258,7 +259,7 @@ function StudentDashboard() {
             </div>
           </div>
           
-          <div className="sd-stat-card">
+          <div className="sd-stat-card clickable" onClick={() => setShowAverageInfo(true)}>
             <div className="sd-stat-icon-wrapper green">
               <TrendingUp size={24} />
             </div>
@@ -268,7 +269,7 @@ function StudentDashboard() {
             </div>
           </div>
           
-          <div className="sd-stat-card">
+          <div className={`sd-stat-card ${bestResult ? 'clickable' : ''}`} onClick={() => bestResult && navigate(`/results/${bestResult._id}`)}>
             <div className="sd-stat-icon-wrapper orange">
               <Target size={24} />
             </div>
@@ -349,6 +350,71 @@ function StudentDashboard() {
 
         </div>
       </div>
+      
+      {/* Average Score Info Modal */}
+      {showAverageInfo && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(10, 10, 20, 0.75)",
+          backdropFilter: "blur(10px)", display: "flex", justifyContent: "center",
+          alignItems: "center", zIndex: 100000, animation: "fadeIn 0.2s ease-out"
+        }}>
+          <div style={{
+            background: "var(--bg-card, #131428)",
+            border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+            borderRadius: "20px", padding: "32px 28px", maxWidth: "460px",
+            width: "90%", boxShadow: "0 24px 60px rgba(0, 0, 0, 0.4)",
+            display: "flex", flexDirection: "column", gap: "20px"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Info size={24} color="var(--green, #10b981)" />
+                <h3 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "var(--text-primary)" }}>
+                  Average Score
+                </h3>
+              </div>
+              <button onClick={() => setShowAverageInfo(false)} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px", color: "var(--text-secondary)", fontSize: "14.5px", lineHeight: "1.5" }}>
+              <p style={{ margin: 0 }}>
+                Your average score is calculated by taking the sum of the percentage scores from all your completed mock tests and dividing it by the total number of tests attempted.
+              </p>
+              
+              <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "12px", padding: "16px", color: "var(--green, #10b981)" }}>
+                <div style={{ textAlign: "center", fontSize: "13px", fontWeight: "600", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Formula</div>
+                <div style={{ textAlign: "center", fontSize: "16px", fontWeight: "700" }}>
+                  (Sum of All Percentages) ÷ (Total Mocks)
+                </div>
+              </div>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "4px" }}>
+                <div style={{ background: "var(--bg-input)", padding: "12px", borderRadius: "10px", border: "1px solid var(--border-color)", textAlign: "center" }}>
+                  <div style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{results.length}</div>
+                  <div style={{ fontSize: "12px", textTransform: "uppercase", fontWeight: "600" }}>Total Mocks</div>
+                </div>
+                <div style={{ background: "var(--bg-input)", padding: "12px", borderRadius: "10px", border: "1px solid var(--border-color)", textAlign: "center" }}>
+                  <div style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{averageScore}%</div>
+                  <div style={{ fontSize: "12px", textTransform: "uppercase", fontWeight: "600" }}>Your Average</div>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setShowAverageInfo(false)}
+              style={{
+                width: "100%", padding: "12px 20px", borderRadius: "8px", border: "none",
+                background: "var(--green, #10b981)", color: "#ffffff", fontWeight: "600",
+                fontSize: "14px", cursor: "pointer", marginTop: "8px"
+              }}
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FileText, BarChart3 } from "lucide-react";
+import { FileText, BarChart3, Sparkles, Image, Clock } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse premium dashboard themes
@@ -46,6 +46,7 @@ const CreateCustomQuiz = () => {
     step: 0, // 0: preparing pattern, 1: generating, 2: validating
   });
   const [aiInputSource, setAiInputSource] = useState("topic"); // "topic" or "material"
+  const [aiGenerateMode, setAiGenerateMode] = useState("prompt"); // "prompt", "document", "image"
   const [aiFile, setAiFile] = useState(null);
 
   const getStableRank = (id) => {
@@ -203,7 +204,7 @@ const CreateCustomQuiz = () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
       let response;
-      if (aiInputSource === "material") {
+      if (aiInputSource === "material" && aiGenerateMode !== "prompt") {
         if (!aiFile) {
           alert("Please upload a file.");
           setAiLoadingSteps({ active: false, step: 0 });
@@ -750,7 +751,7 @@ const CreateCustomQuiz = () => {
                             onClick={() => setAiInputSource("material")}
                             style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "material" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "material" ? "rgba(110, 63, 243, 0.1)" : "transparent", color: aiInputSource === "material" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
                           >
-                            📄 Upload Study Material
+                            <Sparkles size={16} /> AI Generate
                           </button>
                         </div>
                       </div>
@@ -768,38 +769,92 @@ const CreateCustomQuiz = () => {
                         </div>
                       ) : (
                         <div>
-                          <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Study Material (PDF, DOC, DOCX, Image)</label>
-                          <div style={{ padding: "20px", border: "2px dashed var(--border-color, rgba(255,255,255,0.2))", borderRadius: "8px", background: "var(--bg-card, rgba(0,0,0,0.02))", textAlign: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}>
-                            <input 
-                              type="file" 
-                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
-                              onChange={(e) => { 
-                                const file = e.target.files[0];
-                                if(file) {
-                                  if(file.size > 10 * 1024 * 1024) {
-                                    alert("File size exceeds 10MB limit.");
-                                  } else {
-                                    setAiFile(file);
-                                  }
-                                }
-                              }}
-                              style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", zIndex: 10 }}
-                            />
-                            {!aiFile ? (
-                              <>
-                                <div style={{ fontSize: "24px", marginBottom: "8px" }}>📄</div>
-                                <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)" }}>Upload PDF, DOC, DOCX or Image</div>
-                                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>Questions will be generated from your uploaded material.</div>
-                              </>
-                            ) : (
-                              <div style={{ position: "relative", zIndex: 20 }}>
-                                <div style={{ fontSize: "24px", marginBottom: "8px", color: "#10b981" }}>✅</div>
-                                <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", wordBreak: "break-all" }}>{aiFile.name}</div>
-                                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>{(aiFile.size / 1024 / 1024).toFixed(2)} MB</div>
-                                <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAiFile(null); }} style={{ marginTop: "10px", background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", cursor: "pointer" }}>Remove</button>
-                              </div>
-                            )}
+                          <div style={{ display: 'flex', background: 'var(--bg-input, rgba(255,255,255,0.05))', borderRadius: '10px', padding: '3px', border: '1.5px solid var(--border-color, rgba(255,255,255,0.1))', marginBottom: '18px' }}>
+                            {['prompt', 'document', 'image'].map(m => {
+                              const isActive = aiGenerateMode === m;
+                              return (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  onClick={() => {
+                                    setAiGenerateMode(m);
+                                    setAiFile(null); // reset file when switching tabs
+                                  }}
+                                  style={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    padding: '8px 0',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    background: isActive ? 'var(--bg-card, #2c2b3d)' : 'transparent',
+                                    color: isActive ? 'var(--text-primary, #ffffff)' : 'var(--text-secondary, #94a3b8)',
+                                    fontSize: '13px',
+                                    fontWeight: isActive ? '600' : '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.15)' : 'none'
+                                  }}
+                                >
+                                  {m === 'prompt' && <FileText size={15} />}
+                                  {m === 'document' && <FileText size={15} />}
+                                  {m === 'image' && <Image size={15} />}
+                                  {m === 'document' ? 'PDF/DOC' : m.charAt(0).toUpperCase() + m.slice(1)}
+                                </button>
+                              );
+                            })}
                           </div>
+
+                          {aiGenerateMode === 'prompt' ? (
+                            <div>
+                              <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px", textTransform: "uppercase" }}>Topic or Prompt Description</label>
+                              <textarea
+                                value={aiTopic}
+                                onChange={(e) => setAiTopic(e.target.value)}
+                                placeholder="e.g. Fundamental Rights in Indian Constitution Article 14 to 18..."
+                                style={{ width: "100%", height: "100px", padding: "10px 12px", borderRadius: "8px", background: "var(--bg-input, #fafafa)", color: "var(--text-primary)", border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))", outline: "none", fontSize: "14px", resize: "vertical" }}
+                              />
+                            </div>
+                          ) : (
+                            <div>
+                              <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                                {aiGenerateMode === 'document' ? 'Study Material (PDF, DOC, DOCX)' : 'Study Material (Image)'}
+                              </label>
+                              <div style={{ padding: "20px", border: "2px dashed var(--border-color, rgba(255,255,255,0.2))", borderRadius: "8px", background: "var(--bg-card, rgba(0,0,0,0.02))", textAlign: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+                                <input 
+                                  type="file" 
+                                  accept={aiGenerateMode === 'document' ? '.pdf,.doc,.docx' : '.jpg,.jpeg,.png,.webp'}
+                                  onChange={(e) => { 
+                                    const file = e.target.files[0];
+                                    if(file) {
+                                      if(file.size > 10 * 1024 * 1024) {
+                                        alert("File size exceeds 10MB limit.");
+                                      } else {
+                                        setAiFile(file);
+                                      }
+                                    }
+                                  }}
+                                  style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", zIndex: 10 }}
+                                />
+                                {!aiFile ? (
+                                  <>
+                                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>{aiGenerateMode === 'document' ? '📄' : '🖼️'}</div>
+                                    <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)" }}>{aiGenerateMode === 'document' ? 'Upload PDF, DOC or DOCX' : 'Upload Image'}</div>
+                                    <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>Questions will be generated from your uploaded material.</div>
+                                  </>
+                                ) : (
+                                  <div style={{ position: "relative", zIndex: 20 }}>
+                                    <div style={{ fontSize: "24px", marginBottom: "8px", color: "#10b981" }}>✅</div>
+                                    <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", wordBreak: "break-all" }}>{aiFile.name}</div>
+                                    <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>{(aiFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                    <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAiFile(null); }} style={{ marginTop: "10px", background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", cursor: "pointer" }}>Remove</button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -1101,62 +1156,73 @@ const CreateCustomQuiz = () => {
                         key={res._id} 
                         className="result-list-item"
                       >
-                        {/* Left: Icon, Title, Date/Time, Status */}
-                        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                        {/* Left: Icon and Details */}
+                        <div className="result-item-left">
                           <div style={{
-                            width: "48px",
-                            height: "48px",
-                            borderRadius: "12px",
-                            background: "rgba(110, 63, 243, 0.1)",
+                            minWidth: "56px",
+                            height: "64px",
+                            borderRadius: "14px",
+                            background: "#2e1065", // Deep violet
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            color: "#9061F9"
+                            color: "#a78bfa", // Bright violet
+                            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)"
                           }}>
-                            <FileText size={24} />
+                            <FileText size={28} strokeWidth={1.5} />
                           </div>
-                          <div>
-                            <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                            <h4 style={{ margin: "0", fontSize: "16px", fontWeight: "700", color: "#ffffff", lineHeight: "1.4", wordBreak: "break-word" }}>
                               {res.subject || res.quizTitle || "Custom Test"}
                             </h4>
-                            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", fontSize: "13px", color: "var(--text-muted)", marginBottom: "8px" }}>
-                              <span>Attempted on {new Date(res.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                              <span>|</span>
-                              <span>Time: {new Date(res.createdAt).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' })}</span>
+                            <div style={{ fontSize: "13px", color: "var(--text-muted, #94a3b8)", marginTop: "2px" }}>
+                              Attempted on {new Date(res.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}
                             </div>
-                            <span style={{
-                              padding: "4px 10px",
-                              borderRadius: "20px",
-                              background: "rgba(16, 185, 129, 0.15)",
-                              color: "#10B981",
-                              fontWeight: "600",
-                              fontSize: "11px",
-                              textTransform: "uppercase"
-                            }}>
-                              Completed
-                            </span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--text-muted, #94a3b8)" }}>
+                              <Clock size={14} /> Time: {new Date(res.createdAt).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            <div style={{ marginTop: "6px" }}>
+                              <span style={{
+                                padding: "4px 12px",
+                                borderRadius: "100px",
+                                background: "rgba(16, 185, 129, 0.15)",
+                                color: "#10b981",
+                                fontWeight: "700",
+                                fontSize: "11px",
+                                letterSpacing: "0.5px",
+                                textTransform: "uppercase"
+                              }}>
+                                Completed
+                              </span>
+                            </div>
                           </div>
                         </div>
 
                         {/* Middle: Stats (Score, Accuracy, Rank) */}
                         <div className="result-item-stats">
                           {/* Score */}
-                          <div style={{ textAlign: "center", minWidth: "80px" }}>
-                            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Score</span>
-                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#10B981" }}>{res.score} / {res.total}</span>
-                            <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginTop: "2px" }}>{((res.score / (res.total || 1)) * 100).toFixed(0)}%</span>
+                          <div style={{ textAlign: "center", minWidth: "60px" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Score</span>
+                            <span style={{ fontSize: "18px", fontWeight: "700", color: "#10b981", display: "block", marginBottom: "2px" }}>{res.score} / {res.total}</span>
+                            <span style={{ fontSize: "12px", color: "var(--text-muted)", display: "block" }}>{((res.score / (res.total || 1)) * 100).toFixed(0)}%</span>
                           </div>
+
+                          <div className="stat-divider" style={{ width: "1px", height: "40px", background: "rgba(255,255,255,0.08)" }}></div>
 
                           {/* Accuracy */}
-                          <div style={{ textAlign: "center", minWidth: "80px" }}>
-                            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Accuracy</span>
-                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#9061F9" }}>{((res.correct / (res.correct + res.incorrect || 1)) * 100).toFixed(0)}%</span>
+                          <div style={{ textAlign: "center", minWidth: "60px" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Accuracy</span>
+                            <span style={{ fontSize: "18px", fontWeight: "700", color: "#a78bfa", display: "block", marginBottom: "2px" }}>{((res.correct / (res.correct + res.incorrect || 1)) * 100).toFixed(0)}%</span>
+                            <span style={{ fontSize: "12px", color: "transparent", display: "block" }}>_</span>
                           </div>
 
+                          <div className="stat-divider" style={{ width: "1px", height: "40px", background: "rgba(255,255,255,0.08)" }}></div>
+
                           {/* Rank */}
-                          <div style={{ textAlign: "center", minWidth: "80px" }}>
-                            <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Rank</span>
-                            <span style={{ fontSize: "16px", fontWeight: "700", color: "#D97706" }}>#{getStableRank(res._id)}</span>
+                          <div style={{ textAlign: "center", minWidth: "60px" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Rank</span>
+                            <span style={{ fontSize: "18px", fontWeight: "700", color: "#f59e0b", display: "block", marginBottom: "2px" }}>#{getStableRank(res._id)}</span>
+                            <span style={{ fontSize: "12px", color: "transparent", display: "block" }}>_</span>
                           </div>
                         </div>
 
@@ -1169,20 +1235,20 @@ const CreateCustomQuiz = () => {
                               padding: "8px 16px",
                               borderRadius: "8px",
                               border: "none",
-                              background: "rgba(110, 63, 243, 0.15)",
-                              color: "#9061F9",
+                              background: "#4c1d95", // Purple background
+                              color: "#e9d5ff",      // Light purple text
                               fontWeight: "600",
                               fontSize: "13px",
                               cursor: "pointer",
                               transition: "all 0.2s"
                             }}
                             onMouseEnter={(e) => {
-                              e.target.style.background = "#9061F9";
+                              e.target.style.background = "#5b21b6";
                               e.target.style.color = "#ffffff";
                             }}
                             onMouseLeave={(e) => {
-                              e.target.style.background = "rgba(110, 63, 243, 0.15)";
-                              e.target.style.color = "#9061F9";
+                              e.target.style.background = "#4c1d95";
+                              e.target.style.color = "#e9d5ff";
                             }}
                           >
                             View Details
@@ -1193,13 +1259,19 @@ const CreateCustomQuiz = () => {
                               width: "100%",
                               padding: "8px 16px",
                               borderRadius: "8px",
-                              border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                              border: "1px solid rgba(255,255,255,0.8)",
                               background: "#ffffff",
-                              color: "#0a0a0a",
+                              color: "#000000",
                               fontWeight: "600",
                               fontSize: "13px",
                               cursor: "pointer",
                               transition: "all 0.2s"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.background = "#f1f5f9";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.background = "#ffffff";
                             }}
                           >
                             Reattempt

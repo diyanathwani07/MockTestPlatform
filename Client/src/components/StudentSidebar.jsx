@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import StudentBottomNav from "./StudentBottomNav";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard, Palette } from "lucide-react";
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
@@ -84,7 +85,7 @@ function StudentSidebar() {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
-  const { toggleTheme } = useTheme();
+  const { toggleTheme, toggleThemePicker } = useTheme();
 
   const handleLogout = () => {
     localStorage.clear();
@@ -176,11 +177,14 @@ function StudentSidebar() {
             <span>Help & Support</span>
           </NavLink>
           
+          <button onClick={() => { toggleThemePicker(); setIsOpen(false); }} className="sidebar-link" style={{ marginTop: "auto", borderRadius: "12px", border: "none", background: "transparent", cursor: "pointer", width: "100%", textAlign: "left" }}>
+            <Palette size={20} />
+            <span>Theme</span>
+          </button>
           <button 
             onClick={() => setShowLogoutConfirm(true)} 
             className="sidebar-link logout-btn" 
             style={{ 
-              marginTop: "auto", 
               borderRadius: "12px"
             }}
           >
@@ -189,6 +193,7 @@ function StudentSidebar() {
           </button>
         </nav>
       </aside>
+      <StudentBottomNav />
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
@@ -305,3 +310,4 @@ function StudentSidebar() {
 }
 
 export default StudentSidebar;
+

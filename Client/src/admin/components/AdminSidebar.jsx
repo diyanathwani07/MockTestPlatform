@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, LifeBuoy, Menu, X, Bot, BookOpen, Shield, LogOut, Sparkles
 } from 'lucide-react';
+import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
 import { useAuth } from '../../context/AuthContext';
@@ -29,6 +30,7 @@ function AdminSidebar() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { hasPermission, logout } = useAuth();
   const navigate = useNavigate();
+  const { toggleThemePicker } = useTheme();
 
   const handleLogout = () => {
     logout();
@@ -89,11 +91,14 @@ function AdminSidebar() {
             ) : null
           )}
           
+          <button onClick={() => { toggleThemePicker(); setIsOpen(false); }} className="sidebar-link" style={{ marginTop: "auto", borderRadius: "12px", border: "none", background: "transparent", cursor: "pointer", width: "100%", textAlign: "left" }}>
+            <Palette size={20} />
+            <span>Theme</span>
+          </button>
           <button 
             onClick={() => setShowLogoutConfirm(true)} 
             className="sidebar-link logout-btn" 
             style={{ 
-              marginTop: "auto", 
               borderRadius: "12px"
             }}
           >

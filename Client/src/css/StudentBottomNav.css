@@ -1,0 +1,113 @@
+/* MOBILE BOTTOM NAVIGATION */
+.student-bottom-nav {
+  display: none; /* Hidden on desktop */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark-mode .student-bottom-nav,
+:is(.dark) .student-bottom-nav,
+html[class*="theme-"] body.dark-mode .student-bottom-nav {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+  .student-bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 70px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  /* Add padding to page content so it doesn't get hidden */
+  .sd-content {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  flex: 1;
+  height: 100%;
+  gap: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.95);
+}
+
+.bottom-nav-item.active {
+  color: var(--primary);
+}
+
+.bottom-nav-item .icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Central Exam Button Wrapper */
+.bottom-nav-item.center-action {
+  position: relative;
+  top: -15px; /* Elevate it above the bar */
+  flex: 1.2;
+}
+
+/* Elevated Circular Button */
+.bottom-nav-item.center-action .exam-btn-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: var(--primary-foreground, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 2px;
+}
+
+.dark-mode .bottom-nav-item.center-action .exam-btn-circle,
+:is(.dark) .bottom-nav-item.center-action .exam-btn-circle {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.bottom-nav-item.center-action:active .exam-btn-circle {
+  transform: scale(0.92);
+}
+
+/* Center Action Label */
+.bottom-nav-item.center-action span {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.bottom-nav-item.center-action.active span {
+  color: var(--primary);
+}
+
+.bottom-nav-item.center-action.active .exam-btn-circle {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+

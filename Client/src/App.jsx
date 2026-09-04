@@ -559,7 +559,7 @@ function App() {
         />
 
       </Routes>
-      <ThemeButton />
+      
       <ThemePicker />
       </SocketProvider>
     </BrowserRouter>
