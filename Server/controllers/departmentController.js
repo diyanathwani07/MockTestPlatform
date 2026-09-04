@@ -44,7 +44,7 @@ exports.getDepartment = async (req, res) => {
 // POST create department
 exports.createDepartment = async (req, res) => {
   try {
-    const { name, description, permissions, color, slackWebhookUrl, slackNotificationsPaused } = req.body;
+    const { name, description, permissions, color, slackChannelId, slackNotificationsPaused } = req.body;
     if (!name) return res.status(400).json({ message: "Name is required." });
     
     const exists = await Department.findOne({ name });
@@ -55,7 +55,7 @@ exports.createDepartment = async (req, res) => {
       description: description || "",
       permissions: permissions || [],
       color: color || "#6E3FF3",
-      slackWebhookUrl: slackWebhookUrl || "",
+      slackChannelId: slackChannelId || "",
       slackNotificationsPaused: slackNotificationsPaused || false
     });
     
@@ -80,12 +80,12 @@ exports.updateDepartment = async (req, res) => {
     const dept = await Department.findById(req.params.id);
     if (!dept) return res.status(404).json({ message: "Department not found." });
     
-    const { name, description, permissions, color, slackWebhookUrl, slackNotificationsPaused } = req.body;
+    const { name, description, permissions, color, slackChannelId, slackNotificationsPaused } = req.body;
     const oldName = dept.name;
     
     const slackChanges = [];
-    if (slackWebhookUrl !== undefined && slackWebhookUrl !== dept.slackWebhookUrl) {
-      slackChanges.push(`Slack Webhook URL: "${dept.slackWebhookUrl || "None"}" -> "${slackWebhookUrl || "None"}"`);
+    if (slackChannelId !== undefined && slackChannelId !== dept.slackChannelId) {
+      slackChanges.push(`Slack Channel ID: "${dept.slackChannelId || "None"}" -> "${slackChannelId || "None"}"`);
     }
     if (slackNotificationsPaused !== undefined && slackNotificationsPaused !== dept.slackNotificationsPaused) {
       slackChanges.push(`Slack Notifications Paused: ${dept.slackNotificationsPaused} -> ${slackNotificationsPaused}`);
@@ -95,7 +95,7 @@ exports.updateDepartment = async (req, res) => {
     if (description !== undefined) dept.description = description;
     if (permissions) dept.permissions = permissions;
     if (color) dept.color = color;
-    if (slackWebhookUrl !== undefined) dept.slackWebhookUrl = slackWebhookUrl;
+    if (slackChannelId !== undefined) dept.slackChannelId = slackChannelId;
     if (slackNotificationsPaused !== undefined) dept.slackNotificationsPaused = slackNotificationsPaused;
     
     await dept.save();

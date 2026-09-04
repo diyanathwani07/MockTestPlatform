@@ -23,7 +23,7 @@ const PANEL_PERMISSIONS = [
 
 const COLORS = ["#6E3FF3", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
 
-const EMPTY_FORM = { name: "", description: "", permissions: [], color: "#6E3FF3", slackWebhookUrl: "", slackNotificationsPaused: false };
+const EMPTY_FORM = { name: "", description: "", permissions: [], color: "#6E3FF3", slackChannelId: "", slackNotificationsPaused: false };
 
 function RolesPermissions() {
   const [departments, setDepartments] = useState([]);
@@ -65,7 +65,7 @@ function RolesPermissions() {
       description: dept.description || "",
       permissions: [...(dept.permissions || [])],
       color: dept.color || "#6E3FF3",
-      slackWebhookUrl: dept.slackWebhookUrl || "",
+      slackChannelId: dept.slackChannelId || "",
       slackNotificationsPaused: dept.slackNotificationsPaused || false
     });
     setDrawerOpen(true);
@@ -180,7 +180,7 @@ function RolesPermissions() {
 
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "14px" }}>
                       <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Slack:</span>
-                      {!dept.slackWebhookUrl ? (
+                      {!dept.slackChannelId ? (
                         <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "4px", background: "rgba(148, 163, 184, 0.12)", color: "var(--text-muted)", fontWeight: "700" }}>OFF</span>
                       ) : dept.slackNotificationsPaused ? (
                         <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "4px", background: "rgba(239, 68, 68, 0.12)", color: "#EF4444", fontWeight: "700" }}>Paused</span>
@@ -247,13 +247,13 @@ function RolesPermissions() {
               <div style={{ border: "1px solid var(--border-color)", borderRadius: "12px", padding: "16px", marginBottom: "20px", background: "rgba(255, 255, 255, 0.01)" }}>
                 <h4 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "var(--text-primary)", fontWeight: "600" }}>Slack Notifications Integration</h4>
                 
-                <label style={labelStyle}>Incoming Webhook URL</label>
+                <label style={labelStyle}>Slack Channel ID</label>
                 <input 
                   type="text"
-                  value={form.slackWebhookUrl} 
-                  onChange={e => setForm({ ...form, slackWebhookUrl: e.target.value })} 
+                  value={form.slackChannelId} 
+                  onChange={e => setForm({ ...form, slackChannelId: e.target.value })} 
                   style={{ ...inputStyle, marginBottom: "12px" }} 
-                  placeholder="https://hooks.slack.com/services/..." 
+                  placeholder="e.g. C12345678" 
                 />
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>

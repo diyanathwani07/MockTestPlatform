@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { themes } from "../themes/themes";
 import { Sun, Moon, Check, X } from "lucide-react";
+import "../css/ThemePicker.css";
 
 const ThemePicker = () => {
   const {
@@ -49,25 +50,7 @@ const ThemePicker = () => {
       ref={pickerRef}
       role="dialog"
       aria-label="Theme Customization Panel"
-      style={{
-        position: "fixed",
-        bottom: "84px",
-        right: "24px",
-        width: "300px",
-        maxWidth: "calc(100vw - 48px)",
-        maxHeight: "500px",
-        backgroundColor: "var(--bg-card, #131428)",
-        border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
-        borderRadius: "16px",
-        padding: "20px",
-        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
-        zIndex: 99998,
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-        overflowY: "auto",
-        scrollbarWidth: "none"
-      }}
+      className="theme-picker-panel"
     >
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>

@@ -28,12 +28,76 @@ const createTicket = async (req, res) => {
 
     await logAction("CREATE_TICKET", req.user.fullName || "User", `Ticket: ${subject}`, "Support", req.ip);
 
+    const ticketUrl = `${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}/admin/tickets/${ticket._id}`;
+    const slackBlocks = [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🎫 New Support Ticket",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": `*Ticket ID:*\n#${ticket._id.toString().slice(-6).toUpperCase()}`
+          },
+          {
+            "type": "mrkdwn",
+            "text": `*Student:*\n${req.user.fullName || "Unknown"}`
+          },
+          {
+            "type": "mrkdwn",
+            "text": `*Email:*\n${req.user.email || "Unknown"}`
+          },
+          {
+            "type": "mrkdwn",
+            "text": `*Department:*\nHelp and Support`
+          },
+          {
+            "type": "mrkdwn",
+            "text": `*Subject:*\n${subject}`
+          },
+          {
+            "type": "mrkdwn",
+            "text": `*Category:*\n${category}`
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `*Description:*\n${message}`
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "View Ticket",
+              "emoji": true
+            },
+            "url": ticketUrl,
+            "action_id": "view_ticket_action"
+          }
+        ]
+      }
+    ];
+
     await notifyDepartment("Help and Support", { 
       type: "NEW_DEPARTMENT_TICKET", 
       title: "New support ticket", 
       message: `${req.user.fullName || "User"} raised a ticket: "${subject}"`, 
       link: `/admin/tickets/${ticket._id}`, 
-      relatedId: ticket._id 
+      relatedId: ticket._id,
+      slackBlocks
     });
 
     res.status(201).json({

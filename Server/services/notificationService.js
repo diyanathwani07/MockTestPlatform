@@ -64,7 +64,7 @@ async function notifyAllStudents({ type, title, message, link = "", relatedId = 
  * Bulk inserts an in-app notification for all active managers/employees in a specific department, then emits real-time events.
  * Wrapped in try/catch to ensure reliability.
  */
-async function notifyDepartment(department, { type, title, message, link = "", relatedId = null }) {
+async function notifyDepartment(department, { type, title, message, link = "", relatedId = null, slackBlocks = null }) {
   try {
     const staff = await User.find({ 
       department, 
@@ -109,23 +109,34 @@ async function notifyDepartment(department, { type, title, message, link = "", r
       await logAction("SLACK_DEBUG", "System", `Starting Slack logic for dept: ${department}`, "Support", "127.0.0.1");
 
       const deptDoc = await Department.findOne({ name: department });
-      if (deptDoc && deptDoc.slackWebhookUrl && !deptDoc.slackNotificationsPaused) {
+      if (deptDoc && deptDoc.slackChannelId && !deptDoc.slackNotificationsPaused) {
         let slackText = `*${title}*\n${message}`;
         if (link) {
           slackText += `\n<${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}${link}|View Details>`;
         }
         
-        await logAction("SLACK_DEBUG", "System", `Sending to: ${deptDoc.slackWebhookUrl}`, "Support", "127.0.0.1");
+        await logAction("SLACK_DEBUG", "System", `Sending to: ${deptDoc.slackChannelId}`, "Support", "127.0.0.1");
         
-        const slackRes = await sendSlackMessage(deptDoc.slackWebhookUrl, slackText);
+        const slackRes = await sendSlackMessage(deptDoc.slackChannelId, slackText, slackBlocks);
         
-        await logAction("SLACK_DEBUG", "System", `Slack Success: ${slackRes}`, "Support", "127.0.0.1");
+        await logAction("SLACK_DEBUG", "System", `Slack Success`, "Support", "127.0.0.1");
       } else {
-        await logAction("SLACK_DEBUG", "System", `Condition failed. Found Dept: ${!!deptDoc}, URL: ${deptDoc ? deptDoc.slackWebhookUrl : 'none'}, Paused: ${deptDoc ? deptDoc.slackNotificationsPaused : 'N/A'}`, "Support", "127.0.0.1");
+        // Fallback to generic SLACK_CHANNEL_ID if the department doesn't have one configured but we still want to notify
+        const defaultChannel = process.env.SLACK_CHANNEL_ID;
+        if (defaultChannel) {
+          let slackText = `*${title}*\n${message}`;
+          if (link) {
+            slackText += `\n<${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}${link}|View Details>`;
+          }
+          await sendSlackMessage(defaultChannel, slackText, slackBlocks);
+          await logAction("SLACK_DEBUG", "System", `Fallback Slack Success to ${defaultChannel}`, "Support", "127.0.0.1");
+        } else {
+          await logAction("SLACK_DEBUG", "System", `Condition failed. Found Dept: ${!!deptDoc}, Channel: ${deptDoc ? deptDoc.slackChannelId : 'none'}, Paused: ${deptDoc ? deptDoc.slackNotificationsPaused : 'N/A'}`, "Support", "127.0.0.1");
+        }
       }
     } catch (slackErr) {
       const logAction = require("../utils/logger");
-      await logAction("SLACK_ERROR", "System", `Error: ${slackErr.message}\nStack: ${slackErr.stack}`, "Support", "127.0.0.1");
+      await logAction("SLACK_ERROR", "System", `Error: ${slackErr.message}`, "Support", "127.0.0.1");
     }
 
     return result;
@@ -146,8 +157,10 @@ async function notifyContentTeamSlack(text) {
       return;
     }
 
-    if (dept.slackWebhookUrl && !dept.slackNotificationsPaused) {
-      await sendSlackMessage(dept.slackWebhookUrl, text);
+    if (dept.slackChannelId && !dept.slackNotificationsPaused) {
+      await sendSlackMessage(dept.slackChannelId, text);
+    } else if (process.env.SLACK_CHANNEL_ID) {
+      await sendSlackMessage(process.env.SLACK_CHANNEL_ID, text);
     }
   } catch (error) {
     console.error("[NotificationService] Failed to send Slack notification to Content Team:", error);

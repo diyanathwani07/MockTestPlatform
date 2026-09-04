@@ -177,7 +177,7 @@ function StudentSidebar() {
             <span>Help & Support</span>
           </NavLink>
           
-          <button onClick={() => { toggleThemePicker(); setIsOpen(false); }} className="sidebar-link" style={{ marginTop: "auto", borderRadius: "12px", border: "none", background: "transparent", cursor: "pointer", width: "100%", textAlign: "left" }}>
+          <button aria-label="Customize theme" onClick={() => { toggleThemePicker(); setIsOpen(false); }} className="sidebar-link" style={{ marginTop: "auto", borderRadius: "12px", border: "none", background: "transparent", cursor: "pointer", width: "100%", textAlign: "left" }}>
             <Palette size={20} />
             <span>Theme</span>
           </button>
