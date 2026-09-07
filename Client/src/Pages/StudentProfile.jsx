@@ -9,6 +9,8 @@ import "../css/StudentDashboard.css"; // Reuse layout styles
 import "../css/StudentProfile.css"; // Specific profile styles
 import AvatarPickerModal from "../components/AvatarPickerModal";
 
+import MobileProfileFlow from "../components/ProfilePages/MobileProfileFlow";
+
 function StudentProfile() {
   const navigate = useNavigate();
   const [user, setUser] = useState({});
@@ -18,6 +20,14 @@ function StudentProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 767);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 767);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Change Password States
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -150,350 +160,52 @@ function StudentProfile() {
   return (
     <div className="sd-layout">
       <StudentSidebar />
-      <div className="sd-main-content">
-        <StudentNavbar title="Profile" />
-        <div className="sd-profile-container">
-          
-          {/* ── HEADER & FLIP CARD ── */}
-          <div className="sp-header" style={{ marginTop: '0' }}>
-            <div className={`sp-flip-container ${isEditing ? "flipped" : ""}`}>
-              <div className="sp-flip-inner">
-                
-                {/* ── FRONT FACE (PROFILE VIEW) ── */}
-                <div className="sp-flip-front">
-                  {/* ── TOP HERO CARD ── */}
-                  <div className="sp-hero-card">
-                    <div className="sp-hero-left">
-                      <div className="sp-avatar-container">
-                        <div className="sp-avatar" style={{ overflow: 'hidden', padding: 0 }}>
-                          {user.avatar ? (
-                            <img src={user.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
-                          ) : (
-                            initials
-                          )}
-                        </div>
-                        {!previewMode && (
-                          <button className="sp-avatar-edit" onClick={() => setShowAvatarPicker(true)}>
-                            <Edit3 size={12} />
-                          </button>
-                        )}
-                      </div>
-                      <div className="sp-user-info">
-                        <h2 className="sp-name">{user.fullName || user.name || "Student Name"}</h2>
-                        <p className="sp-email">{user.email || "student@example.com"}</p>
-                        {!previewMode && (
-                          <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-                            <button 
-                              className="sp-edit-profile-btn" 
-                              onClick={() => setIsEditing(true)}
-                              style={{ fontSize: "12px", minHeight: "36px", height: "36px", padding: "0 14px", display: "flex", alignItems: "center" }}
-                            >
-                              <Edit3 size={13} style={{ marginRight: "4px", color: "#ffffff" }} /> Edit Profile
-                            </button>
-                            <button 
-                              className="sp-edit-profile-btn" 
-                              onClick={() => {
-                                setPasswordError("");
-                                setPasswordSuccess("");
-                                setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-                                setShowPasswordModal(true);
-                              }}
-                              style={{ 
-                                backgroundColor: "var(--violet, #6E3FF3)", 
-                                border: "none", 
-                                color: "#ffffff",
-                                fontSize: "12px",
-                                minHeight: "36px",
-                                height: "36px",
-                                padding: "0 14px",
-                                display: "flex",
-                                alignItems: "center",
-                                boxShadow: "0 2px 10px rgba(110,63,243,0.2)"
-                              }}
-                            >
-                              <Key size={13} style={{ marginRight: "4px", color: "#ffffff" }} /> Change Password
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="sp-hero-right">
-                      <div className="sp-badge">
-                        <User size={14} /> <span>Student ID: {studentId}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── ABOUT ME SECTION ── */}
-                  <div className="sp-about-card">
-                    <h3 className="sp-about-title">About Me</h3>
-                    
-                    <div className="sp-about-grid">
-                      {/* Left Column: Personal Info */}
-                      <div className="sp-info-column">
-                        <h4 className="sp-section-subtitle">Personal Information</h4>
-                        
-                        <div className="sp-info-list">
-                          <div className="sp-info-item">
-                            <div className="sp-info-label-group">
-                              <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
-                              <span className="sp-info-label">Full Name</span>
-                            </div>
-                            <span className="sp-info-value">{user.fullName || user.name || "N/A"}</span>
-                          </div>
-                          <div className="sp-info-item">
-                            <div className="sp-info-label-group">
-                              <div className="sp-icon-wrapper"><Mail className="sp-info-icon" size={16} /></div>
-                              <span className="sp-info-label">Email</span>
-                            </div>
-                            <span className="sp-info-value" style={{ fontSize: '13px' }}>{user.email || "N/A"}</span>
-                          </div>
-                          <div className="sp-info-item">
-                            <div className="sp-info-label-group">
-                              <div className="sp-icon-wrapper"><Phone className="sp-info-icon" size={16} /></div>
-                              <span className="sp-info-label">Phone</span>
-                            </div>
-                            <span className="sp-info-value">{user.phone || "Not Provided"}</span>
-                          </div>
-                          <div className="sp-info-item">
-                            <div className="sp-info-label-group">
-                              <div className="sp-icon-wrapper"><Calendar className="sp-info-icon" size={16} /></div>
-                              <span className="sp-info-label">Date of Birth</span>
-                            </div>
-                            <span className="sp-info-value">{user.dateOfBirth || "Not Provided"}</span>
-                          </div>
-                          <div className="sp-info-item">
-                            <div className="sp-info-label-group">
-                              <div className="sp-icon-wrapper"><User className="sp-info-icon" size={16} /></div>
-                              <span className="sp-info-label">Gender</span>
-                            </div>
-                            <span className="sp-info-value">{user.gender || "Not Provided"}</span>
-                          </div>
-                          <div className="sp-info-item">
-                            <div className="sp-info-label-group">
-                              <div className="sp-icon-wrapper"><MapPin className="sp-info-icon" size={16} /></div>
-                              <span className="sp-info-label">Location</span>
-                            </div>
-                            <span className="sp-info-value">{user.location || "Not Provided"}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right Column: Bio */}
-                      <div className="sp-bio-column">
-                        <h4 className="sp-section-subtitle">Bio</h4>
-                        <p className="sp-bio-text">
-                          {user.bio || "Passionate learner and aspiring professional. I love solving problems, exploring new technologies, and continuously improving my skills."}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ── BACK FACE (EDIT FORM) ── */}
-                <div className="sp-flip-back">
-                  <h2 className="sp-edit-title">Edit Profile</h2>
-                  
-                  <form onSubmit={handleSave}>
-                    <div className="sp-form-grid">
-                      <div className="sp-form-group">
-                        <label>Full Name</label>
-                        <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="John Doe" required />
-                      </div>
-                      <div className="sp-form-group">
-                        <label>Email Address (Read Only)</label>
-                        <input type="email" defaultValue={user.email || ""} disabled style={{opacity: 0.7, cursor: 'not-allowed'}} />
-                      </div>
-                      <div className="sp-form-group">
-                        <label>Phone Number</label>
-                        <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 98765 43210" required />
-                      </div>
-                      <div className="sp-form-group">
-                        <label>Date of Birth</label>
-                        <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
-                      </div>
-                      <div className="sp-form-group">
-                        <label>Gender</label>
-                        <input type="text" name="gender" value={formData.gender} onChange={handleChange} placeholder="Male / Female / Other" />
-                      </div>
-                      <div className="sp-form-group">
-                        <label>Location (City, State)</label>
-                        <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Nagpur, Maharashtra" />
-                      </div>
-                      <div className="sp-form-group full-width">
-                        <label>Bio</label>
-                        <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Tell us about yourself..."></textarea>
-                      </div>
-                    </div>
-                    
-                    <div className="sp-form-actions">
-                      <button type="button" className="sp-btn-cancel" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</button>
-                      <button 
-                        type="submit" 
-                        className="sp-btn-save" 
-                        disabled={isSaving || previewMode}
-                        title={previewMode ? "Profile editing is disabled in Preview Mode" : ""}
-                        style={{ opacity: previewMode ? 0.6 : 1, cursor: previewMode ? "not-allowed" : "pointer" }}
-                      >
-                        {previewMode ? "Preview Mode (Disabled)" : (isSaving ? "Saving..." : "Save Changes")}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-
-              </div>
-            </div>
-          </div>
+      <div className="sd-main-content mp-wrapper" style={{ 
+         
+         
+        background: 'var(--bg-page, #0f0e17)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: 0
+      }}>
+        {!isMobile && <StudentNavbar title="Profile" />}
+        
+        <div style={{
+          flex: 1,
+          maxWidth: isMobile ? '100%' : '768px',
+          margin: '0',
+          width: '100%',
+          position: 'relative',
+          paddingTop: isMobile ? '0' : '20px',
+          paddingLeft: isMobile ? '0' : '20px',
+          paddingRight: isMobile ? '0' : '20px',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <MobileProfileFlow 
+            user={user}
+            studentId={studentId}
+            initials={initials}
+            previewMode={previewMode}
+            showAvatarPicker={showAvatarPicker}
+            setShowAvatarPicker={setShowAvatarPicker}
+            handleSelectAvatar={handleSelectAvatar}
+            formData={formData}
+            setFormData={setFormData}
+            handleChange={handleChange}
+            handleSave={handleSave}
+            isSaving={isSaving}
+            passwordData={passwordData}
+            setPasswordData={setPasswordData}
+            handlePasswordSubmit={handlePasswordSubmit}
+            passwordError={passwordError}
+            passwordSuccess={passwordSuccess}
+            changingPassword={changingPassword}
+            setShowPasswordModal={setShowPasswordModal}
+            isDesktop={!isMobile}
+          />
         </div>
       </div>
-      <AvatarPickerModal 
-        isOpen={showAvatarPicker} 
-        onClose={() => setShowAvatarPicker(false)} 
-        onSelect={handleSelectAvatar} 
-      />
-
-      {/* Change Password Modal */}
-      {showPasswordModal && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(10, 10, 20, 0.75)",
-          backdropFilter: "blur(10px)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 200000,
-        }}>
-          <form 
-            onSubmit={handlePasswordSubmit}
-            style={{
-              background: "var(--bg-card, #131428)",
-              border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
-              borderRadius: "20px",
-              padding: "32px 28px",
-              maxWidth: "420px",
-              width: "90%",
-              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.4)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px"
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <h3 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "var(--text-primary)" }}>Change Password</h3>
-              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>
-                Update your account password to keep it secure.
-              </p>
-            </div>
-
-            {passwordError && (
-              <div style={{ padding: "10px 14px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", fontSize: "13px", fontWeight: "500" }}>
-                {passwordError}
-              </div>
-            )}
-
-            {passwordSuccess && (
-              <div style={{ padding: "10px 14px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", fontSize: "13px", fontWeight: "500" }}>
-                {passwordSuccess}
-              </div>
-            )}
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Current Password</label>
-                <input 
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
-                  placeholder="Enter current password"
-                  required
-                />
-                <div style={{ textAlign: "right", marginTop: "2px" }}>
-                  <span 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setShowPasswordModal(false);
-                      navigate("/forgot-password");
-                    }}
-                    style={{ fontSize: "12.5px", color: "#6E3FF3", cursor: "pointer", fontWeight: "600" }}
-                  >
-                    Forgot Password?
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>New Password</label>
-                <input 
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
-                  placeholder="Enter new password"
-                  required
-                />
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Confirm New Password</label>
-                <input 
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "var(--bg-input, #0A0A0A)", color: "var(--text-primary)", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
-                  placeholder="Confirm new password"
-                  required
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "8px" }}>
-              <button
-                type="button"
-                onClick={() => setShowPasswordModal(false)}
-                disabled={changingPassword}
-                style={{
-                  flex: 1,
-                  padding: "12px 20px",
-                  borderRadius: "30px",
-                  border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                  background: "transparent",
-                  color: "var(--text-primary)",
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={changingPassword || previewMode}
-                style={{
-                  flex: 1,
-                  padding: "12px 20px",
-                  borderRadius: "30px",
-                  border: "none",
-                  background: "var(--violet)",
-                  color: "#ffffff",
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: "0 4px 14px rgba(110, 63, 243, 0.4)",
-                  opacity: previewMode ? 0.6 : 1
-                }}
-              >
-                {changingPassword ? "Updating..." : "Update Password"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </div>
   );
 }

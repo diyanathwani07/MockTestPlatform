@@ -19,7 +19,7 @@ function AdminScoreAnalytics() {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/results/admin/score-analytics`,
+          `${import.meta.env.VITE_API_URL}/api/results/admin/score-analytics`,
           { headers }
         );
         setData(res.data);
