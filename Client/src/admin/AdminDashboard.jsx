@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -7,6 +8,7 @@ import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalQuizzes: 0,
@@ -617,7 +619,7 @@ function AdminDashboard() {
               {/* FIVE STAT CARDS AT THE TOP */}
               <div className="stat-cards-grid">
                 {/* Card 1: Users */}
-                <div className="stat-card accent-violet">
+                <div className="stat-card accent-violet" onClick={() => navigate("/admin/users")} style={{ cursor: "pointer" }}>
                   <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "#6E3FF3", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Users size={24} />
                   </div>
@@ -641,7 +643,7 @@ function AdminDashboard() {
                 </div>
 
                 {/* Card 2: Quizzes */}
-                <div className="stat-card accent-green">
+                <div className="stat-card accent-green" onClick={() => navigate("/admin/manage-quizzes")} style={{ cursor: "pointer" }}>
                   <div className="stat-card-icon" style={{ background: "rgba(16, 185, 129, 0.08)", color: "#10B981", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ClipboardList size={24} />
                   </div>
@@ -665,7 +667,7 @@ function AdminDashboard() {
                 </div>
 
                 {/* Card 3: Questions */}
-                <div className="stat-card accent-gold">
+                <div className="stat-card accent-gold" onClick={() => navigate("/admin/questions")} style={{ cursor: "pointer" }}>
                   <div className="stat-card-icon" style={{ background: "rgba(245, 158, 11, 0.08)", color: "#F59E0B", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <HelpCircle size={24} />
                   </div>
@@ -689,7 +691,7 @@ function AdminDashboard() {
                 </div>
 
                 {/* Card 4: Attempts */}
-                <div className="stat-card accent-navy">
+                <div className="stat-card accent-navy" onClick={() => navigate("/admin/attempts")} style={{ cursor: "pointer" }}>
                   <div className="stat-card-icon" style={{ background: "rgba(37, 99, 235, 0.08)", color: "#2563EB", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Trophy size={24} />
                   </div>
@@ -713,7 +715,7 @@ function AdminDashboard() {
                 </div>
 
                 {/* Card 5: Average Score */}
-                <div className="stat-card accent-pink">
+                <div className="stat-card accent-pink" onClick={() => navigate("/admin/score-analytics")} style={{ cursor: "pointer" }}>
                   <div className="stat-card-icon" style={{ background: "rgba(236, 72, 153, 0.08)", color: "#EC4899", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <TrendingUp size={24} />
                   </div>

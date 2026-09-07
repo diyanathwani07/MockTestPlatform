@@ -23,6 +23,8 @@ import RolesPermissions from "./admin/RolesPermissions";
 import AdminTickets from "./admin/AdminTickets";
 import ExamSeriesManager from "./admin/ExamSeriesManager";
 import CreateQuizMulti from "./admin/CreateQuizMulti";
+import AdminAttempts from "./admin/AdminAttempts";
+import AdminScoreAnalytics from "./admin/AdminScoreAnalytics";
 
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
@@ -472,6 +474,24 @@ function App() {
           element={
             <AdminRoute>
               <Reports />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/attempts"
+          element={
+            <AdminRoute>
+              <AdminAttempts />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/score-analytics"
+          element={
+            <AdminRoute>
+              <AdminScoreAnalytics />
             </AdminRoute>
           }
         />
