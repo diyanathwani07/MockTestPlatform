@@ -47,7 +47,7 @@ function AdminAiPlans() {
     sellingPrice: 99,
     durationValue: 30,
     durationUnit: "days",
-    aiCredits: 500,
+    
     maxAITests: 20,
     features: ["AI Test Builder", "Personalized Questions", "Exam Pattern Matching", "English + Hindi", "AI Explanations", "Practice & Exam Modes"],
     allowedExamIds: [],
@@ -122,7 +122,7 @@ function AdminAiPlans() {
       sellingPrice: 99,
       durationValue: 30,
       durationUnit: "days",
-      aiCredits: 500,
+      
       maxAITests: 20,
       features: ["AI Test Builder", "Personalized Questions", "Exam Pattern Matching", "English + Hindi", "AI Explanations", "Practice & Exam Modes"],
       allowedExamIds: [],
@@ -144,7 +144,7 @@ function AdminAiPlans() {
       sellingPrice: plan.sellingPrice,
       durationValue: plan.durationValue,
       durationUnit: plan.durationUnit,
-      aiCredits: plan.aiCredits,
+      
       maxAITests: plan.maxAITests || 0,
       features: plan.features || [],
       allowedExamIds: plan.allowedExamIds ? plan.allowedExamIds.map(e => e._id || e) : [],

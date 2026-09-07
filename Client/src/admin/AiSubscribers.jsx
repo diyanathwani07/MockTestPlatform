@@ -735,7 +735,7 @@ export default function AiSubscribers() {
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3, display: "flex", alignItems: "center", gap: 6 }}>
                         <Calendar className="w-3 h-3" /> Joined {new Date(drawerData.student.createdAt).toLocaleDateString("en-GB")}
                         <span>•</span>
-                        <Zap className="w-3 h-3 text-amber-400" /> {drawerData.student.aiCredits || 0} Credits
+                        <Zap className="w-3 h-3 text-amber-400" /> {drawerData.student.isPremium ? "Premium" : "Free"}
                       </div>
                     </div>
                   </div>

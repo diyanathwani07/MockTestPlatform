@@ -81,7 +81,9 @@ export default function MySubscriptions() {
         if (storedUser.isPremium) {
           statusData = {
             isPremium: true,
-            aiCredits: storedUser.aiCredits || 100,
+            maxAITests: 10,
+            aiTestsUsed: 0,
+            aiTestsRemaining: 10,
             activePlan: storedUser.activePlan || null
           };
         }
@@ -135,7 +137,8 @@ export default function MySubscriptions() {
       planNameSnapshot: fallbackPlan?.name || "AI Premium Plan",
       purchaseId: "MEMBERSHIP-ACTIVE",
       amount: fallbackPlan?.sellingPrice || 499,
-      aiCreditsGranted: userProfile?.aiCredits || 100,
+      maxAITests: fallbackPlan?.maxAITests || 10,
+        aiTestsUsed: 0,
       startDate: new Date(),
       expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       status: "active",
@@ -515,6 +518,7 @@ export default function MySubscriptions() {
                           <th style={{ padding: "10px 14px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)" }}>ORDER REF</th>
                           <th style={{ padding: "10px 14px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)" }}>AMOUNT</th>
                           <th style={{ padding: "10px 14px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)" }}>GATEWAY</th>
+                          <th style={{ padding: "10px 14px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)" }}>AI TESTS</th>
                           <th style={{ padding: "10px 14px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)" }}>PURCHASED ON</th>
                           <th style={{ padding: "10px 14px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)" }}>VALID UNTIL</th>
                           <th style={{ padding: "10px 14px", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-secondary)" }}>STATUS</th>
@@ -537,6 +541,9 @@ export default function MySubscriptions() {
                                 <CreditCard className="w-2.5 h-2.5 mr-1" />
                                 {sub.paymentGateway}
                               </Badge>
+                            </td>
+                            <td style={{ padding: "12px 14px", color: "var(--text-secondary)", fontSize: "12px" }}>
+                              {sub.aiTestsUsed || 0} / {sub.maxAITests || 0}
                             </td>
                             <td style={{ padding: "12px 14px", color: "var(--text-secondary)", fontSize: "12px" }}>
                               {new Date(sub.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}

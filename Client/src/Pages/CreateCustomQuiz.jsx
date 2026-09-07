@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FileText, BarChart3, Sparkles, Image, Clock } from "lucide-react";
+import { FileText, BarChart3, Sparkles, Image, Clock, CheckCircle } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse premium dashboard themes
@@ -27,8 +27,9 @@ const CreateCustomQuiz = () => {
 
   // AI Test Builder States
   const [customMode, setCustomMode] = useState("manual"); // "manual" or "ai"
-  const [premiumStatus, setPremiumStatus] = useState({ isPremium: false, aiCredits: 0 });
+  const [premiumStatus, setPremiumStatus] = useState({ isPremium: false, aiTestsRemaining: 0, maxAITests: 0, aiTestsUsed: 0 });
   const [fetchingPremium, setFetchingPremium] = useState(true);
+  const [capacityWarning, setCapacityWarning] = useState(null);
   const [exams, setExams] = useState([]);
   const [examSubjects, setExamSubjects] = useState({});
   const [selectedExam, setSelectedExam] = useState("");
@@ -247,7 +248,7 @@ const CreateCustomQuiz = () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       
-      setPremiumStatus(prev => ({ ...prev, aiCredits: response.data.creditsRemaining }));
+      setPremiumStatus(prev => ({ ...prev, aiTestsRemaining: response.data.aiTestsRemaining, maxAITests: response.data.maxAITests, aiTestsUsed: response.data.aiTestsUsed }));
       setShowAiConfirmModal(false);
       setAiLoadingSteps({ active: false, step: 0 });
       
@@ -266,8 +267,18 @@ const CreateCustomQuiz = () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       console.error("AI Generation Error:", error);
-      alert(error.response?.data?.message || "Failed to generate AI custom test. Please try again.");
       setAiLoadingSteps({ active: false, step: 0 });
+
+      if (error.response?.data?.code === "CAPACITY_EXCEEDED") {
+        setCapacityWarning({
+          requested: error.response.data.requestedCount,
+          maxSafe: error.response.data.maxSafeCount,
+          message: error.response.data.message
+        });
+        setShowAiConfirmModal(false);
+      } else {
+        alert(error.response?.data?.message || "Failed to generate AI custom test. Please try again.");
+      }
     }
   };
 
@@ -601,13 +612,13 @@ const CreateCustomQuiz = () => {
                   <div style={{ color: "var(--text-secondary)", fontSize: "14px", padding: "20px 0", textAlign: "center" }}>
                     Loading Premium entitlements...
                   </div>
-                ) : !premiumStatus.isPremium ? (
+                ) : !premiumStatus.isPremium || premiumStatus.aiTestsRemaining <= 0 ? (
                   <div style={{ textAlign: "center", padding: "16px 0", display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ fontSize: "40px" }}>🔒</div>
                     <div>
-                      <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 6px 0" }}>AI Test Builder</h3>
+                      <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 6px 0" }}>{!premiumStatus.isPremium ? "AI Test Builder" : "AI Test Limit Reached"}</h3>
                       <p style={{ color: "var(--text-secondary)", fontSize: "13.5px", margin: 0, lineHeight: "1.5" }}>
-                        Premium Feature: Create personalized exam-style tests using Gemini AI.
+                        {!premiumStatus.isPremium ? "Unlock the power of AI to generate personalized mock tests, practice quizzes, and get detailed explanations." : "You have used all AI test generations included in your current active plan."}
                       </p>
                     </div>
                     <button
@@ -809,7 +820,10 @@ const CreateCustomQuiz = () => {
 
                           {aiGenerateMode === 'prompt' ? (
                             <div>
-                              <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px", textTransform: "uppercase" }}>Topic or Prompt Description</label>
+                                <label style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px", textTransform: "uppercase" }}>
+                                  <span>Topic or Prompt Description</span>
+                                  <span style={{ fontSize: "11px", color: "var(--text-muted, #94a3b8)", fontWeight: "500", textTransform: "none" }}>(Max 500 words)</span>
+                                </label>
                               <textarea
                                 value={aiTopic}
                                 onChange={(e) => setAiTopic(e.target.value)}
@@ -840,13 +854,20 @@ const CreateCustomQuiz = () => {
                                 />
                                 {!aiFile ? (
                                   <>
-                                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>{aiGenerateMode === 'document' ? '📄' : '🖼️'}</div>
+                                      <div style={{ marginBottom: "12px", animation: "float 3s ease-in-out infinite", display: "flex", justifyContent: "center" }}>
+                                        {aiGenerateMode === 'document' 
+                                          ? <FileText size={40} color="var(--violet, #6E3FF3)" style={{ filter: "drop-shadow(0 4px 6px rgba(110, 63, 243, 0.3))" }} /> 
+                                          : <Image size={40} color="#10b981" style={{ filter: "drop-shadow(0 4px 6px rgba(16, 185, 129, 0.3))" }} />
+                                        }
+                                      </div>
                                     <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)" }}>{aiGenerateMode === 'document' ? 'Upload PDF, DOC or DOCX' : 'Upload Image'}</div>
-                                    <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>Questions will be generated from your uploaded material.</div>
+                                    <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>Questions will be generated from your uploaded material. (Max 10 MB)</div>
                                   </>
                                 ) : (
                                   <div style={{ position: "relative", zIndex: 20 }}>
-                                    <div style={{ fontSize: "24px", marginBottom: "8px", color: "#10b981" }}>✅</div>
+                                      <div style={{ marginBottom: "12px", animation: "slideDown 0.3s ease-out", display: "flex", justifyContent: "center" }}>
+                                        <CheckCircle size={40} color="#10b981" style={{ filter: "drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3))" }} />
+                                      </div>
                                     <div style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", wordBreak: "break-all" }}>{aiFile.name}</div>
                                     <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>{(aiFile.size / 1024 / 1024).toFixed(2)} MB</div>
                                     <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAiFile(null); }} style={{ marginTop: "10px", background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", cursor: "pointer" }}>Remove</button>
@@ -1386,6 +1407,76 @@ const CreateCustomQuiz = () => {
           </div>
         </div>
       )}
+
+        {/* Capacity Warning Modal */}
+        {capacityWarning && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(10, 10, 20, 0.75)",
+            backdropFilter: "blur(10px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 100000,
+            animation: "fadeIn 0.2s ease-out"
+          }}>
+            <div style={{
+              background: "var(--bg-card, #131428)",
+              border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+              borderRadius: "20px",
+              padding: "24px",
+              width: "90%",
+              maxWidth: "420px",
+              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.4)",
+              position: "relative",
+              overflow: "hidden"
+            }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "8px" }}>
+                ⚠️ Source Capacity Reached
+              </h2>
+              
+              <div style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.6", marginBottom: "20px" }}>
+                <p style={{ margin: "0 0 12px 0" }}>{capacityWarning.message}</p>
+                <div style={{ padding: "12px", background: "rgba(255,255,255,0.03)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <span>Requested:</span>
+                    <span style={{ color: "var(--danger, #ff4d4f)", fontWeight: "600" }}>{capacityWarning.requested} questions</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Safe limit:</span>
+                    <span style={{ color: "var(--success, #22c55e)", fontWeight: "600" }}>{capacityWarning.maxSafe} questions</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "12px", width: "100%" }}>
+                <button
+                  onClick={() => setCapacityWarning(null)}
+                  style={{
+                    flex: 1, padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border-color)",
+                    background: "transparent", color: "var(--text-primary)", fontWeight: "600", fontSize: "14px", cursor: "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setAiQuantity(capacityWarning.maxSafe);
+                    setCapacityWarning(null);
+                    setTimeout(() => setShowAiConfirmModal(true), 10);
+                  }}
+                  style={{
+                    flex: 1, padding: "12px", borderRadius: "8px", border: "none",
+                    background: "var(--violet, #6E3FF3)", color: "#fff", fontWeight: "600", fontSize: "14px", cursor: "pointer"
+                  }}
+                >
+                  Generate {capacityWarning.maxSafe}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* AI Test Builder Confirmation Modal */}
       {showAiConfirmModal && (
