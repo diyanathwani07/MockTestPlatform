@@ -8,7 +8,6 @@ const aiPlanSchema = new mongoose.Schema({
   currency: { type: String, default: "INR" },
   durationValue: { type: Number, required: true },
   durationUnit: { type: String, enum: ["days", "months"], default: "days" },
-  aiCredits: { type: Number, required: true },
   maxAITests: { type: Number, default: 0 },
   features: [{ type: String }],
   allowedExamIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "ExamSeries" }],

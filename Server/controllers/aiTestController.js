@@ -3,6 +3,7 @@ const { generateContentWithFallback } = require("../utils/geminiHelper");
 const Quiz = require("../models/Quiz");
 const User = require("../models/User");
 const { enforceExpiry } = require("../utils/subscriptionUtils");
+const Subscription = require("../models/Subscription");
 
 // 1. Get Premium Status
 const getPremiumStatus = async (req, res) => {
@@ -17,14 +18,31 @@ const getPremiumStatus = async (req, res) => {
       user = await User.findById(user._id);
     }
 
+    let activeSub = null;
+    let aiTestsRemaining = 0;
+    
+    if (user.isPremium) {
+      activeSub = await Subscription.findOne({
+        studentId: user._id,
+        status: "active"
+      });
+      
+      if (activeSub) {
+        aiTestsRemaining = Math.max(0, (activeSub.maxAITests || 0) - (activeSub.aiTestsUsed || 0));
+      }
+    }
+
     res.json({
       isPremium: !!user.isPremium,
-      aiCredits: user.aiCredits || 0,
+      expiresAt: user.premiumExpiresAt || null,
+      maxAITests: activeSub ? (activeSub.maxAITests || 0) : 0,
+      aiTestsUsed: activeSub ? (activeSub.aiTestsUsed || 0) : 0,
+      aiTestsRemaining,
       activePlan: user.activePlan || null
     });
   } catch (error) {
     console.error("Get Premium Status Error:", error);
-    res.status(500).json({ message: "Failed to load premium status." });
+    res.status(500).json({ message: "Failed to fetch premium status." });
   }
 };
 
@@ -104,42 +122,39 @@ const generateAITest = async (req, res) => {
       return res.status(400).json({ message: "Invalid question count requested. Choose 10, 20, 30 or 50." });
     }
 
-    // Atomic credit reservation to prevent race conditions
-    const updatedUser = await User.findOneAndUpdate(
+    // Atomic usage reservation
+    const activeSub = await Subscription.findOneAndUpdate(
       {
-        _id: req.user._id,
-        isPremium: true,
-        aiCredits: { $gte: questionCount }
+        studentId: req.user._id,
+        status: "active",
+        $expr: { $lt: ["$aiTestsUsed", "$maxAITests"] }
       },
       {
-        $inc: { aiCredits: -questionCount }
+        $inc: { aiTestsUsed: 1 }
       },
       { new: true }
     );
 
-    if (!updatedUser) {
-      // Check why it failed for accurate error message
+    if (!activeSub) {
       const checkUser = await User.findById(req.user._id);
-      if (!checkUser) return res.status(404).json({ message: "User not found." });
-      if (!checkUser.isPremium) {
+      if (!checkUser || !checkUser.isPremium) {
         return res.status(403).json({
           message: "Premium access required. Please upgrade to use the AI Test Builder.",
           code: "PREMIUM_REQUIRED"
         });
       }
       return res.status(402).json({
-        message: `Insufficient AI credits. You have ${checkUser.aiCredits} credits remaining, but this test requires ${questionCount} credits.`,
-        code: "INSUFFICIENT_CREDITS"
+        message: "You have used all AI test generations included in your plan.",
+        code: "INSUFFICIENT_ALLOWANCE"
       });
     }
 
-    let creditsReserved = true;
-    const creditsDeducted = questionCount;
+    let allowanceReserved = true;
 
-    const refundCredits = async () => {
-      if (creditsReserved) {
-        await User.findByIdAndUpdate(req.user._id, { $inc: { aiCredits: creditsDeducted } });
-        creditsReserved = false;
+    const refundAllowance = async () => {
+      if (allowanceReserved) {
+        await Subscription.findByIdAndUpdate(activeSub._id, { $inc: { aiTestsUsed: -1 } });
+        allowanceReserved = false;
       }
     };
 
@@ -242,12 +257,12 @@ JSON Schema format:
         resultJson = JSON.parse(rawText);
       } catch (e) {
         console.error("AI JSON Parse Failure. Raw response:", rawText);
-        await refundCredits();
+        await refundAllowance();
         return res.status(502).json({ message: "Failed to parse AI question output. Please try again." });
       }
 
       if (!resultJson.questions || !Array.isArray(resultJson.questions)) {
-        await refundCredits();
+        await refundAllowance();
         return res.status(502).json({ message: "AI response did not contain questions list." });
       }
 
@@ -270,7 +285,7 @@ JSON Schema format:
 
       // If validated questions are less than required, we reject or try a fallback (MVP: reject with retry message if too few, or save what we have if close)
       if (validatedQuestions.length < Math.max(5, Math.round(questionCount * 0.7))) {
-        await refundCredits();
+        await refundAllowance();
         return res.status(502).json({ message: "AI generated too many invalid or duplicate questions. Please try again." });
       }
 
@@ -309,10 +324,10 @@ JSON Schema format:
         success: true,
         message: "AI Test generated successfully!",
         quizId: customQuiz._id,
-        creditsRemaining: updatedUser.aiCredits
+        aiTestsRemaining: activeSub.maxAITests - activeSub.aiTestsUsed
       });
     } catch (innerError) {
-      await refundCredits();
+      await refundAllowance();
       throw innerError;
     }
   } catch (error) {
@@ -323,6 +338,34 @@ JSON Schema format:
 
 
 const { extractMaterialContent } = require("../utils/materialHelper");
+
+async function estimateSafeQuestionCapacity(extractedText, multimodalParts, ai) {
+  try {
+    const prompt = "Analyze the provided source material (text and/or images). Estimate the maximum number of distinct, high-quality, factual multiple-choice questions that can be generated from it WITHOUT inventing any outside facts. Consider the density of facts, concepts, and rules in the source. Return ONLY a raw integer representing the maximum safe question count. Do not include any other text or explanation.";
+    const contents = [];
+    if (extractedText) contents.push(extractedText);
+    if (multimodalParts && multimodalParts.length > 0) {
+      contents.push(...multimodalParts);
+    }
+    contents.push(prompt);
+
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents,
+      config: {
+        temperature: 0.2,
+        maxOutputTokens: 10
+      }
+    });
+    
+    const textOutput = response.text ? response.text().trim() : "10";
+    const estimatedCapacity = parseInt(textOutput.replace(/[^0-9]/g, ""), 10);
+    return Math.min(Math.max(estimatedCapacity || 0, 5), 50);
+  } catch (err) {
+    console.error("Capacity Estimation Error:", err);
+    return 50; 
+  }
+}
 
 // 3. Generate AI Test from Material
 const generateFromMaterial = async (req, res) => {
@@ -357,45 +400,67 @@ const generateFromMaterial = async (req, res) => {
     }
 
     // Extract material
-    let extractedText = "";
-    let multimodalParts = [];
-    try {
-      const result = await extractMaterialContent(file);
-      extractedText = result.extractedText;
-      multimodalParts = result.multimodalParts;
-    } catch (err) {
-      return res.status(400).json({ message: err.message });
-    }
+      let extractedText = "";
+      let multimodalParts = [];
+      try {
+        const result = await extractMaterialContent(file);
+        extractedText = result.extractedText;
+        multimodalParts = result.multimodalParts;
+      } catch (err) {
+        return res.status(400).json({ message: err.message });
+      }
 
-    // Atomic credit reservation
-    const updatedUser = await User.findOneAndUpdate(
+      // Source Capacity Validation
+      const tempCredsC = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      const aiC = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      if (tempCredsC) process.env.GOOGLE_APPLICATION_CREDENTIALS = tempCredsC;
+
+      const maxSafeCount = await estimateSafeQuestionCapacity(extractedText, multimodalParts, aiC);
+      
+      if (questionCount > maxSafeCount) {
+        return res.status(400).json({
+          canGenerate: false,
+          requestedCount: questionCount,
+          maxSafeCount,
+          message: `The uploaded source does not contain enough distinct information to safely generate ${questionCount} unique questions.`,
+          code: "CAPACITY_EXCEEDED"
+        });
+      }
+
+      // Atomic usage reservation
+    const activeSub = await Subscription.findOneAndUpdate(
       {
-        _id: req.user._id,
-        isPremium: true,
-        aiCredits: { $gte: questionCount }
+        studentId: req.user._id,
+        status: "active",
+        $expr: { $lt: ["$aiTestsUsed", "$maxAITests"] }
       },
       {
-        $inc: { aiCredits: -questionCount }
+        $inc: { aiTestsUsed: 1 }
       },
       { new: true }
     );
 
-    if (!updatedUser) {
+    if (!activeSub) {
       const checkUser = await User.findById(req.user._id);
-      if (!checkUser) return res.status(404).json({ message: "User not found." });
-      if (!checkUser.isPremium) {
-        return res.status(403).json({ message: "Premium access required.", code: "PREMIUM_REQUIRED" });
+      if (!checkUser || !checkUser.isPremium) {
+        return res.status(403).json({
+          message: "Premium access required. Please upgrade to use the AI Test Builder.",
+          code: "PREMIUM_REQUIRED"
+        });
       }
-      return res.status(402).json({ message: `Insufficient AI credits. You need ${questionCount}.`, code: "INSUFFICIENT_CREDITS" });
+      return res.status(402).json({
+        message: "You have used all AI test generations included in your plan.",
+        code: "INSUFFICIENT_ALLOWANCE"
+      });
     }
 
-    let creditsReserved = true;
-    const creditsDeducted = questionCount;
+    let allowanceReserved = true;
 
-    const refundCredits = async () => {
-      if (creditsReserved) {
-        await User.findByIdAndUpdate(req.user._id, { $inc: { aiCredits: creditsDeducted } });
-        creditsReserved = false;
+    const refundAllowance = async () => {
+      if (allowanceReserved) {
+        await Subscription.findByIdAndUpdate(activeSub._id, { $inc: { aiTestsUsed: -1 } });
+        allowanceReserved = false;
       }
     };
 
@@ -445,13 +510,12 @@ Language constraints:
 ${langRule}
 
 CRITICAL RULES:
-1. Return ONLY a valid JSON object matching the schema below.
-2. Do NOT wrap JSON in \`\`\`json block.
-3. Every question must have exactly ${optionsCount} options.
-4. correctAnswer must EXACTLY match the text of one option inside the options array.
-5. Do NOT generate duplicate questions.
-6. Make questions professional, pedagogical, and syllabus-based rather than general trivia.
-7. ONLY base your questions on the provided study material content. Do not hallucinate external knowledge unless it is common knowledge strictly related to the material.
+1. Generate questions ONLY from information supported by the uploaded source material. Do not introduce unrelated outside facts. Do not invent facts, concepts, names, dates, or rules that are not explicitly supported by the source.
+2. Return ONLY a valid JSON object matching the schema below.
+3. Do NOT wrap JSON in \`\`\`json block.
+4. Every question must have exactly ${optionsCount} options.
+5. correctAnswer must EXACTLY match the text of one option inside the options array.
+6. Do NOT generate duplicate questions.
 
 STUDY MATERIAL CONTENT:
 """
@@ -491,12 +555,12 @@ JSON Schema format:
       try {
         resultJson = JSON.parse(rawText);
       } catch (e) {
-        await refundCredits();
+        await refundAllowance();
         return res.status(502).json({ message: "Failed to parse AI question output. Please try again." });
       }
 
       if (!resultJson.questions || !Array.isArray(resultJson.questions)) {
-        await refundCredits();
+        await refundAllowance();
         return res.status(502).json({ message: "Invalid JSON format returned by AI." });
       }
 
@@ -532,7 +596,7 @@ JSON Schema format:
       }
 
       if (validatedQuestions.length < questionCount) {
-        await refundCredits();
+        await refundAllowance();
         return res.status(502).json({ message: `AI generated ${validatedQuestions.length} valid questions but you requested ${questionCount}. Please try again.` });
       }
 
@@ -569,10 +633,10 @@ JSON Schema format:
         success: true,
         message: "AI Test generated successfully from material!",
         quizId: customQuiz._id,
-        creditsRemaining: updatedUser.aiCredits
+        aiTestsRemaining: activeSub.maxAITests - activeSub.aiTestsUsed
       });
     } catch (innerError) {
-      await refundCredits();
+      await refundAllowance();
       throw innerError;
     }
   } catch (error) {

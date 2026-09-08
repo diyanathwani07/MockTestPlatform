@@ -46,7 +46,7 @@ const createAiPlan = async (req, res) => {
       sellingPrice,
       durationValue,
       durationUnit,
-      aiCredits,
+      
       maxAITests,
       features,
       allowedExamIds,
@@ -55,7 +55,7 @@ const createAiPlan = async (req, res) => {
       displayOrder
     } = req.body;
 
-    if (!name || originalPrice === undefined || sellingPrice === undefined || !durationValue || !aiCredits) {
+    if (!name || originalPrice === undefined || sellingPrice === undefined || !durationValue || !maxAITests) {
       return res.status(400).json({ message: "Please fill in all required fields." });
     }
 
@@ -81,7 +81,7 @@ const createAiPlan = async (req, res) => {
       sellingPrice,
       durationValue,
       durationUnit,
-      aiCredits,
+      
       maxAITests: maxAITests || 0,
       features: features || [],
       allowedExamIds: allowedExamIds || [],
@@ -113,7 +113,7 @@ const updateAiPlan = async (req, res) => {
       sellingPrice,
       durationValue,
       durationUnit,
-      aiCredits,
+      
       maxAITests,
       features,
       allowedExamIds,
@@ -148,7 +148,7 @@ const updateAiPlan = async (req, res) => {
     plan.sellingPrice = sellingPrice !== undefined ? sellingPrice : plan.sellingPrice;
     plan.durationValue = durationValue !== undefined ? durationValue : plan.durationValue;
     plan.durationUnit = durationUnit || plan.durationUnit;
-    plan.aiCredits = aiCredits !== undefined ? aiCredits : plan.aiCredits;
+    
     plan.maxAITests = maxAITests !== undefined ? maxAITests : plan.maxAITests;
     plan.features = features || plan.features;
     plan.allowedExamIds = allowedExamIds || plan.allowedExamIds;
@@ -263,7 +263,7 @@ const subscribeToPlan = async (req, res) => {
       purchaseId,
       amount: plan.sellingPrice || 0,
       currency: plan.currency || "INR",
-      aiCreditsGranted: plan.aiCredits || 0,
+      maxAITests: plan.maxAITests || 10, aiTestsUsed: 0,
       startDate: new Date(),
       expiryDate,
       status: "pending_payment",

@@ -1,5 +1,6 @@
 const express = require("express");
 const { protect } = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
 
 const {
   saveResult,
@@ -8,10 +9,15 @@ const {
   getSharedResult,
   getResultByShareId,
   getResultById,
-  updateResultFeedback
+  updateResultFeedback,
+  getAllAttempts,
+  getScoreAnalytics
 } = require("../controllers/resultController");
 
 const router = express.Router();
+
+router.get("/admin/all-attempts", protect, adminOnly, getAllAttempts);
+router.get("/admin/score-analytics", protect, adminOnly, getScoreAnalytics);
 
 router.post("/save", protect, saveResult);
 router.put("/feedback/:resultId", protect, updateResultFeedback);

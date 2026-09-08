@@ -245,7 +245,7 @@ const getSubscribersList = async (req, res) => {
           email: "$userDoc.email",
           phone: { $ifNull: ["$userDoc.phone", ""] },
           avatar: { $ifNull: ["$userDoc.avatar", ""] },
-          aiCredits: { $ifNull: ["$userDoc.aiCredits", 0] },
+          
           userJoinedAt: "$userDoc.createdAt",
           lifetimeSpend: "$lifetimeSpend",
           purchaseCount: "$purchaseCount",
@@ -367,7 +367,7 @@ const getSubscriberHistory = async (req, res) => {
     }
 
     const student = await User.findById(studentId).select(
-      "fullName email phone avatar createdAt isPremium aiCredits premiumExpiresAt activePlan status"
+      "fullName email phone avatar createdAt isPremium premiumExpiresAt activePlan status"
     );
 
     if (!student) {

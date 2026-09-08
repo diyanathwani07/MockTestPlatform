@@ -29,9 +29,14 @@ const subscriptionSchema = new mongoose.Schema(
       type: String,
       default: "INR"
     },
-    aiCreditsGranted: {
+        maxAITests: {
       type: Number,
-      required: true
+      required: true,
+      default: 0
+    },
+    aiTestsUsed: {
+      type: Number,
+      default: 0
     },
     startDate: {
       type: Date,
@@ -65,3 +70,4 @@ const subscriptionSchema = new mongoose.Schema(
 subscriptionSchema.index({ studentId: 1, status: 1 });
 
 module.exports = mongoose.model("Subscription", subscriptionSchema);
+

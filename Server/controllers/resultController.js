@@ -347,6 +347,88 @@ const updateResultFeedback = async (req, res) => {
   }
 };
 
+// ─── ADMIN: All Attempts ───
+const getAllAttempts = async (req, res) => {
+  try {
+    const results = await Result.find()
+      .populate("userId", "name email")
+      .populate("quizId", "title")
+      .sort({ createdAt: -1 })
+      .select("userId quizId quizTitle score total percentage timeTaken createdAt passPercentage");
+
+    const formatted = results.map(r => ({
+      _id: r._id,
+      studentName: r.userId?.name || "Deleted User",
+      studentEmail: r.userId?.email || "",
+      quizTitle: r.quizId?.title || r.quizTitle || "Untitled Quiz",
+      score: r.score,
+      total: r.total,
+      percentage: r.percentage,
+      timeTaken: r.timeTaken,
+      passed: r.percentage >= (r.passPercentage || 33),
+      date: r.createdAt
+    }));
+
+    res.json({ totalAttempts: formatted.length, attempts: formatted });
+  } catch (error) {
+    console.error("GET ALL ATTEMPTS ERROR:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// ─── ADMIN: Score Analytics ───
+const getScoreAnalytics = async (req, res) => {
+  try {
+    const results = await Result.find()
+      .populate("quizId", "title")
+      .select("quizId quizTitle score total percentage passPercentage");
+
+    // Group by quiz
+    const quizMap = {};
+    let totalPercentageSum = 0;
+    let totalCount = 0;
+
+    results.forEach(r => {
+      const quizKey = r.quizId?._id?.toString() || r.quizTitle || "unknown";
+      const quizTitle = r.quizId?.title || r.quizTitle || "Untitled Quiz";
+      
+      if (!quizMap[quizKey]) {
+        quizMap[quizKey] = { quizTitle, attempts: 0, percentages: [], passCount: 0 };
+      }
+      quizMap[quizKey].attempts += 1;
+      quizMap[quizKey].percentages.push(r.percentage || 0);
+      if (r.percentage >= (r.passPercentage || 33)) quizMap[quizKey].passCount += 1;
+
+      totalPercentageSum += (r.percentage || 0);
+      totalCount += 1;
+    });
+
+    const quizzes = Object.values(quizMap).map(q => {
+      const sorted = [...q.percentages].sort((a, b) => a - b);
+      return {
+        quizTitle: q.quizTitle,
+        totalAttempts: q.attempts,
+        averageScore: parseFloat((q.percentages.reduce((s, v) => s + v, 0) / q.attempts).toFixed(1)),
+        highestScore: sorted[sorted.length - 1] || 0,
+        lowestScore: sorted[0] || 0,
+        passRate: parseFloat(((q.passCount / q.attempts) * 100).toFixed(1))
+      };
+    });
+
+    quizzes.sort((a, b) => b.totalAttempts - a.totalAttempts);
+
+    res.json({
+      overallAverage: totalCount > 0 ? parseFloat((totalPercentageSum / totalCount).toFixed(1)) : 0,
+      totalAttempts: totalCount,
+      totalQuizzes: quizzes.length,
+      quizzes
+    });
+  } catch (error) {
+    console.error("GET SCORE ANALYTICS ERROR:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 module.exports = {
   saveResult,
   getUserResults,
@@ -354,5 +436,7 @@ module.exports = {
   getSharedResult,
   getResultByShareId,
   getResultById,
-  updateResultFeedback
+  updateResultFeedback,
+  getAllAttempts,
+  getScoreAnalytics
 };
