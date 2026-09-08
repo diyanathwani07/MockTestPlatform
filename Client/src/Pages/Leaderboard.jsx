@@ -109,7 +109,7 @@ function Leaderboard() {
     if (!item) return null;
     const name = item.userId?.fullName || item.userId?.name || "User";
     const scoreVal = `${item.score} / ${item.total}`;
-    const ptsVal = `${item.score * 100 + (item.percentage || 0)} QP`;
+    const ptsVal = `${item.score} / ${item.total}`;
     const accuracy = item.correct !== undefined 
       ? `${Math.round((item.correct / (item.correct + item.incorrect || 1)) * 100)}%` 
       : formatPercent(item.percentage);
@@ -364,7 +364,7 @@ function Leaderboard() {
                     const name = r.userId?.fullName || r.userId?.name || "User";
                     const isYou = r.userId && (r.userId._id === currentUser?.id || r.userId._id === currentUser?._id || r.userId === currentUser?.id || r.userId === currentUser?._id);
                     const pctVal = formatPercent(r.percentage !== undefined ? r.percentage : (r.score / r.total) * 100);
-                    const ptsVal = `${r.score * 100 + (r.percentage || 0)} QP`;
+                    const ptsVal = `${r.score} / ${r.total}`;
                     const avatarUrl = r.userId?.avatar;
 
                     return (
