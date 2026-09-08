@@ -5,7 +5,7 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { 
   Info, FileText, Calendar, Search, ChevronDown, ChevronRight, ChevronUp,
-  Trophy, Users, CheckCircle, Percent, User, Crown, Sparkles, ArrowRight 
+  Trophy, Users, CheckCircle, Percent, User, Crown, Sparkles, ArrowRight, X, BookOpen
 } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/Leaderboard.css";
@@ -22,6 +22,7 @@ function Leaderboard() {
   const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [examSearchQuery, setExamSearchQuery] = useState("");
+  const [selectedStudentModal, setSelectedStudentModal] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -102,6 +103,13 @@ function Leaderboard() {
     return `${Number.isInteger(num) ? num : num.toFixed(1)}%`;
   };
 
+  // Helper to format item date
+  const formatDateStr = (dateVal) => {
+    if (!dateVal) return "Recent";
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? "Recent" : d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  };
+
   // Top 3 Podium spots
   const podiumRaw = displayResults.slice(0, 3);
   const getPodiumSpot = (index, rankNum) => {
@@ -115,7 +123,15 @@ function Leaderboard() {
       : formatPercent(item.percentage);
     const avatar = item.userId?.avatar || null;
     const isYou = item.userId && (item.userId._id === currentUser?.id || item.userId === currentUser?.id || item.userId._id === currentUser?._id);
-    return { rank: rankNum, name, score: scoreVal, pts: ptsVal, accuracy, avatar, isYou, raw: item };
+    const quizTitle = item.quizTitle || item.examName || "Mock Test";
+    const examName = item.examName || item.quizTitle || "Exam Series";
+    const subject = item.subject || "General";
+    const date = formatDateStr(item.createdAt);
+
+    return { 
+      rank: rankNum, name, score: scoreVal, pts: ptsVal, accuracy, percentile: formatPercent(item.percentage), 
+      avatar, isYou, quizTitle, examName, subject, date, rawResult: item 
+    };
   };
 
   const spot1 = getPodiumSpot(0, 1);
@@ -135,7 +151,12 @@ function Leaderboard() {
     score: `${r.score} / ${r.total}`,
     accuracy: `${Math.round((r.correct / (r.correct + r.incorrect || 1)) * 100) || 0}%`,
     percentile: formatPercent(r.percentage !== undefined ? r.percentage : (r.score / r.total) * 100),
-    avatar: r.userId?.avatar || null
+    avatar: r.userId?.avatar || null,
+    quizTitle: r.quizTitle || r.examName || "Mock Test",
+    examName: r.examName || r.quizTitle || "Exam Series",
+    subject: r.subject || "General",
+    date: formatDateStr(r.createdAt),
+    rawResult: r
   }));
 
   // Mobile Top Players List (Top 4 to 10 or all if expanded)
@@ -256,7 +277,7 @@ function Leaderboard() {
               {/* STEPPED TOP 3 PODIUM */}
               <div className="lb-mobile-podium-container">
                 {/* Spot #2 (Left) */}
-                <div className="lb-pod-column spot-2">
+                <div className="lb-pod-column spot-2" onClick={() => spot2 && setSelectedStudentModal(spot2)} style={{ cursor: spot2 ? "pointer" : "default" }}>
                   {spot2 ? (
                     <>
                       <div className="lb-pod-avatar-ring silver-ring">
@@ -282,7 +303,7 @@ function Leaderboard() {
                 </div>
 
                 {/* Spot #1 (Center) */}
-                <div className="lb-pod-column spot-1">
+                <div className="lb-pod-column spot-1" onClick={() => spot1 && setSelectedStudentModal(spot1)} style={{ cursor: spot1 ? "pointer" : "default" }}>
                   {spot1 ? (
                     <>
                       <div className="lb-crown-floating">
@@ -311,7 +332,7 @@ function Leaderboard() {
                 </div>
 
                 {/* Spot #3 (Right) */}
-                <div className="lb-pod-column spot-3">
+                <div className="lb-pod-column spot-3" onClick={() => spot3 && setSelectedStudentModal(spot3)} style={{ cursor: spot3 ? "pointer" : "default" }}>
                   {spot3 ? (
                     <>
                       <div className="lb-pod-avatar-ring bronze-ring">
@@ -367,8 +388,28 @@ function Leaderboard() {
                     const ptsVal = `${r.score} / ${r.total}`;
                     const avatarUrl = r.userId?.avatar;
 
+                    const itemDetails = {
+                      rank: rankNum,
+                      name,
+                      isYou,
+                      score: ptsVal,
+                      accuracy: `${Math.round((r.correct / (r.correct + r.incorrect || 1)) * 100) || 0}%`,
+                      percentile: pctVal,
+                      avatar: avatarUrl,
+                      quizTitle: r.quizTitle || r.examName || "Mock Test",
+                      examName: r.examName || r.quizTitle || "Exam Series",
+                      subject: r.subject || "General",
+                      date: formatDateStr(r.createdAt),
+                      rawResult: r
+                    };
+
                     return (
-                      <div key={r._id || idx} className={`lb-player-compact-row ${isYou ? "highlight-you" : ""}`}>
+                      <div 
+                        key={r._id || idx} 
+                        className={`lb-player-compact-row ${isYou ? "highlight-you" : ""}`}
+                        onClick={() => setSelectedStudentModal(itemDetails)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <div className="lb-row-rank-badge">{rankNum}</div>
                         <div className="lb-row-avatar-box">
                           {avatarUrl ? (
@@ -381,7 +422,9 @@ function Leaderboard() {
                           <span className="lb-row-student-name">
                             {name} {isYou && <span className="lb-you-chip">(You)</span>}
                           </span>
-                          <span className="lb-row-qp-points">{ptsVal}</span>
+                          <span className="lb-row-qp-points">
+                            {ptsVal} • {itemDetails.quizTitle}
+                          </span>
                         </div>
                         <div className="lb-row-pct-pill">{pctVal}</div>
                       </div>
@@ -762,7 +805,7 @@ function Leaderboard() {
                   {/* STEPPED TOP 3 PODIUM */}
                   <div className="lb-mobile-podium-container">
                     {/* Spot #2 (Left) */}
-                    <div className="lb-pod-column spot-2">
+                    <div className="lb-pod-column spot-2" onClick={() => spot2 && setSelectedStudentModal(spot2)} style={{ cursor: spot2 ? "pointer" : "default" }}>
                       {spot2 ? (
                         <>
                           <div className="lb-pod-avatar-ring silver-ring">
@@ -788,7 +831,7 @@ function Leaderboard() {
                     </div>
 
                     {/* Spot #1 (Center) */}
-                    <div className="lb-pod-column spot-1">
+                    <div className="lb-pod-column spot-1" onClick={() => spot1 && setSelectedStudentModal(spot1)} style={{ cursor: spot1 ? "pointer" : "default" }}>
                       {spot1 ? (
                         <>
                           <div className="lb-crown-floating">
@@ -817,7 +860,7 @@ function Leaderboard() {
                     </div>
 
                     {/* Spot #3 (Right) */}
-                    <div className="lb-pod-column spot-3">
+                    <div className="lb-pod-column spot-3" onClick={() => spot3 && setSelectedStudentModal(spot3)} style={{ cursor: spot3 ? "pointer" : "default" }}>
                       {spot3 ? (
                         <>
                           <div className="lb-pod-avatar-ring bronze-ring">
@@ -885,7 +928,7 @@ function Leaderboard() {
                   <thead>
                     <tr>
                       <th>Rank</th>
-                      <th>Student</th>
+                      <th>Student & Exam</th>
                       <th>Score</th>
                       <th>Accuracy</th>
                       <th>Percentile</th>
@@ -893,17 +936,29 @@ function Leaderboard() {
                   </thead>
                   <tbody>
                     {desktopTableData.map((row) => (
-                      <tr key={row.rank}>
+                      <tr 
+                        key={row.rank} 
+                        onClick={() => setSelectedStudentModal(row)}
+                        style={{ cursor: "pointer" }}
+                        className="lb-desktop-table-row"
+                      >
                         <td className="rank">{row.rank}</td>
                         <td className="student">
-                          <div className="lb-student-avatar" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                          <div className="lb-student-avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                             {row.avatar ? (
                               <img src={row.avatar} alt={row.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
                               <User size={18} color="var(--text-muted)" />
                             )}
                           </div>
-                          <span className={row.isYou ? 'you' : ''}>{row.name} {row.isYou && "(You)"}</span>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                            <span className={row.isYou ? 'you' : ''} style={{ fontWeight: "700" }}>
+                              {row.name} {row.isYou && "(You)"}
+                            </span>
+                            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "500" }}>
+                              {row.quizTitle} {row.subject && row.subject !== "General" ? `• ${row.subject}` : ""}
+                            </span>
+                          </div>
                         </td>
                         <td className="score">{row.score}</td>
                         <td className="accuracy">{row.accuracy}</td>
@@ -978,6 +1033,156 @@ function Leaderboard() {
             </div>
 
           </div>
+
+          {/* ═════════════════════════════════════════════════════════════
+              🔍 STUDENT ATTEMPT DETAILS MODAL (CLICK ON STUDENT ROW/NAME)
+             ═════════════════════════════════════════════════════════════ */}
+          {selectedStudentModal && (
+            <div 
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0, 0, 0, 0.65)",
+                backdropFilter: "blur(6px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 99999,
+                padding: "16px"
+              }}
+              onClick={() => setSelectedStudentModal(null)}
+            >
+              <div 
+                style={{
+                  background: "var(--bg-card, #131428)",
+                  border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                  borderRadius: "20px",
+                  maxWidth: "440px",
+                  width: "100%",
+                  padding: "24px",
+                  boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "18px",
+                  position: "relative",
+                  animation: "modalFadeIn 0.2s ease-out"
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: "var(--bg-input)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "2px solid var(--violet)" }}>
+                      {selectedStudentModal.avatar ? (
+                        <img src={selectedStudentModal.avatar} alt={selectedStudentModal.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <User size={24} color="var(--text-muted)" />
+                      )}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
+                        {selectedStudentModal.name} {selectedStudentModal.isYou && <span style={{ color: "var(--violet)", fontSize: "12px", fontWeight: "800" }}>(You)</span>}
+                      </div>
+                      <div style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "600" }}>
+                        Rank #{selectedStudentModal.rank} on Leaderboard
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedStudentModal(null)}
+                    style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: "4px" }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div style={{ height: "1px", background: "var(--border-color)" }} />
+
+                {/* Attempt Details */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", borderRadius: "12px", background: "var(--bg-input)" }}>
+                    <BookOpen size={20} style={{ color: "var(--violet)", flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "700", letterSpacing: "0.5px" }}>Test / Exam Title</div>
+                      <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>{selectedStudentModal.quizTitle || selectedStudentModal.examName || "Mock Test"}</div>
+                    </div>
+                  </div>
+
+                  {selectedStudentModal.subject && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", borderRadius: "12px", background: "var(--bg-input)" }}>
+                      <FileText size={20} style={{ color: "var(--violet)", flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "700", letterSpacing: "0.5px" }}>Subject / Module</div>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>{selectedStudentModal.subject}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <div style={{ padding: "12px 14px", borderRadius: "12px", background: "var(--bg-input)" }}>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "700" }}>Score Secured</div>
+                      <div style={{ fontSize: "16px", fontWeight: "800", color: "var(--violet)", marginTop: "2px" }}>{selectedStudentModal.score}</div>
+                    </div>
+                    <div style={{ padding: "12px 14px", borderRadius: "12px", background: "var(--bg-input)" }}>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "700" }}>Accuracy / Percentile</div>
+                      <div style={{ fontSize: "16px", fontWeight: "800", color: "#16A34A", marginTop: "2px" }}>{selectedStudentModal.accuracy} ({selectedStudentModal.percentile})</div>
+                    </div>
+                  </div>
+
+                  {selectedStudentModal.date && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                      <Calendar size={14} /> Completed on {selectedStudentModal.date}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Actions */}
+                <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+                  <button
+                    onClick={() => setSelectedStudentModal(null)}
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      borderRadius: "10px",
+                      border: "1px solid var(--border-color)",
+                      background: "transparent",
+                      color: "var(--text-primary)",
+                      fontWeight: "600",
+                      fontSize: "13px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Close
+                  </button>
+                  {selectedStudentModal.isYou && selectedStudentModal.rawResult && (
+                    <button
+                      onClick={() => {
+                        const targetId = selectedStudentModal.rawResult._id || selectedStudentModal.rawResult.shareId;
+                        navigate(targetId ? `/result/${targetId}` : "/result", { state: selectedStudentModal.rawResult });
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: "var(--violet, #6E3FF3)",
+                        color: "#ffffff",
+                        fontWeight: "700",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      View Full Result <ChevronRight size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

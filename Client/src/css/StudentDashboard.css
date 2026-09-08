@@ -1029,6 +1029,9 @@ body.dark-mode .mobile-sidebar-toggle {
   .sd-navbar {
     padding-left: 70px;
   }
+  .admin-navbar {
+    padding-left: 60px !important;
+  }
 }
 
 @media (max-width: 768px) {

@@ -30,9 +30,22 @@
     filter: drop-shadow(0 -4px 15px rgba(0, 0, 0, 0.4));
   }
 
-  /* Add padding to page content so it doesn't get hidden */
-  .sd-content {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+  /* Add padding to page content so it doesn't get hidden under bottom nav */
+  .sd-main-content,
+  .sd-content,
+  .me-premium-layout,
+  .leaderboard-container,
+  .practice-dashboard-container,
+  .practice-container,
+  .student-results-container,
+  .subject-results-container,
+  .profile-container,
+  .my-subscriptions-page,
+  .pricing-page,
+  .help-support-container,
+  .create-quiz-container,
+  .exam-details-container {
+    padding-bottom: calc(95px + env(safe-area-inset-bottom)) !important;
   }
 }
 

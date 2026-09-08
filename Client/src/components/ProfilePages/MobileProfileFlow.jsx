@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import AvatarPickerModal from "../AvatarPickerModal";
 
@@ -30,6 +31,31 @@ export default function MobileProfileFlow({
   // Sub-screens
   const [notifications, setNotifications] = useState({ push: true, email: true });
   const [language, setLanguage] = useState("en");
+
+  // Real Transaction History state & fetch
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
+
+  useEffect(() => {
+    if (activeScreen === "transactions") {
+      const fetchTransactions = async () => {
+        setLoadingTransactions(true);
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) return;
+          const headers = { Authorization: `Bearer ${token}` };
+          const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+          const res = await axios.get(`${apiUrl}/api/subscription/my`, { headers });
+          setTransactions(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+          console.error("Failed to fetch transactions in profile flow:", err);
+        } finally {
+          setLoadingTransactions(false);
+        }
+      };
+      fetchTransactions();
+    }
+  }, [activeScreen]);
 
   // Safely hide the global hamburger menu on sub-pages so it doesn't overlap the Back button
   React.useEffect(() => {
@@ -241,7 +267,6 @@ export default function MobileProfileFlow({
             
           </div>
         </div>
-        <div style={{ height: '120px', flexShrink: 0, width: '100%' }} />
       </div>
     </div>
   );
@@ -249,12 +274,116 @@ export default function MobileProfileFlow({
   const renderTransactions = () => (
     <div className="mp-screen">
       {renderHeader("Transaction History")}
-      <div className="mp-content mp-centered">
-        <div className="mp-empty-state">
-          <Clock size={48} className="mp-empty-icon" />
-          <h3>No transactions yet</h3>
-          <p>Your transaction history will appear here.</p>
-        </div>
+      <div className="mp-content mp-scrollable" style={{ padding: "16px" }}>
+        {loadingTransactions ? (
+          <div className="mp-centered" style={{ gap: "12px", minHeight: "300px" }}>
+            <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: "var(--violet, #6E3FF3)" }} />
+            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0 }}>Loading your transactions...</p>
+          </div>
+        ) : transactions.length === 0 ? (
+          <div className="mp-centered" style={{ minHeight: "300px" }}>
+            <div className="mp-empty-state">
+              <Clock size={48} className="mp-empty-icon" />
+              <h3>No transactions yet</h3>
+              <p>Your transaction history will appear here once you purchase a plan.</p>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {transactions.map((sub) => {
+              const isCurrentActive = sub.status === "active" && new Date(sub.expiryDate) > new Date();
+              const formattedDate = new Date(sub.startDate || sub.createdAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+              });
+              const formattedExpiry = new Date(sub.expiryDate).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+              });
+
+              return (
+                <div 
+                  key={sub._id || sub.purchaseId}
+                  style={{
+                    background: "var(--bg-card, #16112a)",
+                    border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                    borderRadius: "16px",
+                    padding: "16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+                  }}
+                >
+                  {/* Top Row: Plan Name + Status */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ fontWeight: "700", fontSize: "16px", color: "var(--text-primary)" }}>
+                      {sub.planNameSnapshot || sub.planId?.name || "AI Mock Test Plan"}
+                    </div>
+                    <span style={{
+                      background: isCurrentActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.12)",
+                      color: isCurrentActive ? "#10B981" : "#EF4444",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      padding: "3px 10px",
+                      borderRadius: "100px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px"
+                    }}>
+                      {isCurrentActive ? "Active" : sub.status || "Expired"}
+                    </span>
+                  </div>
+
+                  {/* Order Ref & Amount */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                    <div>
+                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: 600 }}>ORDER REF</div>
+                      <div style={{ fontSize: "12px", fontFamily: "monospace", color: "var(--text-muted)", marginTop: "2px" }}>
+                        {sub.purchaseId || "N/A"}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: "20px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
+                      ₹{sub.amount}
+                    </div>
+                  </div>
+
+                  <hr style={{ border: "none", borderTop: "1px solid var(--border-color, rgba(255,255,255,0.06))", margin: "2px 0" }} />
+
+                  {/* Details Grid */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                    <div>
+                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Gateway:</span>
+                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px", textTransform: "uppercase" }}>
+                        {sub.paymentGateway || "PhonePe"}
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Purchased:</span>
+                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
+                        {formattedDate}
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Valid Until:</span>
+                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
+                        {formattedExpiry}
+                      </div>
+                    </div>
+                    <div>
+                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>AI Tests:</span>
+                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
+                        {sub.aiTestsUsed || 0} / {sub.maxAITests || 0} Used
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -293,29 +422,147 @@ export default function MobileProfileFlow({
   const renderNotifications = () => (
     <div className="mp-screen">
       {renderHeader("Notifications")}
-      <div className="mp-content">
-        <div className="mp-settings-list">
-          <div className="mp-setting-item">
-            <div className="mp-setting-info">
-              <h4>Push Notifications</h4>
-              <p>Receive alerts on your device</p>
+
+      <div className="mp-content mp-scrollable" style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        
+        {/* Push Notifications Card */}
+        <div style={{
+          background: "var(--bg-card, #16112a)",
+          border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+          borderRadius: "18px",
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <div style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, rgba(110, 63, 243, 0.25), rgba(147, 51, 234, 0.25))",
+              color: "var(--violet, #A78BFA)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
+              <Bell size={20} />
             </div>
-            <label className="mp-toggle">
-              <input type="checkbox" checked={notifications.push} onChange={() => setNotifications(prev => ({...prev, push: !prev.push}))} />
-              <span className="mp-toggle-slider"></span>
-            </label>
-          </div>
-          <div className="mp-setting-item">
-            <div className="mp-setting-info">
-              <h4>Email Notifications</h4>
-              <p>Receive updates via email</p>
+            <div>
+              <h4 style={{ margin: "0 0 2px 0", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                Push Notifications
+              </h4>
+              <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                Receive alerts on your device
+              </p>
             </div>
-            <label className="mp-toggle">
-              <input type="checkbox" checked={notifications.email} onChange={() => setNotifications(prev => ({...prev, email: !prev.email}))} />
-              <span className="mp-toggle-slider"></span>
-            </label>
           </div>
+          <label className="mp-toggle" style={{ margin: 0 }}>
+            <input 
+              type="checkbox" 
+              checked={notifications.push} 
+              onChange={() => setNotifications(prev => ({...prev, push: !prev.push}))} 
+            />
+            <span className="mp-toggle-slider"></span>
+          </label>
         </div>
+
+        {/* Email Notifications Card */}
+        <div style={{
+          background: "var(--bg-card, #16112a)",
+          border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+          borderRadius: "18px",
+          padding: "16px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <div style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(110, 63, 243, 0.25))",
+              color: "#60A5FA",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
+              <Mail size={20} />
+            </div>
+            <div>
+              <h4 style={{ margin: "0 0 2px 0", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                Email Notifications
+              </h4>
+              <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                Receive updates via email
+              </p>
+            </div>
+          </div>
+          <label className="mp-toggle" style={{ margin: 0 }}>
+            <input 
+              type="checkbox" 
+              checked={notifications.email} 
+              onChange={() => setNotifications(prev => ({...prev, email: !prev.email}))} 
+            />
+            <span className="mp-toggle-slider"></span>
+          </label>
+        </div>
+
+        {/* Hero Illustration / Confirmation Section */}
+        <div style={{
+          marginTop: "24px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          padding: "32px 20px"
+        }}>
+          {/* Animated Blob Bell Stack */}
+          <div style={{ position: "relative", marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{
+              width: "100px",
+              height: "100px",
+              borderRadius: "40% 60% 70% 30% / 40% 50% 60% 50%",
+              background: "radial-gradient(circle, rgba(110, 63, 243, 0.25) 0%, rgba(168, 85, 247, 0.1) 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              filter: "drop-shadow(0 8px 24px rgba(110, 63, 243, 0.3))"
+            }}>
+              <Bell size={48} color="var(--violet, #A78BFA)" />
+            </div>
+            <div style={{
+              position: "absolute",
+              bottom: "4px",
+              right: "4px",
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              background: "#10B981",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(16, 185, 129, 0.4)",
+              border: "2px solid var(--bg-page, #0A0A0A)"
+            }}>
+              <CheckCircle2 size={16} />
+            </div>
+          </div>
+
+          <h3 style={{ fontSize: "20px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 8px 0" }}>
+            You’re All Set!
+          </h3>
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, maxWidth: "260px", lineHeight: 1.5 }}>
+            You’ll receive notifications based on your preferences.
+          </p>
+        </div>
+
       </div>
     </div>
   );

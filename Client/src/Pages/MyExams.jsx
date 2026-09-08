@@ -276,10 +276,10 @@ function MyExams() {
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className="me-filter-btn"
                         style={{ 
-                          paddingLeft: "42px", 
+                          paddingLeft: "16px", 
                           paddingRight: "16px",
                           cursor: "pointer", 
-                          minWidth: "220px", 
+                          minWidth: "180px", 
                           background: "var(--bg-card)", 
                           color: "var(--text-primary)",
                           border: "1.5px solid var(--border-color)",
@@ -290,9 +290,6 @@ function MyExams() {
                           height: "42px"
                         }}
                       >
-                        <div style={{ position: "absolute", left: "16px", pointerEvents: "none", color: "var(--text-secondary)", display: "flex", alignItems: "center" }}>
-                          <Filter size={18} />
-                        </div>
                         <span style={{ 
                           fontSize: "13.5px", 
                           fontWeight: "600", 
@@ -595,6 +592,8 @@ function MyExams() {
                 </motion.div>
               )}
 
+              {/* Mobile bottom navigation clearance spacer */}
+              <div className="me-mobile-bottom-spacer" style={{ height: "120px", width: "100%", flexShrink: 0 }} />
             </motion.div>
           )}
         </div>
