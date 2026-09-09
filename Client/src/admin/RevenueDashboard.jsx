@@ -195,7 +195,7 @@ export default function RevenueDashboard() {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title="Revenue Analytics" />
+        <AdminNavbar title="Revenue Analytics" parentText="AI Plans" parentLink="/admin/ai-plans" />
 
         <div className="revenue-dashboard-container">
           

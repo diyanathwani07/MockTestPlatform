@@ -21,8 +21,8 @@ html[class*="theme-"] :is(body, #root, *) {
   --sidebar-hover-bg: var(--accent) !important;
 }
 
-/* Enforce accessible contrast when buttons/cards use primary or violet background */
-html[class*="theme-"] :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn) {
+/* Enforce accessible contrast when solid buttons/cards use primary or violet background */
+html[class*="theme-"] :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -30,8 +30,9 @@ html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="backgroundColor
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background:none"],
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: none"],
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: rgba"],
-html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="backgroundColor: rgba"] {
-  color: inherit;
+html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="backgroundColor: rgba"],
+html[class*="theme-"] .theme-toggle-btn {
+  color: inherit !important;
 }
 
 /* ============ Kodama Grove ============ */

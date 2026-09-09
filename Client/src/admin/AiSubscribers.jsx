@@ -218,7 +218,7 @@ export default function AiSubscribers() {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title="AI Subscribers" />
+        <AdminNavbar title="AI Subscribers" parentText="AI Plans" parentLink="/admin/ai-plans" />
 
         <div className="subscribers-dashboard-container">
           
