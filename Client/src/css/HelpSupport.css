@@ -380,19 +380,19 @@ body.dark-mode .hs-ticket-card:hover {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: transparent;
-  color: var(--violet);
-  border: 1px solid var(--violet);
+  background: var(--bg-card, transparent);
+  color: var(--violet, #6E3FF3) !important;
+  border: 1.5px solid var(--violet, #6E3FF3) !important;
   padding: 10px;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .hs-ticket-view-btn:hover {
-  background: var(--violet);
-  color: #fff;
+  background: var(--violet, #6E3FF3) !important;
+  color: var(--sidebar-active-text, var(--primary-foreground, #ffffff)) !important;
 }
 
 .hs-ticket-id {
