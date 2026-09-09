@@ -172,8 +172,8 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-rank-card {
-  background: var(--option-bg, #F8F5FF);
-  border-color: var(--border-color, #EDE9FE);
+  background: var(--bg-card, #ffffff);
+  border-color: var(--border-color, #E4E4E7);
 }
 
 .lb-card-header {
@@ -747,15 +747,20 @@ body.dark-mode .lb-search .lb-icon {
   }
 
   .lb-dropdown-opt {
-    padding: 8px 12px;
+    padding: 10px 12px;
     text-align: left;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     background: transparent;
-    color: var(--text-primary, #1E1B4B);
+    color: var(--text-primary);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .lb-dropdown-opt:hover {
+    background: var(--bg-input, rgba(255,255,255,0.05));
   }
 
   .lb-dropdown-opt.active {
