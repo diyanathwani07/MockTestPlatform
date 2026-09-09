@@ -246,7 +246,7 @@ body.dark-mode .lb-search .lb-icon {
 .lb-btn-primary {
   width: 100%;
   background: var(--violet, #6E3FF3);
-  color: white;
+  color: var(--sidebar-active-text, var(--primary-foreground, white));
   border: none;
   border-radius: 8px;
   padding: 12px;

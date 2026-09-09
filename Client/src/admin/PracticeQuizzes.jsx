@@ -393,7 +393,7 @@ function PracticeQuizzes() {
                     fontWeight: "600",
                     cursor: "pointer",
                     backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
-                    color: viewMode === "active" ? "white" : "var(--text-secondary)",
+                    color: viewMode === "active" ? "var(--sidebar-active-text, var(--primary-foreground))" : "var(--text-secondary)",
                   }}
                 >
                   Active

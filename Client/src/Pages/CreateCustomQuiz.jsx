@@ -468,7 +468,7 @@ const CreateCustomQuiz = () => {
                             background: quizType === "exam" 
                               ? "var(--violet, #6E3FF3)" 
                               : "transparent",
-                            color: quizType === "exam" ? "#ffffff" : "var(--text-secondary)"
+                            color: quizType === "exam" ? "var(--sidebar-active-text, var(--primary-foreground, #ffffff))" : "var(--text-secondary)"
                           }}
                         >
                           Exam Mode
@@ -489,7 +489,7 @@ const CreateCustomQuiz = () => {
                             background: quizType === "practice" 
                               ? "var(--violet, #6E3FF3)" 
                               : "transparent",
-                            color: quizType === "practice" ? "#ffffff" : "var(--text-secondary)"
+                            color: quizType === "practice" ? "var(--sidebar-active-text, var(--primary-foreground, #ffffff))" : "var(--text-secondary)"
                           }}
                         >
                           Practice Mode
@@ -578,7 +578,7 @@ const CreateCustomQuiz = () => {
                               background: quantity === qty 
                                 ? "var(--violet, #6E3FF3)" 
                                 : "transparent",
-                              color: quantity === qty ? "#ffffff" : "var(--text-secondary)"
+                              color: quantity === qty ? "var(--sidebar-active-text, var(--primary-foreground, #ffffff))" : "var(--text-secondary)"
                             }}
                           >
                             {qty}
@@ -601,7 +601,7 @@ const CreateCustomQuiz = () => {
                         transition: "all 0.25s ease",
                         border: "none",
                         background: (loading || !selectedSubject) ? "var(--border-color, #333)" : "var(--violet, #6E3FF3)",
-                        color: (loading || !selectedSubject) ? "var(--text-muted, #777)" : "#ffffff",
+                        color: (loading || !selectedSubject) ? "var(--text-muted, #777)" : "var(--sidebar-active-text, var(--primary-foreground, #ffffff))",
                         boxShadow: (loading || !selectedSubject) ? "none" : "0 4px 10px rgba(110, 63, 243, 0.15)"
                       }}
                     >
@@ -632,7 +632,7 @@ const CreateCustomQuiz = () => {
                         fontSize: "14px",
                         cursor: "pointer",
                         background: "var(--violet, #6E3FF3)",
-                        color: "#fff",
+                        color: "var(--sidebar-active-text, var(--primary-foreground, #fff))",
                         marginTop: "8px"
                       }}
                     >
@@ -690,7 +690,7 @@ const CreateCustomQuiz = () => {
                               background: aiQuizType === "exam" 
                                 ? "var(--violet, #6E3FF3)" 
                                 : "transparent",
-                              color: aiQuizType === "exam" ? "#ffffff" : "var(--text-secondary)"
+                              color: aiQuizType === "exam" ? "var(--sidebar-active-text, var(--primary-foreground, #ffffff))" : "var(--text-secondary)"
                             }}
                           >
                             Exam Mode
@@ -711,7 +711,7 @@ const CreateCustomQuiz = () => {
                               background: aiQuizType === "practice" 
                                 ? "var(--violet, #6E3FF3)" 
                                 : "transparent",
-                              color: aiQuizType === "practice" ? "#ffffff" : "var(--text-secondary)"
+                              color: aiQuizType === "practice" ? "var(--sidebar-active-text, var(--primary-foreground, #ffffff))" : "var(--text-secondary)"
                             }}
                           >
                             Practice Mode
@@ -888,7 +888,7 @@ const CreateCustomQuiz = () => {
                               key={qty}
                               type="button"
                               onClick={() => setAiQuantity(qty)}
-                              style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiQuantity === qty ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiQuantity === qty ? "var(--violet, #6E3FF3)" : "transparent", color: aiQuantity === qty ? "#ffffff" : "var(--text-secondary)", transition: "all 0.15s ease" }}
+                              style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiQuantity === qty ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiQuantity === qty ? "var(--violet, #6E3FF3)" : "transparent", color: aiQuantity === qty ? "var(--sidebar-active-text, var(--primary-foreground, #ffffff))" : "var(--text-secondary)", transition: "all 0.15s ease" }}
                             >
                               {qty}
                             </button>
@@ -985,7 +985,7 @@ const CreateCustomQuiz = () => {
                           transition: "all 0.25s ease",
                           border: "none",
                           background: "var(--violet, #6E3FF3)",
-                          color: "#ffffff",
+                          color: "var(--sidebar-active-text, var(--primary-foreground, #ffffff))",
                           boxShadow: "0 4px 10px rgba(110, 63, 243, 0.15)",
                           marginTop: "8px"
                         }}
@@ -1021,7 +1021,7 @@ const CreateCustomQuiz = () => {
                         transition: "all 0.2s",
                         border: filterMode === mode ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                         background: filterMode === mode ? "var(--violet)" : "transparent",
-                        color: filterMode === mode ? "#ffffff" : "var(--text-secondary)"
+                        color: filterMode === mode ? "var(--sidebar-active-text, var(--primary-foreground, #ffffff))" : "var(--text-secondary)"
                       }}
                     >
                       {mode}

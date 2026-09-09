@@ -280,7 +280,7 @@ body.dark-mode .hs-faq-header h2 {
 
 .hs-new-ticket-btn {
   background: var(--violet);
-  color: #fff;
+  color: var(--sidebar-active-text, var(--primary-foreground, #fff));
   border: none;
   padding: 10px 20px;
   border-radius: 8px;

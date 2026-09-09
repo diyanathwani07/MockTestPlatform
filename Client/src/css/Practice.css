@@ -122,8 +122,8 @@
   width: 100%;
   height: 44px;
   border-radius: 10px;
-  background: rgba(139, 92, 246, 0.1);
-  color: #8B5CF6;
+  background: var(--violet, rgba(139, 92, 246, 0.15));
+  color: var(--sidebar-active-text, var(--primary-foreground, #ffffff));
   border: 1px solid transparent;
   font-size: 14px;
   font-weight: 700;
@@ -136,8 +136,8 @@
 }
 
 .practice-card:hover .practice-start-btn {
-  background: #8B5CF6;
-  color: #ffffff;
+  background: var(--violet, #8B5CF6);
+  color: var(--sidebar-active-text, var(--primary-foreground, #ffffff));
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 

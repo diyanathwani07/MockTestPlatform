@@ -130,6 +130,13 @@ export default function MySubscriptions() {
     (sub) => sub.status === "active" && new Date(sub.expiryDate) > now
   );
 
+  // If activeSubscription exists but has missing/zero maxAITests, fallback to plan or userProfile
+  if (activeSubscription) {
+    if (!activeSubscription.maxAITests || activeSubscription.maxAITests === 0) {
+      activeSubscription.maxAITests = activeSubscription.planId?.maxAITests || userProfile?.maxAITests || 20;
+    }
+  }
+
   // If not found in history, but user profile has active isPremium, synthesize active plan card
   if (!activeSubscription && userProfile?.isPremium) {
     activeSubscription = {
@@ -137,10 +144,10 @@ export default function MySubscriptions() {
       planNameSnapshot: fallbackPlan?.name || "AI Premium Plan",
       purchaseId: "MEMBERSHIP-ACTIVE",
       amount: fallbackPlan?.sellingPrice || 499,
-      maxAITests: fallbackPlan?.maxAITests || 10,
-        aiTestsUsed: 0,
+      maxAITests: fallbackPlan?.maxAITests || userProfile?.maxAITests || 20,
+      aiTestsUsed: userProfile?.aiTestsUsed || 0,
       startDate: new Date(),
-      expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      expiryDate: userProfile?.expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       status: "active",
       paymentGateway: "phonepe"
     };
@@ -207,7 +214,7 @@ export default function MySubscriptions() {
                 alignItems: "center",
                 gap: "6px",
                 background: "var(--violet, #6E3FF3)",
-                color: "#ffffff",
+                color: "var(--sidebar-active-text, var(--primary-foreground, #ffffff))",
                 padding: "8px 16px",
                 borderRadius: "8px",
                 border: "none",
@@ -268,7 +275,7 @@ export default function MySubscriptions() {
                   alignItems: "center",
                   gap: "6px",
                   background: "var(--violet, #6E3FF3)",
-                  color: "#ffffff",
+                  color: "var(--sidebar-active-text, var(--primary-foreground, #ffffff))",
                   padding: "10px 20px",
                   borderRadius: "8px",
                   border: "none",
@@ -324,7 +331,7 @@ export default function MySubscriptions() {
                   alignItems: "center",
                   gap: "8px",
                   background: "var(--violet, #6E3FF3)",
-                  color: "#ffffff",
+                  color: "var(--sidebar-active-text, var(--primary-foreground, #ffffff))",
                   padding: "12px 24px",
                   borderRadius: "10px",
                   border: "none",
@@ -371,7 +378,7 @@ export default function MySubscriptions() {
                         alignItems: "center",
                         gap: "6px",
                         background: "var(--violet, #6E3FF3)",
-                        color: "#ffffff",
+                        color: "var(--sidebar-active-text, var(--primary-foreground, #ffffff))",
                         padding: "10px 20px",
                         borderRadius: "8px",
                         border: "none",
@@ -543,7 +550,7 @@ export default function MySubscriptions() {
                               </Badge>
                             </td>
                             <td style={{ padding: "12px 14px", color: "var(--text-secondary)", fontSize: "12px" }}>
-                              {sub.aiTestsUsed || 0} / {sub.maxAITests || 0}
+                              {sub.aiTestsUsed || 0} / {sub.maxAITests && sub.maxAITests > 0 ? sub.maxAITests : (sub.planId?.maxAITests || 20)}
                             </td>
                             <td style={{ padding: "12px 14px", color: "var(--text-secondary)", fontSize: "12px" }}>
                               {new Date(sub.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}

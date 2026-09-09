@@ -254,7 +254,13 @@ const subscribeToPlan = async (req, res) => {
       expiryDate.setDate(expiryDate.getDate() + plan.durationValue);
     }
 
-    // Create Subscription record
+    // Deactivate older active subscriptions for this student
+    await Subscription.updateMany(
+      { studentId: user._id, status: "active" },
+      { $set: { status: "expired" } }
+    );
+
+    // Create Subscription record as ACTIVE
     const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
     await Subscription.create({
       studentId: user._id,
@@ -263,29 +269,36 @@ const subscribeToPlan = async (req, res) => {
       purchaseId,
       amount: plan.sellingPrice || 0,
       currency: plan.currency || "INR",
-      maxAITests: plan.maxAITests || 10, aiTestsUsed: 0,
+      maxAITests: plan.maxAITests || 20,
+      aiTestsUsed: 0,
       startDate: new Date(),
       expiryDate,
-      status: "pending_payment",
-      paymentGateway: "phonepe", // Matches the gateway currently used
+      status: "active",
+      paymentGateway: "phonepe",
       gatewayTxnId: gatewayTxnId || null
     });
 
+    // Sync User premium status cache
+    user.isPremium = true;
+    user.premiumExpiresAt = expiryDate;
+    user.activePlan = plan._id;
+    await user.save();
+
     // Audit logs including purchaseId
-    await logAction("SUBSCRIBE_AI_PLAN_PENDING", user.fullName, `${plan.name} (Requested, Purchase ID: ${purchaseId})`, "Purchase", req.ip);
+    await logAction("SUBSCRIBE_AI_PLAN_SUCCESS", user.fullName, `${plan.name} (Activated, Purchase ID: ${purchaseId})`, "Purchase", req.ip);
 
     // Send in-app notification
     await notifyUser(user._id, {
-      type: "PAYMENT_PENDING",
-      title: "Plan purchase initiated",
-      message: `Your request to subscribe to "${plan.name}" has been recorded and is pending confirmation.`,
-      link: "/dashboard/pricing"
+      type: "PAYMENT_SUCCESS",
+      title: "Plan subscription active",
+      message: `Your subscription to "${plan.name}" is now active! You can generate AI tests immediately.`,
+      link: "/dashboard/create-custom-quiz"
     });
 
     res.json({
-      message: "Order created and awaiting confirmation.",
+      message: "Plan subscribed successfully!",
       success: true,
-      pending: true
+      pending: false
     });
   } catch (error) {
     console.error("Subscribe to AI Plan Error:", error);

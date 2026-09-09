@@ -317,7 +317,7 @@
 
 .me-btn-primary {
   background: var(--violet, #6E3FF3);
-  color: #fff;
+  color: var(--sidebar-active-text, var(--primary-foreground, #fff));
   border: none;
   padding: 10px 20px;
   border-radius: 10px;

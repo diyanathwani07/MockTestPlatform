@@ -437,7 +437,7 @@ function ManageQuizzes() {
                       fontWeight: "600",
                       cursor: "pointer",
                       backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
-                      color: viewMode === "active" ? "white" : "var(--text-secondary)",
+                      color: viewMode === "active" ? "var(--sidebar-active-text, var(--primary-foreground))" : "var(--text-secondary)",
                     }}
                   >
                     Active
@@ -489,7 +489,7 @@ function ManageQuizzes() {
                     fontSize: "12.5px",
                     fontWeight: "700",
                     backgroundColor: "var(--violet)",
-                    color: "#fff",
+                    color: "var(--sidebar-active-text, var(--primary-foreground, #fff))",
                     border: "none",
                     cursor: "pointer",
                     display: "inline-flex",

@@ -18,27 +18,65 @@ const getPremiumStatus = async (req, res) => {
       user = await User.findById(user._id);
     }
 
-    let activeSub = null;
-    let aiTestsRemaining = 0;
+    let activeSub = await Subscription.findOne({
+      studentId: user._id,
+      status: "active",
+      expiryDate: { $gt: new Date() }
+    }).populate("planId");
+
+    let isPremium = !!user.isPremium;
+
+    // If activeSub exists, ensure user is marked as premium and activePlan matches
+    if (activeSub) {
+      isPremium = true;
+      let needsSave = false;
+      if (!user.isPremium) {
+        user.isPremium = true;
+        user.premiumExpiresAt = activeSub.expiryDate;
+        needsSave = true;
+      }
+      if (!user.activePlan || String(user.activePlan) !== String(activeSub.planId?._id || activeSub.planId)) {
+        user.activePlan = activeSub.planId?._id || activeSub.planId;
+        needsSave = true;
+      }
+      if (needsSave) {
+        await user.save();
+      }
+    }
     
-    if (user.isPremium) {
-      activeSub = await Subscription.findOne({
-        studentId: user._id,
-        status: "active"
-      });
+    let aiTestsRemaining = 0;
+    let maxAITests = 20;
+    let aiTestsUsed = 0;
+
+    if (isPremium) {
+      if (!activeSub) {
+        activeSub = await Subscription.findOne({
+          studentId: user._id,
+          status: "active"
+        }).populate("planId");
+      }
       
       if (activeSub) {
-        aiTestsRemaining = Math.max(0, (activeSub.maxAITests || 0) - (activeSub.aiTestsUsed || 0));
+        maxAITests = (activeSub.maxAITests && activeSub.maxAITests > 0) 
+          ? activeSub.maxAITests 
+          : (activeSub.planId?.maxAITests || 20);
+        aiTestsUsed = activeSub.aiTestsUsed || 0;
+        aiTestsRemaining = Math.max(0, maxAITests - aiTestsUsed);
+      } else {
+        // Fallback for premium user with legacy active record
+        maxAITests = 20;
+        aiTestsUsed = 0;
+        aiTestsRemaining = 20;
       }
     }
 
     res.json({
-      isPremium: !!user.isPremium,
-      expiresAt: user.premiumExpiresAt || null,
-      maxAITests: activeSub ? (activeSub.maxAITests || 0) : 0,
-      aiTestsUsed: activeSub ? (activeSub.aiTestsUsed || 0) : 0,
+      isPremium,
+      expiresAt: user.premiumExpiresAt || (activeSub ? activeSub.expiryDate : null),
+      maxAITests,
+      aiTestsUsed,
       aiTestsRemaining,
-      activePlan: user.activePlan || null
+      activePlan: user.activePlan || (activeSub ? (activeSub.planId?._id || activeSub.planId) : null)
     });
   } catch (error) {
     console.error("Get Premium Status Error:", error);
@@ -122,12 +160,17 @@ const generateAITest = async (req, res) => {
       return res.status(400).json({ message: "Invalid question count requested. Choose 10, 20, 30 or 50." });
     }
 
-    // Atomic usage reservation
-    const activeSub = await Subscription.findOneAndUpdate(
+    // Atomic usage reservation with 10 test default fallback for 0 maxAITests
+    let activeSub = await Subscription.findOneAndUpdate(
       {
         studentId: req.user._id,
         status: "active",
-        $expr: { $lt: ["$aiTestsUsed", "$maxAITests"] }
+        $expr: {
+          $lt: [
+            "$aiTestsUsed",
+            { $cond: { if: { $gt: ["$maxAITests", 0] }, then: "$maxAITests", else: 10 } }
+          ]
+        }
       },
       {
         $inc: { aiTestsUsed: 1 }
@@ -428,12 +471,17 @@ const generateFromMaterial = async (req, res) => {
         });
       }
 
-      // Atomic usage reservation
+      // Atomic usage reservation with 10 test default fallback for 0 maxAITests
     const activeSub = await Subscription.findOneAndUpdate(
       {
         studentId: req.user._id,
         status: "active",
-        $expr: { $lt: ["$aiTestsUsed", "$maxAITests"] }
+        $expr: {
+          $lt: [
+            "$aiTestsUsed",
+            { $cond: { if: { $gt: ["$maxAITests", 0] }, then: "$maxAITests", else: 10 } }
+          ]
+        }
       },
       {
         $inc: { aiTestsUsed: 1 }

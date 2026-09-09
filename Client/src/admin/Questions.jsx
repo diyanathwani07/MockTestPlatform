@@ -814,7 +814,7 @@ function Questions() {
                           transition: "all 0.2s",
                           whiteSpace: "nowrap",
                           backgroundColor: quizType === "exams" ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
-                          color: quizType === "exams" ? "white" : "var(--text-primary)",
+                          color: quizType === "exams" ? "var(--sidebar-active-text, var(--primary-foreground, white))" : "var(--text-primary)",
                           boxShadow: quizType === "exams" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
                         }}
                       >
@@ -838,7 +838,7 @@ function Questions() {
                           transition: "all 0.2s",
                           whiteSpace: "nowrap",
                           backgroundColor: quizType === "practice" ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
-                          color: quizType === "practice" ? "white" : "var(--text-primary)",
+                          color: quizType === "practice" ? "var(--sidebar-active-text, var(--primary-foreground, white))" : "var(--text-primary)",
                           boxShadow: quizType === "practice" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
                         }}
                       >
@@ -864,7 +864,7 @@ function Questions() {
                           fontWeight: "600",
                           whiteSpace: "nowrap",
                           backgroundColor: !isRecycleBin ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
-                          color: !isRecycleBin ? "white" : "var(--text-primary)",
+                          color: !isRecycleBin ? "var(--sidebar-active-text, var(--primary-foreground, white))" : "var(--text-primary)",
                           boxShadow: !isRecycleBin ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
                         }}
                       >
@@ -875,7 +875,7 @@ function Questions() {
                         <span style={{ 
                           fontSize: "10.5px", 
                           backgroundColor: !isRecycleBin ? "rgba(255,255,255,0.2)" : "var(--border-color)", 
-                          color: !isRecycleBin ? "white" : "var(--text-primary)", 
+                          color: !isRecycleBin ? "var(--sidebar-active-text, var(--primary-foreground, white))" : "var(--text-primary)", 
                           padding: "2px 6px", 
                           borderRadius: "20px" 
                         }}>

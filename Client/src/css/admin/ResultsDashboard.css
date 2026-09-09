@@ -31,7 +31,7 @@
 .btn-export {
   background: var(--violet);
   border: none;
-  color: #FFF;
+  color: var(--sidebar-active-text, var(--primary-foreground, #FFF));
   padding: 0 16px;
   height: 38px;
   border-radius: 100px;
