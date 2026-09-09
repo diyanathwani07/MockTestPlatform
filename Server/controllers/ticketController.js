@@ -28,7 +28,7 @@ const createTicket = async (req, res) => {
 
     await logAction("CREATE_TICKET", req.user.fullName || "User", `Ticket: ${subject}`, "Support", req.ip);
 
-    const ticketUrl = `${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}/admin/tickets/${ticket._id}`;
+    const ticketUrl = `${process.env.FRONTEND_URL || "https://mocktestplatform-lac.vercel.app"}/admin/tickets/${ticket._id}`;
     const slackBlocks = [
       {
         "type": "header",

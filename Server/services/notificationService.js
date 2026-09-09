@@ -115,7 +115,7 @@ async function notifyDepartment(department, { type, title, message, link = "", r
       if (targetChannel && !isPaused) {
         let slackText = `*${title}*\n${message}`;
         if (link) {
-          slackText += `\n<${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}${link}|View Details>`;
+          slackText += `\n<${process.env.FRONTEND_URL || "https://mocktestplatform-lac.vercel.app"}${link}|View Details>`;
         }
         
         await logAction("SLACK_DEBUG", "System", `Sending ticket notification to channel: ${targetChannel}`, "Support", "127.0.0.1");
