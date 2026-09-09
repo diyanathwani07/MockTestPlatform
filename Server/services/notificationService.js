@@ -109,30 +109,22 @@ async function notifyDepartment(department, { type, title, message, link = "", r
       await logAction("SLACK_DEBUG", "System", `Starting Slack logic for dept: ${department}`, "Support", "127.0.0.1");
 
       const deptDoc = await Department.findOne({ name: department });
-      if (deptDoc && deptDoc.slackChannelId && !deptDoc.slackNotificationsPaused) {
+      const targetChannel = (deptDoc && deptDoc.slackChannelId) ? deptDoc.slackChannelId : process.env.SLACK_CHANNEL_ID;
+      const isPaused = deptDoc ? deptDoc.slackNotificationsPaused : false;
+
+      if (targetChannel && !isPaused) {
         let slackText = `*${title}*\n${message}`;
         if (link) {
           slackText += `\n<${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}${link}|View Details>`;
         }
         
-        await logAction("SLACK_DEBUG", "System", `Sending to: ${deptDoc.slackChannelId}`, "Support", "127.0.0.1");
+        await logAction("SLACK_DEBUG", "System", `Sending ticket notification to channel: ${targetChannel}`, "Support", "127.0.0.1");
         
-        const slackRes = await sendSlackMessage(deptDoc.slackChannelId, slackText, slackBlocks);
+        const slackRes = await sendSlackMessage(targetChannel, slackText, slackBlocks);
         
-        await logAction("SLACK_DEBUG", "System", `Slack Success`, "Support", "127.0.0.1");
+        await logAction("SLACK_DEBUG", "System", `Slack notification delivered successfully`, "Support", "127.0.0.1");
       } else {
-        // Fallback to generic SLACK_CHANNEL_ID if the department doesn't have one configured but we still want to notify
-        const defaultChannel = process.env.SLACK_CHANNEL_ID;
-        if (defaultChannel) {
-          let slackText = `*${title}*\n${message}`;
-          if (link) {
-            slackText += `\n<${process.env.FRONTEND_URL || "https://mocktestplatform.onrender.com"}${link}|View Details>`;
-          }
-          await sendSlackMessage(defaultChannel, slackText, slackBlocks);
-          await logAction("SLACK_DEBUG", "System", `Fallback Slack Success to ${defaultChannel}`, "Support", "127.0.0.1");
-        } else {
-          await logAction("SLACK_DEBUG", "System", `Condition failed. Found Dept: ${!!deptDoc}, Channel: ${deptDoc ? deptDoc.slackChannelId : 'none'}, Paused: ${deptDoc ? deptDoc.slackNotificationsPaused : 'N/A'}`, "Support", "127.0.0.1");
-        }
+        await logAction("SLACK_DEBUG", "System", `Slack notification skipped. Channel: ${targetChannel || 'none'}, Paused: ${isPaused}`, "Support", "127.0.0.1");
       }
     } catch (slackErr) {
       const logAction = require("../utils/logger");
