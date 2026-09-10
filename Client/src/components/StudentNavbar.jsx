@@ -8,7 +8,7 @@ import { usePreview } from "../context/PreviewContext";
 import NotificationBell from "./NotificationBell";
 import "../css/admin/AdminLayout.css"; // Reuse admin navbar styles
 
-function StudentNavbar({ title }) {
+function StudentNavbar({ title, onNavigateBack }) {
   const { toggleTheme } = useTheme(); 
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -37,12 +37,35 @@ function StudentNavbar({ title }) {
           >
             Dashboard
           </span>
-          {title !== "Dashboard" && (
-            <>
-              <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
-              <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "nowrap" }}>{title}</span>
-            </>
-          )}
+          {title !== "Dashboard" && (() => {
+            const parts = title.split(" > ");
+            if (parts.length > 1) {
+              return (
+                <>
+                  <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
+                  <span 
+                    onClick={() => {
+                      if (onNavigateBack) onNavigateBack();
+                      else navigate("/student/profile");
+                    }}
+                    style={{ cursor: "pointer", transition: "color 0.15s" }}
+                    onMouseEnter={(e) => e.target.style.color = "var(--violet)"}
+                    onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}
+                  >
+                    {parts[0]}
+                  </span>
+                  <span style={{ color: "var(--text-muted)" }}>&gt;</span>
+                  <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "nowrap" }}>{parts[1]}</span>
+                </>
+              );
+            }
+            return (
+              <>
+                <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
+                <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "nowrap" }}>{title}</span>
+              </>
+            );
+          })()}
         </div>
 
         <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>

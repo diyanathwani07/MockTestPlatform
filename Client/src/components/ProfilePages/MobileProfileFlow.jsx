@@ -22,10 +22,14 @@ export default function MobileProfileFlow({
   handlePasswordSubmit,
   passwordError,
   passwordSuccess,
-  changingPassword,
+  activeScreen: controlledActiveScreen,
+  setActiveScreen: controlledSetActiveScreen,
   isDesktop
 }) {
-  const [activeScreen, setActiveScreen] = useState("overview");
+  const [internalActiveScreen, setInternalActiveScreen] = useState("overview");
+  const activeScreen = controlledActiveScreen !== undefined ? controlledActiveScreen : internalActiveScreen;
+  const setActiveScreen = controlledSetActiveScreen || setInternalActiveScreen;
+
   const [isEditing, setIsEditing] = useState(false);
 
   // Sub-screens
@@ -83,7 +87,7 @@ export default function MobileProfileFlow({
   };
 
   const renderHeader = (title) => {
-    if (isDesktop && title === "Profile") return null;
+    if (isDesktop) return null;
 
     return (
       <div className="mp-header" style={{ paddingLeft: title === "Profile" ? "60px" : "20px" }}>

@@ -157,18 +157,32 @@ function StudentProfile() {
     }
   };
 
+  const [activeScreen, setActiveScreen] = useState("overview");
+
+  // Determine top navbar title for desktop
+  let navTitle = "Profile";
+  if (activeScreen === "account") navTitle = "Profile > Account Details";
+  else if (activeScreen === "transactions") navTitle = "Profile > Transaction History";
+  else if (activeScreen === "password") navTitle = "Profile > Change Password";
+  else if (activeScreen === "notifications") navTitle = "Profile > Notifications";
+  else if (activeScreen === "language") navTitle = "Profile > Language";
+  else if (activeScreen === "about") navTitle = "Profile > About Us";
+
   return (
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content mp-wrapper" style={{ 
-         
-         
         background: 'var(--bg-page, #0f0e17)',
         display: 'flex',
         flexDirection: 'column',
         padding: 0
       }}>
-        {!isMobile && <StudentNavbar title="Profile" />}
+        {!isMobile && (
+          <StudentNavbar 
+            title={navTitle} 
+            onNavigateBack={activeScreen !== "overview" ? () => setActiveScreen("overview") : undefined} 
+          />
+        )}
         
         <div style={{
           flex: 1,
@@ -203,6 +217,8 @@ function StudentProfile() {
             changingPassword={changingPassword}
             setShowPasswordModal={setShowPasswordModal}
             isDesktop={!isMobile}
+            activeScreen={activeScreen}
+            setActiveScreen={setActiveScreen}
           />
         </div>
       </div>

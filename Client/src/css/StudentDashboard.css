@@ -647,27 +647,16 @@ body:not(.dark-mode) .ambient-glow-circle-2 {
 
 .sd-upcoming-date {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
-  background: #F3E8FF;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  color: var(--text-primary, #ffffff);
   margin-right: 16px;
-}
-
-.sd-upcoming-date .month {
-  font-size: 11px;
-  font-weight: 700;
-  color: #7E22CE;
-}
-
-.sd-upcoming-date .day {
-  font-size: 18px;
-  font-weight: 800;
-  color: #581C87;
-  line-height: 1;
+  flex-shrink: 0;
 }
 
 .sd-upcoming-info {

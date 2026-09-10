@@ -331,8 +331,7 @@ function StudentDashboard() {
                   return (
                     <div key={series._id} className="sd-upcoming-item" onClick={() => navigate(`/student/exams/${series._id}`)}>
                       <div className="sd-upcoming-date">
-                        <span className="month">{d.toLocaleString('default', { month: 'short' }).toUpperCase()}</span>
-                        <span className="day">{d.getDate()}</span>
+                        <Layers size={20} />
                       </div>
                       <div className="sd-upcoming-info">
                         <h4>{series.title}</h4>
