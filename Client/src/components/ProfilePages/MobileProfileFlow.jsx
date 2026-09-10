@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2, Video, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2, Video, ExternalLink, Sparkles } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import AvatarPickerModal from "../AvatarPickerModal";
 import Logo from "../Logo";
@@ -143,7 +143,7 @@ export default function MobileProfileFlow({
           />
           <MenuItem 
             icon={<Clock size={18} />} 
-            title="Transactions and History" 
+            title="Subscriptions & Order History" 
             subtitle="View your active plan, payments & order receipts" 
             onClick={() => setActiveScreen("transactions")} 
           />
@@ -284,7 +284,7 @@ export default function MobileProfileFlow({
 
     return (
       <div className="mp-screen">
-        {renderHeader("Transactions and History")}
+        {renderHeader("Subscriptions & Order History")}
         <div className="mp-content mp-scrollable" style={{ padding: "16px" }}>
           {loadingTransactions ? (
             <div className="mp-centered" style={{ gap: "12px", minHeight: "300px" }}>
@@ -295,7 +295,7 @@ export default function MobileProfileFlow({
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Active Plan Card Header if present */}
-              {activeSub && (
+              {activeSub ? (
                 <div
                   style={{
                     background: "linear-gradient(135deg, rgba(110, 63, 243, 0.15), rgba(16, 185, 129, 0.1))",
@@ -304,7 +304,7 @@ export default function MobileProfileFlow({
                     padding: "20px",
                     display: "flex",
                     flexDirection: "column",
-                    gap: "12px"
+                    gap: "14px"
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -327,8 +327,29 @@ export default function MobileProfileFlow({
                     </span>
                   </div>
 
-                  <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
-                    {activeSub.planNameSnapshot || activeSub.planId?.name || "AI Mock Test Plan"}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                    <div style={{ fontSize: "20px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
+                      {activeSub.planNameSnapshot || activeSub.planId?.name || "AI Mock Test Plan"}
+                    </div>
+                    <Link
+                      to="/pricing"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        background: "var(--violet, #6E3FF3)",
+                        color: "#FFFFFF",
+                        fontSize: "13px",
+                        fontWeight: "700",
+                        textDecoration: "none",
+                        boxShadow: "0 2px 8px rgba(110, 63, 243, 0.3)"
+                      }}
+                    >
+                      <Sparkles size={15} />
+                      Explore / Upgrade Plans
+                    </Link>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px", background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "12px" }}>
@@ -352,13 +373,72 @@ export default function MobileProfileFlow({
                     </div>
                   </div>
                 </div>
+              ) : (
+                <div
+                  style={{
+                    background: "var(--bg-card, #16112a)",
+                    border: "1px dashed var(--violet, #6E3FF3)",
+                    borderRadius: "16px",
+                    padding: "20px",
+                    display: "flex",
+                    justify: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "12px"
+                  }}
+                >
+                  <div>
+                    <h4 style={{ margin: "0 0 4px 0", fontSize: "16px", color: "var(--text-primary)", fontWeight: "700" }}>
+                      No Active Membership
+                    </h4>
+                    <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
+                      Subscribe to access premium mock tests & AI evaluation features.
+                    </p>
+                  </div>
+                  <Link
+                    to="/pricing"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "9px 18px",
+                      borderRadius: "8px",
+                      background: "var(--violet, #6E3FF3)",
+                      color: "#FFFFFF",
+                      fontSize: "13px",
+                      fontWeight: "700",
+                      textDecoration: "none"
+                    }}
+                  >
+                    <Sparkles size={15} />
+                    Explore Plans
+                  </Link>
+                </div>
               )}
 
               {/* Transactions Header */}
               <div>
-                <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 12px 0" }}>
-                  Payment & Order History
-                </h3>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
+                    Payment & Order History
+                  </h3>
+                  {activeSub && (
+                    <Link 
+                      to="/pricing" 
+                      style={{ 
+                        fontSize: "13px", 
+                        fontWeight: "600", 
+                        color: "var(--violet, #6E3FF3)", 
+                        textDecoration: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      Browse All Plans &rarr;
+                    </Link>
+                  )}
+                </div>
 
                 {transactions.length === 0 ? (
                   <div className="mp-centered" style={{ minHeight: "200px" }}>
@@ -782,15 +862,26 @@ export default function MobileProfileFlow({
     </div>
   );
 
-  switch (activeScreen) {
-    case "account": return renderAccountDetails();
-    case "transactions": return renderTransactions();
-    case "password": return renderChangePassword();
-    case "notifications": return renderNotifications();
-    case "language": return renderLanguage();
-    case "about": return renderAbout();
-    default: return renderOverview();
-  }
+  return (
+    <>
+      <AvatarPickerModal 
+        isOpen={showAvatarPicker} 
+        onClose={() => setShowAvatarPicker(false)} 
+        onSelect={handleSelectAvatar} 
+      />
+      {(() => {
+        switch (activeScreen) {
+          case "account": return renderAccountDetails();
+          case "transactions": return renderTransactions();
+          case "password": return renderChangePassword();
+          case "notifications": return renderNotifications();
+          case "language": return renderLanguage();
+          case "about": return renderAbout();
+          default: return renderOverview();
+        }
+      })()}
+    </>
+  );
 }
 
 function MenuItem({ icon, title, subtitle, onClick }) {
