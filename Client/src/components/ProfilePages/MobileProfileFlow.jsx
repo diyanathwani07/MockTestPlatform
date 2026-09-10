@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2, Video, ExternalLink } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import AvatarPickerModal from "../AvatarPickerModal";
 import Logo from "../Logo";
@@ -143,8 +143,8 @@ export default function MobileProfileFlow({
           />
           <MenuItem 
             icon={<Clock size={18} />} 
-            title="Transaction History" 
-            subtitle="View your past transactions" 
+            title="Transactions and History" 
+            subtitle="View your active plan, payments & order receipts" 
             onClick={() => setActiveScreen("transactions")} 
           />
           <MenuItem 
@@ -278,122 +278,197 @@ export default function MobileProfileFlow({
     </div>
   );
 
-  const renderTransactions = () => (
-    <div className="mp-screen">
-      {renderHeader("Transaction History")}
-      <div className="mp-content mp-scrollable" style={{ padding: "16px" }}>
-        {loadingTransactions ? (
-          <div className="mp-centered" style={{ gap: "12px", minHeight: "300px" }}>
-            <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: "var(--violet, #6E3FF3)" }} />
-            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-            <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0 }}>Loading your transactions...</p>
-          </div>
-        ) : transactions.length === 0 ? (
-          <div className="mp-centered" style={{ minHeight: "300px" }}>
-            <div className="mp-empty-state">
-              <Clock size={48} className="mp-empty-icon" />
-              <h3>No transactions yet</h3>
-              <p>Your transaction history will appear here once you purchase a plan.</p>
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {transactions.map((sub) => {
-              const isCurrentActive = sub.status === "active" && new Date(sub.expiryDate) > new Date();
-              const formattedDate = new Date(sub.startDate || sub.createdAt).toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric"
-              });
-              const formattedExpiry = new Date(sub.expiryDate).toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric"
-              });
+  const renderTransactions = () => {
+    const now = new Date();
+    const activeSub = transactions.find((sub) => sub.status === "active" && new Date(sub.expiryDate) > now);
 
-              return (
-                <div 
-                  key={sub._id || sub.purchaseId}
+    return (
+      <div className="mp-screen">
+        {renderHeader("Transactions and History")}
+        <div className="mp-content mp-scrollable" style={{ padding: "16px" }}>
+          {loadingTransactions ? (
+            <div className="mp-centered" style={{ gap: "12px", minHeight: "300px" }}>
+              <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: "var(--violet, #6E3FF3)" }} />
+              <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0 }}>Loading your transactions & plan history...</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* Active Plan Card Header if present */}
+              {activeSub && (
+                <div
                   style={{
-                    background: "var(--bg-card, #16112a)",
-                    border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                    background: "linear-gradient(135deg, rgba(110, 63, 243, 0.15), rgba(16, 185, 129, 0.1))",
+                    border: "1.5px solid var(--violet, #6E3FF3)",
                     borderRadius: "16px",
-                    padding: "16px",
+                    padding: "20px",
                     display: "flex",
                     flexDirection: "column",
-                    gap: "12px",
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+                    gap: "12px"
                   }}
                 >
-                  {/* Top Row: Plan Name + Status */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ fontWeight: "700", fontSize: "16px", color: "var(--text-primary)" }}>
-                      {sub.planNameSnapshot || sub.planId?.name || "AI Mock Test Plan"}
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <CheckCircle2 size={20} color="#10B981" />
+                      <span style={{ fontWeight: "700", fontSize: "16px", color: "var(--text-primary)" }}>
+                        Active Membership
+                      </span>
                     </div>
                     <span style={{
-                      background: isCurrentActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.12)",
-                      color: isCurrentActive ? "#10B981" : "#EF4444",
+                      background: "rgba(16, 185, 129, 0.2)",
+                      color: "#10B981",
                       fontSize: "11px",
                       fontWeight: "700",
-                      padding: "3px 10px",
+                      padding: "4px 12px",
                       borderRadius: "100px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px"
+                      textTransform: "uppercase"
                     }}>
-                      {isCurrentActive ? "Active" : sub.status || "Expired"}
+                      Active
                     </span>
                   </div>
 
-                  {/* Order Ref & Amount */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                    <div>
-                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: 600 }}>ORDER REF</div>
-                      <div style={{ fontSize: "12px", fontFamily: "monospace", color: "var(--text-muted)", marginTop: "2px" }}>
-                        {sub.purchaseId || "N/A"}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: "20px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
-                      ₹{sub.amount}
-                    </div>
+                  <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
+                    {activeSub.planNameSnapshot || activeSub.planId?.name || "AI Mock Test Plan"}
                   </div>
 
-                  <hr style={{ border: "none", borderTop: "1px solid var(--border-color, rgba(255,255,255,0.06))", margin: "2px 0" }} />
-
-                  {/* Details Grid */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px", background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "12px" }}>
                     <div>
-                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Gateway:</span>
-                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px", textTransform: "uppercase" }}>
-                        {sub.paymentGateway || "PhonePe"}
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>Valid Until</div>
+                      <div style={{ fontWeight: "600", fontSize: "13px", color: "var(--text-primary)", marginTop: "2px" }}>
+                        {new Date(activeSub.expiryDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                       </div>
                     </div>
                     <div>
-                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Purchased:</span>
-                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
-                        {formattedDate}
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>Amount Paid</div>
+                      <div style={{ fontWeight: "600", fontSize: "13px", color: "var(--text-primary)", marginTop: "2px" }}>
+                        ₹{activeSub.amount}
                       </div>
                     </div>
                     <div>
-                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Valid Until:</span>
-                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
-                        {formattedExpiry}
-                      </div>
-                    </div>
-                    <div>
-                      <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>AI Tests:</span>
-                      <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
-                        {sub.aiTestsUsed || 0} / {sub.maxAITests || 0} Used
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>AI Tests Remaining</div>
+                      <div style={{ fontWeight: "600", fontSize: "13px", color: "#10B981", marginTop: "2px" }}>
+                        {Math.max(0, (activeSub.maxAITests || 20) - (activeSub.aiTestsUsed || 0))} / {activeSub.maxAITests || 20}
                       </div>
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+
+              {/* Transactions Header */}
+              <div>
+                <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 12px 0" }}>
+                  Payment & Order History
+                </h3>
+
+                {transactions.length === 0 ? (
+                  <div className="mp-centered" style={{ minHeight: "200px" }}>
+                    <div className="mp-empty-state">
+                      <Clock size={44} className="mp-empty-icon" />
+                      <h4 style={{ margin: "8px 0 4px 0" }}>No transactions yet</h4>
+                      <p>Your subscription & payment history will appear here once you purchase a plan.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {transactions.map((sub) => {
+                      const isCurrentActive = sub.status === "active" && new Date(sub.expiryDate) > new Date();
+                      const formattedDate = new Date(sub.startDate || sub.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric"
+                      });
+                      const formattedExpiry = new Date(sub.expiryDate).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric"
+                      });
+
+                      return (
+                        <div 
+                          key={sub._id || sub.purchaseId}
+                          style={{
+                            background: "var(--bg-card, #16112a)",
+                            border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                            borderRadius: "14px",
+                            padding: "16px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "10px",
+                            boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
+                          }}
+                        >
+                          {/* Top Row: Plan Name + Status */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ fontWeight: "700", fontSize: "15px", color: "var(--text-primary)" }}>
+                              {sub.planNameSnapshot || sub.planId?.name || "AI Mock Test Plan"}
+                            </div>
+                            <span style={{
+                              background: isCurrentActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.12)",
+                              color: isCurrentActive ? "#10B981" : "#EF4444",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              padding: "3px 10px",
+                              borderRadius: "100px",
+                              textTransform: "uppercase"
+                            }}>
+                              {isCurrentActive ? "Active" : sub.status || "Expired"}
+                            </span>
+                          </div>
+
+                          {/* Order Ref & Amount */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                            <div>
+                              <div style={{ fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: 600 }}>ORDER REF</div>
+                              <div style={{ fontSize: "12px", fontFamily: "monospace", color: "var(--text-muted)", marginTop: "2px" }}>
+                                {sub.purchaseId || "N/A"}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
+                              ₹{sub.amount}
+                            </div>
+                          </div>
+
+                          <hr style={{ border: "none", borderTop: "1px solid var(--border-color, rgba(255,255,255,0.06))", margin: "2px 0" }} />
+
+                          {/* Details Grid */}
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                            <div>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Gateway:</span>
+                              <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px", textTransform: "uppercase" }}>
+                                {sub.paymentGateway || "PhonePe"}
+                              </div>
+                            </div>
+                            <div>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Purchased:</span>
+                              <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
+                                {formattedDate}
+                              </div>
+                            </div>
+                            <div>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Valid Until:</span>
+                              <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
+                                {formattedExpiry}
+                              </div>
+                            </div>
+                            <div>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>AI Tests:</span>
+                              <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
+                                {sub.aiTestsUsed || 0} / {sub.maxAITests || 0} Used
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderChangePassword = () => (
     <div className="mp-screen">
@@ -644,9 +719,40 @@ export default function MobileProfileFlow({
             Our goal is to provide high-quality educational content that will help you to ace your Teaching Examinations.
           </p>
 
-          <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--violet, #8b5cf6)", margin: "0 0 12px 0" }}>
-            Teaching Pariksha YouTube channel में आपको मिलेगा:
-          </h4>
+          <div style={{ margin: "0 0 18px 0" }}>
+            <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--violet, #8b5cf6)", margin: "0 0 10px 0" }}>
+              Teaching Pariksha YouTube channel में आपको मिलेगा:
+            </h4>
+            <a 
+              href="https://www.youtube.com/@teachingpariksha" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 18px",
+                borderRadius: "24px",
+                background: "#FF0000",
+                color: "#FFFFFF",
+                fontSize: "13px",
+                fontWeight: "700",
+                textDecoration: "none",
+                boxShadow: "0 4px 14px rgba(255, 0, 0, 0.4)",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 6px 18px rgba(255, 0, 0, 0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 14px rgba(255, 0, 0, 0.4)";
+              }}
+            >
+              <Video size={18} /> Visit @teachingpariksha on YouTube <ExternalLink size={14} />
+            </a>
+          </div>
 
           <ol style={{ paddingLeft: "20px", margin: "0 0 24px 0", display: "flex", flexDirection: "column", gap: "10px", fontSize: "13.5px", lineHeight: "1.6", color: "var(--text-secondary, #e2e8f0)" }}>
             <li>

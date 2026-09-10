@@ -147,13 +147,6 @@ function StudentSidebar() {
             </NavLink>
           )}
 
-          {hasSubscription && (
-            <NavLink to="/dashboard/subscriptions" className="sidebar-link" onClick={() => setIsOpen(false)}>
-              <CreditCard size={20} />
-              <span>My Subscriptions</span>
-            </NavLink>
-          )}
-
           <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <FileText size={20} />
             <span>Exams</span>

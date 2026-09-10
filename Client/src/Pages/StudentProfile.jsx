@@ -162,7 +162,7 @@ function StudentProfile() {
   // Determine top navbar title for desktop
   let navTitle = "Profile";
   if (activeScreen === "account") navTitle = "Profile > Account Details";
-  else if (activeScreen === "transactions") navTitle = "Profile > Transaction History";
+  else if (activeScreen === "transactions") navTitle = "Profile > Transactions and History";
   else if (activeScreen === "password") navTitle = "Profile > Change Password";
   else if (activeScreen === "notifications") navTitle = "Profile > Notifications";
   else if (activeScreen === "language") navTitle = "Profile > Language";
@@ -186,7 +186,7 @@ function StudentProfile() {
         
         <div style={{
           flex: 1,
-          maxWidth: isMobile ? '100%' : (activeScreen === 'about' ? '100%' : '540px'),
+          maxWidth: isMobile ? '100%' : (activeScreen === 'about' || activeScreen === 'transactions' ? '100%' : '540px'),
           margin: '0',
           width: '100%',
           position: 'relative',
