@@ -460,19 +460,26 @@ body:not(.dark-mode) .ambient-glow-circle-2 {
 }
 
 .sd-stat-icon-wrapper {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #ffffff);
 }
 
-.sd-stat-icon-wrapper.purple { background: #F3E8FF; color: #7E22CE; }
-.sd-stat-icon-wrapper.green { background: #DCFCE7; color: #15803D; }
-.sd-stat-icon-wrapper.orange { background: #FFEDD5; color: #C2410C; }
-.sd-stat-icon-wrapper.blue { background: #DBEAFE; color: #1D4ED8; }
+.sd-stat-icon-wrapper.purple,
+.sd-stat-icon-wrapper.green,
+.sd-stat-icon-wrapper.orange,
+.sd-stat-icon-wrapper.blue { 
+  background: var(--bg-input, rgba(255, 255, 255, 0.05)); 
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary, #ffffff); 
+}
 
 .sd-stat-info h3 {
   margin: 0 0 4px 0;
