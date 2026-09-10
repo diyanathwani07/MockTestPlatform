@@ -4,7 +4,7 @@ import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
-import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info } from "lucide-react";
+import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info, Layers } from "lucide-react";
 import "../css/StudentDashboard.css";
 
 const ScoreTrendChart = ({ data }) => {
@@ -251,7 +251,7 @@ function StudentDashboard() {
         <div className="sd-stats-grid">
           <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/results")}>
             <div className="sd-stat-icon-wrapper purple">
-              <BookOpen size={24} />
+              <ClipboardList size={24} />
             </div>
             <div className="sd-stat-info">
               <h3>{mocksAttempted}</h3>
