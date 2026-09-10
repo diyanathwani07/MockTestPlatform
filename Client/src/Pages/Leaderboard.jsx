@@ -542,11 +542,6 @@ function Leaderboard() {
             
             {/* Desktop Header & Filters Combined */}
             <div className="lb-header" style={{ marginBottom: "20px", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-              <div className="lb-title-area">
-                <h1>Leaderboard</h1>
-                <p>Compete with other learners and see where you stand.</p>
-              </div>
-              
               <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap", marginLeft: "auto" }}>
                 <div className="lb-info-pill" style={{ margin: 0 }}>
                   <Info className="lb-info-icon" size={16} />

@@ -5,6 +5,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { PreviewProvider } from "./context/PreviewContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
+import { SidebarProvider } from "./context/SidebarContext";
 import "./css/theme.css";
 import "./css/themes.css";
 import "katex/dist/katex.min.css";
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <PreviewProvider>
       <AuthProvider>
         <ConfirmProvider>
-          <App />
+          <SidebarProvider>
+            <App />
+          </SidebarProvider>
         </ConfirmProvider>
       </AuthProvider>
     </PreviewProvider>

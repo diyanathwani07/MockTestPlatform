@@ -331,6 +331,26 @@ body.dark-mode .profile-floating-menu {
   flex-shrink: 0; 
   height: 100%;
   z-index: 50;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 768px) {
+  .admin-sidebar.collapsed {
+    width: 72px;
+  }
+  .admin-sidebar.collapsed .sidebar-logo {
+    padding: 0 12px;
+    justify-content: center;
+  }
+  .admin-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 12px;
+  }
+  .admin-sidebar.collapsed .sidebar-link span,
+  .admin-sidebar.collapsed .sidebar-bottom span,
+  .admin-sidebar.collapsed .logo-text {
+    display: none !important;
+  }
 }
 .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; height: 70px; border-bottom: 1px solid var(--border-color, #E4E4E7); }
 .logo-emoji { font-size: 20px; }

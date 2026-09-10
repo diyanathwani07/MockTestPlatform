@@ -3,11 +3,10 @@
 }
 
 .lb-container {
-  padding: 32px 40px;
+  padding: 24px;
   background-color: var(--bg-page, #FAFAFC);
   min-height: 100vh;
-  max-width: 1400px;
-  margin: 0 auto;
+  margin: 0;
   width: 100%;
   color: var(--text-primary, #1E1B4B);
   font-family: 'Inter', system-ui, sans-serif;
@@ -161,6 +160,9 @@ body.dark-mode .lb-search .lb-icon {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
 }
 
 .lb-card {

@@ -5,11 +5,13 @@ import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCir
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
+import { useSidebar } from "../context/SidebarContext";
 import axios from "axios";
 import PixelSnow from "./shadcn-space/animations/PixelSnow";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { collapsed } = useSidebar();
 
   // ── Read from cache first so sidebar never flickers on navigation ──
   const getCached = (key, fallback = false) => {
@@ -102,7 +104,7 @@ function StudentSidebar() {
       {/* Overlay for mobile */}
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
-      <aside className={`student-sidebar ${isOpen ? 'open' : ''}`}>
+      <aside className={`student-sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         {/* Animated PixelSnow Background (Winter Only) */}
         <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
           <PixelSnow

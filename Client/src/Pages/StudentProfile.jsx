@@ -68,7 +68,7 @@ function StudentProfile() {
       setPasswordSuccess("Password updated successfully!");
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setTimeout(() => {
-        setShowPasswordModal(false);
+        setActiveScreen("overview");
         setPasswordSuccess("");
       }, 1500);
     } catch (error) {
@@ -186,7 +186,7 @@ function StudentProfile() {
         
         <div style={{
           flex: 1,
-          maxWidth: isMobile ? '100%' : '768px',
+          maxWidth: isMobile ? '100%' : '540px',
           margin: '0',
           width: '100%',
           position: 'relative',

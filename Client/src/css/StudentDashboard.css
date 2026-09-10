@@ -34,6 +34,26 @@
   z-index: 50;
   position: relative;
   overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 768px) {
+  .student-sidebar.collapsed {
+    width: 72px;
+  }
+  .student-sidebar.collapsed .sidebar-logo {
+    padding: 0 12px;
+    justify-content: center;
+  }
+  .student-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 12px;
+  }
+  .student-sidebar.collapsed .sidebar-link span,
+  .student-sidebar.collapsed .sidebar-bottom span,
+  .student-sidebar.collapsed .sidebar-brand-name {
+    display: none !important;
+  }
 }
 
 .sidebar-logo {

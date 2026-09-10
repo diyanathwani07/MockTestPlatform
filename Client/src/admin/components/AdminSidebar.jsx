@@ -8,6 +8,7 @@ import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
 import { useAuth } from '../../context/AuthContext';
+import { useSidebar } from '../../context/SidebarContext';
 import PixelSnow from '../../components/shadcn-space/animations/PixelSnow';
 
 const NAV_ITEMS = [
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
 
 function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { collapsed } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { hasPermission, logout } = useAuth();
   const navigate = useNavigate();
@@ -55,7 +57,7 @@ function AdminSidebar() {
       </button>
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
 
-      <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
+      <aside className={`admin-sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
         {/* Animated PixelSnow Background (Winter) */}
         <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
           <PixelSnow

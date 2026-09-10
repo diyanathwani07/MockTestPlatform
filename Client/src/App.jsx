@@ -275,6 +275,15 @@ function App() {
         />
 
         <Route
+          path="/student/profile"
+          element={
+            <ProtectedRoute>
+              <StudentProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/dashboard/pricing"
           element={
             <ProtectedRoute>

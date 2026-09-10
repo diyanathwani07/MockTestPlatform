@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
@@ -22,6 +23,7 @@ export default function MobileProfileFlow({
   handlePasswordSubmit,
   passwordError,
   passwordSuccess,
+  changingPassword,
   activeScreen: controlledActiveScreen,
   setActiveScreen: controlledSetActiveScreen,
   isDesktop
@@ -403,16 +405,31 @@ export default function MobileProfileFlow({
           {passwordSuccess && <div className="mp-alert mp-alert-success">{passwordSuccess}</div>}
           
           <div className="mp-form-group">
-            <label>Current Password</label>
-            <input type="password" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} required placeholder="Enter current password" />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <label style={{ margin: 0 }}>Current Password</label>
+              <Link 
+                to="/forgot-password" 
+                style={{ 
+                  fontSize: "12px", 
+                  fontWeight: "600", 
+                  color: "var(--violet, #6E3FF3)", 
+                  textDecoration: "none" 
+                }}
+                onMouseEnter={(e) => e.target.style.textDecoration = "underline"}
+                onMouseLeave={(e) => e.target.style.textDecoration = "none"}
+              >
+                Forgot Password?
+              </Link>
+            </div>
+            <input type="password" value={passwordData?.currentPassword || ""} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} required placeholder="Enter current password" />
           </div>
           <div className="mp-form-group">
             <label>New Password</label>
-            <input type="password" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} required placeholder="Enter new password" />
+            <input type="password" value={passwordData?.newPassword || ""} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} required placeholder="Enter new password" />
           </div>
           <div className="mp-form-group">
             <label>Confirm New Password</label>
-            <input type="password" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} required placeholder="Confirm new password" />
+            <input type="password" value={passwordData?.confirmPassword || ""} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} required placeholder="Confirm new password" />
           </div>
           
           <button type="submit" className="mp-btn-primary" style={{marginTop: '16px'}} disabled={changingPassword || previewMode}>

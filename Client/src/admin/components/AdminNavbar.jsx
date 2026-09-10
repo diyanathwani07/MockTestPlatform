@@ -2,22 +2,54 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
-import { Sun, Moon, User, LogOut, Eye, ArrowLeft } from "lucide-react";
+import { Sun, Moon, User, LogOut, Eye, ArrowLeft, PanelLeft } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import NotificationBell from "../../components/NotificationBell";
+import { useSidebar } from "../../context/SidebarContext";
 import "../../css/admin/AdminLayout.css";
 import { useConfirm } from "../../context/ConfirmContext";
 
 function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard" }) {
   const confirm = useConfirm();
   const { toggleTheme } = useTheme(); 
+  const { collapsed, toggleSidebarCollapse } = useSidebar();
   const { setPreviewMode } = usePreview();
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
+      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "12px", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
+        {/* Toggle Sidebar Button */}
+        <button
+          onClick={toggleSidebarCollapse}
+          title="Toggle Sidebar (Ctrl+B)"
+          aria-label="Toggle Sidebar"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "34px",
+            height: "34px",
+            borderRadius: "8px",
+            border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+            background: collapsed ? "var(--violet, #6E3FF3)" : "var(--bg-input, rgba(255,255,255,0.05))",
+            color: collapsed ? "#ffffff" : "var(--text-primary, #ffffff)",
+            cursor: "pointer",
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+            padding: 0,
+            flexShrink: 0
+          }}
+          onMouseEnter={(e) => {
+            if (!collapsed) e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
+          }}
+          onMouseLeave={(e) => {
+            if (!collapsed) e.currentTarget.style.background = "var(--bg-input, rgba(255,255,255,0.05))";
+          }}
+        >
+          <PanelLeft size={18} />
+        </button>
+
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"

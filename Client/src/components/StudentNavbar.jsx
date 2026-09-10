@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../context/ThemeContext";
-import { Sun, Moon, Bell, User, LogOut, Shield } from "lucide-react";
+import { Sun, Moon, Bell, User, LogOut, Shield, PanelLeft } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { usePreview } from "../context/PreviewContext";
 import NotificationBell from "./NotificationBell";
+import { useSidebar } from "../context/SidebarContext";
 import "../css/admin/AdminLayout.css"; // Reuse admin navbar styles
 
 function StudentNavbar({ title, onNavigateBack }) {
   const { toggleTheme } = useTheme(); 
+  const { collapsed, toggleSidebarCollapse } = useSidebar();
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
@@ -27,7 +29,37 @@ function StudentNavbar({ title, onNavigateBack }) {
   return (
     <>
       <header className="admin-navbar">
-        <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", color: "var(--text-secondary)" }}>
+        <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+          {/* Toggle Sidebar Button */}
+          <button
+            onClick={toggleSidebarCollapse}
+            title="Toggle Sidebar (Ctrl+B)"
+            aria-label="Toggle Sidebar"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "34px",
+              height: "34px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+              background: collapsed ? "var(--violet, #6E3FF3)" : "var(--bg-input, rgba(255,255,255,0.05))",
+              color: collapsed ? "#ffffff" : "var(--text-primary, #ffffff)",
+              cursor: "pointer",
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              padding: 0,
+              flexShrink: 0
+            }}
+            onMouseEnter={(e) => {
+              if (!collapsed) e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
+            }}
+            onMouseLeave={(e) => {
+              if (!collapsed) e.currentTarget.style.background = "var(--bg-input, rgba(255,255,255,0.05))";
+            }}
+          >
+            <PanelLeft size={18} />
+          </button>
+
           <span 
             onClick={() => navigate("/dashboard")}
             className={title !== "Dashboard" ? "hidden sm:inline navbar-breadcrumb-home" : "navbar-breadcrumb-home"}
@@ -46,7 +78,7 @@ function StudentNavbar({ title, onNavigateBack }) {
                   <span 
                     onClick={() => {
                       if (onNavigateBack) onNavigateBack();
-                      else navigate("/student/profile");
+                      else navigate("/dashboard/profile");
                     }}
                     style={{ cursor: "pointer", transition: "color 0.15s" }}
                     onMouseEnter={(e) => e.target.style.color = "var(--violet)"}
