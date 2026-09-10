@@ -4,6 +4,7 @@ import axios from "axios";
 import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import AvatarPickerModal from "../AvatarPickerModal";
+import Logo from "../Logo";
 
 export default function MobileProfileFlow({
   user,
@@ -618,13 +619,59 @@ export default function MobileProfileFlow({
   const renderAbout = () => (
     <div className="mp-screen">
       {renderHeader("About Us")}
-      <div className="mp-content mp-centered mp-about-content">
-        <div className="mp-logo-placeholder">
-          TP
+      <div className="mp-content mp-centered mp-about-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "left", padding: "30px 20px", maxWidth: "680px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "24px", transform: "scale(1.25)", display: "flex", justifyContent: "center", width: "100%" }}>
+          <Logo size="large" />
         </div>
-        <h3>Teaching Pariksha</h3>
-        <p>Your ultimate platform for exam preparation and success. We provide comprehensive tools and mock tests to help you achieve your goals.</p>
-        <div className="mp-version">Version 1.0.0</div>
+        
+        <div style={{
+          background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+          borderRadius: "20px",
+          padding: "28px",
+          width: "100%",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.15)"
+        }}>
+          <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary, #ffffff)", margin: "0 0 16px 0", letterSpacing: "0.5px" }}>
+            ABOUT US
+          </h2>
+
+          <p style={{ fontSize: "14px", lineHeight: "1.7", color: "var(--text-primary, #ffffff)", margin: "0 0 12px 0", fontWeight: "500" }}>
+            Teaching Pariksha helps you to prepare for all teaching exams. यहाँ आपका शिक्षक बनने का सपना होता है साकार!
+          </p>
+
+          <p style={{ fontSize: "14px", lineHeight: "1.7", color: "var(--text-secondary, #cbd5e1)", margin: "0 0 20px 0" }}>
+            Our goal is to provide high-quality educational content that will help you to ace your Teaching Examinations.
+          </p>
+
+          <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--violet, #8b5cf6)", margin: "0 0 12px 0" }}>
+            Teaching Pariksha YouTube channel में आपको मिलेगा:
+          </h4>
+
+          <ol style={{ paddingLeft: "20px", margin: "0 0 24px 0", display: "flex", flexDirection: "column", gap: "10px", fontSize: "13.5px", lineHeight: "1.6", color: "var(--text-secondary, #e2e8f0)" }}>
+            <li>
+              <strong>Quality Live Classes</strong> for CTET, UPTET, REET, DSSSB, KVS, BPSC Bihar Teacher और अन्य Teaching Exams की लाइव Classes.
+            </li>
+            <li>
+              Teaching Pariksha Members की <strong>Expert Guidance</strong> से आपको मिलेगी, आपकी Preparation में मदद!
+            </li>
+            <li>
+              हर Teaching Exam Analysis और Expected Cut-off !
+            </li>
+            <li>
+              Latest Notification & Teachers' Vacancy With Detailed Full Information.
+            </li>
+            <li>
+              Exam Preparation Tips and Strategies to Crack Any Teaching Exam in the First Attempt.
+            </li>
+          </ol>
+
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className="mp-version" style={{ display: "inline-block", padding: "6px 18px", borderRadius: "20px", background: "var(--bg-input, rgba(255,255,255,0.05))", border: "1px solid var(--border-color, rgba(255,255,255,0.1))", fontSize: "12px", color: "var(--text-muted, #94a3b8)", fontWeight: "600" }}>
+              Version 1.0.0
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
