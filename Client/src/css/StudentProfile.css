@@ -1090,7 +1090,7 @@ body.dark-mode .sp-badge {
 .mp-form { padding: 0; }
 
 .mp-form-group {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .mp-form-group label {
@@ -1098,19 +1098,19 @@ body.dark-mode .sp-badge {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary, #94A3B8);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .mp-form-group input,
 .mp-form-group select,
 .mp-form-group textarea {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: var(--bg-input, #0A0A0A);
-  border: 1.5px solid var(--border-color, rgba(255,255,255,0.1));
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--bg-input, rgba(255,255,255,0.06));
+  border: 1px solid var(--border-color, rgba(255,255,255,0.12));
   color: var(--text-primary, #fff);
-  font-size: 15px;
+  font-size: 13px;
   outline: none;
 }
 

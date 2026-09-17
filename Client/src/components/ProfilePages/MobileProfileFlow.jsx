@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2, Video, ExternalLink, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2, Video, ExternalLink, Sparkles, Eye, EyeOff, RefreshCw } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import AvatarPickerModal from "../AvatarPickerModal";
 import Logo from "../Logo";
@@ -34,7 +34,9 @@ export default function MobileProfileFlow({
   const setActiveScreen = controlledSetActiveScreen || setInternalActiveScreen;
 
   const [isEditing, setIsEditing] = useState(false);
-
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // Sub-screens
   const [notifications, setNotifications] = useState({ push: true, email: true });
   const [language, setLanguage] = useState("en");
@@ -157,12 +159,6 @@ export default function MobileProfileFlow({
 
         <h4 className="mp-menu-group-title">Preferences</h4>
         <div className="mp-menu-group">
-          <MenuItem 
-            icon={<Bell size={18} />} 
-            title="Notifications" 
-            subtitle="Manage your notification preferences" 
-            onClick={() => setActiveScreen("notifications")} 
-          />
           <MenuItem 
             icon={<Globe size={18} />} 
             title="Language" 
@@ -553,7 +549,7 @@ export default function MobileProfileFlow({
   const renderChangePassword = () => (
     <div className="mp-screen">
       {renderHeader("Change Password")}
-      <div className="mp-content">
+      <div className="mp-content" style={{ padding: "24px 16px", boxSizing: "border-box" }}>
         <form className="mp-form" onSubmit={(e) => {
           handlePasswordSubmit(e);
         }}>
@@ -561,34 +557,111 @@ export default function MobileProfileFlow({
           {passwordSuccess && <div className="mp-alert mp-alert-success">{passwordSuccess}</div>}
           
           <div className="mp-form-group">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-              <label style={{ margin: 0 }}>Current Password</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <label style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px", color: "#e2e8f0", fontSize: "14px" }}>
+                Current Password
+              </label>
               <Link 
                 to="/forgot-password" 
                 style={{ 
-                  fontSize: "12px", 
+                  display: "flex", alignItems: "center", gap: "2px",
+                  fontSize: "13px", 
                   fontWeight: "600", 
-                  color: "var(--violet, #6E3FF3)", 
+                  color: "#f97316", 
                   textDecoration: "none" 
                 }}
-                onMouseEnter={(e) => e.target.style.textDecoration = "underline"}
-                onMouseLeave={(e) => e.target.style.textDecoration = "none"}
               >
                 Forgot Password?
+                <ChevronRight size={14} />
               </Link>
             </div>
-            <input type="password" value={passwordData?.currentPassword || ""} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} required placeholder="Enter current password" />
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <Lock size={18} color="#64748b" style={{ position: "absolute", left: "14px" }} />
+              <input 
+                type={showCurrentPassword ? "text" : "password"} 
+                value={passwordData?.currentPassword || ""} 
+                onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} 
+                required 
+                placeholder="Enter current password" 
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 40px 12px 42px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(148, 163, 184, 0.2)", color: "#f8fafc", outline: "none", fontSize: "14px" }}
+              />
+              <div 
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                style={{ position: "absolute", right: "14px", cursor: "pointer", color: "#64748b", display: "flex" }}
+              >
+                {showCurrentPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </div>
+            </div>
           </div>
-          <div className="mp-form-group">
-            <label>New Password</label>
-            <input type="password" value={passwordData?.newPassword || ""} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} required placeholder="Enter new password" />
+
+          <div className="mp-form-group" style={{ marginTop: "20px" }}>
+            <label style={{ margin: 0, marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px", color: "#e2e8f0", fontSize: "14px" }}>
+              New Password
+            </label>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <Lock size={18} color="#64748b" style={{ position: "absolute", left: "14px" }} />
+              <input 
+                type={showNewPassword ? "text" : "password"} 
+                value={passwordData?.newPassword || ""} 
+                onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} 
+                required 
+                placeholder="Enter new password" 
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 40px 12px 42px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(148, 163, 184, 0.2)", color: "#f8fafc", outline: "none", fontSize: "14px" }}
+              />
+              <div 
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                style={{ position: "absolute", right: "14px", cursor: "pointer", color: "#64748b", display: "flex" }}
+              >
+                {showNewPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </div>
+            </div>
           </div>
-          <div className="mp-form-group">
-            <label>Confirm New Password</label>
-            <input type="password" value={passwordData?.confirmPassword || ""} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} required placeholder="Confirm new password" />
+
+          <div className="mp-form-group" style={{ marginTop: "20px" }}>
+            <label style={{ margin: 0, marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px", color: "#e2e8f0", fontSize: "14px" }}>
+              Confirm New Password
+            </label>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <Lock size={18} color="#64748b" style={{ position: "absolute", left: "14px" }} />
+              <input 
+                type={showConfirmPassword ? "text" : "password"} 
+                value={passwordData?.confirmPassword || ""} 
+                onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} 
+                required 
+                placeholder="Confirm new password" 
+                style={{ width: "100%", boxSizing: "border-box", padding: "12px 40px 12px 42px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(148, 163, 184, 0.2)", color: "#f8fafc", outline: "none", fontSize: "14px" }}
+              />
+              <div 
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={{ position: "absolute", right: "14px", cursor: "pointer", color: "#64748b", display: "flex" }}
+              >
+                {showConfirmPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </div>
+            </div>
           </div>
           
-          <button type="submit" className="mp-btn-primary" style={{marginTop: '16px'}} disabled={changingPassword || previewMode}>
+          <button 
+            type="submit" 
+            className="mp-btn-primary" 
+            style={{ 
+              marginTop: '24px', 
+              width: "100%", 
+              display: "flex", 
+              justifyContent: "center", 
+              alignItems: "center", 
+              gap: "8px", 
+              background: "linear-gradient(90deg, #f97316 0%, #ea580c 100%)", 
+              color: "#fff", 
+              padding: "14px", 
+              borderRadius: "12px", 
+              border: "none", 
+              fontWeight: "600",
+              fontSize: "15px",
+              boxShadow: "0 4px 14px rgba(249, 115, 22, 0.3)"
+            }} 
+            disabled={changingPassword || previewMode}
+          >
+            <RefreshCw size={18} style={{ animation: changingPassword ? "spin 1s linear infinite" : "none" }} />
             {changingPassword ? "Updating..." : "Update Password"}
           </button>
         </form>

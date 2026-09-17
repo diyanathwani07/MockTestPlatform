@@ -174,13 +174,12 @@ function ExamSeriesDetails() {
             <div>
               {/* Header Card */}
               <div className="me-exam-card" style={{ width: "100%", cursor: "default", marginBottom: "32px", background: "linear-gradient(135deg, rgba(110, 63, 243, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)" }}>
-                <div style={{ display: "flex", gap: "20px", alignItems: "flex-start", flexWrap: "wrap" }}>
-                  <div className="me-exam-icon-wrapper" style={{ width: "64px", height: "64px", borderRadius: "16px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3" }}>
+                <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", flexWrap: "nowrap" }}>
+                  <div className="me-exam-icon-wrapper" style={{ width: "64px", height: "64px", flexShrink: 0, borderRadius: "16px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <BookOpen size={32} />
                   </div>
-                  <div style={{ flex: 1, minWidth: "260px", textAlign: "left" }}>
+                  <div style={{ flex: 1, minWidth: "0", textAlign: "left" }}>
                     <h2 style={{ fontSize: "24px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 8px 0", textAlign: "left" }}>{series.title}</h2>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 16px 0", lineHeight: "1.5", textAlign: "left" }}>{series.description || "Access all topic tests and full length mocks structured for this exam."}</p>
                     <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "13px", color: "var(--text-muted)", textAlign: "left" }}>
                       <span><strong>Category:</strong> {series.category || "General"}</span>
                       <span>•</span>
