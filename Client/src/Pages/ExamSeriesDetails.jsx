@@ -4,6 +4,7 @@ import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import QuizDetailsModal from "../components/QuizDetailsModal";
+import { useExam } from "../context/ExamContext";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, BookOpen, AlertCircle, FileText, CheckCircle } from "lucide-react";
 import "../css/StudentDashboard.css";
@@ -12,11 +13,13 @@ import "../css/MyExams.css";
 function ExamSeriesDetails() {
   const { examSeriesId } = useParams();
   const navigate = useNavigate();
+  const { selectedStructure, selectedSubject } = useExam();
   const [series, setSeries] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
+  const [flashcardSets, setFlashcardSets] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("All"); // All, Single Subject, Full Length Mock, Practice
+  const [activeFilter, setActiveFilter] = useState("All"); // All, Single Subject, Full Length Mock, Practice, Flashcards
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuizForDetails, setSelectedQuizForDetails] = useState(null);
 
@@ -26,10 +29,30 @@ function ExamSeriesDetails() {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
 
+        // Build query params for structure/subject filtering
+        const params = new URLSearchParams();
+        if (selectedStructure && selectedStructure._id) {
+          params.set("examStructureId", selectedStructure._id);
+        }
+        if (selectedSubject) {
+          params.set("subjectName", selectedSubject);
+        }
+        const qs = params.toString();
+
         // Fetch Exam Series details & associated quizzes
-        const detailsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-series/${examSeriesId}`, { headers });
+        const detailsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-series/${examSeriesId}${qs ? `?${qs}` : ""}`, { headers });
         setSeries(detailsRes.data.series);
         setQuizzes(detailsRes.data.quizzes || []);
+
+        // Fetch Flashcards
+        try {
+          const fcParams = new URLSearchParams(qs);
+          fcParams.set("examSeriesId", examSeriesId);
+          const fcRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/flashcards/sets?${fcParams.toString()}`, { headers });
+          setFlashcardSets(fcRes.data || []);
+        } catch (e) {
+          console.error("Flashcards fetch error", e);
+        }
 
         const userStr = localStorage.getItem("user");
         if (userStr) {
@@ -44,19 +67,27 @@ function ExamSeriesDetails() {
       }
     };
     fetchData();
-  }, [examSeriesId]);
+  }, [examSeriesId, selectedStructure, selectedSubject]);
 
   const attemptedQuizIds = results.map(r => r.quizId).filter(Boolean);
+
+  const [selectedPyqYear, setSelectedPyqYear] = useState("All");
+
+  // Extract list of unique PYQ years available in these quizzes
+  const pyqYears = [...new Set(quizzes.map((q) => q.pyqYear).filter(Boolean))].sort((a, b) => b - a);
 
   // Filter paper list
   let filteredQuizzes = quizzes;
 
-  if (activeFilter === "Single Subject") {
-    filteredQuizzes = quizzes.filter(q => q.quizType !== "practice" && (!q.sections || q.sections.length <= 1));
-  } else if (activeFilter === "Full Length Mock") {
-    filteredQuizzes = quizzes.filter(q => q.quizType !== "practice" && q.sections && q.sections.length > 1);
-  } else if (activeFilter === "Practice") {
-    filteredQuizzes = quizzes.filter(q => q.quizType === "practice");
+  if (activeFilter !== "All") {
+    filteredQuizzes = quizzes.filter(q => {
+      const type = q.testType || (q.publishAs === "pyq" ? "PYQ" : (q.quizType === "practice" ? "Practice Test" : "Mock Test"));
+      return type === activeFilter;
+    });
+  }
+
+  if (selectedPyqYear !== "All") {
+    filteredQuizzes = filteredQuizzes.filter((q) => Number(q.pyqYear) === Number(selectedPyqYear));
   }
 
   // Filter search matches
@@ -64,6 +95,14 @@ function ExamSeriesDetails() {
     filteredQuizzes = filteredQuizzes.filter(q => 
       q.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
       q.subject?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  let filteredFlashcards = flashcardSets;
+  if (searchQuery) {
+    filteredFlashcards = filteredFlashcards.filter(f => 
+      f.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      f.subjectName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }
 
@@ -156,7 +195,7 @@ function ExamSeriesDetails() {
               {/* Tabs and Filters */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap", marginBottom: "24px" }}>
                 <div className="me-tabs" style={{ margin: 0 }}>
-                  {["All", "Single Subject", "Full Length Mock", "Practice"].map(filter => (
+                  {["All", ...new Set(quizzes.map(q => q.testType || (q.publishAs === "pyq" ? "PYQ" : (q.quizType === "practice" ? "Practice Test" : "Mock Test")))), ...(flashcardSets.length > 0 ? ["Flashcards"] : [])].map(filter => (
                     <button 
                       key={filter} 
                       className={`me-tab-btn ${activeFilter === filter ? "active" : ""}`}
@@ -167,12 +206,38 @@ function ExamSeriesDetails() {
                   ))}
                 </div>
 
+                {pyqYears.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>PYQ Year:</span>
+                    <select
+                      value={selectedPyqYear}
+                      onChange={(e) => setSelectedPyqYear(e.target.value)}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "10px",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                        background: "var(--bg-input, rgba(255, 255, 255, 0.05))",
+                        color: "var(--text-primary, #ffffff)",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        outline: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <option value="All">All Years</option>
+                      {pyqYears.map((yr) => (
+                        <option key={yr} value={yr}>{yr}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="me-search-wrapper" style={{ maxWidth: "320px", width: "100%", margin: 0 }}>
                   <Search className="me-search-icon" size={18} />
                   <input 
                     type="text" 
                     className="me-search-input" 
-                    placeholder="Search papers inside UPTET..." 
+                    placeholder={`Search papers inside ${series?.title || "Exam"}...`} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -180,7 +245,7 @@ function ExamSeriesDetails() {
               </div>
 
               {/* Papers List */}
-              {filteredQuizzes.length === 0 ? (
+              {(filteredQuizzes.length === 0 && (activeFilter !== "Flashcards" && activeFilter !== "All" || filteredFlashcards.length === 0)) ? (
                 <div className="me-empty-state" style={{ padding: "48px 0" }}>
                   <FileText size={40} color="var(--text-muted)" />
                   <h4 style={{ color: "var(--text-primary)", marginTop: "12px" }}>No papers found</h4>
@@ -188,7 +253,38 @@ function ExamSeriesDetails() {
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-                  {filteredQuizzes.map(quiz => {
+                  
+                  {/* Render Flashcards */}
+                  {(activeFilter === "Flashcards" || activeFilter === "All") && filteredFlashcards.map(fc => (
+                    <div key={fc._id} className="me-paper-card" style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "16px", padding: "16px" }}>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
+                          {fc.title}
+                        </h4>
+                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
+                          <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(110, 63, 243, 0.15)", color: "#6E3FF3", borderRadius: "4px", fontWeight: "600" }}>Flashcards</span>
+                          {fc.chapter && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(99, 102, 241, 0.15)", color: "#6366F1", borderRadius: "4px", fontWeight: "600" }}>{fc.chapter}</span>}
+                          {fc.topic && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(236, 72, 153, 0.15)", color: "#EC4899", borderRadius: "4px", fontWeight: "600" }}>{fc.topic}</span>}
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 12px", fontSize: "11px", color: "var(--text-secondary)", marginTop: "6px" }}>
+                          <span><strong>Subject:</strong> {fc.subjectName || "General"}</span>
+                          <span><strong>Cards:</strong> {fc.totalCards}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px", marginTop: "16px", width: "100%" }}>
+                        <button 
+                          className="me-btn-primary" 
+                          style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", background: "#6E3FF3" }}
+                          onClick={() => navigate(`/dashboard/flashcards/${fc._id}`)}
+                        >
+                          Start Learning
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Render Quizzes */}
+                  {activeFilter !== "Flashcards" && filteredQuizzes.map(quiz => {
                     const isMulti = quiz.isModular || (quiz.sections && quiz.sections.length > 1);
                     const durMin = quiz.duration >= 600 ? Math.round(quiz.duration / 60) : quiz.duration;
                     
@@ -229,11 +325,24 @@ function ExamSeriesDetails() {
                             {quiz.title}
                           </h4>
                           
+                          {/* Taxonomy Badges */}
+                          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
+                            {quiz.pyqYear && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(245, 158, 11, 0.15)", color: "#F59E0B", borderRadius: "4px", fontWeight: "600" }}>{quiz.pyqYear}</span>}
+                            {quiz.shift && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(16, 185, 129, 0.15)", color: "#10B981", borderRadius: "4px", fontWeight: "600" }}>{quiz.shift}</span>}
+                            {quiz.testFormat && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(99, 102, 241, 0.15)", color: "#6366F1", borderRadius: "4px", fontWeight: "600" }}>{quiz.testFormat}</span>}
+                            {quiz.topicName && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(236, 72, 153, 0.15)", color: "#EC4899", borderRadius: "4px", fontWeight: "600" }}>{quiz.topicName}</span>}
+                            {quiz.contentType === "pdf" ? (
+                              <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(239, 68, 68, 0.15)", color: "#EF4444", borderRadius: "4px", fontWeight: "600" }}>PDF</span>
+                            ) : (
+                              <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(59, 130, 246, 0.15)", color: "#3B82F6", borderRadius: "4px", fontWeight: "600" }}>Interactive</span>
+                            )}
+                          </div>
+
                           {/* Subject & Stats inline */}
                           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 12px", fontSize: "11px", color: "var(--text-secondary)", marginTop: "6px" }}>
                             <span><strong>Subject:</strong> {quiz.subject}</span>
-                            <span><strong>Qs:</strong> {qCount}</span>
-                            <span><strong>Time:</strong> {durMin}m</span>
+                            {quiz.contentType !== "pdf" && <span><strong>Qs:</strong> {qCount}</span>}
+                            {quiz.contentType !== "pdf" && <span><strong>Time:</strong> {durMin}m</span>}
                           </div>
 
                           {/* Pricing Badge */}
@@ -266,7 +375,7 @@ function ExamSeriesDetails() {
                           </div>
 
                           {/* Sections list in smaller text */}
-                          {isMulti && quiz.sections && quiz.sections.length > 0 && (
+                          {isMulti && quiz.sections && quiz.sections.length > 0 && quiz.contentType !== "pdf" && (
                             <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "6px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               <strong>Sections:</strong> {quiz.sections.map(s => s.sectionId?.title || s.title || "Section").join(", ")}
                             </div>
@@ -282,6 +391,14 @@ function ExamSeriesDetails() {
                               onClick={() => setSelectedQuizForDetails(quiz)}
                             >
                               🔒 Buy Now — ₹{quiz.price || 0}
+                            </button>
+                          ) : quiz.contentType === "pdf" ? (
+                            <button 
+                              className="me-btn-primary" 
+                              style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", background: "#EF4444" }}
+                              onClick={() => window.open(quiz.pdfUrl, "_blank")}
+                            >
+                              View PDF
                             </button>
                           ) : attemptedQuizIds.includes(quiz._id) ? (
                             <>

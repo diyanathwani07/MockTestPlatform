@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import StudentBottomNav from "./StudentBottomNav";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard, Palette } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard, Palette, RefreshCw } from "lucide-react";
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
 import { useSidebar } from "../context/SidebarContext";
+import { useExam } from "../context/ExamContext";
 import axios from "axios";
 import PixelSnow from "./shadcn-space/animations/PixelSnow";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { collapsed } = useSidebar();
+  const { selectedExam, selectedStructure, selectedSubject, openChangeExamModal } = useExam();
 
   // ── Read from cache first so sidebar never flickers on navigation ──
   const getCached = (key, fallback = false) => {
@@ -151,6 +153,18 @@ function StudentSidebar() {
             <FileText size={20} />
             <span>Exams</span>
           </NavLink>
+          <button
+            className="sidebar-link"
+            onClick={() => {
+              setIsOpen(false);
+              openChangeExamModal();
+            }}
+            style={{ border: "none", background: "transparent", cursor: "pointer", width: "100%", textAlign: "left", font: "inherit" }}
+            title={selectedExam ? `${selectedExam.title}${selectedStructure ? ` → ${selectedStructure.name}` : ''}${selectedSubject ? ` → ${selectedSubject}` : ''}` : "Change Target Exam"}
+          >
+            <RefreshCw size={20} />
+            <span>{selectedExam ? selectedExam.title : "Change Exam"}</span>
+          </button>
           <NavLink to="/dashboard/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <BookOpen size={20} />
             <span>Practice</span>

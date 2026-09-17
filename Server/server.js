@@ -41,6 +41,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const resultRoutes = require("./routes/resultRoutes");
 const examSeriesRoutes = require("./routes/examSeriesRoutes");
+const examStructureRoutes = require("./routes/examStructureRoutes");
 const ExamSeries = require("./models/ExamSeries");
 
 const app = express();
@@ -117,6 +118,7 @@ app.use(helmet({
 }));
 
 const { apiLimiter } = require("./middleware/rateLimiter");
+app.set("trust proxy", 1);
 app.use(apiLimiter);
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -127,12 +129,15 @@ app.get("/", (req, res) => {
 });
 
 
-
 app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/results", resultRoutes);
 app.use("/api/exam-series", examSeriesRoutes);
+app.use("/api/exam-structures", examStructureRoutes);
+app.use("/api/flashcards", require("./routes/flashcardRoutes"));
+app.use("/api/taxonomies", require("./routes/taxonomyRoutes"));
 app.use("/api/users/upload-profile", uploadRoutes);
+app.use("/api/upload", uploadRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/departments", departmentRoutes);
 app.use("/api/admin/results", adminResultRoutes);
@@ -152,6 +157,7 @@ app.use("/api/ai-tests", aiTestRoutes);
 app.use("/api/admin/ai-plans", require("./routes/aiPlanRoutes"));
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/admin/revenue", revenueRoutes);
+app.use("/api/taxonomies", require("./routes/taxonomyRoutes"));
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
 setInterval(async () => {
   try {

@@ -8,6 +8,9 @@ import AdminDashboard from "./admin/AdminDashboard";
 import CreateQuiz from "./admin/CreateQuiz";
 import EditQuiz from "./admin/EditQuiz";
 import ManageQuizzes from "./admin/ManageQuizzes";
+import AdminFlashcards from "./admin/AdminFlashcards";
+import CreateFlashcardSet from "./admin/CreateFlashcardSet";
+import ManageFlashcards from "./admin/ManageFlashcards";
 import AdminQuestions from "./admin/Questions";
 import AdminUsers from "./admin/Users";
 import AdminResults from "./admin/Results";
@@ -34,6 +37,7 @@ import Quiz from "./Pages/Quiz";
 import Result from "./Pages/Result";
 import MyExams from "./Pages/MyExams";
 import ExamSeriesDetails from "./Pages/ExamSeriesDetails";
+import FlashcardStudyView from "./Pages/FlashcardStudyView";
 import PracticeDashboard from "./Pages/PracticeDashboard";
 import PracticeTest from "./Pages/PracticeTest";
 import PracticeResult from "./Pages/PracticeResult";
@@ -157,6 +161,15 @@ function App() {
           element={
             <ProtectedRoute>
               <ExamSeriesDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/flashcards/:setId"
+          element={
+            <ProtectedRoute>
+              <FlashcardStudyView />
             </ProtectedRoute>
           }
         />
@@ -439,6 +452,10 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route path="/admin/flashcards" element={<AdminRoute><AdminFlashcards /></AdminRoute>} />
+        <Route path="/admin/flashcards/create" element={<AdminRoute><CreateFlashcardSet /></AdminRoute>} />
+        <Route path="/admin/flashcards/edit/:id" element={<AdminRoute><CreateFlashcardSet /></AdminRoute>} />
+        <Route path="/admin/flashcards/:id/manage" element={<AdminRoute><ManageFlashcards /></AdminRoute>} />
 
 
 

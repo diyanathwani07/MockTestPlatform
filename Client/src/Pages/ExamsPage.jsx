@@ -166,7 +166,8 @@ function ExamsPage() {
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
-                          gap: '8px'
+                          gap: '8px',
+                          marginTop: 'auto'
                         }}
                       >
                         Start Test

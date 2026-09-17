@@ -69,6 +69,17 @@ function EditQuiz() {
     practiceShowExplanations: true,
     practiceShowAnswerReview: true,
     examSeriesId: "",
+    examStructureId: "",
+    subjectName: "",
+    pyqYear: null,
+    testType: "",
+    shift: "",
+    topicName: "",
+    testFormat: "",
+    contentType: "interactive",
+    pdfUrl: null,
+    pdfFileName: null,
+    allowDownload: false,
     isPaid: false,
     price: 0,
     isPracticePaid: false,
@@ -87,6 +98,9 @@ function EditQuiz() {
 
 
   const [seriesList, setSeriesList] = useState([]);
+  const [structuresList, setStructuresList] = useState([]);
+  const [loadingStructures, setLoadingStructures] = useState(false);
+  const [taxonomies, setTaxonomies] = useState({ year: [], shift: [], testType: [], testFormat: [] });
 
   const [presetSelected, setPresetSelected] = useState("Custom");
   const [presets, setPresets] = useState([]);
@@ -343,6 +357,22 @@ function EditQuiz() {
           console.error("Error fetching series list:", err);
         }
 
+        // Fetch Taxonomies
+        try {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/taxonomies`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+          });
+          const data = res.data;
+          setTaxonomies({
+            year: data.filter(t => t.type === 'year').map(t => t.name),
+            shift: data.filter(t => t.type === 'shift').map(t => t.name),
+            testType: data.filter(t => t.type === 'testType').map(t => t.name),
+            testFormat: data.filter(t => t.type === 'testFormat').map(t => t.name)
+          });
+        } catch (err) {
+          console.error("Error fetching taxonomies:", err);
+        }
+
         setQuizMeta({
           examName: dbQuiz.examName || "",
           subject: dbQuiz.subject || "",
@@ -373,6 +403,17 @@ function EditQuiz() {
           practiceShowExplanations: dbQuiz.practiceShowExplanations !== undefined ? dbQuiz.practiceShowExplanations : (dbQuiz.showExplanations !== undefined ? dbQuiz.showExplanations : true),
           practiceShowAnswerReview: dbQuiz.practiceShowAnswerReview !== undefined ? dbQuiz.practiceShowAnswerReview : (dbQuiz.showAnswerReview !== undefined ? dbQuiz.showAnswerReview : true),
           examSeriesId: dbQuiz.examSeriesId || "",
+          examStructureId: dbQuiz.examStructureId || "",
+          subjectName: dbQuiz.subjectName || "",
+          pyqYear: dbQuiz.pyqYear || null,
+          testType: dbQuiz.testType || "",
+          shift: dbQuiz.shift || "",
+          topicName: dbQuiz.topicName || "",
+          testFormat: dbQuiz.testFormat || "",
+          contentType: dbQuiz.contentType || "interactive",
+          pdfUrl: dbQuiz.pdfUrl || null,
+          pdfFileName: dbQuiz.pdfFileName || null,
+          allowDownload: dbQuiz.allowDownload || false,
           isPaid: dbQuiz.isPaid || false,
           price: dbQuiz.price || 0,
           isPracticePaid: dbQuiz.isPracticePaid !== undefined ? dbQuiz.isPracticePaid : (isPracticeRoute ? dbQuiz.isPaid : false),
@@ -592,6 +633,43 @@ function EditQuiz() {
       }
       return updated;
     });
+  };
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setMessage({ text: "Please select a valid PDF file.", type: "error" });
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      setMessage({ text: "PDF size must be less than 20MB", type: "error" });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/pdf`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setQuizMeta(prev => ({ 
+        ...prev, 
+        pdfUrl: res.data.fileUrl, 
+        pdfFileName: res.data.fileName 
+      }));
+      setMessage({ text: "PDF uploaded successfully!", type: "success" });
+    } catch (err) {
+      console.error(err);
+      setMessage({ text: "Failed to upload PDF", type: "error" });
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   const handlePresetChange = async (e) => {
@@ -990,6 +1068,14 @@ function EditQuiz() {
       }
     }
     
+    if (quizMeta.contentType === "pdf") {
+      if (!quizMeta.pdfUrl) {
+        setMessage({ text: "Please upload a PDF file.", type: "status-error" });
+        return false;
+      }
+      return true; // Skip question validation
+    }
+
     const validQuestions = questions.filter(
       (q) =>
         q.questionEnglish.trim() !== "" &&
@@ -1220,6 +1306,135 @@ function EditQuiz() {
                               <option value="practice">Practice Only</option>
                               <option value="both">Both Exam & Practice</option>
                             </select>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Test Type (e.g. PYQ, Mock Test)</label>
+                            <input 
+                              type="text" 
+                              name="testType" 
+                              value={quizMeta.testType || ""} 
+                              onChange={handleMetaChange} 
+                              list="testTypesList" 
+                              placeholder="Select or type..." 
+                            />
+                            <datalist id="testTypesList">
+                              {taxonomies.testType?.map(t => <option key={t} value={t} />)}
+                              <option value="Mock Test" />
+                              <option value="PYQ" />
+                              <option value="Practice Test" />
+                              <option value="Chapter Test" />
+                            </datalist>
+                          </div>
+
+                          {quizMeta.testType?.toUpperCase() === "PYQ" && (
+                            <div className="form-field" style={{ background: "rgba(110, 63, 243, 0.05)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                              <label style={{ display: "block", marginBottom: "8px", color: "var(--violet)", fontWeight: "600" }}>PYQ Content Type</label>
+                              <div style={{ display: "flex", gap: "16px" }}>
+                                <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13px" }}>
+                                  <input 
+                                    type="radio" 
+                                    name="contentType" 
+                                    value="interactive" 
+                                    checked={quizMeta.contentType !== "pdf"} 
+                                    onChange={handleMetaChange} 
+                                  />
+                                  Interactive Quiz
+                                </label>
+                                <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13px" }}>
+                                  <input 
+                                    type="radio" 
+                                    name="contentType" 
+                                    value="pdf" 
+                                    checked={quizMeta.contentType === "pdf"} 
+                                    onChange={handleMetaChange} 
+                                  />
+                                  PDF Document
+                                </label>
+                              </div>
+                            </div>
+                          )}
+
+                          {quizMeta.contentType === "pdf" && (
+                            <div className="form-field" style={{ background: "rgba(239, 68, 68, 0.05)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+                              <label style={{ display: "block", marginBottom: "8px", color: "#EF4444", fontWeight: "600" }}>Upload PYQ PDF</label>
+                              <input type="file" accept="application/pdf" onChange={handlePdfUpload} />
+                              {quizMeta.pdfFileName && (
+                                <div style={{ marginTop: "8px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                                  <strong>Uploaded:</strong> {quizMeta.pdfFileName}
+                                </div>
+                              )}
+                              <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "12px", marginTop: "12px" }}>
+                                <input 
+                                  type="checkbox" 
+                                  name="allowDownload" 
+                                  checked={quizMeta.allowDownload || false} 
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, allowDownload: e.target.checked }))} 
+                                />
+                                Allow Students to Download PDF
+                              </label>
+                            </div>
+                          )}
+
+                          <div className="form-field">
+                            <label>Test Format (e.g. Full Paper, Subject-wise)</label>
+                            <input 
+                              type="text" 
+                              name="testFormat" 
+                              value={quizMeta.testFormat || ""} 
+                              onChange={handleMetaChange} 
+                              list="testFormatsList" 
+                              placeholder="Select or type..." 
+                            />
+                            <datalist id="testFormatsList">
+                              {taxonomies.testFormat?.map(t => <option key={t} value={t} />)}
+                              <option value="Full Paper" />
+                              <option value="Subject-wise" />
+                              <option value="Chapter-wise" />
+                            </datalist>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Year (Optional, usually for PYQs)</label>
+                            <input
+                              type="number"
+                              name="pyqYear"
+                              value={quizMeta.pyqYear || ""}
+                              onChange={(e) => setQuizMeta((prev) => ({ ...prev, pyqYear: e.target.value ? Number(e.target.value) : null }))}
+                              list="yearsList"
+                              placeholder="e.g. 2025"
+                            />
+                            <datalist id="yearsList">
+                              {taxonomies.year?.map(t => <option key={t} value={t} />)}
+                            </datalist>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Shift (Optional)</label>
+                            <input 
+                              type="text" 
+                              name="shift" 
+                              value={quizMeta.shift || ""} 
+                              onChange={handleMetaChange} 
+                              list="shiftsList" 
+                              placeholder="e.g. Shift 1" 
+                            />
+                            <datalist id="shiftsList">
+                              {taxonomies.shift?.map(t => <option key={t} value={t} />)}
+                              <option value="Shift 1" />
+                              <option value="Shift 2" />
+                            </datalist>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Topic / Chapter (Optional)</label>
+                            <input 
+                              type="text" 
+                              name="topicName" 
+                              value={quizMeta.topicName || ""} 
+                              onChange={handleMetaChange} 
+                              placeholder="e.g. Number System" 
+                            />
                           </div>
 
                           <div className="form-field">
@@ -2415,6 +2630,7 @@ function EditQuiz() {
 
                   </div>
                   {/* 3. Questions Builder */}
+                  {quizMeta.contentType !== "pdf" && (
                   <div className="form-card header-questions-card">
                       <div className="questions-title-row">
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -2746,7 +2962,7 @@ function EditQuiz() {
                         </>
                       )}
                     </div>
-
+                  )}
                 </div>
 
                 {/* Bottom Actions Row */}

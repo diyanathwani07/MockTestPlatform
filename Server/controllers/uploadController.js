@@ -37,6 +37,31 @@ const uploadProfilePicture = async (req, res) => {
   }
 };
 
+const uploadPdfFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file provided" });
+    }
+
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Unauthorized. Admin only." });
+    }
+
+    const result = await cloudinaryService.uploadFile(req.file.buffer, "pdfs", req.file.originalname);
+    
+    res.json({
+      success: true,
+      fileUrl: result.secure_url,
+      fileName: req.file.originalname,
+      message: "PDF uploaded successfully",
+    });
+  } catch (error) {
+    console.error("PDF Upload Error:", error);
+    res.status(500).json({ success: false, message: error.message || "Failed to upload PDF" });
+  }
+};
+
 module.exports = {
   uploadProfilePicture,
+  uploadPdfFile,
 };

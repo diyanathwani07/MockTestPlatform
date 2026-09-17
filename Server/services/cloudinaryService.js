@@ -21,6 +21,33 @@ const uploadImage = (fileBuffer, folder) => {
   });
 };
 
+const uploadFile = (fileBuffer, folder, originalFilename = "") => {
+  return new Promise((resolve, reject) => {
+    // Cloudinary supports auto for raw files (e.g. PDFs)
+    const options = {
+      folder,
+      resource_type: "auto",
+    };
+    if (originalFilename) {
+      options.public_id = originalFilename.replace(/\.[^/.]+$/, ""); // Strip extension
+    }
+
+    const stream = cloudinary.uploader.upload_stream(
+      options,
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+
+    streamifier.createReadStream(fileBuffer).pipe(stream);
+  });
+};
+
 module.exports = {
   uploadImage,
+  uploadFile,
 };

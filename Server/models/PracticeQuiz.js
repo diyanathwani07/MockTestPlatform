@@ -93,6 +93,32 @@ const practiceQuizSchema = new mongoose.Schema(
       ref: "Quiz",
       default: null,
     },
+    examSeriesId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ExamSeries",
+      default: null,
+    },
+    examStructureId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ExamStructure",
+      default: null,
+    },
+    subjectName: {
+      type: String,
+      default: null,
+    },
+    pyqYear: {
+      type: Number,
+      default: null,
+    },
+    testType: { type: String, default: "" },
+    shift: { type: String, default: "" },
+    topicName: { type: String, default: "" },
+    testFormat: { type: String, default: "" },
+    contentType: { type: String, enum: ["interactive", "pdf"], default: "interactive" },
+    pdfUrl: { type: String, default: null },
+    pdfFileName: { type: String, default: null },
+    allowDownload: { type: Boolean, default: false },
     isModular: {
       type: Boolean,
       default: false,

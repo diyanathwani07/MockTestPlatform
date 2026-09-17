@@ -3,6 +3,7 @@ const Question = require("../models/Question");
 const User = require("../models/User");
 const Result = require("../models/Result");
 const logAction = require("../utils/logger");
+const applyExamFilters = require("../utils/applyExamFilters");
 const { notifyAllStudents, notifyContentTeamSlack } = require("../services/notificationService");
 const {
   createQuiz: createModularQuiz,
@@ -35,6 +36,27 @@ const createQuiz = async (req, res) => {
       bodyData.examSeriesId = series._id;
     }
     const isBpsc = (bodyData.examName && bodyData.examName.toUpperCase().includes("BPSC")) || (bodyData.title && bodyData.title.toUpperCase().includes("BPSC")) || bodyData.markingPattern === "bpsc";
+
+    const Taxonomy = require("../models/Taxonomy");
+    const syncTaxonomy = async (type, name) => {
+      if (!name) return;
+      const strName = String(name).trim();
+      if (!strName) return;
+      try {
+        await Taxonomy.updateOne(
+          { type, name: { $regex: new RegExp(`^${strName}$`, "i") } },
+          { $setOnInsert: { type, name: strName, createdBy: req.user?._id } },
+          { upsert: true }
+        );
+      } catch (e) {
+        console.error("Taxonomy upsert error:", e);
+      }
+    };
+
+    if (bodyData.testType) await syncTaxonomy("testType", bodyData.testType);
+    if (bodyData.shift) await syncTaxonomy("shift", bodyData.shift);
+    if (bodyData.pyqYear) await syncTaxonomy("year", bodyData.pyqYear);
+    if (bodyData.testFormat) await syncTaxonomy("testFormat", bodyData.testFormat);
 
     const quiz = await quizService.createQuiz({
       ...bodyData,
@@ -84,6 +106,7 @@ const getQuizzes = async (req, res) => {
     if (req.query.subject) {
       filter.subject = req.query.subject;
     }
+    applyExamFilters(filter, req.query);
     if (req.query.published !== undefined) {
       filter.published = req.query.published === "true";
     }

@@ -4,7 +4,9 @@ import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import { useExam } from "../context/ExamContext";
 import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info, Layers } from "lucide-react";
+import DashboardBannerCarousel from "../components/DashboardBannerCarousel";
 import "../css/StudentDashboard.css";
 
 const ScoreTrendChart = ({ data }) => {
@@ -95,6 +97,7 @@ const ScoreTrendChart = ({ data }) => {
 function StudentDashboard() {
   const navigate = useNavigate();
   const { toggleTheme } = useTheme();
+  const { selectedExam, selectedStructure, selectedSubject, openChangeExamModal } = useExam();
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const candidateName = storedUser.fullName || storedUser.name || "Student";
@@ -110,6 +113,7 @@ function StudentDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        setLoading(true);
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         const userId = user.id || user._id;
         if (!userId) return;
@@ -120,11 +124,19 @@ function StudentDashboard() {
         });
         setResults(resultsRes.data);
         
-        // Fetch published parent Exam Series
-        const seriesRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+        // Fetch published parent Exam Series (with optional selectedExam filter)
+        const seriesUrl = selectedExam
+          ? `${import.meta.env.VITE_API_URL}/api/exam-series`
+          : `${import.meta.env.VITE_API_URL}/api/exam-series`;
+        const seriesRes = await axios.get(seriesUrl, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
-        setSeriesList(seriesRes.data);
+        const allSeries = Array.isArray(seriesRes.data) ? seriesRes.data : [];
+        if (selectedExam && selectedExam._id) {
+          setSeriesList(allSeries.filter(s => s._id === selectedExam._id));
+        } else {
+          setSeriesList(allSeries);
+        }
       } catch (error) {
         console.error("Error fetching dashboard data", error);
         setFetchError(true);
@@ -133,7 +145,7 @@ function StudentDashboard() {
       }
     };
     fetchDashboardData();
-  }, []);
+  }, [selectedExam]);
 
   // Compute Stats
   const mocksAttempted = new Set(results.map(r => r.quizId?.toString()).filter(Boolean)).size;
@@ -205,13 +217,29 @@ function StudentDashboard() {
       <div className="sd-main-content">
         <StudentNavbar title="Dashboard" />
 
+        <div style={{ padding: '10px 24px 0 24px' }}>
+          <DashboardBannerCarousel />
+        </div>
+
       {/* ── HERO WELCOME ── */}
-      <div className="sd-hero">
+      <div className="sd-hero" style={{ justifyContent: 'space-between', display: 'flex' }}>
         <div className="sd-hero-content">
-          <p className="sd-hero-greeting">👋 Welcome back,</p>
+          <p className="sd-hero-greeting" style={{ margin: "0 0 4px 0" }}>👋 Welcome back,</p>
           <h1 className="sd-hero-name">{candidateName}</h1>
           <p className="sd-hero-subtitle">Keep practicing, keep improving!</p>
         </div>
+
+        <div className="sd-hero-target-pill">
+          <Target size={18} className="target-icon" />
+          <span className="target-text">
+            {selectedExam ? `Target: ${selectedExam.title}${selectedStructure ? ` → ${selectedStructure.name}` : ''}${selectedSubject ? ` → ${selectedSubject}` : ''}` : "Target: No Exam Selected"}
+          </span>
+          <button className="target-btn" onClick={openChangeExamModal}>
+            {selectedExam ? "Change" : "Select Exam"}
+            <ChevronRight size={16} style={{ marginLeft: "4px" }} />
+          </button>
+        </div>
+
         <div className="sd-hero-graphic">
           <div className="ambient-glow-circle-1"></div>
           <div className="ambient-glow-circle-2"></div>

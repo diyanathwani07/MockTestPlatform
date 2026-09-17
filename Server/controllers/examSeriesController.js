@@ -1,6 +1,8 @@
 const ExamSeries = require("../models/ExamSeries");
 const Quiz = require("../models/Quiz");
+const FlashcardSet = require("../models/FlashcardSet");
 const { notifyAllStudents } = require("../services/notificationService");
+const applyExamFilters = require("../utils/applyExamFilters");
 
 // Create Series
 exports.createSeries = async (req, res) => {
@@ -65,12 +67,17 @@ exports.getAllSeriesWithQuizzes = async (req, res) => {
     const series = await ExamSeries.find({ isPublished: true }).sort({ createdAt: -1 });
     const seriesIds = series.map(s => s._id);
 
-    // Fetch all published quizzes belonging to any of these series
-    const allQuizzes = await Quiz.find({
+    // Build quiz filter — always scoped to these series, optionally narrowed by structure/subject
+    const quizFilter = {
       examSeriesId: { $in: seriesIds },
       isDeleted: { $ne: true },
       $or: [{ published: true }, { status: "Published" }]
-    }).select("_id title subject examSeriesId quizType updatedAt createdAt").sort({ createdAt: -1 });
+    };
+    applyExamFilters(quizFilter, req.query);
+
+    // Fetch all published quizzes belonging to any of these series
+    const allQuizzes = await Quiz.find(quizFilter)
+      .select("_id title subject examSeriesId quizType updatedAt createdAt").sort({ createdAt: -1 });
 
     // Group quizzes by examSeriesId
     const quizMap = {};
@@ -80,10 +87,26 @@ exports.getAllSeriesWithQuizzes = async (req, res) => {
       quizMap[sid].push(q);
     });
 
+    // Fetch all published Flashcard Sets
+    const fcFilter = {
+      examSeriesId: { $in: seriesIds },
+      status: "Published"
+    };
+    // If you need to filter flashcards by subject or structure in the future, apply here.
+    const allFCs = await FlashcardSet.find(fcFilter).select("_id examSeriesId");
+
+    const fcMap = {};
+    allFCs.forEach(f => {
+      const sid = String(f.examSeriesId);
+      if (!fcMap[sid]) fcMap[sid] = [];
+      fcMap[sid].push(f);
+    });
+
     const result = series.map(s => ({
       ...s.toObject(),
       quizzes: quizMap[String(s._id)] || [],
       paperCount: (quizMap[String(s._id)] || []).length,
+      flashcardCount: (fcMap[String(s._id)] || []).length,
     }));
 
     res.json(result);
@@ -100,12 +123,14 @@ exports.getSeriesById = async (req, res) => {
     const series = await ExamSeries.findById(req.params.id);
     if (!series) return res.status(404).json({ message: "Exam Series not found." });
 
-    // Fetch children quizzes belonging to this series
-    const quizzes = await Quiz.find({ 
+    // Fetch children quizzes belonging to this series, optionally filtered
+    const quizFilter = { 
       examSeriesId: series._id, 
       isDeleted: { $ne: true },
       $or: [{ published: true }, { status: "Published" }]
-    }).sort({ createdAt: -1 });
+    };
+    applyExamFilters(quizFilter, req.query);
+    const quizzes = await Quiz.find(quizFilter).sort({ createdAt: -1 });
 
     // Attach isPurchased flag if user is authenticated
     let purchasedExamIds = [];

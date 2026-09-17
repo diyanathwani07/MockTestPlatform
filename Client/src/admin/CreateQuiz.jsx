@@ -68,6 +68,17 @@ function CreateQuiz() {
     practiceShowExplanations: true,
     practiceShowAnswerReview: true,
     examSeriesId: "",
+    examStructureId: "",
+    subjectName: "",
+    pyqYear: null,
+    testType: "Mock Test",
+    shift: "",
+    topicName: "",
+    testFormat: "",
+    contentType: "interactive",
+    pdfUrl: null,
+    pdfFileName: null,
+    allowDownload: false,
     isPracticePaid: false,
     practicePrice: 0,
     detailedDescription: "",
@@ -83,6 +94,9 @@ function CreateQuiz() {
   });
 
   const [seriesList, setSeriesList] = useState([]);
+  const [structuresList, setStructuresList] = useState([]);
+  const [loadingStructures, setLoadingStructures] = useState(false);
+  const [taxonomies, setTaxonomies] = useState({ year: [], shift: [], testType: [], testFormat: [] });
 
   const [presetSelected, setPresetSelected] = useState("Custom");
   const [presets, setPresets] = useState([]);
@@ -119,6 +133,7 @@ function CreateQuiz() {
   const [quizConfigCollapsed, setQuizConfigCollapsed] = useState(false);
   const [questionsCollapsed, setQuestionsCollapsed] = useState(false);
   const [resultSettingsCollapsed, setResultSettingsCollapsed] = useState(false);
+  const [showAdvancedPYQ, setShowAdvancedPYQ] = useState(false);
 
   const [durationMin, setDurationMin] = useState("");
   const [durationSec, setDurationSec] = useState("");
@@ -224,7 +239,25 @@ function CreateQuiz() {
   React.useEffect(() => {
     fetchPresets();
     fetchSeries();
+    fetchTaxonomies();
   }, []);
+
+  const fetchTaxonomies = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/taxonomies`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      const data = res.data;
+      setTaxonomies({
+        year: data.filter(t => t.type === 'year').map(t => t.name),
+        shift: data.filter(t => t.type === 'shift').map(t => t.name),
+        testType: data.filter(t => t.type === 'testType').map(t => t.name),
+        testFormat: data.filter(t => t.type === 'testFormat').map(t => t.name)
+      });
+    } catch (err) {
+      console.error("Error fetching taxonomies:", err);
+    }
+  };
 
   const fetchSeries = async () => {
     try {
@@ -234,6 +267,25 @@ function CreateQuiz() {
       setSeriesList(res.data);
     } catch (err) {
       console.error("Error fetching series list:", err);
+    }
+  };
+
+  const fetchStructuresForSeries = async (seriesId) => {
+    if (!seriesId) {
+      setStructuresList([]);
+      return;
+    }
+    setLoadingStructures(true);
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-structures?examSeriesId=${seriesId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setStructuresList(res.data || []);
+    } catch (err) {
+      console.error("Error fetching structures:", err);
+      setStructuresList([]);
+    } finally {
+      setLoadingStructures(false);
     }
   };
 
@@ -334,6 +386,43 @@ function CreateQuiz() {
       }
       return updated;
     });
+  };
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setMessage({ text: "Please select a valid PDF file.", type: "error" });
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) { // 20MB limit
+      setMessage({ text: "PDF size must be less than 20MB", type: "error" });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/pdf`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setQuizMeta(prev => ({ 
+        ...prev, 
+        pdfUrl: res.data.fileUrl, 
+        pdfFileName: res.data.fileName 
+      }));
+      setMessage({ text: "PDF uploaded successfully!", type: "success" });
+    } catch (err) {
+      console.error(err);
+      setMessage({ text: "Failed to upload PDF", type: "error" });
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   const handlePresetChange = async (e) => {
@@ -629,6 +718,14 @@ function CreateQuiz() {
       setMessage({ text: "Please select a Date and Time for scheduling.", type: "status-error" });
       return false;
     }
+    if (quizMeta.contentType === "pdf") {
+      if (!quizMeta.pdfUrl) {
+        setMessage({ text: "Please upload a PDF file.", type: "status-error" });
+        return false;
+      }
+      return true; // Skip question validation
+    }
+
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.questionEnglish || !q.questionEnglish.trim()) {
@@ -871,14 +968,114 @@ function CreateQuiz() {
                   {!quizConfigCollapsed && (
                     <div className="details-vertical-fields" style={{ marginTop: "16px" }}>
                       <div className="form-field">
-                        <label>Exam</label>
+                        <label>Exam Series</label>
+                        <select
+                          name="examSeriesId"
+                          value={quizMeta.examSeriesId || ""}
+                          onChange={(e) => {
+                            const selectedId = e.target.value;
+                            const seriesObj = seriesList.find((s) => s._id === selectedId);
+                            setQuizMeta((prev) => ({
+                              ...prev,
+                              examSeriesId: selectedId,
+                              examName: seriesObj ? seriesObj.title : prev.examName,
+                              examStructureId: "",
+                              subjectName: "",
+                            }));
+                            fetchStructuresForSeries(selectedId);
+                          }}
+                          style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)" }}
+                        >
+                          <option value="">-- None (Select Exam Series) --</option>
+                          {seriesList.map((s) => (
+                            <option key={s._id} value={s._id}>
+                              {s.title} ({s.category || "General"})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Dependent Structure & Subject dropdowns - hidden if no Exam Series selected */}
+                      {quizMeta.examSeriesId && (
+                        <>
+                          <div className="form-field">
+                            <label>Exam Structure</label>
+                            <select
+                              name="examStructureId"
+                              value={quizMeta.examStructureId || ""}
+                              disabled={loadingStructures || structuresList.length === 0}
+                              onChange={(e) => {
+                                const selectedStructId = e.target.value;
+                                setQuizMeta((prev) => ({
+                                  ...prev,
+                                  examStructureId: selectedStructId,
+                                  subjectName: "",
+                                }));
+                              }}
+                              style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)", opacity: (loadingStructures || structuresList.length === 0) ? 0.6 : 1 }}
+                            >
+                              <option value="">
+                                {loadingStructures
+                                  ? "-- Loading Structures... --"
+                                  : structuresList.length === 0
+                                  ? "-- No Active Structures Created --"
+                                  : "-- Select Structure (e.g. Paper 1, Level 2) --"}
+                              </option>
+                              {structuresList.map((st) => (
+                                <option key={st._id} value={st._id}>
+                                  {st.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Exam Subject</label>
+                            {(() => {
+                              const activeStruct = structuresList.find((st) => st._id === quizMeta.examStructureId);
+                              const availableSubjects = (activeStruct?.subjects || []).filter((sub) => sub.isActive !== false);
+
+                              return (
+                                <select
+                                  name="subjectName"
+                                  value={quizMeta.subjectName || ""}
+                                  disabled={!quizMeta.examStructureId || availableSubjects.length === 0}
+                                  onChange={(e) => {
+                                    const selectedSubName = e.target.value;
+                                    setQuizMeta((prev) => ({
+                                      ...prev,
+                                      subjectName: selectedSubName,
+                                      subject: selectedSubName || prev.subject,
+                                    }));
+                                  }}
+                                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)", opacity: (!quizMeta.examStructureId || availableSubjects.length === 0) ? 0.6 : 1 }}
+                                >
+                                  <option value="">
+                                    {!quizMeta.examStructureId
+                                      ? "-- Select a Structure First --"
+                                      : availableSubjects.length === 0
+                                      ? "-- No Active Subjects in Structure --"
+                                      : "-- Select Subject --"}
+                                  </option>
+                                  {availableSubjects.map((sub) => (
+                                    <option key={sub._id || sub.name} value={sub.name}>
+                                      {sub.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              );
+                            })()}
+                          </div>
+                        </>
+                      )}
+                      <div className="form-field">
+                        <label>Exam Name (Text Tag)</label>
                         <input 
                           type="text" 
                           name="examName" 
                           value={quizMeta.examName || ""} 
                           onChange={handleMetaChange} 
                           placeholder="e.g. UPTET / CTET / BPSC" 
-                          required 
                         />
                       </div>
                       <div className="form-field">
@@ -906,6 +1103,160 @@ function CreateQuiz() {
                           <option value="both">Both Exam & Practice</option>
                         </select>
                       </div>
+                      <div className="form-field checkbox-field" style={{ gridColumn: "1 / -1", background: "rgba(110, 63, 243, 0.05)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: "600", margin: 0, color: "var(--text-primary)" }}>
+                          <input 
+                            type="checkbox" 
+                            checked={showAdvancedPYQ} 
+                            onChange={(e) => {
+                              setShowAdvancedPYQ(e.target.checked);
+                              if (e.target.checked) {
+                                setQuizMeta(prev => ({ ...prev, testType: "PYQ" }));
+                              } else {
+                                setQuizMeta(prev => ({ ...prev, testType: "Mock Test", pyqYear: null, shift: "", topicName: "", testFormat: "", contentType: "interactive" }));
+                              }
+                            }} 
+                            style={{ width: "16px", height: "16px", accentColor: "var(--violet)" }}
+                          />
+                          Create as Previous Year Question (PYQ)
+                        </label>
+                        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", paddingLeft: "24px" }}>
+                          Enable to configure Year, Shift, PDF uploads, and advanced categorization.
+                        </div>
+                      </div>
+
+                      {showAdvancedPYQ && (
+                        <>
+                          <div className="form-field">
+                            <label>Test Type (e.g. PYQ, Mock Test)</label>
+                            <input 
+                              type="text" 
+                              name="testType" 
+                              value={quizMeta.testType || ""} 
+                              onChange={handleMetaChange} 
+                              list="testTypesList" 
+                              placeholder="Select or type..." 
+                            />
+                            <datalist id="testTypesList">
+                              {taxonomies.testType?.map(t => <option key={t} value={t} />)}
+                              <option value="Mock Test" />
+                              <option value="PYQ" />
+                              <option value="Practice Test" />
+                              <option value="Chapter Test" />
+                            </datalist>
+                          </div>
+
+                          {quizMeta.testType?.toUpperCase() === "PYQ" && (
+                            <div className="form-field" style={{ background: "rgba(110, 63, 243, 0.05)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                              <label style={{ display: "block", marginBottom: "8px", color: "var(--violet)", fontWeight: "600" }}>PYQ Content Type</label>
+                              <div style={{ display: "flex", gap: "16px" }}>
+                                <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13px" }}>
+                                  <input 
+                                    type="radio" 
+                                    name="contentType" 
+                                    value="interactive" 
+                                    checked={quizMeta.contentType !== "pdf"} 
+                                    onChange={handleMetaChange} 
+                                  />
+                                  Interactive Quiz
+                                </label>
+                                <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13px" }}>
+                                  <input 
+                                    type="radio" 
+                                    name="contentType" 
+                                    value="pdf" 
+                                    checked={quizMeta.contentType === "pdf"} 
+                                    onChange={handleMetaChange} 
+                                  />
+                                  PDF Document
+                                </label>
+                              </div>
+                            </div>
+                          )}
+
+                          {quizMeta.contentType === "pdf" && (
+                            <div className="form-field" style={{ background: "rgba(239, 68, 68, 0.05)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+                              <label style={{ display: "block", marginBottom: "8px", color: "#EF4444", fontWeight: "600" }}>Upload PYQ PDF</label>
+                              <input type="file" accept="application/pdf" onChange={handlePdfUpload} />
+                              {quizMeta.pdfFileName && (
+                                <div style={{ marginTop: "8px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                                  <strong>Uploaded:</strong> {quizMeta.pdfFileName}
+                                </div>
+                              )}
+                              <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "12px", marginTop: "12px" }}>
+                                <input 
+                                  type="checkbox" 
+                                  name="allowDownload" 
+                                  checked={quizMeta.allowDownload || false} 
+                                  onChange={(e) => setQuizMeta(prev => ({ ...prev, allowDownload: e.target.checked }))} 
+                                />
+                                Allow Students to Download PDF
+                              </label>
+                            </div>
+                          )}
+
+                          <div className="form-field">
+                            <label>Test Format (e.g. Full Paper, Subject-wise)</label>
+                            <input 
+                              type="text" 
+                              name="testFormat" 
+                              value={quizMeta.testFormat || ""} 
+                              onChange={handleMetaChange} 
+                              list="testFormatsList" 
+                              placeholder="Select or type..." 
+                            />
+                            <datalist id="testFormatsList">
+                              {taxonomies.testFormat?.map(t => <option key={t} value={t} />)}
+                              <option value="Full Paper" />
+                              <option value="Subject-wise" />
+                              <option value="Chapter-wise" />
+                            </datalist>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Year (Optional, usually for PYQs)</label>
+                            <input
+                              type="number"
+                              name="pyqYear"
+                              value={quizMeta.pyqYear || ""}
+                              onChange={(e) => setQuizMeta((prev) => ({ ...prev, pyqYear: e.target.value ? Number(e.target.value) : null }))}
+                              list="yearsList"
+                              placeholder="e.g. 2025"
+                            />
+                            <datalist id="yearsList">
+                              {taxonomies.year?.map(t => <option key={t} value={t} />)}
+                            </datalist>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Shift (Optional)</label>
+                            <input 
+                              type="text" 
+                              name="shift" 
+                              value={quizMeta.shift || ""} 
+                              onChange={handleMetaChange} 
+                              list="shiftsList" 
+                              placeholder="e.g. Shift 1" 
+                            />
+                            <datalist id="shiftsList">
+                              {taxonomies.shift?.map(t => <option key={t} value={t} />)}
+                              <option value="Shift 1" />
+                              <option value="Shift 2" />
+                            </datalist>
+                          </div>
+
+                          <div className="form-field">
+                            <label>Topic / Chapter (Optional)</label>
+                            <input 
+                              type="text" 
+                              name="topicName" 
+                              value={quizMeta.topicName || ""} 
+                              onChange={handleMetaChange} 
+                              placeholder="e.g. Number System" 
+                            />
+                          </div>
+                        </>
+                      )}
                       <div className="form-field">
                         <label>Duration</label>
                         <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
@@ -1787,6 +2138,7 @@ function CreateQuiz() {
 
               </div>
               {/* Questions Builder */}
+              {quizMeta.contentType !== "pdf" && (
               <div className="form-card header-questions-card">
                   <div
                     className="questions-title-row"
@@ -2010,7 +2362,7 @@ function CreateQuiz() {
                     </>
                   )}
                 </div>
-
+              )}
             </div>
 
             {/* Bottom Actions */}

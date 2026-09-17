@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import { useExam } from "../context/ExamContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown, Loader2 } from "lucide-react";
 import "../css/StudentDashboard.css";
@@ -10,6 +11,7 @@ import "../css/MyExams.css";
 
 function MyExams() {
   const navigate = useNavigate();
+  const { selectedExam, selectedStructure, selectedSubject, openChangeExamModal } = useExam();
   const [seriesList, setSeriesList] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,9 +25,19 @@ function MyExams() {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+        // Build query params for structure/subject filtering
+        const params = new URLSearchParams();
+        if (selectedStructure && selectedStructure._id) {
+          params.set("examStructureId", selectedStructure._id);
+        }
+        if (selectedSubject) {
+          params.set("subjectName", selectedSubject);
+        }
+        const qs = params.toString();
+
         // Fetch ALL series + their published quizzes in ONE request
         const seriesRes = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/exam-series/with-quizzes`,
+          `${import.meta.env.VITE_API_URL}/api/exam-series/with-quizzes${qs ? `?${qs}` : ""}`,
           { headers }
         );
 
@@ -72,7 +84,7 @@ function MyExams() {
       }
     };
     fetchData();
-  }, []);
+  }, [selectedExam, selectedStructure, selectedSubject]);
 
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -115,9 +127,9 @@ function MyExams() {
   // Attempt status lookup
   const attemptedQuizIds = results.map(r => r.quizId).filter(Boolean);
 
-  // Stats calculation - only show series that have at least 1 paper
-  const validSeriesList = seriesList.filter(s => (s.paperCount || 0) > 0);
-  const totalSeriesCount = validSeriesList.length;
+    // Stats calculation - only show series that have at least 1 paper or 1 flashcard set
+    const validSeriesList = seriesList.filter(s => (s.paperCount || 0) > 0 || (s.flashcardCount || 0) > 0);
+    const totalSeriesCount = validSeriesList.length;
   
   // A series is completed if all its child quizzes have been attempted (and it has quizzes)
   const completedSeries = validSeriesList.filter(series => 
@@ -139,6 +151,12 @@ function MyExams() {
 
   // Filter list based on active tab
   let displayedSeries = validSeriesList;
+
+  // Selected Exam Context Filter
+  if (selectedExam && selectedExam._id) {
+    displayedSeries = displayedSeries.filter(series => series._id === selectedExam._id || series.title?.toLowerCase() === selectedExam.title?.toLowerCase());
+  }
+
   if (activeTab === "Upcoming") displayedSeries = upcomingSeries;
   if (activeTab === "Ongoing") displayedSeries = ongoingSeries;
   if (activeTab === "Completed") displayedSeries = completedSeries;
@@ -492,12 +510,36 @@ function MyExams() {
 
               {/* EMPTY STATE */}
               {displayedSeries.length === 0 && (
-                <motion.div variants={itemVariants} className="me-empty-state">
-                  <div className="me-empty-icon">
+                <motion.div variants={itemVariants} className="me-empty-state" style={{ padding: "48px 24px" }}>
+                  <div className="me-empty-icon" style={{ margin: "0 auto 16px auto" }}>
                     <FileText size={40} />
                   </div>
-                  <h3 className="me-empty-title">No Exam Series Available</h3>
-                  <p className="me-empty-desc">There are currently no mock series published matching your criteria.</p>
+                  <h3 className="me-empty-title">
+                    {!selectedExam ? "No Target Exam Selected" : `No Content for ${selectedExam.title}`}
+                  </h3>
+                  <p className="me-empty-desc" style={{ maxWidth: "440px", margin: "8px auto 20px auto" }}>
+                    {!selectedExam
+                      ? "Select your target exam (CTET, UPTET, SSC, BPSC, etc.) to view tailored exam series and practice tests."
+                      : `There are currently no mock series published under ${selectedExam.title}.`}
+                  </p>
+                  <button
+                    onClick={openChangeExamModal}
+                    style={{
+                      padding: "10px 22px",
+                      borderRadius: "10px",
+                      background: "var(--violet, #6E3FF3)",
+                      color: "#ffffff",
+                      border: "none",
+                      fontWeight: "700",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px"
+                    }}
+                  >
+                    {!selectedExam ? "Select Target Exam" : "Switch Target Exam"}
+                  </button>
                 </motion.div>
               )}
 
@@ -518,7 +560,7 @@ function MyExams() {
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => navigate(`/student/exams/${series._id}`)}
-                            style={{ cursor: "pointer" }}
+                            style={{ cursor: "pointer", height: "100%" }}
                           >
                             {/* Top row: subject badge + completion status */}
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
@@ -580,7 +622,7 @@ function MyExams() {
                             {/* Button */}
                             <button
                               className="me-btn-primary"
-                              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "auto" }}
                             >
                               View Papers <ChevronRight size={14} />
                             </button>

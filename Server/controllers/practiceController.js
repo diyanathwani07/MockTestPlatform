@@ -3,6 +3,7 @@ const PracticeSession = require("../models/PracticeSession");
 const { GoogleGenAI, Type } = require("@google/genai");
 const logAction = require("../utils/logger");
 const { notifyAllStudents, notifyContentTeamSlack } = require("../services/notificationService");
+const applyExamFilters = require("../utils/applyExamFilters");
 
 // @desc    Get all practice quizzes
 // @route   GET /api/practice
@@ -14,6 +15,11 @@ const getPracticeQuizzes = async (req, res) => {
       filter.isDeleted = true;
     } else {
       filter.isDeleted = { $ne: true };
+    }
+
+    applyExamFilters(filter, req.query);
+    if (req.query.subject) {
+      filter.subject = req.query.subject;
     }
 
     // Only show published practice tests to regular students

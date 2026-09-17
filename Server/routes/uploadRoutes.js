@@ -19,4 +19,19 @@ router.post(
   uploadController.uploadProfilePicture
 );
 
+// POST /api/upload/pdf (or wherever this is mounted)
+router.post(
+  "/pdf",
+  authMiddleware.protect,
+  (req, res, next) => {
+    uploadMiddleware.single("file")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      next();
+    });
+  },
+  uploadController.uploadPdfFile
+);
+
 module.exports = router;

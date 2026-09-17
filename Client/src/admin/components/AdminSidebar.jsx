@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
-  LineChart, FileText, LifeBuoy, Menu, X, Bot, BookOpen, Shield, LogOut, Sparkles, Palette
+  LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: "/admin/create-quiz",    icon: Edit3,           label: "Create Quiz",         permission: "create_quiz" },
   { to: "/admin/manage-quizzes", icon: ClipboardList,   label: "Manage Quizzes",      permission: "edit_quiz" },
   { to: "/admin/practice",       icon: BookOpen,        label: "Practice Modules",    permission: "manage_practice_tests" },
+  { to: "/admin/flashcards",     icon: Layers,          label: "Flashcards",          permission: "edit_quiz" },
   { to: "/admin/questions",      icon: HelpCircle,      label: "Questions",           permission: "manage_questions" },
   { to: "/admin/users",          icon: Users,           label: "Users",               permission: "manage_users" },
   { to: "/admin/ai-plans",       icon: Sparkles, Palette,        label: "AI Plans",            permission: "manage_ai_plans" },
