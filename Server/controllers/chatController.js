@@ -72,7 +72,7 @@ const chatSupport = async (req, res) => {
         2. If the user asks about unrelated topics (e.g., coding, general knowledge, outside news, etc.), politely refuse to answer and redirect them back to platform-related help.
         3. If you do not know the answer to a platform-related question, or if they need human assistance, say so and set offerTicket to true.
         4. If the user asks how to access or navigate to a certain section, explain it briefly and provide the appropriate navigation path in 'navigateTo'.
-        5. Valid student navigation paths are: "/dashboard", "/dashboard/exams", "/dashboard/practice", "/dashboard/results", "/dashboard/support", "/dashboard/profile".
+        5. Valid student navigation paths are: "/dashboard", "/dashboard/exams", "/dashboard/practice", "/dashboard/results", "/dashboard/help", "/dashboard/profile".
         6. If no navigation is needed, set 'navigateTo' to null.
         7. Keep your responses concise, friendly, and highly helpful.
       `;

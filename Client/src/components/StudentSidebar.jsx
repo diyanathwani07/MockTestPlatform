@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import StudentBottomNav from "./StudentBottomNav";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard, Palette, RefreshCw } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard, Palette, RefreshCw, PanelLeft } from "lucide-react";
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
@@ -12,7 +12,7 @@ import PixelSnow from "./shadcn-space/animations/PixelSnow";
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { collapsed } = useSidebar();
+  const { collapsed, toggleSidebarCollapse } = useSidebar();
   const { selectedExam, selectedStructure, selectedSubject, openChangeExamModal } = useExam();
 
   // ── Read from cache first so sidebar never flickers on navigation ──
@@ -125,8 +125,38 @@ function StudentSidebar() {
           />
         </div>
 
-        <div className="sidebar-logo" style={{ justifyContent: "center", padding: "0 16px", position: "relative", zIndex: 2 }}>
-          <Logo />
+        <div className="sidebar-logo" style={{ display: "flex", justifyContent: collapsed ? "center" : "space-between", alignItems: "center", padding: collapsed ? "0" : "0 16px", position: "relative", zIndex: 2, height: "64px" }}>
+          {!collapsed && <Logo />}
+          
+          <button
+            onClick={toggleSidebarCollapse}
+            title="Toggle Sidebar (Ctrl+B)"
+            aria-label="Toggle Sidebar"
+            className="hidden sm:inline-flex"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+              background: collapsed ? "var(--violet, #6E3FF3)" : "transparent",
+              color: collapsed ? "#ffffff" : "var(--text-secondary)",
+              cursor: "pointer",
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              padding: 0,
+              flexShrink: 0
+            }}
+            onMouseEnter={(e) => {
+              if (!collapsed) e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
+            }}
+            onMouseLeave={(e) => {
+              if (!collapsed) e.currentTarget.style.background = "transparent";
+            }}
+          >
+            <PanelLeft size={16} />
+          </button>
         </div>
 
         <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>

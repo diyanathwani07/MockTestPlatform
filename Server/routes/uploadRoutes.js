@@ -34,4 +34,19 @@ router.post(
   uploadController.uploadPdfFile
 );
 
+// POST /api/upload/image (or wherever this is mounted)
+router.post(
+  "/image",
+  authMiddleware.protect,
+  (req, res, next) => {
+    uploadMiddleware.single("image")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      next();
+    });
+  },
+  uploadController.uploadGenericImage
+);
+
 module.exports = router;

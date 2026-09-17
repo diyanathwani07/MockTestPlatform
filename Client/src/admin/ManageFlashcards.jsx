@@ -15,19 +15,22 @@ function ManageFlashcards() {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ front: "", back: "", explanation: "", difficulty: "Medium", order: 0 });
+  const [formData, setFormData] = useState({ front: "", back: "", explanation: "", difficulty: "Medium", order: 0, imageUrl: "" });
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const fetchSetAndCards = async () => {
     try {
       const token = localStorage.getItem("token");
-      const resSet = await axios.get(`${import.meta.env.VITE_API_URL}/api/flashcards/sets/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      setSetMeta(resSet.data);
-      
-      const resCards = await axios.get(`${import.meta.env.VITE_API_URL}/api/flashcards/sets/${id}/cards`, { headers: { Authorization: `Bearer ${token}` } });
-      setCards(resCards.data);
+      const [metaRes, cardsRes] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_URL}/api/flashcards/admin/sets/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/flashcards/admin/sets/${id}/cards`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      setSetMeta(metaRes.data);
+      setCards(cardsRes.data);
     } catch (err) {
       console.error(err);
+      alert("Failed to load flashcard set data.");
     } finally {
       setLoading(false);
     }
@@ -38,12 +41,38 @@ function ManageFlashcards() {
   const handleOpenForm = (card = null) => {
     if (card) {
       setEditingId(card._id);
-      setFormData({ front: card.front, back: card.back, explanation: card.explanation || "", difficulty: card.difficulty || "Medium", order: card.order || 0 });
+      setFormData({ front: card.front, back: card.back, explanation: card.explanation || "", difficulty: card.difficulty || "Medium", order: card.order || 0, imageUrl: card.imageUrl || "" });
     } else {
       setEditingId(null);
-      setFormData({ front: "", back: "", explanation: "", difficulty: "Medium", order: cards.length + 1 });
+      setFormData({ front: "", back: "", explanation: "", difficulty: "Medium", order: cards.length + 1, imageUrl: "" });
     }
     setIsFormOpen(true);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const data = new FormData();
+    data.append("image", file);
+    data.append("folder", "flashcards");
+
+    setIsUploading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/image`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      setFormData(prev => ({ ...prev, imageUrl: res.data.imageUrl }));
+    } catch (err) {
+      console.error("Image upload failed", err);
+      alert("Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCloseForm = () => {
@@ -163,6 +192,16 @@ function ManageFlashcards() {
                   <div className="form-field" style={{ marginBottom: "12px" }}>
                     <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Explanation (Optional)</label>
                     <textarea rows={2} value={formData.explanation} onChange={(e) => setFormData({...formData, explanation: e.target.value})} style={{ padding: "10px", fontSize: "13px" }} />
+                  </div>
+                  <div className="form-field" style={{ marginBottom: "12px" }}>
+                    <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Card Image (Optional)</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <input type="file" accept="image/*" onChange={handleImageUpload} style={{ fontSize: "13px" }} />
+                      {isUploading && <span style={{ fontSize: "12px", color: "var(--violet)" }}>Uploading...</span>}
+                      {formData.imageUrl && !isUploading && (
+                        <a href={formData.imageUrl} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "var(--text-primary)" }}>View Image</a>
+                      )}
+                    </div>
                   </div>
                   <div style={{ display: "flex", gap: "16px" }}>
                     <div className="form-field" style={{ flex: 1, marginBottom: 0 }}>

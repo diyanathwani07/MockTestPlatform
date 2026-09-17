@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, CheckCircle, RotateCcw, Book, Square, Eye, ArrowRight } from "lucide-react";
+import { ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, CheckCircle, RotateCcw, Book, Square, Eye, ArrowRight, Sun, Moon, Palette, Shuffle } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 import "../css/StudentDashboard.css"; // Reuse existing styles
 
 function FlashcardStudyView() {
   const { setId } = useParams();
   const navigate = useNavigate();
+  const { isDark, toggleTheme, toggleThemePicker } = useTheme();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const [setMeta, setSetMeta] = useState(null);
   const [cards, setCards] = useState([]);
   const [progress, setProgress] = useState([]);
@@ -16,6 +19,19 @@ function FlashcardStudyView() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [isShuffled, setIsShuffled] = useState(false);
+  
+  const toggleShuffle = () => {
+    if (!isShuffled) {
+      setCards(prev => [...prev].sort(() => Math.random() - 0.5));
+      setIsShuffled(true);
+    } else {
+      setCards(prev => [...prev].sort((a, b) => (a.order || 0) - (b.order || 0)));
+      setIsShuffled(false);
+    }
+    setCurrentIndex(0);
+    setIsFlipped(false);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -167,19 +183,55 @@ function FlashcardStudyView() {
 
         {/* Center: Icon + Title */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", transform: "translateX(-20px)" }}>
-          <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "rgba(110,63,243,0.1)", color: "var(--violet, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--violet, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
              <Book size={28} />
           </div>
           <div style={{ textAlign: "left" }}>
             <h1 style={{ margin: 0, fontSize: "22px", fontWeight: "700", color: "var(--text-primary)" }}>{setMeta.title}</h1>
-            <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "var(--text-secondary)" }}>{setMeta.subjectName || "Subject"} • {activeCards.length} cards</p>
+            <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "var(--text-secondary)" }}>{setMeta.subjectName || "Subject"}</p>
           </div>
         </div>
 
-        {/* Right: End Session */}
-        <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px 16px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-card-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-card)"}>
-          <Square size={14} fill="var(--text-primary)" /> End Session
-        </button>
+        {/* Right: Controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          
+          {/* User Profile */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingRight: "16px", borderRight: "1px solid var(--border-color)" }}>
+            {user?.profilePicture || user?.avatar ? (
+              <img src={user.profilePicture || user.avatar} alt="Profile" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+            ) : (
+              <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", fontSize: "14px" }}>
+                {(user?.name || "S").substring(0, 1).toUpperCase()}
+              </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{user?.name || "Student"}</span>
+              <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{user?.role === "admin" ? "Admin" : "Student"}</span>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* Shuffle Cards */}
+            <button onClick={toggleShuffle} title="Shuffle Cards" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: isShuffled ? "var(--accent-bg, rgba(110,63,243,0.1))" : "var(--bg-card)", border: "1px solid", borderColor: isShuffled ? "var(--accent, #6E3FF3)" : "var(--border-color)", color: isShuffled ? "var(--accent, #6E3FF3)" : "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={(e) => !isShuffled && (e.currentTarget.style.background = "var(--bg-card-hover)")} onMouseLeave={(e) => !isShuffled && (e.currentTarget.style.background = "var(--bg-card)")}>
+              <Shuffle size={16} />
+            </button>
+
+            {/* Palette Picker */}
+            <button onClick={toggleThemePicker} title="Theme Palette" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-card-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-card)"}>
+              <Palette size={16} />
+            </button>
+            
+            {/* Light/Dark Toggle */}
+            <button onClick={toggleTheme} title="Toggle Light/Dark Mode" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-card-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-card)"}>
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            {/* End Session */}
+            <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px 16px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-card-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-card)"}>
+              <Square size={14} fill="var(--text-primary)" /> End Session
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Progress Row */}
@@ -247,9 +299,12 @@ function FlashcardStudyView() {
                   justifyContent: "center",
                   transform: "rotateY(0deg)"
                 }}>
-                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "rgba(110,63,243,0.1)", color: "var(--violet, #6E3FF3)", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
+                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
                     Front
                   </div>
+                  {currentCard?.imageUrl && (
+                    <img src={currentCard.imageUrl} alt="Card Front" style={{ maxWidth: "100%", maxHeight: "250px", objectFit: "contain", marginBottom: "24px", borderRadius: "8px" }} />
+                  )}
                   <div style={{ fontSize: "28px", fontWeight: "700", lineHeight: "1.5", color: "var(--text-primary)" }}>
                     {currentCard?.front}
                   </div>
@@ -270,9 +325,12 @@ function FlashcardStudyView() {
                   justifyContent: "center",
                   transform: "rotateY(180deg)"
                 }}>
-                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "rgba(110,63,243,0.1)", color: "var(--violet, #6E3FF3)", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
+                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
                     Answer
                   </div>
+                  {currentCard?.imageUrl && (
+                    <img src={currentCard.imageUrl} alt="Card Answer" style={{ maxWidth: "100%", maxHeight: "180px", objectFit: "contain", marginBottom: "20px", borderRadius: "8px" }} />
+                  )}
                   <div style={{ fontSize: "22px", fontWeight: "500", lineHeight: "1.6", color: "var(--text-primary)" }}>
                     {currentCard?.back}
                   </div>
@@ -300,7 +358,7 @@ function FlashcardStudyView() {
               {/* CENTER CONTROLS (FLIP OR LEARNING/KNOWN) */}
               <div style={{ flex: 2, maxWidth: "400px", position: "relative", display: "flex", gap: "16px", justifyContent: "center" }}>
                 {!isFlipped ? (
-                  <button onClick={handleFlip} style={{ width: "100%", padding: "16px", borderRadius: "30px", background: "var(--violet, #6E3FF3)", border: "none", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontWeight: "600", fontSize: "16px", cursor: "pointer", boxShadow: "0 8px 20px rgba(110,63,243,0.3)" }}>
+                  <button onClick={handleFlip} style={{ width: "100%", padding: "16px", borderRadius: "30px", background: "var(--violet, #6E3FF3)", border: "none", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontWeight: "600", fontSize: "16px", cursor: "pointer", boxShadow: "0 8px 20px var(--accent-border, rgba(110,63,243,0.3))" }}>
                     <Eye size={20} /> Flip
                   </button>
                 ) : (

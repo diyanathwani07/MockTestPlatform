@@ -20,36 +20,6 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "12px", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
-        {/* Toggle Sidebar Button */}
-        <button
-          onClick={toggleSidebarCollapse}
-          title="Toggle Sidebar (Ctrl+B)"
-          aria-label="Toggle Sidebar"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "34px",
-            height: "34px",
-            borderRadius: "8px",
-            border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-            background: collapsed ? "var(--violet, #6E3FF3)" : "var(--bg-input, rgba(255,255,255,0.05))",
-            color: collapsed ? "#ffffff" : "var(--text-primary, #ffffff)",
-            cursor: "pointer",
-            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            padding: 0,
-            flexShrink: 0
-          }}
-          onMouseEnter={(e) => {
-            if (!collapsed) e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
-          }}
-          onMouseLeave={(e) => {
-            if (!collapsed) e.currentTarget.style.background = "var(--bg-input, rgba(255,255,255,0.05))";
-          }}
-        >
-          <PanelLeft size={18} />
-        </button>
-
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"
