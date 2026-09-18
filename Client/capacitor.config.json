@@ -1,6 +1,6 @@
 {
   "appId": "com.mocktest.platform",
-  "appName": "Mock Test Platform",
+  "appName": "PrepMark",
   "webDir": "dist",
   "plugins": {
     "CapacitorHttp": {

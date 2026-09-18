@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
+import { GraduationCap } from 'lucide-react';
 
 const Logo = ({ size = "normal" }) => {
-  const [imgError, setImgError] = useState(false);
-
   const styles = {
     normal: {
       imgHeight: '32px',
@@ -22,45 +21,31 @@ const Logo = ({ size = "normal" }) => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: current.gap, userSelect: 'none' }}>
-      {!imgError ? (
-        <img 
-          src="/logo.png" 
-          alt="Teaching Pariksha Logo" 
-          width={size === "large" ? "150" : "100"}
-          height={size === "large" ? "48" : "32"}
-          style={{ height: current.imgHeight, width: size === "large" ? "150px" : "100px", display: 'block' }} 
-          onError={() => setImgError(true)}
+      <>
+        <GraduationCap 
+          color="#fbbf24" 
+          size={size === "large" ? 48 : 32} 
         />
-      ) : (
-        <>
-          <img 
-            src="/logo.svg" 
-            alt="Logo" 
-            width={size === "large" ? "48" : "32"}
-            height={size === "large" ? "48" : "32"}
-            style={{ height: current.imgHeight, width: current.imgHeight, display: 'block' }} 
-          />
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: '1.1' }}>
-            <span style={{ 
-              color: '#8b5cf6', 
-              fontWeight: 800, 
-              fontSize: current.topSize, 
-              letterSpacing: '1px',
-              fontFamily: 'system-ui, sans-serif'
-            }}>
-              TEACHING
-            </span>
-            <span style={{ 
-              color: '#fbbf24', 
-              fontWeight: 700, 
-              fontSize: current.bottomSize,
-              fontFamily: 'system-ui, sans-serif'
-            }}>
-              परीक्षा
-            </span>
-          </div>
-        </>
-      )}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: '1.1' }}>
+          <span style={{ 
+            color: '#ffffff', 
+            fontWeight: 800, 
+            fontSize: current.topSize, 
+            letterSpacing: '0.5px',
+            fontFamily: 'system-ui, sans-serif'
+          }}>
+            Prep
+          </span>
+          <span style={{ 
+            color: '#fbbf24', 
+            fontWeight: 700, 
+            fontSize: current.topSize,
+            fontFamily: 'system-ui, sans-serif'
+          }}>
+            Mark
+          </span>
+        </div>
+      </>
     </div>
   );
 };

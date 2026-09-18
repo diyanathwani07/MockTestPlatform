@@ -165,7 +165,7 @@ function PricingPlans() {
                       {/* Name & description */}
                       <h4 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "var(--text-primary)" }}>{plan.name}</h4>
                       <p style={{ margin: "8px 0 0 0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5", minHeight: "45px" }}>
-                        {plan.description || "Unlock high-quality AI practice quizzes designed by Teaching Pariksha."}
+                        {plan.description || "Unlock high-quality AI practice quizzes designed by PrepMark."}
                       </p>
 
                       {/* Price info */}

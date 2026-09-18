@@ -187,7 +187,7 @@ function AdminDashboard() {
     { rank: 1, name: "BPSC Mock Test 5", attempts: 1245 },
     { rank: 2, name: "The Loop Exam", attempts: 982 },
     { rank: 3, name: "JEE Main Final 1", attempts: 875 },
-    { rank: 4, name: "Teaching Pariksha Aptitude", attempts: 740 },
+    { rank: 4, name: "PrepMark Aptitude", attempts: 740 },
     { rank: 5, name: "Quantitative Aptitude Test", attempts: 654 }
   ];
 

@@ -58,6 +58,9 @@ import AiSubscribers from "./admin/AiSubscribers";
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
 import { SocketProvider } from "./context/SocketContext";
+import TermsConditions from "./Pages/TermsConditions";
+import PrivacyPolicy from "./Pages/PrivacyPolicy";
+import RefundPolicy from "./Pages/RefundPolicy";
 
 function App() {
   return (
@@ -67,6 +70,9 @@ function App() {
 
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
 
         <Route
           path="/dashboard"

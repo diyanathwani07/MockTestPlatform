@@ -5,6 +5,7 @@ import Logo from "../components/Logo";
 import { useTheme } from "../context/ThemeContext";
 import { Sun, Moon, Eye, EyeOff, User, Phone, Mail, Lock, MapPin, Map, ArrowRight } from "lucide-react";
 import BorderGlow from "../components/BorderGlow";
+import SimpleFooter from "../components/SimpleFooter";
 import "../css/Login.css";
 import "../css/Register.css";
 
@@ -72,6 +73,7 @@ function Register() {
   };
 
   return (
+    <>
     <div className="login-page">
       {/* SVG Gradients definition */}
       <svg style={{ width: 0, height: 0, position: 'absolute' }}>
@@ -312,6 +314,8 @@ function Register() {
         </div>
       </BorderGlow>
     </div>
+    <SimpleFooter />
+    </>
   );
 }
 

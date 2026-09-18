@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, In
 import ThemeToggle from "../ThemeToggle";
 import AvatarPickerModal from "../AvatarPickerModal";
 import Logo from "../Logo";
+import SimpleFooter from "../SimpleFooter";
 
 export default function MobileProfileFlow({
   user,
@@ -172,9 +173,13 @@ export default function MobileProfileFlow({
           <MenuItem 
             icon={<Info size={18} />} 
             title="About Us" 
-            subtitle="Learn more about Teaching Pariksha" 
+            subtitle="Learn more about PrepMark" 
             onClick={() => setActiveScreen("about")} 
           />
+        </div>
+        
+        <div style={{ marginTop: "32px", paddingBottom: "24px", display: "flex", justifyContent: "center" }}>
+          <SimpleFooter />
         </div>
       </div>
       
@@ -865,16 +870,16 @@ export default function MobileProfileFlow({
           </h2>
 
           <p style={{ fontSize: "14px", lineHeight: "1.7", color: "var(--text-primary, #ffffff)", margin: "0 0 12px 0", fontWeight: "500" }}>
-            Teaching Pariksha helps you to prepare for all teaching exams. यहाँ आपका शिक्षक बनने का सपना होता है साकार!
+            PrepMark helps you prepare for all competitive exams. We are dedicated to providing the best mock tests for real progress.
           </p>
 
           <p style={{ fontSize: "14px", lineHeight: "1.7", color: "var(--text-secondary, #cbd5e1)", margin: "0 0 20px 0" }}>
-            Our goal is to provide high-quality educational content that will help you to ace your Teaching Examinations.
+            Our goal is to provide high-quality educational content and mock tests that will help you to ace your examinations.
           </p>
 
           <div style={{ margin: "0 0 18px 0" }}>
             <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--violet, #8b5cf6)", margin: "0 0 10px 0" }}>
-              Teaching Pariksha YouTube channel में आपको मिलेगा:
+              PrepMark YouTube channel में आपको मिलेगा:
             </h4>
             <a 
               href="https://www.youtube.com/@teachingpariksha" 
@@ -912,7 +917,7 @@ export default function MobileProfileFlow({
               <strong>Quality Live Classes</strong> for CTET, UPTET, REET, DSSSB, KVS, BPSC Bihar Teacher और अन्य Teaching Exams की लाइव Classes.
             </li>
             <li>
-              Teaching Pariksha Members की <strong>Expert Guidance</strong> से आपको मिलेगी, आपकी Preparation में मदद!
+              PrepMark Members की <strong>Expert Guidance</strong> से आपको मिलेगी, आपकी Preparation में मदद!
             </li>
             <li>
               हर Teaching Exam Analysis और Expected Cut-off !
