@@ -96,6 +96,9 @@ const allowedOrigins = [
   "http://localhost",
   "capacitor://localhost",
   "https://mocktestplatform-lac.vercel.app",
+  "https://prepmark.vercel.app",
+  "https://prepmark.com",
+  "https://www.prepmark.com",
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL
 ].filter(Boolean);
