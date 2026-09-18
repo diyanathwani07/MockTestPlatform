@@ -112,6 +112,7 @@ function PhonePeGateway({ quiz, amount, planMonths, onClose, onSuccess, type = "
       clearInterval(interval);
       try {
         const token = localStorage.getItem("token");
+        const redirectUrl = `https://prepmark.vercel.app/profile?payment=success`; // Prod fallback
         if (type === "ai-plan") {
           await axios.post(
             `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribe`,

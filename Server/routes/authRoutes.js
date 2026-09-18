@@ -48,12 +48,12 @@ router.post("/forgot-password", passwordRecoveryLimiter, async (req, res) => {
       // Send OTP email with timeout protection
       const emailPromise = sendEmail({
         email,
-        subject: "Teaching Pariksha - Password Reset OTP",
+        subject: "PrepMark - Password Reset OTP",
         message: `
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px;">
             <div style="background: white; border-radius: 12px; padding: 24px 16px; text-align: center;">
               <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">
-                <img src="${req.protocol}://${req.get('host')}/uploads/logo.png" alt="Teaching Pariksha Logo" style="height: 36px; width: auto; vertical-align: middle;" />
+                <img src="${req.protocol}://${req.get('host')}/uploads/logo.png" alt="PrepMark Logo" style="height: 36px; width: auto; vertical-align: middle;" />
               </div>
               <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Password Reset Request</p>
               <div style="background: #f1f5f9; border-radius: 8px; padding: 20px 8px; margin-bottom: 24px;">
