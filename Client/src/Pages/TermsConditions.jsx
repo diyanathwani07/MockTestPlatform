@@ -48,7 +48,7 @@ export default function TermsConditions() {
         >
           <ArrowLeft size={20} /> Back
         </button>
-        <h1 style={{ fontSize: '32px', color: 'var(--violet, #A78BFA)', marginBottom: '40px' }}>Terms and Conditions</h1>
+        <h1 style={{ textAlign: 'center',  fontSize: '32px', color: 'var(--violet, #A78BFA)', marginBottom: '40px' }}>Terms and Conditions</h1>
       </div>
 
       <div style={{ maxWidth: '1400px', margin: '0', display: 'flex', padding: '0 20px 60px', gap: '40px', alignItems: 'flex-start' }}>
