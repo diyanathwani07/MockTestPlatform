@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function RefundPolicy() {
   const navigate = useNavigate();
@@ -36,6 +38,11 @@ export default function RefundPolicy() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-page, #0f0f13)', color: 'var(--text-primary, #ffffff)' }}>
+      {/* Brand Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid var(--border-color, #2d2d30)' }}>
+        <Logo size="normal" />
+        <ThemeToggle />
+      </div>
       {/* Header Area */}
       <div style={{ padding: '40px 20px 20px', maxWidth: '1400px', margin: '0' }}>
         <button 
@@ -44,8 +51,8 @@ export default function RefundPolicy() {
         >
           <ArrowLeft size={20} /> Back
         </button>
-        <h1 style={{ textAlign: 'center',  fontSize: '32px', marginBottom: '8px', color: 'var(--violet, #A78BFA)' }}>Refunds & Cancellation Policy</h1>
-        <p style={{ textAlign: 'center', color: 'var(--text-secondary, #9ca3af)', marginBottom: '40px', fontSize: '14px' }}>Last updated: January 1, 2025 · Effective for all purchases made on or after this date</p>
+        <h1 style={{ textAlign: 'center', paddingLeft: '320px',  fontSize: '32px', marginBottom: '8px', color: 'var(--violet, #A78BFA)' }}>Refunds & Cancellation Policy</h1>
+        <p style={{ textAlign: 'center', paddingLeft: '320px', color: 'var(--text-secondary, #9ca3af)', marginBottom: '40px', fontSize: '14px' }}>Last updated: January 1, 2025 · Effective for all purchases made on or after this date</p>
       </div>
 
       <div style={{ maxWidth: '1400px', margin: '0', display: 'flex', padding: '0 20px 60px', gap: '40px', alignItems: 'flex-start' }}>
@@ -114,3 +121,4 @@ export default function RefundPolicy() {
     </div>
   );
 }
+
