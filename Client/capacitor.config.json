@@ -1,5 +1,5 @@
 {
-  "appId": "com.mocktest.platform",
+  "appId": "com.prepmark.app",
   "appName": "PrepMark",
   "webDir": "dist",
   "plugins": {
