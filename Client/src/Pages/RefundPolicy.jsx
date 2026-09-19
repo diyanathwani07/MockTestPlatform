@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,7 +45,7 @@ export default function RefundPolicy() {
           <ArrowLeft size={20} /> Back
         </button>
         <h1 style={{ fontSize: '32px', marginBottom: '8px', color: 'var(--violet, #A78BFA)' }}>Refunds & Cancellation Policy</h1>
-        <p style={{ color: 'var(--text-secondary, #9ca3af)', marginBottom: '40px', fontSize: '14px' }}>Last updated: January 1, 2025 · Effective for all purchases made on or after this date</p>
+        <p style={{ color: 'var(--text-secondary, #9ca3af)', marginBottom: '40px', fontSize: '14px' }}>Last updated: January 1, 2025 � Effective for all purchases made on or after this date</p>
       </div>
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', padding: '0 20px 60px', gap: '40px', alignItems: 'flex-start' }}>
@@ -104,13 +104,13 @@ export default function RefundPolicy() {
 
         </div>
       </div>
-      <style>{
+      <style>{`
         @media (min-width: 768px) {
           .legal-sidebar {
             display: block !important;
           }
         }
-      }</style>
+      `}</style>
     </div>
   );
 }

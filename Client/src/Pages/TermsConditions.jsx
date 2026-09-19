@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -137,13 +137,13 @@ export default function TermsConditions() {
 
         </div>
       </div>
-      <style>{
+      <style>{`
         @media (min-width: 768px) {
           .legal-sidebar {
             display: block !important;
           }
         }
-      }</style>
+      `}</style>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-Ôªøimport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,7 +13,7 @@ export default function PrivacyPolicy() {
     { id: 'use', title: 'Use of Your Personal Data' },
     { id: 'retention', title: 'Retention & Transfer' },
     { id: 'disclosure', title: 'Disclosure of Your Data' },
-    { id: 'children', title: 'Children\\'s Privacy' },
+    { id: 'children', title: "Children's Privacy" },
     { id: 'links', title: 'Links to Other Websites' },
     { id: 'changes', title: 'Changes to This Policy' }
   ];
@@ -103,8 +103,8 @@ export default function PrivacyPolicy() {
             <p style={{ marginBottom: '16px' }}>For the purposes of this Privacy Policy:</p>
             <ul style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <li><strong>You</strong> means the individual accessing or using the Service, or the company, or other legal entity on behalf of which such individual is accessing or using the Service, as applicable.</li>
-              <li><strong>Company</strong> (referred to as either ‚Äúthe Company‚Äù, ‚ÄúWe‚Äù, ‚ÄúUs‚Äù or ‚ÄúOur‚Äù in this Agreement) refers to PrepMark (prepmark.vercel.app).</li>
-              <li><strong>Affiliate</strong> means an entity that controls, is controlled by or is under common control with a party, where ‚Äúcontrol‚Äù means ownership of 50% or more of the shares, equity interest or other securities entitled to vote for election of directors or other managing authority.</li>
+              <li><strong>Company</strong> (referred to as either ìthe Companyî, ìWeî, ìUsî or ìOurî in this Agreement) refers to PrepMark (prepmark.vercel.app).</li>
+              <li><strong>Affiliate</strong> means an entity that controls, is controlled by or is under common control with a party, where ìcontrolî means ownership of 50% or more of the shares, equity interest or other securities entitled to vote for election of directors or other managing authority.</li>
               <li><strong>Account</strong> means a unique account created for You to access our Service or parts of our Service.</li>
               <li><strong>Website</strong> refers to PrepMark, accessible from prepmark.vercel.app</li>
               <li><strong>Service</strong> refers to the Website.</li>
@@ -124,7 +124,7 @@ export default function PrivacyPolicy() {
             <p style={{ marginBottom: '16px' }}>While using Our Service, We may ask You to provide Us with certain personally identifiable information that can be used to contact or identify You. Personally identifiable information may include, but is not limited to: Email address, First name and last name, Phone number, and Usage Data.</p>
             
             <h4 style={{ color: '#fff', fontSize: '16px', marginBottom: '8px' }}>Usage Data</h4>
-            <p style={{ marginBottom: '16px' }}>Usage Data is collected automatically when using the Service. Usage Data may include information such as Your Device‚Äôs Internet Protocol address (e.g. IP address), browser type, browser version, the pages of our Service that You visit, the time and date of Your visit, the time spent on those pages, unique device identifiers and other diagnostic data.</p>
+            <p style={{ marginBottom: '16px' }}>Usage Data is collected automatically when using the Service. Usage Data may include information such as Your Deviceís Internet Protocol address (e.g. IP address), browser type, browser version, the pages of our Service that You visit, the time and date of Your visit, the time spent on those pages, unique device identifiers and other diagnostic data.</p>
             <p style={{ marginBottom: '16px' }}>When You access the Service by or through a mobile device, We may collect certain information automatically, including, but not limited to, the type of mobile device You use, Your mobile device unique ID, the IP address of Your mobile device, Your mobile operating system, the type of mobile Internet browser You use, unique device identifiers and other diagnostic data.</p>
             <p>We may also collect information that Your browser sends whenever You visit our Service or when You access the Service by or through a mobile device.</p>
           </div>
@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
             <h2 style={{ color: '#fff', marginBottom: '16px', fontSize: '24px' }}>Tracking Technologies & Cookies</h2>
             <p style={{ marginBottom: '16px' }}>We use Cookies and similar tracking technologies to track the activity on Our Service and store certain information. Tracking technologies used are beacons, tags, and scripts to collect and track information and to improve and analyze Our Service.</p>
             <p style={{ marginBottom: '16px' }}>You can instruct Your browser to refuse all Cookies or to indicate when a Cookie is being sent. However, if You do not accept Cookies, You may not be able to use some parts of our Service.</p>
-            <p style={{ marginBottom: '16px' }}>Cookies can be ‚ÄúPersistent‚Äù or ‚ÄúSession‚Äù Cookies. Persistent Cookies remain on your personal computer or mobile device when You go offline, while Session Cookies are deleted as soon as You close your web browser.</p>
+            <p style={{ marginBottom: '16px' }}>Cookies can be ìPersistentî or ìSessionî Cookies. Persistent Cookies remain on your personal computer or mobile device when You go offline, while Session Cookies are deleted as soon as You close your web browser.</p>
             <p style={{ marginBottom: '16px' }}>We use both session and persistent Cookies for the purposes set out below:</p>
             <ul style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <li><strong>Necessary / Essential Cookies</strong> (Session Cookies): These Cookies are essential to provide You with services available through the Website and to enable You to use some of its features.</li>
@@ -160,7 +160,7 @@ export default function PrivacyPolicy() {
           <div id="retention">
             <h2 style={{ color: '#fff', marginBottom: '16px', fontSize: '24px' }}>Retention & Transfer</h2>
             <p style={{ marginBottom: '16px' }}>The Company will retain Your Personal Data only for as long as is necessary for the purposes set out in this Privacy Policy.</p>
-            <p>Your information, including Personal Data, is processed at the Company‚Äôs operating offices and in any other places where the parties involved in the processing are located. Your consent to this Privacy Policy followed by Your submission of such information represents Your agreement to that transfer.</p>
+            <p>Your information, including Personal Data, is processed at the Companyís operating offices and in any other places where the parties involved in the processing are located. Your consent to this Privacy Policy followed by Your submission of such information represents Your agreement to that transfer.</p>
           </div>
 
           <div id="disclosure">
@@ -185,13 +185,13 @@ export default function PrivacyPolicy() {
 
         </div>
       </div>
-      <style>{
+      <style>{`
         @media (min-width: 768px) {
           .legal-sidebar {
             display: block !important;
           }
         }
-      }</style>
+      `}</style>
     </div>
   );
 }
