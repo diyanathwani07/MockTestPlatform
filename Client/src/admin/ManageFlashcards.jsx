@@ -4,7 +4,7 @@ import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import FlashcardDocxParser from "./components/FlashcardDocxParser";
-import { Trash2, Edit2, Plus, Eye, ChevronLeft, CheckCircle } from "lucide-react";
+import { Layers, Trash2, Edit2, Plus, Eye, ChevronLeft, CheckCircle } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 
 function ManageFlashcards() {
@@ -150,21 +150,24 @@ function ManageFlashcards() {
         <div className="admin-content" style={{ display: "flex", justifyContent: "flex-start" }}>
           
           <div style={{ width: "100%", maxWidth: "800px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
-              <div>
-                <button onClick={() => navigate("/admin/flashcards")} className="btn-secondary" style={{ padding: "4px 8px", marginBottom: "12px", display: "inline-flex", alignItems: "center", fontSize: "12px" }}><ChevronLeft size={14}/> Back</button>
-                <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "4px", margin: 0 }}>{setMeta?.title || "Loading..."}</h2>
-                <p style={{ color: "var(--text-secondary)", margin: 0, fontSize: "13px" }}>{cards.length} Cards in this set.</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", background: "linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%)", border: "1px solid rgba(168, 85, 247, 0.2)", borderRadius: "16px", padding: "20px 24px", flexWrap: "wrap", gap: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <div style={{ background: "#8b5cf6", borderRadius: "12px", width: "56px", height: "56px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Layers color="white" size={28} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: "20px", fontWeight: "800", textTransform: "uppercase", color: "white", marginBottom: "4px", margin: 0, letterSpacing: "0.5px" }}>{setMeta?.title || "Loading..."}</h2>
+                  <p style={{ color: "var(--text-secondary)", margin: 0, fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Layers size={12} /> {cards.length} Cards in this set
+                  </p>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={() => window.open(`/dashboard/flashcards/${id}`, "_blank")} className="btn-secondary" style={{ display: "flex", gap: "6px", alignItems: "center", padding: "8px 16px", fontSize: "13px" }}>
-                  <Eye size={14} /> Preview
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                <button onClick={() => handleOpenForm()} style={{ display: "flex", gap: "6px", alignItems: "center", padding: "10px 20px", fontSize: "14px", background: "#8b5cf6", color: "white", border: "none", borderRadius: "10px", fontWeight: "600", cursor: "pointer", boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)", transition: "all 0.2s" }}>
+                  <Plus size={16} /> Add Card
                 </button>
-                <button onClick={() => handleOpenForm()} className="btn-primary" style={{ display: "flex", gap: "6px", alignItems: "center", padding: "8px 16px", fontSize: "13px" }}>
-                  <Plus size={14} /> Add Card
-                </button>
-                <button onClick={() => navigate("/admin/flashcards")} style={{ display: "flex", gap: "6px", alignItems: "center", padding: "8px 16px", fontSize: "13px", background: "#10B981", color: "white", border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}>
-                  <CheckCircle size={14} /> Save & Close
+                <button onClick={() => navigate("/admin/flashcards")} style={{ display: "flex", gap: "6px", alignItems: "center", padding: "10px 20px", fontSize: "14px", background: "#10B981", color: "white", border: "none", borderRadius: "10px", fontWeight: "600", cursor: "pointer", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)", transition: "all 0.2s" }}>
+                  <CheckCircle size={16} /> Save & Close
                 </button>
               </div>
             </div>
@@ -179,7 +182,7 @@ function ManageFlashcards() {
                   {editingId ? "Edit Card" : "New Card"}
                 </h3>
                 <form onSubmit={handleSaveCard}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "12px" }}>
                     <div className="form-field" style={{ marginBottom: 0 }}>
                       <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Front (Question) *</label>
                       <textarea rows={3} value={formData.front} onChange={(e) => setFormData({...formData, front: e.target.value})} required style={{ padding: "10px", fontSize: "13px" }} />
@@ -204,13 +207,13 @@ function ManageFlashcards() {
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: "16px" }}>
-                    <div className="form-field" style={{ flex: 1, marginBottom: 0 }}>
+                    <div className="form-field" style={{ flex: "1 1 300px", marginBottom: 0 }}>
                       <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Difficulty</label>
                       <select value={formData.difficulty} onChange={(e) => setFormData({...formData, difficulty: e.target.value})} style={{ padding: "10px", fontSize: "13px" }}>
                         <option>Easy</option><option>Medium</option><option>Hard</option>
                       </select>
                     </div>
-                    <div className="form-field" style={{ flex: 1, marginBottom: 0 }}>
+                    <div className="form-field" style={{ flex: "1 1 300px", marginBottom: 0 }}>
                       <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Order</label>
                       <input type="number" value={formData.order} onChange={(e) => setFormData({...formData, order: e.target.value})} style={{ padding: "10px", fontSize: "13px" }} />
                     </div>
@@ -223,27 +226,30 @@ function ManageFlashcards() {
               </div>
             )}
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {cards.map((c, i) => (
-                <div key={c._id} className="form-card" style={{ padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderRadius: "10px" }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--violet)", background: "rgba(110, 63, 243, 0.1)", padding: "2px 6px", borderRadius: "4px" }}>Card {i + 1}</span>
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{c.difficulty}</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {cards.map((c, i) => {
+                const borderColors = ["#8b5cf6", "#3b82f6", "#ec4899"];
+                const color = borderColors[i % 3];
+                return (
+                <div key={c._id} className="form-card" style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderRadius: "12px", background: "var(--bg-card, #1E1E28)", borderLeft: `4px solid ${color}`, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+                  <div style={{ flex: "1 1 300px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: "700", color: "white", background: color, padding: "4px 12px", borderRadius: "16px" }}>Card {i + 1}</span>
+                      <span style={{ fontSize: "12px", color: "var(--text-secondary)", background: "rgba(255,255,255,0.06)", padding: "4px 12px", borderRadius: "16px" }}>{c.difficulty}</span>
                     </div>
-                    <div style={{ fontWeight: "600", fontSize: "14px", color: "var(--text-primary)", marginBottom: "4px", lineHeight: "1.4" }}>
-                      <span style={{ opacity: 0.5, marginRight: "4px" }}>Q:</span>{c.front}
+                    <div style={{ fontWeight: "700", fontSize: "15px", color: "white", marginBottom: "6px", lineHeight: "1.5" }}>
+                      <span style={{ opacity: 0.6, marginRight: "6px" }}>Q:</span>{c.front}
                     </div>
-                    <div style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.4" }}>
-                      <span style={{ opacity: 0.5, marginRight: "4px" }}>A:</span>{c.back}
+                    <div style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.5" }}>
+                      <span style={{ opacity: 0.5, marginRight: "6px" }}>A:</span>{c.back}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "6px", marginLeft: "16px" }}>
-                    <button className="icon-btn" onClick={() => handleOpenForm(c)} style={{ padding: "6px" }}><Edit2 size={14} /></button>
-                    <button className="icon-btn text-danger" onClick={() => handleDeleteCard(c._id)} style={{ padding: "6px" }}><Trash2 size={14} /></button>
+                  <div style={{ display: "flex", gap: "8px", marginLeft: "16px", alignItems: "center" }}>
+                    <button className="icon-btn" onClick={() => handleOpenForm(c)} style={{ padding: "8px", color: "var(--text-secondary)", transition: "color 0.2s" }}><Edit2 size={16} /></button>
+                    <button className="icon-btn" onClick={() => handleDeleteCard(c._id)} style={{ padding: "8px", color: "var(--text-secondary)", transition: "color 0.2s" }}><Trash2 size={16} /></button>
                   </div>
                 </div>
-              ))}
+              )})}
               {cards.length === 0 && !isFormOpen && (
                 <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)", border: "1px dashed var(--border-color)", borderRadius: "12px" }}>
                   No cards added yet. Click "Add Card" to start building your set.
@@ -258,3 +264,4 @@ function ManageFlashcards() {
 }
 
 export default ManageFlashcards;
+

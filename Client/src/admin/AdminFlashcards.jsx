@@ -195,7 +195,7 @@ function AdminFlashcards() {
             </div>
           ) : (
             <div style={{ background: "#111019", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.03)", overflow: "hidden" }}>
-              <div className="table-responsive">
+              <div className="table-responsive" style={{ overflowX: "auto", width: "100%" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "800px" }}>
                   <thead>
                     <tr>
