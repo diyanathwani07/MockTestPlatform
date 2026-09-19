@@ -37,7 +37,7 @@ export default function RefundPolicy() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-page, #0f0f13)', color: 'var(--text-primary, #ffffff)' }}>
       {/* Header Area */}
-      <div style={{ padding: '40px 20px 20px', maxWidth: '1100px', margin: '0 auto' }}>
+      <div style={{ padding: '40px 20px 20px', maxWidth: '1400px', margin: '0' }}>
         <button 
           onClick={() => navigate(-1)}
           style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '24px', fontSize: '16px', fontWeight: '600' }}
@@ -48,7 +48,7 @@ export default function RefundPolicy() {
         <p style={{ color: 'var(--text-secondary, #9ca3af)', marginBottom: '40px', fontSize: '14px' }}>Last updated: January 1, 2025 · Effective for all purchases made on or after this date</p>
       </div>
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', padding: '0 20px 60px', gap: '40px', alignItems: 'flex-start' }}>
+      <div style={{ maxWidth: '1400px', margin: '0', display: 'flex', padding: '0 20px 60px', gap: '40px', alignItems: 'flex-start' }}>
         
         {/* Sidebar */}
         <div style={{ width: '280px', position: 'sticky', top: '40px', background: '#1c1c1f', borderRadius: '12px', padding: '24px 0', border: '1px solid #2d2d30', display: 'none' }} className="legal-sidebar">
