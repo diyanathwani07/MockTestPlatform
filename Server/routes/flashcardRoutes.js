@@ -14,6 +14,8 @@ router.post("/progress/:setId/:cardId", protect, flashcardController.updateProgr
 
 // Admin Routes
 router.get("/admin/sets", protect, adminOnly, flashcardController.getAllFlashcardSetsAdmin);
+router.get("/admin/sets/:id", protect, adminOnly, flashcardController.getFlashcardSetDetails);
+router.get("/admin/sets/:setId/cards", protect, adminOnly, flashcardController.getCardsInSet);
 router.post("/admin/sets", protect, adminOnly, flashcardController.createFlashcardSet);
 router.put("/admin/sets/:id", protect, adminOnly, flashcardController.updateFlashcardSet);
 router.delete("/admin/sets/:id", protect, adminOnly, flashcardController.deleteFlashcardSet);

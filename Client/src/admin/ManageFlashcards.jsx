@@ -18,6 +18,7 @@ function ManageFlashcards() {
   const [formData, setFormData] = useState({ front: "", back: "", explanation: "", difficulty: "Medium", order: 0, imageUrl: "" });
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [imageDragActive, setImageDragActive] = useState(false);
 
   const fetchSetAndCards = async () => {
     try {
@@ -197,12 +198,49 @@ function ManageFlashcards() {
                     <textarea rows={2} value={formData.explanation} onChange={(e) => setFormData({...formData, explanation: e.target.value})} style={{ padding: "10px", fontSize: "13px" }} />
                   </div>
                   <div className="form-field" style={{ marginBottom: "12px" }}>
-                    <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Card Image (Optional)</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <input type="file" accept="image/*" onChange={handleImageUpload} style={{ fontSize: "13px" }} />
-                      {isUploading && <span style={{ fontSize: "12px", color: "var(--violet)" }}>Uploading...</span>}
-                      {formData.imageUrl && !isUploading && (
-                        <a href={formData.imageUrl} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "var(--text-primary)" }}>View Image</a>
+                    <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px", display: "block", fontWeight: "600" }}>Card Image (Optional)</label>
+                    <div 
+                      onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setImageDragActive(true); }}
+                      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setImageDragActive(true); }}
+                      onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setImageDragActive(false); }}
+                      onDrop={(e) => { 
+                        e.preventDefault(); 
+                        e.stopPropagation(); 
+                        setImageDragActive(false); 
+                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                          processImageFile(e.dataTransfer.files[0]);
+                        }
+                      }}
+                      style={{ 
+                        border: imageDragActive ? "2px dashed var(--violet, #6E3FF3)" : "1px dashed var(--border-color, #333)", 
+                        borderRadius: "10px", 
+                        padding: "16px", 
+                        textAlign: "center", 
+                        backgroundColor: imageDragActive ? "rgba(110, 63, 243, 0.05)" : "rgba(255, 255, 255, 0.02)",
+                        transition: "all 0.2s ease"
+                      }}
+                    >
+                      {isUploading ? (
+                        <span style={{ fontSize: "13px", color: "var(--violet, #6E3FF3)", fontWeight: "500" }}>Uploading image...</span>
+                      ) : formData.imageUrl ? (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                          <img src={formData.imageUrl} alt="Flashcard" style={{ maxHeight: "120px", borderRadius: "8px", objectFit: "contain", border: "1px solid var(--border-color, #333)" }} />
+                          <div style={{ display: "flex", gap: "16px" }}>
+                            <a href={formData.imageUrl} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "white", textDecoration: "none", background: "rgba(255,255,255,0.1)", padding: "4px 10px", borderRadius: "4px" }}>View Full Image</a>
+                            <button type="button" onClick={() => setFormData(prev => ({...prev, imageUrl: ""}))} style={{ fontSize: "12px", color: "#F87171", background: "transparent", border: "none", cursor: "pointer", textDecoration: "underline" }}>Remove</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+                          <div style={{ color: "var(--text-secondary, #9CA3AF)", marginBottom: "4px" }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                          </div>
+                          <span style={{ fontSize: "13px", color: "var(--text-secondary, #9CA3AF)" }}>Drag & drop an image here, or</span>
+                          <label style={{ cursor: "pointer", color: "var(--violet, #6E3FF3)", fontSize: "13px", fontWeight: "600" }}>
+                            <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} />
+                            browse to upload
+                          </label>
+                        </div>
                       )}
                     </div>
                   </div>
