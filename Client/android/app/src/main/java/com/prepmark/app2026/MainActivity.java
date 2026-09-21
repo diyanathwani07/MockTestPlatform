@@ -1,4 +1,4 @@
-package com.prepmark.app;
+package com.prepmark.app2026;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -1,10 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.prepmark.app"
+    namespace = "com.prepmark.app2026"
     compileSdk = rootProject.ext.compileSdkVersion
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
     defaultConfig {
-        applicationId "com.prepmark.app"
+        applicationId "com.prepmark.app2026"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

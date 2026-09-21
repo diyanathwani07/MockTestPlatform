@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+sudo apt-get update -y && sudo apt-get install -y openjdk-21-jdk
+echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> android/gradle.properties
+echo "Injected Java 21 into gradle.properties for EAS Build"
