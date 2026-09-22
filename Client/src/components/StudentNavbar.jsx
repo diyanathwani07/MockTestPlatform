@@ -28,7 +28,7 @@ function StudentNavbar({ title, onNavigateBack }) {
 
   return (
     <>
-      <header className="admin-navbar">
+      <header className="admin-navbar" style={{ zIndex: 2000 }}>
         <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
           <span 
             onClick={() => navigate("/dashboard")}

@@ -589,7 +589,7 @@ function MyExams() {
                                   padding: "4px 10px",
                                   borderRadius: "100px"
                                 }}>
-                                  {series.title}
+                                  {series.category || "General"}
                                 </span>
                               )}
                               {isCompleted && (
@@ -612,7 +612,7 @@ function MyExams() {
                             {/* Stats row */}
                             <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
                               <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                <FileText size={13} /> {series.paperCount} Papers
+                                <FileText size={13} /> {(series.paperCount || 0) + (series.flashcardCount || 0)} Items
                               </span>
                               <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                 <CheckCircle2 size={13} /> {attemptedCount} Attempted
@@ -624,7 +624,7 @@ function MyExams() {
                               className="me-btn-primary"
                               style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "auto" }}
                             >
-                              View Papers <ChevronRight size={14} />
+                              View Contents <ChevronRight size={14} />
                             </button>
                           </motion.div>
                         );

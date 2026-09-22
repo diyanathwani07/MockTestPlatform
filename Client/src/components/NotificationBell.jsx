@@ -208,7 +208,7 @@ export default function NotificationBell() {
           style={{
             position: "absolute",
             top: "45px",
-            right: "0",
+            right: window.innerWidth < 768 ? "10px" : "0",
             width: "320px",
             maxWidth: "calc(100vw - 20px)",
             maxHeight: "400px",
@@ -216,7 +216,7 @@ export default function NotificationBell() {
             border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
             borderRadius: "12px",
             boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)",
-            zIndex: 1000,
+            zIndex: 9999,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",

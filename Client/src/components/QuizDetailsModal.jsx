@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CheckCircle2, AlertTriangle, X, Play, Clock, FileText } from "lucide-react";
+import { CheckCircle2, AlertTriangle, X, Play, Clock, FileText, BookOpen, Layers } from "lucide-react";
 import axios from "axios";
 import PhonePeGateway from "./PhonePeGateway";
 import "../css/QuizDetailsModal.css";
@@ -10,9 +10,11 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
   const [currency, setCurrency] = useState("INR");
   const [showGateway, setShowGateway] = useState(false);
 
+  const isFlashcard = quiz._type === "flashcard";
+
   const plans = quiz.plans && quiz.plans.length > 0 
     ? quiz.plans 
-    : [{ durationMonths: 1, price: quiz.price || 99, discountLabel: "90% off" }];
+    : [{ durationMonths: 1, price: quiz.price || 99, discountLabel: quiz.originalPrice ? `${Math.round((1 - (quiz.price / quiz.originalPrice)) * 100)}% off` : "90% off" }];
 
   // Select default plan (e.g. 1st plan)
   useEffect(() => {
@@ -24,7 +26,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
   const handleOpenGateway = () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please login to purchase exams.");
+      alert("Please login to purchase.");
       return;
     }
     setShowGateway(true);
@@ -39,9 +41,16 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
     ? `$${((selectedPlan?.price || quiz.price || 99) / 83).toFixed(2)}`
     : `₹${selectedPlan?.price || quiz.price || 99}`;
 
+  // Use originalPrice from data if available, otherwise fallback to price * 10
+  const origPriceValue = quiz.originalPrice || (quiz.price || 99) * 10;
   const originalPrice = currency === "USD"
-    ? `$${(((selectedPlan?.price || quiz.price || 99) * 10) / 83).toFixed(2)}`
-    : `₹${Math.round((selectedPlan?.price || quiz.price || 99) * 10)}`;
+    ? `$${(origPriceValue / 83).toFixed(2)}`
+    : `₹${origPriceValue}`;
+
+  // Compute discount label from originalPrice if available
+  const discountLabel = quiz.originalPrice && quiz.price
+    ? `${Math.round((1 - (quiz.price / quiz.originalPrice)) * 100)}% off`
+    : selectedPlan?.discountLabel || "90% off";
 
   return (
     <>
@@ -50,7 +59,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
         {/* Header Title */}
         <div className="qdm-header">
           <div>
-            <span className="qdm-badge">Premium Mock Series</span>
+            <span className="qdm-badge">{isFlashcard ? "Premium Flashcard Set" : "Premium Mock Series"}</span>
             <h3 className="qdm-title">{quiz.title}</h3>
           </div>
           <button onClick={onClose} className="qdm-close-btn">
@@ -79,7 +88,10 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
               <div className="qdm-overview-content">
                 <h4 className="qdm-section-title">Description</h4>
                 <div className="qdm-description">
-                  {quiz.detailedDescription || `${quiz.title} is a complete mock exam practice course specially designed to help you prepare effectively, including topic-wise practice, in-depth subject coverage, and full simulated conditions.`}
+                  {quiz.detailedDescription || quiz.description || (isFlashcard
+                    ? `${quiz.title} is a comprehensive flashcard set designed to help you master key concepts through active recall and spaced repetition.`
+                    : `${quiz.title} is a complete mock exam practice course specially designed to help you prepare effectively, including topic-wise practice, in-depth subject coverage, and full simulated conditions.`
+                  )}
                 </div>
 
                 <div className="qdm-plans-section">
@@ -115,16 +127,35 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
 
             {activeTab === "Content" && (
               <div className="qdm-content-tab">
-                <h4 className="qdm-section-title">Exam Content Overview</h4>
+                <h4 className="qdm-section-title">{isFlashcard ? "Flashcard Set Overview" : "Exam Content Overview"}</h4>
                 <div className="qdm-content-items">
-                  <div className="qdm-content-item">
-                    <FileText size={15} className="qdm-content-icon" />
-                    <span>Multiple assessment sections and real-time marking keys.</span>
-                  </div>
-                  <div className="qdm-content-item">
-                    <Clock size={15} className="qdm-content-icon" />
-                    <span>Duration configuration: {Math.round(quiz.duration / 60)} minutes total.</span>
-                  </div>
+                  {isFlashcard ? (
+                    <>
+                      <div className="qdm-content-item">
+                        <Layers size={15} className="qdm-content-icon" />
+                        <span>Total Cards: {quiz.totalCards || 0} flashcards for active recall practice.</span>
+                      </div>
+                      <div className="qdm-content-item">
+                        <BookOpen size={15} className="qdm-content-icon" />
+                        <span>Subject: {quiz.subjectName || "General"}{quiz.chapter ? ` • Chapter: ${quiz.chapter}` : ""}{quiz.topic ? ` • Topic: ${quiz.topic}` : ""}</span>
+                      </div>
+                      <div className="qdm-content-item">
+                        <FileText size={15} className="qdm-content-icon" />
+                        <span>Difficulty: {quiz.difficulty || "Beginner"}. Track your progress as you learn.</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="qdm-content-item">
+                        <FileText size={15} className="qdm-content-icon" />
+                        <span>Multiple assessment sections and real-time marking keys.</span>
+                      </div>
+                      <div className="qdm-content-item">
+                        <Clock size={15} className="qdm-content-icon" />
+                        <span>Duration configuration: {Math.round(quiz.duration / 60)} minutes total.</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -142,23 +173,9 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                     <span className="qdm-original-price">{originalPrice}</span>
                   </div>
                 </div>
-                {selectedPlan?.discountLabel && (
-                  <span className="qdm-discount-badge">
-                    {(() => {
-                      const label = String(selectedPlan.discountLabel).trim();
-                      if (/^\d+(\.\d+)?$/.test(label)) {
-                        return `${label}% off`;
-                      }
-                      if (/^\d+(\.\d+)?\s*%?$/.test(label)) {
-                        return label.includes('%') ? label : `${label}%`;
-                      }
-                      if (/^\d+(\.\d+)?\s*%?\s*off$/i.test(label)) {
-                        return label.toLowerCase();
-                      }
-                      return label;
-                    })()}
-                  </span>
-                )}
+                <span className="qdm-discount-badge">
+                  {discountLabel}
+                </span>
               </div>
 
               <div className="qdm-currency-selector">

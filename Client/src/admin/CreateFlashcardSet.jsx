@@ -12,7 +12,7 @@ function CreateFlashcardSet() {
 
   const [formData, setFormData] = useState({
     title: "", description: "", difficulty: "Beginner", status: "Draft",
-    isPaid: false, price: 0,
+    isPaid: false, price: 0, originalPrice: 0,
     examSeriesId: "", examStructureId: "", subjectName: "", chapter: "", topic: "", year: ""
   });
   
@@ -32,7 +32,7 @@ function CreateFlashcardSet() {
           const set = res.data;
           setFormData({
             title: set.title || "", description: set.description || "", difficulty: set.difficulty || "Beginner", status: set.status || "Draft",
-            isPaid: set.isPaid || false, price: set.price || 0,
+            isPaid: set.isPaid || false, price: set.price || 0, originalPrice: set.originalPrice || 0,
             examSeriesId: set.examSeriesId?._id || set.examSeriesId || "",
             examStructureId: set.examStructureId?._id || set.examStructureId || "",
             subjectName: set.subjectName || "", chapter: set.chapter || "", topic: set.topic || "", year: set.year || ""
@@ -117,7 +117,10 @@ function CreateFlashcardSet() {
                   Paid Set
                 </label>
                 {formData.isPaid && (
-                  <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Price ₹" style={{ padding: "6px 12px", width: "90px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "white", fontSize: "13px" }} />
+                  <>
+                    <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Selling ₹" style={{ padding: "6px 12px", width: "100px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "white", fontSize: "13px" }} />
+                    <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange} placeholder="Original ₹" style={{ padding: "6px 12px", width: "100px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "white", fontSize: "13px" }} />
+                  </>
                 )}
               </div>
             </div>

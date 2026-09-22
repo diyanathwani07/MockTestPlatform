@@ -183,7 +183,7 @@ function ExamSeriesDetails() {
                     <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "13px", color: "var(--text-muted)", textAlign: "left" }}>
                       <span><strong>Category:</strong> {series.category || "General"}</span>
                       <span>•</span>
-                      <span><strong>Total Papers:</strong> {quizzes.length}</span>
+                      <span><strong>Total Items:</strong> {quizzes.length + flashcardSets.length}</span>
                       <span>•</span>
                       <span><strong>Attempted:</strong> {quizzes.filter(q => attemptedQuizIds.includes(q._id)).length}</span>
                     </div>
@@ -269,15 +269,53 @@ function ExamSeriesDetails() {
                           <span><strong>Subject:</strong> {fc.subjectName || "General"}</span>
                           <span><strong>Cards:</strong> {fc.totalCards}</span>
                         </div>
+                        {/* Pricing Badge */}
+                        <div style={{ marginTop: "8px" }}>
+                          {fc.isPaid ? (
+                            <span style={{ 
+                              backgroundColor: "rgba(239, 68, 68, 0.12)", 
+                              color: "#EF4444", 
+                              border: "1px solid rgba(239, 68, 68, 0.2)",
+                              padding: "3px 8px", 
+                              borderRadius: "6px", 
+                              fontSize: "11px", 
+                              fontWeight: "700" 
+                            }}>
+                              {fc.isPurchased ? "✓ Purchased" : `Paid (₹${fc.price || 0})`}
+                            </span>
+                          ) : (
+                            <span style={{ 
+                              backgroundColor: "rgba(16, 185, 129, 0.12)", 
+                              color: "#10B981", 
+                              border: "1px solid rgba(16, 185, 129, 0.2)",
+                              padding: "3px 8px", 
+                              borderRadius: "6px", 
+                              fontSize: "11px", 
+                              fontWeight: "700" 
+                            }}>
+                              Free
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div style={{ display: "flex", gap: "8px", marginTop: "16px", width: "100%" }}>
-                        <button 
-                          className="me-btn-primary" 
-                          style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", background: "#6E3FF3" }}
-                          onClick={() => navigate(`/dashboard/flashcards/${fc._id}`)}
-                        >
-                          Start Learning
-                        </button>
+                        {fc.isPaid && !fc.isPurchased ? (
+                          <button 
+                            className="me-btn-primary" 
+                            style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #6E3FF3, #3B82F6)" }}
+                            onClick={() => setSelectedQuizForDetails({ ...fc, _type: "flashcard" })}
+                          >
+                            🔒 Buy Now — ₹{fc.price || 0}
+                          </button>
+                        ) : (
+                          <button 
+                            className="me-btn-primary" 
+                            style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", background: "#6E3FF3" }}
+                            onClick={() => navigate(`/dashboard/flashcards/${fc._id}`)}
+                          >
+                            Start Learning
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
