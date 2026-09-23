@@ -21,17 +21,7 @@ function FlashcardStudyView() {
   const [finished, setFinished] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
   
-  const toggleShuffle = () => {
-    if (!isShuffled) {
-      setCards(prev => [...prev].sort(() => Math.random() - 0.5));
-      setIsShuffled(true);
-    } else {
-      setCards(prev => [...prev].sort((a, b) => (a.order || 0) - (b.order || 0)));
-      setIsShuffled(false);
-    }
-    setCurrentIndex(0);
-    setIsFlipped(false);
-  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,13 +36,17 @@ function FlashcardStudyView() {
         ]);
         
         setSetMeta(metaRes.data);
-        setCards(cardsRes.data);
+        let fetchedCards = cardsRes.data;
+        if (metaRes.data.isShuffled) {
+          fetchedCards = [...fetchedCards].sort(() => Math.random() - 0.5);
+        }
+        setCards(fetchedCards);
         setProgress(progRes.data);
         
         // Auto-resume logic: find first card not marked Known
-        if (cardsRes.data.length > 0) {
+        if (fetchedCards.length > 0) {
           const knownIds = progRes.data.filter(p => p.status === "Known").map(p => p.flashcardId);
-          const firstUnlearned = cardsRes.data.findIndex(c => !knownIds.includes(c._id));
+          const firstUnlearned = fetchedCards.findIndex(c => !knownIds.includes(c._id));
           if (firstUnlearned !== -1) setCurrentIndex(firstUnlearned);
         }
       } catch (err) {
@@ -174,68 +168,70 @@ function FlashcardStudyView() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-app)", display: "flex", flexDirection: "column", color: "var(--text-primary)" }}>
       
-      {/* Top Navigation Row */}
-      <div style={{ padding: "24px 40px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
-        {/* Left: Back Button */}
-        <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "none", border: "none", color: "var(--violet, #6E3FF3)", fontWeight: "600", fontSize: "14px", cursor: "pointer", padding: 0 }}>
-          <ArrowLeft size={16} /> Back to Flashcards
-        </button>
-
-        {/* Center: Icon + Title */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", transform: "translateX(-20px)" }}>
-          <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--violet, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-             <Book size={28} />
-          </div>
-          <div style={{ textAlign: "left" }}>
-            <h1 style={{ margin: 0, fontSize: "22px", fontWeight: "700", color: "var(--text-primary)" }}>{setMeta.title}</h1>
-            <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "var(--text-secondary)" }}>{setMeta.subjectName || "Subject"}</p>
-          </div>
+      {/* Top Navigation */}
+      <div className="fs-header-container" style={{ padding: "24px 40px", maxWidth: "1200px", margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: "24px" }}>
+        
+        {/* Row 1: Back Button */}
+        <div className="fs-header-row-1" style={{ display: "flex", width: "100%" }}>
+          <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "none", border: "none", color: "var(--violet, #6E3FF3)", fontWeight: "600", fontSize: "14px", cursor: "pointer", padding: 0, whiteSpace: "nowrap" }}>
+            <ArrowLeft size={16} /> Back to Flashcards
+          </button>
         </div>
 
-        {/* Right: Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        {/* Row 2: Title and Controls */}
+        <div className="fs-header-row-2" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
           
-          {/* User Profile */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingRight: "16px", borderRight: "1px solid var(--border-color)" }}>
-            {user?.profilePicture || user?.avatar ? (
-              <img src={user.profilePicture || user.avatar} alt="Profile" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
-            ) : (
-              <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", fontSize: "14px" }}>
-                {(user?.name || "S").substring(0, 1).toUpperCase()}
-              </div>
-            )}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-              <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>{user?.name || "Student"}</span>
-              <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{user?.role === "admin" ? "Admin" : "Student"}</span>
+          {/* Left: Icon + Title */}
+          <div className="fs-header-center" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--violet, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+               <Book size={24} />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <h1 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.2" }}>{setMeta.title}</h1>
+              <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "var(--text-secondary)" }}>{setMeta.subjectName || "Subject"}</p>
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            {/* Shuffle Cards */}
-            <button onClick={toggleShuffle} title="Shuffle Cards" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: isShuffled ? "var(--accent-bg, rgba(110,63,243,0.1))" : "var(--bg-card)", border: "1px solid", borderColor: isShuffled ? "var(--accent, #6E3FF3)" : "var(--border-color)", color: isShuffled ? "var(--accent, #6E3FF3)" : "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={(e) => !isShuffled && (e.currentTarget.style.background = "var(--bg-card-hover)")} onMouseLeave={(e) => !isShuffled && (e.currentTarget.style.background = "var(--bg-card)")}>
-              <Shuffle size={16} />
-            </button>
-
-            {/* Palette Picker */}
-            <button onClick={toggleThemePicker} title="Theme Palette" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-card-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-card)"}>
-              <Palette size={16} />
-            </button>
+          {/* Right: Controls */}
+          <div className="fs-header-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             
-            {/* Light/Dark Toggle */}
-            <button onClick={toggleTheme} title="Toggle Light/Dark Mode" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-card-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-card)"}>
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            {/* User Profile */}
+            <div className="fs-user-profile" style={{ display: "flex", alignItems: "center", gap: "10px", paddingRight: "16px", borderRight: "1px solid var(--border-color)" }}>
+              {user?.profilePicture || user?.avatar ? (
+                <img src={user.profilePicture || user.avatar} alt="Profile" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }} />
+              ) : (
+                <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", fontSize: "13px" }}>
+                  {(user?.name || "S").substring(0, 1).toUpperCase()}
+                </div>
+              )}
+              <div className="fs-user-text" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", whiteSpace: "nowrap" }}>{user?.name || "Student"}</span>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>{user?.role === "admin" ? "Admin" : "Student"}</span>
+              </div>
+            </div>
 
-            {/* End Session */}
-            <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px 16px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-card-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-card)"}>
-              <Square size={14} fill="var(--text-primary)" /> End Session
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {/* Palette Picker */}
+              <button onClick={toggleThemePicker} title="Theme Palette" className="fs-icon-btn" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "background 0.2s" }}>
+                <Palette size={16} />
+              </button>
+              
+              {/* Light/Dark Toggle */}
+              <button onClick={toggleTheme} title="Toggle Light/Dark Mode" className="fs-icon-btn" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px", borderRadius: "8px", cursor: "pointer", transition: "background 0.2s" }}>
+                {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+
+              {/* End Session */}
+              <button onClick={() => navigate(-1)} className="fs-icon-btn" style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "10px 16px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer", transition: "background 0.2s" }}>
+                <Square size={14} fill="var(--text-primary)" /> <span className="fs-end-session-text">End Session</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Progress Row */}
-      <div style={{ maxWidth: "1200px", margin: "0 auto 40px auto", width: "100%", padding: "0 40px", display: "flex", alignItems: "center", gap: "24px" }}>
+      <div className="fs-progress-row" style={{ maxWidth: "1200px", margin: "0 auto 40px auto", width: "100%", padding: "0 40px", display: "flex", alignItems: "center", gap: "24px" }}>
         <div style={{ fontSize: "13px", fontWeight: "500", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
           {currentIndex + 1} / {activeCards.length} cards
         </div>
@@ -274,10 +270,10 @@ function FlashcardStudyView() {
                 marginBottom: "40px"
               }}
             >
-              <div style={{
+              <div className="fs-card-inner" style={{
                 display: "grid",
                 width: "100%",
-                minHeight: "400px",
+                minHeight: "300px",
                 textAlign: "center",
                 transition: "transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)",
                 transformStyle: "preserve-3d",
@@ -285,14 +281,17 @@ function FlashcardStudyView() {
               }}>
                 
                 {/* FRONT OF CARD */}
-                <div style={{
+                <div className="fs-card-face" style={{
                   gridArea: "1 / 1",
+                  position: isFlipped ? "absolute" : "relative",
+                  width: "100%",
+                  height: "100%",
                   backfaceVisibility: "hidden",
                   background: "var(--bg-card)",
                   borderRadius: "24px",
                   border: "1px solid var(--border-color)",
                   boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
-                  padding: "80px 40px",
+                  padding: "80px 40px 40px 40px",
                   display: "flex", 
                   flexDirection: "column",
                   alignItems: "center", 
@@ -305,20 +304,23 @@ function FlashcardStudyView() {
                   {currentCard?.imageUrl && (
                     <img src={currentCard.imageUrl} alt="Card Front" style={{ maxWidth: "100%", maxHeight: "250px", objectFit: "contain", marginBottom: "24px", borderRadius: "8px" }} />
                   )}
-                  <div style={{ fontSize: "28px", fontWeight: "700", lineHeight: "1.5", color: "var(--text-primary)" }}>
+                  <div className="fs-card-text" style={{ fontSize: "28px", fontWeight: "700", lineHeight: "1.5", color: "var(--text-primary)" }}>
                     {currentCard?.front}
                   </div>
                 </div>
 
                 {/* BACK OF CARD */}
-                <div style={{
+                <div className="fs-card-face" style={{
                   gridArea: "1 / 1",
+                  position: isFlipped ? "relative" : "absolute",
+                  width: "100%",
+                  height: "100%",
                   backfaceVisibility: "hidden",
                   background: "var(--bg-card)",
                   borderRadius: "24px",
                   border: "1px solid var(--border-color)",
                   boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
-                  padding: "80px 40px",
+                  padding: "80px 40px 40px 40px",
                   display: "flex", 
                   flexDirection: "column",
                   alignItems: "center", 
@@ -331,7 +333,7 @@ function FlashcardStudyView() {
                   {currentCard?.imageUrl && (
                     <img src={currentCard.imageUrl} alt="Card Answer" style={{ maxWidth: "100%", maxHeight: "180px", objectFit: "contain", marginBottom: "20px", borderRadius: "8px" }} />
                   )}
-                  <div style={{ fontSize: "22px", fontWeight: "500", lineHeight: "1.6", color: "var(--text-primary)" }}>
+                  <div className="fs-card-text" style={{ fontSize: "22px", fontWeight: "500", lineHeight: "1.6", color: "var(--text-primary)" }}>
                     {currentCard?.back}
                   </div>
                   {currentCard?.explanation && (
@@ -348,7 +350,7 @@ function FlashcardStudyView() {
             </div>
 
             {/* Navigation Controls */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginBottom: "60px", width: "100%", maxWidth: "850px", position: "relative" }}>
+            <div className="fs-bottom-controls" style={{ display: "flex", justifyContent: "center", gap: "16px", marginBottom: "60px", width: "100%", maxWidth: "850px", position: "relative" }}>
               
               {/* PREV */}
               <button onClick={handlePrev} disabled={currentIndex === 0} style={{ flex: 1, maxWidth: "180px", padding: "16px", borderRadius: "30px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: currentIndex === 0 ? "var(--text-muted)" : "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontWeight: "600", cursor: currentIndex === 0 ? "not-allowed" : "pointer" }}>

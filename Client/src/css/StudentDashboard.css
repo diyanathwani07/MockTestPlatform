@@ -1382,3 +1382,231 @@ body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
   color: #000000 !important;
 }
 
+
+/* ============================================
+   FLASHCARD STUDY VIEW RESPONSIVENESS
+   ============================================ */
+
+.fs-header {
+  padding: 24px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.fs-header-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transform: translateX(-20px);
+}
+
+.fs-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fs-end-session-text {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .fs-header {
+    flex-direction: column;
+    padding: 16px 20px;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .fs-header > button { 
+    align-self: flex-start;
+  }
+
+  .fs-header-center {
+    transform: none;
+    text-align: center;
+  }
+
+  .fs-header-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: 12px;
+  }
+  
+  .fs-user-profile {
+    display: none !important; 
+  }
+
+  .fs-end-session-text {
+    display: none; 
+  }
+  
+  .fs-progress-row {
+    padding: 0 20px !important;
+    flex-direction: column;
+    gap: 12px !important;
+  }
+  
+  .fs-progress-row > div:first-child {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .fs-card-face {
+    padding: 60px 20px !important;
+    min-height: 320px !important;
+  }
+  
+  .fs-card-text {
+    fontSize: 22px !important;
+  }
+  
+  .fs-bottom-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px !important;
+    padding: 0 10px;
+  }
+  
+  .fs-bottom-controls button {
+    padding: 12px 20px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .fs-bottom-controls > button, .fs-bottom-controls > div > button {
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+  .fs-bottom-controls > div {
+    flex: 2 !important;
+    min-width: 200px !important;
+  }
+  .fs-bottom-controls {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .fs-header-container {
+    padding: 16px 20px !important;
+    gap: 16px !important;
+  }
+  
+  .fs-header-row-2 {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .fs-header-center {
+    width: 100%;
+    gap: 12px !important;
+  }
+  
+  .fs-header-controls {
+    width: 100%;
+    justify-content: center !important;
+    gap: 12px !important;
+  }
+  
+  .fs-user-profile {
+    display: flex !important; /* Re-show it based on their new instructions */
+    padding-right: 12px !important;
+  }
+  
+  .fs-user-text {
+    display: none !important; /* Hide the text (name/role) to save space, just show avatar */
+  }
+
+  .fs-icon-btn {
+    padding: 10px !important;
+  }
+  
+  .fs-end-session-text {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .fs-header-row-2 {
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+  }
+  
+  .fs-header-center {
+    width: auto !important;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .fs-header-center h1 {
+    font-size: 16px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .fs-header-center p {
+    font-size: 11px !important;
+  }
+
+  .fs-header-controls {
+    width: auto !important;
+    flex-shrink: 0;
+    gap: 8px !important;
+  }
+  
+  .fs-user-profile {
+    padding-right: 8px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .fs-bottom-controls {
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    padding: 0 8px !important;
+    width: 100% !important;
+  }
+  .fs-bottom-controls > button, .fs-bottom-controls > div > button {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+  }
+  
+  .fs-bottom-controls > div {
+    min-width: 0 !important;
+    flex: 1 !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .fs-card-face {
+    padding: 60px 20px 40px 20px !important; /* Less padding on bottom */
+    min-height: auto !important; /* Let it shrink if content is small */
+  }
+  
+  /* Ensure the grid doesn't force a huge height */
+  .fs-card-inner {
+    min-height: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .fs-card-face {
+    padding: 60px 20px 30px 20px !important; 
+    min-height: auto !important; 
+    justify-content: center !important; /* Push content to top so it doesn't float in middle */
+  }
+}

@@ -1,84 +1,173 @@
 import React, { useState } from "react";
 import mammoth from "mammoth";
+import axios from "axios";
 
 export default function FlashcardDocxParser({ onCardsLoaded }) {
   const [parsing, setParsing] = useState(false);
   const [status, setStatus] = useState("");
   const [dragActive, setDragActive] = useState(false);
 
+  function dataURLtoBlob(dataurl) {
+    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
+  }
+
   const processFile = async (file) => {
     if (!file) return;
-
     if (!file.name.endsWith(".docx")) {
-      setStatus("❌ Please upload a .docx file only.");
+      setStatus("? Please upload a .docx file only.");
       return;
     }
-
     setParsing(true);
     setStatus("Parsing document...");
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      const rawText = result.value;
+      
+      const options = {
+        convertImage: mammoth.images.imgElement(function(image) {
+          return image.read("base64").then(function(imageBuffer) {
+            return {
+              src: "data:" + image.contentType + ";base64," + imageBuffer
+            };
+          });
+        })
+      };
 
-      const cards = parseFlashcardsFromText(rawText);
+      const result = await mammoth.convertToHtml({ arrayBuffer }, options);
+      const htmlText = result.value;
+
+      const cards = parseFlashcardsFromHtml(htmlText);
 
       if (cards.length === 0) {
-        setStatus("❌ No flashcards found. Please check the document format.");
+        setStatus("? No flashcards found. Please check the document format.");
       } else {
+        // Upload images
+        for (let i = 0; i < cards.length; i++) {
+          let card = cards[i];
+          if (card.localImage) {
+            setStatus(`Uploading image ${i+1} of ${cards.length}...`);
+            try {
+              const blob = dataURLtoBlob(card.localImage);
+              const formData = new FormData();
+              formData.append("image", blob, "image.png");
+              formData.append("folder", "flashcards");
+              const token = localStorage.getItem("token");
+              const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/image`, formData, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              card.imageUrl = res.data.imageUrl;
+            } catch(e) {
+              console.error("Failed to upload image", e);
+            }
+            delete card.localImage;
+          }
+        }
+
         setStatus(`✅ Found ${cards.length} flashcards!`);
         onCardsLoaded(cards, file.name);
       }
     } catch (err) {
       console.error(err);
-      setStatus("❌ Error parsing the document.");
+      setStatus("? Error parsing the document.");
     } finally {
       setParsing(false);
     }
   };
 
-  const parseFlashcardsFromText = (text) => {
-    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-    const cards = [];
+  const parseFlashcardsFromHtml = (html) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
     
+    const items = [];
+    const traverse = (node) => {
+      if (node.nodeName.toLowerCase() === 'img') {
+        items.push({ type: 'image', src: node.getAttribute('src') });
+      } else if (node.nodeName.toLowerCase() === 'br') {
+        items.push({ type: 'text', content: '\n' });
+      } else if (node.nodeType === Node.TEXT_NODE) {
+        items.push({ type: 'text', content: node.textContent });
+      } else {
+        if (node.nodeName.toLowerCase() === 'p' && items.length > 0 && items[items.length-1].content !== '\n') {
+           items.push({ type: 'text', content: '\n' });
+        }
+        node.childNodes.forEach(traverse);
+        if (node.nodeName.toLowerCase() === 'p') {
+           items.push({ type: 'text', content: '\n' });
+        }
+      }
+    };
+    traverse(doc.body);
+
+    let lines = [];
+    let currentLine = { text: "", image: null };
+    
+    items.forEach(item => {
+       if (item.type === 'text') {
+           const parts = item.content.split('\n');
+           parts.forEach((part, i) => {
+              currentLine.text += part;
+              if (i < parts.length - 1) {
+                  lines.push(currentLine);
+                  currentLine = { text: "", image: null };
+              }
+           });
+       } else if (item.type === 'image') {
+           currentLine.image = item.src;
+       }
+    });
+    if (currentLine.text || currentLine.image) lines.push(currentLine);
+    
+    lines = lines.map(l => ({ ...l, text: l.text.trim() })).filter(l => l.text.length > 0 || l.image);
+
+    const cards = [];
     let currentCard = null;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      const text = line.text;
 
-      // New Question starts
-      if (/^(?:Q\d+[\.\)]\s*|Question\s*\d+[\.\)]\s*)/i.test(line)) {
+      if (/^(?:Q\d+[\.\)]\s*|Question\s*\d+[\.\)]\s*)/i.test(text)) {
         if (currentCard && currentCard.front && currentCard.back) {
           cards.push(currentCard);
         }
         currentCard = {
-          front: line.replace(/^(?:Q\d+[\.\)]\s*|Question\s*\d+[\.\)]\s*)/i, "").trim(),
+          front: text.replace(/^(?:Q\d+[\.\)]\s*|Question\s*\d+[\.\)]\s*)/i, "").trim(),
           back: "",
-          explanation: ""
+          explanation: "",
+          imageUrl: "",
+          localImage: line.image || null
         };
       } 
-      // Hindi translation for question
-      else if (/^H[\.\:]\s*/i.test(line) && currentCard) {
-        const hindiText = line.replace(/^H[\.\:]\s*/i, "").trim();
+      else if (/^H[\.\:]\s*/i.test(text) && currentCard) {
+        const hindiText = text.replace(/^H[\.\:]\s*/i, "").trim();
         currentCard.front += `\n\n${hindiText}`;
+        if (line.image && !currentCard.localImage) currentCard.localImage = line.image;
       }
-      // Answer starts
-      else if (/^(?:Ans|Answer)[\.\:\s]/i.test(line) && currentCard) {
-        currentCard.back = line.replace(/^(?:Ans|Answer)[\.\:\s]+/i, "").trim();
+      else if (/^(?:Ans|Answer)[\.\:\s]/i.test(text) && currentCard) {
+        currentCard.back = text.replace(/^(?:Ans|Answer)[\.\:\s]+/i, "").trim();
+        if (line.image && !currentCard.localImage) currentCard.localImage = line.image;
       }
-      // Explanation starts
-      else if (/^(?:Exp|Explanation)[\.\:\s]/i.test(line) && currentCard) {
-        currentCard.explanation = line.replace(/^(?:Exp|Explanation)[\.\:\s]+/i, "").trim();
+      else if (/^(?:Exp|Explanation)[\.\:\s]/i.test(text) && currentCard) {
+        currentCard.explanation = text.replace(/^(?:Exp|Explanation)[\.\:\s]+/i, "").trim();
+        if (line.image && !currentCard.localImage) currentCard.localImage = line.image;
       }
-      // Continuation lines
       else if (currentCard) {
-        if (!currentCard.back && !currentCard.explanation) {
-            currentCard.front += " " + line;
-        } else if (currentCard.back && !currentCard.explanation) {
-            currentCard.back += " " + line;
-        } else if (currentCard.explanation) {
-            currentCard.explanation += " " + line;
+        if (text) {
+          if (!currentCard.back && !currentCard.explanation) {
+              currentCard.front += (currentCard.front ? " " : "") + text;
+          } else if (currentCard.back && !currentCard.explanation) {
+              currentCard.back += (currentCard.back ? " " : "") + text;
+          } else if (currentCard.explanation) {
+              currentCard.explanation += (currentCard.explanation ? " " : "") + text;
+          }
+        }
+        if (line.image && !currentCard.localImage) {
+            currentCard.localImage = line.image;
         }
       }
     }
@@ -89,7 +178,6 @@ export default function FlashcardDocxParser({ onCardsLoaded }) {
 
     return cards;
   };
-
   const showGuide = () => {
     alert(
       "Supported Word (.docx) Format for Flashcards:\n\n" +

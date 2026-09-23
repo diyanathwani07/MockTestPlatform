@@ -12,7 +12,7 @@ function CreateFlashcardSet() {
 
   const [formData, setFormData] = useState({
     title: "", description: "", difficulty: "Beginner", status: "Draft",
-    isPaid: false, price: 0, originalPrice: 0,
+    isPaid: false, price: 0, originalPrice: 0, isShuffled: false,
     examSeriesId: "", examStructureId: "", subjectName: "", chapter: "", topic: "", year: ""
   });
   
@@ -32,7 +32,7 @@ function CreateFlashcardSet() {
           const set = res.data;
           setFormData({
             title: set.title || "", description: set.description || "", difficulty: set.difficulty || "Beginner", status: set.status || "Draft",
-            isPaid: set.isPaid || false, price: set.price || 0, originalPrice: set.originalPrice || 0,
+            isPaid: set.isPaid || false, price: set.price || 0, originalPrice: set.originalPrice || 0, isShuffled: set.isShuffled || false,
             examSeriesId: set.examSeriesId?._id || set.examSeriesId || "",
             examStructureId: set.examStructureId?._id || set.examStructureId || "",
             subjectName: set.subjectName || "", chapter: set.chapter || "", topic: set.topic || "", year: set.year || ""
@@ -203,6 +203,13 @@ function CreateFlashcardSet() {
                   <option>Draft</option><option>Published</option>
                 </select>
               </div>
+            </div>
+            
+            <div style={{ marginTop: "16px" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", cursor: "pointer" }}>
+                <input type="checkbox" name="isShuffled" checked={formData.isShuffled} onChange={handleChange} style={{ width: "16px", height: "16px" }} /> 
+                Shuffle cards in student view
+              </label>
             </div>
 
             <div style={{ marginTop: "32px", display: "flex", justifyContent: "flex-end", borderTop: "1px solid var(--border-color)", paddingTop: "20px" }}>

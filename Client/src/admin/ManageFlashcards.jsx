@@ -19,6 +19,7 @@ function ManageFlashcards() {
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [imageDragActive, setImageDragActive] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const fetchSetAndCards = async () => {
     try {
@@ -226,7 +227,7 @@ function ManageFlashcards() {
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
                           <img src={formData.imageUrl} alt="Flashcard" style={{ maxHeight: "120px", borderRadius: "8px", objectFit: "contain", border: "1px solid var(--border-color, #333)" }} />
                           <div style={{ display: "flex", gap: "16px" }}>
-                            <a href={formData.imageUrl} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "white", textDecoration: "none", background: "rgba(255,255,255,0.1)", padding: "4px 10px", borderRadius: "4px" }}>View Full Image</a>
+                            <button type="button" onClick={() => setPreviewImage(formData.imageUrl)} style={{ fontSize: "12px", color: "white", textDecoration: "none", background: "rgba(255,255,255,0.1)", border: "none", cursor: "pointer", padding: "4px 10px", borderRadius: "4px" }}>View Full Image</button>
                             <button type="button" onClick={() => setFormData(prev => ({...prev, imageUrl: ""}))} style={{ fontSize: "12px", color: "#F87171", background: "transparent", border: "none", cursor: "pointer", textDecoration: "underline" }}>Remove</button>
                           </div>
                         </div>
@@ -258,7 +259,7 @@ function ManageFlashcards() {
                   </div>
                   <div style={{ display: "flex", gap: "12px", marginTop: "24px", justifyContent: "flex-end" }}>
                     <button type="button" className="btn-secondary" onClick={handleCloseForm} style={{ padding: "8px 16px", fontSize: "13px" }}>Cancel</button>
-                    <button type="submit" className="btn-primary" style={{ padding: "8px 16px", fontSize: "13px" }}>Save Card</button>
+                    <button type="submit" className="btn-primary" style={{ flex: "none", width: "fit-content", padding: "10px 24px", fontSize: "14px", fontWeight: "600" }}>Save Card</button>
                   </div>
                 </form>
               </div>
@@ -297,6 +298,20 @@ function ManageFlashcards() {
           </div>
         </div>
       </div>
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0, 0, 0, 0.8)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }} onClick={() => setPreviewImage(null)}>
+          <div style={{ position: "relative", maxWidth: "90%", maxHeight: "90%" }} onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => setPreviewImage(null)} 
+              style={{ position: "absolute", top: "-40px", right: "0", background: "none", border: "none", color: "white", fontSize: "16px", cursor: "pointer", padding: "8px" }}
+            >
+              ✕ Close
+            </button>
+            <img src={previewImage} alt="Preview" style={{ maxWidth: "100%", maxHeight: "85vh", objectFit: "contain", borderRadius: "8px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
