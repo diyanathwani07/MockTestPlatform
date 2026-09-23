@@ -41,16 +41,16 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
     ? `$${((selectedPlan?.price || quiz.price || 99) / 83).toFixed(2)}`
     : `₹${selectedPlan?.price || quiz.price || 99}`;
 
-  // Use originalPrice from data if available, otherwise fallback to price * 10
-  const origPriceValue = quiz.originalPrice || (quiz.price || 99) * 10;
-  const originalPrice = currency === "USD"
-    ? `$${(origPriceValue / 83).toFixed(2)}`
-    : `₹${origPriceValue}`;
+  // Only show original price if it actually exists and is greater than the selling price
+  const hasOriginalPrice = quiz.originalPrice && quiz.originalPrice > (quiz.price || 0);
+  const originalPrice = hasOriginalPrice
+    ? (currency === "USD" ? `$${(quiz.originalPrice / 83).toFixed(2)}` : `₹${quiz.originalPrice}`)
+    : null;
 
-  // Compute discount label from originalPrice if available
-  const discountLabel = quiz.originalPrice && quiz.price
+  // Compute discount label only from real originalPrice
+  const discountLabel = hasOriginalPrice
     ? `${Math.round((1 - (quiz.price / quiz.originalPrice)) * 100)}% off`
-    : selectedPlan?.discountLabel || "90% off";
+    : (selectedPlan?.discountLabel || null);
 
   return (
     <>
@@ -170,12 +170,14 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                   <span className="qdm-price-label">PRICE</span>
                   <div className="qdm-price-values">
                     <span className="qdm-current-price">{displayPrice}</span>
-                    <span className="qdm-original-price">{originalPrice}</span>
+                    {originalPrice && <span className="qdm-original-price">{originalPrice}</span>}
                   </div>
                 </div>
-                <span className="qdm-discount-badge">
-                  {discountLabel}
-                </span>
+                {discountLabel && (
+                  <span className="qdm-discount-badge">
+                    {discountLabel}
+                  </span>
+                )}
               </div>
 
               <div className="qdm-currency-selector">

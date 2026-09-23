@@ -50,7 +50,7 @@ function CreateFlashcardSet() {
       if (!formData.examSeriesId) return setStructures([]);
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-structures/series/${formData.examSeriesId}`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-structures?examSeriesId=${formData.examSeriesId}`, { headers: { Authorization: `Bearer ${token}` } });
         setStructures(res.data);
       } catch (error) {
         console.error(error);
@@ -72,13 +72,19 @@ function CreateFlashcardSet() {
       const url = `${import.meta.env.VITE_API_URL}/api/flashcards/admin/sets${isEdit ? `/${id}` : ""}`;
       const method = isEdit ? "put" : "post";
       
-      const payload = { ...formData };
+      const payload = { 
+        ...formData,
+        price: Number(formData.price) || 0,
+        originalPrice: Number(formData.originalPrice) || 0
+      };
       if (!payload.examStructureId) delete payload.examStructureId;
       if (!payload.year) delete payload.year;
       if (!payload.description) delete payload.description;
       if (!payload.subjectName) delete payload.subjectName;
       if (!payload.chapter) delete payload.chapter;
       if (!payload.topic) delete payload.topic;
+
+      console.log("Sending payload to backend:", payload);
 
       await axios[method](url, payload, { headers: { Authorization: `Bearer ${token}` } });
       navigate("/admin/flashcards");
@@ -94,7 +100,7 @@ function CreateFlashcardSet() {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title={<span>{isEdit ? "Edit Flashcard Set" : "Create Flashcard Set"}</span>} />
+        <AdminNavbar title={<span>{isEdit ? "Edit Flashcard Set" : "Create Flashcard Set"}</span>} parentText="Flashcard Sets" parentLink="/admin/flashcards" />
         <div className="admin-content" style={{ display: "flex", justifyContent: "flex-start" }}>
           
           <form 
@@ -117,10 +123,16 @@ function CreateFlashcardSet() {
                   Paid Set
                 </label>
                 {formData.isPaid && (
-                  <>
-                    <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Selling ₹" style={{ padding: "6px 12px", width: "100px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "white", fontSize: "13px" }} />
-                    <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange} placeholder="Original ₹" style={{ padding: "6px 12px", width: "100px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "white", fontSize: "13px" }} />
-                  </>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <span style={{ fontSize: "10px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Selling ₹</span>
+                      <input type="number" name="price" value={formData.price === 0 ? "" : formData.price} onChange={handleChange} placeholder="Selling ₹" style={{ padding: "6px 12px", width: "90px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "white", fontSize: "13px" }} />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <span style={{ fontSize: "10px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Original ₹</span>
+                      <input type="number" name="originalPrice" value={formData.originalPrice === 0 ? "" : formData.originalPrice} onChange={handleChange} placeholder="Original ₹" style={{ padding: "6px 12px", width: "90px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "white", fontSize: "13px" }} />
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -206,7 +218,7 @@ function CreateFlashcardSet() {
                 type="submit" 
                 className="btn-primary" 
                 disabled={loading}
-                style={{ padding: "10px 24px", fontSize: "14px", fontWeight: "600", borderRadius: "8px" }}
+                style={{ flex: "none", width: "fit-content", padding: "10px 24px", fontSize: "14px", fontWeight: "600", borderRadius: "8px" }}
               >
                 {loading ? "Saving..." : "Save Flashcard Set"}
               </button>
