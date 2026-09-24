@@ -217,7 +217,7 @@ function AdminFlashcards() {
                             <div>
                               <div style={{ fontSize: "14px", fontWeight: "600", color: "#fff", marginBottom: "4px" }}>{set.title}</div>
                               <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                                {set.difficulty} • {set.isPaid ? <span style={{ color: "#ef4444" }}>Paid (₹{set.price})</span> : <span style={{ color: "#10b981" }}>Free</span>}
+                                {set.difficulty} • {set.isPaid ? <span style={{ color: "#ef4444" }}>Paid (₹{set.price || 99})</span> : <span style={{ color: "#10b981" }}>Free</span>}
                               </div>
                             </div>
                           </div>

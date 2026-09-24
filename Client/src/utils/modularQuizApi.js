@@ -325,6 +325,12 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     plans: (quizMeta.isPaid || quizMeta.isPracticePaid) ? (quizMeta.plans || []) : [],
   };
 
+  delete payload._id;
+  delete payload.id;
+  delete payload.createdAt;
+  delete payload.updatedAt;
+  delete payload.__v;
+
   if (isPractice) {
     payload.showResultAfterSubmission = quizMeta.practiceShowResultAfterSubmission !== undefined ? quizMeta.practiceShowResultAfterSubmission : true;
     payload.showCorrectAnswers = quizMeta.practiceShowCorrectAnswers !== undefined ? quizMeta.practiceShowCorrectAnswers : true;
