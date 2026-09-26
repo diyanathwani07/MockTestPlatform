@@ -69,6 +69,7 @@ const registerUser = async (req, res) => {
         district: user.district,
         state: user.state,
         role: user.role,
+        onboardingCompleted: user.onboardingCompleted,
       },
     });
     await logAction("REGISTER_USER", user.fullName, `User registered account: ${user.email}`, "Auth", req.ip);
@@ -145,6 +146,7 @@ const loginUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
+        onboardingCompleted: user.onboardingCompleted,
         department: user.department,
         permissions: userPermissions,
         avatar: user.avatar,

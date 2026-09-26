@@ -30,6 +30,7 @@ import AdminAttempts from "./admin/AdminAttempts";
 import AdminScoreAnalytics from "./admin/AdminScoreAnalytics";
 
 import Login from "./Pages/Login";
+import StudentOnboarding from "./Pages/StudentOnboarding";
 import Register from "./Pages/Register";
 import StudentDashboard from "./Pages/StudentDashboard";
 import StartTest from "./Pages/StartTest";
@@ -70,6 +71,7 @@ function App() {
 
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+          <Route path="/onboarding" element={<StudentOnboarding />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
@@ -619,3 +621,4 @@ function App() {
 }
 
 export default App;
+

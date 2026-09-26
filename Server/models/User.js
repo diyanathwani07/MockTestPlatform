@@ -114,6 +114,8 @@ const userSchema = new mongoose.Schema(
     purchasedExams: [{ type: mongoose.Schema.Types.ObjectId, ref: "ExamSeries" }],
     purchasedPractice: [{ type: mongoose.Schema.Types.ObjectId, ref: "PracticeQuiz" }],
     isPremium: { type: Boolean, default: false },
+    onboardingCompleted: { type: Boolean, default: false },
+    onboardingData: { type: Object, default: {} },
 
     premiumExpiresAt: { type: Date },
     activePlan: { type: mongoose.Schema.Types.ObjectId, ref: "AiPlan" },

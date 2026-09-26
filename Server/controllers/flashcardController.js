@@ -2,6 +2,7 @@ const FlashcardSet = require("../models/FlashcardSet");
 const Flashcard = require("../models/Flashcard");
 const FlashcardProgress = require("../models/FlashcardProgress");
 const AuditLog = require("../models/AuditLog");
+const { notifyAllStudents } = require("../services/notificationService");
 
 // Admin: Create Flashcard Set
 const createFlashcardSet = async (req, res) => {
@@ -20,6 +21,16 @@ const createFlashcardSet = async (req, res) => {
       module: "Flashcards",
     });
 
+    if (set.status === "Published") {
+      notifyAllStudents({
+        type: "NEW_FLASHCARD_SET",
+        title: "New Flashcards Available",
+        message: `Flashcard set "${set.title}" is now available.`,
+        link: set.examSeriesId ? `/dashboard/${set.examSeriesId}` : "/dashboard",
+        relatedId: set._id
+      });
+    }
+
     res.status(201).json(set);
   } catch (error) {
     res.status(500).json({ message: "Error creating flashcard set", error: error.message });
@@ -32,7 +43,13 @@ const updateFlashcardSet = async (req, res) => {
     const oldSet = await FlashcardSet.findById(req.params.id);
     if (!oldSet) return res.status(404).json({ message: "Set not found" });
 
-    const set = await FlashcardSet.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    console.log("[updateFlashcardSet] Received payload:", req.body);
+    const set = await FlashcardSet.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true, strict: false }
+    );
+    console.log("[updateFlashcardSet] Saved set:", set.toObject());
     
     let action = "Updated Flashcard Set";
     let details = `Updated Flashcard Set: ${set.title}`;
@@ -59,6 +76,17 @@ const updateFlashcardSet = async (req, res) => {
       ipAddress: req.ip || req.connection.remoteAddress,
       module: "Flashcards",
     });
+
+    // Notify if status changed from Draft to Published
+    if (oldSet.status !== "Published" && set.status === "Published") {
+      notifyAllStudents({
+        type: "NEW_FLASHCARD_SET",
+        title: "New Flashcards Available",
+        message: `Flashcard set "${set.title}" is now available.`,
+        link: set.examSeriesId ? `/dashboard/${set.examSeriesId}` : "/dashboard",
+        relatedId: set._id
+      });
+    }
 
     res.json(set);
   } catch (error) {
@@ -96,7 +124,8 @@ const getAllFlashcardSetsAdmin = async (req, res) => {
     const sets = await FlashcardSet.find()
       .populate("examSeriesId", "title")
       .populate("examStructureId", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(sets);
   } catch (error) {
     res.status(500).json({ message: "Error fetching sets", error: error.message });
@@ -117,8 +146,28 @@ const getFlashcardSets = async (req, res) => {
     const sets = await FlashcardSet.find(filter)
       .populate("examSeriesId", "title")
       .populate("examStructureId", "name")
-      .sort({ createdAt: -1 });
-    res.json(sets);
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Attach isPurchased flag based on user's purchasedExams
+    let purchasedExamIds = [];
+    if (req.user) {
+      const User = require("../models/User");
+      const user = await User.findById(req.user._id).select("purchasedExams role");
+      purchasedExamIds = (user?.purchasedExams || []).map(id => id.toString());
+    }
+
+    const setsWithPurchaseStatus = sets.map(s => {
+      const seriesId = s.examSeriesId?._id?.toString() || s.examSeriesId?.toString() || "";
+      s.isPurchased = req.user && (
+        req.user.role === "admin" || 
+        req.user.role === "superadmin" || 
+        purchasedExamIds.includes(seriesId)
+      );
+      return s;
+    });
+
+    res.json(setsWithPurchaseStatus);
   } catch (error) {
     res.status(500).json({ message: "Error fetching sets", error: error.message });
   }
@@ -129,7 +178,8 @@ const getFlashcardSetDetails = async (req, res) => {
   try {
     const set = await FlashcardSet.findById(req.params.id)
       .populate("examSeriesId", "title")
-      .populate("examStructureId", "name");
+      .populate("examStructureId", "name")
+      .lean();
     if (!set) return res.status(404).json({ message: "Set not found" });
     res.json(set);
   } catch (error) {
@@ -140,6 +190,23 @@ const getFlashcardSetDetails = async (req, res) => {
 // Cards Management
 const getCardsInSet = async (req, res) => {
   try {
+    // Check if the set is paid and user has access
+    const set = await FlashcardSet.findById(req.params.setId);
+    if (!set) return res.status(404).json({ message: "Set not found" });
+
+    if (set.isPaid && req.user) {
+      const isAdmin = req.user.role === "admin" || req.user.role === "superadmin";
+      if (!isAdmin) {
+        const User = require("../models/User");
+        const user = await User.findById(req.user._id).select("purchasedExams");
+        const purchasedIds = (user?.purchasedExams || []).map(id => id.toString());
+        const seriesId = set.examSeriesId?.toString() || "";
+        if (!purchasedIds.includes(seriesId)) {
+          return res.status(403).json({ message: "This flashcard set is paid. Please purchase to access." });
+        }
+      }
+    }
+
     const cards = await Flashcard.find({ flashcardSetId: req.params.setId }).sort({ order: 1, createdAt: 1 });
     res.json(cards);
   } catch (error) {

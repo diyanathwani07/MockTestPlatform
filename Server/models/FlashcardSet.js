@@ -33,6 +33,8 @@ const flashcardSetSchema = new mongoose.Schema(
 
     isPaid: { type: Boolean, default: false },
     price: { type: Number, default: 0 },
+    originalPrice: { type: Number, default: 0 },
+    isShuffled: { type: Boolean, default: false },
     
     totalCards: { type: Number, default: 0 },
     

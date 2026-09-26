@@ -522,3 +522,9 @@ body.dark-mode .secure-footer svg {
     font-size: 28px;
   }
 }
+
+@media (min-width: 561px) {
+  .mobile-only-mascot {
+    display: none !important;
+  }
+}

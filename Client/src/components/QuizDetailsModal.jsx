@@ -14,7 +14,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
 
   const plans = quiz.plans && quiz.plans.length > 0 
     ? quiz.plans 
-    : [{ durationMonths: 1, price: quiz.price || 99, discountLabel: quiz.originalPrice ? `${Math.round((1 - (quiz.price / quiz.originalPrice)) * 100)}% off` : "90% off" }];
+    : [{ durationMonths: 1, price: (quiz.price !== undefined && quiz.price !== null ? quiz.price : 99), discountLabel: quiz.originalPrice ? `${Math.round((1 - (quiz.price / quiz.originalPrice)) * 100)}% off` : "90% off" }];
 
   // Select default plan (e.g. 1st plan)
   useEffect(() => {
@@ -38,8 +38,8 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
   };
 
   const displayPrice = currency === "USD" 
-    ? `$${((selectedPlan?.price || quiz.price || 99) / 83).toFixed(2)}`
-    : `₹${selectedPlan?.price || quiz.price || 99}`;
+    ? `$${((selectedPlan?.price || (quiz.price !== undefined && quiz.price !== null ? quiz.price : 99)) / 83).toFixed(2)}`
+    : `₹${selectedPlan?.price || (quiz.price !== undefined && quiz.price !== null ? quiz.price : 99)}`;
 
   // Only show original price if it actually exists and is greater than the selling price
   const hasOriginalPrice = quiz.originalPrice && quiz.originalPrice > (quiz.price || 0);
@@ -213,7 +213,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
     {showGateway && (
       <PhonePeGateway
         quiz={quiz}
-        amount={selectedPlan?.price || quiz.price || 99}
+        amount={selectedPlan?.price || (quiz.price !== undefined && quiz.price !== null ? quiz.price : 99)}
         planMonths={selectedPlan?.durationMonths || 1}
         onClose={() => setShowGateway(false)}
         onSuccess={handlePaymentSuccess}

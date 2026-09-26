@@ -4,18 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview",
-  "eas-build-pre-install": "if [ \"$EAS_BUILD_PLATFORM\" = \"android\" ]; then sudo apt-get update && sudo apt-get install -y openjdk-21-jdk && export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 && export PATH=\"$JAVA_HOME/bin:$PATH\" && set-env JAVA_HOME \"$JAVA_HOME\" && set-env PATH \"$JAVA_HOME/bin:$PATH\" && echo \"JAVA_HOME=$JAVA_HOME\" && java -version && javac -version; fi"
-},
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "eas-build-pre-install": "if [ \"$EAS_BUILD_PLATFORM\" = \"android\" ]; then sudo apt-get update && sudo apt-get install -y openjdk-21-jdk && export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 && export PATH=\"$JAVA_HOME/bin:$PATH\" && set-env JAVA_HOME \"$JAVA_HOME\" && set-env PATH \"$JAVA_HOME/bin:$PATH\" && echo \"JAVA_HOME=$JAVA_HOME\" && java -version && javac -version; fi"
+  },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
     "@capacitor/cli": "^8.4.2",
     "@capacitor/core": "^8.4.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@lottiefiles/dotlottie-react": "^0.19.16",
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@mui/material": "^9.3.0",
     "@mui/x-date-pickers": "^9.10.1",

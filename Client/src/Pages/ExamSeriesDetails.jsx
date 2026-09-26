@@ -281,7 +281,7 @@ function ExamSeriesDetails() {
                               fontSize: "11px", 
                               fontWeight: "700" 
                             }}>
-                              {fc.isPurchased ? "✓ Purchased" : `Paid (₹${fc.price || 99})`}
+                              {fc.isPurchased ? "✓ Purchased" : `Paid (₹${(fc.price !== undefined && fc.price !== null ? fc.price : 99)})`}
                             </span>
                           ) : (
                             <span style={{ 
@@ -305,7 +305,7 @@ function ExamSeriesDetails() {
                             style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #6E3FF3, #3B82F6)" }}
                             onClick={() => setSelectedQuizForDetails({ ...fc, _type: "flashcard" })}
                           >
-                            🔒 Buy Now — ₹{fc.price || 99}
+                            🔒 Buy Now — ₹{(fc.price !== undefined && fc.price !== null ? fc.price : 99)}
                           </button>
                         ) : (
                           <button 
@@ -427,7 +427,7 @@ function ExamSeriesDetails() {
                               style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #6E3FF3, #3B82F6)" }}
                               onClick={() => setSelectedQuizForDetails(quiz)}
                             >
-                              🔒 Buy Now — ₹{quiz.price || 99}
+                              🔒 Buy Now — ₹{(quiz.price !== undefined && quiz.price !== null ? quiz.price : 99)}
                             </button>
                           ) : quiz.contentType === "pdf" ? (
                             <button 

@@ -14,6 +14,13 @@ function Register() {
   const navigate = useNavigate();
   const { toggleTheme, isDark } = useTheme();
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 560);
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 560);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showAdminKey, setShowAdminKey] = useState(false);
@@ -72,24 +79,52 @@ function Register() {
 }
   };
 
-  return (
+    const AuthContainer = !isMobile ? BorderGlow : 'div';
+  const containerProps = !isMobile 
+    ? { className: "login-card animate-fade-in", edgeSensitivity: 30, glowColor: "260 85 70", borderRadius: 28, glowRadius: 40, glowIntensity: 1.2, coneSpread: 25, animated: true, colors: ['#7B3FF3', '#00D2FF', '#EC4899'], alwaysGlow: true }
+    : { className: "auth-content-container animate-fade-in", style: { width: "100%", maxWidth: "420px", padding: "24px", display: "flex", flexDirection: "column", zIndex: 10 } };
+
+return (
     <>
-    <div className="login-page">
+    
+  <div className={isMobile ? "login-page full-screen-auth" : "login-page"} style={isMobile ? { width: "100vw", minHeight: "100vh", background: isDark ? "radial-gradient(circle at top, rgba(123, 63, 243, 0.15) 0%, #11101F 60%)" : "radial-gradient(circle at top, rgba(123, 63, 243, 0.1) 0%, var(--bg-body) 60%)", backgroundColor: isDark ? "#11101F" : "var(--bg-body)", margin: 0, padding: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" } : {}}>
+    {!isMobile && (
+      <>
+        <svg style={{ width: 0, height: 0, position: 'absolute' }}>
+          <defs>
+            <linearGradient id="left-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#00D2FF" />
+              <stop offset="50%" stopColor="#3B82F6" />
+              <stop offset="100%" stopColor="#7B3FF3" />
+            </linearGradient>
+            <linearGradient id="right-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3B82F6" />
+              <stop offset="50%" stopColor="#7B3FF3" />
+              <stop offset="100%" stopColor="#EC4899" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="top-left-glow"></div>
+        <div className="bottom-right-glow"></div>
+        <div className="grid-pattern-left"></div>
+        <div className="grid-pattern-right"></div>
+        <div className="glow-dot glow-dot-1"></div>
+        <div className="glow-dot glow-dot-2"></div>
+
+        <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M 0,0 C 35,0 45,28 32,55 C 20,80 5,88 0,88 Z" fill="url(#left-3d-grad)" opacity="0.95" />
+          <path d="M 0,10 C 35,25 38,50 18,75 C 10,85 0,90 0,90" fill="none" stroke="#00D2FF" strokeWidth="1.25" />
+        </svg>
+
+        <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M 100,100 C 65,100 55,72 68,45 C 80,20 95,12 100,12 Z" fill="url(#right-3d-grad)" opacity="0.95" />
+          <path d="M 100,90 C 65,75 62,50 82,25 C 90,15 100,10 100,10" fill="none" stroke="#7B3FF3" strokeWidth="1.25" />
+        </svg>
+      </>
+    )}
+
       {/* SVG Gradients definition */}
-      <svg style={{ width: 0, height: 0, position: 'absolute' }}>
-        <defs>
-          <linearGradient id="left-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00D2FF" />
-            <stop offset="50%" stopColor="#3B82F6" />
-            <stop offset="100%" stopColor="#7B3FF3" />
-          </linearGradient>
-          <linearGradient id="right-3d-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#3B82F6" />
-            <stop offset="50%" stopColor="#7B3FF3" />
-            <stop offset="100%" stopColor="#EC4899" />
-          </linearGradient>
-        </defs>
-      </svg>
+      
 
       <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
         <button 
@@ -112,37 +147,21 @@ function Register() {
       </div>
 
       {/* Decorative Background Elements */}
-      <div className="top-left-glow"></div>
-      <div className="bottom-right-glow"></div>
-      <div className="grid-pattern-left"></div>
-      <div className="grid-pattern-right"></div>
-      <div className="glow-dot glow-dot-1"></div>
-      <div className="glow-dot glow-dot-2"></div>
+      
+      
+      
+      
+      
+      
 
       {/* Responsive Inline SVG Waves matching mockup */}
-      <svg className="bg-wave-left" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M 0,0 C 35,0 45,28 32,55 C 20,80 5,88 0,88 Z" fill="url(#left-3d-grad)" opacity="0.95" />
-        <path d="M 0,10 C 35,25 38,50 18,75 C 10,85 0,90 0,90" fill="none" stroke="#00D2FF" strokeWidth="1.25" />
-      </svg>
+      
 
-      <svg className="bg-wave-right" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M 100,100 C 65,100 55,72 68,45 C 80,20 95,12 100,12 Z" fill="url(#right-3d-grad)" opacity="0.95" />
-        <path d="M 100,90 C 65,75 62,50 82,25 C 90,15 100,10 100,10" fill="none" stroke="#7B3FF3" strokeWidth="1.25" />
-      </svg>
+      
 
-      <BorderGlow
-        className="login-card animate-fade-in"
-        style={{ maxWidth: '680px' }}
-        edgeSensitivity={30}
-        glowColor="260 85 70"
-        borderRadius={28}
-        glowRadius={40}
-        glowIntensity={1.2}
-        coneSpread={25}
-        animated={true}
-        colors={['#7B3FF3', '#00D2FF', '#EC4899']}
-        alwaysGlow={true}
-      >
+      
+    <AuthContainer {...containerProps}>
+
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
           <Logo size="large" />
         </div>
@@ -312,7 +331,7 @@ function Register() {
             <span> Login</span>
           </Link>
         </div>
-      </BorderGlow>
+          </AuthContainer>
     </div>
     <SimpleFooter />
     </>

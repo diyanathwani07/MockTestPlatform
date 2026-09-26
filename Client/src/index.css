@@ -1,12 +1,20 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
+  --primary: #8A55FC;
+  --primary-strong: #7C3AED;
+  --primary-light: #B3A7F6;
+  --bg-card: #FFFFFF;
+  --bg-body: #EBEBEB;
+  --text-primary: #171719;
+  --text-secondary: #6D6F75;
+  --border-color: #E5E5E7;
+  --text: var(--text-secondary);
+  --text-h: var(--text-primary);
+  --bg: var(--bg-body);
+  --border: var(--border-color);
   --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
+  --accent: var(--primary);
+  --accent-bg: var(--primary-light);
+  --accent-border: var(--primary);
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
@@ -32,6 +40,12 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --primary: #8A55FC;
+    --bg-card: #16171d;
+    --bg-body: #08060d;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --border-color: #2e303a;
     --text: #9ca3af;
     --text-h: #f3f4f6;
     --bg: #16171d;
@@ -165,3 +179,4 @@ code {
     width: 100%;
   }
 }
+

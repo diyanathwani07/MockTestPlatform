@@ -199,7 +199,7 @@ const logAction = require("../utils/logger");
 
 router.put("/profile", protect, async (req, res) => {
   try {
-    const { fullName, phone, dateOfBirth, gender, location, bio, avatar } = req.body;
+    const { fullName, phone, dateOfBirth, gender, location, bio, avatar, onboardingCompleted, onboardingData } = req.body;
     
     // req.user is set by the protect middleware
     const user = await User.findById(req.user._id);
@@ -220,6 +220,8 @@ router.put("/profile", protect, async (req, res) => {
     if (gender !== undefined && gender !== user.gender) user.gender = gender;
     if (location !== undefined && location !== user.location) user.location = location;
     if (bio !== undefined && bio !== user.bio) user.bio = bio;
+    if (onboardingCompleted !== undefined && onboardingCompleted !== user.onboardingCompleted) { user.onboardingCompleted = onboardingCompleted; changedFields.push('onboardingCompleted'); }
+    if (onboardingData !== undefined) { user.onboardingData = onboardingData; changedFields.push('onboardingData'); }
     if (avatar !== undefined && avatar !== user.avatar) {
       changedFields.push("profile picture updated");
       user.avatar = avatar;

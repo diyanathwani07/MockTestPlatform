@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { useTheme } from "../context/ThemeContext";
 import StudentSidebar from "../components/StudentSidebar";
@@ -96,6 +97,8 @@ const ScoreTrendChart = ({ data }) => {
 
 function StudentDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  useEffect(() => { if (user && user.role === "user" && !user.onboardingCompleted && window.innerWidth <= 560) { navigate("/onboarding"); } }, [user, navigate]);
   const { toggleTheme } = useTheme();
   const { selectedExam, selectedStructure, selectedSubject, openChangeExamModal } = useExam();
 

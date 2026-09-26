@@ -28,7 +28,7 @@ const Logo = ({ size = "normal" }) => {
         />
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: '1.1' }}>
           <span style={{ 
-            color: '#ffffff', 
+            color: 'var(--text-primary)', 
             fontWeight: 800, 
             fontSize: current.topSize, 
             letterSpacing: '0.5px',
