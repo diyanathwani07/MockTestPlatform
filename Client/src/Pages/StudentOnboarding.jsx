@@ -95,7 +95,7 @@ export default function StudentOnboarding() {
   const renderProgress = () => {
     const totalSteps = 6;
     return (
-      <div className="flex justify-center items-center space-x-2 mb-8">
+      <div className="flex justify-center items-center space-x-2 mt-8">
         {[...Array(totalSteps)].map((_, i) => (
           <div 
             key={i} 
