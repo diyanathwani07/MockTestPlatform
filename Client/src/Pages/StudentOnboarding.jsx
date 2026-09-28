@@ -392,7 +392,7 @@ export default function StudentOnboarding() {
                 Your PrepMark journey starts here.
               </p>
               
-              {formData.examId && (
+              {formData.examId && formData.examId !== "other" && (
                 <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(138, 85, 252, 0.1)", color: "var(--primary)", padding: "8px 16px", borderRadius: "20px", fontSize: "14px", fontWeight: "600", marginBottom: "32px" }}>
                   <Target size={16} /> Preparing for: {formData.examId === "other" ? "Your Exam" : (examSeries.find(e => e._id === formData.examId)?.title || "Your Exam")}
                 </div>
