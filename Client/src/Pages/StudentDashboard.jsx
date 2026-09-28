@@ -232,16 +232,18 @@ function StudentDashboard() {
           <p className="sd-hero-subtitle">Keep practicing, keep improving!</p>
         </div>
 
-        <div className="sd-hero-target-pill">
-          <Target size={18} className="target-icon" />
-          <span className="target-text">
-            {selectedExam ? `Target: ${selectedExam.title}${selectedStructure ? ` → ${selectedStructure.name}` : ''}${selectedSubject ? ` → ${selectedSubject}` : ''}` : "Target: No Exam Selected"}
-          </span>
-          <button className="target-btn" onClick={openChangeExamModal}>
-            {selectedExam ? "Change" : "Select Exam"}
-            <ChevronRight size={16} style={{ marginLeft: "4px" }} />
-          </button>
-        </div>
+        {selectedExam && (
+          <div className="sd-hero-target-pill">
+            <Target size={18} className="target-icon" />
+            <span className="target-text">
+              {`Target: ${selectedExam.title}${selectedStructure ? ` • ${selectedStructure.name}` : ''}${selectedSubject ? ` • ${selectedSubject}` : ''}`}
+            </span>
+            <button className="target-btn" onClick={openChangeExamModal}>
+              Change
+              <ChevronRight size={16} style={{ marginLeft: "4px" }} />
+            </button>
+          </div>
+        )}
 
         <div className="sd-hero-graphic">
           <div className="ambient-glow-circle-1"></div>
