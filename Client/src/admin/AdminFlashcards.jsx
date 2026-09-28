@@ -60,7 +60,7 @@ function AdminFlashcards() {
           
           {/* Header Banner */}
           <div style={{
-            background: "linear-gradient(135deg, #15102a 0%, #1d173b 100%)",
+            background: "var(--bg-card)",
             borderRadius: "16px",
             padding: "24px 32px",
             display: "flex",
@@ -68,7 +68,7 @@ function AdminFlashcards() {
             alignItems: "center",
             marginBottom: "24px",
             border: "1px solid rgba(255, 255, 255, 0.03)",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
             flexWrap: "wrap",
             gap: "20px"
           }}>
@@ -116,7 +116,7 @@ function AdminFlashcards() {
               {/* Total Sets */}
               <div 
                 onClick={() => setFilter("All")}
-                style={{ cursor: "pointer", background: "#161329", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", gap: "20px", border: filter === "All" ? "1px solid #c4b5fd" : "1px solid rgba(110, 63, 243, 0.15)", transition: "all 0.2s" }} 
+                style={{ cursor: "pointer", background: "var(--bg-card)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", gap: "20px", border: filter === "All" ? "1px solid #c4b5fd" : "1px solid rgba(110, 63, 243, 0.15)", transition: "all 0.2s" }} 
                 onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"} 
                 onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
               >
@@ -125,7 +125,7 @@ function AdminFlashcards() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "13px", color: "#c4b5fd", fontWeight: "500" }}>Total Sets</span>
+                    <span style={{ fontSize: "13px", color: "var(--violet, #8b5cf6)", fontWeight: "500" }}>Total Sets</span>
                     <ChevronRight size={14} color="rgba(196, 181, 253, 0.5)" />
                   </div>
                   <div style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.2" }}>{sets.length}</div>
@@ -135,16 +135,16 @@ function AdminFlashcards() {
               {/* Published */}
               <div 
                 onClick={() => setFilter("Published")}
-                style={{ cursor: "pointer", background: "#0d211e", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", gap: "20px", border: filter === "Published" ? "1px solid #6ee7b7" : "1px solid rgba(16, 185, 129, 0.15)", transition: "all 0.2s" }} 
+                style={{ cursor: "pointer", background: "var(--bg-card)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", gap: "20px", border: filter === "Published" ? "1px solid #6ee7b7" : "1px solid rgba(16, 185, 129, 0.15)", transition: "all 0.2s" }} 
                 onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"} 
                 onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
               >
-                <div style={{ background: "rgba(16, 185, 129, 0.15)", width: "52px", height: "52px", borderRadius: "14px", display: "flex", justifyContent: "center", alignItems: "center", color: "#10b981" }}>
+                <div style={{ background: "rgba(16, 185, 129, 0.1)", width: "52px", height: "52px", borderRadius: "14px", display: "flex", justifyContent: "center", alignItems: "center", color: "#10b981" }}>
                   <Eye size={24} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "13px", color: "#6ee7b7", fontWeight: "500" }}>Published</span>
+                    <span style={{ fontSize: "13px", color: "var(--green, #10b981)", fontWeight: "500" }}>Published</span>
                     <ChevronRight size={14} color="rgba(110, 231, 183, 0.5)" />
                   </div>
                   <div style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.2" }}>{publishedCount}</div>
@@ -154,16 +154,16 @@ function AdminFlashcards() {
               {/* Drafts */}
               <div 
                 onClick={() => setFilter("Draft")}
-                style={{ cursor: "pointer", background: "#251a14", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", gap: "20px", border: filter === "Draft" ? "1px solid #fcd34d" : "1px solid rgba(245, 158, 11, 0.15)", transition: "all 0.2s" }} 
+                style={{ cursor: "pointer", background: "var(--bg-card)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "center", gap: "20px", border: filter === "Draft" ? "1px solid #fcd34d" : "1px solid rgba(245, 158, 11, 0.15)", transition: "all 0.2s" }} 
                 onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"} 
                 onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
               >
-                <div style={{ background: "rgba(245, 158, 11, 0.15)", width: "52px", height: "52px", borderRadius: "14px", display: "flex", justifyContent: "center", alignItems: "center", color: "#f59e0b" }}>
+                <div style={{ background: "rgba(245, 158, 11, 0.1)", width: "52px", height: "52px", borderRadius: "14px", display: "flex", justifyContent: "center", alignItems: "center", color: "#f59e0b" }}>
                   <Edit2 size={24} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "13px", color: "#fcd34d", fontWeight: "500" }}>Drafts</span>
+                    <span style={{ fontSize: "13px", color: "var(--yellow, #f59e0b)", fontWeight: "500" }}>Drafts</span>
                     <ChevronRight size={14} color="rgba(252, 211, 77, 0.5)" />
                   </div>
                   <div style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.2" }}>{draftCount}</div>

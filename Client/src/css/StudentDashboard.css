@@ -110,9 +110,9 @@
 }
 
 .sidebar-link.active {
-  background: var(--sidebar-active-bg, #4F22C5);
-  color: #ffffff;
-}
+    background: var(--sidebar-active-bg, #4F22C5);
+    color: var(--sidebar-active-text, #ffffff);
+  }
 
 .sidebar-bottom {
   padding: 20px;
