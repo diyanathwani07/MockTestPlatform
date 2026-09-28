@@ -11,36 +11,33 @@
 
 /* Floating Action Button */
 .acb-fab {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--violet, #6E3FF3);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 20px rgba(110, 63, 243, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation: floatBob 2.5s ease-in-out infinite;
-  user-select: none;
-}
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #6D35D9;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    user-select: none;
+  }
 
 .acb-fab:active {
   cursor: grabbing;
   animation: none;
 }
 
-@keyframes floatBob {
-  0%, 100% { transform: translateY(0); box-shadow: 0 4px 20px rgba(110, 63, 243, 0.4); }
-  50% { transform: translateY(-10px); box-shadow: 0 10px 30px rgba(110, 63, 243, 0.55); }
-}
+
+
 
 .acb-fab:hover {
-  animation-play-state: paused;
-  transform: scale(1.1) translateY(-5px);
-}
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
 
 .acb-fab.open {
   background: #334155;
@@ -279,6 +276,17 @@ body.dark-mode .acb-input-area input {
   .acb-fab {
     width: 52px;
     height: 52px;
+    border-radius: 50%;
+    background: #6D35D9;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    user-select: none;
   }
   .acb-window {
     left: auto;

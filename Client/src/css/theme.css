@@ -78,29 +78,29 @@
 
 [data-theme="dark"], body.dark-mode {
   /* Backgrounds */
-  --bg-page:        #0f0e17;
-  --bg-card:        #1c1b2e;
-  --bg-panel:       #1c1b2e;
-  --bg-input:       #252438;
-  --bg-header:      #15141f;
-  --bg-sidebar:     #0f0e17;
+  --bg-page:        #0D0D16;
+  --bg-card:        #1A1A2A;
+  --bg-panel:       #1A1A2A;
+  --bg-input:       #171727;
+  --bg-header:      #171727;
+  --bg-sidebar:     #11111C;
   --hero-bg:        linear-gradient(135deg, #1E1B4B 0%, #2D1B69 100%);
   --icon-bg:        #4F22C5;
   --icon-color:     #ffffff;
 
   /* Text */
-  --text-primary:   #f0eeff;
-  --text-secondary: #c4bfe8;
+  --text-primary:   #F5F3FF;
+  --text-secondary: #A7A3BD;
   --text-muted:     #6b6880;
 
   /* Sidebar Links */
-  --sidebar-active-bg: #4F22C5;
+  --sidebar-active-bg: #6D35D9;
   --sidebar-active-text: #ffffff;
   --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
 
   /* Borders */
-  --border-color:   #2e2c45;
-  --border-input:   #3a3852;
+  --border-color:   #292941;
+  --border-input:   #292941;
 
   /* Cards */
   --card-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);

@@ -1,12 +1,12 @@
-with open('c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/admin/AdminLayout.css', 'r', encoding='utf-8') as f:
+import re
+with open('c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/admin/AdminChatbot.css', 'r', encoding='utf-8') as f:
     content = f.read()
 
-import re
-content = re.sub(
-    r'\.page-nav-btn\.active-page\s*\{([^\}]+)color:\s*var\(--sidebar-active-text,\s*#ffffff\);',
-    r'.page-nav-btn.active-page {\1color: #ffffff;',
-    content
-)
+# Fix the broken syntax
+# We will just remove any loose '50% { ... } }' block
+broken_block = '''  50% { transform: translateY(-10px); box-shadow: 0 10px 30px rgba(110, 63, 243, 0.55); }
+}'''
+content = content.replace(broken_block, '')
 
-with open('c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/admin/AdminLayout.css', 'w', encoding='utf-8') as f:
+with open('c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/admin/AdminChatbot.css', 'w', encoding='utf-8') as f:
     f.write(content)

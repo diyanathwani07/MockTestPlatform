@@ -1115,3 +1115,34 @@ body.dark-mode .practice-question-card::before,
   }
 }
 
+
+/* --- DARK THEME POLISH OVERRIDES --- */
+body.dark-mode .practice-card {
+  border: 1px solid #292941 !important;
+  box-shadow: none !important;
+  background: var(--bg-card) !important;
+}
+
+body.dark-mode .practice-card:hover {
+  border-color: #6D35D9 !important;
+  box-shadow: none !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Tone down hover glow on Start Practice Button */
+body.dark-mode .practice-card:hover .practice-start-btn {
+  background: #6D35D9 !important;
+  box-shadow: none !important;
+}
+
+/* Medium Difficulty Badge */
+body.dark-mode .practice-difficulty {
+  background: #232338 !important;
+  color: #C8C3E8 !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+}
