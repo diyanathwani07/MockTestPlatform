@@ -33,7 +33,7 @@ export default function StudentOnboarding() {
     const fetchExams = async () => {
       try {
         const token = localStorage.getItem("token");
-        const headers = token ? { Authorization: Bearer  } : {};
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-series`, { headers });
         setExamSeries(res.data.data || res.data || []);
       } catch (err) {
@@ -77,7 +77,7 @@ export default function StudentOnboarding() {
         onboardingCompleted: true,
         onboardingData: formData
       }, {
-        headers: { Authorization: Bearer  }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
       const updatedUser = { ...user, fullName: formData.name, onboardingCompleted: true, onboardingData: formData };
