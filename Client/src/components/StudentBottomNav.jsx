@@ -18,10 +18,10 @@ const StudentBottomNav = () => {
             {/* Gradient overlay for glossy effect */}
             <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ background: 'linear-gradient(to bottom, var(--primary), transparent)' }}></div>
             
-            <IconComponent size={16} className="text-white relative z-10" />
+            <IconComponent size={16} className="text-[var(--primary)] relative z-10" />
           </div>
           <div className="flex flex-col items-center mt-[2px]">
-             <span className="text-[9px] text-white font-medium leading-none tracking-wide">{label}</span>
+             <span className="text-[9px] text-[var(--primary)] font-medium leading-none tracking-wide">{label}</span>
              <div 
                className="rounded-full w-1 h-1 mt-1" 
                style={{ backgroundColor: 'var(--primary)', boxShadow: '0 0 4px 1px var(--primary)' }}
@@ -31,7 +31,7 @@ const StudentBottomNav = () => {
       );
     }
     return (
-      <div className="flex flex-col justify-center items-center h-full opacity-70">
+      <div className="flex flex-col justify-center items-center h-full opacity-90">
         <div className="flex justify-center items-center w-8 h-8">
           <IconComponent size={20} className="text-[var(--bottom-nav-text)]" />
         </div>
@@ -44,7 +44,7 @@ const StudentBottomNav = () => {
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 w-full z-[999] select-none" style={{ height: 'calc(75px + env(safe-area-inset-bottom))' }}>
+    <nav className="md:hidden fixed bottom-0 left-0 w-full z-[999] select-none" style={{ height: 'calc(75px + env(safe-area-inset-bottom))', filter: 'drop-shadow(0 -4px 24px rgba(0, 0, 0, 0.08))' }}>
       
       {/* Safe Area Fill for iOS */}
       <div className="absolute bottom-0 left-0 w-full " style={{ height: 'env(safe-area-inset-bottom)', backgroundColor: 'var(--bottom-nav-end)' }}></div>
@@ -199,7 +199,7 @@ const StudentBottomNav = () => {
           </svg>
 
           {/* Exam Icon */}
-          <ClipboardList size={22} className="text-white relative z-10 -top-[2px]" strokeWidth={2.5} />
+          <ClipboardList size={22} className="text-white relative z-10 -top-[2px]" strokeWidth={2.5} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
         </NavLink>
       </div>
 
