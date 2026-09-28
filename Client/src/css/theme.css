@@ -455,3 +455,102 @@ body.dark-mode .lb-pillar {
 body.dark-mode .lb-spot-1 .lb-pillar {
   background: linear-gradient(180deg, rgba(110, 63, 243, 0.25) 0%, rgba(110, 63, 243, 0) 100%) !important;
 }
+/* ============================================
+   GLOBAL DESIGN SYSTEM POLISH (DARK MODE)
+   ============================================ */
+
+/* 1. Refine all cards, panels, and surfaces */
+body.dark-mode .card,
+body.dark-mode .stat-card,
+body.dark-mode .question-section,
+body.dark-mode .candidate-panel,
+body.dark-mode .login-card,
+body.dark-mode .form-card,
+body.dark-mode .quiz-table-wrapper,
+body.dark-mode .review-item,
+body.dark-mode .option-card,
+body.dark-mode .manage-quizzes-container,
+body.dark-mode .create-quiz-container,
+body.dark-mode .acb-window,
+body.dark-mode .practice-card,
+body.dark-mode .admin-dashboard-container .stat-card,
+body.dark-mode .sd-subject-card,
+body.dark-mode .custom-quiz-item,
+body.dark-mode .mp-menu-item,
+body.dark-mode .desktop-legal-card,
+body.dark-mode .mp-profile-summary,
+body.dark-mode .result-summary,
+body.dark-mode .result-details {
+  border: 1px solid var(--border-color, #292941) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+body.dark-mode .card:hover,
+body.dark-mode .stat-card:hover,
+body.dark-mode .practice-card:hover,
+body.dark-mode .sd-subject-card:hover,
+body.dark-mode .custom-quiz-item:hover,
+body.dark-mode .mp-menu-item:hover,
+body.dark-mode .option-card:hover {
+  box-shadow: none !important;
+  border-color: #6D35D9 !important;
+}
+
+/* 2. Global Badges as Professional Metadata */
+body.dark-mode .practice-difficulty,
+body.dark-mode .status-badge,
+body.dark-mode .role-outline-badge,
+body.dark-mode .question-badge,
+body.dark-mode .practice-subject-badge,
+body.dark-mode .badge,
+body.dark-mode .mp-badge-student {
+  background: #232338 !important;
+  color: #C8C3E8 !important;
+  border: 1px solid #292941 !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Semantic Badge Overrides (Subtle) */
+body.dark-mode .status-published, 
+body.dark-mode .role-super, 
+body.dark-mode .role-user {
+  background: rgba(16, 185, 129, 0.08) !important;
+  color: #34D399 !important;
+  border-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+body.dark-mode .status-draft {
+  background: rgba(245, 158, 11, 0.08) !important;
+  color: #FBBF24 !important;
+  border-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+body.dark-mode .role-admin {
+  background: rgba(56, 189, 248, 0.08) !important;
+  color: #38BDF8 !important;
+  border-color: rgba(56, 189, 248, 0.15) !important;
+}
+
+/* 3. Global Action Buttons (Tone down overly bright purple hover states) */
+body.dark-mode .btn-primary:hover,
+body.dark-mode .practice-start-btn:hover,
+body.dark-mode .manage-command-btn.primary:hover {
+  background: #6D35D9 !important;
+  box-shadow: none !important;
+}
+
+/* 4. Subdued active sidebar link */
+body.dark-mode .sidebar-link.active,
+body.dark-mode .admin-sidebar-nav a.active {
+  background: #6D35D9 !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
