@@ -1365,3 +1365,106 @@ body.dark-mode .sp-badge {
     padding-bottom: 20px !important;
   }
 }
+
+/* DESKTOP PROFILE OVERVIEW LAYOUT */
+@media (min-width: 1024px) {
+  .mp-overview {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  
+  .mp-profile-summary {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    column-gap: 24px;
+    row-gap: 4px;
+    align-items: center;
+    background: var(--bg-card, #16112a);
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid var(--border-color, rgba(255,255,255,0.05));
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    margin-bottom: 0;
+  }
+  
+  .mp-profile-summary .mp-avatar-wrapper {
+    grid-row: 1 / 4;
+    grid-column: 1;
+    margin-bottom: 0;
+  }
+  
+  .mp-profile-summary .mp-avatar {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .mp-profile-summary .mp-name {
+    grid-row: 1;
+    grid-column: 2;
+    margin: 0;
+    align-self: end;
+    text-align: left;
+    font-size: 24px;
+  }
+  
+  .mp-profile-summary .mp-student-id {
+    grid-row: 2;
+    grid-column: 2;
+    margin: 0;
+    text-align: left;
+    font-size: 14px;
+  }
+  
+  .mp-profile-summary .mp-badge-student {
+    grid-row: 3;
+    grid-column: 2;
+    margin: 0;
+    justify-self: start;
+  }
+  
+  .mp-menu-group-title {
+    display: none !important;
+  }
+
+  .mp-menu-group {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 20px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: visible !important;
+  }
+  
+  .mp-menu-item {
+    background: var(--bg-card, #16112a);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.05)) !important;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.2s ease;
+  }
+  
+  .mp-menu-item:hover {
+    border-color: var(--violet) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(110, 63, 243, 0.08);
+  }
+  
+  /* Row 1: 3 columns */
+  .mp-menu-item:nth-child(1),
+  .mp-menu-item:nth-child(2),
+  .mp-menu-item:nth-child(3) {
+    grid-column: span 2;
+  }
+  
+  /* Row 2: 2 columns */
+  .mp-menu-item:nth-child(4),
+  .mp-menu-item:nth-child(5) {
+    grid-column: span 3;
+  }
+}

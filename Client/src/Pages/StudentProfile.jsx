@@ -186,7 +186,7 @@ function StudentProfile() {
         
         <div style={{
           flex: 1,
-          maxWidth: isMobile ? '100%' : (activeScreen === 'about' ? '100%' : activeScreen === 'transactions' ? '720px' : '540px'),
+          maxWidth: isMobile ? '100%' : (activeScreen === 'overview' ? '1200px' : activeScreen === 'about' ? '100%' : activeScreen === 'transactions' ? '720px' : '540px'),
           margin: '0',
           width: '100%',
           position: 'relative',
