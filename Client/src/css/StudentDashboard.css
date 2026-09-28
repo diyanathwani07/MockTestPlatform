@@ -111,7 +111,7 @@
 
 .sidebar-link.active {
   background: var(--sidebar-active-bg, #4F22C5);
-  color: var(--sidebar-active-text, #fff);
+  color: #ffffff;
 }
 
 .sidebar-bottom {

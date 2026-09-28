@@ -312,7 +312,7 @@ button[type="submit"] {
   border: none;
   border-radius: 14px;
   background: var(--violet) !important;
-  color: var(--sidebar-active-text, #ffffff);
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;

@@ -371,7 +371,7 @@ function AdminAiPlans() {
                 borderRadius: "8px",
                 border: "none",
                 background: "var(--violet, #6E3FF3)",
-                color: "var(--sidebar-active-text, var(--primary-foreground, #fff))",
+                color: "#ffffff",
                 fontWeight: "600",
                 fontSize: "14px",
                 cursor: "pointer",

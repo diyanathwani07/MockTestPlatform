@@ -159,7 +159,7 @@ function ExamsPage() {
                           fontSize: '14px', 
                           fontWeight: '600',
                           background: 'var(--violet, #6E3FF3)',
-                          color: 'var(--sidebar-active-text, var(--primary-foreground, #ffffff))',
+                          color: '#ffffff',
                           border: 'none',
                           borderRadius: '8px',
                           cursor: 'pointer',

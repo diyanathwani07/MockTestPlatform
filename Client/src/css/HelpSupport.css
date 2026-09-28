@@ -280,7 +280,7 @@ body.dark-mode .hs-faq-header h2 {
 
 .hs-new-ticket-btn {
   background: var(--violet);
-  color: var(--sidebar-active-text, var(--primary-foreground, #fff));
+  color: #ffffff;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
@@ -392,7 +392,7 @@ body.dark-mode .hs-ticket-card:hover {
 
 .hs-ticket-view-btn:hover {
   background: var(--violet, #6E3FF3) !important;
-  color: var(--sidebar-active-text, var(--primary-foreground, #ffffff)) !important;
+  color: #ffffff !important;
 }
 
 .hs-ticket-id {

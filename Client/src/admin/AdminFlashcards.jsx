@@ -78,20 +78,20 @@ function AdminFlashcards() {
                 background: "linear-gradient(135deg, #6c3ce9 0%, #4f22c9 100%)",
                 display: "flex", justifyContent: "center", alignItems: "center",
                 boxShadow: "0 4px 20px rgba(108, 60, 233, 0.4)",
-                color: "#fff"
+                color: "var(--text-primary)"
               }}>
                 <Layers size={28} />
               </div>
               <div>
-                <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#fff", margin: "0 0 6px 0", letterSpacing: "-0.5px" }}>Flashcard Sets</h2>
-                <p style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.6)", margin: 0 }}>Manage all flashcard sets across the platform.</p>
+                <h2 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 6px 0", letterSpacing: "-0.5px" }}>Flashcard Sets</h2>
+                <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0 }}>Manage all flashcard sets across the platform.</p>
               </div>
             </div>
             <button 
               onClick={() => navigate("/admin/flashcards/create")}
               style={{
                 background: "linear-gradient(90deg, #ff715b 0%, #ff5238 100%)",
-                color: "#fff",
+                color: "var(--text-primary)",
                 border: "none",
                 padding: "12px 24px",
                 borderRadius: "12px",
@@ -128,7 +128,7 @@ function AdminFlashcards() {
                     <span style={{ fontSize: "13px", color: "#c4b5fd", fontWeight: "500" }}>Total Sets</span>
                     <ChevronRight size={14} color="rgba(196, 181, 253, 0.5)" />
                   </div>
-                  <div style={{ fontSize: "28px", fontWeight: "700", color: "#fff", lineHeight: "1.2" }}>{sets.length}</div>
+                  <div style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.2" }}>{sets.length}</div>
                 </div>
               </div>
 
@@ -147,7 +147,7 @@ function AdminFlashcards() {
                     <span style={{ fontSize: "13px", color: "#6ee7b7", fontWeight: "500" }}>Published</span>
                     <ChevronRight size={14} color="rgba(110, 231, 183, 0.5)" />
                   </div>
-                  <div style={{ fontSize: "28px", fontWeight: "700", color: "#fff", lineHeight: "1.2" }}>{publishedCount}</div>
+                  <div style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.2" }}>{publishedCount}</div>
                 </div>
               </div>
 
@@ -166,7 +166,7 @@ function AdminFlashcards() {
                     <span style={{ fontSize: "13px", color: "#fcd34d", fontWeight: "500" }}>Drafts</span>
                     <ChevronRight size={14} color="rgba(252, 211, 77, 0.5)" />
                   </div>
-                  <div style={{ fontSize: "28px", fontWeight: "700", color: "#fff", lineHeight: "1.2" }}>{draftCount}</div>
+                  <div style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.2" }}>{draftCount}</div>
                 </div>
               </div>
             </div>
@@ -178,15 +178,15 @@ function AdminFlashcards() {
               Loading Flashcard Sets...
             </div>
           ) : sets.length === 0 ? (
-            <div style={{ background: "#111019", borderRadius: "16px", padding: "60px 20px", textAlign: "center", border: "1px solid rgba(255,255,255,0.03)" }}>
+            <div style={{ background: "var(--bg-card)", borderRadius: "16px", padding: "60px 20px", textAlign: "center", border: "1px solid var(--border-color)" }}>
               <div style={{ width: "64px", height: "64px", background: "rgba(110, 63, 243, 0.1)", color: "#8b5cf6", borderRadius: "16px", display: "flex", justifyContent: "center", alignItems: "center", margin: "0 auto 20px" }}>
                 <Layers size={32} />
               </div>
-              <h3 style={{ fontSize: "18px", color: "#fff", marginBottom: "8px", fontWeight: "600" }}>No flashcard sets yet</h3>
+              <h3 style={{ fontSize: "18px", color: "var(--text-primary)", marginBottom: "8px", fontWeight: "600" }}>No flashcard sets yet</h3>
               <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>Get started by creating your first flashcard set. You can group them by exam series and subjects.</p>
               <button 
                 onClick={() => navigate("/admin/flashcards/create")}
-                style={{ background: "#ff6146", color: "#fff", border: "none", padding: "10px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                style={{ background: "#ff6146", color: "var(--text-primary)", border: "none", padding: "10px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
                 onMouseEnter={(e) => e.currentTarget.style.background = "#ff7a63"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "#ff6146"}
               >
@@ -194,16 +194,16 @@ function AdminFlashcards() {
               </button>
             </div>
           ) : (
-            <div style={{ background: "#111019", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.03)", overflow: "hidden" }}>
+            <div style={{ background: "var(--bg-card)", borderRadius: "16px", border: "1px solid var(--border-color)", overflow: "hidden" }}>
               <div className="table-responsive" style={{ overflowX: "auto", width: "100%" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "800px" }}>
                   <thead>
                     <tr>
-                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Title & Details</th>
-                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Hierarchy Map</th>
-                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Cards</th>
-                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Status</th>
-                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "right", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Actions</th>
+                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "left", borderBottom: "1px solid var(--border-color)" }}>Title & Details</th>
+                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "left", borderBottom: "1px solid var(--border-color)" }}>Hierarchy Map</th>
+                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "center", borderBottom: "1px solid var(--border-color)" }}>Cards</th>
+                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "center", borderBottom: "1px solid var(--border-color)" }}>Status</th>
+                      <th style={{ padding: "16px 24px", fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textAlign: "right", borderBottom: "1px solid var(--border-color)" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -215,7 +215,7 @@ function AdminFlashcards() {
                               <Layers size={20} />
                             </div>
                             <div>
-                              <div style={{ fontSize: "14px", fontWeight: "600", color: "#fff", marginBottom: "4px" }}>{set.title}</div>
+                              <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>{set.title}</div>
                               <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
                                 {set.difficulty} • {set.isPaid ? <span style={{ color: "#ef4444" }}>Paid (₹{(set.price !== undefined && set.price !== null ? set.price : 99)})</span> : <span style={{ color: "#10b981" }}>Free</span>}
                               </div>
@@ -223,10 +223,10 @@ function AdminFlashcards() {
                           </div>
                         </td>
                         <td style={{ padding: "16px 24px" }}>
-                          <div style={{ fontSize: "13px", color: "#fff", marginBottom: "4px", fontWeight: "500" }}>{set.examSeriesId?.title || "No Series Linked"}</div>
+                          <div style={{ fontSize: "13px", color: "var(--text-primary)", marginBottom: "4px", fontWeight: "500" }}>{set.examSeriesId?.title || "No Series Linked"}</div>
                           <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>{set.subjectName || "All Subjects"} {set.topic ? `> ${set.topic}` : ""}</div>
                         </td>
-                        <td style={{ padding: "16px 24px", textAlign: "center", fontSize: "14px", fontWeight: "600", color: "#fff" }}>{set.totalCards || 0}</td>
+                        <td style={{ padding: "16px 24px", textAlign: "center", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>{set.totalCards || 0}</td>
                         <td style={{ padding: "16px 24px", textAlign: "center" }}>
                           <span style={{ 
                             padding: "6px 12px", borderRadius: "8px", fontSize: "11px", fontWeight: "600",
