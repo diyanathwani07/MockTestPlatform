@@ -136,49 +136,87 @@ export default function MobileProfileFlow({
           <span className="mp-badge-student">Student</span>
         </div>
 
-        <h4 className="mp-menu-group-title">Account</h4>
-        <div className="mp-menu-group">
-          <MenuItem 
-            icon={<User size={18} />} 
-            title="Account Details" 
-            subtitle="View and manage your account information" 
-            onClick={() => setActiveScreen("account")} 
-          />
-          <MenuItem 
-            icon={<Clock size={18} />} 
-            title="Subscriptions & Order History" 
-            subtitle="View your active plan, payments & order receipts" 
-            onClick={() => setActiveScreen("transactions")} 
-          />
-          <MenuItem 
-            icon={<Lock size={18} />} 
-            title="Change Password" 
-            subtitle="Update your account password" 
-            onClick={() => setActiveScreen("password")} 
-          />
-        </div>
-
-        <h4 className="mp-menu-group-title">Preferences</h4>
-        <div className="mp-menu-group">
-          <MenuItem 
-            icon={<Globe size={18} />} 
-            title="Language" 
-            subtitle="Choose your preferred language" 
-            onClick={() => setActiveScreen("language")} 
-          />
-        </div>
-
-        <h4 className="mp-menu-group-title">Information</h4>
-        <div className="mp-menu-group">
-          <MenuItem 
-            icon={<Info size={18} />} 
-            title="About Us" 
-            subtitle="Learn more about PrepMark" 
-            onClick={() => setActiveScreen("about")} 
-          />
-        </div>
         
-        <div style={{ marginTop: "32px", paddingBottom: "24px", display: "flex", justifyContent: "center" }}>
+          {isDesktop ? (
+            <div className="mp-menu-group">
+              <MenuItem 
+                icon={<User size={18} />} 
+                title="Account Details" 
+                subtitle="View and manage your account information" 
+                onClick={() => setActiveScreen("account")} 
+              />
+              <MenuItem 
+                icon={<Clock size={18} />} 
+                title="Subscriptions & Order History" 
+                subtitle="View your active plan, payments & order receipts" 
+                onClick={() => setActiveScreen("transactions")} 
+              />
+              <MenuItem 
+                icon={<Lock size={18} />} 
+                title="Change Password" 
+                subtitle="Update your account password" 
+                onClick={() => setActiveScreen("password")} 
+              />
+              <MenuItem 
+                icon={<Globe size={18} />} 
+                title="Language" 
+                subtitle="Choose your preferred language" 
+                onClick={() => setActiveScreen("language")} 
+              />
+              <MenuItem 
+                icon={<Info size={18} />} 
+                title="About Us" 
+                subtitle="Learn more about PrepMark" 
+                onClick={() => setActiveScreen("about")} 
+              />
+            </div>
+          ) : (
+            <>
+              <h4 className="mp-menu-group-title">Account</h4>
+              <div className="mp-menu-group">
+                <MenuItem 
+                  icon={<User size={18} />} 
+                  title="Account Details" 
+                  subtitle="View and manage your account information" 
+                  onClick={() => setActiveScreen("account")} 
+                />
+                <MenuItem 
+                  icon={<Clock size={18} />} 
+                  title="Subscriptions & Order History" 
+                  subtitle="View your active plan, payments & order receipts" 
+                  onClick={() => setActiveScreen("transactions")} 
+                />
+                <MenuItem 
+                  icon={<Lock size={18} />} 
+                  title="Change Password" 
+                  subtitle="Update your account password" 
+                  onClick={() => setActiveScreen("password")} 
+                />
+              </div>
+
+              <h4 className="mp-menu-group-title">Preferences</h4>
+              <div className="mp-menu-group">
+                <MenuItem 
+                  icon={<Globe size={18} />} 
+                  title="Language" 
+                  subtitle="Choose your preferred language" 
+                  onClick={() => setActiveScreen("language")} 
+                />
+              </div>
+
+              <h4 className="mp-menu-group-title">Information</h4>
+              <div className="mp-menu-group">
+                <MenuItem 
+                  icon={<Info size={18} />} 
+                  title="About Us" 
+                  subtitle="Learn more about PrepMark" 
+                  onClick={() => setActiveScreen("about")} 
+                />
+              </div>
+            </>
+          )}
+
+          <div style={{ marginTop: "32px", paddingBottom: "24px", display: "flex", justifyContent: "center" }}>
           <SimpleFooter />
         </div>
       </div>

@@ -1386,7 +1386,7 @@ body.dark-mode .sp-badge {
     padding: 32px;
     border: 1px solid var(--border-color, rgba(255,255,255,0.05));
     box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    margin-bottom: 0;
+    margin-bottom: 24px;
   }
   
   .mp-profile-summary .mp-avatar-wrapper {
