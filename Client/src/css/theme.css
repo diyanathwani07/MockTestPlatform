@@ -8,6 +8,11 @@
    ============================================ */
 
 :root {
+  /* Bottom Nav Variables */
+  --bottom-nav-start: #FFFFFF;
+  --bottom-nav-end: #F8FAFC;
+  --bottom-nav-text: #64748B;
+
   /* Backgrounds */
   --bg-page:        #FBF1FF;
   --bg-card:        #ffffff;
@@ -77,6 +82,11 @@
 }
 
 [data-theme="dark"], body.dark-mode {
+  /* Bottom Nav Variables */
+  --bottom-nav-start: #1A1A2A;
+  --bottom-nav-end: #0D0D16;
+  --bottom-nav-text: #A7A3BD;
+
   /* Backgrounds */
   --bg-page:        #0D0D16;
   --bg-card:        #1A1A2A;

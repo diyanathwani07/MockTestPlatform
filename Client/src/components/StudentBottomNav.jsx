@@ -33,10 +33,10 @@ const StudentBottomNav = () => {
     return (
       <div className="flex flex-col justify-center items-center h-full opacity-70">
         <div className="flex justify-center items-center w-8 h-8">
-          <IconComponent size={20} className="text-[#8D8D93]" />
+          <IconComponent size={20} className="text-[var(--bottom-nav-text)]" />
         </div>
         <div className="flex flex-col items-center mt-[2px]">
-           <span className="text-[9px] text-[#8D8D93] font-medium leading-none tracking-wide">{label}</span>
+           <span className="text-[9px] text-[var(--bottom-nav-text)] font-medium leading-none tracking-wide">{label}</span>
            <div className="w-1 h-1 mt-1 opacity-0"></div>
         </div>
       </div>
@@ -47,7 +47,7 @@ const StudentBottomNav = () => {
     <nav className="md:hidden fixed bottom-0 left-0 w-full z-[999] select-none" style={{ height: 'calc(75px + env(safe-area-inset-bottom))' }}>
       
       {/* Safe Area Fill for iOS */}
-      <div className="absolute bottom-0 left-0 w-full bg-[#0F1012]" style={{ height: 'env(safe-area-inset-bottom)' }}></div>
+      <div className="absolute bottom-0 left-0 w-full " style={{ height: 'env(safe-area-inset-bottom)', backgroundColor: 'var(--bottom-nav-end)' }}></div>
 
       {/* --- Seamless Edge Fillers for screens wider than 390px --- */}
       {/* Left Filler */}
@@ -56,7 +56,7 @@ const StudentBottomNav = () => {
         style={{ 
            width: 'calc(50vw - 194px)', /* 195px half, overlap slightly to prevent gap */
            bottom: 'env(safe-area-inset-bottom)',
-           background: 'linear-gradient(180deg, #2A303E 0%, #0F1012 100%)',
+           background: 'linear-gradient(180deg, var(--bottom-nav-start) 0%, var(--bottom-nav-end) 100%)',
            boxShadow: 'inset 0 1px 10px 0 rgba(0,0,0,0.1)'
         }}
       >
@@ -70,7 +70,7 @@ const StudentBottomNav = () => {
         style={{ 
            width: 'calc(50vw - 194px)',
            bottom: 'env(safe-area-inset-bottom)',
-           background: 'linear-gradient(180deg, #2A303E 0%, #0F1012 100%)',
+           background: 'linear-gradient(180deg, var(--bottom-nav-start) 0%, var(--bottom-nav-end) 100%)',
            boxShadow: 'inset 0 1px 10px 0 rgba(0,0,0,0.1)'
         }}
       >
@@ -126,8 +126,8 @@ const StudentBottomNav = () => {
           />
           <defs>
             <linearGradient id="paint0_linear_40_54_nav" x1="195" y1="0" x2="195" y2="85" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#2A303E" />
-              <stop offset="1" stopColor="#0F1012" />
+              <stop stopColor="var(--bottom-nav-start)" />
+              <stop offset="1" stopColor="var(--bottom-nav-end)" />
             </linearGradient>
           </defs>
         </svg>
