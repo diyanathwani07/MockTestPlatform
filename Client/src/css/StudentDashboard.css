@@ -423,8 +423,8 @@ body:not(.dark-mode) .ambient-glow-circle-2 {
 
 @media (max-width: 768px) {
   .sd-hero {
-    padding: 36px 28px;
-    min-height: 180px;
+    padding: 24px 20px;
+    min-height: auto;
     border-radius: 20px;
     margin: 10px 16px 16px 16px;
   }
