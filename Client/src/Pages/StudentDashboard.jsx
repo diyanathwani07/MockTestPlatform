@@ -220,7 +220,7 @@ function StudentDashboard() {
       <div className="sd-main-content">
         <StudentNavbar title="Dashboard" />
 
-        <div style={{ padding: '10px 24px 0 24px' }}>
+        <div className='sd-banner-wrapper' style={{ padding: '10px 24px 0 24px' }}>
           <DashboardBannerCarousel />
         </div>
 

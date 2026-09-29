@@ -426,7 +426,7 @@ body:not(.dark-mode) .ambient-glow-circle-2 {
     padding: 24px 20px;
     min-height: auto;
     border-radius: 20px;
-    margin: 10px 16px 16px 16px;
+    margin: 0px 16px 16px 16px;
   }
   .sd-hero-content {
     max-width: 100%;
@@ -786,7 +786,12 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 }
 
 /* ── CONTENT AREA ── */
-.sd-content {
+
+  .sd-banner-wrapper {
+    padding: 0px 16px 0 16px !important;
+  }
+
+  .sd-content {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto 0 0;
@@ -1149,6 +1154,11 @@ body.dark-mode .mobile-sidebar-toggle {
   .sd-hero-target-pill .target-icon {
     flex-shrink: 0;
   }
+  
+  .sd-banner-wrapper {
+    padding: 0px 16px 0 16px !important;
+  }
+
   .sd-content { padding: 24px 20px 40px; }
   
   .sd-stats-grid { 
