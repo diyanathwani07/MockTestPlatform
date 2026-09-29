@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useTheme } from "../context/ThemeContext";
-import { Sun, Moon, Eye, EyeOff, User, Phone, Mail, Lock, MapPin, Map, ArrowRight } from "lucide-react";
+import { Sun, Moon, Eye, EyeOff, User, Phone, Mail, Lock, MapPin, Map, ArrowRight, Calendar, Users } from "lucide-react";
 import BorderGlow from "../components/BorderGlow";
 import SimpleFooter from "../components/SimpleFooter";
 import "../css/Login.css";
@@ -33,6 +33,8 @@ function Register() {
     confirmPassword: "",
     district: "",
     state: "",
+    gender: "",
+    age: "",
   });
 
   const handleChange = (e) => {
@@ -308,6 +310,45 @@ return (
                 value={formData.state}
                 onChange={handleChange}
                 required
+              />
+            </div>
+
+            <div className="input-box">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Users size={12} />
+                </span>
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+              >
+                <option value="" disabled>Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div className="input-box">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="label-icon-circle">
+                  <Calendar size={12} />
+                </span>
+                Age
+              </label>
+              <input
+                type="number"
+                name="age"
+                placeholder="Enter age"
+                value={formData.age}
+                onChange={handleChange}
+                required
+                min="10"
+                max="100"
               />
             </div>
 

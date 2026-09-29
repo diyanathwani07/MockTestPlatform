@@ -15,6 +15,8 @@ const registerUser = async (req, res) => {
   state,
   role,
   adminSecretKey,
+  gender,
+  dateOfBirth,
 } = req.body;
 
     const userExists = await User.findOne({ email });
@@ -56,6 +58,8 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
       district,
       state,
+      gender,
+      dateOfBirth,
       role: finalRole,
     });
 
