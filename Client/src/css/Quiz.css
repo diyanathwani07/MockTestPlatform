@@ -1005,7 +1005,21 @@ body.dark-mode .quiz-question-card::before,
   }
 }
 @media (max-width: 768px) {
-  .quiz-action-bar {
+  
+}
+
+@media (max-width: 768px) {
+  .quiz-action-left {
     display: none !important;
+  }
+  .quiz-action-right {
+    display: flex !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    flex-direction: row !important;
+  }
+  .quiz-action-right button {
+    flex: 1;
+    margin: 0 4px;
   }
 }
