@@ -1,0 +1,20 @@
+76:   const [warningMsg, setWarningMsg] = useState("");
+77:   const [violations, setViolations] = useState(0);
+78:   const MAX_VIOLATIONS = 3;
+79: 
+80:   // ── Enter fullscreen on quiz load ──
+81:   useEffect(() => {
+82:     if (isPreview) return; // Disable anti-cheat for preview
+83: 
+84:     const el = document.documentElement;
+85:     if (el.requestFullscreen) el.requestFullscreen();
+86:     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+87:     else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+88: 
+89:     return () => {
+90:       // Exit fullscreen when leaving the quiz page
+91:       if (document.exitFullscreen && document.fullscreenElement) {
+92:         document.exitFullscreen();
+93:       }
+94:     };
+95:   }, []);

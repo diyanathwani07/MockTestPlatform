@@ -82,9 +82,9 @@ function Quiz() {
     if (isPreview) return; // Disable anti-cheat for preview
 
     const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+    if (el.requestFullscreen) { el.requestFullscreen().catch(() => {}); }
+    else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+    else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
 
     return () => {
       // Exit fullscreen when leaving the quiz page
@@ -1076,7 +1076,7 @@ function Quiz() {
       </div>
 
       {/* ─── MOBILE STICKY FOOTER ─── */}
-      <div className="mobile-quiz-footer">
+      <div className="mobile-quiz-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', height: '65px' }}>
         <div className="mobile-progress-bar-container">
           <div 
             className="mobile-progress-fill" 
@@ -1085,14 +1085,39 @@ function Quiz() {
         </div>
         
         <button 
+          onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))} 
+          disabled={currentQuestion === 0 || lockPreviousQuestions}
+          style={{ padding: '10px 16px', borderRadius: '10px', background: '#F1EFFA', color: '#2D1B69', border: '1.5px solid #D8D3F0', fontWeight: '700', fontSize: '13px', zIndex: 10, opacity: (currentQuestion === 0 || lockPreviousQuestions) ? 0.5 : 1 }}
+        >
+          Prev
+        </button>
+
+        <button 
           className="mobile-fab-palette"
           onClick={() => setShowPaletteMobile(!showPaletteMobile)}
         >
           <div className="fab-icon-container">
             <LayoutGrid size={24} />
           </div>
-          <span className="fab-label">Question Palette</span>
+          <span className="fab-label">Palette</span>
         </button>
+
+        {currentQuestion === questions.length - 1 ? (
+          <button 
+            onClick={submitQuiz} 
+            disabled={previewMode}
+            style={{ padding: '10px 16px', borderRadius: '10px', background: previewMode ? '#6b7280' : '#16A34A', color: '#FFFFFF', border: 'none', fontWeight: '700', fontSize: '13px', zIndex: 10, opacity: previewMode ? 0.5 : 1 }}
+          >
+            Submit
+          </button>
+        ) : (
+          <button 
+            onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))}
+            style={{ padding: '10px 16px', borderRadius: '10px', background: '#3730A3', color: '#FFFFFF', border: 'none', fontWeight: '700', fontSize: '13px', zIndex: 10 }}
+          >
+            Next
+          </button>
+        )}
       </div>
 
     </div>
