@@ -984,7 +984,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('/logo.png');
+  background-image: url('/prepmark-watermark.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 260px auto;
@@ -1002,5 +1002,10 @@ body.dark-mode .quiz-question-card::before,
   .quiz-question-card::before {
     background-size: 180px auto !important;
     background-position: center 25% !important;
+  }
+}
+@media (max-width: 768px) {
+  .quiz-action-bar {
+    display: none !important;
   }
 }

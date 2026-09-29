@@ -1,0 +1,37 @@
+
+  // Helper to turn 1800 seconds into structured timer JSX
+  const formatTimeBox = (totalSecs, overrideColor) => {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    
+    return (
+      <div className="structured-timer">
+        <div className="timer-block">
+          <span className="timer-val" style={{ color: overrideColor || "#EF4444" }}>{h.toString().padStart(2, "0")}</span>
+          <span className="timer-lbl">HR</span>
+        </div>
+        <span className="timer-colon" style={{ color: overrideColor || "#EF4444" }}>:</span>
+        <div className="timer-block">
+          <span className="timer-val" style={{ color: overrideColor || "#EF4444" }}>{m.toString().padStart(2, "0")}</span>
+          <span className="timer-lbl">MIN</span>
+        </div>
+        <span className="timer-colon" style={{ color: overrideColor || "#EF4444" }}>:</span>
+        <div className="timer-block">
+          <span className="timer-val" style={{ color: overrideColor || "#EF4444" }}>{s.toString().padStart(2, "0")}</span>
+          <span className="timer-lbl">SEC</span>
+        </div>
+      </div>
+    );
+  };
+
+  // Helper to decide button colors in the Palette
+  const getPaletteStatus = (idx) => {
+    if (reviewQuestions.includes(idx)) return "review";
+    if (userAnswers[idx] !== undefined) return "answered";
+    if (visitedQuestions.includes(idx)) return "visited";
+    return "unvisited";
+  };
+
+  if (error) {
+    return (

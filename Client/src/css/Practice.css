@@ -826,10 +826,10 @@ body.dark-mode .practice-inline-exp.danger {
   }
 
   .practice-meta-grid {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    margin-bottom: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
   }
 
   .practice-meta-grid .meta-item {
@@ -837,7 +837,7 @@ body.dark-mode .practice-inline-exp.danger {
   }
   
   .practice-title {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   /* Practice Test Nav */
@@ -1094,7 +1094,7 @@ body.dark-mode .practice-inline-exp.danger {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('/logo.png');
+  background-image: url('/prepmark-watermark.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 260px auto;
@@ -1146,3 +1146,5 @@ body.dark-mode .practice-difficulty {
   padding: 4px 8px !important;
   border-radius: 6px !important;
 }
+
+@media (min-width: 769px) { .hide-on-desktop { display: none !important; } }

@@ -64,7 +64,14 @@ function StudentNavbar({ title, onNavigateBack }) {
             return (
               <>
                 <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
-                <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "nowrap" }}>{title}</span>
+                <span 
+                  className="navbar-page-title" 
+                  style={{ color: "var(--text-primary)", fontWeight: "700", whiteSpace: "nowrap", cursor: (title === "Results" || title === "Practice") ? "pointer" : "default" }}
+                  onClick={() => {
+                    if (title === "Results") navigate("/dashboard/results");
+                    if (title === "Practice") navigate("/dashboard/practice");
+                  }}
+                >{title}</span>
               </>
             );
           })()}

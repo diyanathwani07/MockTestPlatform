@@ -723,7 +723,7 @@ function Quiz() {
 
           {/* Compact Horizontal Clock(s) - MOBILE ONLY */}
           <div className="quiz-timers-wrapper mobile-timer-only" style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap", width: "100%" }}>
-            <div className="quiz-horizontal-timer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+            <div className="quiz-horizontal-timer" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <Clock size={18} color="var(--text-secondary)" />
                 <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
@@ -919,7 +919,7 @@ function Quiz() {
           
           {/* 1. Desktop Timer Block */}
           <div className="quiz-timers-wrapper desktop-timer-only" style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px", width: "100%" }}>
-            <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "#111115", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
+            <div className="quiz-horizontal-timer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "14px 24px", borderRadius: "12px", boxShadow: "var(--card-shadow)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <Clock size={18} color="var(--text-secondary)" />
                 <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", whiteSpace: "nowrap" }}>

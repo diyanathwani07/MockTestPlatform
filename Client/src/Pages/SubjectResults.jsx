@@ -93,8 +93,9 @@ function SubjectResults() {
                 style={{
                   background: "transparent", border: "1px solid var(--border-color)", borderRadius: "8px",
                   width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", color: "var(--text-primary)"
+                  cursor: "pointer", color: "var(--text-primary)", flexShrink: 0
                 }}
+                className="hide-on-desktop"
               >
                 <ArrowLeft size={20} />
               </button>
