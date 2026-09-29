@@ -316,7 +316,7 @@ return (
           </div>
           )}
 
-          <h2 className="login-title">{!isMobile ? "Welcome Back" : (selectedRole === "admin" ? "Admin Portal" : "Student Login")}</h2>
+          <h2 className="login-title">{!isMobile ? "Welcome Back" : "Welcome Back!"}</h2>
           <div className="title-underline"></div>
 
           <p className="subtitle">{!isMobile ? "Login to continue your preparation" : "Enter your credentials to continue"}</p>
@@ -378,7 +378,7 @@ return (
             </button>
           </form>
 
-          {(!isMobile || selectedRole === "student") && (
+          {true && (
             <>
               <div className="or-divider">
                 <div className="divider-line"></div>
