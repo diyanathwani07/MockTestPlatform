@@ -1163,8 +1163,8 @@ body.dark-mode .mobile-sidebar-toggle {
   }
   .sd-stat-info h3 { font-size: 18px; margin: 0; }
   .sd-stat-info p { font-size: 11px; margin: 0; }
-  .sd-stat-icon-wrapper { width: 36px; height: 36px; border-radius: 8px; }
-  .sd-stat-icon-wrapper svg { width: 18px; height: 18px; }
+  .sd-stat-icon-wrapper { display: none; }
+  
 
   .sd-bottom-grid {
     grid-template-columns: 1fr;
