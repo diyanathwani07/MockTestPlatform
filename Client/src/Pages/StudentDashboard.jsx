@@ -8,6 +8,7 @@ import StudentNavbar from "../components/StudentNavbar";
 import { useExam } from "../context/ExamContext";
 import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info, Layers } from "lucide-react";
 import DashboardBannerCarousel from "../components/DashboardBannerCarousel";
+import StreakCard from "../components/StreakCard";
 import "../css/StudentDashboard.css";
 
 const ScoreTrendChart = ({ data }) => {
@@ -328,21 +329,8 @@ function StudentDashboard() {
         <div className="sd-bottom-grid">
           
           {/* LEFT: PERFORMANCE CHART */}
-          <div className="sd-performance-section">
-            <div className="sd-section-header" style={{ alignItems: "flex-start", marginBottom: "0" }}>
-              <div>
-                <h2 style={{ marginBottom: "4px" }}>Score Trend</h2>
-                <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0, fontWeight: "500" }}>Your average score over time</p>
-              </div>
-              <select className="sd-period-select" style={{ background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: "600", outline: "none", cursor: "pointer" }}>
-                <option>Last 6 Tests</option>
-                <option>All Time</option>
-              </select>
-            </div>
-            
-            <div className="sd-chart-container" style={{ height: "220px", width: "100%", marginTop: "16px" }}>
-              <ScoreTrendChart data={results} />
-            </div>
+          <div className="sd-performance-section" style={{ padding: 0, border: "none", background: "transparent", boxShadow: "none" }}>
+            <StreakCard results={results} />
           </div>
 
           {/* RIGHT: AVAILABLE SERIES */}
