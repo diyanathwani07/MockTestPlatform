@@ -182,7 +182,7 @@ return (
           
           <h2 style={{ marginTop: "48px", fontSize: "22px", color: "var(--text-primary)", fontWeight: "600" }}>Already have an account?</h2>
           <button 
-            onClick={() => setStep("role")}
+            onClick={() => setStep("form")}
             style={{ width: "100%", marginTop: "16px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "white", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
           >
             SIGN IN
@@ -246,60 +246,12 @@ return (
         </div>
       )}
       
-      {isMobile && step === "role" && (
-        <div className="animate-fade-in" style={{ textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: "20px", position: "relative" }}>
-            <button 
-              onClick={() => setStep("landing")}
-              style={{ position: "absolute", left: 0, zIndex: 10, background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", padding: "8px" }}
-            >
-              <ArrowLeft size={24} />
-            </button>
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <Logo size="medium" />
-            </div>
-          </div>
-
-          <div className="mobile-only-mascot" style={{ width: "100%", maxWidth: "180px", margin: "0 auto", paddingBottom: "16px", display: "flex", justifyContent: "center" }}><PrepMarkMascot state="welcome" size="min(160px, 25vh)" /></div>
-          
-          <h2 className="login-title" style={{ marginTop: "16px" }}>Welcome Back!</h2>
-          <p className="subtitle">Who is logging in today?</p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "32px" }}>
-            <button 
-              onClick={() => handleRoleSelect("student")}
-              style={{
-                width: "100%", padding: "16px", borderRadius: "12px", 
-                border: "2px solid var(--primary)", background: "rgba(138, 85, 252, 0.05)", 
-                color: "var(--text-primary)", fontWeight: "600", fontSize: "16px", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: "12px"
-              }}
-            >
-              <User size={20} color="var(--primary)" />
-              Continue as Student
-            </button>
-            <button 
-              onClick={() => handleRoleSelect("admin")}
-              style={{
-                width: "100%", padding: "16px", borderRadius: "12px", 
-                border: "1px solid var(--border-color)", background: "var(--bg-body)", 
-                color: "var(--text-primary)", fontWeight: "500", fontSize: "16px", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: "12px"
-              }}
-            >
-              <Shield size={20} color="var(--text-secondary)" />
-              Continue as Admin
-            </button>
-          </div>
-        </div>
-      )}
-
       {(!isMobile || step === "form") && (
         <div className="animate-fade-in">
           <div style={{ display: "flex", alignItems: "center", marginBottom: "20px", position: "relative" }}>
             {isMobile && (
             <button 
-              onClick={() => setStep("role")}
+              onClick={() => setStep("landing")}
               style={{ position: "absolute", left: 0, zIndex: 10, background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", padding: "8px" }}
             >
               <ArrowLeft size={24} />
