@@ -50,6 +50,7 @@ function Register() {
   }
 
   try {
+    setIsLoading(true);
     const isEmail = formData.identifier.includes("@");
     const email = isEmail ? formData.identifier : `${formData.identifier}@temp.prepmark.com`;
     const phone = isEmail ? "" : formData.identifier;
@@ -72,6 +73,7 @@ function Register() {
     alert(res.data.message);
 
     navigate("/");
+    setIsLoading(false);
   } catch (error) {
   console.log(error.response);
   console.log(error.response?.data);
@@ -81,6 +83,7 @@ function Register() {
     error.message ||
     "Registration Failed"
   );
+  setIsLoading(false);
 }
   };
 

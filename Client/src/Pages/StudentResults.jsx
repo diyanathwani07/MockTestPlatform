@@ -82,12 +82,7 @@ function StudentResults() {
                 
                 return (
                   <div key={examName} className="practice-card">
-                    <div className="practice-card-header">
-                      <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
-                        <span className="dot" style={{ backgroundColor: color.dot }}></span>
-                        Performance History
-                      </div>
-                    </div>
+
                     
                     <h3 className="practice-quiz-title">{examName}</h3>
                     

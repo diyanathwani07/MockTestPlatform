@@ -149,12 +149,7 @@ function SubjectResults() {
                     style={{ cursor: "pointer" }}
                     onClick={() => setSelectedSubjectTab(sub)}
                   >
-                    <div className="practice-card-header">
-                      <div className="practice-subject-badge" style={{ backgroundColor: color.bg, color: color.text }}>
-                        <span className="dot" style={{ backgroundColor: color.dot }}></span>
-                        Subject Results
-                      </div>
-                    </div>
+
                     
                     <h3 className="practice-quiz-title">{sub}</h3>
                     <p className="practice-quiz-desc">
