@@ -224,10 +224,7 @@ function SubjectResults() {
                           gap: "14px",
                           minHeight: "230px",
                           boxSizing: "border-box",
-                          backgroundColor: "#0B0A10",
-                          border: "1px solid rgba(110, 63, 243, 0.4)",
                           borderRadius: "16px",
-                          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)"
                         }}
                       >
                         <div>
@@ -257,7 +254,7 @@ function SubjectResults() {
 
                           {/* Score / Status */}
                           {result.showResultAfterSubmission !== false ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", backgroundColor: "#000000", padding: "12px 16px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.08)", marginBottom: "12px" }}>
+                            <div className="sr-score-box" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", padding: "12px 16px", borderRadius: "10px", marginBottom: "12px" }}>
                               <div style={{ display: "flex", justifyContent: "space-between" }}>
                                 <span>Score:</span>
                                 <span style={{ color: "#10B981" }}>{result.score}/{result.total} ({result.percentage || 0}%)</span>
@@ -281,7 +278,7 @@ function SubjectResults() {
                               const targetId = result._id || result.shareId;
                               navigate(targetId ? `/result/${targetId}` : "/result", { state: { ...result, fromAttempts: true } });
                             }}
-                            style={{ flex: 1, padding: "12px", background: "transparent", color: "#8A5CF5", border: "1px solid rgba(110, 63, 243, 0.6)", borderRadius: "12px", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", transition: "all 0.2s" }}
+                            className="sr-result-btn" style={{ flex: 1, padding: "12px", borderRadius: "12px", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", transition: "all 0.2s" }}
                           >
                             Result
                           </button>
@@ -299,7 +296,7 @@ function SubjectResults() {
                                   },
                                 });
                               }}
-                              style={{ flex: 1, padding: "12px", background: "#1F1D2B", color: "#ffffff", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", transition: "all 0.2s" }}
+                              className="sr-reattempt-btn" style={{ flex: 1, padding: "12px", borderRadius: "12px", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", transition: "all 0.2s" }}
                             >
                               Reattempt
                             </button>

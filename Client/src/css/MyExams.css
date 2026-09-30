@@ -213,8 +213,8 @@
 }
 
 .me-exam-card {
-  background: #0B0A10;
-  border: 1px solid rgba(110, 63, 243, 0.4);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -726,4 +726,59 @@
   .me-tab-btn {
     flex: 1 1 100%;
   }
+}
+
+/* Dark mode specifically requested deep dark blue with purple border */
+body.dark-mode .me-exam-card,
+.dark .me-exam-card {
+  background: #0B0A10;
+  border: 1px solid rgba(110, 63, 243, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.sr-score-box {
+  background: var(--bg-body, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+body.dark-mode .sr-score-box,
+.dark .sr-score-box {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* SubjectResults Buttons Light/Dark Mode Support */
+.sr-result-btn {
+  background: transparent;
+  color: var(--brand-color, #7B3FF3);
+  border: 1px solid var(--brand-color, #7B3FF3);
+}
+.sr-result-btn:hover {
+  background: rgba(110, 63, 243, 0.05);
+}
+
+.sr-reattempt-btn {
+  background: var(--bg-hover, #f3f4f6);
+  color: var(--text-primary, #111827);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+.sr-reattempt-btn:hover {
+  background: var(--border-color, #e5e7eb);
+}
+
+body.dark-mode .sr-result-btn,
+.dark .sr-result-btn {
+  color: #8A5CF5;
+  border: 1px solid rgba(110, 63, 243, 0.6);
+}
+
+body.dark-mode .sr-reattempt-btn,
+.dark .sr-reattempt-btn {
+  background: #1F1D2B;
+  color: #ffffff;
+  border: none;
+}
+body.dark-mode .sr-reattempt-btn:hover,
+.dark .sr-reattempt-btn:hover {
+  background: #2D2A3D;
 }
