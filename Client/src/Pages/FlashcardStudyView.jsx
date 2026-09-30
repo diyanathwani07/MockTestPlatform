@@ -181,7 +181,7 @@ function FlashcardStudyView() {
           </button>
           <div style={{fontWeight: 600}}>{setMeta.title || "Flashcards"}</div>
           <button className="fs-mobile-header-icon">
-            <Share2 size={24} />
+            
           </button>
         </div>
 
@@ -321,10 +321,7 @@ function FlashcardStudyView() {
                     {currentCard?.front}
                   </div>
                 
-                  {/* Emoji Cutout */}
-                  <div className="fs-emoji-cutout">
-                    🤫
-                  </div>
+
                 </div>
 
                 {/* BACK OF CARD */}
@@ -363,21 +360,18 @@ function FlashcardStudyView() {
                     </div>
                   )}
                 
-                  {/* Emoji Cutout */}
-                  <div className="fs-emoji-cutout">
-                    🤫
-                  </div>
+
                 </div>
                 
               </div>
             </div>
 
             {/* Navigation Controls */}
-            <div className="fs-bottom-controls" style={{ display: "flex", justifyContent: "center", gap: "16px", marginBottom: "60px", width: "100%", maxWidth: "850px", position: "relative" }}>
+            <div className="fs-bottom-controls" style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "60px", width: "100%", maxWidth: "850px", position: "relative" }}>
               
               {/* PREV */}
-              <button onClick={handlePrev} disabled={currentIndex === 0} className="fs-prev-btn fs-mobile-prev" style={{ flex: 1, maxWidth: "180px", padding: "16px", borderRadius: "30px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: currentIndex === 0 ? "var(--text-muted)" : "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontWeight: "600", cursor: currentIndex === 0 ? "not-allowed" : "pointer" }}>
-                <ArrowLeft size={18} /> Previous
+              <button onClick={handlePrev} disabled={currentIndex === 0} className="fs-prev-btn" style={{ width: "48px", height: "48px", flexShrink: 0, borderRadius: "50%", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: currentIndex === 0 ? "var(--text-muted)" : "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", cursor: currentIndex === 0 ? "not-allowed" : "pointer" }}>
+                <ArrowLeft size={20} />
               </button>
 
               {/* CENTER CONTROLS (FLIP OR LEARNING/KNOWN) */}
@@ -409,8 +403,8 @@ function FlashcardStudyView() {
               </div>
 
               {/* NEXT */}
-              <button onClick={handleNext} className="fs-prev-btn fs-mobile-prev" style={{ flex: 1, maxWidth: "180px", padding: "16px", borderRadius: "30px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontWeight: "600", cursor: "pointer" }}>
-                Next
+              <button onClick={handleNext} className="fs-next-btn" style={{ width: "48px", height: "48px", flexShrink: 0, borderRadius: "50%", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", cursor: "pointer" }}>
+                <ArrowRight size={20} />
               </button>
             </div>
             

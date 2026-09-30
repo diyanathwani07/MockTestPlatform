@@ -50,10 +50,10 @@
     margin-bottom: 20px !important;
   }
   .fs-header-row-1 {
-    display: none !important; /* Hide original header row entirely */
+    /* display: none !important; */ /* Hide original header row entirely */
   }
   .fs-header-row-2, .fs-progress-row {
-    display: none !important;
+    /* display: none !important; */
   }
   
   /* The Card Wrapper */
@@ -87,7 +87,7 @@
 
   /* Remove 'Front'/'Answer' badges on mobile */
   .fs-card-face > div:first-child {
-    display: none !important;
+    /* display: none !important; */
   }
 
   /* Add Question Mark Icon at Top */
@@ -158,7 +158,7 @@
   
   /* Controls */
   .fs-bottom-controls {
-    flex-direction: column !important;
+    flex-direction: row !important;
     gap: 16px !important;
     padding: 0 24px !important;
     margin-top: 40px !important;
@@ -174,7 +174,7 @@
 
   .fs-bottom-controls > div {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
     gap: 16px !important;
   }
   
@@ -208,6 +208,6 @@
   }
   
   .fs-mobile-prev {
-    display: none !important;
+    /* display: none !important; */
   }
 }
