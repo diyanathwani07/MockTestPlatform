@@ -1620,3 +1620,24 @@ body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
     justify-content: center !important; /* Push content to top so it doesn't float in middle */
   }
 }
+
+
+/* --- BANNER SPACING FIXES --- */
+.sd-banner-wrapper {
+  padding: 24px 40px 0 40px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .sd-banner-wrapper {
+    padding: 24px 24px 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sd-banner-wrapper {
+    padding: 16px 16px 0 16px !important;
+  }
+}
