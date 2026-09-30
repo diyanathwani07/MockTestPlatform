@@ -213,8 +213,8 @@
 }
 
 .me-exam-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: #0B0A10;
+  border: 1px solid rgba(110, 63, 243, 0.4);
   border-radius: 16px;
   padding: 20px;
   display: flex;

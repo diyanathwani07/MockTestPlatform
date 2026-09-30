@@ -26,12 +26,9 @@ function Register() {
   const [showAdminKey, setShowAdminKey] = useState(false);
 
   const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    email: "",
+    identifier: "",
     password: "",
     confirmPassword: "",
-    district: "",
     state: "",
     gender: "",
     age: "",
@@ -53,15 +50,21 @@ function Register() {
   }
 
   try {
+    const isEmail = formData.identifier.includes("@");
+    const email = isEmail ? formData.identifier : `${formData.identifier}@temp.prepmark.com`;
+    const phone = isEmail ? "" : formData.identifier;
+    const fullName = isEmail ? formData.identifier.split("@")[0] : "Student";
+    
     const res = await axios.post(
   `${import.meta.env.VITE_API_URL}/api/auth/register`,
   {
-    fullName: formData.fullName,
-    email: formData.email,
-    phone: formData.phone,
+    fullName: fullName,
+    email: email,
+    phone: phone,
     password: formData.password,
-    district: formData.district,
     state: formData.state,
+    gender: formData.gender,
+    dateOfBirth: formData.age,
     role: "user",
   }
 );
@@ -83,7 +86,7 @@ function Register() {
 
     const AuthContainer = !isMobile ? BorderGlow : 'div';
   const containerProps = !isMobile 
-    ? { className: "login-card animate-fade-in", edgeSensitivity: 30, glowColor: "260 85 70", borderRadius: 28, glowRadius: 40, glowIntensity: 1.2, coneSpread: 25, animated: true, colors: ['#7B3FF3', '#00D2FF', '#EC4899'], alwaysGlow: true }
+    ? { className: "register-card animate-fade-in", style: { maxWidth: "900px", width: "90%" }, edgeSensitivity: 30, glowColor: "260 85 70", borderRadius: 28, glowRadius: 40, glowIntensity: 1.2, coneSpread: 25, animated: true, colors: ['#7B3FF3', '#00D2FF', '#EC4899'], alwaysGlow: true }
     : { className: "auth-content-container animate-fade-in", style: { width: "100%", maxWidth: "420px", padding: "24px", display: "flex", flexDirection: "column", zIndex: 10 } };
 
 return (
@@ -181,15 +184,15 @@ return (
             <div className="input-box">
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span className="label-icon-circle">
-                  <User size={12} />
+                  <Phone size={12} />
                 </span>
-                Full Name
+                Phone Number / Email
               </label>
               <input
                 type="text"
-                name="fullName"
-                placeholder="Enter your full name"
-                value={formData.fullName}
+                name="identifier"
+                placeholder="Enter your email or phone number"
+                value={formData.identifier}
                 onChange={handleChange}
                 required
               />
@@ -198,32 +201,15 @@ return (
             <div className="input-box">
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span className="label-icon-circle">
-                  <Phone size={12} />
+                  <Map size={12} />
                 </span>
-                Phone Number
+                State
               </label>
               <input
-                type="tel"
-                name="phone"
-                placeholder="Enter phone number"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="input-box full-width">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="label-icon-circle">
-                  <Mail size={12} />
-                </span>
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter email address"
-                value={formData.email}
+                type="text"
+                name="state"
+                placeholder="Enter state"
+                value={formData.state}
                 onChange={handleChange}
                 required
               />
@@ -282,41 +268,7 @@ return (
             <div className="input-box">
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span className="label-icon-circle">
-                  <MapPin size={12} />
-                </span>
-                District
-              </label>
-              <input
-                type="text"
-                name="district"
-                placeholder="Enter district"
-                value={formData.district}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="input-box">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="label-icon-circle">
-                  <Map size={12} />
-                </span>
-                State
-              </label>
-              <input
-                type="text"
-                name="state"
-                placeholder="Enter state"
-                value={formData.state}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="input-box">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="label-icon-circle">
-                  <Users size={12} />
+                  <User size={12} />
                 </span>
                 Gender
               </label>
@@ -326,7 +278,7 @@ return (
                 onChange={handleChange}
                 required
               >
-                <option value="" disabled>Select gender</option>
+                <option value="" disabled hidden>Select gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
@@ -347,23 +299,22 @@ return (
                 value={formData.age}
                 onChange={handleChange}
                 required
-                min="10"
-                max="100"
               />
             </div>
 
             <div className="terms-box full-width" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
               <input type="checkbox" id="terms" required style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
               <label htmlFor="terms" style={{ fontSize: '14px', cursor: 'pointer', userSelect: 'none' }}>
-                I agree to the Terms & Conditions
+                I agree to the <span style={{ color: '#7b3ff3', fontWeight: 500 }}>Terms & Conditions</span>
               </label>
             </div>
-          </div>
 
-          <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px' }}>
-            <ArrowRight size={18} style={{ position: 'absolute', left: '24px' }} />
-            <span>Create Account</span>
-          </button>
+            <div className="full-width" style={{ marginTop: '16px' }}>
+              <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <ArrowRight size={20} /> Create Account
+              </button>
+            </div>
+          </div>
         </form>
 
         <div className="register-link" style={{ marginTop: '24px' }}>
