@@ -1,9 +1,23 @@
-﻿path = 'c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/StudentDashboard.css'
-with open(path, 'r', encoding='utf-8') as f:
-    lines = f.readlines()
-for i, line in enumerate(lines):
-    if '.sd-stat-card' in line and 'flex-direction: column' in lines[i+1]:
-        start = max(0, i-5)
-        end = min(len(lines), i+15)
-        print("".join(lines[start:end]))
-        break
+﻿import re
+
+css_path = 'c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/StudentDashboard.css'
+with open(css_path, 'r', encoding='utf-8') as f:
+    css = f.read()
+
+# Let's extract @media (max-width: 768px) blocks
+matches = re.findall(r'@media\s*\(\s*max-width:\s*768px\s*\)\s*\{(.*?)\}', css, re.DOTALL)
+print("--- Mobile Media Queries ---")
+for m in matches:
+    print(m)
+
+print("\n--- .sd-hero ---")
+for m in re.findall(r'\.sd-hero\s*\{[^}]*\}', css):
+    print(m)
+
+print("\n--- .sd-stats-grid ---")
+for m in re.findall(r'\.sd-stats-grid\s*\{[^}]*\}', css):
+    print(m)
+
+print("\n--- .sd-content ---")
+for m in re.findall(r'\.sd-content\s*\{[^}]*\}', css):
+    print(m)
