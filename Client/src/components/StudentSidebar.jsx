@@ -57,6 +57,10 @@ function StudentSidebar() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
+        // Prevent repetitive API calls on every page navigation
+        if (sessionStorage.getItem("_sidebar_fetched") === "true") return;
+        sessionStorage.setItem("_sidebar_fetched", "true");
+
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const headers = { Authorization: `Bearer ${token}` };
 

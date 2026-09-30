@@ -36,6 +36,14 @@ export default function NotificationBell() {
 
   // Initial load
   useEffect(() => {
+    // Prevent fetching on every route change remount
+    const lastFetch = sessionStorage.getItem("_notif_fetched_time");
+    const now = Date.now();
+    if (lastFetch && now - parseInt(lastFetch) < 30000) {
+      // If fetched less than 30s ago, skip the initial mount fetch
+      return;
+    }
+    sessionStorage.setItem("_notif_fetched_time", now.toString());
     fetchNotifications();
   }, [fetchNotifications]);
 

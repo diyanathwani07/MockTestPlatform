@@ -101,7 +101,7 @@ function SubjectResults() {
               </button>
               <div>
                 <h1 className="practice-title" style={{ margin: "0 0 4px 0" }}>
-                  {decodedExamName} {selectedSubjectTab ? `- ${selectedSubjectTab}` : ""} Results
+                  {selectedSubjectTab ? `${selectedSubjectTab} Results` : `${decodedExamName} Results`}
                 </h1>
                 <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0 }}>
                   {selectedSubjectTab ? `Review all your test attempts for ${selectedSubjectTab}.` : "Select a subject to view your attempts."}

@@ -1645,13 +1645,16 @@ body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
 /* --- MOBILE SPACING FIX --- */
 @media (max-width: 768px) {
   .sd-content {
-    padding: 0 16px 40px 16px !important; /* Removed top padding */
+    padding: 24px 16px 40px 16px !important;
   }
   .sd-hero {
-    margin-bottom: 16px !important; /* Tighter gap */
+    margin-bottom: 16px !important;
+  }
+  .sd-hero + .sd-content {
+    padding-top: 0 !important;
   }
   .sd-stats-grid {
     gap: 12px !important;
-    margin-bottom: 16px !important; /* Tighter gap to Streak Card */
+    margin-bottom: 16px !important;
   }
 }
