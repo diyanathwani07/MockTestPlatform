@@ -1,73 +1,75 @@
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ForgotPassword from "./Pages/ForgotPassword";
+const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
 import AdminRoute from "./components/AdminRoute";
 
 
-import AdminDashboard from "./admin/AdminDashboard";
-import CreateQuiz from "./admin/CreateQuiz";
-import EditQuiz from "./admin/EditQuiz";
-import ManageQuizzes from "./admin/ManageQuizzes";
-import AdminFlashcards from "./admin/AdminFlashcards";
-import CreateFlashcardSet from "./admin/CreateFlashcardSet";
-import ManageFlashcards from "./admin/ManageFlashcards";
-import AdminQuestions from "./admin/Questions";
-import AdminUsers from "./admin/Users";
-import AdminResults from "./admin/Results";
-import Reports from "./admin/Reports";
-import Settings from "./admin/Settings";
+const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
+const CreateQuiz = lazy(() => import("./admin/CreateQuiz"));
+const EditQuiz = lazy(() => import("./admin/EditQuiz"));
+const ManageQuizzes = lazy(() => import("./admin/ManageQuizzes"));
+const AdminFlashcards = lazy(() => import("./admin/AdminFlashcards"));
+const CreateFlashcardSet = lazy(() => import("./admin/CreateFlashcardSet"));
+const ManageFlashcards = lazy(() => import("./admin/ManageFlashcards"));
+const AdminQuestions = lazy(() => import("./admin/Questions"));
+const AdminUsers = lazy(() => import("./admin/Users"));
+const AdminResults = lazy(() => import("./admin/Results"));
+const Reports = lazy(() => import("./admin/Reports"));
+const Settings = lazy(() => import("./admin/Settings"));
 
 
-import AuditLog from "./admin/AuditLog"; // <── (Requires src/admin/AuditLog.jsx to exist!)
-import AdminProfile from "./admin/components/AdminProfile"; // <── Re-routed into 'components'
-import PracticeQuizzes from "./admin/PracticeQuizzes";
-import CreatePracticeMulti from "./admin/CreatePracticeMulti";
-import RolesPermissions from "./admin/RolesPermissions";
-import AdminTickets from "./admin/AdminTickets";
-import ExamSeriesManager from "./admin/ExamSeriesManager";
-import CreateQuizMulti from "./admin/CreateQuizMulti";
-import AdminAttempts from "./admin/AdminAttempts";
-import AdminScoreAnalytics from "./admin/AdminScoreAnalytics";
+const AuditLog = lazy(() => import("./admin/AuditLog")); // <── (Requires src/admin/AuditLog.jsx to exist!)
+const AdminProfile = lazy(() => import("./admin/components/AdminProfile")); // <── Re-routed into 'components'
+const PracticeQuizzes = lazy(() => import("./admin/PracticeQuizzes"));
+const CreatePracticeMulti = lazy(() => import("./admin/CreatePracticeMulti"));
+const RolesPermissions = lazy(() => import("./admin/RolesPermissions"));
+const AdminTickets = lazy(() => import("./admin/AdminTickets"));
+const ExamSeriesManager = lazy(() => import("./admin/ExamSeriesManager"));
+const CreateQuizMulti = lazy(() => import("./admin/CreateQuizMulti"));
+const AdminAttempts = lazy(() => import("./admin/AdminAttempts"));
+const AdminScoreAnalytics = lazy(() => import("./admin/AdminScoreAnalytics"));
 
-import Login from "./Pages/Login";
-import StudentOnboarding from "./Pages/StudentOnboarding";
-import Register from "./Pages/Register";
-import StudentDashboard from "./Pages/StudentDashboard";
-import StartTest from "./Pages/StartTest";
-import Quiz from "./Pages/Quiz";
-import Result from "./Pages/Result";
-import MyExams from "./Pages/MyExams";
-import ExamSeriesDetails from "./Pages/ExamSeriesDetails";
-import FlashcardStudyView from "./Pages/FlashcardStudyView";
-import PracticeDashboard from "./Pages/PracticeDashboard";
-import PracticeTest from "./Pages/PracticeTest";
-import PracticeResult from "./Pages/PracticeResult";
-import StudentResults from "./Pages/StudentResults";
-import SubjectResults from "./Pages/SubjectResults";
-import Leaderboard from "./Pages/Leaderboard";
-import SharedResult from "./Pages/SharedResult";
-import HelpSupport from "./Pages/HelpSupport";
-import StudentProfile from "./Pages/StudentProfile";
-import ExamsPage from "./Pages/ExamsPage";
-import PracticePage from "./Pages/PracticePage";
-import CreateCustomQuiz from "./Pages/CreateCustomQuiz";
-import PricingPlans from "./Pages/PricingPlans";
-import MySubscriptions from "./Pages/MySubscriptions";
-import AdminAiPlans from "./admin/AiPlans";
-import RevenueDashboard from "./admin/RevenueDashboard";
-import AiSubscribers from "./admin/AiSubscribers";
+const Login = lazy(() => import("./Pages/Login"));
+const StudentOnboarding = lazy(() => import("./Pages/StudentOnboarding"));
+const Register = lazy(() => import("./Pages/Register"));
+const StudentDashboard = lazy(() => import("./Pages/StudentDashboard"));
+const StartTest = lazy(() => import("./Pages/StartTest"));
+const Quiz = lazy(() => import("./Pages/Quiz"));
+const Result = lazy(() => import("./Pages/Result"));
+const MyExams = lazy(() => import("./Pages/MyExams"));
+const ExamSeriesDetails = lazy(() => import("./Pages/ExamSeriesDetails"));
+const FlashcardStudyView = lazy(() => import("./Pages/FlashcardStudyView"));
+const PracticeDashboard = lazy(() => import("./Pages/PracticeDashboard"));
+const PracticeTest = lazy(() => import("./Pages/PracticeTest"));
+const PracticeResult = lazy(() => import("./Pages/PracticeResult"));
+const StudentResults = lazy(() => import("./Pages/StudentResults"));
+const SubjectResults = lazy(() => import("./Pages/SubjectResults"));
+const Leaderboard = lazy(() => import("./Pages/Leaderboard"));
+const SharedResult = lazy(() => import("./Pages/SharedResult"));
+const HelpSupport = lazy(() => import("./Pages/HelpSupport"));
+const StudentProfile = lazy(() => import("./Pages/StudentProfile"));
+const ExamsPage = lazy(() => import("./Pages/ExamsPage"));
+const PracticePage = lazy(() => import("./Pages/PracticePage"));
+const CreateCustomQuiz = lazy(() => import("./Pages/CreateCustomQuiz"));
+const PricingPlans = lazy(() => import("./Pages/PricingPlans"));
+const MySubscriptions = lazy(() => import("./Pages/MySubscriptions"));
+const AdminAiPlans = lazy(() => import("./admin/AiPlans"));
+const RevenueDashboard = lazy(() => import("./admin/RevenueDashboard"));
+const AiSubscribers = lazy(() => import("./admin/AiSubscribers"));
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
 import { SocketProvider } from "./context/SocketContext";
-import TermsConditions from "./Pages/TermsConditions";
-import PrivacyPolicy from "./Pages/PrivacyPolicy";
-import RefundPolicy from "./Pages/RefundPolicy";
+const TermsConditions = lazy(() => import("./Pages/TermsConditions"));
+const PrivacyPolicy = lazy(() => import("./Pages/PrivacyPolicy"));
+const RefundPolicy = lazy(() => import("./Pages/RefundPolicy"));
 
 function App() {
   return (
     <BrowserRouter>
       <SocketProvider>
-        <Routes>
+        <Suspense fallback={<div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main, #0B0A10)' }}><div className="loader" style={{ width: '48px', height: '48px', border: '5px solid #4A358A', borderBottomColor: 'transparent', borderRadius: '50%', display: 'inline-block', boxSizing: 'border-box', animation: 'rotation 1s linear infinite' }}></div><style>{`@keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style></div>}>
+      <Routes>
 
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -613,6 +615,7 @@ function App() {
         />
 
       </Routes>
+      </Suspense>
       
       <ThemePicker />
       </SocketProvider>
