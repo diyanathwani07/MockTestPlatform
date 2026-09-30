@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import PrepMarkMascot from "../components/PrepMarkMascot";
@@ -7,8 +7,9 @@ import { ArrowRight, ArrowLeft, Target } from "lucide-react";
 
 export default function StudentOnboarding() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, login } = useAuth();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(location.state?.skipIntro ? 2 : 1);
   const [examSeries, setExamSeries] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -279,8 +280,12 @@ export default function StudentOnboarding() {
                   Continue
                 </button>
               </div>
-            </div>
-          )}
+                <button onClick={nextStep} style={{ marginTop: "16px", padding: "8px", background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontWeight: "500", width: "100%", fontSize: "14px", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "var(--text-primary)"} onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}>
+                  Skip for now
+                </button>
+              </div>
+            )}
+
 
           {/* STEP 5: EXPERIENCE LEVEL */}
           {step === 5 && (
@@ -318,8 +323,12 @@ export default function StudentOnboarding() {
                   Continue
                 </button>
               </div>
-            </div>
-          )}
+                <button onClick={nextStep} style={{ marginTop: "16px", padding: "8px", background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontWeight: "500", width: "100%", fontSize: "14px", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "var(--text-primary)"} onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}>
+                  Skip for now
+                </button>
+              </div>
+            )}
+
 
           {/* STEP 6: STUDY PREFERENCE */}
           {step === 6 && (
@@ -379,8 +388,12 @@ export default function StudentOnboarding() {
                   Continue
                 </button>
               </div>
-            </div>
-          )}
+                <button onClick={nextStep} style={{ marginTop: "16px", padding: "8px", background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontWeight: "500", width: "100%", fontSize: "14px", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "var(--text-primary)"} onMouseLeave={(e) => e.target.style.color = "var(--text-secondary)"}>
+                  Skip for now
+                </button>
+              </div>
+            )}
+
 
           {/* STEP 7: COMPLETE */}
           {step === 7 && (

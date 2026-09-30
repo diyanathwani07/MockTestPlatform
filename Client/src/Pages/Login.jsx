@@ -38,7 +38,7 @@ function Login() {
       } else {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         if (user.onboardingCompleted === false && isMobile) { 
-          navigate("/onboarding"); 
+          navigate("/onboarding", { state: { skipIntro: true } }); 
         } else { 
           navigate("/dashboard"); 
         }
@@ -89,10 +89,10 @@ function Login() {
           navigate("/dashboard");
         } catch (err) {
           console.error("Failed to sync onboarding", err);
-          navigate("/onboarding");
+          navigate("/onboarding", { state: { skipIntro: true } });
         }
       } else {
-        if (!res.data.user.onboardingCompleted && isMobile) { navigate("/onboarding"); } else { navigate("/dashboard"); }
+        if (!res.data.user.onboardingCompleted && isMobile) { navigate("/onboarding", { state: { skipIntro: true } }); } else { navigate("/dashboard"); }
       }
     } catch (error) {
       alert(
@@ -238,7 +238,7 @@ return (
             </div>
           </div>
           <button 
-            onClick={() => navigate("/onboarding")}
+            onClick={() => navigate("/onboarding", { state: { skipIntro: true } })}
             style={{ width: "100%", marginTop: "24px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "white", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
           >
             CONTINUE
