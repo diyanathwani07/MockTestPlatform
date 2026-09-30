@@ -50,11 +50,11 @@
     margin-bottom: 20px !important;
   }
   .fs-header-row-1 {
-    /* display: none !important; */ /* Hide original header row entirely */
+    display: none !important;
   }
-  .fs-header-row-2, .fs-progress-row {
-    /* display: none !important; */
-  }
+  .fs-header-row-2 {
+      display: none !important;
+    }
   
   /* The Card Wrapper */
   .fs-card-wrapper {
@@ -87,7 +87,7 @@
 
   /* Remove 'Front'/'Answer' badges on mobile */
   .fs-card-face > div:first-child {
-    /* display: none !important; */
+    display: none !important;
   }
 
   /* Add Question Mark Icon at Top */
@@ -208,6 +208,6 @@
   }
   
   .fs-mobile-prev {
-    /* display: none !important; */
+    display: none !important;
   }
 }
