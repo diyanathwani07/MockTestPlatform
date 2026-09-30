@@ -39,7 +39,7 @@
     position: relative;
     overflow-x: hidden;
   }
-  .dark-theme .fs-study-view {
+  .dark-mode .fs-study-view {
     background: linear-gradient(180deg, #8B5CF6 0%, #8B5CF6 45%, #0B0A10 45%, #0B0A10 100%) !important;
   }
 
@@ -80,7 +80,7 @@
     overflow: visible !important;
     justify-content: center !important;
   }
-  .dark-theme .fs-card-face {
+  .dark-mode .fs-card-face {
     background: #7C3AED !important;
     color: #FFF !important;
   }
@@ -108,7 +108,7 @@
     font-weight: 600;
     color: rgba(0,0,0,0.5);
   }
-  .dark-theme .fs-card-face::before {
+  .dark-mode .fs-card-face::before {
     background: rgba(255,255,255,0.2);
     color: rgba(255,255,255,0.8);
   }
@@ -131,7 +131,7 @@
     text-align: center;
     color: #000 !important;
   }
-  .dark-theme .fs-card-text {
+  .dark-mode .fs-card-text {
     color: #FFF !important;
   }
 
@@ -152,7 +152,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     z-index: 10;
   }
-  .dark-theme .fs-emoji-cutout {
+  .dark-mode .fs-emoji-cutout {
     background: #0B0A10;
   }
   

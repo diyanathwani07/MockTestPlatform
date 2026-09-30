@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, CheckCircle, RotateCcw, Book, Square, Eye, ArrowRight, Sun, Moon, Palette, Shuffle } from "lucide-react";
+import { ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, CheckCircle, RotateCcw, Book, Square, Eye, ArrowRight, Sun, Moon, Palette, Shuffle , Share2} from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
-import "../css/StudentDashboard.css"; // Reuse existing styles
+import "../css/StudentDashboard.css";
+import "../css/FlashcardMobile.css"; // Reuse existing styles
 
 function FlashcardStudyView() {
   const { setId } = useParams();
@@ -111,7 +112,7 @@ function FlashcardStudyView() {
 
   if (finished) {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-app)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "white", padding: "20px" }}>
+      <div className="fs-study-view" style={{ minHeight: "100vh", backgroundColor: "var(--bg-app)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "white", padding: "20px" }}>
         <div style={{ background: "var(--bg-card)", padding: "40px", borderRadius: "24px", maxWidth: "400px", width: "100%", textAlign: "center", border: "1px solid var(--border-color)" }}>
           <div style={{ fontSize: "48px", marginBottom: "16px" }}>🎉</div>
           <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Learning Complete!</h2>
@@ -166,7 +167,7 @@ function FlashcardStudyView() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-app)", display: "flex", flexDirection: "column", color: "var(--text-primary)" }}>
+    <div className="fs-study-view" style={{ minHeight: "100vh", backgroundColor: "var(--bg-app)", display: "flex", flexDirection: "column", color: "var(--text-primary)" }}>
       
       {/* Top Navigation */}
       <div className="fs-header-container" style={{ padding: "24px 40px", maxWidth: "1200px", margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: "24px" }}>
