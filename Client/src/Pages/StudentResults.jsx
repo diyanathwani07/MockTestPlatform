@@ -90,9 +90,7 @@ function StudentResults() {
                     </div>
                     
                     <h3 className="practice-quiz-title">{examName}</h3>
-                    <p className="practice-quiz-desc">
-                      Review your historical performance and analytics for this test.
-                    </p>
+                    
 
                     <div className="practice-meta-grid">
                       <div className="meta-item">

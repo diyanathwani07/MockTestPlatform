@@ -604,9 +604,7 @@ function MyExams() {
                               <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
                                 {series.title}
                               </h4>
-                              <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
-                                Practice mock exams for your preparation.
-                              </p>
+                              
                             </div>
 
                             {/* Stats row */}

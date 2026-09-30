@@ -115,19 +115,14 @@ function PracticeDashboard() {
                     </div>
                     
                     <h3 className="practice-quiz-title">{quiz.title || quiz.examGroup}</h3>
-                    <p className="practice-quiz-desc">
-                      Practice module focusing on core concepts.
-                    </p>
+                    
 
                     <div className="practice-meta-grid">
                       <div className="meta-item">
                         <HelpCircle size={14} />
                         <span>{questionCount} Questions</span>
                       </div>
-                      <div className="meta-item">
-                        <Clock size={14} />
-                        <span>Untimed</span>
-                      </div>
+                      
                     </div>
 
                     <button 
