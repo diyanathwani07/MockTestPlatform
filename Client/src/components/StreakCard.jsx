@@ -1,8 +1,9 @@
-﻿import React from 'react';
-import { Lock, Flame, Gift, Check } from 'lucide-react';
+﻿import React, { useState } from 'react';
+import { Lock, Flame, Gift, Check, Award, Star, Sparkles, Trophy, Medal, Snowflake } from 'lucide-react';
 import '../css/StreakCard.css';
 
 const StreakCard = ({ results }) => {
+  const [notify, setNotify] = useState(true);
   const calculateStreak = (results) => {
       if (!results || results.length === 0) return 0;
       
@@ -94,6 +95,71 @@ const StreakCard = ({ results }) => {
         <div className="streak-banner-text">
           <h4>Keep your streak alive!</h4>
           <p>Complete a mock test each day and win exciting rewards.</p>
+        </div>
+      </div>
+
+      <div className="streak-bottom-grid">
+        <div className="streak-badges-card">
+          <div className="streak-badges-header">
+            <Award size={20} color="#C084FC" /> Badges
+          </div>
+          <div className="streak-badges-list">
+            <div className="streak-badge-item">
+              <div className="streak-badge-icon-wrap">
+                <Star size={32} color="#FBBF24" fill="#FBBF24" />
+              </div>
+              <span className="streak-badge-title">3 days</span>
+              <span className="streak-badge-sub">Star</span>
+            </div>
+            <div className="streak-badge-item">
+              <div className="streak-badge-icon-wrap">
+                <Sparkles size={32} color="#FBBF24" fill="#FBBF24" />
+              </div>
+              <span className="streak-badge-title">5 days</span>
+              <span className="streak-badge-sub">Superstar</span>
+            </div>
+            <div className="streak-badge-item">
+              <div className="streak-badge-icon-wrap">
+                <Trophy size={32} color="#FBBF24" fill="#FBBF24" />
+              </div>
+              <span className="streak-badge-title">7 days</span>
+              <span className="streak-badge-sub">Champion</span>
+            </div>
+            <div className="streak-badge-item">
+              <div className="streak-badge-icon-wrap">
+                <Medal size={32} color="#FBBF24" fill="#FBBF24" />
+              </div>
+              <span className="streak-badge-title">31 days</span>
+              <span className="streak-badge-sub">Icon</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C084FC' }}></div>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--border-color, #2D234A)' }}></div>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--border-color, #2D234A)' }}></div>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--border-color, #2D234A)' }}></div>
+          </div>
+
+        </div>
+
+        <div className="streak-notify-card">
+          <div className="streak-notify-header">
+            <span className="streak-notify-link">View All</span>
+          </div>
+          <div className="streak-notify-box">
+            <div className="streak-notify-icon">
+              <Snowflake size={20} color="#3B82F6" />
+            </div>
+            <div className="streak-notify-content" style={{ flex: 1 }}>
+              <h5>Can you reach a 3-day streak?</h5>
+              <p>Push notify me for tomorrow's game</p>
+            </div>
+            <div 
+              className={`streak-toggle ${!notify ? 'off' : ''}`} 
+              onClick={() => setNotify(!notify)}
+            ></div>
+          </div>
+
         </div>
       </div>
     </div>
