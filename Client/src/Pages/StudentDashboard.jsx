@@ -164,7 +164,7 @@ function StudentDashboard() {
   const bestScoreExam = bestResult ? (bestResult.quizTitle || bestResult.subject || "N/A") : "No attempts yet";
 
   const availableCount = seriesList.length;
-  const recentAvailable = [...seriesList].reverse().slice(0, 3);
+  const recentAvailable = [...seriesList].reverse().slice(0, 5);
 
   const upcomingSeriesList = recentAvailable.length === 0 ? (
     <div className="sd-empty-upcoming">
