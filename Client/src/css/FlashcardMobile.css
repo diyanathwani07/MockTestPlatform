@@ -1,0 +1,213 @@
+
+/* --- FLASHCARD MOBILE & DESKTOP CSS --- */
+
+/* Hide mobile header on desktop */
+.fs-mobile-header {
+  display: none;
+}
+
+/* Hide Emoji cutout by default on desktop */
+.fs-emoji-cutout {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Show mobile header */
+  .fs-mobile-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .fs-mobile-header-icon {
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .fs-study-view {
+    padding: 0 !important;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #C29DF3 0%, #C29DF3 45%, #FFFFFF 45%, #FFFFFF 100%) !important;
+    position: relative;
+    overflow-x: hidden;
+  }
+  .dark-theme .fs-study-view {
+    background: linear-gradient(180deg, #8B5CF6 0%, #8B5CF6 45%, #0B0A10 45%, #0B0A10 100%) !important;
+  }
+
+  /* Header */
+  .fs-header-container {
+    padding: 20px 24px 0 24px !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+  }
+  .fs-header-row-1 {
+    display: none !important; /* Hide original header row entirely */
+  }
+  .fs-header-row-2, .fs-progress-row {
+    display: none !important;
+  }
+  
+  /* The Card Wrapper */
+  .fs-card-wrapper {
+    padding: 0 24px !important;
+    margin-bottom: 30px !important;
+    perspective: 1200px;
+  }
+
+  /* The Card Inner */
+  .fs-card-inner {
+    min-height: 420px !important;
+  }
+
+  /* The Card Faces */
+  .fs-card-face {
+    background: #C8A8F5 !important;
+    border-radius: 24px !important;
+    border: none !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1) !important;
+    padding: 60px 24px 40px 24px !important;
+    color: #000 !important;
+    position: relative;
+    overflow: visible !important;
+    justify-content: center !important;
+  }
+  .dark-theme .fs-card-face {
+    background: #7C3AED !important;
+    color: #FFF !important;
+  }
+
+  /* Remove 'Front'/'Answer' badges on mobile */
+  .fs-card-face > div:first-child {
+    display: none !important;
+  }
+
+  /* Add Question Mark Icon at Top */
+  .fs-card-face::before {
+    content: '?';
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 36px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.5);
+  }
+  .dark-theme .fs-card-face::before {
+    background: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.8);
+  }
+
+  /* Heart cutout bottom left */
+  .fs-card-face::after {
+    content: '🤍';
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    font-size: 24px;
+    opacity: 0.8;
+  }
+
+  /* Card Text */
+  .fs-card-text {
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-align: center;
+    color: #000 !important;
+  }
+  .dark-theme .fs-card-text {
+    color: #FFF !important;
+  }
+
+  /* Bottom Emoji Cutout Wrapper */
+  .fs-emoji-cutout {
+    display: flex !important;
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: #FFFFFF;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    z-index: 10;
+  }
+  .dark-theme .fs-emoji-cutout {
+    background: #0B0A10;
+  }
+  
+  /* Controls */
+  .fs-bottom-controls {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 0 24px !important;
+    margin-top: 40px !important;
+    margin-bottom: 40px !important;
+  }
+  
+  /* Make buttons full width */
+  .fs-bottom-controls > button,
+  .fs-bottom-controls > div {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .fs-bottom-controls > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  
+  /* Flip Button and Got it buttons */
+  .fs-flip-btn, .fs-bottom-controls > div > button {
+    width: 100% !important;
+    padding: 18px !important;
+    border-radius: 30px !important;
+    background: #B080F0 !important;
+    color: #FFF !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: none !important;
+  }
+
+  /* Next Button */
+  .fs-next-btn {
+    width: 100% !important;
+    padding: 18px !important;
+    border-radius: 30px !important;
+    background: #C29DF3 !important;
+    color: #FFF !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    justify-content: center !important;
+  }
+  
+  .fs-mobile-prev {
+    display: none !important;
+  }
+}

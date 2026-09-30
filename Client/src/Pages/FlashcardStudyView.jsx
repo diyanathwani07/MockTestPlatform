@@ -172,6 +172,18 @@ function FlashcardStudyView() {
       <div className="fs-header-container" style={{ padding: "24px 40px", maxWidth: "1200px", margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: "24px" }}>
         
         {/* Row 1: Back Button */}
+        
+        {/* Mobile Header */}
+        <div className="fs-mobile-header">
+          <button onClick={() => navigate(-1)} className="fs-mobile-header-icon">
+            <ArrowLeft size={24} />
+          </button>
+          <div style={{fontWeight: 600}}>{setMeta.title || "Flashcards"}</div>
+          <button className="fs-mobile-header-icon">
+            <Share2 size={24} />
+          </button>
+        </div>
+
         <div className="fs-header-row-1" style={{ display: "flex", width: "100%" }}>
           <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "none", border: "none", color: "var(--violet, #6E3FF3)", fontWeight: "600", fontSize: "14px", cursor: "pointer", padding: 0, whiteSpace: "nowrap" }}>
             <ArrowLeft size={16} /> Back to Flashcards
@@ -307,6 +319,11 @@ function FlashcardStudyView() {
                   <div className="fs-card-text" style={{ fontSize: "28px", fontWeight: "700", lineHeight: "1.5", color: "var(--text-primary)" }}>
                     {currentCard?.front}
                   </div>
+                
+                  {/* Emoji Cutout */}
+                  <div className="fs-emoji-cutout">
+                    🤫
+                  </div>
                 </div>
 
                 {/* BACK OF CARD */}
@@ -344,6 +361,11 @@ function FlashcardStudyView() {
                       </div>
                     </div>
                   )}
+                
+                  {/* Emoji Cutout */}
+                  <div className="fs-emoji-cutout">
+                    🤫
+                  </div>
                 </div>
                 
               </div>
@@ -353,14 +375,14 @@ function FlashcardStudyView() {
             <div className="fs-bottom-controls" style={{ display: "flex", justifyContent: "center", gap: "16px", marginBottom: "60px", width: "100%", maxWidth: "850px", position: "relative" }}>
               
               {/* PREV */}
-              <button onClick={handlePrev} disabled={currentIndex === 0} style={{ flex: 1, maxWidth: "180px", padding: "16px", borderRadius: "30px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: currentIndex === 0 ? "var(--text-muted)" : "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontWeight: "600", cursor: currentIndex === 0 ? "not-allowed" : "pointer" }}>
+              <button onClick={handlePrev} disabled={currentIndex === 0} className="fs-prev-btn fs-mobile-prev" style={{ flex: 1, maxWidth: "180px", padding: "16px", borderRadius: "30px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: currentIndex === 0 ? "var(--text-muted)" : "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontWeight: "600", cursor: currentIndex === 0 ? "not-allowed" : "pointer" }}>
                 <ArrowLeft size={18} /> Previous
               </button>
 
               {/* CENTER CONTROLS (FLIP OR LEARNING/KNOWN) */}
               <div style={{ flex: 2, maxWidth: "400px", position: "relative", display: "flex", gap: "16px", justifyContent: "center" }}>
                 {!isFlipped ? (
-                  <button onClick={handleFlip} style={{ width: "100%", padding: "16px", borderRadius: "30px", background: "var(--violet, #6E3FF3)", border: "none", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontWeight: "600", fontSize: "16px", cursor: "pointer", boxShadow: "0 8px 20px var(--accent-border, rgba(110,63,243,0.3))" }}>
+                  <button onClick={handleFlip} className="fs-flip-btn" style={{ width: "100%", padding: "16px", borderRadius: "30px", background: "var(--violet, #6E3FF3)", border: "none", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontWeight: "600", fontSize: "16px", cursor: "pointer", boxShadow: "0 8px 20px var(--accent-border, rgba(110,63,243,0.3))" }}>
                     <Eye size={20} /> Flip
                   </button>
                 ) : (
@@ -386,8 +408,8 @@ function FlashcardStudyView() {
               </div>
 
               {/* NEXT */}
-              <button onClick={handleNext} style={{ flex: 1, maxWidth: "180px", padding: "16px", borderRadius: "30px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontWeight: "600", cursor: "pointer" }}>
-                Next <ArrowRight size={18} />
+              <button onClick={handleNext} className="fs-prev-btn fs-mobile-prev" style={{ flex: 1, maxWidth: "180px", padding: "16px", borderRadius: "30px", background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontWeight: "600", cursor: "pointer" }}>
+                Next
               </button>
             </div>
             
