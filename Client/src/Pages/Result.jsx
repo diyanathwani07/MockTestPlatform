@@ -873,7 +873,37 @@ function Result() {
             display: "flex", gap: "30px", maxWidth: isExam ? "1100px" : "650px", width: "100%", justifyContent: "center", alignItems: "flex-start", boxSizing: "border-box", flexWrap: "wrap", margin: "0 auto"
           }}>
             <div className="result-modal-card" style={{ margin: 0, flex: 1.2, minWidth: "320px", maxWidth: "650px" }}>
-              <div className="rm-header">
+              
+            {/* MOBILE INSPO TOP SECTION */}
+            <div className="rm-mobile-top">
+              <h2 className="inspo-mobile-header">Quiz Result</h2>
+              
+              <div className="inspo-trophy-container">
+                <Trophy className="inspo-trophy-svg" />
+                <div className="inspo-avatar">
+                  <img src={user?.profilePicture || user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="User" />
+                </div>
+              </div>
+              
+              <h1 className="inspo-congrats">Congratulations!</h1>
+              
+              <p className="inspo-subtitle">
+                You have completed <strong>{examTitle}</strong> on {formattedDate}.<br />
+                Duration: {data?.duration || 30} Min
+              </p>
+              
+              <div className="inspo-score-box">
+                <p className="inspo-score-label">Your Score</p>
+                <div className="inspo-score-value">
+                  <span className="inspo-score-num">{score}</span>
+                  <span className="inspo-score-denom">/ {total}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* DESKTOP ORIGINAL TOP SECTION */}
+            <div className="rm-desktop-top">
+<div className="rm-header">
               <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px", color: "#F59E0B" }}>
                 <Trophy size={64} strokeWidth={1.5} />
               </div>
@@ -934,6 +964,8 @@ function Result() {
                 </p>
               </div>
             </div>
+
+                        </div>
 
             {/* Metrics Grid */}
             <div className="rm-metrics-grid">
