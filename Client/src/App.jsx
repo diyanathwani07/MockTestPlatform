@@ -271,6 +271,14 @@ function App() {
         />
 
         <Route
+          path="/dashboard/streak"
+          element={
+            <ProtectedRoute>
+              <StreakPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/leaderboard"
           element={
             <ProtectedRoute>
