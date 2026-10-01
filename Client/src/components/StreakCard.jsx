@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Flame, Snowflake } from "lucide-react";
+import { Flame, Snowflake, CheckCircle, X } from "lucide-react";
 import "../css/StreakCard.css";
 
 const StreakCard = ({ results }) => {
   const navigate = useNavigate();
+  const [showFreezeModal, setShowFreezeModal] = useState(false);
   
   const calculateStreak = (results) => {
       if (!results || !Array.isArray(results) || results.length === 0) return { streak: 0, dates: [] };
@@ -122,7 +123,7 @@ const StreakCard = ({ results }) => {
 
       {/* Freeze Ready to Use Banner inside Card */}
       <div style={{ 
-        marginTop: '24px',
+        marginTop: 'auto',
         padding: '12px 16px',
         borderRadius: '16px',
         background: 'rgba(56, 189, 248, 0.05)',

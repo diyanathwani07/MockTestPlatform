@@ -166,7 +166,7 @@ function StudentDashboard() {
   const bestScoreExam = bestResult ? (bestResult.quizTitle || bestResult.subject || "N/A") : "No attempts yet";
 
   const availableCount = seriesList.length;
-  const recentAvailable = [...seriesList].reverse().slice(0, 5);
+  const recentAvailable = [...seriesList].reverse().slice(0, 3);
 
   const upcomingSeriesList = recentAvailable.length === 0 ? (
     <div className="sd-empty-upcoming">
@@ -331,12 +331,12 @@ function StudentDashboard() {
         <div className="sd-bottom-grid">
           
           {/* LEFT: PERFORMANCE CHART */}
-          <div className="sd-performance-section" style={{ padding: 0, border: "none", background: "transparent", boxShadow: "none" }}>
+          <div className="sd-performance-section" style={{ padding: 0, border: "none", background: "transparent", boxShadow: "none", display: "flex", flexDirection: "column", height: "100%" }}>
             <StreakCard results={results} />
           </div>
 
           {/* RIGHT: AVAILABLE SERIES */}
-          <div className="sd-upcoming-section">
+          <div className="sd-upcoming-section" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <div className="sd-section-header">
               <h2>Available Series</h2>
               <span className="sd-view-all" onClick={() => navigate("/dashboard/exams")}>View All</span>

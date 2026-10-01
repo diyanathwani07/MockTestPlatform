@@ -787,9 +787,7 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 
 /* ── CONTENT AREA ── */
 
-  .sd-banner-wrapper {
-    padding: 0px 16px 0 16px !important;
-  }
+  
 
   .sd-content {
   width: 100%;
@@ -1155,9 +1153,7 @@ body.dark-mode .mobile-sidebar-toggle {
     flex-shrink: 0;
   }
   
-  .sd-banner-wrapper {
-    padding: 0px 16px 0 16px !important;
-  }
+  
 
   .sd-content { padding: 24px 20px 40px; }
   

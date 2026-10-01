@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { Sun, Moon, Bell, User, LogOut, Shield, PanelLeft } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import UniversalSearch from "./UniversalSearch";
 import { usePreview } from "../context/PreviewContext";
 import NotificationBell from "./NotificationBell";
 import { useSidebar } from "../context/SidebarContext";
@@ -78,6 +79,7 @@ function StudentNavbar({ title, onNavigateBack }) {
         </div>
 
         <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <UniversalSearch />
           
           {/* Icon Group: Theme & Notifications */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Snowflake, Flame, Star, Sparkles, Trophy, Medal, ChevronDown } from "lucide-react";
 import axios from "axios";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import StudentSidebar from "../components/StudentSidebar";
+import StudentNavbar from "../components/StudentNavbar";
+import "../css/StudentDashboard.css";
 
 function StreakPage() {
   const navigate = useNavigate();
@@ -130,15 +133,11 @@ function StreakPage() {
   });
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-main, #0B0A10)", color: "var(--text-primary)", padding: "20px", paddingBottom: "100px" }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'var(--bg-card)', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-primary)' }}>
-          <ChevronLeft size={24} />
-        </button>
-        <h2 style={{ flex: 1, textAlign: 'center', margin: 0, fontSize: '20px', fontWeight: '700' }}>Streak</h2>
-        <div style={{ width: '40px' }} /> {/* spacer */}
-      </div>
+    <div className="sd-layout">
+      <StudentSidebar />
+      <div className="sd-main-content">
+        <StudentNavbar title="Dashboard > Streak" />
+        <div className="sd-content" style={{ maxWidth: "1000px", margin: "0 auto", padding: "24px 20px" }}>
 
       {/* Hero Banner */}
       <div style={{ 
@@ -322,6 +321,8 @@ function StreakPage() {
         </div>
       </div>
 
+    </div>
+      </div>
     </div>
   );
 }

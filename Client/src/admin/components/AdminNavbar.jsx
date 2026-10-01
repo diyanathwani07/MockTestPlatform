@@ -4,6 +4,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
 import { Sun, Moon, User, LogOut, Eye, ArrowLeft, PanelLeft } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
+import UniversalSearch from "../../components/UniversalSearch";
 import NotificationBell from "../../components/NotificationBell";
 import { useSidebar } from "../../context/SidebarContext";
 import "../../css/admin/AdminLayout.css";
@@ -34,6 +35,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
       </div>
 
       <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <UniversalSearch />
         {/* Theme Toggle Button */}
         <ThemeToggle />
 
