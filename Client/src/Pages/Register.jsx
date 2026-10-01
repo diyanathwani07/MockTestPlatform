@@ -218,9 +218,7 @@ return (
         <h2 className="login-title">Create Account</h2>
         <div className="title-underline"></div>
 
-        <p className="subtitle">
-          {step === 1 ? "Step 1 (Identification): Phone / Email" : step === 2 ? "Step 2 (Verification): Enter OTP" : "Step 3 (Profile Details): Complete Registration"}
-        </p>
+
 
         
         {step === 1 && (
