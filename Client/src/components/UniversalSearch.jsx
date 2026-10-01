@@ -18,19 +18,18 @@ const UniversalSearch = () => {
     { name: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={18} /> },
     { name: "My Exams", path: "/dashboard/exams", icon: <BookOpen size={18} /> },
     { name: "Practice", path: "/dashboard/practice", icon: <PenTool size={18} /> },
-    { name: "Custom Test", path: "/dashboard/custom-test", icon: <Target size={18} /> },
+    { name: "Custom Test", path: "/dashboard/create-custom-quiz", icon: <Target size={18} /> },
     { name: "Results", path: "/dashboard/results", icon: <BarChart size={18} /> },
     { name: "Leaderboard", path: "/dashboard/leaderboard", icon: <Trophy size={18} /> },
-    { name: "Help & Support", path: "/dashboard/support", icon: <HelpCircle size={18} /> },
+    { name: "Help & Support", path: "/dashboard/help", icon: <HelpCircle size={18} /> },
     { name: "My Profile", path: "/dashboard/profile", icon: <User size={18} /> },
   ];
 
   const adminLinks = [
     { name: "Admin Dashboard", path: "/admin/dashboard", icon: <LayoutDashboard size={18} /> },
     { name: "Manage Exams", path: "/admin/exams", icon: <Layers size={18} /> },
-    { name: "Create Exam", path: "/admin/exams/create", icon: <FileText size={18} /> },
-    { name: "Manage Quizzes", path: "/admin/quizzes", icon: <FileText size={18} /> },
-    { name: "Score Analytics", path: "/admin/analytics", icon: <BarChart size={18} /> },
+    { name: "Manage Quizzes", path: "/admin/manage-quizzes", icon: <FileText size={18} /> },
+    { name: "Score Analytics", path: "/admin/score-analytics", icon: <BarChart size={18} /> },
     { name: "Flashcards", path: "/admin/flashcards", icon: <BookOpen size={18} /> },
     { name: "User Management", path: "/admin/users", icon: <Users size={18} /> },
   ];
@@ -119,7 +118,7 @@ const UniversalSearch = () => {
                     key={link.path}
                     className={`search-modal-item ${index === selectedIndex ? "selected" : ""}`}
                     onClick={() => handleSelect(link.path)}
-                    onMouseEnter={() => setSelectedIndex(index)}
+                    
                   >
                     <div className="search-modal-item-icon">{link.icon}</div>
                     <span className="search-modal-item-text">{link.name}</span>
