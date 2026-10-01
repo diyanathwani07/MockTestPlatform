@@ -83,7 +83,7 @@ const StreakCard = ({ results }) => {
       <div className="streak-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="streak-title-area">
           <div className="streak-title">
-            <span className="fire-emoji">🔥</span> Streak
+            <span className="fire-emoji">🔥</span> {streak} {streak === 1 ? "Day" : "Days"} Streak
           </div>
           <p className="streak-subtitle">Show up. Keep going. Build your streak!</p>
         </div>
@@ -112,34 +112,29 @@ const StreakCard = ({ results }) => {
               ) : (
                   <Flame size={24} color={day.isDone ? '#F59E0B' : 'rgba(59, 130, 246, 0.5)'} fill={day.isDone ? '#F59E0B' : 'rgba(59, 130, 246, 0.5)'} />
               )}
-              
-              {/* Optional Streak Badge on today (or yesterday if today is not done but yesterday is) */}
-              {day.isDone && ((day.isToday && dates.includes(day.dateStr)) || (day.isYesterday && !dates.includes(days[6].dateStr))) && streak > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-8px',
-                  right: '-8px',
-                  background: '#F59E0B',
-                  color: '#fff',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '2px solid #fff'
-                }}>
-                  {streak}
-                </div>
-              )}
             </div>
             <span style={{ fontSize: '13px', fontWeight: '600', color: day.isDone ? 'var(--text-primary)' : 'var(--text-muted)' }}>
               {day.label}
             </span>
           </div>
         ))}
+      </div>
+
+      {/* Freeze Ready to Use Banner inside Card */}
+      <div style={{ 
+        marginTop: '24px',
+        padding: '12px 16px',
+        borderRadius: '16px',
+        background: 'rgba(56, 189, 248, 0.05)',
+        border: '1px solid rgba(56, 189, 248, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px'
+      }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Snowflake size={16} color="#38BDF8" fill="#38BDF8" />
+        </div>
+        <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>1 streak freeze ready to use</span>
       </div>
     </div>
   );
