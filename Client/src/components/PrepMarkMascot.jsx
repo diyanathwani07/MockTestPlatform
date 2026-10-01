@@ -1,10 +1,8 @@
 import React from "react";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
-const PrepMarkMascot = ({ state = "welcome", size = 120 }) => {
-  // We are waiting for the actual .lottie file from the user.
-  // Replace this placeholder URL once the file is uploaded to Supabase or the public folder.
-  const lottieUrl = "/Bag.lottie";
+const PrepMarkMascot = ({ state = "welcome", size = 120, lottieFile = "Bag.lottie" }) => {
+  const lottieUrl = `/${lottieFile}`;
 
   return (
     <div
