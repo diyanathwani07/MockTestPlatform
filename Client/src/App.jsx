@@ -33,6 +33,7 @@ const AdminScoreAnalytics = lazy(() => import("./admin/AdminScoreAnalytics"));
 const Login = lazy(() => import("./Pages/Login"));
 const StudentOnboarding = lazy(() => import("./Pages/StudentOnboarding"));
 const Register = lazy(() => import("./Pages/Register"));
+const StreakPage = lazy(() => import("./Pages/StreakPage"));
 const StudentDashboard = lazy(() => import("./Pages/StudentDashboard"));
 const StartTest = lazy(() => import("./Pages/StartTest"));
 const Quiz = lazy(() => import("./Pages/Quiz"));
