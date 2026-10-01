@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
@@ -879,7 +881,7 @@ function Result() {
               <h2 className="inspo-mobile-header">Quiz Result</h2>
               
               <div className="inspo-trophy-container">
-                <Trophy className="inspo-trophy-svg" />
+                <DotLottieReact src="/Yay.lottie" loop autoplay style={{ width: "200px", height: "200px", zIndex: 10 }} />
                 <div className="inspo-avatar">
                   <img src={user?.profilePicture || user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="User" />
                 </div>
@@ -905,7 +907,7 @@ function Result() {
             <div className="rm-desktop-top">
 <div className="rm-header">
               <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px", color: "#F59E0B" }}>
-                <Trophy size={64} strokeWidth={1.5} />
+                <DotLottieReact src="/Yay.lottie" loop autoplay style={{ width: "80px", height: "80px" }} />
               </div>
               <h2>Quiz Completed!</h2>
               <p>Great job, <strong>{user.name || user.fullName}</strong>! You've completed the quiz.</p>
