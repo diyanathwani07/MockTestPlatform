@@ -47,10 +47,14 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
     ? (currency === "USD" ? `$${(quiz.originalPrice / 83).toFixed(2)}` : `₹${quiz.originalPrice}`)
     : null;
 
-  // Compute discount label only from real originalPrice
-  const discountLabel = hasOriginalPrice
-    ? `${Math.round((1 - (quiz.price / quiz.originalPrice)) * 100)}% off`
-    : (selectedPlan?.discountLabel || null);
+  // Compute discount label
+  const currentPrice = selectedPlan?.price !== undefined ? selectedPlan.price : (quiz.price !== undefined && quiz.price !== null ? quiz.price : 99);
+  let discountLabel = null;
+  if (hasOriginalPrice && quiz.originalPrice > 0) {
+    discountLabel = `${Math.round((1 - (currentPrice / quiz.originalPrice)) * 100)}% off`;
+  } else if (currentPrice > 0 && selectedPlan?.discountLabel) {
+    discountLabel = selectedPlan.discountLabel;
+  }
 
   return (
     <>
@@ -84,8 +88,8 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
         <div className="qdm-body">
           {/* Left panel info */}
           <div className="qdm-left-panel">
-            {activeTab === "Overview" && (
-              <div className="qdm-overview-content">
+            <div className="qdm-tabs-content-wrapper" style={{ display: "grid" }}>
+              <div className="qdm-overview-content" style={{ gridArea: "1 / 1", visibility: activeTab === "Overview" ? "visible" : "hidden", opacity: activeTab === "Overview" ? 1 : 0, pointerEvents: activeTab === "Overview" ? "auto" : "none", transition: "opacity 0.2s ease" }}>
                 <h4 className="qdm-section-title">Description</h4>
                 <div className="qdm-description">
                   {quiz.detailedDescription || quiz.description || (isFlashcard
@@ -115,17 +119,9 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                   </div>
                 )}
 
-                
-
-                <div className="qdm-refund-notice">
-                  <AlertTriangle size={14} className="qdm-warning-icon" />
-                  <span>Note: No Refund Policy</span>
-                </div>
               </div>
-            )}
 
-            {activeTab === "Content" && (
-              <div className="qdm-content-tab">
+              <div className="qdm-content-tab" style={{ gridArea: "1 / 1", visibility: activeTab === "Content" ? "visible" : "hidden", opacity: activeTab === "Content" ? 1 : 0, pointerEvents: activeTab === "Content" ? "auto" : "none", transition: "opacity 0.2s ease" }}>
                 <h4 className="qdm-section-title">{isFlashcard ? "Flashcard Set Overview" : "Exam Content Overview"}</h4>
                 <div className="qdm-content-items">
                   {isFlashcard ? (
@@ -157,7 +153,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                   )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Right panel buy trigger */}
