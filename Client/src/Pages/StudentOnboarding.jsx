@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -170,6 +171,9 @@ export default function StudentOnboarding() {
           {/* STEP 3: EXAM SELECTION */}
           {step === 3 && (
             <div className="animate-fade-in mt-6 text-left">
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+                <DotLottieReact src="/Bag.lottie" loop autoplay style={{ width: "120px", height: "120px" }} />
+              </div>
               <h2 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "8px", textAlign: "center" }}>
                 What are you preparing for?
               </h2>

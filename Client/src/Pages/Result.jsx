@@ -876,33 +876,6 @@ function Result() {
           }}>
             <div className="result-modal-card" style={{ margin: 0, flex: 1.2, minWidth: "320px", maxWidth: "650px" }}>
               
-            {/* MOBILE INSPO TOP SECTION */}
-            <div className="rm-mobile-top">
-              <h2 className="inspo-mobile-header">Quiz Result</h2>
-              
-              <div className="inspo-trophy-container">
-                <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Yay.lottie" : "/idk.lottie"} loop autoplay style={{ width: "200px", height: "200px", zIndex: 10 }} />
-                <div className="inspo-avatar">
-                  <img src={user?.profilePicture || user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="User" />
-                </div>
-              </div>
-              
-              <h1 className="inspo-congrats">{Number(computedPercentage) >= passThreshold ? "Congratulations!" : "Keep Practicing!"}</h1>
-              
-              <p className="inspo-subtitle">
-                You have completed <strong>{examTitle}</strong> on {formattedDate}.<br />
-                Duration: {data?.duration || 30} Min
-              </p>
-              
-              <div className="inspo-score-box">
-                <p className="inspo-score-label">Your Score</p>
-                <div className="inspo-score-value">
-                  <span className="inspo-score-num">{score}</span>
-                  <span className="inspo-score-denom">/ {total}</span>
-                </div>
-              </div>
-            </div>
-
             {/* DESKTOP ORIGINAL TOP SECTION */}
             <div className="rm-desktop-top">
 <div className="rm-header">
