@@ -74,14 +74,18 @@ router.post("/send-register-otp", async (req, res) => {
           setTimeout(() => reject(new Error("SMTP Connection or Send Timeout")), 15000)
         );
 
-        await Promise.race([emailPromise, timeoutPromise]);
+        const emailSuccess = await Promise.race([emailPromise, timeoutPromise]);
+        if (!emailSuccess) throw new Error("Email service failed");
       } catch (mailError) {
-        console.warn("Mail Send Failed or Timed Out:", mailError.message);
+        console.error("Mail Send Failed or Timed Out:", mailError.message);
+        return res.status(500).json({
+          message: "Failed to send OTP email. Please ensure backend environment variables are correctly configured.",
+        });
       }
     }
     
     res.json({
-      message: "OTP sent successfully. (Check terminal in dev mode)",
+      message: "OTP sent successfully.",
     });
 
   } catch (error) {
