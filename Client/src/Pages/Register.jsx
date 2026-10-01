@@ -130,7 +130,7 @@ function Register() {
 
     const AuthContainer = !isMobile ? BorderGlow : 'div';
   const containerProps = !isMobile 
-    ? { className: "register-card animate-fade-in", style: { maxWidth: "900px", width: "90%" }, edgeSensitivity: 30, glowColor: "260 85 70", borderRadius: 28, glowRadius: 40, glowIntensity: 1.2, coneSpread: 25, animated: true, colors: ['#7B3FF3', '#00D2FF', '#EC4899'], alwaysGlow: true }
+    ? { className: "register-card animate-fade-in", style: { maxWidth: step === 3 ? "750px" : "500px", width: "100%" }, edgeSensitivity: 30, glowColor: "260 85 70", borderRadius: 28, glowRadius: 40, glowIntensity: 1.2, coneSpread: 25, animated: true, colors: ['#7B3FF3', '#00D2FF', '#EC4899'], alwaysGlow: true }
     : { className: "auth-content-container animate-fade-in", style: { width: "100%", maxWidth: "420px", padding: "24px", display: "flex", flexDirection: "column", zIndex: 10 } };
 
 return (
