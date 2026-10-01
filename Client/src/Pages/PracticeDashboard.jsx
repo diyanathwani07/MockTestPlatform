@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
@@ -89,7 +91,9 @@ function PracticeDashboard() {
             </div>
           ) : filteredQuizzes.length === 0 ? (
             <div className="sd-empty">
-              <div className="sd-empty-icon">📭</div>
+              <div className="sd-empty-icon" style={{ width: "120px", height: "120px", margin: "0 auto" }}>
+                <DotLottieReact src="/idk.lottie" loop autoplay />
+              </div>
               <h3>No Practice Tests Found</h3>
               <p>{searchQuery ? "Try adjusting your search keywords." : "Check back soon for new learning modules."}</p>
             </div>

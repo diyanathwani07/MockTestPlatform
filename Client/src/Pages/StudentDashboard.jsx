@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
@@ -15,7 +17,7 @@ const ScoreTrendChart = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="sd-empty-chart">
-        <TrendingUp size={32} color="var(--border-input)" />
+        <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><DotLottieReact src="/idk.lottie" loop autoplay /></div>
         <p>Attempt some mocks to see your performance trend.</p>
       </div>
     );
@@ -168,7 +170,7 @@ function StudentDashboard() {
 
   const upcomingSeriesList = recentAvailable.length === 0 ? (
     <div className="sd-empty-upcoming">
-      <Calendar size={32} color="var(--border-input)" />
+      <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><DotLottieReact src="/idk.lottie" loop autoplay /></div>
       <p>No available series right now.</p>
     </div>
   ) : recentAvailable.map((series) => {
@@ -343,7 +345,7 @@ function StudentDashboard() {
             <div className="sd-upcoming-list">
               {recentAvailable.length === 0 ? (
                 <div className="sd-empty-upcoming">
-                  <Calendar size={32} color="var(--border-input)" />
+                  <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><DotLottieReact src="/idk.lottie" loop autoplay /></div>
                   <p>No available series right now.</p>
                 </div>
               ) : (

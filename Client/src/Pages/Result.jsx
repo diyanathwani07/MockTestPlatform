@@ -881,13 +881,13 @@ function Result() {
               <h2 className="inspo-mobile-header">Quiz Result</h2>
               
               <div className="inspo-trophy-container">
-                <DotLottieReact src="/Yay.lottie" loop autoplay style={{ width: "200px", height: "200px", zIndex: 10 }} />
+                <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Yay.lottie" : "/idk.lottie"} loop autoplay style={{ width: "200px", height: "200px", zIndex: 10 }} />
                 <div className="inspo-avatar">
                   <img src={user?.profilePicture || user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="User" />
                 </div>
               </div>
               
-              <h1 className="inspo-congrats">Congratulations!</h1>
+              <h1 className="inspo-congrats">{Number(computedPercentage) >= passThreshold ? "Congratulations!" : "Keep Practicing!"}</h1>
               
               <p className="inspo-subtitle">
                 You have completed <strong>{examTitle}</strong> on {formattedDate}.<br />
@@ -907,9 +907,9 @@ function Result() {
             <div className="rm-desktop-top">
 <div className="rm-header">
               <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px", color: "#F59E0B" }}>
-                <DotLottieReact src="/Yay.lottie" loop autoplay style={{ width: "80px", height: "80px" }} />
+                <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Yay.lottie" : "/idk.lottie"} loop autoplay style={{ width: "80px", height: "80px" }} />
               </div>
-              <h2>Quiz Completed!</h2>
+              <h2>{Number(computedPercentage) >= passThreshold ? "Quiz Completed!" : "Keep Practicing!"}</h2>
               <p>Great job, <strong>{user.name || user.fullName}</strong>! You've completed the quiz.</p>
             </div>
 

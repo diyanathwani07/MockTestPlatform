@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FileText, CheckCircle, Target } from "lucide-react";
@@ -57,7 +59,9 @@ function StudentResults() {
             </div>
           ) : examNames.length === 0 ? (
             <div className="sd-empty">
-              <div className="sd-empty-icon">📭</div>
+              <div className="sd-empty-icon" style={{ width: "120px", height: "120px", margin: "0 auto" }}>
+                <DotLottieReact src="/idk.lottie" loop autoplay />
+              </div>
               <h3>No Results Found</h3>
               <p>You haven't attempted any exams yet.</p>
             </div>
