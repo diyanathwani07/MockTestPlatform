@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+﻿path = 'c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/Pages/StreakPage.jsx'
+
+content = """import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Snowflake, Flame, Star, Sparkles, Trophy, Medal, ChevronDown } from "lucide-react";
 import axios from "axios";
@@ -327,3 +329,8 @@ function StreakPage() {
 }
 
 export default StreakPage;
+"""
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(content)
+print("Updated StreakPage.jsx natively")
