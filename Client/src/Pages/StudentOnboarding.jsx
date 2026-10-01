@@ -123,7 +123,7 @@ export default function StudentOnboarding() {
 
         <div style={{ backgroundColor: "var(--bg-card)", padding: "32px 24px", borderRadius: "24px", boxShadow: "0 10px 40px rgba(0,0,0,0.05)", border: "1px solid var(--border-color)", textAlign: "center" }}>
           
-          <PrepMarkMascot state={step === 6 ? "success" : "welcome"} />
+          <PrepMarkMascot state={step === 6 ? "success" : "welcome"} size={180} />
 
           {/* STEP 1: WELCOME */}
           {step === 1 && (
@@ -172,9 +172,7 @@ export default function StudentOnboarding() {
           {/* STEP 3: EXAM SELECTION */}
           {step === 3 && (
             <div className="animate-fade-in mt-6 text-left">
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
-                <DotLottieReact src="/Bag.lottie" loop autoplay style={{ width: "120px", height: "120px" }} />
-              </div>
+              
               <h2 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "8px", textAlign: "center" }}>
                 What are you preparing for?
               </h2>
