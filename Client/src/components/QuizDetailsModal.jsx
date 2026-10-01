@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CheckCircle2, AlertTriangle, X, Play, Clock, FileText, BookOpen, Layers } from "lucide-react";
+import { CheckCircle2, AlertTriangle, X, Play, Clock, FileText, BookOpen, Layers, Shield } from "lucide-react";
 import axios from "axios";
 import PhonePeGateway from "./PhonePeGateway";
 import "../css/QuizDetailsModal.css";
@@ -179,15 +179,15 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                 )}
               </div>
 
-              <div className="qdm-currency-selector">
-                <label className="qdm-currency-label">Choose Currency:</label>
+              <div className="qdm-currency-row">
+                <span className="qdm-currency-label">Currency</span>
                 <select 
                   value={currency} 
                   onChange={(e) => setCurrency(e.target.value)}
                   className="qdm-currency-select"
                 >
                   <option value="INR">INR</option>
-                  <option value="USD">USD (PayPal/Stripe)</option>
+                  <option value="USD">USD</option>
                 </select>
               </div>
             </div>
@@ -195,7 +195,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
             {/* Bottom Actions */}
             <div className="qdm-actions">
               <div className="qdm-secured-text">
-                Secured Checkout. 100% encrypted gateway.
+                <Shield size={12} className="qdm-secured-icon" /> Secured Checkout. 100% encrypted gateway.
               </div>
               <button
                 onClick={handleOpenGateway}
