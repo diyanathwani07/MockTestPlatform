@@ -136,8 +136,8 @@ function StreakPage() {
     <div className="sd-layout">
       <StudentSidebar />
       <div className="sd-main-content">
-        <StudentNavbar title="Dashboard > Streak" />
-        <div className="sd-content" style={{ maxWidth: "1000px", margin: "0 auto", padding: "24px 20px" }}>
+        <StudentNavbar title="Streak" />
+        <div className="sd-content" style={{ paddingTop: "20px" }}>
 
       {/* Hero Banner */}
       <div style={{ 
