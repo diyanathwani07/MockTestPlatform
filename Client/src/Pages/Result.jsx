@@ -880,7 +880,7 @@ function Result() {
             <div className="rm-desktop-top">
 <div className="rm-header">
               <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px", color: "#F59E0B" }}>
-                <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Yay.lottie" : "/idk.lottie"} loop autoplay style={{ width: "80px", height: "80px" }} />
+                <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "80px", height: "80px" }} />
               </div>
               <h2>{Number(computedPercentage) >= passThreshold ? "Quiz Completed!" : "Keep Practicing!"}</h2>
               <p>Great job, <strong>{user.name || user.fullName}</strong>! You've completed the quiz.</p>

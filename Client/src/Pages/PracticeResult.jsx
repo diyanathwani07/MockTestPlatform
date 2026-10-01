@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Trophy, Clock, Target, AlertTriangle, ArrowRight, RotateCcw, CheckCircle, Percent } from "lucide-react";
 import "../css/StudentDashboard.css";
 import "../css/Practice.css";
@@ -127,8 +128,8 @@ function PracticeResult() {
           <div style={{ position: "relative", marginBottom: "32px", display: "flex", justifyContent: "center", alignItems: "center" }}>
             {/* Dots / Confetti background decorator */}
             <div style={{ position: "absolute", width: "160px", height: "160px", pointerEvents: "none", opacity: 0.8, background: "radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)" }} />
-            <div style={{ width: "96px", height: "96px", borderRadius: "50%", background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 25px rgba(124, 58, 237, 0.3)" }}>
-              <Trophy size={48} color="#ffffff" />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <DotLottieReact src={accuracy >= 40 ? "/Yay.lottie" : "/idk.lottie"} loop autoplay style={{ width: "120px", height: "120px" }} />
             </div>
           </div>
 

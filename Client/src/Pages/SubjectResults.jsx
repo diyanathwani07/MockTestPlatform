@@ -105,7 +105,7 @@ function SubjectResults() {
                   {selectedSubjectTab ? `${selectedSubjectTab} Results` : `${decodedExamName} Results`}
                 </h1>
                 <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0 }}>
-                  {selectedSubjectTab ? `Review all your test attempts for ${selectedSubjectTab}.` : "Select a subject to view your attempts."}
+                  {selectedSubjectTab ? "Review all your test attempts." : "Select a subject to view your attempts."}
                 </p>
               </div>
             </div>
