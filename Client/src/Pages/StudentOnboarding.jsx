@@ -26,7 +26,8 @@ export default function StudentOnboarding() {
 
   useEffect(() => {
     // If user already completed onboarding, redirect to dashboard
-    if (user?.onboardingCompleted) {
+    const token = localStorage.getItem("token");
+    if (user?.onboardingCompleted && token) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
