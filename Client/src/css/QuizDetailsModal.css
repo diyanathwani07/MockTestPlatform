@@ -490,6 +490,28 @@ body.dark-mode .qdm-secured-text {
     animation: qdm-slide-up 0.3s ease forwards;
   }
 
+
+    .qdm-refund-notice {
+      padding: 8px 12px;
+      margin-top: 16px;
+      font-size: 11px;
+    }
+    .qdm-section-title {
+      margin-bottom: 8px;
+    }
+    .qdm-plans-list {
+      gap: 8px;
+    }
+    .qdm-plan-item {
+      padding: 10px 14px;
+    }
+    .qdm-price-row {
+      margin-bottom: 12px;
+    }
+    .qdm-currency-selector {
+      margin-bottom: 16px;
+    }
+
   @keyframes qdm-slide-up {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
@@ -521,10 +543,10 @@ body.dark-mode .qdm-secured-text {
   }
 
   .qdm-left-panel {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color, #ECE9F7);
-    padding: 20px;
-    overflow-y: visible;
+      border-right: none;
+      border-bottom: 1px solid var(--border-color, #ECE9F7);
+      padding: 12px 16px;
+      overflow-y: visible;
   }
 
   body.dark-mode .qdm-left-panel {

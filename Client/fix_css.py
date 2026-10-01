@@ -1,9 +1,12 @@
-﻿path = 'c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/StudentDashboard.css'
+﻿path = 'c:/Users/HP/OneDrive/Desktop/MockTestSeries/Client/src/css/StreakCard.css'
 with open(path, 'r', encoding='utf-8') as f:
     content = f.read()
-import re
-# Remove the ones with !important that have padding: 0px 16px 0 16px
-content = re.sub(r'\.sd-banner-wrapper\s*\{\s*padding:\s*0px\s+16px\s+0\s+16px\s+!important;\s*\}', '', content)
+
+content = content.replace(
+    '.streak-card-container > * {\n  z-index: 1;\n}',
+    '.streak-card-container > * {\n  z-index: 1;\n  flex-shrink: 0;\n}'
+)
+
 with open(path, 'w', encoding='utf-8') as f:
     f.write(content)
-print("Removed old .sd-banner-wrapper blocks.")
+print("Updated StreakCard.css flex-shrink")

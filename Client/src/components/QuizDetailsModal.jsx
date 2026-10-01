@@ -94,29 +94,28 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
                   )}
                 </div>
 
-                <div className="qdm-plans-section">
-                  <div className="qdm-offer-label">
-                    <span className="qdm-offer-dot"></span>
-                    Exclusive Launch Offer
-                  </div>
-                  {plans.map((p, idx) => (
-                    <div key={idx} className="qdm-plan-row" onClick={() => setSelectedPlan(p)}>
-                      <input 
-                        type="radio" 
-                        name="subPlan" 
-                        checked={selectedPlan?.durationMonths === p.durationMonths}
-                        onChange={() => setSelectedPlan(p)}
-                        className="qdm-radio"
-                      />
-                      <span>{p.durationMonths} Month{p.durationMonths > 1 ? 's' : ''} — <strong>₹{p.price}</strong></span>
+                {plans.length > 1 && (
+                  <div className="qdm-plans-section">
+                    <div className="qdm-offer-label">
+                      <span className="qdm-offer-dot"></span>
+                      Select Plan
                     </div>
-                  ))}
-                </div>
+                    {plans.map((p, idx) => (
+                      <div key={idx} className="qdm-plan-row" onClick={() => setSelectedPlan(p)}>
+                        <input 
+                          type="radio" 
+                          name="subPlan" 
+                          checked={selectedPlan?.durationMonths === p.durationMonths}
+                          onChange={() => setSelectedPlan(p)}
+                          className="qdm-radio"
+                        />
+                        <span>{p.durationMonths} Month{p.durationMonths > 1 ? 's' : ''} — <strong>₹{p.price}</strong></span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                <div className="qdm-note-box">
-                  <div className="qdm-note-title">🔴 Note:</div>
-                  <div className="qdm-note-text">Available only for registered student accounts. Ensure safe network conditions before starting attempt.</div>
-                </div>
+                
 
                 <div className="qdm-refund-notice">
                   <AlertTriangle size={14} className="qdm-warning-icon" />
@@ -167,7 +166,7 @@ function QuizDetailsModal({ quiz, onClose, attemptedCount = 0 }) {
             <div className="qdm-price-section">
               <div className="qdm-price-row">
                 <div>
-                  <span className="qdm-price-label">PRICE</span>
+                  <span className="qdm-price-label">PRICE {plans.length === 1 && selectedPlan ? `(${selectedPlan.durationMonths} Month${selectedPlan.durationMonths > 1 ? "s" : ""})` : ""}</span>
                   <div className="qdm-price-values">
                     <span className="qdm-current-price">{displayPrice}</span>
                     {originalPrice && <span className="qdm-original-price">{originalPrice}</span>}

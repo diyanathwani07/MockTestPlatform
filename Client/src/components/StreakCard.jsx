@@ -94,7 +94,7 @@ const StreakCard = ({ results }) => {
         </button>
       </div>
 
-      <div className="streak-timeline-container" style={{ position: 'relative', marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+      <div className="streak-timeline-container" style={{ position: 'relative', marginTop: '20px', marginBottom: '24px', display: 'flex', flexShrink: 0, justifyContent: 'space-between' }}>
         {days.map((day, i) => (
           <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
             <div style={{
