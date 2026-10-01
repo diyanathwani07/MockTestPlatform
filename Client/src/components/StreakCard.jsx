@@ -42,10 +42,11 @@ const StreakCard = ({ results }) => {
   const streak = calculateStreak(results);
   const milestoneProgress = streak === 0 ? 0 : ((streak - 1) % 7) + 1; // 1 to 7
 
+  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const days = Array.from({ length: 7 }, (_, i) => {
-    const dayNumber = i + 1;
-    const isDone = dayNumber <= milestoneProgress;
-    return { dayNumber, isDone };
+    const label = dayLabels[i];
+    const isDone = (i + 1) <= milestoneProgress;
+    return { label, isDone };
   });
 
   return (
@@ -77,7 +78,7 @@ const StreakCard = ({ results }) => {
                   <Lock size={18} color="#6B7280" />
                 )}
               </div>
-              <span className="streak-day-label">Day {day.dayNumber}</span>
+              <span className="streak-day-label">{day.label}</span>
               {day.isDone ? (
                 <span className="streak-status done"><Check size={12} strokeWidth={4} /> Done</span>
               ) : (
