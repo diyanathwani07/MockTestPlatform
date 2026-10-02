@@ -175,7 +175,7 @@ function ExamSeriesDetails() {
               {/* Header Card */}
               <div className="me-exam-card" style={{ width: "100%", cursor: "default", marginBottom: "32px", background: "linear-gradient(135deg, rgba(110, 63, 243, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)" }}>
                 <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", flexWrap: "nowrap" }}>
-                  <div className="me-exam-icon-wrapper" style={{ width: "64px", height: "64px", flexShrink: 0, borderRadius: "16px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div className="me-exam-icon-wrapper" style={{ width: "64px", height: "64px", flexShrink: 0, borderRadius: "16px", background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <BookOpen size={32} />
                   </div>
                   <div style={{ flex: 1, minWidth: "0", textAlign: "left" }}>
@@ -261,8 +261,8 @@ function ExamSeriesDetails() {
                           {fc.title}
                         </h4>
                         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
-                          <span style={{ fontSize: "10px", padding: "2px 6px", background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "#6E3FF3", borderRadius: "4px", fontWeight: "600" }}>Flashcards</span>
-                          {fc.chapter && fc.chapter.toLowerCase() !== (fc.subjectName || "General").toLowerCase() && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(99, 102, 241, 0.15)", color: "#6366F1", borderRadius: "4px", fontWeight: "600" }}>{fc.chapter}</span>}
+                          <span style={{ fontSize: "10px", padding: "2px 6px", background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)", borderRadius: "4px", fontWeight: "600" }}>Flashcards</span>
+                          {fc.chapter && fc.chapter.toLowerCase() !== (fc.subjectName || "General").toLowerCase() && <span style={{ fontSize: "10px", padding: "2px 6px", background: "color-mix(in srgb, var(--primary) 15%, transparent)", color: "var(--primary)", borderRadius: "4px", fontWeight: "600" }}>{fc.chapter}</span>}
                           {fc.topic && fc.topic.toLowerCase() !== (fc.subjectName || "General").toLowerCase() && fc.topic.toLowerCase() !== (fc.chapter || "").toLowerCase() && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(236, 72, 153, 0.15)", color: "#EC4899", borderRadius: "4px", fontWeight: "600" }}>{fc.topic}</span>}
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 12px", fontSize: "11px", color: "var(--text-secondary)", marginTop: "6px" }}>
@@ -302,7 +302,7 @@ function ExamSeriesDetails() {
                         {fc.isPaid && !fc.isPurchased ? (
                           <button 
                             className="me-btn-primary" 
-                            style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #6E3FF3, #3B82F6)" }}
+                            style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "var(--primary)" }}
                             onClick={() => setSelectedQuizForDetails({ ...fc, _type: "flashcard" })}
                           >
                             🔒 Buy Now — ₹{(fc.price !== undefined && fc.price !== null ? fc.price : 99)}
@@ -310,7 +310,7 @@ function ExamSeriesDetails() {
                         ) : (
                           <button 
                             className="me-btn-primary" 
-                            style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", background: "#6E3FF3" }}
+                            style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", background: "var(--primary)" }}
                             onClick={() => navigate(`/dashboard/flashcards/${fc._id}`)}
                           >
                             Start Learning
@@ -366,7 +366,7 @@ function ExamSeriesDetails() {
                           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
                             {quiz.pyqYear && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(245, 158, 11, 0.15)", color: "#F59E0B", borderRadius: "4px", fontWeight: "600" }}>{quiz.pyqYear}</span>}
                             {quiz.shift && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(16, 185, 129, 0.15)", color: "#10B981", borderRadius: "4px", fontWeight: "600" }}>{quiz.shift}</span>}
-                            {quiz.testFormat && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(99, 102, 241, 0.15)", color: "#6366F1", borderRadius: "4px", fontWeight: "600" }}>{quiz.testFormat}</span>}
+                            {quiz.testFormat && <span style={{ fontSize: "10px", padding: "2px 6px", background: "color-mix(in srgb, var(--primary) 15%, transparent)", color: "var(--primary)", borderRadius: "4px", fontWeight: "600" }}>{quiz.testFormat}</span>}
                             {quiz.topicName && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(236, 72, 153, 0.15)", color: "#EC4899", borderRadius: "4px", fontWeight: "600" }}>{quiz.topicName}</span>}
                             {quiz.contentType === "pdf" ? (
                               <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(239, 68, 68, 0.15)", color: "#EF4444", borderRadius: "4px", fontWeight: "600" }}>PDF</span>
@@ -424,7 +424,7 @@ function ExamSeriesDetails() {
                           {quiz.isPaid && !quiz.isPurchased ? (
                             <button 
                               className="me-btn-primary" 
-                              style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #6E3FF3, #3B82F6)" }}
+                              style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "var(--primary)" }}
                               onClick={() => setSelectedQuizForDetails(quiz)}
                             >
                               🔒 Buy Now — ₹{(quiz.price !== undefined && quiz.price !== null ? quiz.price : 99)}

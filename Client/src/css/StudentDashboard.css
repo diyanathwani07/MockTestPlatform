@@ -69,7 +69,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6E3FF3, #2D1B69);
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 50%, black));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -293,8 +293,8 @@ body:not(.dark-mode) .sd-hero-subtitle {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  background: rgba(110, 63, 243, 0.12);
-  border: 1px solid rgba(110, 63, 243, 0.25);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
   padding: 8px 8px 8px 20px;
   border-radius: 40px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -334,8 +334,8 @@ body:not(.dark-mode) .sd-hero-subtitle {
 }
 
 body:not(.dark-mode) .sd-hero-target-pill {
-  background: rgba(110, 63, 243, 0.06);
-  border: 1px solid rgba(110, 63, 243, 0.15);
+  background: color-mix(in srgb, var(--primary) 06%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 body:not(.dark-mode) .sd-hero-target-pill .target-icon,
@@ -636,7 +636,7 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 .sd-view-all {
   font-size: 13px;
   font-weight: 600;
-  color: #6E3FF3;
+  color: var(--primary);
   cursor: pointer;
 }
 
@@ -688,7 +688,7 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 
 .sd-chart-bar {
   width: 40px;
-  background: linear-gradient(180deg, #6E3FF3 0%, rgba(110,63,243,0.5) 100%);
+  background: linear-gradient(180deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 5%, transparent) 100%);
   border-radius: 6px 6px 0 0;
   position: relative;
   transition: height 0.5s ease-out;
@@ -738,8 +738,8 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 }
 
 .sd-upcoming-item:hover {
-  border-color: #6E3FF3;
-  background: rgba(110, 63, 243, 0.02);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 02%, transparent);
 }
 
 .sd-upcoming-date {
@@ -828,11 +828,11 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 
 .sd-exam-card:hover {
   background: var(--bg-input, #222038);
-  border-color: #6E3FF3;
+  border-color: var(--primary);
 }
 
 .sd-exam-active {
-  border-color: #6E3FF3 !important;
+  border-color: var(--primary) !important;
   background: var(--bg-input, #222038) !important;
 }
 
@@ -917,8 +917,8 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 
 .sd-subjects-count {
   font-size: 13px;
-  color: var(--sidebar-active-text, #6E3FF3);
-  background: var(--sidebar-active-bg, #F3E8FF);
+  color: var(--sidebar-active-text, var(--primary));
+  background: var(--sidebar-active-bg, color-mix(in srgb, var(--primary) 15%, transparent));
   padding: 6px 14px;
   border-radius: 20px;
   font-weight: 600;
@@ -944,9 +944,9 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 }
 
 .sd-subject-card:hover {
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet, var(--primary));
   transform: translateY(-2px);
-  box-shadow: var(--card-hover-shadow, 0 12px 24px -8px rgba(110,63,243,0.15));
+  box-shadow: var(--card-hover-shadow, 0 12px 24px -8px color-mix(in srgb, var(--primary) 15%, transparent));
 }
 
 .sd-subject-top {
@@ -988,7 +988,7 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 
 .sd-start-btn {
   margin-top: 6px;
-  background: linear-gradient(135deg, #3730A3, #6E3FF3) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 70%, black), var(--primary)) !important;
   color: white !important;
   border: none !important;
   border-radius: 10px !important;
@@ -1006,7 +1006,7 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 .sd-start-btn:hover {
   transform: none !important;
   opacity: 0.92 !important;
-  box-shadow: 0 4px 16px rgba(110, 63, 243, 0.35) !important;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 35%, transparent) !important;
 }
 
 /* ── LOADING ── */
@@ -1024,7 +1024,7 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
   width: 40px;
   height: 40px;
   border: 3px solid var(--border-color);
-  border-top-color: #6E3FF3;
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -1064,13 +1064,13 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
   top: 15px;
   left: 15px;
   z-index: 10005;
-  background: var(--sidebar-active-bg, #F3E8FF);
-  color: var(--sidebar-active-text, #6E3FF3);
-  border: 1.5px solid rgba(110, 63, 243, 0.15);
+  background: var(--sidebar-active-bg, color-mix(in srgb, var(--primary) 15%, transparent));
+  color: var(--sidebar-active-text, var(--primary));
+  border: 1.5px solid color-mix(in srgb, var(--primary) 15%, transparent);
   border-radius: 10px;
   padding: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(110, 63, 243, 0.08);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 08%, transparent);
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
@@ -1214,7 +1214,7 @@ body.dark-mode .mobile-sidebar-toggle {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #6E3FF3, #9333EA);
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 80%, white));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1226,8 +1226,8 @@ body.dark-mode .mobile-sidebar-toggle {
 .me-my-exam-card:hover {
   background: var(--option-hover);
   transform: translateY(-4px);
-  border-color: rgba(110, 63, 243, 0.35);
-  box-shadow: 0 12px 32px -8px rgba(110, 63, 243, 0.22);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  box-shadow: 0 12px 32px -8px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 /* ── CUSTOM QUIZ CARD RESPONSIVENESS ── */

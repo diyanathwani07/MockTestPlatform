@@ -19,6 +19,9 @@ html[class*="theme-"] :is(body, #root, *) {
   --sidebar-active-bg: var(--primary) !important;
   --sidebar-active-text: var(--primary-foreground) !important;
   --sidebar-hover-bg: var(--accent) !important;
+  --bottom-nav-start: var(--card) !important;
+  --bottom-nav-end: var(--background) !important;
+  --bottom-nav-text: var(--muted-foreground) !important;
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */

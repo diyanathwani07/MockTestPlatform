@@ -14,7 +14,7 @@
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: #6D35D9;
+    background: var(--primary);
     color: white;
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -277,7 +277,7 @@ body.dark-mode .acb-input-area input {
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: #6D35D9;
+    background: var(--primary);
     color: white;
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);

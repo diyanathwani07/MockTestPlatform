@@ -135,13 +135,13 @@
 .me-search-icon {
   position: absolute;
   left: 12px;
-  color: var(--text-muted, #8B5CF6);
+  color: var(--text-muted, var(--primary));
   pointer-events: none;
 }
 
 .me-search-input {
-  background: var(--bg-input, rgba(110, 63, 243, 0.04));
-  border: 1.5px solid #8B5CF6;
+  background: var(--bg-input, color-mix(in srgb, var(--primary) 4%, transparent));
+  border: 1.5px solid var(--primary);
   border-radius: 9999px;
   padding: 10px 16px 10px 42px !important;
   color: var(--text-primary);
@@ -153,9 +153,9 @@
 }
 
 .me-search-input:focus {
-  border-color: #A78BFA;
-  background: var(--bg-input, rgba(110, 63, 243, 0.07));
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  border-color: var(--primary);
+  background: var(--bg-input, color-mix(in srgb, var(--primary) 7%, transparent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 .me-filter-btn {
@@ -174,7 +174,7 @@
 
 .me-filter-btn:hover {
   background: var(--option-hover);
-  border-color: rgba(110, 63, 243, 0.3);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 /* Section Titles */
@@ -193,7 +193,7 @@
 }
 
 .me-view-all {
-  color: #A78BFA;
+  color: var(--primary);
   font-size: 14px;
   text-decoration: none;
   font-weight: 500;
@@ -232,7 +232,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--violet, #6E3FF3);
+  background: var(--violet, var(--primary));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -244,8 +244,8 @@
 .me-exam-card:hover {
   background: var(--option-hover);
   transform: translateY(-4px);
-  border-color: rgba(110, 63, 243, 0.35);
-  box-shadow: 0 12px 32px -8px rgba(110, 63, 243, 0.22);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  box-shadow: 0 12px 32px -8px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 .me-exam-top {
@@ -316,7 +316,7 @@
 }
 
 .me-btn-primary {
-  background: var(--violet, #6E3FF3);
+  background: var(--violet, var(--primary));
   color: #ffffff;
   border: none;
   padding: 10px 20px;
@@ -325,7 +325,7 @@
   font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(110, 63, 243, 0.25);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 25%, transparent);
   width: 100%;
   justify-content: center;
   display: flex;
@@ -349,7 +349,7 @@
   padding: 16px;
   font-size: 13px;
   font-weight: 600;
-  color: #A78BFA;
+  color: var(--primary);
   cursor: pointer;
   transition: background 0.2s;
   border-top: 1px solid var(--border-color);
@@ -371,7 +371,7 @@
 }
 
 .me-btn-primary:hover {
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 40%, transparent);
   transform: translateY(-1px);
 }
 
@@ -398,9 +398,9 @@
 }
 
 .me-action-btn {
-  background: rgba(124, 58, 237, 0.1) !important;
-  color: #A78BFA !important;
-  border: 1px solid rgba(124, 58, 237, 0.3) !important;
+  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+  color: var(--primary) !important;
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent) !important;
   padding: 8px 16px !important;
   border-radius: 8px !important;
   font-size: 13px !important;
@@ -412,14 +412,14 @@
 }
 
 .me-action-btn:hover {
-  background: rgba(124, 58, 237, 0.2) !important;
-  border-color: #A78BFA !important;
+  background: color-mix(in srgb, var(--primary) 20%, transparent) !important;
+  border-color: var(--primary) !important;
 }
 
 .me-btn-secondary {
-  background: rgba(124, 58, 237, 0.1);
-  color: #A78BFA;
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
   padding: 10px 24px;
   border-radius: 12px;
   font-weight: 600;
@@ -429,13 +429,13 @@
 }
 
 .me-btn-secondary:hover {
-  background: rgba(124, 58, 237, 0.2);
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 /* Ongoing Exam Highlight */
 .me-ongoing-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(124, 58, 237, 0.05) 100%);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, color-mix(in srgb, var(--primary) 5%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
   border-radius: 20px;
   padding: 24px 32px;
   display: flex;
@@ -507,8 +507,8 @@
 }
 
 .me-badge {
-  background: var(--sidebar-active-bg, rgba(110, 63, 243, 0.1));
-  color: var(--sidebar-active-text, #6E3FF3);
+  background: var(--sidebar-active-bg, color-mix(in srgb, var(--primary) 10%, transparent));
+  color: var(--sidebar-active-text, var(--primary));
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
@@ -516,7 +516,7 @@
 }
 
 .me-btn-start {
-  background: var(--violet, #6E3FF3);
+  background: var(--violet, var(--primary));
   color: #fff;
   border: none;
   padding: 10px 24px;
@@ -528,7 +528,7 @@
 }
 
 .me-btn-start:hover {
-  background: var(--violet-dark, #5b30d6);
+  background: var(--violet-dark, var(--primary));
   transform: translateY(-1px);
 }
 
@@ -731,8 +731,8 @@
 /* Dark mode specifically requested deep dark blue with purple border */
 body.dark-mode .me-exam-card,
 .dark .me-exam-card {
-  background: #0B0A10;
-  border: 1px solid rgba(110, 63, 243, 0.4);
+  background: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
@@ -750,11 +750,11 @@ body.dark-mode .sr-score-box,
 /* SubjectResults Buttons Light/Dark Mode Support */
 .sr-result-btn {
   background: transparent;
-  color: var(--brand-color, #7B3FF3);
-  border: 1px solid var(--brand-color, #7B3FF3);
+  color: var(--brand-color, var(--primary));
+  border: 1px solid var(--brand-color, var(--primary));
 }
 .sr-result-btn:hover {
-  background: rgba(110, 63, 243, 0.05);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
 }
 
 .sr-reattempt-btn {
@@ -768,17 +768,17 @@ body.dark-mode .sr-score-box,
 
 body.dark-mode .sr-result-btn,
 .dark .sr-result-btn {
-  color: #8A5CF5;
-  border: 1px solid rgba(110, 63, 243, 0.6);
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 60%, transparent);
 }
 
 body.dark-mode .sr-reattempt-btn,
 .dark .sr-reattempt-btn {
-  background: #1F1D2B;
+  background: var(--bg-card);
   color: #ffffff;
   border: none;
 }
 body.dark-mode .sr-reattempt-btn:hover,
 .dark .sr-reattempt-btn:hover {
-  background: #2D2A3D;
+  background: var(--option-hover, #2D2A3D);
 }
