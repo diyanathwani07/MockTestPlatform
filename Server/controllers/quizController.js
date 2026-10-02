@@ -136,7 +136,11 @@ const getQuizzes = async (req, res) => {
       const purchasedExamIds = (user?.purchasedExams || []).map((id) => id.toString());
       quizzes = quizzes.map((quiz) => {
         const qObj = quiz.toObject();
-        qObj.isPurchased = req.user.role === "admin" || req.user.role === "superadmin" || purchasedExamIds.includes(qObj._id.toString());
+        const parentSeriesId = qObj.examSeries ? qObj.examSeries.toString() : "";
+        qObj.isPurchased = req.user.role === "admin" || 
+          req.user.role === "superadmin" || 
+          purchasedExamIds.includes(qObj._id.toString()) ||
+          (parentSeriesId && purchasedExamIds.includes(parentSeriesId));
         return qObj;
       });
     }

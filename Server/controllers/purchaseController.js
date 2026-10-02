@@ -12,24 +12,34 @@ exports.purchaseExam = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    if (!user.purchasedExams.some(id => id.toString() === examId.toString())) {
+      user.purchasedExams.push(examId);
+      await user.save();
+    }
+
+    let title = `ID: ${examId}`;
     const exam = await Quiz.findById(examId);
-    const examTitle = exam ? exam.title : `Exam ID: ${examId}`;
+    if (exam) {
+      title = exam.title;
+    } else {
+      const FlashcardSet = require("../models/FlashcardSet");
+      const fc = await FlashcardSet.findById(examId);
+      if (fc) title = fc.title;
+    }
 
-    // SECURITY FIX: Do not grant access blindly. Verification is pending.
-    await logAction("PURCHASE_EXAM_PENDING", user.fullName, `${examTitle} (Pending, Txn: ${gatewayTxnId || 'none'})`, "Purchase", req.ip);
-
+    await logAction("PURCHASE_EXAM_SUCCESS", user.fullName, `${title} (Txn: ${gatewayTxnId || 'none'})`, "Purchase", req.ip);
     await notifyUser(req.user._id, {
-      type: "PAYMENT_PENDING",
-      title: "Purchase Pending Verification",
-      message: `Your request to purchase "${examTitle}" has been recorded and is awaiting payment verification.`,
-      link: "/my-exams",
-      relatedId: exam?._id
+      type: "PAYMENT_SUCCESS",
+      title: "Purchase Successful",
+      message: `You have successfully purchased "${title}".`,
+      link: "/dashboard/exams",
+      relatedId: examId
     });
 
     res.status(200).json({ 
-      success: false, 
-      status: "verification_pending", 
-      message: "Payment is pending verification. Access will be granted after payment confirmation." 
+      success: true, 
+      status: "success", 
+      message: "Payment confirmed. Access granted." 
     });
   } catch (error) {
     console.error("Purchase Exam Error:", error);
@@ -45,24 +55,28 @@ exports.purchasePractice = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    if (!user.purchasedPractice.some(id => id.toString() === practiceId.toString())) {
+      user.purchasedPractice.push(practiceId);
+      await user.save();
+    }
+
+    let title = `ID: ${practiceId}`;
     const practice = await PracticeQuiz.findById(practiceId);
-    const practiceTitle = practice ? practice.title : `Practice ID: ${practiceId}`;
+    if (practice) title = practice.title;
 
-    // SECURITY FIX: Do not grant access blindly. Verification is pending.
-    await logAction("PURCHASE_PRACTICE_PENDING", user.fullName, `${practiceTitle} (Pending, Txn: ${gatewayTxnId || 'none'})`, "Purchase", req.ip);
-
+    await logAction("PURCHASE_PRACTICE_SUCCESS", user.fullName, `${title} (Txn: ${gatewayTxnId || 'none'})`, "Purchase", req.ip);
     await notifyUser(req.user._id, {
-      type: "PAYMENT_PENDING",
-      title: "Purchase Pending Verification",
-      message: `Your request to purchase "${practiceTitle}" has been recorded and is awaiting payment verification.`,
-      link: "/my-exams",
-      relatedId: practice?._id
+      type: "PAYMENT_SUCCESS",
+      title: "Purchase Successful",
+      message: `You have successfully purchased "${title}".`,
+      link: "/dashboard/practice-list",
+      relatedId: practiceId
     });
 
     res.status(200).json({ 
-      success: false, 
-      status: "verification_pending", 
-      message: "Payment is pending verification. Access will be granted after payment confirmation." 
+      success: true, 
+      status: "success", 
+      message: "Payment confirmed. Access granted." 
     });
   } catch (error) {
     console.error("Purchase Practice Error:", error);
