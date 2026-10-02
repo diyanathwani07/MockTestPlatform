@@ -174,10 +174,12 @@ function StudentSidebar() {
               <span>My Exams</span>
             </NavLink>
 
-          <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          {hasPurchasedPractice && (
+            <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
               <BookOpen size={20} />
               <span>My Practice</span>
             </NavLink>
+          )}
 
           <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <FileText size={20} />
