@@ -234,7 +234,7 @@ const StudentBottomNav = () => {
             to="/dashboard/create-custom-quiz"
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
-            {({ isActive }) => renderIcon(FilePlus, "Custom Test", isActive)}
+            {({ isActive }) => renderIcon(FilePlus, "Custom", isActive)}
           </NavLink>
           <NavLink 
             to="/dashboard/results"

@@ -30,7 +30,7 @@ const StudentChatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
-  const { position, wasDragged, handlers } = useDraggable(30, 30);
+  const { position, wasDragged, handlers } = useDraggable(30, window.innerWidth < 768 ? 95 : 30);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
