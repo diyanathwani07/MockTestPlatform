@@ -32,6 +32,7 @@ const UniversalSearch = () => {
     { name: "Score Analytics", path: "/admin/score-analytics", icon: <BarChart size={18} /> },
     { name: "Flashcards", path: "/admin/flashcards", icon: <BookOpen size={18} /> },
     { name: "User Management", path: "/admin/users", icon: <Users size={18} /> },
+    { name: "Manage Banners", path: "/admin/banners", icon: <Image size={18} /> },
   ];
 
   const links = isAdmin ? adminLinks : studentLinks;

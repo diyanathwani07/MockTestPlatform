@@ -29,6 +29,7 @@ const ExamSeriesManager = lazy(() => import("./admin/ExamSeriesManager"));
 const CreateQuizMulti = lazy(() => import("./admin/CreateQuizMulti"));
 const AdminAttempts = lazy(() => import("./admin/AdminAttempts"));
 const AdminScoreAnalytics = lazy(() => import("./admin/AdminScoreAnalytics"));
+const AdminBanners = lazy(() => import("./admin/AdminBanners"));
 
 const Login = lazy(() => import("./Pages/Login"));
 const StudentOnboarding = lazy(() => import("./Pages/StudentOnboarding"));
@@ -588,13 +589,22 @@ function App() {
         />
 
         <Route
-          path="/admin/exams"
-          element={
-            <AdminRoute>
-              <ExamSeriesManager />
-            </AdminRoute>
-          }
-        />
+            path="/admin/exams"
+            element={
+              <AdminRoute>
+                <ExamSeriesManager />
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/banners"
+            element={
+              <AdminRoute>
+                <AdminBanners />
+              </AdminRoute>
+            }
+          />
 
         <Route
           path="/admin/exams/:examId"
