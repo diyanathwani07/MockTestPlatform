@@ -1654,3 +1654,23 @@ body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
     margin-bottom: 16px !important;
   }
 }
+/* Notification Dropdown Positioning */
+.notif-dropdown {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    width: 320px;
+    max-width: calc(100vw - 20px);
+}
+
+@media (max-width: 768px) {
+    .notif-dropdown {
+        position: fixed;
+        top: 65px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100vw - 32px);
+        max-width: 100vw;
+        right: auto;
+    }
+}

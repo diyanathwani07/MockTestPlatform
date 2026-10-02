@@ -212,13 +212,9 @@ export default function NotificationBell() {
 
       {/* DROPDOWN PANEL */}
       {isOpen && (
-        <div
-          style={{
-            position: "absolute",
-            top: "45px",
-            right: window.innerWidth < 768 ? "10px" : "0",
-            width: "320px",
-            maxWidth: "calc(100vw - 20px)",
+          <div
+            className="notif-dropdown"
+            style={{
             maxHeight: "400px",
             background: "var(--bg-panel, #121324)",
             border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
