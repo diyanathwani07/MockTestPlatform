@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../css/DashboardBannerCarousel.css';
 
@@ -62,10 +63,28 @@ const swipePower = (offset, velocity) => {
 export default function DashboardBannerCarousel() {
   const [[page, direction], setPage] = useState([0, 0]);
   const [isPaused, setIsPaused] = useState(false);
+  const [dbBanners, setDbBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const banners = MOCK_BANNERS;
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/banners`);
+        if (res.data && res.data.length > 0) {
+          setDbBanners(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch banners:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBanners();
+  }, []);
+
+  const banners = dbBanners.length > 0 ? dbBanners : MOCK_BANNERS;
   const imageIndex = ((page % banners.length) + banners.length) % banners.length;
   const activeBanner = banners[imageIndex];
 

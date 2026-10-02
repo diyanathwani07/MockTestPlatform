@@ -95,6 +95,8 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost",
   "capacitor://localhost",
+  "null",
+  "file://",
   "https://mocktestplatform-lac.vercel.app",
   "https://prepmark.vercel.app",
   "https://prepmark.com",
