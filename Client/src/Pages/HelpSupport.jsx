@@ -357,7 +357,7 @@ function HelpSupport() {
       <div className="sd-main-content">
         <StudentNavbar title="Help & Support" />
 
-        <div className="sd-content" style={{ paddingTop: '20px' }}>
+        <div className="sd-content">
           <div className="hs-page-container">
           {/* HERO SECTION */}
           <div className="hs-hero">

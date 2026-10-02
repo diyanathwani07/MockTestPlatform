@@ -1085,6 +1085,7 @@ body.dark-mode .hs-ticket-reveal button:hover {
   .hs-hero {
     padding: 16px 20px;
     margin-bottom: 20px;
+    margin-top: 16px;
   }
   
   .hs-hero-content h1 {
@@ -1196,5 +1197,15 @@ body.dark-mode .hs-ticket-reveal button:hover {
   .hs-faq-answer {
     padding: 0 16px 16px 16px !important;
     font-size: 14px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hs-status-legend {
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+  }
+  .hs-legend-item {
+    flex: 1 1 40% !important;
   }
 }

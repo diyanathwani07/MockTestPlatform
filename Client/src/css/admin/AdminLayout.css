@@ -571,7 +571,7 @@ body.dark-mode .mobile-sidebar-toggle {
 
 @media (max-width: 768px) {
   .admin-navbar {
-    padding: 16px 16px 16px 55px;
+    padding: 16px 16px 16px 70px;
     flex-wrap: nowrap;
     gap: 8px;
   }
