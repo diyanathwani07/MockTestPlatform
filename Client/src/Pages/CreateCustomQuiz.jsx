@@ -741,7 +741,7 @@ const CreateCustomQuiz = () => {
                           disabled={!selectedExam}
                           style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--bg-input, #fafafa)", color: "var(--text-primary)", border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))", outline: "none", fontSize: "14px", cursor: !selectedExam ? "not-allowed" : "pointer" }}
                         >
-                          <option value="">-- Choose target Subject --</option>
+                          <option value="">{!selectedExam ? "-- Select Exam First --" : (examSubjects[selectedExam] && examSubjects[selectedExam].length > 0 ? "-- Choose target Subject --" : "-- No Subjects Available --")}</option>
                           {examSubjects[selectedExam]?.map((sub, idx) => <option key={idx} value={sub}>{sub}</option>)}
                         </select>
                       </div>
