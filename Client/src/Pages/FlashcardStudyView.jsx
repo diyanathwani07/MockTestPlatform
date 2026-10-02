@@ -272,10 +272,7 @@ function FlashcardStudyView() {
         ) : (
           <>
             {/* The Card */}
-            <div 
-              onClick={handleFlip}
-              style={{ 
-                width: "100%", 
+            <div onClick={handleFlip} className="fs-card-wrapper" style={{ width: "100%", 
                 maxWidth: "850px", 
                 perspective: "1200px",
                 cursor: "pointer",
