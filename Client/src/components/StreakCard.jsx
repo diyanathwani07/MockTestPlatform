@@ -89,7 +89,7 @@ const StreakCard = ({ results }) => {
           <p className="streak-subtitle">Show up. Keep going. Build your streak!</p>
         </div>
         
-        <button onClick={() => navigate("/dashboard/streak")} style={{ background: 'transparent', border: 'none', color: 'var(--violet, #6E3FF3)', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>
+        <button onClick={() => navigate("/dashboard/streak")} style={{ background: 'transparent', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>
           View All
         </button>
       </div>
@@ -101,17 +101,17 @@ const StreakCard = ({ results }) => {
               width: '40px',
               height: '56px',
               borderRadius: '20px',
-              background: day.isDone ? (day.isFreeze ? 'rgba(56, 189, 248, 0.2)' : '#ffffff') : 'rgba(59, 130, 246, 0.2)',
+              background: day.isDone ? (day.isFreeze ? 'rgba(56, 189, 248, 0.2)' : 'var(--primary)') : 'color-mix(in srgb, var(--primary) 10%, transparent)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: day.isDone ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
+              boxShadow: day.isDone ? '0 4px 12px color-mix(in srgb, var(--primary) 40%, transparent)' : 'none',
               position: 'relative'
             }}>
               {day.isFreeze ? (
                   <Snowflake size={24} color="#38BDF8" fill="#38BDF8" />
               ) : (
-                  <Flame size={24} color={day.isDone ? '#F59E0B' : 'rgba(59, 130, 246, 0.5)'} fill={day.isDone ? '#F59E0B' : 'rgba(59, 130, 246, 0.5)'} />
+                  <Flame size={24} color={day.isDone ? '#ffffff' : 'color-mix(in srgb, var(--primary) 30%, transparent)'} fill={day.isDone ? '#ffffff' : 'color-mix(in srgb, var(--primary) 30%, transparent)'} />
               )}
             </div>
             <span style={{ fontSize: '13px', fontWeight: '600', color: day.isDone ? 'var(--text-primary)' : 'var(--text-muted)' }}>

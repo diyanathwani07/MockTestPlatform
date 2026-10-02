@@ -141,7 +141,7 @@ function StreakPage() {
 
       {/* Hero Banner */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #F97316 0%, #D97706 100%)',
+        background: 'linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 60%, black) 100%)',
         borderRadius: '24px',
         padding: '24px',
         display: 'flex',
@@ -196,8 +196,8 @@ function StreakPage() {
               {dayObj.isActive ? (
                 <div style={{ 
                   width: '36px', height: '36px', borderRadius: '50%', 
-                  background: '#F97316', display: 'flex', alignItems: 'center', 
-                  justifyContent: 'center', boxShadow: '0 4px 10px rgba(249, 115, 22, 0.3)' 
+                  background: 'var(--primary)', display: 'flex', alignItems: 'center', 
+                  justifyContent: 'center', boxShadow: '0 4px 10px color-mix(in srgb, var(--primary) 30%, transparent)' 
                 }}>
                   <Flame size={20} color="white" fill="white" />
                 </div>
@@ -226,7 +226,7 @@ function StreakPage() {
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
         <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '20px 12px', textAlign: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: '800', color: '#F97316', marginBottom: '4px' }}>{stats.current}</div>
+          <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)', marginBottom: '4px' }}>{stats.current}</div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Current</div>
         </div>
         <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '20px 12px', textAlign: 'center' }}>
