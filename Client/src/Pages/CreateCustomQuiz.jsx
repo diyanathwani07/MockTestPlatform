@@ -1036,7 +1036,7 @@ const CreateCustomQuiz = () => {
                         className="custom-quiz-item"
                         style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}
                       >
-                        <div style={{ flex: "1 1 200px", minWidth: 0 }}>
+                        <div style={{ flex: "1 1 auto", minWidth: "200px" }}>
                           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
                             <h4 style={{ 
                                 margin: 0, 
