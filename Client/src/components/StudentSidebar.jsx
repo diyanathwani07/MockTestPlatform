@@ -169,19 +169,15 @@ function StudentSidebar() {
             <span>Dashboard</span>
           </NavLink>
           
-          {hasPurchasedExams && (
-            <NavLink to="/dashboard/exams-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink to="/dashboard/exams-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
               <FileText size={20} />
               <span>My Exams</span>
             </NavLink>
-          )}
 
-          {hasPurchasedPractice && (
-            <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
               <BookOpen size={20} />
               <span>My Practice</span>
             </NavLink>
-          )}
 
           <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
             <FileText size={20} />
