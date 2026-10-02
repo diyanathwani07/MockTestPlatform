@@ -60,6 +60,7 @@
   .fs-card-wrapper {
     padding: 0 24px !important;
     margin-bottom: 30px !important;
+    box-sizing: border-box !important;
     perspective: 1200px;
   }
 
@@ -147,7 +148,7 @@
     flex-direction: row !important;
     gap: 8px !important;
     max-width: none !important;
-    width: 100% !important;
+    width: auto !important;
   }
   
   /* Flip Button and Got it buttons */
