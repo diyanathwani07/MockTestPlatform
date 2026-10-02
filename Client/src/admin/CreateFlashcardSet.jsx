@@ -4,6 +4,7 @@ import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
+import "../css/admin/CreateQuiz.css";
 
 function CreateFlashcardSet() {
   const { id } = useParams();
@@ -115,7 +116,7 @@ function CreateFlashcardSet() {
               boxShadow: "0 4px 20px rgba(0,0,0,0.15)"
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "16px", marginBottom: "20px" }}>
+            <div className="header-flex-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "16px", marginBottom: "24px" }}>
               <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>{isEdit ? "Edit Set Details" : "New Flashcard Set"}</h2>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: "600", color: formData.isPaid ? "#ef4444" : "var(--text-primary)", cursor: "pointer" }}>
@@ -139,7 +140,7 @@ function CreateFlashcardSet() {
 
             <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--violet)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>General Info</h3>
             
-            <div style={{ display: "grid", gap: "12px", marginBottom: "24px" }}>
+            <div className="responsive-grid-single" style={{ gap: "16px", marginBottom: "32px" }}>
               <div className="form-field" style={{ marginBottom: 0 }}>
                 <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Title *</label>
                 <input type="text" name="title" value={formData.title} onChange={handleChange} required style={{ padding: "10px 12px", fontSize: "14px" }} />
@@ -151,7 +152,7 @@ function CreateFlashcardSet() {
             </div>
 
             <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--violet)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Taxonomy / Hierarchy</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
+            <div className="responsive-grid" style={{ gap: "16px", marginBottom: "32px" }}>
               <div className="form-field" style={{ marginBottom: 0 }}>
                 <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Exam Series *</label>
                 <select name="examSeriesId" value={formData.examSeriesId} onChange={handleChange} required style={{ padding: "10px 12px", fontSize: "13px" }}>
@@ -190,7 +191,7 @@ function CreateFlashcardSet() {
             </div>
 
             <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--violet)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Publishing Settings</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="responsive-grid" style={{ gap: "16px" }}>
               <div className="form-field" style={{ marginBottom: 0 }}>
                 <label style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Difficulty</label>
                 <select name="difficulty" value={formData.difficulty} onChange={handleChange} style={{ padding: "10px 12px", fontSize: "13px" }}>
@@ -233,8 +234,61 @@ function CreateFlashcardSet() {
           </form>
         </div>
       </div>
+
+      <style>{`
+        .responsive-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+        .responsive-grid-single {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+        .header-flex-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        @media (max-width: 768px) {
+          .responsive-grid {
+            grid-template-columns: 1fr;
+          }
+          .header-flex-row {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 16px;
+          }
+        }
+        .form-field {
+          display: flex;
+          flex-direction: column;
+          text-align: left;
+        }
+        .form-field label {
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          color: var(--text-secondary) !important;
+          margin-bottom: 6px !important;
+        }
+        .form-field input, .form-field textarea, .form-field select {
+          width: 100% !important;
+          box-sizing: border-box !important;
+          background-color: var(--bg-input) !important;
+          border: 1px solid var(--border-color) !important;
+          border-radius: 8px !important;
+          padding: 12px 16px !important;
+          font-size: 14px !important;
+          color: var(--text-primary) !important;
+        }
+        .form-field input:focus, .form-field textarea:focus, .form-field select:focus {
+          border-color: var(--violet) !important;
+          box-shadow: 0 0 0 3px rgba(110,63,243,0.15) !important;
+          outline: none !important;
+        }
+      `}</style>
     </div>
   );
 }
+
 
 export default CreateFlashcardSet;
