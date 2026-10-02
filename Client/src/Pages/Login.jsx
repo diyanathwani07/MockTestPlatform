@@ -233,7 +233,7 @@ return (
             <div style={{ position: "relative" }}>
               {isDark && <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "150px", height: "150px", background: "radial-gradient(circle, rgba(138, 85, 252, 0.4) 0%, rgba(0,0,0,0) 70%)", borderRadius: "50%", zIndex: 0 }}></div>}
               <div style={{ position: "relative", zIndex: 1 }}>
-                <PrepMarkMascot state="welcome" size="min(200px, 35vh)" lottieFile="mascot.lottie" />
+                <PrepMarkMascot state="welcome" size="min(200px, 35vh)" lottieFile="Bag.lottie" />
               </div>
             </div>
           </div>
