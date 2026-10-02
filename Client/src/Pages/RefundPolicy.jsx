@@ -51,8 +51,8 @@ export default function RefundPolicy() {
         >
           <ArrowLeft size={20} /> Back
         </button>
-        <h1 style={{ textAlign: 'center', paddingLeft: '320px',  fontSize: '32px', marginBottom: '8px', color: 'var(--violet, #A78BFA)' }}>Refunds & Cancellation Policy</h1>
-        <p style={{ textAlign: 'center', paddingLeft: '320px', color: 'var(--text-secondary, #9ca3af)', marginBottom: '40px', fontSize: '14px' }}>Last updated: 15 Sep 2026 � Effective for all purchases made on or after this date</p>
+        <h1 className="legal-title" style={{ textAlign: 'center',  fontSize: '32px', marginBottom: '8px', color: 'var(--violet, #A78BFA)' }}>Refunds & Cancellation Policy</h1>
+        <p className="legal-title" style={{ textAlign: 'center', color: 'var(--text-secondary, #9ca3af)', marginBottom: '40px', fontSize: '14px' }}>Last updated: 15 Sep 2026 � Effective for all purchases made on or after this date</p>
       </div>
 
       <div style={{ maxWidth: '1400px', margin: '0', display: 'flex', padding: '0 20px 60px', gap: '40px', alignItems: 'flex-start' }}>
@@ -115,6 +115,9 @@ export default function RefundPolicy() {
         @media (min-width: 768px) {
           .legal-sidebar {
             display: block !important;
+          }
+          .legal-title {
+            padding-left: 320px !important;
           }
         }
       `}</style>
