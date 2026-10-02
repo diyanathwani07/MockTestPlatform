@@ -106,9 +106,8 @@ const CreateCustomQuiz = () => {
         const examsSet = new Set();
         const subjectsMap = {}; // examName -> Set of subjects
         
-        quizzesList.forEach(q => {
-          if (q.examName && q.examName.trim()) {
-            const exName = q.examName.trim();
+                  quizzesList.forEach(q => {
+            const exName = (q.examName && q.examName.trim()) ? q.examName.trim() : "General";
             examsSet.add(exName);
             if (!subjectsMap[exName]) {
               subjectsMap[exName] = new Set();
@@ -116,10 +115,8 @@ const CreateCustomQuiz = () => {
             if (q.subject && q.subject.trim()) {
               subjectsMap[exName].add(q.subject.trim());
             }
-          }
-        });
-
-        // Convert sets to arrays
+          });
+// Convert sets to arrays
         const finalExams = Array.from(examsSet);
         const finalSubjectsMap = {};
         Object.keys(subjectsMap).forEach(key => {
