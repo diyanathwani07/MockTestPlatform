@@ -566,8 +566,8 @@ function MyExams() {
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                               {series.subjects && series.subjects.length > 0 ? (
                                 <span style={{
-                                  background: "rgba(110, 63, 243, 0.15)",
-                                  color: "#A78BFA",
+                                  background: "color-mix(in srgb, var(--primary) 20%, transparent)",
+                                  color: "var(--primary)",
                                   fontSize: "11px",
                                   fontWeight: 600,
                                   padding: "4px 10px",

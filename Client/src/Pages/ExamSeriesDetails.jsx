@@ -261,7 +261,7 @@ function ExamSeriesDetails() {
                           {fc.title}
                         </h4>
                         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
-                          <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(110, 63, 243, 0.15)", color: "#6E3FF3", borderRadius: "4px", fontWeight: "600" }}>Flashcards</span>
+                          <span style={{ fontSize: "10px", padding: "2px 6px", background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "#6E3FF3", borderRadius: "4px", fontWeight: "600" }}>Flashcards</span>
                           {fc.chapter && fc.chapter.toLowerCase() !== (fc.subjectName || "General").toLowerCase() && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(99, 102, 241, 0.15)", color: "#6366F1", borderRadius: "4px", fontWeight: "600" }}>{fc.chapter}</span>}
                           {fc.topic && fc.topic.toLowerCase() !== (fc.subjectName || "General").toLowerCase() && fc.topic.toLowerCase() !== (fc.chapter || "").toLowerCase() && <span style={{ fontSize: "10px", padding: "2px 6px", background: "rgba(236, 72, 153, 0.15)", color: "#EC4899", borderRadius: "4px", fontWeight: "600" }}>{fc.topic}</span>}
                         </div>

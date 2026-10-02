@@ -495,12 +495,12 @@ function Result() {
               width: "64px",
               height: "64px",
               borderRadius: "50%",
-              background: error.type === "UNAUTHORIZED" ? "rgba(239, 68, 68, 0.1)" : "rgba(110, 63, 243, 0.1)",
+              background: error.type === "UNAUTHORIZED" ? "rgba(239, 68, 68, 0.1)" : "color-mix(in srgb, var(--primary) 10%, transparent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               marginBottom: "16px",
-              color: error.type === "UNAUTHORIZED" ? "#EF4444" : "#6E3FF3"
+              color: error.type === "UNAUTHORIZED" ? "#EF4444" : "var(--primary)"
             }}>
               <AlertCircle size={36} />
             </div>
@@ -888,7 +888,7 @@ function Result() {
 
             {/* Quiz Info */}
             <div className="rm-info-card">
-              <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#6E3FF3", backgroundColor: "rgba(110,63,243,0.1)", borderRadius: "12px", width: "48px", height: "48px" }}>
+              <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)", borderRadius: "12px", width: "48px", height: "48px" }}>
                 <FileText size={24} />
               </div>
               <div className="rm-info-content">
@@ -905,7 +905,7 @@ function Result() {
             {/* Score Section */}
             <div className="rm-score-section">
               <div className="rm-score-circle-wrapper">
-                <div className="rm-score-circle" style={{ background: `conic-gradient(#6E3FF3 ${computedPercentage}%, ${isDark ? "#1D1B28" : "#F3F4F6"} ${computedPercentage}%)` }}>
+                <div className="rm-score-circle" style={{ background: `conic-gradient(var(--primary) ${computedPercentage}%, ${isDark ? "#1D1B28" : "#F3F4F6"} ${computedPercentage}%)` }}>
                   <div className="rm-score-inner">
                     <span className="rm-pct">{computedPercentage}%</span>
                     <span className="rm-pct-label">Score</span>
@@ -1125,8 +1125,8 @@ function Result() {
                     onClick={() => setReviewFilter("all")}
                     style={{ 
                       fontSize: "13px", 
-                      backgroundColor: "rgba(110, 63, 243, 0.1)", 
-                      color: "#6E3FF3", 
+                      backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)", 
+                      color: "var(--primary)", 
                       padding: "4px 12px", 
                       borderRadius: "20px", 
                       fontWeight: "600",
@@ -1147,7 +1147,7 @@ function Result() {
                     questions.forEach((_, idx) => { allIndices[idx] = true; });
                     setExpandedQuestions(allIndices);
                   }}
-                  style={{ background: "transparent", border: "none", color: "#6E3FF3", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+                  style={{ background: "transparent", border: "none", color: "var(--primary)", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
                 >
                   Expand All
                 </button>
@@ -1299,9 +1299,9 @@ function Result() {
                               optBorder = "1px solid #ef4444";
                               optColor = isDark ? "#f87171" : "#991b1b";
                             } else {
-                              optBg = isDark ? "rgba(110, 63, 243, 0.15)" : "#f3e8ff";
-                              optBorder = "1px solid #6e3ff3";
-                              optColor = isDark ? "#a78bfa" : "#6e3ff3";
+                              optBg = isDark ? "color-mix(in srgb, var(--primary) 15%, transparent)" : "#f3e8ff";
+                              optBorder = "1px solid var(--primary)";
+                              optColor = isDark ? "var(--primary)" : "var(--primary)";
                               optWeight = "600";
                             }
                           }
@@ -1324,7 +1324,7 @@ function Result() {
                                 width: "26px", 
                                 height: "26px", 
                                 borderRadius: "50%", 
-                                backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "#6e3ff3") : (isDark ? "#3F3C53" : "#F1F5F9")),
+                                backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "var(--primary)") : (isDark ? "#3F3C53" : "#F1F5F9")),
                                 color: isCorrectOpt || isSelected ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
                                 border: isCorrectOpt || isSelected ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
                                 display: "flex",
@@ -1372,8 +1372,8 @@ function Result() {
                         </div>
                         
                         {data?.showExplanations !== false && q.explanation && (
-                          <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", borderLeft: "4px solid #6E3FF3", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "left" }}>
-                            <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: isDark ? "#A78BFA" : "#6E3FF3", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", borderLeft: "4px solid var(--primary)", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "left" }}>
+                            <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: isDark ? "var(--primary)" : "var(--primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
                               <span>💡</span> Explanation
                             </p>
                             <p style={{ margin: 0, fontSize: "14.5px", color: isDark ? "#E2E8F0" : "#475569", lineHeight: "1.6" }}><MathRenderer text={q.explanation} /></p>
@@ -1422,8 +1422,8 @@ function Result() {
                    width: "48px",
                    height: "48px",
                    borderRadius: "50%",
-                   backgroundColor: isDark ? "#6E3FF3" : "#ffffff",
-                   color: isDark ? "#ffffff" : "#6E3FF3",
+                   backgroundColor: isDark ? "var(--primary)" : "#ffffff",
+                   color: isDark ? "#ffffff" : "var(--primary)",
                    border: "2px solid var(--border-color, #d1d5db)",
                    boxShadow: "0 4px 16px rgba(110, 63, 243, 0.3)",
                    display: "flex",

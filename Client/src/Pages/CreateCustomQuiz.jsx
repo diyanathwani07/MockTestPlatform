@@ -602,7 +602,7 @@ const CreateCustomQuiz = () => {
                         border: "none",
                         background: (loading || !selectedSubject) ? "var(--border-color, #333)" : "var(--violet, #6E3FF3)",
                         color: (loading || !selectedSubject) ? "var(--text-muted, #777)" : "#ffffff",
-                        boxShadow: (loading || !selectedSubject) ? "none" : "0 4px 10px rgba(110, 63, 243, 0.15)"
+                        boxShadow: (loading || !selectedSubject) ? "none" : "0 4px 10px color-mix(in srgb, var(--primary) 15%, transparent)"
                       }}
                     >
                       {loading ? "Generating Practice Test..." : "Create Custom Quiz"}
@@ -649,7 +649,7 @@ const CreateCustomQuiz = () => {
                       alignItems: "center", 
                       fontSize: "12.5px", 
                       color: "var(--text-secondary)", 
-                      background: "rgba(110, 63, 243, 0.06)", 
+                      background: "color-mix(in srgb, var(--primary) 6%, transparent)", 
                       padding: "10px 14px", 
                       borderRadius: "8px", 
                       border: "1.5px solid var(--border-color)",
@@ -753,14 +753,14 @@ const CreateCustomQuiz = () => {
                           <button
                             type="button"
                             onClick={() => setAiInputSource("topic")}
-                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "topic" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "topic" ? "rgba(110, 63, 243, 0.1)" : "transparent", color: aiInputSource === "topic" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "topic" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "topic" ? "color-mix(in srgb, var(--primary) 10%, transparent)" : "transparent", color: aiInputSource === "topic" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
                           >
                             Topic
                           </button>
                           <button
                             type="button"
                             onClick={() => setAiInputSource("material")}
-                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "material" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "material" ? "rgba(110, 63, 243, 0.1)" : "transparent", color: aiInputSource === "material" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "material" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "material" ? "color-mix(in srgb, var(--primary) 10%, transparent)" : "transparent", color: aiInputSource === "material" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
                           >
                             <Sparkles size={16} /> AI Generate
                           </button>
@@ -856,7 +856,7 @@ const CreateCustomQuiz = () => {
                                   <>
                                       <div style={{ marginBottom: "12px", animation: "float 3s ease-in-out infinite", display: "flex", justifyContent: "center" }}>
                                         {aiGenerateMode === 'document' 
-                                          ? <FileText size={40} color="var(--violet, #6E3FF3)" style={{ filter: "drop-shadow(0 4px 6px rgba(110, 63, 243, 0.3))" }} /> 
+                                          ? <FileText size={40} color="var(--violet, #6E3FF3)" style={{ filter: "drop-shadow(0 4px 6px color-mix(in srgb, var(--primary) 30%, transparent))" }} /> 
                                           : <Image size={40} color="#10b981" style={{ filter: "drop-shadow(0 4px 6px rgba(16, 185, 129, 0.3))" }} />
                                         }
                                       </div>
@@ -986,7 +986,7 @@ const CreateCustomQuiz = () => {
                           border: "none",
                           background: "var(--violet, #6E3FF3)",
                           color: "#ffffff",
-                          boxShadow: "0 4px 10px rgba(110, 63, 243, 0.15)",
+                          boxShadow: "0 4px 10px color-mix(in srgb, var(--primary) 15%, transparent)",
                           marginTop: "8px"
                         }}
                       >
@@ -1084,7 +1084,7 @@ const CreateCustomQuiz = () => {
                               padding: "8px 16px",
                               borderRadius: "20px",
                               border: "none",
-                              background: "rgba(110, 63, 243, 0.15)",
+                              background: "color-mix(in srgb, var(--primary) 15%, transparent)",
                               color: "#9061F9",
                               fontWeight: "600",
                               fontSize: "13px",
@@ -1583,7 +1583,7 @@ const CreateCustomQuiz = () => {
                   fontSize: "14px",
                   cursor: "pointer",
                   transition: "all 0.2s",
-                  boxShadow: "0 4px 14px rgba(110, 63, 243, 0.4)"
+                  boxShadow: "0 4px 14px color-mix(in srgb, var(--primary) 40%, transparent)"
                 }}
               >
                 Generate Test
