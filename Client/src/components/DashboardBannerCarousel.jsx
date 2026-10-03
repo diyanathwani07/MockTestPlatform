@@ -84,9 +84,12 @@ export default function DashboardBannerCarousel() {
     fetchBanners();
   }, []);
 
+  
   const banners = dbBanners.length > 0 ? dbBanners : MOCK_BANNERS;
   const imageIndex = ((page % banners.length) + banners.length) % banners.length;
   const activeBanner = banners[imageIndex];
+  const isPureImage = !activeBanner.title && !activeBanner.description && !activeBanner.category;
+
 
   const paginate = useCallback((newDirection) => {
     setPage([page + newDirection, newDirection]);
@@ -124,7 +127,9 @@ export default function DashboardBannerCarousel() {
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
             key={page}
-            className={`banner-slide align-${activeBanner.align || 'left'}`}
+            className={`banner-slide ${isPureImage ? 'pure-image-slide' : `align-${activeBanner.align || 'left'}`}`}
+            onClick={() => { if (isPureImage && activeBanner.ctaRoute) navigate(activeBanner.ctaRoute); }}
+            style={{ cursor: isPureImage && activeBanner.ctaRoute ? 'pointer' : 'default' }}
             custom={direction}
             variants={prefersReducedMotion ? {
               enter: { opacity: 0 },
@@ -151,26 +156,29 @@ export default function DashboardBannerCarousel() {
               }
             }}
           >
-            <div className="banner-bg-image" style={{ backgroundImage: `url(${activeBanner.image})` }}></div>
-            <div className="banner-gradient-overlay"></div>
-            
-            <div className="banner-content">
-              {activeBanner.category && (
-                <span className="banner-category">{activeBanner.category}</span>
-              )}
-              <h2 className="banner-title">{activeBanner.title}</h2>
-              <p className="banner-desc">{activeBanner.description}</p>
-              
-              {activeBanner.ctaLabel && (
-                <button 
-                  className="banner-cta"
-                  onClick={() => navigate(activeBanner.ctaRoute)}
-                  aria-label={activeBanner.ctaLabel}
-                >
-                  {activeBanner.ctaLabel}
-                </button>
-              )}
-            </div>
+            <div className={`banner-bg-image ${isPureImage ? 'full-width' : ''}`} style={{ backgroundImage: `url(${activeBanner.image})` }}></div>
+            {!isPureImage && (
+              <>
+                <div className="banner-gradient-overlay"></div>
+                <div className="banner-content">
+                  {activeBanner.category && (
+                    <span className="banner-category">{activeBanner.category}</span>
+                  )}
+                  <h2 className="banner-title">{activeBanner.title}</h2>
+                  <p className="banner-desc">{activeBanner.description}</p>
+                  
+                  {activeBanner.ctaLabel && (
+                    <button 
+                      className="banner-cta"
+                      onClick={() => navigate(activeBanner.ctaRoute)}
+                      aria-label={activeBanner.ctaLabel}
+                    >
+                      {activeBanner.ctaLabel}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

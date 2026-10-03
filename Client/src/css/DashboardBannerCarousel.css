@@ -245,3 +245,21 @@
     width: 80%;
   }
 }
+
+
+/* Pure Image Banner Overrides */
+.banner-slide.pure-image-slide .banner-bg-image.full-width {
+  width: 100%;
+  left: 0;
+  right: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+@media (max-width: 768px) {
+  .banner-slide.pure-image-slide .banner-bg-image.full-width {
+    background-size: contain;
+    background-color: #0d0d12;
+  }
+}
