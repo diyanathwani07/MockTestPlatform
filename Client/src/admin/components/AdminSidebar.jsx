@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
+  Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers, PanelLeft
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";

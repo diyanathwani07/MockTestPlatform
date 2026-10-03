@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Command, LayoutDashboard, BookOpen, PenTool, Target, Trophy, HelpCircle, User, Shield, Layers, FileText, BarChart, Users } from "lucide-react";
+import { Image, Search, Command, LayoutDashboard, BookOpen, PenTool, Target, Trophy, HelpCircle, User, Shield, Layers, FileText, BarChart, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../css/UniversalSearch.css";
