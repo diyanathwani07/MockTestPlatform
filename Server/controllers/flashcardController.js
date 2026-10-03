@@ -162,7 +162,7 @@ const getFlashcardSets = async (req, res) => {
       s.isPurchased = req.user && (
         req.user.role === "admin" || 
         req.user.role === "superadmin" || 
-        purchasedExamIds.includes(seriesId)
+        purchasedExamIds.includes(s._id.toString()) || purchasedExamIds.includes(seriesId)
       );
       return s;
     });

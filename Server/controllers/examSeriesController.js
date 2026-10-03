@@ -142,7 +142,7 @@ exports.getSeriesById = async (req, res) => {
 
     const quizzesWithPurchaseStatus = quizzes.map(q => {
       const qObj = q.toObject();
-      qObj.isPurchased = req.user && (req.user.role === "admin" || req.user.role === "superadmin" || purchasedExamIds.includes(qObj._id.toString()));
+      qObj.isPurchased = req.user && (req.user.role === "admin" || req.user.role === "superadmin" || purchasedExamIds.includes(qObj._id.toString()) || purchasedExamIds.includes(series._id.toString()));
       return qObj;
     });
 
