@@ -600,7 +600,14 @@ function MyExams() {
                             </div>
 
                             {/* Title */}
+
+                            {series.thumbnail && (
+                              <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginBottom: "12px", marginTop: "8px", flexShrink: 0 }}>
+                                <img src={series.thumbnail} alt={series.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              </div>
+                            )}
                             <div>
+
                               <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
                                 {series.title}
                               </h4>

@@ -15,10 +15,13 @@ function ExamSeriesManager() {
   // Modals / Form states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "General",
+    category: "General", thumbnail: "",
+      thumbnail: "", thumbnail: "",
     isPublished: true,
   });
 
@@ -84,12 +87,59 @@ function ExamSeriesManager() {
     }
   };
 
+  
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    const formDataObj = new FormData();
+    formDataObj.append("image", file);
+    try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/image`, formDataObj, { headers });
+      if (res.data.url) {
+        setFormData(prev => ({ ...prev, thumbnail: res.data.url }));
+        alert("Image uploaded successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload image");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    const formDataObj = new FormData();
+    formDataObj.append("image", file);
+    try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/image`, formDataObj, { headers });
+      if (res.data.url) {
+        setFormData(prev => ({ ...prev, thumbnail: res.data.url }));
+        alert("Image uploaded successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload image");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleOpenCreate = () => {
     setEditingId(null);
     setFormData({
       title: "",
       description: "",
-      category: "General",
+      category: "General", thumbnail: "",
+      thumbnail: "", thumbnail: "",
       isPublished: true,
     });
     setStructures([]);
@@ -103,7 +153,8 @@ function ExamSeriesManager() {
     setFormData({
       title: series.title,
       description: series.description || "",
-      category: series.category || "General",
+      category: series.category || "General", thumbnail: series.thumbnail || "",
+        thumbnail: series.thumbnail || "", thumbnail: series.thumbnail || "",
       isPublished: series.isPublished ?? true,
     });
     setNewStructureName("");
@@ -435,7 +486,8 @@ function ExamSeriesManager() {
               <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" }}>
                 <div style={{ background: "var(--bg-panel, #16112a)", border: "1px solid var(--border-color, rgba(255,255,255,0.1))", padding: "24px", borderRadius: "16px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}>
                   <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)" }}>{editingId ? "Update Exam Series" : "Create Exam Series"}</h3>
-                  <form onSubmit={handleFormSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <form onSubmit={handleFormSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
+<div style={{ flex: "2 1 400px", display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                       <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Series Title</label>
                       <input 
@@ -448,6 +500,34 @@ function ExamSeriesManager() {
                       />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Exam Card Banner (Optional)</label>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <input 
+                            type="text" 
+                            value={formData.thumbnail || ""} 
+                            onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
+                            placeholder="https://..."
+                          />
+                          <label style={{ 
+                            padding: "10px 16px", 
+                            background: "var(--bg-card)", 
+                            border: "1px solid var(--border-color)", 
+                            borderRadius: "8px", 
+                            cursor: uploadingImage ? "wait" : "pointer", 
+                            color: "var(--text-primary)", 
+                            fontWeight: "600",
+                            fontSize: "13px",
+                            whiteSpace: "nowrap"
+                          }}>
+                            {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                            <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} disabled={uploadingImage} />
+                          </label>
+                        </div>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>This image will be displayed on the student exams page.</span>
+                      </div>
                       <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Category</label>
                       <input 
                         type="text" 
@@ -711,7 +791,58 @@ function ExamSeriesManager() {
                         {editingId ? "Update" : "Create"}
                       </button>
                     </div>
-                  </form>
+                  </div>
+
+                  <div style={{ flex: "1 1 300px", minWidth: "300px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Live Preview (Student View)</label>
+                    <div style={{ 
+                      background: "var(--bg-card)", 
+                      borderRadius: "16px", 
+                      padding: "20px", 
+                      border: "1px solid var(--border-color)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "12px",
+                      position: "relative",
+                      overflow: "hidden"
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                        <span style={{ background: "rgba(59, 130, 246, 0.1)", color: "#3B82F6", fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px" }}>
+                          {formData.category || "General"}
+                        </span>
+                      </div>
+                      
+                      {formData.thumbnail && (
+                        <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginTop: "4px", flexShrink: 0 }}>
+                          <img src={formData.thumbnail} alt={formData.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </div>
+                      )}
+                      
+                      <div>
+                        <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
+                          {formData.title || "Exam Series Title"}
+                        </h4>
+                      </div>
+                      
+                      <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                          <FileText size={13} /> 2 Items
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                          <CheckCircle size={13} /> 0 Attempted
+                        </span>
+                      </div>
+                      
+                      <button style={{ 
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "8px",
+                        background: "var(--violet)", color: "white", border: "none", borderRadius: "10px", padding: "10px", fontWeight: "600", fontSize: "13.5px", cursor: "pointer"
+                      }}>
+                        View Contents <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+</form>
                 </div>
               </div>
             )}
