@@ -7,7 +7,7 @@
   border: 1px solid var(--border-color, #ECE9F7);
   box-shadow: var(--card-shadow, 0 1px 3px rgba(26, 26, 46, 0.04));
   margin-bottom: 10px;
-  height: 280px;
+  height: 340px;
   display: flex;
   user-select: none;
 }
@@ -47,7 +47,7 @@
   bottom: 0;
   right: 0;
   width: 60%;
-  background-size: cover;
+  background-size: 100% 100%;
   background-position: center;
   z-index: 0;
   -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
@@ -253,7 +253,7 @@
   width: 100%;
   left: 0;
   right: 0;
-  background-size: cover;
+  background-size: 100% 100%;
   background-repeat: no-repeat;
   -webkit-mask-image: none;
   mask-image: none;
