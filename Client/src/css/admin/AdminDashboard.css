@@ -109,10 +109,10 @@ body.dark-mode .reports-analytics-table td {
 
 
 .stat-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 18px;
-}
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+  }
 
 .stat-card {
   background: #fff;
@@ -163,32 +163,22 @@ body.dark-mode .reports-analytics-table td {
   font-weight: 700;
   color: var(--text-primary);
 }
-.stat-card-trend {
-  white-space: normal;
-  word-break: break-word;
-  max-width: 100%;
-}
+
 .stat-card-sparkline {
   max-width: 100%;
 }
 
-@media (max-width: 1400px) {
-  .stat-cards-grid { grid-template-columns: repeat(5, 1fr); }
-}
 
-@media (max-width: 1100px) {
-  .stat-cards-grid { grid-template-columns: repeat(3, 1fr); }
-}
 
-@media (max-width: 900px) {
-  .stat-cards-grid { grid-template-columns: repeat(2, 1fr); }
-}
+
+
+
 
 @media (max-width: 768px) {
-  .stat-cards-grid { 
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 12px;
-  }
+  .stat-cards-grid {
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
   .stat-card {
     flex-direction: column;
     align-items: flex-start;
@@ -342,6 +332,7 @@ body.dark-mode .reports-analytics-table td {
 
 .stat-card-trend {
   font-size: 11px;
+    white-space: nowrap;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -652,4 +643,11 @@ body.dark-mode .dashboard-view-all-btn {
 body.dark-mode .dashboard-view-all-btn:hover {
   background: #6E3FF3;
   color: #ffffff;
+}
+
+@media (max-width: 1400px) {
+  .stat-cards-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1024px) {
+  .stat-cards-grid { grid-template-columns: repeat(2, 1fr); }
 }

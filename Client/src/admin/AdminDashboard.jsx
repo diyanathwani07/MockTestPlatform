@@ -626,7 +626,7 @@ function AdminDashboard() {
                   <div>
                     <p className="stat-card-label">Total Users</p>
                     <p className="stat-card-value">{loading ? "—" : formatNumber(usersCount)}</p>
-                    <span className="stat-card-trend trend-up">↑ 12.5% <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>vs last 7 days</span></span>
+                    <span className="stat-card-trend trend-up">↑ 12.5% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
                     <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
@@ -650,7 +650,7 @@ function AdminDashboard() {
                   <div>
                     <p className="stat-card-label">Total Quizzes</p>
                     <p className="stat-card-value">{loading ? "—" : formatNumber(quizzesCount)}</p>
-                    <span className="stat-card-trend trend-up">↑ 8.4% <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>vs last 7 days</span></span>
+                    <span className="stat-card-trend trend-up">↑ 8.4% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
                     <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
@@ -674,7 +674,7 @@ function AdminDashboard() {
                   <div>
                     <p className="stat-card-label">Total Questions</p>
                     <p className="stat-card-value">{loading ? "—" : formatNumber(questionsCount)}</p>
-                    <span className="stat-card-trend trend-up">↑ 15.3% <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>vs last 7 days</span></span>
+                    <span className="stat-card-trend trend-up">↑ 15.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
                     <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
@@ -698,7 +698,7 @@ function AdminDashboard() {
                   <div>
                     <p className="stat-card-label">Total Attempts</p>
                     <p className="stat-card-value">{loading ? "—" : formatNumber(attemptsCount)}</p>
-                    <span className="stat-card-trend trend-up">↑ 18.7% <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>vs last 7 days</span></span>
+                    <span className="stat-card-trend trend-up">↑ 18.7% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
                     <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
@@ -723,7 +723,7 @@ function AdminDashboard() {
                     <p className="stat-card-label">Average Score</p>
                     <p className="stat-card-value">{loading ? "—" : averageScoreCount}</p>
                     <span className="stat-card-trend" style={{ color: "#9D174D", fontWeight: "600", fontSize: "11px", display: "flex", alignItems: "center", gap: "3px", marginTop: "4px" }}>
-                      ↑ 5.3% <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>vs last 7 days</span>
+                      ↑ 5.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span>
                     </span>
                   </div>
                   <div className="stat-card-sparkline">
