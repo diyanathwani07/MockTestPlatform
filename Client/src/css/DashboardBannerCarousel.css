@@ -7,7 +7,7 @@
   border: 1px solid var(--border-color, #ECE9F7);
   box-shadow: var(--card-shadow, 0 1px 3px rgba(26, 26, 46, 0.04));
   margin-bottom: 10px;
-  height: 200px;
+  height: 250px;
   display: flex;
   user-select: none;
 }
