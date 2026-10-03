@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
-import { Search, Plus, Trash2, Edit2, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Layers, BookOpen, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Plus, Trash2, Edit2, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Layers, BookOpen, ArrowUp, ArrowDown, FileText, CheckCircle } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 
@@ -16,12 +16,10 @@ function ExamSeriesManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     category: "General", thumbnail: "",
-      thumbnail: "", thumbnail: "",
     isPublished: true,
   });
 
@@ -110,36 +108,12 @@ function ExamSeriesManager() {
     }
   };
 
-  
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploadingImage(true);
-    const formDataObj = new FormData();
-    formDataObj.append("image", file);
-    try {
-      const token = localStorage.getItem("token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload/image`, formDataObj, { headers });
-      if (res.data.url) {
-        setFormData(prev => ({ ...prev, thumbnail: res.data.url }));
-        alert("Image uploaded successfully!");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to upload image");
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
   const handleOpenCreate = () => {
     setEditingId(null);
     setFormData({
       title: "",
       description: "",
       category: "General", thumbnail: "",
-      thumbnail: "", thumbnail: "",
       isPublished: true,
     });
     setStructures([]);
@@ -154,7 +128,6 @@ function ExamSeriesManager() {
       title: series.title,
       description: series.description || "",
       category: series.category || "General", thumbnail: series.thumbnail || "",
-        thumbnail: series.thumbnail || "", thumbnail: series.thumbnail || "",
       isPublished: series.isPublished ?? true,
     });
     setNewStructureName("");
@@ -500,7 +473,6 @@ function ExamSeriesManager() {
                       />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      
                       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                         <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Exam Card Banner (Optional)</label>
                         <div style={{ display: "flex", gap: "8px" }}>
@@ -522,7 +494,7 @@ function ExamSeriesManager() {
                             fontSize: "13px",
                             whiteSpace: "nowrap"
                           }}>
-                            {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                            {uploadingImage ? "Uploading..." : "Upload Image"}
                             <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} disabled={uploadingImage} />
                           </label>
                         </div>
