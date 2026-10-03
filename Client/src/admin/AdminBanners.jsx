@@ -165,8 +165,26 @@ export default function AdminBanners() {
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{b.category}</span>
                   </td>
                   <td>
-                    {b.ctaLabel} <br/> <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{b.ctaRoute}</span>
-                  </td>
+                      {b.ctaLabel ? (
+                        <>
+                          <strong style={{ fontSize: '13px' }}>{b.ctaLabel}</strong><br/>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{b.ctaRoute || 'No Link'}</span>
+                        </>
+                      ) : (
+                        <span style={{ 
+                          fontSize: '11px', 
+                          padding: '4px 10px', 
+                          borderRadius: '20px', 
+                          background: 'var(--bg-input)', 
+                          border: '1px solid var(--border-color)',
+                          color: 'var(--text-secondary)',
+                          fontWeight: '600',
+                          display: 'inline-block'
+                        }}>
+                          {b.ctaRoute ? `🔗 ${b.ctaRoute}` : 'No Link'}
+                        </span>
+                      )}
+                    </td>
                   <td>{b.order}</td>
                   <td>
                     {b.isActive ? <CheckCircle size={16} color="#10B981" /> : <XCircle size={16} color="#EF4444" />}
