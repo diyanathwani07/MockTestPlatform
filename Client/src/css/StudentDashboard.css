@@ -1678,9 +1678,4 @@ body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
     }
 }
 
-@media (min-width: 1400px) {
-  .sd-hero {
-    margin: 20px auto;
-    width: 1320px;
-  }
-}
+
