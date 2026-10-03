@@ -2,8 +2,8 @@
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
-import { Plus, Edit2, Trash2, Image, Link, AlignLeft, AlignCenter, AlignRight, CheckCircle, XCircle } from "lucide-react";
-import toast from "react-hot-toast";
+import { Plus, Edit2, Trash2, CheckCircle, XCircle } from "lucide-react";
+
 import "../css/admin/AdminLayout.css";
 
 export default function AdminBanners() {
@@ -32,7 +32,7 @@ export default function AdminBanners() {
       setBanners(res.data);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load banners");
+      alert("Failed to load banners");
     } finally {
       setLoading(false);
     }
@@ -64,17 +64,17 @@ export default function AdminBanners() {
         await axios.put(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/banners/${editingBanner._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success("Banner updated!");
+        alert("Banner updated!");
       } else {
         await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/banners`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success("Banner created!");
+        alert("Banner created!");
       }
       setShowModal(false);
       fetchBanners();
     } catch (error) {
-      toast.error("Error saving banner");
+      alert("Error saving banner");
     }
   };
 
@@ -85,10 +85,10 @@ export default function AdminBanners() {
       await axios.delete(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/banners/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success("Banner deleted");
+      alert("Banner deleted");
       fetchBanners();
     } catch (error) {
-      toast.error("Error deleting banner");
+      alert("Error deleting banner");
     }
   };
 
