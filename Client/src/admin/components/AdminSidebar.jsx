@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { to: "/admin/flashcards",     icon: Layers,          label: "Flashcards",          permission: "edit_quiz" },
   { to: "/admin/questions",      icon: HelpCircle,      label: "Questions",           permission: "manage_questions" },
   { to: "/admin/users",          icon: Users,           label: "Users",               permission: "manage_users" },
-    { to: "/admin/banners",        icon: Image,           label: "Banners",             permission: "view_dashboard" },
+    { to: "/admin/banners",        icon: Image,           label: "Banners",             permission: "dashboard" },
   { to: "/admin/ai-plans",       icon: Sparkles, Palette,        label: "AI Plans",            permission: "manage_ai_plans" },
   { to: "/admin/results",        icon: Trophy,          label: "Results",             permission: "manage_results" },
   { to: "/admin/reports",        icon: LineChart,       label: "Reports",             permission: "view_reports" },
