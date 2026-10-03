@@ -10,6 +10,7 @@ import "../css/admin/AdminBanners.css";
 export default function AdminBanners() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingBanner, setEditingBanner] = useState(null);
   const [formData, setFormData] = useState({
@@ -42,6 +43,35 @@ export default function AdminBanners() {
   useEffect(() => {
     fetchBanners();
   }, []);
+
+  
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formDataObj = new FormData();
+    formDataObj.append("image", file);
+    formDataObj.append("folder", "banners");
+    
+    setUploadingImage(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/upload/image`, formDataObj, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      if (res.data && res.data.success) {
+        setFormData(prev => ({ ...prev, image: res.data.imageUrl }));
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to upload image.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleOpenModal = (banner = null) => {
     if (banner) {
@@ -178,8 +208,14 @@ export default function AdminBanners() {
                 </div>
               </div>
               <div className="al-form-group">
-                <label>Image URL</label>
-                <input type="text" required value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="al-input" />
+                <label>Image URL (or Upload)</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input type="text" required value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="al-input" style={{ flex: 1 }} placeholder="https://..." />
+                  <label className="al-btn al-btn-secondary" style={{ cursor: uploadingImage ? 'wait' : 'pointer', margin: 0, whiteSpace: 'nowrap' }}>
+                    {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} disabled={uploadingImage} />
+                  </label>
+                </div>
               </div>
               <div className="al-form-row">
                 <div className="al-form-group">
