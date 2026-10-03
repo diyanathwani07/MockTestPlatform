@@ -147,7 +147,7 @@ export default function AdminBanners() {
             <thead>
               <tr>
                 <th>Image</th>
-                <th>Title & Category</th>
+                <th>Banner Info</th>
                 <th>CTA</th>
                 <th>Order</th>
                 <th>Status</th>
@@ -201,24 +201,6 @@ export default function AdminBanners() {
               </div>
 
               <div className="al-form-group">
-                <label>Title</label>
-                <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="al-input" />
-              </div>
-              <div className="al-form-group">
-                <label>Description (Optional)</label>
-                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="al-input" />
-              </div>
-              <div className="al-form-row">
-                <div className="al-form-group">
-                  <label>Category (Badge)</label>
-                  <input type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="al-input" />
-                </div>
-                <div className="al-form-group">
-                  <label>Order (Lower = First)</label>
-                  <input type="number" value={formData.order} onChange={e => setFormData({...formData, order: parseInt(e.target.value)})} className="al-input" />
-                </div>
-              </div>
-              <div className="al-form-group">
                 <label>Image URL (or Upload)</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input type="text" required value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="al-input" style={{ flex: 1 }} placeholder="https://..." />
@@ -228,32 +210,25 @@ export default function AdminBanners() {
                   </label>
                 </div>
               </div>
+
               <div className="al-form-row">
                 <div className="al-form-group">
-                  <label>CTA Button Label</label>
-                  <input type="text" value={formData.ctaLabel} onChange={e => setFormData({...formData, ctaLabel: e.target.value})} className="al-input" />
-                </div>
-                <div className="al-form-group">
-                  <label>CTA Button Route</label>
+                  <label>CTA Button Route (Link to Page)</label>
                   <input type="text" value={formData.ctaRoute} onChange={e => setFormData({...formData, ctaRoute: e.target.value})} className="al-input" placeholder="/dashboard/practice" />
                 </div>
-              </div>
-              <div className="al-form-row">
                 <div className="al-form-group">
-                  <label>Content Alignment</label>
-                  <select value={formData.align} onChange={e => setFormData({...formData, align: e.target.value})} className="al-input">
-                    <option value="left">Left</option>
-                    <option value="center">Center</option>
-                    <option value="right">Right</option>
-                  </select>
-                </div>
-                <div className="al-form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '10px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
-                    <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} style={{ width: '18px', height: '18px' }} />
-                    Active (Visible to Students)
-                  </label>
+                  <label>Order (Lower = First)</label>
+                  <input type="number" value={formData.order} onChange={e => setFormData({...formData, order: parseInt(e.target.value)})} className="al-input" />
                 </div>
               </div>
+
+              <div className="al-form-group" style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
+                  <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} style={{ width: '18px', height: '18px' }} />
+                  Active (Visible to Students)
+                </label>
+              </div>
+
               <div className="al-modal-footer">
                 <button type="button" className="al-btn al-btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="al-btn al-btn-primary">Save Banner</button>
