@@ -89,7 +89,7 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
   const banners = previewBanners || (dbBanners.length > 0 ? dbBanners : MOCK_BANNERS);
   const imageIndex = ((page % banners.length) + banners.length) % banners.length;
   const activeBanner = banners[imageIndex];
-  const isPureImage = !activeBanner.title && !activeBanner.description && !activeBanner.category;
+  const isPureImage = !activeBanner.title || activeBanner.title.trim() === "";
 
 
   const paginate = useCallback((newDirection) => {
