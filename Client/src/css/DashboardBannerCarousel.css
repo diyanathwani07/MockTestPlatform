@@ -14,7 +14,8 @@
 
 @media (max-width: 768px) {
   .dashboard-banner-container {
-    height: 160px;
+    height: auto;
+    aspect-ratio: 16 / 8;
     margin-bottom: 10px;
     border-radius: var(--border-radius-md, 12px);
   }
@@ -259,7 +260,7 @@
 }
 @media (max-width: 768px) {
   .banner-slide.pure-image-slide .banner-bg-image.full-width {
-    background-size: contain;
-    background-color: #0d0d12;
+    background-size: 100% 100%;
+    background-color: transparent;
   }
 }
