@@ -189,9 +189,19 @@ export default function AdminBanners() {
               <button className="al-close-btn" onClick={() => setShowModal(false)}><XCircle size={24}/></button>
             </div>
             <form onSubmit={handleSave} className="al-modal-body">
+              <div className="al-form-group" style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
+                <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>Live Preview</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>*Desktop View (Mobile will adapt automatically)</span>
+                </label>
+                <div style={{ pointerEvents: 'none', transform: 'scale(0.95)', transformOrigin: 'top center', marginBottom: '-10px', borderRadius: '12px', overflow: 'hidden' }}>
+                  <DashboardBannerCarousel previewBanners={[{ ...formData, _id: 'preview' }]} />
+                </div>
+              </div>
+
               <div className="al-form-group">
                 <label>Title</label>
-                <input type="text" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="al-input" />
+                <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="al-input" />
               </div>
               <div className="al-form-group">
                 <label>Description (Optional)</label>

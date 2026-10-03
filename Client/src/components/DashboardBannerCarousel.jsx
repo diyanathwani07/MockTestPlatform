@@ -60,7 +60,7 @@ const swipePower = (offset, velocity) => {
   return Math.abs(offset) * velocity;
 };
 
-export default function DashboardBannerCarousel() {
+export default function DashboardBannerCarousel({ previewBanners = null }) {
   const [[page, direction], setPage] = useState([0, 0]);
   const [isPaused, setIsPaused] = useState(false);
   const [dbBanners, setDbBanners] = useState([]);
@@ -69,6 +69,7 @@ export default function DashboardBannerCarousel() {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   useEffect(() => {
+    if (previewBanners) return;
     const fetchBanners = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/banners`);
@@ -85,7 +86,7 @@ export default function DashboardBannerCarousel() {
   }, []);
 
   
-  const banners = dbBanners.length > 0 ? dbBanners : MOCK_BANNERS;
+  const banners = previewBanners || (dbBanners.length > 0 ? dbBanners : MOCK_BANNERS);
   const imageIndex = ((page % banners.length) + banners.length) % banners.length;
   const activeBanner = banners[imageIndex];
   const isPureImage = !activeBanner.title && !activeBanner.description && !activeBanner.category;
