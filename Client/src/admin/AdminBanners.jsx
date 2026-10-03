@@ -5,6 +5,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import { Plus, Edit2, Trash2, CheckCircle, XCircle } from "lucide-react";
 
 import "../css/admin/AdminLayout.css";
+import "../css/admin/AdminBanners.css";
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState([]);
