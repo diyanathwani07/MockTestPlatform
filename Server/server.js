@@ -141,6 +141,7 @@ app.use("/api/exam-series", examSeriesRoutes);
 app.use("/api/exam-structures", examStructureRoutes);
 app.use("/api/flashcards", require("./routes/flashcardRoutes"));
 app.use("/api/taxonomies", require("./routes/taxonomyRoutes"));
+app.use("/api/banners", require("./routes/bannerRoutes"));
 app.use("/api/users/upload-profile", uploadRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/admin/users", adminUserRoutes);
