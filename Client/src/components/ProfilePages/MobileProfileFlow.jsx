@@ -55,8 +55,48 @@ export default function MobileProfileFlow({
           if (!token) return;
           const headers = { Authorization: `Bearer ${token}` };
           const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-          const res = await axios.get(`${apiUrl}/api/subscription/my`, { headers });
-          setTransactions(Array.isArray(res.data) ? res.data : []);
+          
+          const [subRes, examsRes, practiceRes] = await Promise.all([
+            axios.get(`${apiUrl}/api/subscription/my`, { headers }).catch(() => ({ data: [] })),
+            axios.get(`${apiUrl}/api/purchase/my-exams`, { headers }).catch(() => ({ data: [] })),
+            axios.get(`${apiUrl}/api/purchase/my-practice`, { headers }).catch(() => ({ data: [] }))
+          ]);
+          
+          let allTxns = Array.isArray(subRes.data) ? subRes.data : [];
+          
+          const exams = Array.isArray(examsRes.data) ? examsRes.data : [];
+          const practice = Array.isArray(practiceRes.data) ? practiceRes.data : [];
+
+          const examTxns = exams.map(exam => ({
+            _id: `exam-${exam._id}`,
+            purchaseId: `EXAM-${exam._id.substring(0, 8).toUpperCase()}`,
+            status: "active",
+            amount: exam.price || 0,
+            paymentGateway: "One-Time",
+            planNameSnapshot: `Exam: ${exam.title || 'Custom Exam'}`,
+            createdAt: exam.createdAt || new Date(),
+            expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
+            aiTestsUsed: 0,
+            maxAITests: "N/A"
+          }));
+
+          const practiceTxns = practice.map(p => ({
+            _id: `prac-${p._id}`,
+            purchaseId: `PRAC-${p._id.substring(0, 8).toUpperCase()}`,
+            status: "active",
+            amount: p.practicePrice || p.price || 0,
+            paymentGateway: "One-Time",
+            planNameSnapshot: `Practice: ${p.title || 'Module'}`,
+            createdAt: p.createdAt || new Date(),
+            expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
+            aiTestsUsed: 0,
+            maxAITests: "N/A"
+          }));
+
+          allTxns = [...allTxns, ...examTxns, ...practiceTxns];
+          allTxns.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          
+          setTransactions(allTxns);
         } catch (err) {
           console.error("Failed to fetch transactions in profile flow:", err);
         } finally {
