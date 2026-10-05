@@ -1499,6 +1499,7 @@ const bulkImportQuizzes = async (req, res) => {
 };
 
 module.exports = {
+  getQuizSuggestions,
   createQuiz,
   getQuizzes,
   getQuizById,
@@ -1518,4 +1519,18 @@ module.exports = {
   deleteCustomQuiz,
   submitQuiz,
   bulkImportQuizzes,
+};
+
+// @desc    Get unique exam names and subjects for autocomplete suggestions
+// @route   GET /api/quizzes/metadata/suggestions
+// @access  Private/Admin
+const getQuizSuggestions = async (req, res) => {
+  try {
+    const examNames = await Quiz.distinct("examName", { examName: { $ne: null, $ne: "" } });
+    const subjects = await Quiz.distinct("subject", { subject: { $ne: null, $ne: "" } });
+    res.json({ examNames: examNames.sort(), subjects: subjects.sort() });
+  } catch (error) {
+    console.error("Error fetching quiz suggestions:", error);
+    res.status(500).json({ message: "Server error fetching suggestions" });
+  }
 };

@@ -96,6 +96,7 @@ function CreateQuiz() {
   const [seriesList, setSeriesList] = useState([]);
   const [structuresList, setStructuresList] = useState([]);
   const [loadingStructures, setLoadingStructures] = useState(false);
+  const [suggestions, setSuggestions] = useState({ examNames: [], subjects: [] });
   const [taxonomies, setTaxonomies] = useState({ year: [], shift: [], testType: [], testFormat: [] });
 
   const [presetSelected, setPresetSelected] = useState("Custom");
@@ -240,7 +241,20 @@ function CreateQuiz() {
     fetchPresets();
     fetchSeries();
     fetchTaxonomies();
+    fetchSuggestions();
   }, []);
+
+  const fetchSuggestions = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/metadata/suggestions`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setSuggestions(res.data);
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
+    }
+  };
+
 
   const fetchTaxonomies = async () => {
     try {
@@ -1073,6 +1087,7 @@ function CreateQuiz() {
                         <input 
                           type="text" 
                           name="examName" 
+                          list="examNamesList"
                           value={quizMeta.examName || ""} 
                           onChange={handleMetaChange} 
                           placeholder="e.g. UPTET / CTET / BPSC" 
@@ -1080,7 +1095,7 @@ function CreateQuiz() {
                       </div>
                       <div className="form-field">
                         <label>Subject</label>
-                        <input type="text" name="subject" value={quizMeta.subject} onChange={handleMetaChange} placeholder="e.g. Physics / Chemistry / Math" required />
+                        <input type="text" name="subject" list="subjectsList" value={quizMeta.subject} onChange={handleMetaChange} placeholder="e.g. Physics / Chemistry / Math" required />
                       </div>
                       <div className="form-field">
                         <label>Quiz Title</label>

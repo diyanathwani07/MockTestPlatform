@@ -100,6 +100,7 @@ function EditQuiz() {
   const [seriesList, setSeriesList] = useState([]);
   const [structuresList, setStructuresList] = useState([]);
   const [loadingStructures, setLoadingStructures] = useState(false);
+  const [suggestions, setSuggestions] = useState({ examNames: [], subjects: [] });
   const [taxonomies, setTaxonomies] = useState({ year: [], shift: [], testType: [], testFormat: [] });
 
   const [presetSelected, setPresetSelected] = useState("Custom");

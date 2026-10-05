@@ -11,6 +11,7 @@ const {
   updateQuiz,
   deleteQuiz,
   getDashboardStats,
+  getQuizSuggestions,
   exportSectionAsQuiz,
   addSectionToQuiz,
   removeSectionFromQuiz,
@@ -27,6 +28,8 @@ const {
 } = require("../controllers/quizController");
 
 // Dashboard stats — admin only
+
+router.get("/metadata/suggestions", protect, adminOnly, getQuizSuggestions);
 router.get("/stats/dashboard", protect, adminOnly, getDashboardStats);
 
 // Conversion utility — must be before /:id routes
