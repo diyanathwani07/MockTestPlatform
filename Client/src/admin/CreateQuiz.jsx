@@ -2138,6 +2138,7 @@ function CreateQuiz() {
 
               </div>
               {/* Questions Builder */}
+              </div>
               {quizMeta.contentType !== "pdf" && (
               <div className="form-card header-questions-card">
                   <div
@@ -2375,7 +2376,6 @@ function CreateQuiz() {
                     : "Status: Ready (Draft / Publish)"
                   }
                 </span>
-              </div>
               <div className="action-buttons-group">
                 <button type="button" className="btn-save-draft" disabled={loading} onClick={() => handleSubmit("draft")}>
                   Save to Drafts
