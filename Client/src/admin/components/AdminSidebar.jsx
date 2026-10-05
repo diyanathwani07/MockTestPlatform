@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { to: "/admin/dashboard",      icon: LayoutDashboard, label: "Dashboard",           permission: "dashboard" },
   { to: "/admin/create-quiz",    icon: Edit3,           label: "Create Quiz",         permission: "create_quiz" },
   { to: "/admin/manage-quizzes", icon: ClipboardList,   label: "Manage Quizzes",      permission: "edit_quiz" },
+  { to: "/admin/exams",          icon: Layers,          label: "Manage Exams",        permission: "edit_quiz" },
   { to: "/admin/practice",       icon: BookOpen,        label: "Practice Modules",    permission: "manage_practice_tests" },
   { to: "/admin/flashcards",     icon: Layers,          label: "Flashcards",          permission: "edit_quiz" },
   { to: "/admin/questions",      icon: HelpCircle,      label: "Questions",           permission: "manage_questions" },
