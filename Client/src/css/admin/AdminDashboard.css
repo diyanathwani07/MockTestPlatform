@@ -110,7 +110,7 @@ body.dark-mode .reports-analytics-table td {
 
 .stat-cards-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 18px;
   }
 
@@ -645,9 +645,6 @@ body.dark-mode .dashboard-view-all-btn:hover {
   color: #ffffff;
 }
 
-@media (max-width: 1400px) {
-  .stat-cards-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 1024px) {
-  .stat-cards-grid { grid-template-columns: repeat(2, 1fr); }
-}
+
+
+
