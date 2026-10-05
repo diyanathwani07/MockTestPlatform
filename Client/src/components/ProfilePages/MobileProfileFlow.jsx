@@ -216,28 +216,39 @@ export default function MobileProfileFlow({
             </>
           )}
 
-                    <div style={{ marginTop: "32px", paddingBottom: "24px", display: "flex", justifyContent: "center", width: "100%" }}>
+                    <div style={{ marginTop: "32px", paddingBottom: "24px", width: "100%" }}>
             {isDesktop ? (
               <div className="desktop-legal-card">
                 <div className="dl-header">
-                  <div className="dl-title-wrap">
-                    <Shield size={20} className="dl-icon" />
-                    <h3>Legal</h3>
+                  <div className="dl-header-left">
+                    <div className="dl-icon-wrapper">
+                      <Shield size={24} />
+                    </div>
+                    <div className="dl-header-text">
+                      <h4>Legal & Privacy</h4>
+                      <p>View our policies and terms of service</p>
+                    </div>
                   </div>
-                  <span className="dl-badge">Your privacy matters</span>
+                  <span className="dl-badge"><Shield size={14} /> Your privacy matters</span>
                 </div>
-                <div className="dl-links-grid">
-                  <a href="/terms" className="dl-link-item">
-                    <FileText size={16} />
-                    <span>Terms & Conditions</span>
+                <div className="dl-grid">
+                  <a href="/terms" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <FileText size={20} style={{ color: 'var(--text-secondary)' }} />
+                      <span style={{ fontWeight: '600' }}>Terms & Conditions</span>
+                    </div>
                   </a>
-                  <a href="/privacy" className="dl-link-item">
-                    <Shield size={16} />
-                    <span>Privacy Policy</span>
+                  <a href="/privacy" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <Shield size={20} style={{ color: 'var(--text-secondary)' }} />
+                      <span style={{ fontWeight: '600' }}>Privacy Policy</span>
+                    </div>
                   </a>
-                  <a href="/refunds" className="dl-link-item">
-                    <RefreshCw size={16} />
-                    <span>Refunds & Cancellation Policy</span>
+                  <a href="/refunds" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <RefreshCw size={20} style={{ color: 'var(--text-secondary)' }} />
+                      <span style={{ fontWeight: '600' }}>Refunds & Cancellation Policy</span>
+                    </div>
                   </a>
                 </div>
               </div>
