@@ -417,7 +417,7 @@ function ManageQuizzes() {
             
             <div className="manage-quizzes-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
               <div style={{ textAlign: "left" }}>
-                <h2 style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: "700", color: "var(--text-primary)", fontFamily: "'Fraunces', serif", margin: "0 0 4px 0" }}>
+                <h2 style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>
                   {viewMode === "active" ? "Manage Quizzes" : "Recycle Bin"}
                 </h2>
                 <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600" }}>
@@ -1040,7 +1040,9 @@ function ManageQuizzes() {
                 )}
               </div>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+              <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", padding: "0", overflow: "hidden", border: "1.5px solid var(--border-color)", borderRadius: "16px" }}>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--bg-page)", borderBottom: "1.5px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
                     {ownershipTab !== "mine" && <th style={{ padding: "18px 28px", fontWeight: "700" }}>Created By</th>}
@@ -1458,6 +1460,8 @@ function ManageQuizzes() {
                   )}
                 </tbody>
               </table>
+                </div>
+              </div>
             )}
           </div>
 

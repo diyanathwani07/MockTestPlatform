@@ -2629,9 +2629,7 @@ function EditQuiz() {
                     </div>
 
                   </div>
-              </div>
                   {/* 3. Questions Builder */}
-              </div>
                   {quizMeta.contentType !== "pdf" && (
                   <div className="form-card header-questions-card">
                       <div className="questions-title-row">
@@ -2965,6 +2963,7 @@ function EditQuiz() {
                       )}
                     </div>
                   )}
+                </div>
 
                 {/* Bottom Actions Row */}
                 <div className="quiz-bottom-actions-row">
@@ -2976,6 +2975,7 @@ function EditQuiz() {
                         : `Status: Ready (${quizMeta.status})`
                       }
                     </span>
+                  </div>
                   <div className="action-buttons-group">
                     <button
                       type="button"
