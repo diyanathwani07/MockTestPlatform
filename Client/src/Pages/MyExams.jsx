@@ -161,12 +161,26 @@ function MyExams() {
   if (activeTab === "Ongoing") displayedSeries = ongoingSeries;
   if (activeTab === "Completed") displayedSeries = completedSeries;
 
-  // Search filtering (title / subjects match)
+  // Search filtering (title / subjects match + keyword shortcuts)
   if (searchQuery) {
-    displayedSeries = displayedSeries.filter(series => 
-      series.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      series.subjects?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    const sq = searchQuery.toLowerCase().trim();
+    displayedSeries = displayedSeries.filter(series => {
+      const matchesTitle = series.title?.toLowerCase().includes(sq);
+      const matchesSubject = series.subjects?.some(s => s.toLowerCase().includes(sq));
+      
+      let matchesKeyword = false;
+      if (sq.includes("free")) {
+        matchesKeyword = matchesKeyword || series.quizzes?.some(q => !q.isPaid);
+      }
+      if (sq.includes("paid")) {
+        matchesKeyword = matchesKeyword || series.quizzes?.some(q => q.isPaid);
+      }
+      if (sq.includes("purchase")) {
+        matchesKeyword = matchesKeyword || series.quizzes?.some(q => q.isPurchased);
+      }
+
+      return matchesTitle || matchesSubject || matchesKeyword;
+    });
   }
 
   // Unified Filter check

@@ -64,6 +64,13 @@ exports.getSeries = async (req, res) => {
 // Get ALL series with their published quizzes in one shot (for student dashboard)
 exports.getAllSeriesWithQuizzes = async (req, res) => {
   try {
+    let purchasedExamIds = [];
+    if (req.user) {
+      const User = require("../models/User");
+      const user = await User.findById(req.user._id).select("purchasedExams");
+      purchasedExamIds = (user?.purchasedExams || []).map(id => id.toString());
+    }
+
     const series = await ExamSeries.find({ isPublished: true }).sort({ createdAt: -1 });
     const seriesIds = series.map(s => s._id);
 
@@ -77,7 +84,7 @@ exports.getAllSeriesWithQuizzes = async (req, res) => {
 
     // Fetch all published quizzes belonging to any of these series
     const allQuizzes = await Quiz.find(quizFilter)
-      .select("_id title subject examSeriesId quizType updatedAt createdAt").sort({ createdAt: -1 });
+      .select("_id title subject examSeriesId quizType updatedAt createdAt isPaid price").sort({ createdAt: -1 });
 
     // Group quizzes by examSeriesId
     const quizMap = {};
@@ -102,10 +109,21 @@ exports.getAllSeriesWithQuizzes = async (req, res) => {
       fcMap[sid].push(f);
     });
 
-    const result = series.map(s => ({
-      ...s.toObject(),
-      quizzes: quizMap[String(s._id)] || [],
-      paperCount: (quizMap[String(s._id)] || []).length,
+    const result = series.map(s => {
+      const sObj = s.toObject();
+      const quizzesForSeries = (quizMap[String(s._id)] || []).map(q => {
+        const qObj = q.toObject ? q.toObject() : { ...q };
+        if (req.user) {
+          qObj.isPurchased = req.user.role === "admin" || req.user.role === "superadmin" || 
+            purchasedExamIds.includes(qObj._id.toString()) || 
+            purchasedExamIds.includes(s._id.toString());
+        }
+        return qObj;
+      });
+      return {
+        ...sObj,
+        quizzes: quizzesForSeries,
+        paperCount: quizzesForSeries.length,
       flashcardCount: (fcMap[String(s._id)] || []).length,
     }));
 

@@ -49,9 +49,13 @@ function ExamsPage() {
   const purchasedExams = exams.filter((e) => e.isPurchased);
 
   const filteredExams = purchasedExams.filter((exam) => {
+    const sq = searchQuery.toLowerCase().trim();
     return (
-      (exam.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (exam.subject || "").toLowerCase().includes(searchQuery.toLowerCase())
+      (exam.title || "").toLowerCase().includes(sq) ||
+      (exam.subject || "").toLowerCase().includes(sq) ||
+      (sq.includes("free") && !exam.isPaid) ||
+      (sq.includes("paid") && exam.isPaid) ||
+      (sq.includes("purchase") && exam.isPurchased)
     );
   });
 
