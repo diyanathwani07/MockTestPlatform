@@ -2137,6 +2137,7 @@ function CreateQuiz() {
                 </div>
 
               </div>
+              </div>
               {/* Questions Builder */}
               </div>
               {quizMeta.contentType !== "pdf" && (
@@ -2364,7 +2365,6 @@ function CreateQuiz() {
                   )}
                 </div>
               )}
-            </div>
 
             {/* Bottom Actions */}
             <div className="quiz-bottom-actions-row">

@@ -2629,6 +2629,7 @@ function EditQuiz() {
                     </div>
 
                   </div>
+              </div>
                   {/* 3. Questions Builder */}
               </div>
                   {quizMeta.contentType !== "pdf" && (
@@ -2964,7 +2965,6 @@ function EditQuiz() {
                       )}
                     </div>
                   )}
-                </div>
 
                 {/* Bottom Actions Row */}
                 <div className="quiz-bottom-actions-row">
