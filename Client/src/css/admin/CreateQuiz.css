@@ -1423,3 +1423,10 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
     padding: 10px 8px !important;
   }
 }
+.quiz-left-panel, .admin-quiz-right-panel {
+  min-width: 0;
+}
+
+.quiz-left-panel, .admin-quiz-right-panel {
+  min-width: 0;
+}
