@@ -482,6 +482,8 @@ function ExamSeriesDetails() {
           )}
 
         </div>
+        {/* Spacer for bottom navigation on mobile */}
+        <div style={{ height: '80px' }}></div>
       </div>
       {selectedQuizForDetails && (
         <QuizDetailsModal 
