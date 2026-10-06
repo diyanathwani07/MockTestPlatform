@@ -514,7 +514,99 @@ function ExamSeriesManager() {
               )}
             </div>
           
-        </div>
+        
+
+            {/* Modal Dialog for Edit Series & Structure Management */}
+            {isModalOpen && (
+              <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" }}>
+                <div style={{ background: "var(--bg-panel, #16112a)", border: "1px solid var(--border-color, rgba(255,255,255,0.1))", padding: "24px", borderRadius: "16px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}>
+                  <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)" }}>{editingId ? "Update Exam Series" : "Create Exam Series"}</h3>
+                  <form onSubmit={handleFormSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
+<div style={{ flex: "2 1 400px", display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Series Title</label>
+                      <input 
+                        type="text" 
+                        value={formData.title} 
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
+                        required
+                        placeholder="e.g. UPTET / CTET / BPSC TRE"
+                      />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Exam Card Banner (Optional)</label>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <input 
+                            type="text" 
+                            value={formData.thumbnail || ""} 
+                            onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
+                            placeholder="https://..."
+                          />
+                          <label style={{ 
+                            padding: "10px 16px", 
+                            background: "var(--bg-card)", 
+                            border: "1px solid var(--border-color)", 
+                            borderRadius: "8px", 
+                            cursor: uploadingImage ? "wait" : "pointer", 
+                            color: "var(--text-primary)", 
+                            fontWeight: "600",
+                            fontSize: "13px",
+                            whiteSpace: "nowrap"
+                          }}>
+                            {uploadingImage ? "Uploading..." : "Upload Image"}
+                            <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} disabled={uploadingImage} />
+                          </label>
+                        </div>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>This image will be displayed on the student exams page.</span>
+                      </div>
+                      <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Category</label>
+                      <input 
+                        type="text" 
+                        value={formData.category} 
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
+                        placeholder="e.g. Teacher Exams"
+                      />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Description (Optional)</label>
+                      <textarea 
+                        value={formData.description} 
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", resize: "none" }}
+                        rows={2}
+                        placeholder="Provide details about papers inside this Exam Series..."
+                      />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <input 
+                        type="checkbox"
+                        checked={formData.isPublished}
+                        onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                        style={{ width: "16px", height: "16px", accentColor: "#6E3FF3" }}
+                        id="isPublishedCheck"
+                      />
+                      <label htmlFor="isPublishedCheck" style={{ fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer" }}>Publish Series (Visible to candidates)</label>
+                    </div>
+
+                    {/* MANAGE STRUCTURE & SUBJECTS SECTION (Only available for existing/editing series) */}
+                    {editingId && (
+                      <div style={{ marginTop: "12px", paddingTop: "16px", borderTop: "1px solid var(--border-color, rgba(255,255,255,0.1))" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <Layers size={18} color="var(--violet, #6E3FF3)" /> Manage Exam Structures & Subjects
+                          </h4>
+                        </div>
+
+                        {structureError && (
+                          <div style={{ padding: "8px 12px", background: "rgba(239, 68, 68, 0.15)", color: "#ef4444", borderRadius: "8px", fontSize: "12px", marginBottom: "12px" }}>
+                            {structureError}
+                          </div>
+                        )}
+          </div>
       </div>
     </div>
   );
