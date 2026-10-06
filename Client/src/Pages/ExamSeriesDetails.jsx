@@ -378,8 +378,7 @@ function ExamSeriesDetails() {
                           {/* Subject & Stats inline */}
                           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 12px", fontSize: "11px", color: "var(--text-secondary)", marginTop: "6px" }}>
                             <span><strong>Subject:</strong> {quiz.subject}</span>
-                            {quiz.contentType !== "pdf" && <span><strong>Qs:</strong> {qCount}</span>}
-                            {quiz.contentType !== "pdf" && <span><strong>Time:</strong> {durMin}m</span>}
+                                                        {quiz.contentType !== "pdf" && <span><strong>Time:</strong> {durMin}m</span>}
                           </div>
 
                           {/* Pricing Badge */}

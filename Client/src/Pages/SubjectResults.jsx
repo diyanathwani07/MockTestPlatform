@@ -242,8 +242,7 @@ function SubjectResults() {
                           {/* Meta info */}
                           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", fontSize: "12px", color: "var(--text-muted)", marginBottom: "12px" }}>
                             <span><strong>Subject:</strong> {result.subject || "General"}</span>
-                            <span>•</span>
-                            <span><strong>Qs:</strong> {totalQuestions}</span>
+                            
                             <span>•</span>
                             <span><strong>Time:</strong> {formattedTime}</span>
                           </div>
