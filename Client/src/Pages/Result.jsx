@@ -293,6 +293,13 @@ function Result() {
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [reviewFilter, setReviewFilter] = useState("all"); // "all", "correct", "incorrect", "unattempted"
   const [isScrolledDown, setIsScrolledDown] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -595,6 +602,18 @@ function Result() {
     return `${m}m ${s}s`;
   };
 
+  const handleShare = async () => {
+    const shareUrl = shareId ? `${window.location.origin}/result/share/${shareId}` : window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Quiz Result - ${examTitle}`, text: `I scored ${score}/${total} (${computedPercentage}%) on ${examTitle}!`, url: shareUrl });
+      } catch (e) { console.log('Share cancelled'); }
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      alert('Result link copied!');
+    }
+  };
+
   const formattedDate = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -866,7 +885,133 @@ function Result() {
 
             
             {/* Header */}
-      {!showAnswers && (
+      {!showAnswers && isMobile ? (
+        <div style={{
+          backgroundColor: "var(--bg-page)",
+          color: "var(--text-primary)",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          fontFamily: "'Inter', sans-serif",
+          padding: "20px",
+          boxSizing: "border-box"
+        }}>
+          {/* Top Bar */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", marginTop: "10px" }}>
+            <button 
+              onClick={() => {
+                if (location.state?.fromAttempts) {
+                  navigate(-1);
+                } else {
+                  navigate("/dashboard/results");
+                }
+              }}
+              style={{
+                background: "none", border: "none", color: "var(--text-primary)", fontSize: "24px", cursor: "pointer", padding: "0"
+              }}
+            >
+              ←
+            </button>
+            <h2 style={{ fontSize: "16px", fontWeight: "600", margin: "0", textAlign: "center", flex: 1, padding: "0 10px" }}>
+              {examTitle}
+            </h2>
+            <button onClick={handleShare} style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer", padding: "0" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </button>
+          </div>
+
+          {/* Mascot & Motivational Text */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "40px" }}>
+            <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "100px", height: "100px", marginBottom: "16px" }} />
+            <h1 style={{ fontSize: "24px", fontWeight: "700", margin: "0 0 8px 0", textAlign: "center" }}>
+              {Number(computedPercentage) >= 80 ? "Excellent Work!" : Number(computedPercentage) >= passThreshold ? "Good effort, keep going" : "Keep Practicing!"}
+            </h1>
+            <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0, textAlign: "center" }}>
+              {Number(computedPercentage) >= 80 ? "Outstanding performance!" : Number(computedPercentage) >= passThreshold ? "You're on the right track" : "Don't give up, try again"}
+            </p>
+          </div>
+
+          {/* Score Circle */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "40px" }}>
+            <div style={{
+              width: "160px",
+              height: "160px",
+              borderRadius: "50%",
+              background: `conic-gradient(var(--primary) ${computedPercentage}%, ${isDark ? "#1D1B28" : "#E5E7EB"} ${computedPercentage}%)`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 8px 16px rgba(0,0,0,0.1)"
+            }}>
+              <div style={{
+                width: "140px",
+                height: "140px",
+                borderRadius: "50%",
+                backgroundColor: "var(--bg-page)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center"
+              }}>
+                <span style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Your score</span>
+                <span style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1 }}>{score}/{total}</span>
+                <span style={{ fontSize: "14px", color: "var(--primary)", fontWeight: "600", marginTop: "4px" }}>{computedPercentage}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "40px", gap: "10px" }}>
+            <div style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "rgba(34, 197, 94, 0.1)", color: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px", fontSize: "14px" }}>✓</div>
+              <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{correct}</span>
+              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Correct</span>
+            </div>
+            <div style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "rgba(239, 68, 68, 0.1)", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px", fontSize: "14px" }}>✕</div>
+              <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{incorrect}</span>
+              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Wrong</span>
+            </div>
+            <div style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "rgba(156, 163, 175, 0.1)", color: "#9ca3af", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px", fontSize: "14px" }}>—</div>
+              <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{unanswered}</span>
+              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Skipped</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "auto" }}>
+            <button 
+              onClick={() => setShowAnswers(true)}
+              style={{
+                width: "100%", padding: "16px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "#fff", fontSize: "16px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+              }}
+            >
+              Review Answers
+            </button>
+            <button 
+              onClick={() => navigate("/dashboard")}
+              style={{
+                width: "100%", padding: "16px", borderRadius: "16px", backgroundColor: "transparent", color: "var(--text-primary)", fontSize: "16px", fontWeight: "600", border: "1px solid var(--border-color)", cursor: "pointer"
+              }}
+            >
+              Go to Dashboard
+            </button>
+          </div>
+          
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <span onClick={handleShare} style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", cursor: "pointer", textDecoration: "underline" }}>
+              Share Result
+            </span>
+          </div>
+        </div>
+      ) : !showAnswers && (
         <div className="result-modal-overlay">
           {/* Back button to go to previous page (e.g. Attempts list) */}
           <button 
