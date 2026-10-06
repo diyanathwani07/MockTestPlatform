@@ -1,3 +1,4 @@
+import confetti from "canvas-confetti";
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
