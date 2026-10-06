@@ -629,15 +629,15 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 12.5% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
+                    <svg viewBox="0 0 100 30" width="70" height="25" >
                       <defs>
                         <linearGradient id="gradient-users" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#6E3FF3" stopOpacity="0.25" />
                           <stop offset="100%" stopColor="#6E3FF3" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 T100,6 L100,30 L0,30 Z" fill="url(#gradient-users)" />
-                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 T100,6" fill="none" stroke="#6E3FF3" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6 L100,30 L0,30 Z" fill="url(#gradient-users)" />
+                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6" fill="none" stroke="#6E3FF3" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
@@ -653,15 +653,15 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 8.4% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
+                    <svg viewBox="0 0 100 30" width="70" height="25" >
                       <defs>
                         <linearGradient id="gradient-quizzes-card" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
                           <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <path d="M0,26 Q15,22 30,18 T60,10 T90,5 T100,2 L100,30 L0,30 Z" fill="url(#gradient-quizzes-card)" />
-                      <path d="M0,26 Q15,22 30,18 T60,10 T90,5 T100,2" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,26 Q15,22 30,18 T60,10 T90,5 Q95,2 100,2 L100,30 L0,30 Z" fill="url(#gradient-quizzes-card)" />
+                      <path d="M0,26 Q15,22 30,18 T60,10 T90,5 Q95,2 100,2" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
@@ -677,15 +677,15 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 15.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
+                    <svg viewBox="0 0 100 30" width="70" height="25" >
                       <defs>
                         <linearGradient id="gradient-questions" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.25" />
                           <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <path d="M0,24 Q15,20 30,22 T60,15 T90,6 T100,4 L100,30 L0,30 Z" fill="url(#gradient-questions)" />
-                      <path d="M0,24 Q15,20 30,22 T60,15 T90,6 T100,4" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,24 Q15,20 30,22 T60,15 T90,6 Q95,4 100,4 L100,30 L0,30 Z" fill="url(#gradient-questions)" />
+                      <path d="M0,24 Q15,20 30,22 T60,15 T90,6 Q95,4 100,4" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
@@ -701,15 +701,15 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 18.7% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
+                    <svg viewBox="0 0 100 30" width="70" height="25" >
                       <defs>
                         <linearGradient id="gradient-attempts-card" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
                           <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <path d="M0,28 Q15,22 30,24 T60,14 T90,8 T100,5 L100,30 L0,30 Z" fill="url(#gradient-attempts-card)" />
-                      <path d="M0,28 Q15,22 30,24 T60,14 T90,8 T100,5" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,28 Q15,22 30,24 T60,14 T90,8 Q95,5 100,5 L100,30 L0,30 Z" fill="url(#gradient-attempts-card)" />
+                      <path d="M0,28 Q15,22 30,24 T60,14 T90,8 Q95,5 100,5" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
@@ -727,15 +727,15 @@ function AdminDashboard() {
                     </span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" style={{ overflow: "visible" }}>
+                    <svg viewBox="0 0 100 30" width="70" height="25" >
                       <defs>
                         <linearGradient id="gradient-score-card" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#EC4899" stopOpacity="0.25" />
                           <stop offset="100%" stopColor="#EC4899" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <path d="M0,22 Q15,28 30,15 T60,25 T90,5 T100,12 L100,30 L0,30 Z" fill="url(#gradient-score-card)" />
-                      <path d="M0,22 Q15,28 30,15 T60,25 T90,5 T100,12" fill="none" stroke="#EC4899" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,22 Q15,28 30,15 T60,25 T90,5 Q95,12 100,12 L100,30 L0,30 Z" fill="url(#gradient-score-card)" />
+                      <path d="M0,22 Q15,28 30,15 T60,25 T90,5 Q95,12 100,12" fill="none" stroke="#EC4899" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
