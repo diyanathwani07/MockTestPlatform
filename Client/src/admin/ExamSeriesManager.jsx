@@ -428,7 +428,7 @@ function ExamSeriesManager() {
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                     <thead>
-                      <tr style={{ backgroundColor: "var(--bg-page)", borderBottom: "1.5px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
+                      <tr style={{ backgroundColor: "transparent", borderBottom: "1px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
                         <th style={{ padding: "18px 24px", fontWeight: "700" }}>Exam Series Title</th>
                         <th style={{ padding: "18px 24px", fontWeight: "700" }}>Slug</th>
                         <th style={{ padding: "18px 24px", fontWeight: "700" }}>Category</th>

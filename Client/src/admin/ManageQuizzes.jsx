@@ -901,7 +901,7 @@ function ManageQuizzes() {
           )}
 
           {/* ─── DATA TABLE ─── */}
-          <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: isMobile ? 0 : "12px 0", overflowX: "auto", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
+          <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: 0, overflowX: "auto", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
             {loading ? (
               <div style={{ padding: "64px 20px", textAlign: "center", color: "var(--text-secondary)", fontSize: "15px" }}>
                 ⏳ Loading quizzes from database...
@@ -1042,7 +1042,7 @@ function ManageQuizzes() {
             ) : (
                                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
-                  <tr style={{ backgroundColor: "var(--bg-page)", borderBottom: "1.5px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
+                  <tr style={{ backgroundColor: "transparent", borderBottom: "1px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
                     {ownershipTab !== "mine" && <th style={{ padding: "18px 28px", fontWeight: "700" }}>Created By</th>}
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Exam</th>
                     <th style={{ padding: "18px 24px", fontWeight: "700" }}>Subject</th>
