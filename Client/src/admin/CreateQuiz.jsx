@@ -1721,7 +1721,7 @@ function CreateQuiz() {
                 </div>
 
                 {/* Result Settings Card */}
-                <div className="form-card compact-card" style={{ marginTop: "24px" }}>
+                <div className="form-card compact-card">
                   <div 
                     onClick={() => setResultSettingsCollapsed(!resultSettingsCollapsed)}
                     style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: resultSettingsCollapsed ? "none" : "1px solid var(--border-color)", paddingBottom: resultSettingsCollapsed ? "0" : "10px", marginBottom: resultSettingsCollapsed ? "0" : "16px" }}
