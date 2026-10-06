@@ -606,7 +606,282 @@ function ExamSeriesManager() {
                             {structureError}
                           </div>
                         )}
-          </div>
+
+                        {/* Add Structure Input */}
+                        <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
+                          <input
+                            type="text"
+                            placeholder="Add structure (e.g. Paper 1, Level 2, PRT)..."
+                            value={newStructureName}
+                            onChange={(e) => setNewStructureName(e.target.value)}
+                            style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "13px" }}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddStructure}
+                            style={{ padding: "8px 14px", borderRadius: "8px", background: "var(--violet, #6E3FF3)", color: "#fff", border: "none", cursor: "pointer", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <Plus size={16} /> Add Structure
+                          </button>
+                        </div>
+
+                        {/* Structure List */}
+                        {loadingStructures ? (
+                          <div style={{ fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "10px" }}>Loading structures...</div>
+                        ) : structures.length === 0 ? (
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)", textAlign: "center", padding: "12px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
+                            No exam structures created yet. Add one above!
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                            {structures.map((struct, sIdx) => {
+                              const isExpanded = expandedStructureId === struct._id;
+                              return (
+                                <div
+                                  key={struct._id}
+                                  style={{
+                                    border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
+                                    borderRadius: "10px",
+                                    background: struct.isActive ? "rgba(255,255,255,0.03)" : "rgba(239,68,68,0.05)",
+                                    overflow: "hidden"
+                                  }}
+                                >
+                                  {/* Structure Header */}
+                                  <div
+                                    style={{
+                                      padding: "10px 14px",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      gap: "10px"
+                                    }}
+                                  >
+                                    <div
+                                      onClick={() => setExpandedStructureId(isExpanded ? null : struct._id)}
+                                      style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", flex: 1 }}
+                                    >
+                                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                      <span style={{ fontWeight: "700", fontSize: "14px", color: struct.isActive ? "var(--text-primary)" : "var(--text-muted)", textDecoration: struct.isActive ? "none" : "line-through" }}>
+                                        {struct.name}
+                                      </span>
+                                      <span style={{ fontSize: "11px", color: "var(--text-secondary)", background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: "10px" }}>
+                                        {(struct.subjects || []).length} Subjects
+                                      </span>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleReorderStructure(sIdx, "up")}
+                                        disabled={sIdx === 0}
+                                        style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: sIdx === 0 ? "default" : "pointer", opacity: sIdx === 0 ? 0.3 : 1 }}
+                                        title="Move Up"
+                                      >
+                                        <ArrowUp size={14} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleReorderStructure(sIdx, "down")}
+                                        disabled={sIdx === structures.length - 1}
+                                        style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: sIdx === structures.length - 1 ? "default" : "pointer", opacity: sIdx === structures.length - 1 ? 0.3 : 1 }}
+                                        title="Move Down"
+                                      >
+                                        <ArrowDown size={14} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToggleStructureActive(struct)}
+                                        style={{
+                                          padding: "2px 8px",
+                                          borderRadius: "6px",
+                                          border: "none",
+                                          fontSize: "11px",
+                                          fontWeight: "700",
+                                          cursor: "pointer",
+                                          background: struct.isActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                                          color: struct.isActive ? "#10B981" : "#EF4444"
+                                        }}
+                                      >
+                                        {struct.isActive ? "Active" : "Inactive"}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteStructure(struct._id)}
+                                        style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: "2px" }}
+                                        title="Delete Structure"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Expanded Subjects Area */}
+                                  {isExpanded && (
+                                    <div style={{ padding: "10px 14px 14px 34px", background: "rgba(0,0,0,0.15)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                                      <div style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "8px", letterSpacing: "0.5px" }}>
+                                        Subjects in {struct.name}
+                                      </div>
+
+                                      {/* Add Subject Input */}
+                                      <div style={{ display: "flex", gap: "6px", marginBottom: "10px" }}>
+                                        <input
+                                          type="text"
+                                          placeholder="Add subject (e.g. Mathematics, Science)..."
+                                          value={newSubjectName[struct._id] || ""}
+                                          onChange={(e) => setNewSubjectName({ ...newSubjectName, [struct._id]: e.target.value })}
+                                          style={{ flex: 1, padding: "6px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "12px" }}
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => handleAddSubject(struct)}
+                                          style={{ padding: "6px 12px", borderRadius: "6px", background: "rgba(110,63,243,0.2)", color: "var(--violet, #8b5cf6)", border: "1px solid rgba(110,63,243,0.3)", cursor: "pointer", fontWeight: "600", fontSize: "12px" }}
+                                        >
+                                          ＋ Add
+                                        </button>
+                                      </div>
+
+                                      {/* Subjects List */}
+                                      {(struct.subjects || []).length === 0 ? (
+                                        <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>No subjects added to this structure yet.</div>
+                                      ) : (
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                                          {(struct.subjects || []).map((sub, subIdx) => (
+                                            <div
+                                              key={sub._id || subIdx}
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                                padding: "6px 10px",
+                                                background: "rgba(255,255,255,0.03)",
+                                                borderRadius: "6px",
+                                                fontSize: "12px"
+                                              }}
+                                            >
+                                              <span style={{ fontWeight: "600", color: sub.isActive !== false ? "var(--text-primary)" : "var(--text-muted)", textDecoration: sub.isActive !== false ? "none" : "line-through" }}>
+                                                {sub.name}
+                                              </span>
+                                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleReorderSubject(struct, subIdx, "up")}
+                                                  disabled={subIdx === 0}
+                                                  style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: subIdx === 0 ? "default" : "pointer", opacity: subIdx === 0 ? 0.3 : 1 }}
+                                                >
+                                                  <ArrowUp size={12} />
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleReorderSubject(struct, subIdx, "down")}
+                                                  disabled={subIdx === (struct.subjects.length - 1)}
+                                                  style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: subIdx === (struct.subjects.length - 1) ? "default" : "pointer", opacity: subIdx === (struct.subjects.length - 1) ? 0.3 : 1 }}
+                                                >
+                                                  <ArrowDown size={12} />
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleToggleSubjectActive(struct, subIdx)}
+                                                  style={{
+                                                    padding: "2px 6px",
+                                                    borderRadius: "4px",
+                                                    border: "none",
+                                                    fontSize: "10px",
+                                                    fontWeight: "700",
+                                                    cursor: "pointer",
+                                                    background: sub.isActive !== false ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                                                    color: sub.isActive !== false ? "#10B981" : "#EF4444"
+                                                  }}
+                                                >
+                                                  {sub.isActive !== false ? "Active" : "Inactive"}
+                                                </button>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "16px" }}>
+                      <button 
+                        type="button" 
+                        onClick={() => setIsModalOpen(false)}
+                        style={{ padding: "8px 16px", borderRadius: "8px", background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-secondary)", cursor: "pointer" }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit" 
+                        style={{ padding: "8px 16px", borderRadius: "8px", background: "#6E3FF3", color: "#fff", border: "none", cursor: "pointer", fontWeight: "600" }}
+                      >
+                        {editingId ? "Update" : "Create"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ flex: "1 1 300px", minWidth: "300px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Live Preview (Student View)</label>
+                    <div style={{ 
+                      background: "var(--bg-card)", 
+                      borderRadius: "16px", 
+                      padding: "20px", 
+                      border: "1px solid var(--border-color)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "12px",
+                      position: "relative",
+                      overflow: "hidden"
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                        <span style={{ background: "rgba(59, 130, 246, 0.1)", color: "#3B82F6", fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px" }}>
+                          {formData.category || "General"}
+                        </span>
+                      </div>
+                      
+                      {formData.thumbnail && (
+                        <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginTop: "4px", flexShrink: 0 }}>
+                          <img src={formData.thumbnail} alt={formData.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </div>
+                      )}
+                      
+                      <div>
+                        <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
+                          {formData.title || "Exam Series Title"}
+                        </h4>
+                      </div>
+                      
+                      <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                          <FileText size={13} /> 2 Items
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                          <CheckCircle size={13} /> 0 Attempted
+                        </span>
+                      </div>
+                      
+                      <button style={{ 
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "8px",
+                        background: "var(--violet)", color: "white", border: "none", borderRadius: "10px", padding: "10px", fontWeight: "600", fontSize: "13.5px", cursor: "pointer"
+                      }}>
+                        View Contents <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+</form>
+                </div>
+              </div>
+            )}
+
+        </div>
       </div>
     </div>
   );

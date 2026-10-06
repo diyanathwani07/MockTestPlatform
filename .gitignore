@@ -25,3 +25,7 @@ dist-ssr
 node_modules
 .env
 dist
+# Temp scripts
+*.py
+*.txt
+Server/test_*.js
