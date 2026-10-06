@@ -885,7 +885,7 @@ function Result() {
 
             
             {/* Header */}
-      {!showAnswers && isMobile ? (
+      {!showAnswers && isMobile && (
         <div style={{
           backgroundColor: "var(--bg-page)",
           color: "var(--text-primary)",
@@ -1003,7 +1003,7 @@ function Result() {
             </span>
           </div>
         </div>
-      ) : !showAnswers && (
+      )} {!showAnswers && !isMobile && (
         <div className="result-modal-overlay">
           {/* Back button to go to previous page (e.g. Attempts list) */}
           <button 
