@@ -978,11 +978,11 @@ function Result() {
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "auto" }}>
+          <div style={{ display: "flex", flexDirection: "row", gap: "12px", marginTop: "auto" }}>
             <button 
               onClick={() => setShowAnswers(true)}
               style={{
-                width: "100%", padding: "16px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "#fff", fontSize: "16px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "#fff", fontSize: "14.5px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", textAlign: "center", whiteSpace: "nowrap"
               }}
             >
               Review Answers
@@ -990,10 +990,10 @@ function Result() {
             <button 
               onClick={() => navigate("/dashboard")}
               style={{
-                width: "100%", padding: "16px", borderRadius: "16px", backgroundColor: "transparent", color: "var(--text-primary)", fontSize: "16px", fontWeight: "600", border: "1px solid var(--border-color)", cursor: "pointer"
+                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "transparent", color: "var(--text-primary)", fontSize: "14.5px", fontWeight: "600", border: "1px solid var(--border-color)", cursor: "pointer", textAlign: "center", whiteSpace: "nowrap"
               }}
             >
-              Go to Dashboard
+              Dashboard
             </button>
           </div>
           
@@ -1178,16 +1178,24 @@ function Result() {
 
 
             {/* Action Buttons */}
-            <div className="rm-actions">
-              {data?.showAnswerReview !== false && (
-                <button className="rm-btn-outline" onClick={() => setShowAnswers(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                  <FileText size={18} /> Review Answers
-                </button>
-              )}
-              <button className="rm-btn-solid" onClick={() => navigate("/dashboard")} style={{ marginLeft: data?.showAnswerReview === false ? 0 : undefined, width: data?.showAnswerReview === false ? "100%" : undefined }}>
-                Back to Dashboard →
-              </button>
-            </div>
+          <div style={{ display: "flex", flexDirection: "row", gap: "12px", marginTop: "auto" }}>
+            <button 
+              onClick={() => setShowAnswers(true)}
+              style={{
+                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "#fff", fontSize: "14.5px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", textAlign: "center", whiteSpace: "nowrap"
+              }}
+            >
+              Review Answers
+            </button>
+            <button 
+              onClick={() => navigate("/dashboard")}
+              style={{
+                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "transparent", color: "var(--text-primary)", fontSize: "14.5px", fontWeight: "600", border: "1px solid var(--border-color)", cursor: "pointer", textAlign: "center", whiteSpace: "nowrap"
+              }}
+            >
+              Dashboard
+            </button>
+          </div>
 
             {/* Social Share */}
             <div className="rm-social-share">
