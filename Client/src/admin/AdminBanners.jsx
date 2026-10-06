@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DashboardBannerCarousel from "../components/DashboardBannerCarousel";
 import AdminSidebar from "./components/AdminSidebar";
@@ -147,7 +147,6 @@ export default function AdminBanners() {
             <thead>
               <tr>
                 <th>Image</th>
-                <th>Banner Info</th>
                 <th>CTA</th>
                 <th>Order</th>
                 <th>Status</th>
@@ -159,10 +158,6 @@ export default function AdminBanners() {
                 <tr key={b._id}>
                   <td>
                     <img src={b.image} alt={b.title} style={{ width: '80px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                  </td>
-                  <td>
-                    <strong>{b.title}</strong><br />
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{b.category}</span>
                   </td>
                   <td>
                       {b.ctaLabel ? (

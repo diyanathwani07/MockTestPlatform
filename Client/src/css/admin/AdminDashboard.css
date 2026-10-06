@@ -155,6 +155,7 @@ body.dark-mode .reports-analytics-table td {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .stat-card-value {
