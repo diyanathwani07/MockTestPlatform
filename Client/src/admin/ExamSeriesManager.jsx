@@ -337,489 +337,183 @@ function ExamSeriesManager() {
       <div className="admin-main">
         <AdminNavbar title="Exam Series Management" />
         
-        <div className="admin-content manage-series-view-container">
-          <div className="manage-quizzes-container">
-            
-            {/* Top Toolbar Actions */}
-            <div className="manage-quizzes-header">
-              <div className="search-bar-container">
-                <Search size={18} className="search-icon" />
-                <input 
-                  type="text" 
-                  placeholder="Search series or categories..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+        <div className="admin-content manage-series-view-container" style={{ flex: 1, textAlign: "left" }}>
 
-              <div className="header-actions">
-                <button className="btn-refresh" onClick={fetchSeries} title="Refresh lists">
-                  <RefreshCw size={18} />
+          {/* ─── COMMAND BAR ─── */}
+          <div className="armored-admin-card" style={{ 
+            backgroundColor: "var(--bg-card)", 
+            border: "1.5px solid var(--border-color)", 
+            borderRadius: "16px", 
+            marginBottom: "24px", 
+            padding: "20px 24px",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+              <div style={{ textAlign: "left" }}>
+                <h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>
+                  Exam Series Overview
+                </h2>
+                <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: "500" }}>
+                  Manage categories, links, and series metadata.
+                </span>
+              </div>
+              
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "8px", 
+                  backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)", 
+                  borderRadius: "10px", padding: "8px 14px", minWidth: "260px"
+                }}>
+                  <Search size={16} style={{ color: "var(--text-muted)" }} />
+                  <input 
+                    type="text" 
+                    placeholder="Search series or categories..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "14px", color: "var(--text-primary)" }}
+                  />
+                </div>
+                
+                <button onClick={fetchSeries} style={{ 
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: "40px", height: "40px", borderRadius: "10px",
+                  backgroundColor: "var(--bg-page)", border: "1px solid var(--border-color)",
+                  color: "var(--text-primary)", cursor: "pointer"
+                }} title="Refresh">
+                  <RefreshCw size={16} />
                 </button>
-                <button className="btn-create-quiz" onClick={handleOpenCreate}>
-                  <Plus size={18} /> Create Exam Series
+                
+                <button onClick={handleOpenCreate} style={{ 
+                  display: "flex", alignItems: "center", gap: "8px",
+                  backgroundColor: "var(--primary)", color: "#fff",
+                  border: "none", borderRadius: "10px", padding: "0 20px", height: "40px",
+                  fontWeight: "600", fontSize: "14px", cursor: "pointer", boxShadow: "0 4px 12px rgba(110,63,243,0.2)"
+                }}>
+                  <Plus size={16} /> Create Series
                 </button>
               </div>
             </div>
-
-            {error && (
-              <div style={{ padding: "12px", background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", borderRadius: "8px", margin: "16px 0", display: "flex", gap: "8px", alignItems: "center" }}>
-                <AlertCircle size={18} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* List Table */}
-            {loading ? (
-              <div style={{ textAlign: "center", padding: "40px" }}>Loading Exam Series details...</div>
-            ) : filteredSeries.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-                No Exam Series matching search queries.
-              </div>
-            ) : (
-              <div className="quizzes-table-wrapper" style={{ overflowX: "auto" }}>
-                <table className="quizzes-table" style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr>
-                      <th>Exam Series Title</th>
-                      <th>Slug</th>
-                      <th>Category</th>
-                      <th>Linked Quizzes</th>
-                      <th>Description</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredSeries.map(s => (
-                      <tr key={s._id}>
-                        <td style={{ fontWeight: 600 }}>{s.title}</td>
-                        <td style={{ color: "var(--text-secondary)" }}>{s.slug}</td>
-                        <td>
-                          <span style={{ padding: "4px 8px", background: "rgba(110,63,243,0.1)", color: "#6E3FF3", borderRadius: "12px", fontSize: "12px", fontWeight: "600" }}>
-                            {s.category || "General"}
-                          </span>
-                        </td>
-                        <td>
-                          <span style={{ 
-                            padding: "4px 10px", 
-                            background: quizCounts[s._id] > 0 ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)", 
-                            color: quizCounts[s._id] > 0 ? "#10B981" : "#EF4444",
-                            borderRadius: "12px", 
-                            fontSize: "12px", 
-                            fontWeight: "700" 
-                          }}>
-                            {quizCounts[s._id] ?? 0} {quizCounts[s._id] === 1 ? "Quiz" : "Quizzes"}
-                          </span>
-                        </td>
-                        <td style={{ maxWidth: "300px", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
-                          {s.description || "--"}
-                        </td>
-                        <td>
-                          <span style={{ 
-                            padding: "4px 8px", 
-                            background: s.isPublished ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)", 
-                            color: s.isPublished ? "#10B981" : "#F59E0B",
-                            borderRadius: "12px",
-                            fontSize: "12px", 
-                            fontWeight: "600"
-                          }}>
-                            {s.isPublished ? "Published" : "Draft"}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: "flex", gap: "10px" }}>
-                            <button 
-                              onClick={() => handleOpenEdit(s)}
-                              style={{ display: "flex", alignItems: "center", background: "transparent", border: "none", color: "var(--primary-color)", cursor: "pointer" }}
-                              title="Edit Series & Structures"
-                            >
-                              <Edit2 size={16} />
-                            </button>
-                            {s.slug !== "ungrouped-mocks" && (
-                              <button 
-                                onClick={() => handleDelete(s._id)}
-                                style={{ display: "flex", alignItems: "center", background: "transparent", border: "none", color: "#ef4444", cursor: "pointer" }}
-                                title="Delete Series"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Modal Dialog for Edit Series & Structure Management */}
-            {isModalOpen && (
-              <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" }}>
-                <div style={{ background: "var(--bg-panel, #16112a)", border: "1px solid var(--border-color, rgba(255,255,255,0.1))", padding: "24px", borderRadius: "16px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}>
-                  <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)" }}>{editingId ? "Update Exam Series" : "Create Exam Series"}</h3>
-                  <form onSubmit={handleFormSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
-<div style={{ flex: "2 1 400px", display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Series Title</label>
-                      <input 
-                        type="text" 
-                        value={formData.title} 
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
-                        required
-                        placeholder="e.g. UPTET / CTET / BPSC TRE"
-                      />
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Exam Card Banner (Optional)</label>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <input 
-                            type="text" 
-                            value={formData.thumbnail || ""} 
-                            onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
-                            placeholder="https://..."
-                          />
-                          <label style={{ 
-                            padding: "10px 16px", 
-                            background: "var(--bg-card)", 
-                            border: "1px solid var(--border-color)", 
-                            borderRadius: "8px", 
-                            cursor: uploadingImage ? "wait" : "pointer", 
-                            color: "var(--text-primary)", 
-                            fontWeight: "600",
-                            fontSize: "13px",
-                            whiteSpace: "nowrap"
-                          }}>
-                            {uploadingImage ? "Uploading..." : "Upload Image"}
-                            <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} disabled={uploadingImage} />
-                          </label>
-                        </div>
-                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>This image will be displayed on the student exams page.</span>
-                      </div>
-                      <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Category</label>
-                      <input 
-                        type="text" 
-                        value={formData.category} 
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)" }}
-                        placeholder="e.g. Teacher Exams"
-                      />
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Description (Optional)</label>
-                      <textarea 
-                        value={formData.description} 
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", resize: "none" }}
-                        rows={2}
-                        placeholder="Provide details about papers inside this Exam Series..."
-                      />
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <input 
-                        type="checkbox"
-                        checked={formData.isPublished}
-                        onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                        style={{ width: "16px", height: "16px", accentColor: "#6E3FF3" }}
-                        id="isPublishedCheck"
-                      />
-                      <label htmlFor="isPublishedCheck" style={{ fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer" }}>Publish Series (Visible to candidates)</label>
-                    </div>
-
-                    {/* MANAGE STRUCTURE & SUBJECTS SECTION (Only available for existing/editing series) */}
-                    {editingId && (
-                      <div style={{ marginTop: "12px", paddingTop: "16px", borderTop: "1px solid var(--border-color, rgba(255,255,255,0.1))" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                            <Layers size={18} color="var(--violet, #6E3FF3)" /> Manage Exam Structures & Subjects
-                          </h4>
-                        </div>
-
-                        {structureError && (
-                          <div style={{ padding: "8px 12px", background: "rgba(239, 68, 68, 0.15)", color: "#ef4444", borderRadius: "8px", fontSize: "12px", marginBottom: "12px" }}>
-                            {structureError}
-                          </div>
-                        )}
-
-                        {/* Add Structure Input */}
-                        <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
-                          <input
-                            type="text"
-                            placeholder="Add structure (e.g. Paper 1, Level 2, PRT)..."
-                            value={newStructureName}
-                            onChange={(e) => setNewStructureName(e.target.value)}
-                            style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "13px" }}
-                          />
-                          <button
-                            type="button"
-                            onClick={handleAddStructure}
-                            style={{ padding: "8px 14px", borderRadius: "8px", background: "var(--violet, #6E3FF3)", color: "#fff", border: "none", cursor: "pointer", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
-                          >
-                            <Plus size={16} /> Add Structure
-                          </button>
-                        </div>
-
-                        {/* Structure List */}
-                        {loadingStructures ? (
-                          <div style={{ fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "10px" }}>Loading structures...</div>
-                        ) : structures.length === 0 ? (
-                          <div style={{ fontSize: "12px", color: "var(--text-muted)", textAlign: "center", padding: "12px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
-                            No exam structures created yet. Add one above!
-                          </div>
-                        ) : (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                            {structures.map((struct, sIdx) => {
-                              const isExpanded = expandedStructureId === struct._id;
-                              return (
-                                <div
-                                  key={struct._id}
-                                  style={{
-                                    border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
-                                    borderRadius: "10px",
-                                    background: struct.isActive ? "rgba(255,255,255,0.03)" : "rgba(239,68,68,0.05)",
-                                    overflow: "hidden"
-                                  }}
-                                >
-                                  {/* Structure Header */}
-                                  <div
-                                    style={{
-                                      padding: "10px 14px",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "space-between",
-                                      gap: "10px"
-                                    }}
-                                  >
-                                    <div
-                                      onClick={() => setExpandedStructureId(isExpanded ? null : struct._id)}
-                                      style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", flex: 1 }}
-                                    >
-                                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                                      <span style={{ fontWeight: "700", fontSize: "14px", color: struct.isActive ? "var(--text-primary)" : "var(--text-muted)", textDecoration: struct.isActive ? "none" : "line-through" }}>
-                                        {struct.name}
-                                      </span>
-                                      <span style={{ fontSize: "11px", color: "var(--text-secondary)", background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: "10px" }}>
-                                        {(struct.subjects || []).length} Subjects
-                                      </span>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleReorderStructure(sIdx, "up")}
-                                        disabled={sIdx === 0}
-                                        style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: sIdx === 0 ? "default" : "pointer", opacity: sIdx === 0 ? 0.3 : 1 }}
-                                        title="Move Up"
-                                      >
-                                        <ArrowUp size={14} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleReorderStructure(sIdx, "down")}
-                                        disabled={sIdx === structures.length - 1}
-                                        style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: sIdx === structures.length - 1 ? "default" : "pointer", opacity: sIdx === structures.length - 1 ? 0.3 : 1 }}
-                                        title="Move Down"
-                                      >
-                                        <ArrowDown size={14} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleToggleStructureActive(struct)}
-                                        style={{
-                                          padding: "2px 8px",
-                                          borderRadius: "6px",
-                                          border: "none",
-                                          fontSize: "11px",
-                                          fontWeight: "700",
-                                          cursor: "pointer",
-                                          background: struct.isActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
-                                          color: struct.isActive ? "#10B981" : "#EF4444"
-                                        }}
-                                      >
-                                        {struct.isActive ? "Active" : "Inactive"}
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleDeleteStructure(struct._id)}
-                                        style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: "2px" }}
-                                        title="Delete Structure"
-                                      >
-                                        <Trash2 size={14} />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  {/* Expanded Subjects Area */}
-                                  {isExpanded && (
-                                    <div style={{ padding: "10px 14px 14px 34px", background: "rgba(0,0,0,0.15)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                                      <div style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "8px", letterSpacing: "0.5px" }}>
-                                        Subjects in {struct.name}
-                                      </div>
-
-                                      {/* Add Subject Input */}
-                                      <div style={{ display: "flex", gap: "6px", marginBottom: "10px" }}>
-                                        <input
-                                          type="text"
-                                          placeholder="Add subject (e.g. Mathematics, Science)..."
-                                          value={newSubjectName[struct._id] || ""}
-                                          onChange={(e) => setNewSubjectName({ ...newSubjectName, [struct._id]: e.target.value })}
-                                          style={{ flex: 1, padding: "6px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-input)", color: "var(--text-primary)", fontSize: "12px" }}
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => handleAddSubject(struct)}
-                                          style={{ padding: "6px 12px", borderRadius: "6px", background: "rgba(110,63,243,0.2)", color: "var(--violet, #8b5cf6)", border: "1px solid rgba(110,63,243,0.3)", cursor: "pointer", fontWeight: "600", fontSize: "12px" }}
-                                        >
-                                          ＋ Add
-                                        </button>
-                                      </div>
-
-                                      {/* Subjects List */}
-                                      {(struct.subjects || []).length === 0 ? (
-                                        <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>No subjects added to this structure yet.</div>
-                                      ) : (
-                                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                                          {(struct.subjects || []).map((sub, subIdx) => (
-                                            <div
-                                              key={sub._id || subIdx}
-                                              style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                padding: "6px 10px",
-                                                background: "rgba(255,255,255,0.03)",
-                                                borderRadius: "6px",
-                                                fontSize: "12px"
-                                              }}
-                                            >
-                                              <span style={{ fontWeight: "600", color: sub.isActive !== false ? "var(--text-primary)" : "var(--text-muted)", textDecoration: sub.isActive !== false ? "none" : "line-through" }}>
-                                                {sub.name}
-                                              </span>
-                                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                                <button
-                                                  type="button"
-                                                  onClick={() => handleReorderSubject(struct, subIdx, "up")}
-                                                  disabled={subIdx === 0}
-                                                  style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: subIdx === 0 ? "default" : "pointer", opacity: subIdx === 0 ? 0.3 : 1 }}
-                                                >
-                                                  <ArrowUp size={12} />
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  onClick={() => handleReorderSubject(struct, subIdx, "down")}
-                                                  disabled={subIdx === (struct.subjects.length - 1)}
-                                                  style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: subIdx === (struct.subjects.length - 1) ? "default" : "pointer", opacity: subIdx === (struct.subjects.length - 1) ? 0.3 : 1 }}
-                                                >
-                                                  <ArrowDown size={12} />
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  onClick={() => handleToggleSubjectActive(struct, subIdx)}
-                                                  style={{
-                                                    padding: "2px 6px",
-                                                    borderRadius: "4px",
-                                                    border: "none",
-                                                    fontSize: "10px",
-                                                    fontWeight: "700",
-                                                    cursor: "pointer",
-                                                    background: sub.isActive !== false ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
-                                                    color: sub.isActive !== false ? "#10B981" : "#EF4444"
-                                                  }}
-                                                >
-                                                  {sub.isActive !== false ? "Active" : "Inactive"}
-                                                </button>
-                                              </div>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "16px" }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setIsModalOpen(false)}
-                        style={{ padding: "8px 16px", borderRadius: "8px", background: "transparent", border: "1px solid var(--border-color)", color: "var(--text-secondary)", cursor: "pointer" }}
-                      >
-                        Cancel
-                      </button>
-                      <button 
-                        type="submit" 
-                        style={{ padding: "8px 16px", borderRadius: "8px", background: "#6E3FF3", color: "#fff", border: "none", cursor: "pointer", fontWeight: "600" }}
-                      >
-                        {editingId ? "Update" : "Create"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div style={{ flex: "1 1 300px", minWidth: "300px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <label style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-secondary)" }}>Live Preview (Student View)</label>
-                    <div style={{ 
-                      background: "var(--bg-card)", 
-                      borderRadius: "16px", 
-                      padding: "20px", 
-                      border: "1px solid var(--border-color)",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "12px",
-                      position: "relative",
-                      overflow: "hidden"
-                    }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-                        <span style={{ background: "rgba(59, 130, 246, 0.1)", color: "#3B82F6", fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px" }}>
-                          {formData.category || "General"}
-                        </span>
-                      </div>
-                      
-                      {formData.thumbnail && (
-                        <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginTop: "4px", flexShrink: 0 }}>
-                          <img src={formData.thumbnail} alt={formData.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        </div>
-                      )}
-                      
-                      <div>
-                        <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
-                          {formData.title || "Exam Series Title"}
-                        </h4>
-                      </div>
-                      
-                      <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                          <FileText size={13} /> 2 Items
-                        </span>
-                        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                          <CheckCircle size={13} /> 0 Attempted
-                        </span>
-                      </div>
-                      
-                      <button style={{ 
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "8px",
-                        background: "var(--violet)", color: "white", border: "none", borderRadius: "10px", padding: "10px", fontWeight: "600", fontSize: "13.5px", cursor: "pointer"
-                      }}>
-                        View Contents <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-</form>
-                </div>
-              </div>
-            )}
-
           </div>
+
+          {error && (
+            <div style={{ padding: "12px", background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", borderRadius: "8px", margin: "0 0 24px 0", display: "flex", gap: "8px", alignItems: "center" }}>
+              <AlertCircle size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+                        {/* ─── DATA TABLE CARD ─── */}
+            <div className="armored-admin-card" style={{ 
+              backgroundColor: "var(--bg-card)", 
+              border: "1.5px solid var(--border-color)", 
+              borderRadius: "16px",
+              boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+              overflow: "hidden"
+            }}>
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
+                  <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', marginBottom: "12px" }} />
+                  <div>Loading Exam Series details...</div>
+                </div>
+              ) : filteredSeries.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
+                  <Search size={32} style={{ opacity: 0.5, marginBottom: "12px" }} />
+                  <div style={{ fontSize: "16px", fontWeight: "600" }}>No Exam Series Found</div>
+                  <div style={{ fontSize: "13px" }}>Try adjusting your search filters.</div>
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                    <thead>
+                      <tr style={{ backgroundColor: "var(--bg-page)", borderBottom: "1.5px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
+                        <th style={{ padding: "18px 24px", fontWeight: "700" }}>Exam Series Title</th>
+                        <th style={{ padding: "18px 24px", fontWeight: "700" }}>Slug</th>
+                        <th style={{ padding: "18px 24px", fontWeight: "700" }}>Category</th>
+                        <th style={{ padding: "18px 24px", fontWeight: "700" }}>Linked Quizzes</th>
+                        <th style={{ padding: "18px 24px", fontWeight: "700" }}>Description</th>
+                        <th style={{ padding: "18px 24px", fontWeight: "700" }}>Status</th>
+                        <th style={{ padding: "18px 24px", fontWeight: "700", textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="report-table-body">
+                      {filteredSeries.map(s => (
+                        <tr key={s._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "14px" }}>
+                          <td style={{ padding: "18px 24px", fontWeight: 600, color: "var(--text-primary)" }}>{s.title}</td>
+                          <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "13px" }}>{s.slug}</td>
+                          <td style={{ padding: "18px 24px" }}>
+                            <span style={{ padding: "4px 10px", background: "rgba(110,63,243,0.1)", color: "#6E3FF3", borderRadius: "100px", fontSize: "12px", fontWeight: "700" }}>
+                              {s.category || "General"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "18px 24px" }}>
+                            <span style={{ 
+                              padding: "4px 10px", 
+                              background: quizCounts[s._id] > 0 ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)", 
+                              color: quizCounts[s._id] > 0 ? "#10B981" : "#EF4444",
+                              borderRadius: "100px", 
+                              fontSize: "12px", 
+                              fontWeight: "700" 
+                            }}>
+                              {quizCounts[s._id] ?? 0} {quizCounts[s._id] === 1 ? "Quiz" : "Quizzes"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "18px 24px", maxWidth: "250px", color: "var(--text-secondary)" }}>
+                            <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {s.description || "--"}
+                            </div>
+                          </td>
+                          <td style={{ padding: "18px 24px" }}>
+                            <span style={{ 
+                              padding: "4px 10px", 
+                              background: s.isPublished ? "rgba(16,185,129,0.1)" : "rgba(107,114,128,0.1)", 
+                              color: s.isPublished ? "#10B981" : "#6B7280", 
+                              borderRadius: "100px", 
+                              fontSize: "12px", 
+                              fontWeight: "700" 
+                            }}>
+                              {s.isPublished ? "Published" : "Draft"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "18px 24px", textAlign: "right" }}>
+                            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                              <button 
+                                onClick={() => handleOpenEdit(s)} 
+                                title="Edit"
+                                style={{
+                                  background: "var(--bg-page)", border: "1px solid var(--border-color)",
+                                  width: "32px", height: "32px", borderRadius: "8px",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  color: "var(--text-primary)", cursor: "pointer"
+                                }}
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button 
+                                className="btn-delete"
+                                onClick={() => handleDelete(s._id)} 
+                                title="Delete"
+                                style={{
+                                  background: "rgba(239, 68, 68, 0.1)", border: "none",
+                                  width: "32px", height: "32px", borderRadius: "8px",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  color: "#EF4444", cursor: "pointer"
+                                }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          
         </div>
       </div>
     </div>
