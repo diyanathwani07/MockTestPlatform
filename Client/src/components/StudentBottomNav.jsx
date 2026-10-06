@@ -54,7 +54,7 @@ const StudentBottomNav = () => {
       <div 
         className="absolute left-0 h-[53px] pointer-events-none z-0"
         style={{ 
-           width: 'calc(50vw - 194px)', /* 195px half, overlap slightly to prevent gap */
+           width: 'calc(50vw - 170px)', /* 195px half, overlap slightly to prevent gap */
            bottom: 'env(safe-area-inset-bottom)',
            background: 'linear-gradient(180deg, var(--bottom-nav-start) 0%, var(--bottom-nav-end) 100%)',
            boxShadow: 'inset 0 1px 10px 0 rgba(0,0,0,0.1)'
@@ -68,7 +68,7 @@ const StudentBottomNav = () => {
       <div 
         className="absolute right-0 h-[53px] pointer-events-none z-0"
         style={{ 
-           width: 'calc(50vw - 194px)',
+           width: 'calc(50vw - 170px)',
            bottom: 'env(safe-area-inset-bottom)',
            background: 'linear-gradient(180deg, var(--bottom-nav-start) 0%, var(--bottom-nav-end) 100%)',
            boxShadow: 'inset 0 1px 10px 0 rgba(0,0,0,0.1)'
@@ -82,7 +82,7 @@ const StudentBottomNav = () => {
       {/* Background SVG Wrapper (Fixed 390px width so the curve NEVER stretches horizontally) */}
       <div 
         className="absolute left-1/2 -translate-x-1/2 w-[390px] h-[75px] pointer-events-none z-0"
-        style={{ bottom: 'env(safe-area-inset-bottom)' }}
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) - 22px)' }}
       >
         {/* Background SVG 1 - Theme Glow Stroke */}
         <svg
