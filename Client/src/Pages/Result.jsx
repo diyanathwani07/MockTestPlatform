@@ -919,7 +919,7 @@ function Result() {
           </div>
 
           {/* Mascot & Motivational Text */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "40px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "24px" }}>
             <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "100px", height: "100px", marginBottom: "16px" }} />
             <h1 style={{ fontSize: "24px", fontWeight: "700", margin: "0 0 8px 0", textAlign: "center" }}>
               {Number(computedPercentage) >= 80 ? "Excellent Work!" : Number(computedPercentage) >= passThreshold ? "Good effort, keep going" : "Keep Practicing!"}
@@ -930,7 +930,7 @@ function Result() {
           </div>
 
           {/* Score Circle */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: "40px" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
             <div style={{
               width: "160px",
               height: "160px",
@@ -959,7 +959,7 @@ function Result() {
           </div>
 
           {/* Stats Cards */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "40px", gap: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px", gap: "10px" }}>
             <div style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center" }}>
               <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "rgba(34, 197, 94, 0.1)", color: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px", fontSize: "14px" }}>✓</div>
               <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{correct}</span>
@@ -978,7 +978,7 @@ function Result() {
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: "flex", flexDirection: "row", gap: "12px", marginTop: "auto" }}>
+          <div style={{ display: "flex", flexDirection: "row", gap: "12px", marginTop: "8px" }}>
             <button 
               onClick={() => setShowAnswers(true)}
               style={{
@@ -1178,7 +1178,7 @@ function Result() {
 
 
             {/* Action Buttons */}
-          <div style={{ display: "flex", flexDirection: "row", gap: "12px", marginTop: "auto" }}>
+          <div style={{ display: "flex", flexDirection: "row", gap: "12px", marginTop: "8px" }}>
             <button 
               onClick={() => setShowAnswers(true)}
               style={{
