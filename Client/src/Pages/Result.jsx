@@ -960,17 +960,38 @@ function Result() {
 
           {/* Stats Cards */}
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px", gap: "10px" }}>
-            <div style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div 
+              onClick={() => {
+                if (data?.showAnswerReview !== false) {
+                  setReviewFilter(reviewFilter === "correct" ? "all" : "correct");
+                  setShowAnswers(true);
+                }
+              }}
+              style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center", cursor: data?.showAnswerReview !== false ? "pointer" : "default" }}>
               <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "rgba(34, 197, 94, 0.1)", color: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px", fontSize: "14px" }}>✓</div>
               <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{correct}</span>
               <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Correct</span>
             </div>
-            <div style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div 
+              onClick={() => {
+                if (data?.showAnswerReview !== false) {
+                  setReviewFilter(reviewFilter === "incorrect" ? "all" : "incorrect");
+                  setShowAnswers(true);
+                }
+              }}
+              style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center", cursor: data?.showAnswerReview !== false ? "pointer" : "default" }}>
               <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "rgba(239, 68, 68, 0.1)", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px", fontSize: "14px" }}>✕</div>
               <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{incorrect}</span>
               <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Wrong</span>
             </div>
-            <div style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div 
+              onClick={() => {
+                if (data?.showAnswerReview !== false) {
+                  setReviewFilter(reviewFilter === "unattempted" ? "all" : "unattempted");
+                  setShowAnswers(true);
+                }
+              }}
+              style={{ flex: 1, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)", borderRadius: "16px", padding: "16px 12px", display: "flex", flexDirection: "column", alignItems: "center", cursor: data?.showAnswerReview !== false ? "pointer" : "default" }}>
               <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "rgba(156, 163, 175, 0.1)", color: "#9ca3af", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px", fontSize: "14px" }}>—</div>
               <span style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>{unanswered}</span>
               <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Skipped</span>
