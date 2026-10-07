@@ -629,7 +629,7 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 12.5% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" >
+                    <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-users" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#6E3FF3" stopOpacity="0.25" />
@@ -653,7 +653,7 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 8.4% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" >
+                    <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-quizzes-card" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
@@ -677,7 +677,7 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 15.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" >
+                    <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-questions" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.25" />
@@ -701,7 +701,7 @@ function AdminDashboard() {
                     <span className="stat-card-trend trend-up">↑ 18.7% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" >
+                    <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-attempts-card" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
@@ -727,7 +727,7 @@ function AdminDashboard() {
                     </span>
                   </div>
                   <div className="stat-card-sparkline">
-                    <svg viewBox="0 0 100 30" width="70" height="25" >
+                    <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-score-card" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#EC4899" stopOpacity="0.25" />
