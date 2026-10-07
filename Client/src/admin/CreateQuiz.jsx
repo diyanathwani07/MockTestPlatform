@@ -723,8 +723,8 @@ function CreateQuiz() {
         return false;
       }
     } else {
-      if (!quizMeta.examName || !quizMeta.subject || !quizMeta.title || !quizMeta.duration) {
-        setMessage({ text: "Please fill in Exam, Subject, Title, and Duration.", type: "status-error" });
+      if (!quizMeta.subject || !quizMeta.title || !quizMeta.duration) {
+        setMessage({ text: "Please fill in Subject, Title, and Duration.", type: "status-error" });
         return false;
       }
     }
@@ -776,7 +776,7 @@ function CreateQuiz() {
       if (quizMeta.quizType === "practice") {
         const payload = {
           title: quizMeta.title,
-          subject: quizMeta.subject || quizMeta.examName || "General",
+          subject: quizMeta.subject || "General",
           description: quizMeta.description,
           questions: questions.map(q => ({
             questionEnglish: q.questionEnglish,
