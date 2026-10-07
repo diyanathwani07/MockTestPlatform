@@ -124,8 +124,9 @@ exports.getAllSeriesWithQuizzes = async (req, res) => {
         ...sObj,
         quizzes: quizzesForSeries,
         paperCount: quizzesForSeries.length,
-      flashcardCount: (fcMap[String(s._id)] || []).length,
-    }));
+        flashcardCount: (fcMap[String(s._id)] || []).length,
+      };
+    });
 
     res.json(result);
   } catch (error) {
