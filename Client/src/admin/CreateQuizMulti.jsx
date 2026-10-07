@@ -783,7 +783,7 @@ function CreateQuizMulti() {
                             name="title"
                             value={quizMeta.title}
                             onChange={handleMetaChange}
-                            placeholder="e.g. TCS NQT 2026"
+                            placeholder="e.g. CTET Paper 1"
                             className="force-quiz-input"
                           />
                         </div>
@@ -794,7 +794,7 @@ function CreateQuizMulti() {
                             name="subject"
                             value={quizMeta.subject}
                             onChange={handleMetaChange}
-                            placeholder="e.g. Aptitude"
+                            placeholder="e.g. Teaching Exams"
                             className="force-quiz-input"
                           />
                         </div>
@@ -805,7 +805,7 @@ function CreateQuizMulti() {
                             name="examName"
                             value={quizMeta.examName}
                             onChange={handleMetaChange}
-                            placeholder="e.g. TCS NQT"
+                            placeholder="e.g. CTET"
                             className="force-quiz-input"
                           />
                         </div>
