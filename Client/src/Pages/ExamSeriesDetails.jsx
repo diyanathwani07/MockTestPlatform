@@ -305,7 +305,7 @@ function ExamSeriesDetails() {
                             style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "var(--primary)" }}
                             onClick={() => setSelectedQuizForDetails({ ...fc, _type: "flashcard" })}
                           >
-                            🔒 Buy Now — ₹{(fc.price !== undefined && fc.price !== null ? fc.price : 99)}
+                            🔒 Buy Now — ₹{fc.plans && fc.plans.length > 0 ? fc.plans[0].price : (fc.price !== undefined && fc.price !== null ? fc.price : 99)}
                           </button>
                         ) : (
                           <button 
@@ -426,7 +426,7 @@ function ExamSeriesDetails() {
                               style={{ width: "100%", padding: "8px 16px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", background: "var(--primary)" }}
                               onClick={() => setSelectedQuizForDetails(quiz)}
                             >
-                              🔒 Buy Now — ₹{(quiz.price !== undefined && quiz.price !== null ? quiz.price : 99)}
+                              🔒 Buy Now — ₹{quiz.plans && quiz.plans.length > 0 ? quiz.plans[0].price : (quiz.price !== undefined && quiz.price !== null ? quiz.price : 99)}
                             </button>
                           ) : quiz.contentType === "pdf" ? (
                             <button 
