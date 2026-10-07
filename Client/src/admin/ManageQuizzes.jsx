@@ -1097,8 +1097,8 @@ function ManageQuizzes() {
                           {quiz.examName || "—"}
                         </td>
                         
-                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", whiteSpace: "nowrap" }}>
-                          {quiz.subject}
+                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", whiteSpace: "normal", maxWidth: "250px", wordWrap: "break-word" }}>
+                            {quiz.subject}
                         </td>
                         
                         <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)" }}>
