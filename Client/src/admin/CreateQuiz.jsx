@@ -1003,7 +1003,7 @@ function CreateQuiz() {
                           <option value="">-- None (Select Exam Series) --</option>
                           {seriesList.map((s) => (
                             <option key={s._id} value={s._id}>
-                              {s.title} ({s.category || "General"})
+                              {s.title}
                             </option>
                           ))}
                         </select>
