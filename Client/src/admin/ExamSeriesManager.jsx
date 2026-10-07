@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -517,8 +518,8 @@ function ExamSeriesManager() {
         
 
             {/* Modal Dialog for Edit Series & Structure Management */}
-            {isModalOpen && (
-              <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" }}>
+            {isModalOpen && createPortal(
+              <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" }}>
                 <div style={{ background: "var(--bg-panel, #16112a)", border: "1px solid var(--border-color, rgba(255,255,255,0.1))", padding: "24px", borderRadius: "16px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}>
                   <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)" }}>{editingId ? "Update Exam Series" : "Create Exam Series"}</h3>
                   <form onSubmit={handleFormSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
@@ -878,7 +879,8 @@ function ExamSeriesManager() {
 
 </form>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
 
         </div>
