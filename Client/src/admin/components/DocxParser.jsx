@@ -216,7 +216,7 @@ function parseQuestionsFromText(text) {
   const sections = [];
 
   // Split by section markers (e.g., "Section: Aptitude", "Section 1")
-  const sectionChunks = text.split(/\n(?=(?:(?:Section|Part|Subject)\s*[:\-]?\s*|\d+\)\s+[^\n:]{2,80}\n))/i).filter(Boolean);
+  const sectionChunks = text.split(/\n(?=(?:(?:Section|Part|Subject)\s*[:\-]\s*|(?:Section|Part|Subject)\s+[A-Za-z0-9]+\s*\n|\d+\)\s+[^=:\n]{2,80}\n))/i).filter(Boolean);
 
   for (const chunk of sectionChunks) {
     let sectionTitle = "Default";
