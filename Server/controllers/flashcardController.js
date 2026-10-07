@@ -201,7 +201,7 @@ const getCardsInSet = async (req, res) => {
         const user = await User.findById(req.user._id).select("purchasedExams");
         const purchasedIds = (user?.purchasedExams || []).map(id => id.toString());
         const seriesId = set.examSeriesId?.toString() || "";
-        if (!purchasedIds.includes(seriesId)) {
+        if (!purchasedIds.includes(seriesId) && !purchasedIds.includes(set._id.toString())) {
           return res.status(403).json({ message: "This flashcard set is paid. Please purchase to access." });
         }
       }
