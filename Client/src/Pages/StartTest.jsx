@@ -300,7 +300,7 @@ function StartTest() {
               <span className="countdown-number">{countdown}</span>
             </div>
 
-            <h3 className="countdown-title">Starting in {countdown}s…</h3>
+            <h3 className="countdown-title">Starting...</h3>
             <p className="countdown-subtitle">
               {selectedQuiz?.title} — {selectedQuiz?.subject}
             </p>

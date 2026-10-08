@@ -1075,7 +1075,7 @@ function Quiz() {
 
       </div>
 
-      {/* ─── MOBILE STICKY FOOTER ─── */}
+      {/* ??? MOBILE STICKY FOOTER ??? */}
       <div className="mobile-quiz-footer">
         <div className="mobile-progress-bar-container">
           <div 
@@ -1084,6 +1084,50 @@ function Quiz() {
           ></div>
         </div>
         
+        <div className="mobile-footer-nav">
+          <button 
+            className="quiz-btn-previous"
+            onClick={() => setCurrentQuestion(Math.max(currentQuestion - 1, 0))} 
+            disabled={currentQuestion === 0 || lockPreviousQuestions}
+            style={{ 
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+              background: "#F1EFFA", color: "#2D1B69", border: "1.5px solid #D8D3F0", 
+              borderRadius: "10px", fontWeight: "700", cursor: (currentQuestion === 0 || lockPreviousQuestions) ? "not-allowed" : "pointer",
+              opacity: (currentQuestion === 0 || lockPreviousQuestions) ? 0.5 : 1, transition: "all 0.15s ease"
+            }}
+          >
+            <ArrowLeft size={16} /> Prev
+          </button>
+          
+          {currentQuestion < questions.length - 1 ? (
+            <button 
+              className="quiz-btn-next"
+              onClick={() => setCurrentQuestion(Math.min(currentQuestion + 1, questions.length - 1))} 
+              style={{ 
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                background: "#3730A3", color: "#FFFFFF", border: "none", 
+                borderRadius: "10px", fontWeight: "700", cursor: "pointer", transition: "all 0.15s ease"
+              }}
+            >
+              Next <ArrowRight size={16} />
+            </button>
+          ) : (
+            <button 
+              className="quiz-btn-submit"
+              onClick={submitQuiz} 
+              disabled={previewMode}
+              title={previewMode ? "Submitting disabled in Preview Mode" : ""}
+              style={{ 
+                display: "flex", alignItems: "center", justifyContent: "center", 
+                background: previewMode ? "#6b7280" : "#16A34A", color: "#FFFFFF", border: "none", 
+                borderRadius: "10px", fontWeight: "700", cursor: previewMode ? "not-allowed" : "pointer", transition: "all 0.15s ease", gap: "8px"
+              }}
+            >
+              {previewMode ? "Preview" : "Submit"}
+            </button>
+          )}
+        </div>
+
         <button 
           className="mobile-fab-palette"
           onClick={() => setShowPaletteMobile(!showPaletteMobile)}
