@@ -150,8 +150,7 @@ export const initPushNotifications = async () => {
   if (Capacitor.isNativePlatform()) {
     await setupNativePushNotifications();
   } else {
-    // Optionally enable web push if required by calling setupWebPushNotifications()
-    // Doing it automatically might prompt the user immediately on page load, which is bad UX.
-    // We leave it manual for web (e.g. they click "Enable Notifications" in settings).
+    // Automatically setup web push so the browser will prompt for permission
+    await setupWebPushNotifications();
   }
 };
