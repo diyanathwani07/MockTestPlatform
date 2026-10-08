@@ -133,6 +133,10 @@ h2 {
     width: 100%;
     margin-top: 35px;
     padding: 18px;
+    position: sticky;
+    bottom: 24px;
+    z-index: 20;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     border: none;
     border-radius: 15px;
     background: linear-gradient(90deg, #6a11cb, #7b3ff3);
