@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import confetti from 'canvas-confetti';
+
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 import { useLocation, useNavigate, useParams } from "react-router-dom";

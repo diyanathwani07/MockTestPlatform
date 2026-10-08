@@ -408,11 +408,13 @@ function ManageQuizzes() {
             border: "1.5px solid var(--border-color)", 
             borderRadius: "16px", 
             marginBottom: "28px", 
+            padding: "24px",
             boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            textAlign: "left"
+            textAlign: "left",
+            width: "100%"
           }}>
             
             <div className="manage-quizzes-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
