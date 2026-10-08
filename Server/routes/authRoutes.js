@@ -273,7 +273,7 @@ const logAction = require("../utils/logger");
 
 router.put("/profile", protect, async (req, res) => {
   try {
-    const { fullName, phone, dateOfBirth, gender, location, bio, avatar, onboardingCompleted, onboardingData } = req.body;
+    const { fullName, phone, dateOfBirth, gender, location, bio, avatar, onboardingCompleted, onboardingData, notificationPreferences } = req.body;
     
     // req.user is set by the protect middleware
     const user = await User.findById(req.user._id);
@@ -301,6 +301,10 @@ router.put("/profile", protect, async (req, res) => {
       user.avatar = avatar;
       user.profilePicture = avatar;
     }
+    if (notificationPreferences !== undefined) {
+      user.notificationPreferences = { ...user.notificationPreferences, ...notificationPreferences };
+      changedFields.push('notification preferences');
+    }
 
     const updatedUser = await user.save();
 
@@ -326,6 +330,7 @@ router.put("/profile", protect, async (req, res) => {
       bio: updatedUser.bio,
       avatar: updatedUser.avatar,
       profilePicture: updatedUser.profilePicture,
+      notificationPreferences: updatedUser.notificationPreferences,
     });
   } catch (error) {
     console.error("Update Profile Error:", error);

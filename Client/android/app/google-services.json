@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "178312273007",
+    "project_id": "prepmark-notifications",
+    "storage_bucket": "prepmark-notifications.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178312273007:android:9ff6f7b388b857824c819a",
+        "android_client_info": {
+          "package_name": "com.prepmark.app2026"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaP_qDPG5JQBH-X0afxzf9uUq6vC5A8Z0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,3 +1,4 @@
+import { unregisterDeviceToken } from '../utils/pushNotifications';
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
@@ -32,7 +33,16 @@ export function AuthProvider({ children }) {
     setUser(data.user);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      const androidToken = localStorage.getItem('fcm_token');
+      const webToken = localStorage.getItem('fcm_token_web');
+      if (androidToken) await unregisterDeviceToken(androidToken);
+      if (webToken) await unregisterDeviceToken(webToken);
+    } catch (e) {
+      console.error("Failed to unregister device on logout", e);
+    }
+
     localStorage.clear();
     setToken(null);
     setRole(null);

@@ -1,3 +1,4 @@
+import { setupWebPushNotifications } from '../../utils/pushNotifications';
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -40,6 +41,36 @@ export default function MobileProfileFlow({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // Sub-screens
   const [notifications, setNotifications] = useState({ push: true, email: true });
+
+  // Initialize notifications from Auth context if available
+  useEffect(() => {
+    if (user && user.notificationPreferences) {
+      setNotifications(user.notificationPreferences);
+    }
+  }, [user]);
+
+  const updateNotificationPreference = async (key, value) => {
+    const newPrefs = { ...notifications, [key]: value };
+    
+    if (key === 'push' && value === true) {
+      // User turned on push, let's request permissions if on Web
+      setupWebPushNotifications();
+    }
+    setNotifications(newPrefs);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/auth/profile`,
+        { notificationPreferences: newPrefs },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (typeof updateUserContext === "function") {
+        updateUserContext({ notificationPreferences: newPrefs });
+      }
+    } catch (error) {
+      console.error("Failed to update notification preferences", error);
+    }
+  };
   const [language, setLanguage] = useState("en");
 
   // Real Transaction History state & fetch

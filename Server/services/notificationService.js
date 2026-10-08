@@ -1,6 +1,47 @@
 const Notification = require("../models/Notification");
 const User = require("../models/User");
+const NotificationDevice = require("../models/NotificationDevice");
 const { emitToUser, emitToAdmin, emitToDepartment } = require("./socketService");
+const { admin } = require("../config/firebaseAdmin");
+
+async function sendFcmPush(userIds, title, message, link) {
+  try {
+    const devices = await NotificationDevice.find({ userId: { $in: userIds } });
+    if (devices.length === 0) return;
+
+    const tokens = devices.map(d => d.token);
+    if (tokens.length === 0) return;
+
+    const payload = {
+      notification: { title, body: message },
+      data: { link: link || "/" }
+    };
+
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: payload.notification,
+      data: payload.data
+    });
+
+    if (response.failureCount > 0) {
+      const failedTokens = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          const errorCode = resp.error?.code;
+          if (errorCode === 'messaging/invalid-registration-token' || errorCode === 'messaging/registration-token-not-registered') {
+            failedTokens.push(tokens[idx]);
+          }
+        }
+      });
+      if (failedTokens.length > 0) {
+        await NotificationDevice.deleteMany({ token: { $in: failedTokens } });
+      }
+    }
+  } catch (error) {
+    console.error("[FCM Push] Error:", error.message);
+  }
+}
+
 
 /**
  * Creates and saves an in-app notification for a single user, then emits a real-time event.
@@ -20,6 +61,12 @@ async function notifyUser(userId, { type, title, message, link = "", relatedId =
 
     // Real-time WebSocket delivery
     emitToUser(userId, "notification", notification);
+
+    // FCM Push
+    const user = await User.findById(userId).select("notificationPreferences");
+    if (!user || user.notificationPreferences?.push !== false) {
+      await sendFcmPush([userId], title, message, link);
+    }
 
     return notification;
   } catch (error) {
@@ -52,6 +99,13 @@ async function notifyAllStudents({ type, title, message, link = "", relatedId = 
     result.forEach(n => {
       emitToUser(n.userId, "notification", n);
     });
+
+    // FCM Push for students who have it enabled
+    const enabledStudents = await User.find({ _id: { $in: activeStudents.map(s => s._id) }, 'notificationPreferences.push': { $ne: false } }).select("_id");
+    const enabledIds = enabledStudents.map(s => s._id);
+    if (enabledIds.length > 0) {
+      await sendFcmPush(enabledIds, title, message, link);
+    }
 
     return result;
   } catch (error) {

@@ -67,6 +67,11 @@ const PrivacyPolicy = lazy(() => import("./Pages/PrivacyPolicy"));
 const RefundPolicy = lazy(() => import("./Pages/RefundPolicy"));
 
 function App() {
+  useEffect(() => {
+    // Initialize native push notifications (Capacitor only)
+    initPushNotifications();
+  }, []);
+
   return (
     <BrowserRouter>
       <SocketProvider>

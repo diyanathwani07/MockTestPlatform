@@ -119,6 +119,10 @@ const userSchema = new mongoose.Schema(
 
     premiumExpiresAt: { type: Date },
     activePlan: { type: mongoose.Schema.Types.ObjectId, ref: "AiPlan" },
+    notificationPreferences: {
+      push: { type: Boolean, default: true },
+      email: { type: Boolean, default: true }
+    },
   },
   {
     timestamps: true,
