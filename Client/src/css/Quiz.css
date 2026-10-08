@@ -751,10 +751,7 @@ body {
     grid-column: 1 / span 2;
   }
   
-  .quiz-action-left button, .quiz-action-right button {
-    width: 100%;
-    min-height: 44px; /* Accessible touch target */
-  }
+  .quiz-action-left button, 
   
   /* Ensure Option Cards have proper spacing */
   .option-card {
@@ -1009,17 +1006,25 @@ body.dark-mode .quiz-question-card::before,
 }
 
 @media (max-width: 768px) {
-  .quiz-action-left {
-    display: none !important;
-  }
-  .quiz-action-right {
-    display: flex !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    flex-direction: row !important;
-  }
-  .quiz-action-right button {
-    flex: 1;
-    margin: 0 4px;
-  }
+  .quiz-action-left, .quiz-action-right {
+      display: none !important;
+    }
+
+    .mobile-footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding-top: 12px;
+      position: relative;
+      z-index: 2;
+    }
+    .mobile-footer-nav button {
+      flex: 0 1 42%;
+      min-height: 44px;
+      font-size: 13px !important;
+      padding: 0 12px !important;
+    }
+  
+  
 }
