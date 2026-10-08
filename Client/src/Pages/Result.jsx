@@ -605,7 +605,7 @@ function Result() {
   };
 
   const handleShare = async () => {
-    const shareUrl = shareId ? `${window.location.origin}/result/share/${shareId}` : window.location.href;
+    const shareUrl = shareId ? `${window.location.origin}/share-result/${shareId}` : window.location.href;
     if (navigator.share) {
       try {
         await navigator.share({ title: `Quiz Result - ${examTitle}`, text: `I scored ${score}/${total} (${computedPercentage}%) on ${examTitle}!`, url: shareUrl });

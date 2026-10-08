@@ -259,6 +259,10 @@ function App() {
           path="/share-result/:shareId"
           element={<SharedResult />}
         />
+        <Route
+          path="/result/share/:shareId"
+          element={<SharedResult />}
+        />
 
         <Route
           path="/dashboard/results"
