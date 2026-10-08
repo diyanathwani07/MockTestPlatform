@@ -1010,7 +1010,7 @@ body.dark-mode .quiz-question-card::before,
       z-index: 2;
     }
     .mobile-footer-nav button {
-      flex: 0 1 42%;
+      flex: 0 1 38%;
       min-height: 44px;
       font-size: 13px !important;
       padding: 0 12px !important;

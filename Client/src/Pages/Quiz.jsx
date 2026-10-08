@@ -1135,7 +1135,7 @@ function Quiz() {
           <div className="fab-icon-container">
             <LayoutGrid size={24} />
           </div>
-          <span className="fab-label">Question Palette</span>
+          
         </button>
       </div>
 
