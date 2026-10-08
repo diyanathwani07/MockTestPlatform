@@ -1,4 +1,5 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
+import { initPushNotifications } from './utils/pushNotifications';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
