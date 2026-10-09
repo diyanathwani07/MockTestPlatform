@@ -11,6 +11,9 @@ import SimpleFooter from "../SimpleFooter";
 export default function MobileProfileFlow({
   user,
   studentId,
+  adminId,
+  isAdmin,
+
   initials,
   previewMode,
   showAvatarPicker,
@@ -202,9 +205,13 @@ export default function MobileProfileFlow({
               </button>
             )}
           </div>
-          <h2 className="mp-name">{user.fullName || user.name || "Student Name"}</h2>
-          <p className="mp-student-id">Student ID: {studentId}</p>
-          <span className="mp-badge-student">Student</span>
+          <h2 className="mp-name">{user.fullName || user.name || (isAdmin ? "Admin Name" : "Student Name")}</h2>
+          <p className="mp-student-id">{isAdmin ? `Admin ID: ${adminId || ""}` : `Student ID: ${studentId || ""}`}</p>
+          {isAdmin ? (
+            <span className="mp-badge-student" style={{background: "var(--primary)", color: "var(--primary-foreground)"}}>Admin</span>
+          ) : (
+            <span className="mp-badge-student">Student</span>
+          )}
         </div>
 
         
@@ -216,12 +223,14 @@ export default function MobileProfileFlow({
                 subtitle="View and manage your account information" 
                 onClick={() => setActiveScreen("account")} 
               />
-              <MenuItem 
-                icon={<Clock size={18} />} 
-                title="Subscriptions & Order History" 
-                subtitle="View your active plan, payments & order receipts" 
-                onClick={() => setActiveScreen("transactions")} 
-              />
+              {!isAdmin && (
+                <MenuItem 
+                  icon={<Clock size={18} />} 
+                  title="Subscriptions & Order History" 
+                  subtitle="View your active plan, payments & order receipts" 
+                  onClick={() => setActiveScreen("transactions")} 
+                />
+              )}
               <MenuItem 
                 icon={<Lock size={18} />} 
                 title="Change Password" 
