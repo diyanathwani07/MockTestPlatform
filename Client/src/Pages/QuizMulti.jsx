@@ -1214,7 +1214,7 @@ function QuizMulti() {
                         width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", cursor: "pointer", transition: "all 0.2s",
                         backgroundColor: palettePage === p ? "#3B82F6" : "var(--bg-card)",
                         border: palettePage === p ? "none" : "1.5px solid var(--border-color)",
-                        color: palettePage === p ? "#fff" : "var(--text-primary)",
+                        color: palettePage === p  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)",
                         fontWeight: "700",
                         fontSize: "13px",
                         boxShadow: palettePage === p ? "0 4px 10px rgba(59, 130, 246, 0.3)" : "none"

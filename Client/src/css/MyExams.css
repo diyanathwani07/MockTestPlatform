@@ -317,7 +317,7 @@
 
 .me-btn-primary {
   background: var(--violet, var(--primary));
-  color: #ffffff;
+  color: var(--primary-foreground);
   border: none;
   padding: 10px 20px;
   border-radius: 10px;
@@ -775,7 +775,7 @@ body.dark-mode .sr-result-btn,
 body.dark-mode .sr-reattempt-btn,
 .dark .sr-reattempt-btn {
   background: var(--bg-card);
-  color: #ffffff;
+  color: var(--primary-foreground);
   border: none;
 }
 body.dark-mode .sr-reattempt-btn:hover,

@@ -454,7 +454,7 @@ function ManageQuizzes() {
                       fontWeight: "600",
                       cursor: "pointer",
                       backgroundColor: viewMode === "recycle" ? "var(--red)" : "transparent",
-                      color: viewMode === "recycle" ? "white" : "var(--text-secondary)",
+                      color: viewMode === "recycle"  ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
                     }}
                   >
                     Recycle Bin

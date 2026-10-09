@@ -78,7 +78,7 @@ function AdminFlashcards() {
                 background: "var(--primary)",
                 display: "flex", justifyContent: "center", alignItems: "center",
                 boxShadow: "0 4px 20px rgba(108, 60, 233, 0.4)",
-                color: "var(--text-primary)"
+                color: "var(--primary-foreground)"
               }}>
                 <Layers size={28} />
               </div>
@@ -91,7 +91,7 @@ function AdminFlashcards() {
               onClick={() => navigate("/admin/flashcards/create")}
               style={{
                 background: "var(--primary)",
-                color: "var(--text-primary)",
+                color: "var(--primary-foreground)",
                 border: "none",
                 padding: "12px 24px",
                 borderRadius: "12px",

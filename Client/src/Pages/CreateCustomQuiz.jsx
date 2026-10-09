@@ -465,7 +465,7 @@ const CreateCustomQuiz = () => {
                             background: quizType === "exam" 
                               ? "var(--violet)" 
                               : "transparent",
-                            color: quizType === "exam" ? "#ffffff" : "var(--text-secondary)"
+                            color: quizType === "exam" ? "var(--primary-foreground)" : "var(--text-secondary)"
                           }}
                         >
                           Exam Mode
@@ -486,7 +486,7 @@ const CreateCustomQuiz = () => {
                             background: quizType === "practice" 
                               ? "var(--violet)" 
                               : "transparent",
-                            color: quizType === "practice" ? "#ffffff" : "var(--text-secondary)"
+                            color: quizType === "practice" ? "var(--primary-foreground)" : "var(--text-secondary)"
                           }}
                         >
                           Practice Mode
@@ -575,7 +575,7 @@ const CreateCustomQuiz = () => {
                               background: quantity === qty 
                                 ? "var(--violet)" 
                                 : "transparent",
-                              color: quantity === qty ? "#ffffff" : "var(--text-secondary)"
+                              color: quantity === qty ? "var(--primary-foreground)" : "var(--text-secondary)"
                             }}
                           >
                             {qty}
@@ -687,7 +687,7 @@ const CreateCustomQuiz = () => {
                               background: aiQuizType === "exam" 
                                 ? "var(--violet)" 
                                 : "transparent",
-                              color: aiQuizType === "exam" ? "#ffffff" : "var(--text-secondary)"
+                              color: aiQuizType === "exam" ? "var(--primary-foreground)" : "var(--text-secondary)"
                             }}
                           >
                             Exam Mode
@@ -708,7 +708,7 @@ const CreateCustomQuiz = () => {
                               background: aiQuizType === "practice" 
                                 ? "var(--violet)" 
                                 : "transparent",
-                              color: aiQuizType === "practice" ? "#ffffff" : "var(--text-secondary)"
+                              color: aiQuizType === "practice" ? "var(--primary-foreground)" : "var(--text-secondary)"
                             }}
                           >
                             Practice Mode
@@ -885,7 +885,7 @@ const CreateCustomQuiz = () => {
                               key={qty}
                               type="button"
                               onClick={() => setAiQuantity(qty)}
-                              style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiQuantity === qty ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiQuantity === qty ? "var(--violet)" : "transparent", color: aiQuantity === qty ? "#ffffff" : "var(--text-secondary)", transition: "all 0.15s ease" }}
+                              style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiQuantity === qty ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiQuantity === qty ? "var(--violet)" : "transparent", color: aiQuantity === qty  ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)", transition: "all 0.15s ease" }}
                             >
                               {qty}
                             </button>
@@ -1018,7 +1018,7 @@ const CreateCustomQuiz = () => {
                         transition: "all 0.2s",
                         border: filterMode === mode ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                         background: filterMode === mode ? "var(--violet)" : "transparent",
-                        color: filterMode === mode ? "#ffffff" : "var(--text-secondary)"
+                        color: filterMode === mode  ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)"
                       }}
                     >
                       {mode}

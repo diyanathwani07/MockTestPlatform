@@ -875,7 +875,7 @@ function Questions() {
                         <span style={{ 
                           fontSize: "10.5px", 
                           backgroundColor: !isRecycleBin ? "rgba(255,255,255,0.2)" : "var(--border-color)", 
-                          color: !isRecycleBin ? "#ffffff" : "var(--text-primary)", 
+                          color: !isRecycleBin  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", 
                           padding: "2px 6px", 
                           borderRadius: "20px" 
                         }}>
@@ -898,7 +898,7 @@ function Questions() {
                           fontWeight: "600",
                           whiteSpace: "nowrap",
                           backgroundColor: isRecycleBin ? "var(--red, #EF4444)" : "var(--bg-card, #1E1B2E)",
-                          color: isRecycleBin ? "white" : "var(--text-primary)",
+                          color: isRecycleBin  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)",
                           boxShadow: isRecycleBin ? "0 4px 12px rgba(239, 68, 68, 0.2)" : "none"
                         }}
                       >
@@ -909,7 +909,7 @@ function Questions() {
                         <span style={{ 
                           fontSize: "10.5px", 
                           backgroundColor: isRecycleBin ? "rgba(255,255,255,0.2)" : "var(--border-color)", 
-                          color: isRecycleBin ? "white" : "var(--text-primary)", 
+                          color: isRecycleBin  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", 
                           padding: "2px 6px", 
                           borderRadius: "20px" 
                         }}>

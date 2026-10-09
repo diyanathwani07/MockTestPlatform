@@ -1,5 +1,6 @@
 :root {
   --primary: #8A55FC;
+    --primary-foreground: #ffffff;
   --primary-strong: #7C3AED;
   --primary-light: #B3A7F6;
   --bg-card: #FFFFFF;
@@ -41,6 +42,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --primary: #8A55FC;
+    --primary-foreground: #ffffff;
     --bg-card: #16171d;
     --bg-body: #08060d;
     --text-primary: #f3f4f6;

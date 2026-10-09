@@ -115,7 +115,7 @@ function SearchableDropdown({ label, options, selected, onSelect, placeholder = 
                 borderRadius: "4px",
                 cursor: "pointer",
                 fontSize: "12px",
-                color: selected === label ? "#fff" : "var(--text-primary)",
+                color: selected === label  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)",
                 background: selected === label ? "var(--primary)" : "transparent",
                 transition: "background 0.15s"
               }}
@@ -140,7 +140,7 @@ function SearchableDropdown({ label, options, selected, onSelect, placeholder = 
                   borderRadius: "4px",
                   cursor: "pointer",
                   fontSize: "12px",
-                  color: selected === opt ? "#fff" : "var(--text-primary)",
+                  color: selected === opt  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)",
                   background: selected === opt ? "var(--primary)" : "transparent",
                   transition: "background 0.15s"
                 }}

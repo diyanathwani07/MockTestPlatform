@@ -300,7 +300,7 @@ function AdminDashboard() {
                     cursor: "pointer", 
                     border: "none",
                     background: activeDashboardView === "support" ? "var(--primary)" : "transparent",
-                    color: activeDashboardView === "support" ? "#fff" : "var(--text-secondary, #6B7280)",
+                    color: activeDashboardView === "support" ? "var(--primary-foreground)" : "var(--text-secondary, #6B7280)",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
                   }}

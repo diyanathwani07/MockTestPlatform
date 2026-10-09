@@ -2097,7 +2097,7 @@ function EditQuiz() {
                                               fontSize: "13px",
                                               fontWeight: isSelected ? "700" : "500",
                                               backgroundColor: isSelected ? "var(--violet)" : "transparent",
-                                              color: isSelected ? "#ffffff" : "var(--text-primary)",
+                                              color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)",
                                               transition: "all 0.1s ease"
                                             }}
                                           >
@@ -2128,7 +2128,7 @@ function EditQuiz() {
                                               fontSize: "13px",
                                               fontWeight: isSelected ? "700" : "500",
                                               backgroundColor: isSelected ? "var(--violet)" : "transparent",
-                                              color: isSelected ? "#ffffff" : "var(--text-primary)",
+                                              color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)",
                                               transition: "all 0.1s ease"
                                             }}
                                           >
@@ -2159,7 +2159,7 @@ function EditQuiz() {
                                               fontSize: "13px",
                                               fontWeight: "700",
                                               backgroundColor: isSelected ? "var(--violet)" : "transparent",
-                                              color: isSelected ? "#ffffff" : "var(--text-secondary)",
+                                              color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
                                               transition: "all 0.15s ease"
                                             }}
                                           >
@@ -2325,7 +2325,7 @@ function EditQuiz() {
                                              {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map((hr) => {
                                                const isSelected = hr === resultReleaseHour;
                                                return (
-                                                 <div key={hr} onClick={() => { setResultReleaseHour(hr); updateResultReleaseDateTime(resultReleaseDateOnly, hr, resultReleaseMinute, resultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>{hr}</div>
+                                                 <div key={hr} onClick={() => { setResultReleaseHour(hr); updateResultReleaseDateTime(resultReleaseDateOnly, hr, resultReleaseMinute, resultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", transition: "all 0.1s ease" }}>{hr}</div>
                                                );
                                              })}
                                            </div>
@@ -2333,7 +2333,7 @@ function EditQuiz() {
                                              {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map((min) => {
                                                const isSelected = min === resultReleaseMinute;
                                                return (
-                                                 <div key={min} onClick={() => { setResultReleaseMinute(min); updateResultReleaseDateTime(resultReleaseDateOnly, resultReleaseHour, min, resultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>{min}</div>
+                                                 <div key={min} onClick={() => { setResultReleaseMinute(min); updateResultReleaseDateTime(resultReleaseDateOnly, resultReleaseHour, min, resultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", transition: "all 0.1s ease" }}>{min}</div>
                                                );
                                              })}
                                            </div>
@@ -2341,7 +2341,7 @@ function EditQuiz() {
                                              {["AM", "PM"].map((p) => {
                                                const isSelected = p === resultReleasePeriod;
                                                return (
-                                                 <div key={p} onClick={() => { setResultReleasePeriod(p); updateResultReleaseDateTime(resultReleaseDateOnly, resultReleaseHour, resultReleaseMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>{p}</div>
+                                                 <div key={p} onClick={() => { setResultReleasePeriod(p); updateResultReleaseDateTime(resultReleaseDateOnly, resultReleaseHour, resultReleaseMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)", transition: "all 0.1s ease" }}>{p}</div>
                                                );
                                              })}
                                            </div>
@@ -2537,7 +2537,7 @@ function EditQuiz() {
                                              {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map((hr) => {
                                                const isSelected = hr === practiceResultReleaseHour;
                                                return (
-                                                 <div key={hr} onClick={() => { setPracticeResultReleaseHour(hr); updatePracticeResultReleaseDateTime(practiceResultReleaseDateOnly, hr, practiceResultReleaseMinute, practiceResultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>{hr}</div>
+                                                 <div key={hr} onClick={() => { setPracticeResultReleaseHour(hr); updatePracticeResultReleaseDateTime(practiceResultReleaseDateOnly, hr, practiceResultReleaseMinute, practiceResultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", transition: "all 0.1s ease" }}>{hr}</div>
                                                );
                                              })}
                                            </div>
@@ -2545,7 +2545,7 @@ function EditQuiz() {
                                              {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map((min) => {
                                                const isSelected = min === practiceResultReleaseMinute;
                                                return (
-                                                 <div key={min} onClick={() => { setPracticeResultReleaseMinute(min); updatePracticeResultReleaseDateTime(practiceResultReleaseDateOnly, practiceResultReleaseHour, min, practiceResultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>{min}</div>
+                                                 <div key={min} onClick={() => { setPracticeResultReleaseMinute(min); updatePracticeResultReleaseDateTime(practiceResultReleaseDateOnly, practiceResultReleaseHour, min, practiceResultReleasePeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", transition: "all 0.1s ease" }}>{min}</div>
                                                );
                                              })}
                                            </div>
@@ -2553,7 +2553,7 @@ function EditQuiz() {
                                              {["AM", "PM"].map((p) => {
                                                const isSelected = p === practiceResultReleasePeriod;
                                                return (
-                                                 <div key={p} onClick={() => { setPracticeResultReleasePeriod(p); updatePracticeResultReleaseDateTime(practiceResultReleaseDateOnly, practiceResultReleaseHour, practiceResultReleaseMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>{p}</div>
+                                                 <div key={p} onClick={() => { setPracticeResultReleasePeriod(p); updatePracticeResultReleaseDateTime(practiceResultReleaseDateOnly, practiceResultReleaseHour, practiceResultReleaseMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected  ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)", transition: "all 0.1s ease" }}>{p}</div>
                                                );
                                              })}
                                            </div>
@@ -2826,7 +2826,7 @@ function EditQuiz() {
                                                         borderRadius: "50%",
                                                         border: isCorrect ? "1.5px solid #10B981" : "1.5px solid var(--border-input)",
                                                         backgroundColor: isCorrect ? "#10B981" : "transparent",
-                                                        color: isCorrect ? "#ffffff" : "transparent",
+                                                        color: isCorrect  ? "var(--primary-foreground, #ffffff)" : "transparent",
                                                         cursor: "pointer",
                                                         fontSize: "12px",
                                                         fontWeight: "bold",

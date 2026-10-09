@@ -16,12 +16,12 @@
 .tk-header h2 {
   font-size: 24px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
 }
 
 .tk-header p {
-  color: #6B7280;
+  color: var(--text-muted);
   margin: 0;
   font-size: 14px;
 }
@@ -62,20 +62,20 @@
 .tk-stat-label {
   font-size: 13px;
   font-weight: 600;
-  color: #6B7280;
+  color: var(--text-muted);
   margin: 0 0 4px 0;
 }
 
 .tk-stat-value {
   font-size: 24px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .tk-stat-desc {
   font-size: 12px;
-  color: #9CA3AF;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -107,7 +107,7 @@
   border-radius: 8px;
   padding: 8px 16px;
   width: 320px;
-  color: #6B7280;
+  color: var(--text-muted);
 }
 
 .tk-search input {
@@ -117,7 +117,7 @@
   padding-left: 10px;
   outline: none;
   font-size: 14px;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .tk-filters {
@@ -135,7 +135,7 @@
 .tk-filter-group label {
   font-size: 11px;
   font-weight: 600;
-  color: #9CA3AF;
+  color: var(--text-muted);
 }
 
 .tk-filter-group select {
@@ -145,7 +145,7 @@
   background: #F9FAFB;
   font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -162,7 +162,7 @@
   border-radius: 8px;
   padding: 8px 12px;
   background: #F9FAFB;
-  color: #6B7280;
+  color: var(--text-muted);
   margin-top: 18px; /* align with select boxes */
 }
 
@@ -171,7 +171,7 @@
   background: transparent;
   width: 90px;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
 }
@@ -206,7 +206,7 @@
   text-align: left;
   font-size: 12px;
   font-weight: 600;
-  color: #6B7280;
+  color: var(--text-muted);
   border-bottom: 1px solid #F3F4F6;
   background: #FFFFFF;
 }
@@ -224,7 +224,7 @@
 .tk-id {
   font-size: 13px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .tk-user-info {
@@ -254,12 +254,12 @@
 .tk-name {
   font-size: 14px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .tk-email {
   font-size: 12px;
-  color: #6B7280;
+  color: var(--text-muted);
 }
 
 .tk-subject-cell {
@@ -271,7 +271,7 @@
 .tk-subject-title {
   font-size: 13px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -280,7 +280,7 @@
 
 .tk-subject-desc {
   font-size: 12px;
-  color: #6B7280;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -306,7 +306,7 @@
 .tk-status-open { background: #FEF3C7; color: #B45309; }
 .tk-status-in-progress { background: #DBEAFE; color: #1D4ED8; }
 .tk-status-resolved { background: #D1FAE5; color: #047857; }
-.tk-status-closed { background: #F3F4F6; color: #374151; }
+.tk-status-closed { background: #F3F4F6; color: var(--text-primary); }
 .tk-status-reopened { background: #F5F3FF; color: #7C3AED; }
 
 .tk-date-cell {
@@ -316,13 +316,13 @@
 
 .tk-date {
   font-size: 13px;
-  color: #374151;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .tk-time {
   font-size: 12px;
-  color: #6B7280;
+  color: var(--text-muted);
 }
 
 .tk-actions-cell {
@@ -339,15 +339,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6B7280;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .tk-icon-btn:hover {
   border-color: var(--primary);
-  color: var(--primary);
-  background: #F3E8FF;
+    color: var(--primary-foreground);
+    background: var(--primary);
 }
 
 .dots-icon {
@@ -368,7 +368,7 @@
 
 .tk-showing {
   font-size: 13px;
-  color: #6B7280;
+  color: var(--text-muted);
 }
 
 .tk-pages {
@@ -380,7 +380,7 @@
 .tk-page-btn {
   background: transparent;
   border: 1px solid #E5E7EB;
-  color: #374151;
+  color: var(--text-primary);
   width: 32px;
   height: 32px;
   border-radius: 6px;
@@ -393,13 +393,13 @@
 }
 
 .tk-page-btn.active {
-  background: #F3E8FF;
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
 }
 
 .tk-page-dots {
-  color: #9CA3AF;
+  color: var(--text-muted);
   margin: 0 4px;
 }
 
@@ -481,13 +481,13 @@
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .close-btn {
   background: transparent;
   border: 1px solid #E5E7EB;
-  color: #6B7280;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
@@ -537,7 +537,7 @@
 .meta-label {
   font-size: 12px;
   text-transform: uppercase;
-  color: #9CA3AF;
+  color: var(--text-muted);
   margin: 0 0 4px 0;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -545,14 +545,14 @@
 
 .meta-value {
   font-size: 15px;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
   font-weight: 600;
 }
 
 .meta-sub {
   font-size: 13px;
-  color: #6B7280;
+  color: var(--text-muted);
   margin: 2px 0 0 0;
 }
 
@@ -563,7 +563,7 @@
 .ticket-title {
   font-size: 20px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0 0 20px 0;
   line-height: 1.4;
 }
@@ -589,7 +589,7 @@
 .ticket-message {
   margin: 0;
   font-size: 14px;
-  color: #4B5563;
+  color: var(--text-secondary);
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -603,7 +603,7 @@
   margin: 0 0 16px 0;
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .status-buttons {
@@ -617,7 +617,7 @@
   border-radius: 8px;
   border: 1px solid #E5E7EB;
   background: #FFFFFF;
-  color: #6B7280;
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -627,7 +627,7 @@
 .status-btn:hover {
   background: #F9FAFB;
   border-color: #D1D5DB;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .status-btn.active.open {
@@ -871,7 +871,7 @@
 }
 .tk-badge.tk-unassigned {
   background: #F3F4F6;
-  color: #6B7280;
+  color: var(--text-muted);
 }
 .tk-lock-warning {
   background: #FFFBEB;
