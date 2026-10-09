@@ -10,7 +10,7 @@ export function ThemeProvider({ children }) {
   const [mode, setModeState] = useState(() => {
     const storedMode = localStorage.getItem("selected-mode");
     if (storedMode) return storedMode;
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return "light";
   });
 
   const [showThemePicker, setShowThemePicker] = useState(false);
@@ -38,14 +38,6 @@ export function ThemeProvider({ children }) {
     
     // Determine the effective theme based on the required mapping matrix
     let effectiveTheme = theme;
-    
-    if (theme === "original") {
-      effectiveTheme = mode === "dark" ? "vercel" : "retro-arcade";
-    } else if (theme === "retro-arcade" && mode === "light") {
-      effectiveTheme = "original"; // Use old Original light palette
-    } else if (theme === "vercel" && mode === "dark") {
-      effectiveTheme = "original"; // Use old Original dark palette
-    }
 
     // Add new theme class (only if NOT original)
     if (effectiveTheme && effectiveTheme !== "original") {
