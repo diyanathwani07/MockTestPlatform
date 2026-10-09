@@ -603,7 +603,7 @@ function CreateQuizMulti() {
 
           <div
             className="create-quiz-container animate-fade-in"
-            style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}
+            style={{ width: "100%" }}
           >
             {!id && (
               <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
