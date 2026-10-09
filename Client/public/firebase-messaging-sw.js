@@ -1,13 +1,14 @@
-﻿importScripts("https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js");
 
-// We need some minimal config here for the worker, but typically it doesn't need the full secret keys.
-// Usually, it's injected or we pass just the sender ID.
+// We need some minimal config here for the worker. 
+// We are passing these dynamically through URL query parameters during registration to avoid hardcoding secrets.
+const urlParams = new URLSearchParams(location.search);
 firebase.initializeApp({
-  apiKey: "AIzaSyDex1pWfzcrXMTOzpjMOPgRtTFWXDlB-EI", // Note: The SW sometimes needs these to compile if we use the compat library
-  projectId: "prepmark-notifications",
-  messagingSenderId: "178312273007", // We would need the real one here
-  appId: "1:178312273007:web:6fa9bd067002929d4c819a"
+  apiKey: urlParams.get('apiKey') || "dummy_api_key", 
+  projectId: urlParams.get('projectId') || "dummy_project_id",
+  messagingSenderId: urlParams.get('messagingSenderId') || "dummy_sender_id", 
+  appId: urlParams.get('appId') || "dummy_app_id"
 });
 
 const messaging = firebase.messaging();

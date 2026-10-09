@@ -1,4 +1,4 @@
-﻿import { PushNotifications } from '@capacitor/push-notifications';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import axios from 'axios';
 
@@ -119,8 +119,12 @@ export const setupWebPushNotifications = async () => {
 
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
+      const swUrl = `/firebase-messaging-sw.js?apiKey=${firebaseConfig.apiKey}&projectId=${firebaseConfig.projectId}&messagingSenderId=${firebaseConfig.messagingSenderId}&appId=${firebaseConfig.appId}`;
+      const registration = await navigator.serviceWorker.register(swUrl);
+      
       const currentToken = await getToken(messaging, { 
-        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
+        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: registration
       });
       
       if (currentToken) {
