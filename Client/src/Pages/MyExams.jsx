@@ -541,8 +541,8 @@ function MyExams() {
                     style={{
                       padding: "10px 22px",
                       borderRadius: "10px",
-                      background: "var(--violet, #6E3FF3)",
-                      color: "#ffffff",
+                      background: "var(--violet)",
+                      color: "var(--primary-foreground)",
                       border: "none",
                       fontWeight: "700",
                       fontSize: "14px",

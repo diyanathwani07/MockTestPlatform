@@ -89,7 +89,7 @@ body {
 }
 
 .active-subject-tab {
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  background: linear-gradient(135deg, #2D1B69, var(--primary));
   color: white;
   padding: 10px 24px;
   font-size: 14px;
@@ -183,7 +183,7 @@ body {
 .option-card input { 
   width: 18px; 
   height: 18px; 
-  accent-color: #6E3FF3; 
+  accent-color: var(--primary); 
   flex-shrink: 0; 
   cursor: pointer;
 }
@@ -265,7 +265,7 @@ body {
 }
 
 .candidate-panel h3 { 
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3); 
+  background: linear-gradient(135deg, #2D1B69, var(--primary)); 
   color: white; 
   padding: 14px 18px; 
   font-size: 13px; 
@@ -334,7 +334,7 @@ body {
 }
 
 .palette-header {
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  background: linear-gradient(135deg, #2D1B69, var(--primary));
   color: #fff;
   font-weight: 600;
   font-size: 13px;
@@ -366,7 +366,7 @@ body {
 }
 
 .palette-btn.active {
-  outline: 2.5px solid #6E3FF3;
+  outline: 2.5px solid var(--primary);
   outline-offset: 1px;
 }
 
@@ -455,7 +455,7 @@ body {
 }
 
 .subject-highlight { 
-  color: #6E3FF3 !important; 
+  color: var(--primary) !important; 
   font-weight: 700; 
 }
 
@@ -475,7 +475,7 @@ body {
 .start-test-btn { 
   width: 100%; 
   padding: 16px; 
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3); 
+  background: linear-gradient(135deg, #2D1B69, var(--primary)); 
   color: white; 
   border: none; 
   border-radius: 12px; 

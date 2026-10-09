@@ -48,7 +48,7 @@
 }
 
 .lb-info-icon {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
 }
 
 /* Filters */
@@ -70,7 +70,7 @@
 }
 
 .lb-filter-select:hover, .lb-filter-select:focus {
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
 }
 
 .lb-search {
@@ -193,7 +193,7 @@ body.dark-mode .lb-search .lb-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6E3FF3;
+  color: var(--primary);
 }
 
 .lb-card-header h3 {
@@ -206,7 +206,7 @@ body.dark-mode .lb-search .lb-icon {
 .lb-rank-huge {
   font-size: 36px;
   font-weight: 800;
-  color: #6E3FF3;
+  color: var(--primary);
   margin: 0 0 4px 0;
 }
 
@@ -242,13 +242,12 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-stat-value.purple {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
 }
 
 .lb-btn-primary {
   width: 100%;
-  background: var(--violet, #6E3FF3);
-  color: #ffffff;
+  background: var(--primary); color: var(--primary-foreground);
   border: none;
   border-radius: 8px;
   padding: 12px;
@@ -304,7 +303,7 @@ body.dark-mode .lb-search .lb-icon {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   text-transform: uppercase;
   display: block;
   margin-bottom: 2px;
@@ -330,7 +329,7 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-hero-trophy-icon {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
 }
 
 /* Performance Banner */
@@ -357,7 +356,7 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-perf-text strong {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   font-weight: 800;
 }
 
@@ -470,7 +469,7 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-pod-score.main-pts {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   font-size: 12px;
   font-weight: 800;
 }
@@ -497,10 +496,10 @@ body.dark-mode .lb-search .lb-icon {
 .step-1 {
   height: 90px;
   background: linear-gradient(180deg, var(--option-hover, rgba(110, 63, 243, 0.15)) 0%, var(--bg-input, #F4F4F5) 100%);
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
 }
 .step-1 .lb-pod-step-num {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   opacity: 1;
   font-size: 22px;
 }
@@ -569,12 +568,12 @@ body.dark-mode .lb-search .lb-icon {
 }
 
 .lb-table td.student .you {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
 }
 
 .lb-table td.score {
   font-weight: 700;
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
 }
 
 .lb-table td.accuracy {
@@ -584,7 +583,7 @@ body.dark-mode .lb-search .lb-icon {
 
 .lb-table td.percentile {
   font-weight: 700;
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
 }
 
 /* ═════════════════════════════════════════════════════════════
@@ -767,7 +766,7 @@ body.dark-mode .lb-search .lb-icon {
 
   .lb-dropdown-opt.active {
     background: var(--option-hover, rgba(110, 63, 243, 0.1));
-    color: var(--violet, #6E3FF3);
+    color: var(--violet);
     font-weight: 700;
   }
 
@@ -863,13 +862,13 @@ body.dark-mode .lb-search .lb-icon {
   }
 
   .lb-crown-accent-icon {
-    color: var(--violet, #6E3FF3);
+    color: var(--violet);
   }
 
   .lb-view-toggle-btn {
     background: transparent;
     border: none;
-    color: var(--violet, #6E3FF3);
+    color: var(--violet);
     font-size: 12.5px;
     font-weight: 700;
     cursor: pointer;
@@ -895,7 +894,7 @@ body.dark-mode .lb-search .lb-icon {
 
   .lb-player-compact-row.highlight-you {
     background: var(--option-hover, rgba(110, 63, 243, 0.08));
-    border-color: var(--violet, #6E3FF3);
+    border-color: var(--violet);
   }
 
   .lb-row-rank-badge {
@@ -949,7 +948,7 @@ body.dark-mode .lb-search .lb-icon {
   }
 
   .lb-you-chip {
-    color: var(--violet, #6E3FF3);
+    color: var(--violet);
     font-size: 10.5px;
     font-weight: 800;
     margin-left: 4px;
@@ -965,7 +964,7 @@ body.dark-mode .lb-search .lb-icon {
     padding: 3px 8px;
     border-radius: 20px;
     background: rgba(110, 63, 243, 0.1);
-    color: var(--violet, #6E3FF3);
+    color: var(--violet);
     font-size: 11.5px;
     font-weight: 800;
     flex-shrink: 0;
@@ -985,7 +984,7 @@ body.dark-mode .lb-search .lb-icon {
     left: 12px;
     right: 12px;
     background: var(--bg-card, #ffffff);
-    border: 1.5px solid var(--violet, #6E3FF3);
+    border: 1.5px solid var(--violet);
     border-radius: 16px;
     padding: 8px 12px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
@@ -998,7 +997,7 @@ body.dark-mode .lb-search .lb-icon {
   .lb-user-rank-number {
     font-size: 13px;
     font-weight: 900;
-    color: var(--violet, #6E3FF3);
+    color: var(--violet);
     flex-shrink: 0;
   }
 
@@ -1039,8 +1038,7 @@ body.dark-mode .lb-search .lb-icon {
   }
 
   .lb-user-view-btn {
-    background: var(--violet, #6E3FF3);
-    color: #ffffff;
+    background: var(--primary); color: var(--primary-foreground);
     border: none;
     border-radius: 8px;
     padding: 6px 9px;

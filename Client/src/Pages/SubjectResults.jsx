@@ -226,7 +226,7 @@ function SubjectResults() {
                         <div>
                           {/* Top row: Mock badge + Status */}
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                            <span style={{ fontSize: "10px", fontWeight: "800", textTransform: "uppercase", padding: "4px 8px", borderRadius: "6px", backgroundColor: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", letterSpacing: "0.5px" }}>
+                            <span style={{ fontSize: "10px", fontWeight: "800", textTransform: "uppercase", padding: "4px 8px", borderRadius: "6px", backgroundColor: "rgba(110, 63, 243, 0.1)", color: "var(--primary)", letterSpacing: "0.5px" }}>
                               {result.quizType === "practice" ? "Practice" : "Mock"}
                             </span>
                             <span style={{ color: "#10B981", fontSize: "12px", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>

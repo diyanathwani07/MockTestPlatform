@@ -75,7 +75,7 @@ function AdminFlashcards() {
             <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
               <div style={{
                 width: "56px", height: "56px", borderRadius: "14px",
-                background: "linear-gradient(135deg, #6c3ce9 0%, #4f22c9 100%)",
+                background: "var(--primary)",
                 display: "flex", justifyContent: "center", alignItems: "center",
                 boxShadow: "0 4px 20px rgba(108, 60, 233, 0.4)",
                 color: "var(--text-primary)"
@@ -90,7 +90,7 @@ function AdminFlashcards() {
             <button 
               onClick={() => navigate("/admin/flashcards/create")}
               style={{
-                background: "linear-gradient(90deg, #ff715b 0%, #ff5238 100%)",
+                background: "var(--primary)",
                 color: "var(--text-primary)",
                 border: "none",
                 padding: "12px 24px",
@@ -186,9 +186,9 @@ function AdminFlashcards() {
               <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>Get started by creating your first flashcard set. You can group them by exam series and subjects.</p>
               <button 
                 onClick={() => navigate("/admin/flashcards/create")}
-                style={{ background: "#ff6146", color: "var(--text-primary)", border: "none", padding: "10px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#ff7a63"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "#ff6146"}
+                style={{ background: "var(--primary)", color: "var(--text-primary)", border: "none", padding: "10px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "var(--primary)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "var(--primary)"}
               >
                 Create New Set
               </button>

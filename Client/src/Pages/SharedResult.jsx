@@ -49,7 +49,7 @@ function SharedResult() {
         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', maxWidth: '400px' }}>{error}</p>
         <button 
           onClick={() => navigate("/")}
-          style={{ marginTop: '24px', padding: '12px 24px', backgroundColor: 'var(--violet)', color: 'white', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+          style={{ marginTop: '24px', padding: '12px 24px', backgroundColor: 'var(--violet)', color: "var(--primary-foreground)", borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
         >
           Go to Homepage
         </button>
@@ -96,7 +96,7 @@ function SharedResult() {
           </div>
 
           <div className="rm-info-card">
-            <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#6E3FF3", backgroundColor: "rgba(110,63,243,0.1)", borderRadius: "12px", width: "48px", height: "48px" }}>
+            <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", backgroundColor: "rgba(110,63,243,0.1)", borderRadius: "12px", width: "48px", height: "48px" }}>
               <Medal size={24} />
             </div>
             <div className="rm-info-content">
@@ -111,7 +111,7 @@ function SharedResult() {
 
           <div className="rm-score-section">
             <div className="rm-score-circle-wrapper">
-              <div className="rm-score-circle" style={{ background: `conic-gradient(#6E3FF3 ${percentage}%, #F3F4F6 ${percentage}%)` }}>
+              <div className="rm-score-circle" style={{ background: `conic-gradient(var(--primary) ${percentage}%, #F3F4F6 ${percentage}%)` }}>
                 <div className="rm-score-inner">
                   <span className="rm-pct">{percentage}%</span>
                   <span className="rm-pct-label">Score</span>

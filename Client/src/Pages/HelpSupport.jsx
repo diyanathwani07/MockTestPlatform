@@ -532,8 +532,8 @@ function HelpSupport() {
                 gap: '8px',
                 padding: '10px 20px',
                 borderRadius: '8px',
-                backgroundColor: 'var(--primary-color, #6E3FF3)',
-                color: '#fff',
+                backgroundColor: 'var(--primary)',
+                color: "var(--primary-foreground)",
                 border: 'none',
                 fontWeight: '700',
                 cursor: 'pointer',
@@ -579,7 +579,7 @@ function HelpSupport() {
               <div className="ticket-content">
                 <h4 style={{ margin: "0 0 16px 0", color: "var(--text-main)", fontSize: "16px" }}>{selectedTicket.subject}</h4>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "8px" }}>
-                  <div style={{ background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", padding: "8px", borderRadius: "8px", marginTop: "4px" }}>
+                  <div style={{ background: "rgba(110, 63, 243, 0.1)", color: "var(--primary)", padding: "8px", borderRadius: "8px", marginTop: "4px" }}>
                     <User size={20} />
                   </div>
                   <div style={{ flex: 1 }}>
@@ -609,7 +609,7 @@ function HelpSupport() {
                       }}>
                         <div style={{ 
                           background: isStudent ? "rgba(110, 63, 243, 0.1)" : "rgba(16, 185, 129, 0.1)", 
-                          color: isStudent ? "#6E3FF3" : "#10B981", 
+                          color: isStudent ? "var(--primary)" : "#10B981", 
                           padding: "8px", 
                           borderRadius: "8px", 
                           marginTop: "4px" 
@@ -624,7 +624,7 @@ function HelpSupport() {
                           border: `1px solid ${isStudent ? "rgba(110, 63, 243, 0.1)" : "rgba(16, 185, 129, 0.2)"}`,
                           textAlign: isStudent ? "left" : "right"
                         }}>
-                          <p style={{ fontWeight: 600, margin: "0 0 6px 0", color: isStudent ? "#6E3FF3" : "#10B981", fontSize: "13px" }}>
+                          <p style={{ fontWeight: 600, margin: "0 0 6px 0", color: isStudent ? "var(--primary)" : "#10B981", fontSize: "13px" }}>
                             {isStudent ? "You" : "Admin Support"}
                             <span style={{ fontWeight: "normal", color: "var(--text-muted)", fontSize: "11px", marginLeft: "8px", marginRight: "8px" }}>
                               {new Date(reply.createdAt).toLocaleString()}

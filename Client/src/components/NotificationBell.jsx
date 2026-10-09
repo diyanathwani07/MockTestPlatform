@@ -253,7 +253,7 @@ export default function NotificationBell() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "var(--violet, #6E3FF3)",
+                  color: "var(--violet)",
                   fontSize: "11px",
                   fontWeight: "600",
                   cursor: "pointer",
@@ -320,7 +320,7 @@ export default function NotificationBell() {
                         width: "6px",
                         height: "6px",
                         borderRadius: "50%",
-                        background: "var(--violet, #6E3FF3)",
+                        background: "var(--violet)",
                       }}
                     />
                   )}

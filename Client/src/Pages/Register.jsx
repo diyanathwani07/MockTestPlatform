@@ -240,7 +240,7 @@ return (
               />
             </div>
             
-            <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px', width: "100%", padding: "14px", borderRadius: "12px", border: "none", background: "var(--violet, #6E3FF3)", color: "white", fontWeight: "600", cursor: "pointer" }} disabled={isLoading}>
+            <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px', width: "100%", padding: "14px", borderRadius: "12px", border: "none", background: "var(--violet)", color: "var(--primary-foreground)", fontWeight: "600", cursor: "pointer" }} disabled={isLoading}>
               <span>{isLoading ? "Sending..." : "Send OTP"}</span>
             </button>
           </form>
@@ -269,7 +269,7 @@ return (
               </p>
             </div>
             
-            <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px', width: "100%", padding: "14px", borderRadius: "12px", border: "none", background: "var(--violet, #6E3FF3)", color: "white", fontWeight: "600", cursor: "pointer" }} disabled={isLoading}>
+            <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px', width: "100%", padding: "14px", borderRadius: "12px", border: "none", background: "var(--violet)", color: "var(--primary-foreground)", fontWeight: "600", cursor: "pointer" }} disabled={isLoading}>
               <span>{isLoading ? "Verifying..." : "Verify OTP"}</span>
             </button>
           </form>
@@ -389,11 +389,11 @@ return (
             <div className="terms-box full-width" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px' }}>
               <input type="checkbox" id="terms" required style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
               <label htmlFor="terms" style={{ fontSize: '14px', cursor: 'pointer', userSelect: 'none', color: "var(--text-secondary)" }}>
-                I agree to the <span style={{ color: "var(--violet, #6E3FF3)" }}>Terms & Conditions</span>
+                I agree to the <span style={{ color: "var(--violet)" }}>Terms & Conditions</span>
               </label>
             </div>
 
-            <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px', width: "100%", padding: "14px", borderRadius: "12px", border: "none", background: "var(--violet, #6E3FF3)", color: "white", fontWeight: "600", cursor: "pointer" }} disabled={isLoading}>
+            <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginTop: '24px', width: "100%", padding: "14px", borderRadius: "12px", border: "none", background: "var(--violet)", color: "var(--primary-foreground)", fontWeight: "600", cursor: "pointer" }} disabled={isLoading}>
               <span>{isLoading ? "Creating Account..." : "Create Account"}</span>
             </button>
           </form>

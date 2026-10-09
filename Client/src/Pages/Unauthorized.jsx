@@ -18,13 +18,13 @@ function Unauthorized() {
           display: "flex", alignItems: "center", justifyContent: "center",
           margin: "0 auto 24px"
         }}>
-          <ShieldOff size={36} style={{ color: "#6E3FF3" }} />
+          <ShieldOff size={36} style={{ color: "var(--primary)" }} />
         </div>
 
         {/* 403 */}
         <div style={{
           fontSize: "96px", fontWeight: "900", lineHeight: 1,
-          background: "linear-gradient(135deg, #6E3FF3, #a855f7)",
+          background: "linear-gradient(135deg, var(--primary), #a855f7)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
           marginBottom: "16px"
         }}>403</div>
@@ -43,7 +43,7 @@ function Unauthorized() {
               display: "flex", alignItems: "center", gap: "8px",
               padding: "12px 24px", borderRadius: "10px",
               border: "1.5px solid rgba(110,63,243,0.4)", background: "transparent",
-              color: "#6E3FF3", fontWeight: "600", fontSize: "14px", cursor: "pointer"
+              color: "var(--primary)", fontWeight: "600", fontSize: "14px", cursor: "pointer"
             }}
           >
             <ArrowLeft size={16} /> Go Back
@@ -53,8 +53,8 @@ function Unauthorized() {
             style={{
               display: "flex", alignItems: "center", gap: "8px",
               padding: "12px 24px", borderRadius: "10px",
-              border: "none", background: "linear-gradient(135deg, #6E3FF3, #8B5CF6)",
-              color: "#fff", fontWeight: "600", fontSize: "14px", cursor: "pointer"
+              border: "none", background: "linear-gradient(135deg, var(--primary), #8B5CF6)",
+              color: "var(--primary-foreground)", fontWeight: "600", fontSize: "14px", cursor: "pointer"
             }}
           >
             <LayoutDashboard size={16} /> Go to Dashboard

@@ -7,7 +7,7 @@
 }
 
 .palette-header {
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  background: linear-gradient(135deg, #2D1B69, var(--primary));
   color: #fff;
   font-weight: 600;
   font-size: 13px;
@@ -39,7 +39,7 @@
 }
 
 .palette-btn.active {
-  outline: 2.5px solid #6E3FF3;
+  outline: 2.5px solid var(--primary);
   outline-offset: 1px;
 }
 
@@ -94,7 +94,7 @@
 
 .page-btn:hover:not(:disabled) {
   background: #F5F2FF;
-  border-color: #6E3FF3;
+  border-color: var(--primary);
 }
 
 .page-btn:disabled {

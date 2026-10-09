@@ -80,8 +80,7 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: var(--violet, #6E3FF3);
-  color: #fff;
+  background: var(--primary); color: var(--primary-foreground);
   font-size: 34px;
   font-weight: 700;
   display: flex;
@@ -100,8 +99,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--violet, #6E3FF3);
-  color: #fff;
+  background: var(--primary); color: var(--primary-foreground);
   border: 2px solid #fff;
   display: flex;
   align-items: center;
@@ -144,7 +142,7 @@
 }
 
 .sp-edit-profile-btn {
-  background: var(--violet, #6E3FF3);
+  background: var(--violet);
   border: none;
   color: #fff;
   font-size: 13px;
@@ -219,7 +217,7 @@
 .sp-section-subtitle {
   font-size: 13px;
   font-weight: 700;
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   margin: 0 0 8px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -251,7 +249,7 @@
 /* Icon box on left */
 .sp-icon-wrapper {
   background: var(--icon-bg, #F3E8FF);
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   padding: 8px;
   border-radius: 8px;
   display: flex;
@@ -414,7 +412,7 @@
 
 .sp-form-group input:focus,
 .sp-form-group textarea:focus {
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
   outline: none;
   box-shadow: 0 0 0 3px rgba(110,63,243,0.12);
 }
@@ -457,7 +455,7 @@
 }
 
 .sp-btn-save {
-  background: linear-gradient(135deg, #6E3FF3, #9333EA);
+  background: linear-gradient(135deg, var(--primary), #9333EA);
   color: #fff;
   box-shadow: 0 4px 14px rgba(110,63,243,0.3);
 }
@@ -582,12 +580,12 @@
 .avatar-preset-item:hover,
 .avatar-preset-item:active {
   transform: scale(1.1) translateY(-2px);
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
   box-shadow: 0 8px 20px rgba(110,63,243,0.45);
 }
 
 .avatar-preset-item.selected {
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
   box-shadow: 0 0 0 3px rgba(110,63,243,0.3);
 }
 
@@ -899,14 +897,14 @@ body.dark-mode .sp-badge {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  border: 3px solid var(--violet, #6E3FF3);
+  border: 3px solid var(--violet);
   background: rgba(110, 63, 243, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
   font-weight: 600;
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(110,63,243,0.25);
 }
@@ -924,8 +922,7 @@ body.dark-mode .sp-badge {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--violet, #6E3FF3);
-  color: #fff;
+  background: var(--primary); color: var(--primary-foreground);
   border: 2px solid var(--bg-page, #0A0A0A);
   display: flex;
   align-items: center;
@@ -991,7 +988,7 @@ body.dark-mode .sp-badge {
   height: 40px;
   border-radius: 12px;
   background: rgba(110, 63, 243, 0.1);
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1026,7 +1023,7 @@ body.dark-mode .sp-badge {
 .mp-info-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   margin: 0 0 16px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1074,8 +1071,7 @@ body.dark-mode .sp-badge {
   width: 100%;
   padding: 16px;
   border-radius: 14px;
-  background: var(--violet, #6E3FF3);
-  color: #fff;
+  background: var(--primary); color: var(--primary-foreground);
   border: none;
   font-size: 16px;
   font-weight: 600;
@@ -1117,7 +1113,7 @@ body.dark-mode .sp-badge {
 .mp-form-group input:focus,
 .mp-form-group select:focus,
 .mp-form-group textarea:focus {
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
 }
 
 .mp-form-actions {
@@ -1144,8 +1140,7 @@ body.dark-mode .sp-badge {
 }
 
 .mp-btn-save {
-  background: var(--violet, #6E3FF3);
-  color: #fff;
+  background: var(--primary); color: var(--primary-foreground);
 }
 
 .mp-settings-list {
@@ -1215,8 +1210,8 @@ body.dark-mode .sp-badge {
 }
 
 .mp-toggle input:checked + .mp-toggle-slider {
-  background-color: var(--violet, #6E3FF3);
-  border-color: var(--violet, #6E3FF3);
+  background-color: var(--violet);
+  border-color: var(--violet);
 }
 
 .mp-toggle input:checked + .mp-toggle-slider:before {
@@ -1247,7 +1242,7 @@ body.dark-mode .sp-badge {
 }
 
 .mp-language-item.selected {
-  color: var(--violet, #6E3FF3);
+  color: var(--violet);
   font-weight: 600;
 }
 
@@ -1268,7 +1263,7 @@ body.dark-mode .sp-badge {
   width: 80px;
   height: 80px;
   border-radius: 24px;
-  background: linear-gradient(135deg, #6E3FF3, #9333EA);
+  background: linear-gradient(135deg, var(--primary), #9333EA);
   color: #fff;
   display: flex;
   align-items: center;

@@ -64,7 +64,7 @@
   font-size: 15px;
 }
 .rm-header strong {
-  color: #6E3FF3;
+  color: var(--primary);
 }
 
 /* Info Card */
@@ -184,7 +184,7 @@
 .rm-score-num {
   font-size: 36px;
   font-weight: 800;
-  color: #6E3FF3;
+  color: var(--primary);
 }
 .rm-score-denom {
   font-size: 20px;
@@ -229,7 +229,7 @@
   line-height: 1.4;
 }
 .rm-feedback-text strong {
-  color: #6E3FF3;
+  color: var(--primary);
 }
 
 /* Metrics Grid */
@@ -317,7 +317,7 @@
 .rm-banner-btn {
   background: #ffffff;
   border: 1px solid #E2E8F0;
-  color: #6E3FF3;
+  color: var(--primary);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 12px;
@@ -328,7 +328,7 @@
 }
 .rm-banner-btn:hover {
   background: #F1F5F9;
-  border-color: #6E3FF3;
+  border-color: var(--primary);
 }
 
 /* Actions */
@@ -347,15 +347,15 @@
 }
 .rm-btn-outline {
   background: transparent;
-  border: 1.5px solid #6E3FF3;
-  color: #6E3FF3;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
 }
 .rm-btn-outline:hover {
   background: rgba(110, 63, 243, 0.05);
 }
 .rm-btn-solid {
-  background: #6E3FF3;
-  border: 1.5px solid #6E3FF3;
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
   color: #ffffff;
 }
 .rm-btn-solid:hover {
@@ -436,7 +436,7 @@
   line-height: 1.5;
 }
 .q-number {
-  color: #6E3FF3;
+  color: var(--primary);
   font-weight: 700;
 }
 
@@ -583,7 +583,7 @@ body.dark-mode .rm-pct {
 }
 
 body.dark-mode .rm-score-circle {
-  background: conic-gradient(#6E3FF3 var(--score-pct, 100%), #1D1B28 var(--score-pct, 100%)) !important;
+  background: conic-gradient(var(--primary) var(--score-pct, 100%), #1D1B28 var(--score-pct, 100%)) !important;
 }
 
 body.dark-mode .rm-score-middle {
@@ -618,7 +618,7 @@ body.dark-mode .rm-feedback-text {
 }
 
 body.dark-mode .rm-feedback-text strong {
-  color: #6E3FF3 !important;
+  color: var(--primary) !important;
 }
 
 body.dark-mode .rm-metrics-grid {
@@ -688,7 +688,7 @@ body.dark-mode .opt-box {
 
 body.dark-mode .opt-box.selected {
   background-color: rgba(110, 63, 243, 0.1) !important;
-  border-color: #6E3FF3 !important;
+  border-color: var(--primary) !important;
 }
 
 body.dark-mode .opt-box.correct {

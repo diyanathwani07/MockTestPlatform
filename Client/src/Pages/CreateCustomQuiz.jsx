@@ -460,10 +460,10 @@ const CreateCustomQuiz = () => {
                             cursor: "pointer",
                             transition: "all 0.2s ease",
                             border: quizType === "exam" 
-                              ? "1.5px solid var(--violet, #6E3FF3)" 
+                              ? "1.5px solid var(--violet)" 
                               : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                             background: quizType === "exam" 
-                              ? "var(--violet, #6E3FF3)" 
+                              ? "var(--violet)" 
                               : "transparent",
                             color: quizType === "exam" ? "#ffffff" : "var(--text-secondary)"
                           }}
@@ -481,10 +481,10 @@ const CreateCustomQuiz = () => {
                             cursor: "pointer",
                             transition: "all 0.2s ease",
                             border: quizType === "practice" 
-                              ? "1.5px solid var(--violet, #6E3FF3)" 
+                              ? "1.5px solid var(--violet)" 
                               : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                             background: quizType === "practice" 
-                              ? "var(--violet, #6E3FF3)" 
+                              ? "var(--violet)" 
                               : "transparent",
                             color: quizType === "practice" ? "#ffffff" : "var(--text-secondary)"
                           }}
@@ -570,10 +570,10 @@ const CreateCustomQuiz = () => {
                               cursor: "pointer",
                               transition: "all 0.2s ease",
                               border: quantity === qty 
-                                ? "1.5px solid var(--violet, #6E3FF3)" 
+                                ? "1.5px solid var(--violet)" 
                                 : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                               background: quantity === qty 
-                                ? "var(--violet, #6E3FF3)" 
+                                ? "var(--violet)" 
                                 : "transparent",
                               color: quantity === qty ? "#ffffff" : "var(--text-secondary)"
                             }}
@@ -597,7 +597,7 @@ const CreateCustomQuiz = () => {
                         cursor: (loading || !selectedSubject) ? "not-allowed" : "pointer",
                         transition: "all 0.25s ease",
                         border: "none",
-                        background: (loading || !selectedSubject) ? "var(--border-color, #333)" : "var(--violet, #6E3FF3)",
+                        background: (loading || !selectedSubject) ? "var(--border-color, #333)" : "var(--violet)",
                         color: (loading || !selectedSubject) ? "var(--text-muted, #777)" : "#ffffff",
                         boxShadow: (loading || !selectedSubject) ? "none" : "0 4px 10px color-mix(in srgb, var(--primary) 15%, transparent)"
                       }}
@@ -628,8 +628,8 @@ const CreateCustomQuiz = () => {
                         fontWeight: "700",
                         fontSize: "14px",
                         cursor: "pointer",
-                        background: "var(--violet, #6E3FF3)",
-                        color: "#ffffff",
+                        background: "var(--violet)",
+                        color: "var(--primary-foreground)",
                         marginTop: "8px"
                       }}
                     >
@@ -658,7 +658,7 @@ const CreateCustomQuiz = () => {
                       </div>
                       <span 
                         onClick={() => navigate("/dashboard/pricing")}
-                        style={{ color: "var(--violet, #6E3FF3)", fontWeight: "700", cursor: "pointer", textDecoration: "underline" }}
+                        style={{ color: "var(--violet)", fontWeight: "700", cursor: "pointer", textDecoration: "underline" }}
                       >
                         Upgrade / Renew Plan
                       </span>
@@ -682,10 +682,10 @@ const CreateCustomQuiz = () => {
                               cursor: "pointer",
                               transition: "all 0.2s ease",
                               border: aiQuizType === "exam" 
-                                ? "1.5px solid var(--violet, #6E3FF3)" 
+                                ? "1.5px solid var(--violet)" 
                                 : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                               background: aiQuizType === "exam" 
-                                ? "var(--violet, #6E3FF3)" 
+                                ? "var(--violet)" 
                                 : "transparent",
                               color: aiQuizType === "exam" ? "#ffffff" : "var(--text-secondary)"
                             }}
@@ -703,10 +703,10 @@ const CreateCustomQuiz = () => {
                               cursor: "pointer",
                               transition: "all 0.2s ease",
                               border: aiQuizType === "practice" 
-                                ? "1.5px solid var(--violet, #6E3FF3)" 
+                                ? "1.5px solid var(--violet)" 
                                 : "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
                               background: aiQuizType === "practice" 
-                                ? "var(--violet, #6E3FF3)" 
+                                ? "var(--violet)" 
                                 : "transparent",
                               color: aiQuizType === "practice" ? "#ffffff" : "var(--text-secondary)"
                             }}
@@ -750,14 +750,14 @@ const CreateCustomQuiz = () => {
                           <button
                             type="button"
                             onClick={() => setAiInputSource("topic")}
-                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "topic" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "topic" ? "color-mix(in srgb, var(--primary) 10%, transparent)" : "transparent", color: aiInputSource === "topic" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "topic" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "topic" ? "color-mix(in srgb, var(--primary) 10%, transparent)" : "transparent", color: aiInputSource === "topic" ? "var(--violet)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
                           >
                             Topic
                           </button>
                           <button
                             type="button"
                             onClick={() => setAiInputSource("material")}
-                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "material" ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "material" ? "color-mix(in srgb, var(--primary) 10%, transparent)" : "transparent", color: aiInputSource === "material" ? "var(--violet, #6E3FF3)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                            style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiInputSource === "material" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiInputSource === "material" ? "color-mix(in srgb, var(--primary) 10%, transparent)" : "transparent", color: aiInputSource === "material" ? "var(--violet)" : "var(--text-secondary)", transition: "all 0.15s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
                           >
                             <Sparkles size={16} /> AI Generate
                           </button>
@@ -853,7 +853,7 @@ const CreateCustomQuiz = () => {
                                   <>
                                       <div style={{ marginBottom: "12px", animation: "float 3s ease-in-out infinite", display: "flex", justifyContent: "center" }}>
                                         {aiGenerateMode === 'document' 
-                                          ? <FileText size={40} color="var(--violet, #6E3FF3)" style={{ filter: "drop-shadow(0 4px 6px color-mix(in srgb, var(--primary) 30%, transparent))" }} /> 
+                                          ? <FileText size={40} color="var(--violet)" style={{ filter: "drop-shadow(0 4px 6px color-mix(in srgb, var(--primary) 30%, transparent))" }} /> 
                                           : <Image size={40} color="#10b981" style={{ filter: "drop-shadow(0 4px 6px rgba(16, 185, 129, 0.3))" }} />
                                         }
                                       </div>
@@ -885,7 +885,7 @@ const CreateCustomQuiz = () => {
                               key={qty}
                               type="button"
                               onClick={() => setAiQuantity(qty)}
-                              style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiQuantity === qty ? "1.5px solid var(--violet, #6E3FF3)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiQuantity === qty ? "var(--violet, #6E3FF3)" : "transparent", color: aiQuantity === qty ? "#ffffff" : "var(--text-secondary)", transition: "all 0.15s ease" }}
+                              style={{ padding: "8px 0", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer", border: aiQuantity === qty ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color, rgba(255,255,255,0.1))", background: aiQuantity === qty ? "var(--violet)" : "transparent", color: aiQuantity === qty ? "#ffffff" : "var(--text-secondary)", transition: "all 0.15s ease" }}
                             >
                               {qty}
                             </button>
@@ -905,7 +905,7 @@ const CreateCustomQuiz = () => {
                                 value={level}
                                 checked={aiDifficulty === level}
                                 onChange={(e) => setAiDifficulty(e.target.value)}
-                                style={{ accentColor: "var(--violet, #6E3FF3)" }}
+                                style={{ accentColor: "var(--violet)" }}
                               />
                               {level}
                             </label>
@@ -925,7 +925,7 @@ const CreateCustomQuiz = () => {
                                 value={lang}
                                 checked={aiLanguage === lang}
                                 onChange={(e) => setAiLanguage(e.target.value)}
-                                style={{ accentColor: "var(--violet, #6E3FF3)" }}
+                                style={{ accentColor: "var(--violet)" }}
                               />
                               {lang === "English + Hindi" ? "Bilingual" : lang.charAt(0).toUpperCase() + lang.slice(1)}
                             </label>
@@ -940,7 +940,7 @@ const CreateCustomQuiz = () => {
                           id="followPattern"
                           checked={followExamPattern}
                           onChange={(e) => setFollowExamPattern(e.target.checked)}
-                          style={{ accentColor: "var(--violet, #6E3FF3)", marginTop: "3px", cursor: "pointer" }}
+                          style={{ accentColor: "var(--violet)", marginTop: "3px", cursor: "pointer" }}
                         />
                         <div>
                           <label htmlFor="followPattern" style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", cursor: "pointer" }}>Follow Exam Pattern</label>
@@ -955,7 +955,7 @@ const CreateCustomQuiz = () => {
                           id="includeExplanations"
                           checked={includeExplanations}
                           onChange={(e) => setIncludeExplanations(e.target.checked)}
-                          style={{ accentColor: "var(--violet, #6E3FF3)", marginTop: "3px", cursor: "pointer" }}
+                          style={{ accentColor: "var(--violet)", marginTop: "3px", cursor: "pointer" }}
                         />
                         <div>
                           <label htmlFor="includeExplanations" style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", cursor: "pointer" }}>Include Explanations</label>
@@ -981,8 +981,8 @@ const CreateCustomQuiz = () => {
                           cursor: "pointer",
                           transition: "all 0.25s ease",
                           border: "none",
-                          background: "var(--violet, #6E3FF3)",
-                          color: "#ffffff",
+                          background: "var(--violet)",
+                          color: "var(--primary-foreground)",
                           boxShadow: "0 4px 10px color-mix(in srgb, var(--primary) 15%, transparent)",
                           marginTop: "8px"
                         }}
@@ -1059,7 +1059,7 @@ const CreateCustomQuiz = () => {
                           {quiz.title && quiz.title.length > 55 && (
                             <div 
                               onClick={() => setExpandedItems(prev => ({ ...prev, [quiz._id]: !prev[quiz._id] }))}
-                              style={{ fontSize: "11px", color: "var(--violet, #6E3FF3)", cursor: "pointer", fontWeight: "600", marginBottom: "4px" }}
+                              style={{ fontSize: "11px", color: "var(--violet)", cursor: "pointer", fontWeight: "600", marginBottom: "4px" }}
                             >
                               {expandedItems[quiz._id] ? "Show less" : "Read more"}
                             </div>
@@ -1465,7 +1465,7 @@ const CreateCustomQuiz = () => {
                   }}
                   style={{
                     flex: 1, padding: "12px", borderRadius: "8px", border: "none",
-                    background: "var(--violet, #6E3FF3)", color: "#fff", fontWeight: "600", fontSize: "14px", cursor: "pointer"
+                    background: "var(--violet)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "14px", cursor: "pointer"
                   }}
                 >
                   Generate {capacityWarning.maxSafe}
@@ -1574,8 +1574,8 @@ const CreateCustomQuiz = () => {
                   padding: "12px 20px",
                   borderRadius: "8px",
                   border: "none",
-                  background: "var(--violet, #6E3FF3)",
-                  color: "#ffffff",
+                  background: "var(--violet)",
+                  color: "var(--primary-foreground)",
                   fontWeight: "600",
                   fontSize: "14px",
                   cursor: "pointer",
@@ -1650,7 +1650,7 @@ const CreateCustomQuiz = () => {
               height: "36px",
               borderRadius: "50%",
               border: "3px solid rgba(144, 97, 249, 0.15)",
-              borderTopColor: "var(--violet, #6E3FF3)",
+              borderTopColor: "var(--violet)",
               animation: "spin 1s linear infinite"
             }}></div>
           </div>

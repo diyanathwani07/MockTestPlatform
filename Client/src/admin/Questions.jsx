@@ -310,7 +310,7 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
             style={{
               background: 'none',
               border: 'none',
-              color: 'var(--violet, #6E3FF3)',
+              color: 'var(--violet)',
               fontWeight: '800',
               fontSize: '13px',
               cursor: 'pointer',
@@ -332,14 +332,14 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
               padding: '12px 16px', 
               background: 'var(--bg-input, rgba(110, 63, 243, 0.04))', 
               borderRadius: '8px', 
-              borderLeft: '4px solid var(--violet, #6E3FF3)',
+              borderLeft: '4px solid var(--violet)',
               borderTop: '1px solid var(--border-color)',
               borderRight: '1px solid var(--border-color)',
               borderBottom: '1px solid var(--border-color)'
             }}>
               <strong style={{ 
                 fontSize: '11.5px', 
-                color: 'var(--violet, #6E3FF3)', 
+                color: 'var(--violet)', 
                 display: 'block', 
                 marginBottom: '6px', 
                 textTransform: 'uppercase',
@@ -780,11 +780,11 @@ function Questions() {
                     {/* Search Input collections - MOBILE */}
                     <div className="practice-search-pill" style={{ 
                       display: "flex", alignItems: "center", gap: "8px", 
-                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet, #6E3FF3)", 
+                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet)", 
                       borderRadius: "100px", padding: "10px 16px",
                       width: "100%", boxSizing: "border-box", marginTop: "8px"
                     }}>
-                      <Search size={16} style={{ color: "var(--violet, #6E3FF3)", flexShrink: 0 }} />
+                      <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
                       <input 
                         type="text" 
                         placeholder="Search collections..." 
@@ -813,7 +813,7 @@ function Questions() {
                           fontWeight: "600",
                           transition: "all 0.2s",
                           whiteSpace: "nowrap",
-                          backgroundColor: quizType === "exams" ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
+                          backgroundColor: quizType === "exams" ? "var(--violet)" : "var(--bg-card, #1E1B2E)",
                           color: quizType === "exams"  ? 'var(--primary-foreground)' : "var(--text-primary)",
                           boxShadow: quizType === "exams" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
                         }}
@@ -837,7 +837,7 @@ function Questions() {
                           fontWeight: "600",
                           transition: "all 0.2s",
                           whiteSpace: "nowrap",
-                          backgroundColor: quizType === "practice" ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
+                          backgroundColor: quizType === "practice" ? "var(--violet)" : "var(--bg-card, #1E1B2E)",
                           color: quizType === "practice"  ? 'var(--primary-foreground)' : "var(--text-primary)",
                           boxShadow: quizType === "practice" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
                         }}
@@ -863,7 +863,7 @@ function Questions() {
                           fontSize: "12.5px",
                           fontWeight: "600",
                           whiteSpace: "nowrap",
-                          backgroundColor: !isRecycleBin ? "var(--violet, #6E3FF3)" : "var(--bg-card, #1E1B2E)",
+                          backgroundColor: !isRecycleBin ? "var(--violet)" : "var(--bg-card, #1E1B2E)",
                           color: !isRecycleBin  ? 'var(--primary-foreground)' : "var(--text-primary)",
                           boxShadow: !isRecycleBin ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
                         }}
@@ -921,11 +921,11 @@ function Questions() {
                     {/* Search Input collections - DESKTOP (aligned to right on same row) */}
                     <div className="practice-search-pill" style={{ 
                       display: "flex", alignItems: "center", gap: "8px", 
-                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet, #6E3FF3)", 
+                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet)", 
                       borderRadius: "100px", padding: "10px 16px",
                       width: "300px", boxSizing: "border-box", marginLeft: "auto", flexShrink: 0
                     }}>
-                      <Search size={16} style={{ color: "var(--violet, #6E3FF3)", flexShrink: 0 }} />
+                      <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
                       <input 
                         type="text" 
                         placeholder="Search collections..." 
@@ -1005,7 +1005,7 @@ function Questions() {
                         : "Draft (Not Published)";
                       
                       const dotColor = book.status === "Published" ? "#16A34A" : "#6B7280";
-                      const folderColor = index % 2 === 0 ? "#6E3FF3" : "#22C55E";
+                      const folderColor = index % 2 === 0 ? "var(--primary)" : "#22C55E";
 
                       return (
                         <div
@@ -1045,7 +1045,7 @@ function Questions() {
                               fontSize: "9.5px", 
                               fontWeight: "700", 
                               textTransform: "uppercase", 
-                              color: "var(--violet, #6E3FF3)", 
+                              color: "var(--violet)", 
                               backgroundColor: "rgba(110, 63, 243, 0.1)", 
                               padding: "4px 8px", 
                               borderRadius: "6px",

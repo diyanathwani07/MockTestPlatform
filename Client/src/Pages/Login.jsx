@@ -183,7 +183,7 @@ return (
           <h2 style={{ marginTop: "48px", fontSize: "22px", color: "var(--text-primary)", fontWeight: "600" }}>Already have an account?</h2>
           <button 
             onClick={() => setStep("form")}
-            style={{ width: "100%", marginTop: "16px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "white", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
+            style={{ width: "100%", marginTop: "16px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "var(--primary-foreground)", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
           >
             SIGN IN
           </button>
@@ -216,7 +216,7 @@ return (
           </div>
           <button 
             onClick={() => setStep("intro2")}
-            style={{ width: "100%", marginTop: "24px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "white", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
+            style={{ width: "100%", marginTop: "24px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "var(--primary-foreground)", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
           >
             CONTINUE
           </button>
@@ -239,7 +239,7 @@ return (
           </div>
           <button 
             onClick={() => navigate("/onboarding", { state: { skipIntro: true } })}
-            style={{ width: "100%", marginTop: "24px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "white", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
+            style={{ width: "100%", marginTop: "24px", padding: "16px", borderRadius: "16px", background: "var(--primary)", color: "var(--primary-foreground)", fontWeight: "bold", fontSize: "16px", border: "none", cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,0.15)" }}
           >
             CONTINUE
           </button>

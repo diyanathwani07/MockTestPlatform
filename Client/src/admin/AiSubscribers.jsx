@@ -42,7 +42,7 @@ import "../css/admin/AiSubscribers.css";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const BAR_COLORS = ["#6E3FF3", "#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#8B5CF6"];
+const BAR_COLORS = ["var(--primary)", "#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#8B5CF6"];
 
 export default function AiSubscribers() {
   const navigate = useNavigate();
@@ -529,8 +529,8 @@ export default function AiSubscribers() {
                                   width: 32,
                                   height: 32,
                                   borderRadius: "50%",
-                                  background: "linear-gradient(135deg, #6E3FF3, #2D1B69)",
-                                  color: "#ffffff",
+                                  background: "linear-gradient(135deg, var(--primary), #2D1B69)",
+                                  color: "var(--primary-foreground)",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",

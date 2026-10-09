@@ -162,7 +162,7 @@ export default function GrammarFixButton({ text, onApply }) {
               onClick={handleApply}
               style={{
                 background: "var(--violet)",
-                color: "#FFF",
+                color: "var(--primary-foreground)",
                 border: "none",
                 borderRadius: "6px",
                 padding: "6px 12px",

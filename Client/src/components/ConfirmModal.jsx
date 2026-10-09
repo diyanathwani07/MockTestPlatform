@@ -21,7 +21,7 @@ export default function ConfirmModal({
         return <AlertTriangle size={28} style={{ color: '#f59e0b' }} />;
       case 'info':
       default:
-        return <HelpCircle size={28} style={{ color: '#6E3FF3' }} />;
+        return <HelpCircle size={28} style={{ color: 'var(--primary)' }} />;
     }
   };
 
@@ -45,7 +45,7 @@ export default function ConfirmModal({
         return '#f59e0b';
       case 'info':
       default:
-        return '#6E3FF3';
+        return 'var(--primary)';
     }
   };
 

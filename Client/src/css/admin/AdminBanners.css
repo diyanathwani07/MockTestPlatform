@@ -24,7 +24,7 @@
   transition: all 0.2s;
 }
 .al-btn-primary {
-  background-color: var(--violet, #6E3FF3);
+  background-color: var(--violet);
   color: #fff;
 }
 .al-btn-primary:hover {
@@ -147,7 +147,7 @@
 }
 .al-input:focus {
   outline: none;
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
   box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
 }
 .al-form-row {

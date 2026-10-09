@@ -163,7 +163,7 @@ const StudentChatbot = () => {
                   {msg.text}
                   {msg.isTicketPrompt && (
                      <div style={{ marginTop: "8px" }}>
-                       <a href="/dashboard/help" style={{ display: "inline-block", background: "#fff", color: "var(--violet, #6E3FF3)", padding: "4px 8px", borderRadius: "4px", fontSize: "12px", textDecoration: "none", fontWeight: "bold" }}>
+                       <a href="/dashboard/help" style={{ display: "inline-block", background: "#fff", color: "var(--violet)", padding: "4px 8px", borderRadius: "4px", fontSize: "12px", textDecoration: "none", fontWeight: "bold" }}>
                          Go to Help & Support
                        </a>
                      </div>

@@ -435,7 +435,7 @@ export default function MobileProfileFlow({
         <div className="mp-content mp-scrollable" style={{ padding: "16px" }}>
           {loadingTransactions ? (
             <div className="mp-centered" style={{ gap: "12px", minHeight: "300px" }}>
-              <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: "var(--violet, #6E3FF3)" }} />
+              <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: "var(--violet)" }} />
               <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
               <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0 }}>Loading your transactions & plan history...</p>
             </div>
@@ -446,7 +446,7 @@ export default function MobileProfileFlow({
                 <div
                   style={{
                     background: "linear-gradient(135deg, rgba(110, 63, 243, 0.15), rgba(16, 185, 129, 0.1))",
-                    border: "1.5px solid var(--violet, #6E3FF3)",
+                    border: "1.5px solid var(--violet)",
                     borderRadius: "16px",
                     padding: "20px",
                     display: "flex",
@@ -475,7 +475,7 @@ export default function MobileProfileFlow({
                   </div>
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                    <div style={{ fontSize: "20px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
+                    <div style={{ fontSize: "20px", fontWeight: "800", color: "var(--violet)" }}>
                       {activeSub.planNameSnapshot || activeSub.planId?.name || "AI Mock Test Plan"}
                     </div>
                     <Link
@@ -486,8 +486,8 @@ export default function MobileProfileFlow({
                         gap: "6px",
                         padding: "8px 16px",
                         borderRadius: "8px",
-                        background: "var(--violet, #6E3FF3)",
-                        color: "#FFFFFF",
+                        background: "var(--violet)",
+                        color: "var(--primary-foreground)",
                         fontSize: "13px",
                         fontWeight: "700",
                         textDecoration: "none",
@@ -524,7 +524,7 @@ export default function MobileProfileFlow({
                 <div
                   style={{
                     background: "var(--bg-card, #16112a)",
-                    border: "1px dashed var(--violet, #6E3FF3)",
+                    border: "1px dashed var(--violet)",
                     borderRadius: "16px",
                     padding: "20px",
                     display: "flex",
@@ -550,8 +550,8 @@ export default function MobileProfileFlow({
                       gap: "6px",
                       padding: "9px 18px",
                       borderRadius: "8px",
-                      background: "var(--violet, #6E3FF3)",
-                      color: "#FFFFFF",
+                      background: "var(--violet)",
+                      color: "var(--primary-foreground)",
                       fontSize: "13px",
                       fontWeight: "700",
                       textDecoration: "none"
@@ -575,7 +575,7 @@ export default function MobileProfileFlow({
                       style={{ 
                         fontSize: "13px", 
                         fontWeight: "600", 
-                        color: "var(--violet, #6E3FF3)", 
+                        color: "var(--violet)", 
                         textDecoration: "none",
                         display: "inline-flex",
                         alignItems: "center",
@@ -650,7 +650,7 @@ export default function MobileProfileFlow({
                                 {sub.purchaseId || "N/A"}
                               </div>
                             </div>
-                            <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
+                            <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet)" }}>
                               ₹{sub.amount}
                             </div>
                           </div>

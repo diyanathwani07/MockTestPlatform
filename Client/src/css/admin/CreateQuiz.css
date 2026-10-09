@@ -560,7 +560,7 @@ body.dark-mode .create-quiz-page .option-letter-badge {
 }
 
 body.dark-mode .create-quiz-page .option-letter-badge:hover {
-  border-color: #6E3FF3 !important;
+  border-color: var(--primary) !important;
   color: #FFFFFF !important;
 }
 
@@ -715,12 +715,12 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
 }
 
 .section-picker-item:hover {
-  border-color: var(--violet, #6e3ff3);
+  border-color: var(--violet);
   background-color: var(--option-hover, rgba(110, 63, 243, 0.04));
 }
 
 .section-picker-item.selected {
-  border-color: var(--violet, #6e3ff3);
+  border-color: var(--violet);
   background-color: rgba(110, 63, 243, 0.08);
 }
 
@@ -777,11 +777,11 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
 }
 
 .section-picker-mode-option:hover {
-  border-color: var(--violet, #6e3ff3);
+  border-color: var(--violet);
 }
 
 .section-picker-mode-option.active {
-  border-color: var(--violet, #6e3ff3);
+  border-color: var(--violet);
   background-color: rgba(110, 63, 243, 0.06);
 }
 
@@ -790,7 +790,7 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
 }
 
 .section-picker-mode-option svg {
-  color: var(--violet, #6e3ff3);
+  color: var(--violet);
   flex-shrink: 0;
 }
 
@@ -831,7 +831,7 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
 }
 
 .section-picker-btn.primary {
-  background-color: var(--violet, #6e3ff3);
+  background-color: var(--violet);
   color: #ffffff;
   border: none;
 }

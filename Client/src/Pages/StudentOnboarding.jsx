@@ -136,7 +136,7 @@ export default function StudentOnboarding() {
               </p>
               <button 
                 onClick={nextStep}
-                style={{ width: "100%", padding: "16px", borderRadius: "12px", background: "var(--primary)", color: "white", fontWeight: "600", fontSize: "16px", border: "none", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}
+                style={{ width: "100%", padding: "16px", borderRadius: "12px", background: "var(--primary)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "16px", border: "none", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}
               >
                 Let's Get Started <ArrowRight size={20} />
               </button>
@@ -161,7 +161,7 @@ export default function StudentOnboarding() {
                 <button 
                   onClick={nextStep}
                   disabled={!formData.name.trim()}
-                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.name.trim() ? "var(--primary)" : "var(--border-color)", color: "white", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.name.trim() ? "pointer" : "not-allowed" }}
+                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.name.trim() ? "var(--primary)" : "var(--border-color)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.name.trim() ? "pointer" : "not-allowed" }}
                 >
                   Continue
                 </button>
@@ -239,7 +239,7 @@ export default function StudentOnboarding() {
                     }
                     nextStep();
                   }}
-                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "var(--primary)", color: "white", fontWeight: "600", fontSize: "16px", border: "none", cursor: "pointer" }}
+                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "var(--primary)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "16px", border: "none", cursor: "pointer" }}
                 >
                   Continue
                 </button>
@@ -278,7 +278,7 @@ export default function StudentOnboarding() {
                 <button 
                   onClick={nextStep}
                   disabled={!formData.goal}
-                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.goal ? "var(--primary)" : "var(--border-color)", color: "white", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.goal ? "pointer" : "not-allowed" }}
+                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.goal ? "var(--primary)" : "var(--border-color)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.goal ? "pointer" : "not-allowed" }}
                 >
                   Continue
                 </button>
@@ -321,7 +321,7 @@ export default function StudentOnboarding() {
                 <button 
                   onClick={nextStep}
                   disabled={!formData.experience}
-                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.experience ? "var(--primary)" : "var(--border-color)", color: "white", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.experience ? "pointer" : "not-allowed" }}
+                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.experience ? "var(--primary)" : "var(--border-color)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.experience ? "pointer" : "not-allowed" }}
                 >
                   Continue
                 </button>
@@ -386,7 +386,7 @@ export default function StudentOnboarding() {
                 <button 
                   onClick={nextStep}
                   disabled={formData.preferences.length === 0}
-                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.preferences.length > 0 ? "var(--primary)" : "var(--border-color)", color: "white", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.preferences.length > 0 ? "pointer" : "not-allowed" }}
+                  style={{ flex: 1, padding: "16px", borderRadius: "12px", background: formData.preferences.length > 0 ? "var(--primary)" : "var(--border-color)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "16px", border: "none", cursor: formData.preferences.length > 0 ? "pointer" : "not-allowed" }}
                 >
                   Continue
                 </button>
@@ -417,7 +417,7 @@ export default function StudentOnboarding() {
               <button 
                 onClick={finishOnboarding}
                 disabled={loading}
-                style={{ width: "100%", padding: "16px", borderRadius: "12px", background: "var(--primary)", color: "white", fontWeight: "600", fontSize: "16px", border: "none", cursor: loading ? "wait" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}
+                style={{ width: "100%", padding: "16px", borderRadius: "12px", background: "var(--primary)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "16px", border: "none", cursor: loading ? "wait" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}
               >
                 {loading ? "Saving..." : (!user ? "Create Account" : "Go to Dashboard")}
                 {!loading && <ArrowRight size={20} />}

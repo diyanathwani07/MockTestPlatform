@@ -681,7 +681,7 @@ function QuizMulti() {
             onClick={() => navigate("/dashboard", { replace: true })}
             style={{
               background: "var(--violet)",
-              color: "#ffffff",
+              color: "var(--primary-foreground)",
               border: "none",
               borderRadius: "12px",
               padding: "14px 32px",
@@ -797,8 +797,8 @@ function QuizMulti() {
               <button
                 onClick={reEnterFullscreen}
                 style={{
-                  background: "linear-gradient(135deg,#3730A3,#6E3FF3)",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  background: "linear-gradient(135deg,#3730A3,var(--primary))",
+                  color: "var(--primary-foreground)", border: "none", borderRadius: "12px",
                   padding: "14px 36px", fontSize: "15px", fontWeight: "700",
                   cursor: "pointer", width: "auto"
                 }}
@@ -827,8 +827,8 @@ function QuizMulti() {
           <button
             onClick={endBreak}
             style={{
-              background: "linear-gradient(135deg,#3730A3,#6E3FF3)",
-              color: "#fff", border: "none", borderRadius: "12px",
+              background: "linear-gradient(135deg,#3730A3,var(--primary))",
+              color: "var(--primary-foreground)", border: "none", borderRadius: "12px",
               padding: "16px 48px", fontSize: "16px", fontWeight: "700",
               cursor: "pointer", transition: "transform 0.2s"
             }}
@@ -1307,7 +1307,7 @@ function QuizMulti() {
           <div style={{ marginTop: "24px", textAlign: "right" }}>
             <button 
               onClick={() => setShowInstructionsModal(false)}
-              style={{ background: "#6E3FF3", color: "white", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", border: "none", cursor: "pointer" }}
+              style={{ background: "var(--primary)", color: "var(--primary-foreground)", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", border: "none", cursor: "pointer" }}
             >
               Understood, Resume Test
             </button>

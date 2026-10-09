@@ -257,9 +257,9 @@ function Reports() {
                         onClick={() => setCurrentPage(item)}
                         style={{
                           minWidth: "34px", height: "34px", borderRadius: "8px",
-                          border: currentPage === item ? "1.5px solid var(--primary-color, #6E3FF3)" : "1.5px solid var(--border-color)",
+                          border: currentPage === item ? "1.5px solid var(--primary)" : "1.5px solid var(--border-color)",
                           background: currentPage === item ? "rgba(110, 63, 243, 0.15)" : "transparent",
-                          color: currentPage === item ? "var(--primary-color, #6E3FF3)" : "var(--text-secondary)",
+                          color: currentPage === item ? "var(--primary)" : "var(--text-secondary)",
                           fontWeight: currentPage === item ? "700" : "500",
                           fontSize: "13px",
                           cursor: "pointer",

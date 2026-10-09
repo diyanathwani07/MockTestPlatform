@@ -500,7 +500,7 @@
 }
 
 .rev-search-input:focus {
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
 }
 
 .rev-status-select {

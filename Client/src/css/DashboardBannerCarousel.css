@@ -93,7 +93,7 @@
   padding: 4px 10px;
   border-radius: 20px;
   background: var(--icon-bg, #F3E8FF);
-  color: var(--icon-color, #6E3FF3);
+  color: var(--icon-color, var(--primary));
   margin-bottom: 12px;
 }
 
@@ -116,8 +116,7 @@
 }
 
 .banner-cta {
-  background: var(--violet, #6E3FF3);
-  color: #ffffff;
+  background: var(--primary); color: var(--primary-foreground);
   border: none;
   border-radius: 8px;
   padding: 8px 16px;

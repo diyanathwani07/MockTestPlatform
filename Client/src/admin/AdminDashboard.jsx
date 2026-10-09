@@ -168,7 +168,7 @@ function AdminDashboard() {
 
   // Real-data aggregates with mockup fallbacks
   const activities = stats.activities && stats.activities.length > 0 ? stats.activities : [
-    { text: 'Quiz "BPSC Mock Test 5" published', time: '22 Jun 2026, 10:25 AM', icon: '📖', bg: '#EDE9FE', color: '#6E3FF3' },
+    { text: 'Quiz "BPSC Mock Test 5" published', time: '22 Jun 2026, 10:25 AM', icon: '📖', bg: '#EDE9FE', color: 'var(--primary)' },
     { text: 'New quiz "The Loop Exam" created', time: '22 Jun 2026, 09:40 AM', icon: '➕', bg: '#FEF3C7', color: '#D97706' },
     { text: 'User Ravi Kumar attempted "BPSC Mock Test 5"', time: '22 Jun 2026, 09:15 AM', icon: '👥', bg: '#D1FAE5', color: '#10B981' },
     { text: 'Subject "History" updated', time: '21 Jun 2026, 04:45 PM', icon: '✏️', bg: '#DBEAFE', color: '#2563EB' },
@@ -282,7 +282,7 @@ function AdminDashboard() {
                     fontSize: "13px", 
                     cursor: "pointer", 
                     border: "none",
-                    background: activeDashboardView === "main" ? "var(--primary-color, #6E3FF3)" : "transparent",
+                    background: activeDashboardView === "main" ? "var(--primary)" : "transparent",
                     color: activeDashboardView === "main" ? "#fff" : "var(--text-secondary, #6B7280)",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
@@ -299,7 +299,7 @@ function AdminDashboard() {
                     fontSize: "13px", 
                     cursor: "pointer", 
                     border: "none",
-                    background: activeDashboardView === "support" ? "var(--primary-color, #6E3FF3)" : "transparent",
+                    background: activeDashboardView === "support" ? "var(--primary)" : "transparent",
                     color: activeDashboardView === "support" ? "#fff" : "var(--text-secondary, #6B7280)",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
@@ -317,7 +317,7 @@ function AdminDashboard() {
               {/* Stat Cards */}
               <div className="stat-cards-grid">
                 <div className="stat-card accent-violet">
-                  <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "#6E3FF3", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "var(--primary)", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <FileText size={24} />
                   </div>
                   <div>
@@ -389,8 +389,8 @@ function AdminDashboard() {
                   {/* Legends */}
                   <div style={{ display: "flex", gap: "20px", marginBottom: "20px", fontSize: "12.5px", fontWeight: "600" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(110, 63, 243, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
-                      <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#6E3FF3" }}></span>
-                      <span style={{ color: "#6E3FF3" }}>Created</span>
+                      <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "var(--primary)" }}></span>
+                      <span style={{ color: "var(--primary)" }}>Created</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
                       <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }}></span>
@@ -426,7 +426,7 @@ function AdminDashboard() {
                       const endX = width - 40;
                       const stepX = (endX - startX) / (supportChartData.length - 1);
 
-                      const pointsCreated = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsCreated), val: d.ticketsCreated, label: d.label, dataset: "Tickets Created", color: "#6E3FF3" }));
+                      const pointsCreated = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsCreated), val: d.ticketsCreated, label: d.label, dataset: "Tickets Created", color: "var(--primary)" }));
                       const pointsResolved = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsResolved), val: d.ticketsResolved, label: d.label, dataset: "Tickets Resolved", color: "#10B981" }));
 
                       const getSmoothPath = (pts) => {
@@ -459,8 +459,8 @@ function AdminDashboard() {
                           <svg viewBox="0 0 1000 250" style={{ width: "100%", height: "auto", overflow: "visible" }}>
                             <defs>
                               <linearGradient id="gradient-created-chart" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#6E3FF3" stopOpacity="0.3" />
-                                <stop offset="100%" stopColor="#6E3FF3" stopOpacity="0.0" />
+                                <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
+                                <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
                               </linearGradient>
                               <linearGradient id="gradient-resolved-chart" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
@@ -483,7 +483,7 @@ function AdminDashboard() {
                             <path d={pathResolvedArea} fill="url(#gradient-resolved-chart)" />
                             <path d={pathCreatedArea} fill="url(#gradient-created-chart)" />
 
-                            <path d={pathCreatedStroke} fill="none" stroke="#6E3FF3" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d={pathCreatedStroke} fill="none" stroke="var(--primary)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
                             <path d={pathResolvedStroke} fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
                             {pointsCreated.concat(pointsResolved).map((pt, i) => (
@@ -566,7 +566,7 @@ function AdminDashboard() {
                 <div className="form-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column" }}>
                   <div className="dashboard-card-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                     <h3 className="dashboard-card-title">Unassigned Support Tickets</h3>
-                    <a href="/admin/tickets" style={{ fontSize: "13px", fontWeight: "600", color: "#6E3FF3", textDecoration: "none" }}>View All →</a>
+                    <a href="/admin/tickets" style={{ fontSize: "13px", fontWeight: "600", color: "var(--primary)", textDecoration: "none" }}>View All →</a>
                   </div>
                   <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -590,7 +590,7 @@ function AdminDashboard() {
                                 <div style={{ fontSize: "12px", color: "var(--text-muted)", maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.message}</div>
                               </td>
                               <td style={{ padding: "14px 8px" }}>
-                                <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: "600", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3" }}>
+                                <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: "600", background: "rgba(110, 63, 243, 0.1)", color: "var(--primary)" }}>
                                   {t.category.replace(' Issue', '')}
                                 </span>
                               </td>
@@ -620,7 +620,7 @@ function AdminDashboard() {
               <div className="stat-cards-grid">
                 {/* Card 1: Users */}
                 <div className="stat-card accent-violet" onClick={() => navigate("/admin/users")} style={{ cursor: "pointer" }}>
-                  <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "#6E3FF3", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "var(--primary)", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Users size={24} />
                   </div>
                   <div>
@@ -632,12 +632,12 @@ function AdminDashboard() {
                     <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-users" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#6E3FF3" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#6E3FF3" stopOpacity="0" />
+                          <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
                         </linearGradient>
                       </defs>
                       <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6 L100,30 L0,30 Z" fill="url(#gradient-users)" />
-                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6" fill="none" stroke="#6E3FF3" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
@@ -1056,7 +1056,7 @@ function AdminDashboard() {
                       onMouseOut={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "#6E3FF3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             {explorerView === "exams" ? <GraduationCap size={20} strokeWidth={2} /> : explorerView === "subjects" ? <Library size={20} strokeWidth={2} /> : <File size={20} strokeWidth={2} />}
                           </div>
                           <div>

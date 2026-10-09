@@ -568,7 +568,7 @@ function Users() {
               <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>The user you are looking for does not exist or has been deleted.</p>
               <button 
                 onClick={() => navigate("/admin/users")}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--violet)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', marginTop: '8px' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--violet)', color: "var(--primary-foreground)", border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', marginTop: '8px' }}
               >
                 <ArrowLeft size={16} /> Back to Users
               </button>
@@ -966,7 +966,7 @@ function Users() {
                         padding: '5px 10px',
                         borderRadius: '6px',
                         border: 'none',
-                        background: userTypeFilter === 'users' ? '#6E3FF3' : 'transparent',
+                        background: userTypeFilter === 'users' ? 'var(--primary)' : 'transparent',
                         color: userTypeFilter === 'users' ? '#FFFFFF' : 'var(--text-secondary)',
                         fontSize: '12px',
                         fontWeight: '600',
@@ -983,7 +983,7 @@ function Users() {
                         padding: '5px 10px',
                         borderRadius: '6px',
                         border: 'none',
-                        background: userTypeFilter === 'staff' ? '#6E3FF3' : 'transparent',
+                        background: userTypeFilter === 'staff' ? 'var(--primary)' : 'transparent',
                         color: userTypeFilter === 'staff' ? '#FFFFFF' : 'var(--text-secondary)',
                         fontSize: '12px',
                         fontWeight: '600',
@@ -1004,7 +1004,7 @@ function Users() {
                       padding: '5px 10px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'active' ? '#6E3FF3' : 'transparent',
+                      background: viewTab === 'active' ? 'var(--primary)' : 'transparent',
                       color: viewTab === 'active' ? '#FFFFFF' : 'var(--text-secondary)',
                       fontSize: '12px',
                       fontWeight: '600',
@@ -1021,7 +1021,7 @@ function Users() {
                       padding: '5px 10px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'archived' ? '#6E3FF3' : 'transparent',
+                      background: viewTab === 'archived' ? 'var(--primary)' : 'transparent',
                       color: viewTab === 'archived' ? '#FFFFFF' : 'var(--text-secondary)',
                       fontSize: '12px',
                       fontWeight: '600',
@@ -1957,8 +1957,8 @@ function Users() {
                     fontSize: "12px",
                     fontWeight: "700",
                     borderRadius: "6px",
-                    background: selectedPlanId ? "var(--violet, #6E3FF3)" : "rgba(110, 63, 243, 0.3)",
-                    color: "#ffffff",
+                    background: selectedPlanId ? "var(--violet)" : "rgba(110, 63, 243, 0.3)",
+                    color: "var(--primary-foreground)",
                     border: "none",
                     cursor: selectedPlanId ? "pointer" : "not-allowed",
                     whiteSpace: "nowrap",
@@ -2032,7 +2032,7 @@ function Users() {
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                             <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontWeight: '700', color: '#6E3FF3', fontSize: '15px' }}>
+                              <div style={{ fontWeight: '700', color: 'var(--primary)', fontSize: '15px' }}>
                                 {attempt.score}/{attempt.total}
                               </div>
                               <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
@@ -2050,7 +2050,7 @@ function Users() {
                                 alignItems: 'center', 
                                 justifyContent: 'center', 
                                 background: 'rgba(110, 63, 243, 0.1)', 
-                                color: '#6E3FF3', 
+                                color: 'var(--primary)', 
                                 padding: '8px', 
                                 borderRadius: '8px',
                                 textDecoration: 'none',
@@ -2140,7 +2140,7 @@ function Users() {
                         </div>
                         <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
                           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Average Score</div>
-                          <div style={{ fontSize: '24px', fontWeight: '700', color: '#6E3FF3' }}>{avg}%</div>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary)' }}>{avg}%</div>
                         </div>
                         <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
                           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Highest Score</div>
@@ -2165,7 +2165,7 @@ function Users() {
                                   <span style={{ color: 'var(--text-muted)' }}>{percentage}% ({data.total} tests)</span>
                                 </div>
                                 <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-                                  <div style={{ width: `${percentage}%`, height: '100%', background: '#6E3FF3', borderRadius: '4px' }}></div>
+                                  <div style={{ width: `${percentage}%`, height: '100%', background: 'var(--primary)', borderRadius: '4px' }}></div>
                                 </div>
                               </div>
                             );
@@ -2282,7 +2282,7 @@ function Users() {
                       flex: 1,
                       padding: '8px 12px',
                       borderRadius: '8px',
-                      border: '1.5px solid ' + (addMode === 'manual' ? '#6E3FF3' : 'var(--border-color)'),
+                      border: '1.5px solid ' + (addMode === 'manual' ? 'var(--primary)' : 'var(--border-color)'),
                       background: addMode === 'manual' ? 'rgba(110, 63, 243, 0.15)' : 'transparent',
                       color: addMode === 'manual' ? '#FFFFFF' : 'var(--text-secondary)',
                       fontWeight: '600',
@@ -2300,7 +2300,7 @@ function Users() {
                       flex: 1,
                       padding: '8px 12px',
                       borderRadius: '8px',
-                      border: '1.5px solid ' + (addMode === 'csv' ? '#6E3FF3' : 'var(--border-color)'),
+                      border: '1.5px solid ' + (addMode === 'csv' ? 'var(--primary)' : 'var(--border-color)'),
                       background: addMode === 'csv' ? 'rgba(110, 63, 243, 0.15)' : 'transparent',
                       color: addMode === 'csv' ? '#FFFFFF' : 'var(--text-secondary)',
                       fontWeight: '600',
@@ -2512,7 +2512,7 @@ function Users() {
                           onDragLeave={() => setDragOver(false)}
                           onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleCSVFileSelected(e.dataTransfer.files[0]); }}
                           style={{
-                            border: '2px dashed ' + (dragOver ? '#6E3FF3' : 'var(--border-color)'),
+                            border: '2px dashed ' + (dragOver ? 'var(--primary)' : 'var(--border-color)'),
                             borderRadius: '12px',
                             padding: '40px 20px',
                             textAlign: 'center',
@@ -2697,7 +2697,7 @@ function Users() {
                                 style={{
                                   background: 'none',
                                   border: 'none',
-                                  color: '#6E3FF3',
+                                  color: 'var(--primary)',
                                   fontSize: '11.5px',
                                   fontWeight: '700',
                                   cursor: 'pointer',

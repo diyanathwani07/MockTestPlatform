@@ -58,7 +58,7 @@
 }
 
 .sr-select:focus {
-  border-color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
 }
 
 .sr-select-icon {
@@ -82,8 +82,8 @@
 }
 
 .sr-calendar-btn:hover {
-  border-color: var(--violet, #6E3FF3);
-  color: var(--violet, #6E3FF3);
+  border-color: var(--violet);
+  color: var(--violet);
 }
 
 .sr-results-list {

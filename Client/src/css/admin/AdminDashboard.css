@@ -46,8 +46,8 @@
 /* Dark Mode Active Slider State */
 body.dark-mode .pill-thumb-slider {
   transform: translateX(29px) !important;
-  background-color: #6E3FF3 !important;
-  box-shadow: 0 0 10px #6E3FF3 !important;
+  background-color: var(--primary) !important;
+  box-shadow: 0 0 10px var(--primary) !important;
 }
 
 body.dark-mode .theme-pill-switch {
@@ -231,7 +231,7 @@ body.dark-mode .reports-analytics-table td {
 
 .report-search-pill:focus-within {
   background: var(--bg-card);
-  border-color: #6E3FF3;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
 }
 
@@ -290,7 +290,7 @@ body.dark-mode .reports-analytics-table td {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2D1B69, #6E3FF3);
+  background: linear-gradient(135deg, #2D1B69, var(--primary));
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -416,8 +416,7 @@ body.dark-mode .reports-analytics-table td {
 }
 
 .dashboard-view-all-btn:hover {
-  background: var(--violet);
-  color: #ffffff;
+  background: var(--primary); color: var(--primary-foreground);
 }
 
 /* Subjects list progress bars */
@@ -643,8 +642,7 @@ body.dark-mode .dashboard-view-all-btn {
 }
 
 body.dark-mode .dashboard-view-all-btn:hover {
-  background: #6E3FF3;
-  color: #ffffff;
+  background: var(--primary); color: var(--primary-foreground);
 }
 
 

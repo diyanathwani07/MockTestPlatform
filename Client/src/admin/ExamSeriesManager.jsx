@@ -445,7 +445,7 @@ function ExamSeriesManager() {
                           <td style={{ padding: "18px 24px", fontWeight: 600, color: "var(--text-primary)" }}>{s.title}</td>
                           <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "13px" }}>{s.slug}</td>
                           <td style={{ padding: "18px 24px" }}>
-                            <span style={{ padding: "4px 10px", background: "rgba(110,63,243,0.1)", color: "#6E3FF3", borderRadius: "100px", fontSize: "12px", fontWeight: "700" }}>
+                            <span style={{ padding: "4px 10px", background: "rgba(110,63,243,0.1)", color: "var(--primary)", borderRadius: "100px", fontSize: "12px", fontWeight: "700" }}>
                               {s.category || "General"}
                             </span>
                           </td>
@@ -587,7 +587,7 @@ function ExamSeriesManager() {
                         type="checkbox"
                         checked={formData.isPublished}
                         onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                        style={{ width: "16px", height: "16px", accentColor: "#6E3FF3" }}
+                        style={{ width: "16px", height: "16px", accentColor: "var(--primary)" }}
                         id="isPublishedCheck"
                       />
                       <label htmlFor="isPublishedCheck" style={{ fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer" }}>Publish Series (Visible to candidates)</label>
@@ -598,7 +598,7 @@ function ExamSeriesManager() {
                       <div style={{ marginTop: "12px", paddingTop: "16px", borderTop: "1px solid var(--border-color, rgba(255,255,255,0.1))" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
                           <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                            <Layers size={18} color="var(--violet, #6E3FF3)" /> Manage Exam Structures & Subjects
+                            <Layers size={18} color="var(--violet)" /> Manage Exam Structures & Subjects
                           </h4>
                         </div>
 
@@ -620,7 +620,7 @@ function ExamSeriesManager() {
                           <button
                             type="button"
                             onClick={handleAddStructure}
-                            style={{ padding: "8px 14px", borderRadius: "8px", background: "var(--violet, #6E3FF3)", color: 'var(--primary-foreground)', border: "none", cursor: "pointer", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
+                            style={{ padding: "8px 14px", borderRadius: "8px", background: "var(--violet)", color: 'var(--primary-foreground)', border: "none", cursor: "pointer", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
                           >
                             <Plus size={16} /> Add Structure
                           </button>
@@ -821,7 +821,7 @@ function ExamSeriesManager() {
                       </button>
                       <button 
                         type="submit" 
-                        style={{ padding: "8px 16px", borderRadius: "8px", background: "#6E3FF3", color: "#fff", border: "none", cursor: "pointer", fontWeight: "600" }}
+                        style={{ padding: "8px 16px", borderRadius: "8px", background: "var(--primary)", color: "var(--primary-foreground)", border: "none", cursor: "pointer", fontWeight: "600" }}
                       >
                         {editingId ? "Update" : "Create"}
                       </button>

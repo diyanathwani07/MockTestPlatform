@@ -352,7 +352,7 @@ function AdminAiPlans() {
                 <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>Active Revenue</p>
                 <span style={{ fontSize: "11px", color: "var(--violet)", fontWeight: "600" }}>View Analytics →</span>
               </div>
-              <h3 style={{ margin: "8px 0 0 0", fontSize: "28px", fontWeight: "800", color: "var(--violet, #6E3FF3)" }}>
+              <h3 style={{ margin: "8px 0 0 0", fontSize: "28px", fontWeight: "800", color: "var(--violet)" }}>
                 {metricsLoading ? "..." : `₹${metrics.activeRevenue}`}
               </h3>
             </div>
@@ -370,7 +370,7 @@ function AdminAiPlans() {
                 padding: "10px 18px",
                 borderRadius: "8px",
                 border: "none",
-                background: "var(--violet, #6E3FF3)",
+                background: "var(--violet)",
                 color: 'var(--primary-foreground)',
                 fontWeight: "600",
                 fontSize: "14px",
@@ -639,7 +639,7 @@ function AdminAiPlans() {
                             type="checkbox" 
                             checked={form.features.includes(feat)}
                             onChange={() => handleFeatureToggle(feat)}
-                            style={{ accentColor: "var(--violet, #6E3FF3)" }}
+                            style={{ accentColor: "var(--violet)" }}
                           />
                           <span>{feat}</span>
                         </label>
@@ -662,7 +662,7 @@ function AdminAiPlans() {
                         <button 
                           type="button" 
                           onClick={handleSelectAllExams}
-                          style={{ background: "none", border: "none", color: "var(--violet, #6E3FF3)", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}
+                          style={{ background: "none", border: "none", color: "var(--violet)", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}
                         >
                           {form.allowedExamIds.length === exams.length ? "Deselect All" : "Select All"}
                         </button>
@@ -676,7 +676,7 @@ function AdminAiPlans() {
                               type="checkbox" 
                               checked={form.allowedExamIds.includes(exam._id)}
                               onChange={() => handleExamToggle(exam._id)}
-                              style={{ accentColor: "var(--violet, #6E3FF3)" }}
+                              style={{ accentColor: "var(--violet)" }}
                             />
                             <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }} title={exam.title}>{exam.title}</span>
                           </label>
@@ -716,7 +716,7 @@ function AdminAiPlans() {
                         type="button" 
                         onClick={handleQuickAddExam}
                         disabled={addingExam || !newExamTitle.trim()}
-                        style={{ padding: "8px 14px", background: "var(--violet, #6E3FF3)", color: 'var(--primary-foreground)', border: "none", borderRadius: "6px", fontSize: "12.5px", fontWeight: "600", cursor: addingExam || !newExamTitle.trim() ? "not-allowed" : "pointer", opacity: addingExam || !newExamTitle.trim() ? 0.6 : 1 }}
+                        style={{ padding: "8px 14px", background: "var(--violet)", color: 'var(--primary-foreground)', border: "none", borderRadius: "6px", fontSize: "12.5px", fontWeight: "600", cursor: addingExam || !newExamTitle.trim() ? "not-allowed" : "pointer", opacity: addingExam || !newExamTitle.trim() ? 0.6 : 1 }}
                       >
                         {addingExam ? "Adding..." : "Add"}
                       </button>
@@ -753,7 +753,7 @@ function AdminAiPlans() {
                       type="checkbox" 
                       checked={form.isFeatured}
                       onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                      style={{ accentColor: "var(--violet, #6E3FF3)", width: "16px", height: "16px" }}
+                      style={{ accentColor: "var(--violet)", width: "16px", height: "16px" }}
                     />
                     <span>Mark as Recommended (Highlights plan)</span>
                   </label>
@@ -772,7 +772,7 @@ function AdminAiPlans() {
                   <button 
                     type="submit" 
                     disabled={submitting}
-                    style={{ flex: "none", width: "auto", padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet, #6E3FF3)", color: 'var(--primary-foreground)', fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                    style={{ flex: "none", width: "auto", padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet)", color: 'var(--primary-foreground)', fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
                   >
                     {submitting ? "Saving..." : "Save Plan"}
                   </button>
@@ -789,7 +789,7 @@ function AdminAiPlans() {
                   maxWidth: "320px",
                   background: "var(--bg-card, #1c1b2e)",
                   borderRadius: "16px",
-                  border: form.isFeatured ? "2px solid var(--violet, #6E3FF3)" : "1px solid var(--border-color)",
+                  border: form.isFeatured ? "2px solid var(--violet)" : "1px solid var(--border-color)",
                   padding: "24px",
                   boxShadow: form.isFeatured ? "0 8px 30px rgba(110,63,243,0.12)" : "0 4px 12px rgba(0,0,0,0.05)",
                   position: "relative",
@@ -803,7 +803,7 @@ function AdminAiPlans() {
                       top: "-12px",
                       left: "50%",
                       transform: "translateX(-50%)",
-                      background: "var(--violet, #6E3FF3)",
+                      background: "var(--violet)",
                       color: 'var(--primary-foreground)',
                       fontSize: "11px",
                       fontWeight: "800",
@@ -858,7 +858,7 @@ function AdminAiPlans() {
                       padding: "12px",
                       borderRadius: "8px",
                       border: "none",
-                      background: "var(--violet, #6E3FF3)",
+                      background: "var(--violet)",
                       color: 'var(--primary-foreground)',
                       fontWeight: "700",
                       fontSize: "14px",

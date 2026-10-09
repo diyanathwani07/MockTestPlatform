@@ -88,7 +88,7 @@ function PricingPlans() {
                 padding: "6px 16px",
                 fontSize: "12.5px",
                 fontWeight: "600",
-                color: "var(--violet, #6E3FF3)",
+                color: "var(--violet)",
                 cursor: "pointer",
                 transition: "all 0.2s ease"
               }}
@@ -134,7 +134,7 @@ function PricingPlans() {
                   <div key={plan._id} style={{
                     background: "var(--bg-card, #1c1b2e)",
                     borderRadius: "16px",
-                    border: plan.isFeatured ? "2px solid var(--violet, #6E3FF3)" : "1px solid var(--border-color)",
+                    border: plan.isFeatured ? "2px solid var(--violet)" : "1px solid var(--border-color)",
                     padding: "32px 24px",
                     boxShadow: plan.isFeatured ? "0 10px 30px rgba(110,63,243,0.12)" : "0 4px 12px rgba(0,0,0,0.03)",
                     position: "relative",
@@ -151,8 +151,8 @@ function PricingPlans() {
                         top: "-12px",
                         left: "50%",
                         transform: "translateX(-50%)",
-                        background: "var(--violet, #6E3FF3)",
-                        color: "#ffffff",
+                        background: "var(--violet)",
+                        color: "var(--primary-foreground)",
                         fontSize: "11px",
                         fontWeight: "800",
                         padding: "4px 14px",
@@ -216,7 +216,7 @@ function PricingPlans() {
                             padding: "14px",
                             borderRadius: "8px",
                             border: "none",
-                            background: isActive ? "#10B981" : "var(--violet, #6E3FF3)",
+                            background: isActive ? "#10B981" : "var(--violet)",
                             color: isActive ? "#ffffff" : "#ffffff",
                             fontWeight: "700",
                             fontSize: "14px",

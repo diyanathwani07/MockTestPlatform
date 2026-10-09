@@ -292,8 +292,8 @@ function AuditLog() {
             <button
               onClick={exportToCSV}
               style={{
-                background: "#6E3FF3",
-                color: "#FFF",
+                background: "var(--primary)",
+                color: "var(--primary-foreground)",
                 borderRadius: "10px",
                 border: "none",
                 padding: "11px 22px",
@@ -419,7 +419,7 @@ function AuditLog() {
                                   <span style={{ fontSize: "11px", color: "var(--text-secondary)", padding: "2px 6px", borderRadius: "100px", background: "rgba(110, 63, 243, 0.15)", fontWeight: "700" }}>
                                     {g.logs.length}
                                   </span>
-                                  <span style={{ display: "inline-flex", alignItems: "center", color: "var(--violet, #6E3FF3)" }}>
+                                  <span style={{ display: "inline-flex", alignItems: "center", color: "var(--violet)" }}>
                                     {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                   </span>
                                 </>

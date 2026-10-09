@@ -269,7 +269,7 @@ const ForgotPassword = () => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="• • • • • •" 
-                style={{ fontSize: "20px", letterSpacing: "6px", textAlign: "center", fontWeight: "bold", color: "#6E3FF3", width: "100%", height: "52px" }}
+                style={{ fontSize: "20px", letterSpacing: "6px", textAlign: "center", fontWeight: "bold", color: "var(--primary)", width: "100%", height: "52px" }}
                 required 
               />
             </div>

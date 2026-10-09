@@ -840,7 +840,7 @@ body.dark-mode .qb-pagination {
 }
 
 .qb-flip-front {
-  background-color: var(--violet, #6E3FF3);
+  background-color: var(--violet);
   color: white;
   transform: rotateY(0deg);
   box-shadow: 0 4px 12px rgba(110, 63, 243, 0.2);

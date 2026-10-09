@@ -227,7 +227,7 @@ export default function ChangeExamModal() {
                   ? "rgba(59, 130, 246, 0.15)"
                   : "rgba(16, 185, 129, 0.15)",
                 color: step === 1
-                  ? "var(--violet, #6E3FF3)"
+                  ? "var(--violet)"
                   : step === 2
                   ? "#3B82F6"
                   : "#10B981",
@@ -275,7 +275,7 @@ export default function ChangeExamModal() {
                 height: "3px",
                 borderRadius: "2px",
                 background: s <= step
-                  ? "var(--violet, #6E3FF3)"
+                  ? "var(--violet)"
                   : "var(--border-color, rgba(255, 255, 255, 0.1))",
                 transition: "background 0.3s ease",
               }}
@@ -331,7 +331,7 @@ export default function ChangeExamModal() {
             <>
               {loading ? (
                 <div style={{ padding: "40px 0", textAlign: "center", color: "var(--text-secondary)" }}>
-                  <Loader2 size={32} style={{ animation: "spin 1s linear infinite", margin: "0 auto 12px auto", color: "var(--violet, #6E3FF3)" }} />
+                  <Loader2 size={32} style={{ animation: "spin 1s linear infinite", margin: "0 auto 12px auto", color: "var(--violet)" }} />
                   <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
                   <p style={{ margin: 0, fontSize: "14px" }}>Loading exam series...</p>
                 </div>
@@ -352,7 +352,7 @@ export default function ChangeExamModal() {
                       padding: "14px 16px",
                       borderRadius: "12px",
                       border: !selectedExam
-                        ? "1.5px solid var(--violet, #6E3FF3)"
+                        ? "1.5px solid var(--violet)"
                         : "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
                       background: !selectedExam
                         ? "rgba(110, 63, 243, 0.12)"
@@ -376,7 +376,7 @@ export default function ChangeExamModal() {
                           justifyContent: "center",
                         }}
                       >
-                        <Layers size={20} color="#6E3FF3" />
+                        <Layers size={20} color="var(--primary)" />
                       </div>
                       <div>
                         <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: "700", color: "var(--text-primary, #ffffff)" }}>
@@ -388,7 +388,7 @@ export default function ChangeExamModal() {
                       </div>
                     </div>
                     {!selectedExam ? (
-                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "var(--violet, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "var(--violet)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <Check size={14} color="white" strokeWidth={3} />
                       </div>
                     ) : (
@@ -406,7 +406,7 @@ export default function ChangeExamModal() {
                         padding: "14px 16px",
                         borderRadius: "12px",
                         border: isSelected
-                          ? "1.5px solid var(--violet, #6E3FF3)"
+                          ? "1.5px solid var(--violet)"
                           : "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
                         background: isSelected
                           ? "rgba(110, 63, 243, 0.12)"
@@ -456,8 +456,8 @@ export default function ChangeExamModal() {
                               width: "22px",
                               height: "22px",
                               borderRadius: "50%",
-                              background: "var(--violet, #6E3FF3)",
-                              color: "#ffffff",
+                              background: "var(--violet)",
+                              color: "var(--primary-foreground)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",

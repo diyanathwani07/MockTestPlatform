@@ -186,7 +186,7 @@ function FlashcardStudyView() {
         </div>
 
         <div className="fs-header-row-1" style={{ display: "flex", width: "100%" }}>
-          <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "none", border: "none", color: "var(--violet, #6E3FF3)", fontWeight: "600", fontSize: "14px", cursor: "pointer", padding: 0, whiteSpace: "nowrap" }}>
+          <button onClick={() => navigate(-1)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "none", border: "none", color: "var(--violet)", fontWeight: "600", fontSize: "14px", cursor: "pointer", padding: 0, whiteSpace: "nowrap" }}>
             <ArrowLeft size={16} /> Back to Flashcards
           </button>
         </div>
@@ -196,7 +196,7 @@ function FlashcardStudyView() {
           
           {/* Left: Icon + Title */}
           <div className="fs-header-center" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--violet, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--violet)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                <Book size={24} />
             </div>
             <div style={{ textAlign: "left" }}>
@@ -213,7 +213,7 @@ function FlashcardStudyView() {
               {user?.profilePicture || user?.avatar ? (
                 <img src={user.profilePicture || user.avatar} alt="Profile" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }} />
               ) : (
-                <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", fontSize: "13px" }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, var(--primary))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", fontSize: "13px" }}>
                   {(user?.name || "S").substring(0, 1).toUpperCase()}
                 </div>
               )}
@@ -249,7 +249,7 @@ function FlashcardStudyView() {
           {currentIndex + 1} / {activeCards.length} cards
         </div>
         <div style={{ flex: 1, height: "4px", background: "var(--border-color, rgba(0,0,0,0.05))", borderRadius: "2px", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${((currentIndex + 1) / activeCards.length) * 100}%`, background: "var(--violet, #6E3FF3)", transition: "width 0.3s" }} />
+          <div style={{ height: "100%", width: `${((currentIndex + 1) / activeCards.length) * 100}%`, background: "var(--violet)", transition: "width 0.3s" }} />
         </div>
         <div style={{ fontSize: "13px", fontWeight: "500", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
           {Math.round(((currentIndex + 1) / activeCards.length) * 100)}%
@@ -264,7 +264,7 @@ function FlashcardStudyView() {
             <h3 style={{ color: "var(--text-primary)", marginBottom: "16px" }}>No cards to review!</h3>
             <button 
               onClick={() => { setReviewMode(false); setCurrentIndex(0); setFinished(false); }}
-              style={{ padding: "12px 24px", borderRadius: "12px", background: "var(--violet, #6E3FF3)", color: "white", border: "none", fontWeight: "600", cursor: "pointer" }}
+              style={{ padding: "12px 24px", borderRadius: "12px", background: "var(--violet)", color: "var(--primary-foreground)", border: "none", fontWeight: "600", cursor: "pointer" }}
             >
               Study All Cards
             </button>
@@ -308,7 +308,7 @@ function FlashcardStudyView() {
                   justifyContent: "center",
                   transform: "rotateY(0deg)"
                 }}>
-                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
+                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, var(--primary))", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
                     Front
                   </div>
                   {currentCard?.imageUrl && (
@@ -339,7 +339,7 @@ function FlashcardStudyView() {
                   justifyContent: "center",
                   transform: "rotateY(180deg)"
                 }}>
-                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, #6E3FF3)", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
+                  <div style={{ position: "absolute", top: "24px", left: "24px", background: "var(--accent-bg, rgba(110,63,243,0.1))", color: "var(--accent, var(--primary))", fontSize: "14px", fontWeight: "600", padding: "8px 20px", borderRadius: "20px" }}>
                     Answer
                   </div>
                   {currentCard?.imageUrl && (
@@ -374,7 +374,7 @@ function FlashcardStudyView() {
               {/* CENTER CONTROLS (FLIP OR LEARNING/KNOWN) */}
               <div style={{ flex: 2, maxWidth: "400px", position: "relative", display: "flex", gap: "16px", justifyContent: "center" }}>
                 {!isFlipped ? (
-                  <button onClick={handleFlip} className="fs-flip-btn" style={{ width: "100%", padding: "16px", borderRadius: "30px", background: "var(--violet, #6E3FF3)", border: "none", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontWeight: "600", fontSize: "16px", cursor: "pointer", boxShadow: "0 8px 20px var(--accent-border, rgba(110,63,243,0.3))" }}>
+                  <button onClick={handleFlip} className="fs-flip-btn" style={{ width: "100%", padding: "16px", borderRadius: "30px", background: "var(--violet)", border: "none", color: "var(--primary-foreground)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontWeight: "600", fontSize: "16px", cursor: "pointer", boxShadow: "0 8px 20px var(--accent-border, rgba(110,63,243,0.3))" }}>
                     <Eye size={20} /> Flip
                   </button>
                 ) : (

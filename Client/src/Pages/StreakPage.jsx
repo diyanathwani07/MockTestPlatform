@@ -230,7 +230,7 @@ function StreakPage() {
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Current</div>
         </div>
         <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '20px 12px', textAlign: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: '800', color: '#6E3FF3', marginBottom: '4px' }}>{stats.best}</div>
+          <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)', marginBottom: '4px' }}>{stats.best}</div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Best</div>
         </div>
         <div style={{ background: 'var(--bg-card)', borderRadius: '20px', padding: '20px 12px', textAlign: 'center' }}>

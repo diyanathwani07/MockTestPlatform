@@ -21,9 +21,9 @@ const PANEL_PERMISSIONS = [
   { key: "manage_roles",          label: "Roles & Permissions" }
 ];
 
-const COLORS = ["#6E3FF3", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
+const COLORS = ["var(--primary)", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
 
-const EMPTY_FORM = { name: "", description: "", permissions: [], color: "#6E3FF3", slackChannelId: "", slackNotificationsPaused: false };
+const EMPTY_FORM = { name: "", description: "", permissions: [], color: "var(--primary)", slackChannelId: "", slackNotificationsPaused: false };
 
 function RolesPermissions() {
   const [departments, setDepartments] = useState([]);
@@ -64,7 +64,7 @@ function RolesPermissions() {
       name: dept.name,
       description: dept.description || "",
       permissions: [...(dept.permissions || [])],
-      color: dept.color || "#6E3FF3",
+      color: dept.color || "var(--primary)",
       slackChannelId: dept.slackChannelId || "",
       slackNotificationsPaused: dept.slackNotificationsPaused || false
     });
@@ -143,7 +143,7 @@ function RolesPermissions() {
 
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: "28px", flexWrap: "wrap", gap: "16px" }}>
-            <button onClick={openCreate} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #6E3FF3, #8B5CF6)", color: "#fff", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>
+            <button onClick={openCreate} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, var(--primary), #8B5CF6)", color: "var(--primary-foreground)", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>
               <Plus size={16} /> Create Department
             </button>
           </div>
@@ -228,7 +228,7 @@ function RolesPermissions() {
             {/* Drawer Header */}
             <div style={{ padding: "24px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "var(--bg-card)", zIndex: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <Shield size={20} style={{ color: "#6E3FF3" }} />
+                <Shield size={20} style={{ color: "var(--primary)" }} />
                 <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>{editingDept ? "Edit Department" : "Create New Department"}</h3>
               </div>
               <button onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)" }}><X size={20} /></button>
@@ -283,7 +283,7 @@ function RolesPermissions() {
                 {PANEL_PERMISSIONS.map((panel, idx) => (
                   <div key={panel.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: idx < PANEL_PERMISSIONS.length - 1 ? "1px solid var(--border-color)" : "none", background: "var(--bg-card)" }}>
                     <span style={{ fontSize: "13px", color: "var(--text-secondary, #94a3b8)", fontWeight: "500" }}>{panel.label}</span>
-                    <div onClick={() => togglePermission(panel.key)} style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.permissions.includes(panel.key) ? "#6E3FF3" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                    <div onClick={() => togglePermission(panel.key)} style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.permissions.includes(panel.key) ? "var(--primary)" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
                       <div style={{ position: "absolute", top: "2px", left: form.permissions.includes(panel.key) ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
                     </div>
                   </div>
@@ -294,7 +294,7 @@ function RolesPermissions() {
             {/* Drawer Footer */}
             <div style={{ padding: "20px 28px", borderTop: "1px solid var(--border-color)", display: "flex", gap: "12px", position: "sticky", bottom: 0, background: "var(--bg-card)" }}>
               <button onClick={() => setDrawerOpen(false)} style={{ flex: 1, padding: "11px", borderRadius: "10px", border: "1.5px solid var(--border-color)", background: "transparent", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}>Cancel</button>
-              <button onClick={handleSave} disabled={saving} style={{ flex: 2, padding: "11px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #6E3FF3, #8B5CF6)", color: "#fff", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
+              <button onClick={handleSave} disabled={saving} style={{ flex: 2, padding: "11px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, var(--primary), #8B5CF6)", color: "var(--primary-foreground)", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
                 {saving ? "Saving..." : editingDept ? "Save Changes" : "Create Department"}
               </button>
             </div>

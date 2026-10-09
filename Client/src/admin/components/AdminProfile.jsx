@@ -196,9 +196,9 @@ function AdminProfile() {
                             setShowPasswordModal(true);
                           }}
                           style={{ 
-                            backgroundColor: "var(--violet, #6E3FF3)", 
+                            backgroundColor: "var(--violet)", 
                             border: "none", 
-                            color: "#ffffff",
+                            color: "var(--primary-foreground)",
                             fontSize: "12px",
                             minHeight: "36px",
                             height: "36px",
@@ -402,7 +402,7 @@ function AdminProfile() {
                          setShowPasswordModal(false);
                          navigate("/forgot-password");
                        }}
-                       style={{ fontSize: "12.5px", color: "#6E3FF3", cursor: "pointer", fontWeight: "600" }}
+                       style={{ fontSize: "12.5px", color: "var(--primary)", cursor: "pointer", fontWeight: "600" }}
                      >
                        Forgot Password?
                      </span>
@@ -463,7 +463,7 @@ function AdminProfile() {
                     borderRadius: "30px",
                     border: "none",
                     background: "var(--violet)",
-                    color: "#ffffff",
+                    color: "var(--primary-foreground)",
                     fontWeight: "600",
                     fontSize: "14px",
                     cursor: "pointer",

@@ -80,7 +80,7 @@ function AdminScoreAnalytics() {
             {/* Total Quizzes */}
             <div className="form-card" style={{ margin: 0, padding: "20px", display: "flex", alignItems: "center", gap: "16px" }}>
               <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "rgba(110,63,243,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <BarChart3 size={24} color="#6E3FF3" />
+                <BarChart3 size={24} color="var(--primary)" />
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", fontWeight: "600", textTransform: "uppercase" }}>Quizzes Attempted</p>

@@ -211,7 +211,7 @@ export default function FlashcardDocxParser({ onCardsLoaded }) {
       }}
       style={{ 
         padding: "10px 14px", 
-        border: dragActive ? "2.5px dashed var(--violet, #6E3FF3)" : "1.5px solid var(--border-color)", 
+        border: dragActive ? "2.5px dashed var(--violet)" : "1.5px solid var(--border-color)", 
         borderRadius: "10px", 
         backgroundColor: dragActive ? "rgba(110, 63, 243, 0.08)" : "var(--bg-card, #1E1E1E)", 
         display: "flex", 
@@ -228,7 +228,7 @@ export default function FlashcardDocxParser({ onCardsLoaded }) {
       <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: "200px" }}>
         <div style={{ 
           width: "36px", height: "36px", borderRadius: "8px", 
-          background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", 
+          background: "rgba(110, 63, 243, 0.1)", color: "var(--primary)", 
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: "18px"
         }}>
@@ -263,7 +263,7 @@ export default function FlashcardDocxParser({ onCardsLoaded }) {
             }}
           />
           <div style={{ 
-            background: "var(--violet, #6E3FF3)", color: "white", 
+            background: "var(--violet)", color: "var(--primary-foreground)", 
             padding: "8px 16px", borderRadius: "6px", fontSize: "13px", fontWeight: "600" 
           }}>
             Browse File

@@ -1236,7 +1236,7 @@ function EditQuiz() {
                       >
                         <span>Quiz Configuration</span>
                         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                          <button onClick={(e) => { e.stopPropagation(); handleSavePreset(); }} className="dashboard-view-all-btn" style={{ padding: "4px 8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
+                          <button onClick={(e) => { e.stopPropagation(); handleSavePreset(); }} className="dashboard-view-all-btn" style={{ padding: "4px 8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px", background: "rgba(110, 63, 243, 0.1)", color: "var(--primary)", border: "1px solid rgba(110, 63, 243, 0.2)" }}>
                             💾 Save as Preset
                           </button>
                           <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "normal" }}>
@@ -1631,7 +1631,7 @@ function EditQuiz() {
                                     onClick={handleSaveOverview}
                                     style={{
                                       background: "var(--violet)",
-                                      color: "#FFF",
+                                      color: "var(--primary-foreground)",
                                       padding: "6px 14px",
                                       borderRadius: "8px",
                                       border: "none",
@@ -1795,8 +1795,8 @@ function EditQuiz() {
                           padding: "10px 14px",
                           border: "none",
                           borderRadius: "10px",
-                          backgroundColor: "var(--primary-color, #6E3FF3)",
-                          color: "#fff",
+                          backgroundColor: "var(--primary)",
+                          color: "var(--primary-foreground)",
                           fontSize: "12.5px",
                           fontWeight: "700",
                           cursor: "pointer",
@@ -2879,7 +2879,7 @@ function EditQuiz() {
                                                   fontWeight: "bold",
                                                   backgroundColor: "rgba(110, 63, 243, 0.1)",
                                                   border: "1px solid rgba(110, 63, 243, 0.2)",
-                                                  color: "var(--violet, #6E3FF3)",
+                                                  color: "var(--violet)",
                                                   cursor: "pointer"
                                                 }}
                                               >

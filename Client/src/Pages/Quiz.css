@@ -39,7 +39,7 @@
 .review-flag { background-color: #FEF3C7; color: #B45309; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 6px; }
 
 .question-box { margin-bottom: 32px; }
-.lang-hint { font-size: 11px; font-weight: 700; color: #6E3FF3; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px; }
+.lang-hint { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px; }
 .hindi-hint { margin-top: 20px; color: #0284C7; }
 .q-prompt-text { font-size: 17px; line-height: 1.6; font-weight: 500; margin: 0; color: #1a1a2e; }
 
@@ -54,8 +54,8 @@
 }
 
 .option-card:hover { background-color: #F5F2FF; border-color: #C7B9F8; }
-.selected-opt-card { background-color: #F0ECFF !important; border-color: #6E3FF3 !important; font-weight: 600; }
-.option-card input { width: 18px; height: 18px; accent-color: #6E3FF3; cursor: pointer; }
+.selected-opt-card { background-color: #F0ECFF !important; border-color: var(--primary) !important; font-weight: 600; }
+.option-card input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
 
 /* Action Buttons */
 .button-group {
@@ -71,7 +71,7 @@
 .review-btn { background-color: #F4C842; color: #1a1a2e; }
 .clear-btn  { background-color: #E2436B; color: #FFFFFF; }
 .prev-btn   { background-color: #F1EFFA; color: #2D1B69; margin-left: auto; }
-.next-btn   { background-color: #6E3FF3; color: #FFFFFF; }
+.next-btn   { background-color: var(--primary); color: #FFFFFF; }
 .submit-btn { background: linear-gradient(135deg, #10B981, #059669); color: #FFFFFF; margin-left: 12px; }
 
 
@@ -124,7 +124,7 @@ body.dark-mode .option-card {
 
 body.dark-mode .option-card:hover {
   background-color: rgba(110, 63, 243, 0.15) !important;
-  border-color: #6E3FF3 !important;
+  border-color: var(--primary) !important;
 }
 
 body.dark-mode .selected-opt-card {

@@ -388,7 +388,7 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, existingPlans = [], cur
           <button
             type="button"
             onClick={handleSave}
-            style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet)", color: "white", fontWeight: "600", cursor: "pointer" }}
+            style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet)", color: "var(--primary-foreground)", fontWeight: "600", cursor: "pointer" }}
           >
             {isEditMode ? "Update Plan" : `Create ${plans.length} Plan${plans.length > 1 ? "s" : ""}`}
           </button>

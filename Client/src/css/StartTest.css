@@ -215,7 +215,7 @@ h2 {
 
 .countdown-progress {
     fill: none;
-    stroke: #6E3FF3;
+    stroke: var(--primary);
     stroke-width: 6;
     stroke-linecap: round;
     stroke-dasharray: 276.46;

@@ -877,8 +877,8 @@ function CreateQuiz() {
                   padding: "10px 14px",
                   border: "none",
                   borderRadius: "10px",
-                  backgroundColor: "var(--primary-color, #6E3FF3)",
-                  color: "#fff",
+                  backgroundColor: "var(--primary)",
+                  color: "var(--primary-foreground)",
                   fontSize: "12.5px",
                   fontWeight: "700",
                   cursor: "pointer",
@@ -910,7 +910,7 @@ function CreateQuiz() {
               <div style={{ display: "flex", background: "var(--bg-input)", padding: "4px", borderRadius: "12px", border: "1.5px solid var(--border-input)" }}>
                 <button
                   onClick={() => navigate('/admin/create-quiz')}
-                  style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--primary-color, #6E3FF3)", color: "#fff", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                  style={{ padding: "8px 24px", borderRadius: "8px", background: "var(--primary)", color: "var(--primary-foreground)", fontWeight: "600", border: "none", cursor: "pointer", transition: "all 0.2s" }}
                 >
                   Single Quiz
                 </button>
@@ -969,7 +969,7 @@ function CreateQuiz() {
                       <button
                         onClick={(e) => { e.stopPropagation(); handleSavePreset(); }}
                         className="dashboard-view-all-btn"
-                        style={{ padding: "4px 8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px", background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", border: "1px solid rgba(110, 63, 243, 0.2)" }}
+                        style={{ padding: "4px 8px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px", background: "rgba(110, 63, 243, 0.1)", color: "var(--primary)", border: "1px solid rgba(110, 63, 243, 0.2)" }}
                       >
                         💾 Save as Preset
                       </button>
@@ -1472,8 +1472,8 @@ function CreateQuiz() {
                       padding: "10px 14px",
                       border: "none",
                       borderRadius: "10px",
-                      backgroundColor: "var(--primary-color, #6E3FF3)",
-                      color: "#fff",
+                      backgroundColor: "var(--primary)",
+                      color: "var(--primary-foreground)",
                       fontSize: "12.5px",
                       fontWeight: "700",
                       cursor: "pointer",
@@ -2218,7 +2218,7 @@ function CreateQuiz() {
                                                 fontWeight: "bold",
                                                 backgroundColor: "rgba(110, 63, 243, 0.1)",
                                                 border: "1px solid rgba(110, 63, 243, 0.2)",
-                                                color: "var(--violet, #6E3FF3)",
+                                                color: "var(--violet)",
                                                 cursor: "pointer"
                                               }}
                                             >

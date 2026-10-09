@@ -602,7 +602,7 @@ function AdminTickets() {
                 <h4 className="ticket-title">{selectedTicket.subject}</h4>
                 <div className="ticket-message-box">
                   <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "8px" }}>
-                    <div style={{ background: "rgba(110, 63, 243, 0.1)", color: "#6E3FF3", padding: "8px", borderRadius: "8px", marginTop: "4px" }}>
+                    <div style={{ background: "rgba(110, 63, 243, 0.1)", color: "var(--primary)", padding: "8px", borderRadius: "8px", marginTop: "4px" }}>
                       <User size={20} />
                     </div>
                     <div style={{ flex: 1 }}>
@@ -646,7 +646,7 @@ function AdminTickets() {
                         }}>
                           <div style={{ 
                             background: isAdmin ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", 
-                            color: isAdmin ? "#10B981" : "#6E3FF3", 
+                            color: isAdmin ? "#10B981" : "var(--primary)", 
                             padding: "8px", 
                             borderRadius: "8px", 
                             marginTop: "4px" 
@@ -661,7 +661,7 @@ function AdminTickets() {
                             border: `1px solid ${isAdmin ? "rgba(16, 185, 129, 0.2)" : "rgba(110, 63, 243, 0.1)"}`,
                             textAlign: isAdmin ? "right" : "left"
                           }}>
-                            <p style={{ fontWeight: 600, margin: "0 0 6px 0", color: isAdmin ? "#10B981" : "#6E3FF3", fontSize: "13px" }}>
+                            <p style={{ fontWeight: 600, margin: "0 0 6px 0", color: isAdmin ? "#10B981" : "var(--primary)", fontSize: "13px" }}>
                               {isAdmin ? "Admin Support" : "Student"}
                               <span style={{ fontWeight: "normal", color: "var(--text-muted)", fontSize: "11px", marginLeft: "8px" }}>
                                 {new Date(reply.createdAt).toLocaleString()}

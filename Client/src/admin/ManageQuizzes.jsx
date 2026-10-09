@@ -650,7 +650,7 @@ function ManageQuizzes() {
                         onDragLeave={() => setDragOver(false)}
                         onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleCSVFileSelected(e.dataTransfer.files[0]); }}
                         style={{
-                          border: "2px dashed " + (dragOver ? "#6E3FF3" : "var(--border-color)"),
+                          border: "2px dashed " + (dragOver ? "var(--primary)" : "var(--border-color)"),
                           borderRadius: "12px",
                           padding: "40px 20px",
                           textAlign: "center",

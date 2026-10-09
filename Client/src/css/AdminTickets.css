@@ -177,8 +177,7 @@
 }
 
 .tk-new-ticket-btn {
-  background: #6E3FF3;
-  color: #fff;
+  background: var(--primary); color: var(--primary-foreground);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -239,7 +238,7 @@
   height: 36px;
   border-radius: 50%;
   background: #F3E8FF;
-  color: #6E3FF3;
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,7 +299,7 @@
 .tk-cat-acc { background: #E0E7FF; color: #4338CA; } /* Account */
 .tk-cat-pay, .tk-cat-bil { background: #DCFCE7; color: #15803D; } /* Payments/Billing */
 .tk-cat-tec { background: #FFEDD5; color: #C2410C; } /* Technical */
-.tk-cat-gen { background: #F3E8FF; color: #6E3FF3; } /* General */
+.tk-cat-gen { background: #F3E8FF; color: var(--primary); } /* General */
 .tk-cat-exa { background: #FCE7F3; color: #BE185D; } /* Exam */
 
 /* Statuses */
@@ -346,8 +345,8 @@
 }
 
 .tk-icon-btn:hover {
-  border-color: #6E3FF3;
-  color: #6E3FF3;
+  border-color: var(--primary);
+  color: var(--primary);
   background: #F3E8FF;
 }
 
@@ -395,8 +394,8 @@
 
 .tk-page-btn.active {
   background: #F3E8FF;
-  border-color: #6E3FF3;
-  color: #6E3FF3;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .tk-page-dots {
@@ -527,7 +526,7 @@
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  color: #6E3FF3;
+  color: var(--primary);
 }
 
 .meta-item > div {
@@ -583,7 +582,7 @@
   top: -14px;
   left: 24px;
   background: #FFFFFF;
-  color: #6E3FF3;
+  color: var(--primary);
   padding: 0 8px;
 }
 

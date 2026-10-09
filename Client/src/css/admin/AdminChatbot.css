@@ -14,8 +14,7 @@
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: var(--primary);
-    color: white;
+    background: var(--primary); color: var(--primary-foreground);
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
@@ -102,7 +101,7 @@ body.dark-mode .acb-header {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6E3FF3, #4F22C5);
+  background: linear-gradient(135deg, var(--primary), #4F22C5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,8 +168,7 @@ body.dark-mode .acb-header-info h3 {
 }
 
 .acb-bubble.user {
-  background: #6E3FF3;
-  color: #fff;
+  background: var(--primary); color: var(--primary-foreground);
   border-bottom-right-radius: 4px;
 }
 
@@ -238,11 +236,11 @@ body.dark-mode .acb-input-area input {
 }
 
 .acb-input-area input:focus {
-  border-color: #6E3FF3;
+  border-color: var(--primary);
 }
 
 .acb-input-area button {
-  background: #6E3FF3 !important;
+  background: var(--primary) !important;
   color: #fff !important;
   border: none !important;
   width: 40px !important;
@@ -277,8 +275,7 @@ body.dark-mode .acb-input-area input {
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: var(--primary);
-    color: white;
+    background: var(--primary); color: var(--primary-foreground);
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;

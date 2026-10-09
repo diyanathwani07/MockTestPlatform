@@ -550,7 +550,7 @@ function Result() {
               onClick={() => navigate("/dashboard")}
               style={{
                 background: "var(--violet)",
-                color: "#ffffff",
+                color: "var(--primary-foreground)",
                 border: "none",
                 borderRadius: "12px",
                 padding: "12px 28px",
@@ -840,7 +840,7 @@ function Result() {
               onClick={() => navigate("/dashboard")}
               style={{
                 background: "var(--violet)",
-                color: "#ffffff",
+                color: "var(--primary-foreground)",
                 border: "none",
                 borderRadius: "12px",
                 padding: "14px 32px",
@@ -1005,7 +1005,7 @@ function Result() {
             <button 
               onClick={() => setShowAnswers(true)}
               style={{
-                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "#fff", fontSize: "14.5px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", textAlign: "center", whiteSpace: "nowrap"
+                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "var(--primary-foreground)", fontSize: "14.5px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", textAlign: "center", whiteSpace: "nowrap"
               }}
             >
               Review Answers
@@ -1205,7 +1205,7 @@ function Result() {
             <button 
               onClick={() => setShowAnswers(true)}
               style={{
-                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "#fff", fontSize: "14.5px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", textAlign: "center", whiteSpace: "nowrap"
+                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "var(--primary-foreground)", fontSize: "14.5px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", textAlign: "center", whiteSpace: "nowrap"
               }}
             >
               Review Answers

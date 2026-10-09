@@ -99,7 +99,7 @@ function DocxParser({ onQuestionsLoaded }) {
       onDrop={handleDrop}
       style={{ 
         padding: "10px 14px", 
-        border: dragActive ? "2.5px dashed var(--violet, #6E3FF3)" : "1.5px solid var(--border-color)", 
+        border: dragActive ? "2.5px dashed var(--violet)" : "1.5px solid var(--border-color)", 
         borderRadius: "10px", 
         backgroundColor: dragActive ? "rgba(110, 63, 243, 0.08)" : "var(--bg-input)", 
         display: "flex", 
@@ -181,8 +181,8 @@ function DocxParser({ onQuestionsLoaded }) {
             gap: "6px", 
             padding: "6px 12px", 
             borderRadius: "6px", 
-            backgroundColor: "var(--primary-color, #6E3FF3)",
-            color: "#fff",
+            backgroundColor: "var(--primary)",
+            color: "var(--primary-foreground)",
             fontSize: "12px",
             fontWeight: "700",
             transition: "all 0.2s",
