@@ -922,7 +922,7 @@ function Result() {
 
           {/* Mascot & Motivational Text */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "24px" }}>
-            <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "100px", height: "100px", marginBottom: "16px" }} />
+            <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "100px", height: "100px", marginBottom: "16px", transform: "scale(1.8)" }} />
             <h1 style={{ fontSize: "24px", fontWeight: "700", margin: "0 0 8px 0", textAlign: "center" }}>
               {Number(computedPercentage) >= 80 ? "Excellent Work!" : Number(computedPercentage) >= passThreshold ? "Good effort, keep going" : "Keep Practicing!"}
             </h1>
@@ -1071,7 +1071,7 @@ function Result() {
             <div className="rm-desktop-top">
 <div className="rm-header">
               <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px", color: "#F59E0B" }}>
-                <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "80px", height: "80px" }} />
+                <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "80px", height: "80px", transform: "scale(2.2)" }} />
               </div>
               <h2>{Number(computedPercentage) >= passThreshold ? "Quiz Completed!" : "Keep Practicing!"}</h2>
               <p>Great job, <strong>{user.name || user.fullName}</strong>! You've completed the quiz.</p>
