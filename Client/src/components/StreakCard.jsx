@@ -119,7 +119,7 @@ const StreakCard = ({ results }) => {
               {day.isFreeze ? (
                   <Snowflake size={24} color="#38BDF8" fill="#38BDF8" />
               ) : (
-                  <Flame size={24} color={day.isDone ? '#ffffff' : 'color-mix(in srgb, var(--primary) 30%, transparent)'} fill={day.isDone ? '#ffffff' : 'color-mix(in srgb, var(--primary) 30%, transparent)'} />
+                  <Flame size={24} color={day.isDone ? 'var(--primary-foreground)' : 'color-mix(in srgb, var(--primary) 30%, transparent)'} fill={day.isDone ? 'var(--primary-foreground)' : 'color-mix(in srgb, var(--primary) 30%, transparent)'} />
               )}
             </div>
             <span style={{ fontSize: '13px', fontWeight: '600', color: day.isDone ? 'var(--text-primary)' : 'var(--text-muted)' }}>
