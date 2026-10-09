@@ -408,7 +408,7 @@ return (
         </div>
           </AuthContainer>
     </div>
-    <SimpleFooter />
+    <SimpleFooter hideOnMobile={true} />
     </>
   );
 }
