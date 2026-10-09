@@ -123,7 +123,7 @@ export default function StudentOnboarding() {
 
         <div style={{ backgroundColor: "var(--bg-card)", padding: "32px 24px", borderRadius: "24px", boxShadow: "0 10px 40px rgba(0,0,0,0.05)", border: "1px solid var(--border-color)", textAlign: "center" }}>
           
-          <PrepMarkMascot state={step === 6 ? "success" : "welcome"} size={180} />
+          <PrepMarkMascot state={step === 6 ? "success" : "welcome"} size={180} scale={2} />
 
           {/* STEP 1: WELCOME */}
           {step === 1 && (
