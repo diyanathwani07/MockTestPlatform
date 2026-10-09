@@ -389,7 +389,7 @@ function ExamSeriesManager() {
                 
                 <button onClick={handleOpenCreate} style={{ 
                   display: "flex", alignItems: "center", gap: "8px",
-                  backgroundColor: "var(--primary)", color: "#fff",
+                  backgroundColor: "var(--primary)", color: "var(--primary-foreground)",
                   border: "none", borderRadius: "10px", padding: "0 20px", height: "40px",
                   fontWeight: "600", fontSize: "14px", cursor: "pointer", boxShadow: "0 4px 12px rgba(110,63,243,0.2)"
                 }}>
@@ -620,7 +620,7 @@ function ExamSeriesManager() {
                           <button
                             type="button"
                             onClick={handleAddStructure}
-                            style={{ padding: "8px 14px", borderRadius: "8px", background: "var(--violet, #6E3FF3)", color: "#fff", border: "none", cursor: "pointer", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
+                            style={{ padding: "8px 14px", borderRadius: "8px", background: "var(--violet, #6E3FF3)", color: 'var(--primary-foreground)', border: "none", cursor: "pointer", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
                           >
                             <Plus size={16} /> Add Structure
                           </button>
@@ -870,7 +870,7 @@ function ExamSeriesManager() {
                       
                       <button style={{ 
                         display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "8px",
-                        background: "var(--violet)", color: "white", border: "none", borderRadius: "10px", padding: "10px", fontWeight: "600", fontSize: "13.5px", cursor: "pointer"
+                        background: "var(--violet)", color: "var(--primary-foreground)", border: "none", borderRadius: "10px", padding: "10px", fontWeight: "600", fontSize: "13.5px", cursor: "pointer"
                       }}>
                         View Contents <ChevronRight size={14} />
                       </button>

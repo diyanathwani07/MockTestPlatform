@@ -393,7 +393,7 @@ function PracticeQuizzes() {
                     fontWeight: "600",
                     cursor: "pointer",
                     backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
-                    color: viewMode === "active" ? "#ffffff" : "var(--text-secondary)",
+                    color: viewMode === "active" ? "var(--primary-foreground)" : "var(--text-secondary)",
                   }}
                 >
                   Active
@@ -761,7 +761,7 @@ function PracticeQuizzes() {
                       {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
                         const isSelected = hr === scheduledHour;
                         return (
-                          <div key={hr} onClick={() => { setScheduledHour(hr); updateScheduledTime(hr, scheduledMinute, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                          <div key={hr} onClick={() => { setScheduledHour(hr); updateScheduledTime(hr, scheduledMinute, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "var(--primary-foreground)" : "var(--text-primary)", transition: "all 0.1s ease" }}>
                             {hr}
                           </div>
                         );
@@ -775,7 +775,7 @@ function PracticeQuizzes() {
                       {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
                         const isSelected = min === scheduledMinute;
                         return (
-                          <div key={min} onClick={() => { setScheduledMinute(min); updateScheduledTime(scheduledHour, min, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                          <div key={min} onClick={() => { setScheduledMinute(min); updateScheduledTime(scheduledHour, min, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "var(--primary-foreground)" : "var(--text-primary)", transition: "all 0.1s ease" }}>
                             {min}
                           </div>
                         );
@@ -789,7 +789,7 @@ function PracticeQuizzes() {
                       {["AM", "PM"].map(p => {
                         const isSelected = p === scheduledPeriod;
                         return (
-                          <div key={p} onClick={() => { setScheduledPeriod(p); updateScheduledTime(scheduledHour, scheduledMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
+                          <div key={p} onClick={() => { setScheduledPeriod(p); updateScheduledTime(scheduledHour, scheduledMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: viewMode === "active" ? "var(--primary-foreground)" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
                             {p}
                           </div>
                         );
@@ -814,7 +814,7 @@ function PracticeQuizzes() {
               <button 
                 onClick={handleSaveSchedule}
                 disabled={savingSchedule}
-                style={{ flex: 1, padding: "10px", borderRadius: "10px", border: "none", background: "var(--violet)", color: "#fff", cursor: savingSchedule ? "not-allowed" : "pointer", fontWeight: "600", fontSize: "13px", opacity: savingSchedule ? 0.7 : 1 }}
+                style={{ flex: 1, padding: "10px", borderRadius: "10px", border: "none", background: "var(--violet)", color: "var(--primary-foreground)", cursor: savingSchedule ? "not-allowed" : "pointer", fontWeight: "600", fontSize: "13px", opacity: savingSchedule ? 0.7 : 1 }}
               >
                 {savingSchedule ? "Saving..." : "Save Schedule"}
               </button>

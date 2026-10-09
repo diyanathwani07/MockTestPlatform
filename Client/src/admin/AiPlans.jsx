@@ -371,7 +371,7 @@ function AdminAiPlans() {
                 borderRadius: "8px",
                 border: "none",
                 background: "var(--violet, #6E3FF3)",
-                color: "#ffffff",
+                color: 'var(--primary-foreground)',
                 fontWeight: "600",
                 fontSize: "14px",
                 cursor: "pointer",
@@ -716,7 +716,7 @@ function AdminAiPlans() {
                         type="button" 
                         onClick={handleQuickAddExam}
                         disabled={addingExam || !newExamTitle.trim()}
-                        style={{ padding: "8px 14px", background: "var(--violet, #6E3FF3)", color: "white", border: "none", borderRadius: "6px", fontSize: "12.5px", fontWeight: "600", cursor: addingExam || !newExamTitle.trim() ? "not-allowed" : "pointer", opacity: addingExam || !newExamTitle.trim() ? 0.6 : 1 }}
+                        style={{ padding: "8px 14px", background: "var(--violet, #6E3FF3)", color: 'var(--primary-foreground)', border: "none", borderRadius: "6px", fontSize: "12.5px", fontWeight: "600", cursor: addingExam || !newExamTitle.trim() ? "not-allowed" : "pointer", opacity: addingExam || !newExamTitle.trim() ? 0.6 : 1 }}
                       >
                         {addingExam ? "Adding..." : "Add"}
                       </button>
@@ -772,7 +772,7 @@ function AdminAiPlans() {
                   <button 
                     type="submit" 
                     disabled={submitting}
-                    style={{ flex: "none", width: "auto", padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet, #6E3FF3)", color: "#fff", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                    style={{ flex: "none", width: "auto", padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet, #6E3FF3)", color: 'var(--primary-foreground)', fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
                   >
                     {submitting ? "Saving..." : "Save Plan"}
                   </button>
@@ -804,7 +804,7 @@ function AdminAiPlans() {
                       left: "50%",
                       transform: "translateX(-50%)",
                       background: "var(--violet, #6E3FF3)",
-                      color: "#fff",
+                      color: 'var(--primary-foreground)',
                       fontSize: "11px",
                       fontWeight: "800",
                       padding: "4px 12px",
@@ -859,7 +859,7 @@ function AdminAiPlans() {
                       borderRadius: "8px",
                       border: "none",
                       background: "var(--violet, #6E3FF3)",
-                      color: "#fff",
+                      color: 'var(--primary-foreground)',
                       fontWeight: "700",
                       fontSize: "14px",
                       opacity: 0.8

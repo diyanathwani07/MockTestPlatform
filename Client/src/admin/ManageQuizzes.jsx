@@ -439,7 +439,7 @@ function ManageQuizzes() {
                       fontWeight: "600",
                       cursor: "pointer",
                       backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
-                      color: viewMode === "active" ? "#ffffff" : "var(--text-secondary)",
+                      color: viewMode === "active" ? "var(--primary-foreground)" : "var(--text-secondary)",
                     }}
                   >
                     Active
@@ -491,7 +491,7 @@ function ManageQuizzes() {
                     fontSize: "12.5px",
                     fontWeight: "700",
                     backgroundColor: "var(--violet)",
-                    color: "#ffffff",
+                    color: "var(--primary-foreground)",
                     border: "none",
                     cursor: "pointer",
                     display: "inline-flex",
@@ -851,7 +851,7 @@ function ManageQuizzes() {
                                 padding: "6px 12px",
                                 borderRadius: "6px",
                                 backgroundColor: "var(--violet)",
-                                color: "#fff",
+                                color: "var(--primary-foreground)",
                                 border: "none",
                                 fontSize: "12px",
                                 fontWeight: "700",
@@ -892,7 +892,7 @@ function ManageQuizzes() {
                       className="btn-primary"
                       disabled={csvImporting || csvParsed.exams.filter(e => e.errors.length === 0).length === 0}
                       onClick={handleCSVImportSubmit}
-                      style={{ padding: "10px 20px", borderRadius: "10px", backgroundColor: "var(--violet)", color: "#fff", border: "none", minHeight: "38px", cursor: "pointer" }}
+                      style={{ padding: "10px 20px", borderRadius: "10px", backgroundColor: "var(--violet)", color: "var(--primary-foreground)", border: "none", minHeight: "38px", cursor: "pointer" }}
                     >
                       {csvImporting ? "Importing..." : "Confirm Import"}
                     </button>
@@ -1439,7 +1439,7 @@ function ManageQuizzes() {
                                 padding: "8px 16px",
                                 borderRadius: "8px",
                                 backgroundColor: "var(--violet)",
-                                color: "#fff",
+                                color: "var(--primary-foreground)",
                                 border: "none",
                                 fontWeight: "700",
                                 fontSize: "13.0px",
@@ -1540,7 +1540,7 @@ function ManageQuizzes() {
                             padding: "8px 14px",
                             borderRadius: "8px",
                             backgroundColor: "var(--violet)",
-                            color: "#fff",
+                            color: "var(--primary-foreground)",
                             border: "none",
                             fontSize: "12px",
                             fontWeight: "700",
