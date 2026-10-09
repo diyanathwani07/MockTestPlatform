@@ -178,7 +178,7 @@ html[class*="theme-"] .theme-toggle-btn {
   --card-foreground: oklch(.31 .05 219.65);
   --popover: oklch(.93 .03 92.4);
   --popover-foreground: oklch(.31 .05 219.65);
-  --primary: oklch(.59 .2 355.89);
+  --primary: oklch(.54 .14 350);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(.64 .1 187.38);
   --secondary-foreground: oklch(1 0 0);
@@ -190,7 +190,7 @@ html[class*="theme-"] .theme-toggle-btn {
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(.65 .02 205.26);
   --input: oklch(.65 .02 205.26);
-  --ring: oklch(.59 .2 355.89);
+  --ring: oklch(.54 .14 350);
 }
 .theme-retro-arcade.dark, .theme-retro-arcade :is(.dark *) {
   --background: oklch(.27 .05 219.82);
@@ -199,7 +199,7 @@ html[class*="theme-"] .theme-toggle-btn {
   --card-foreground: oklch(.7 .02 196.79);
   --popover: oklch(.31 .05 219.65);
   --popover-foreground: oklch(.7 .02 196.79);
-  --primary: oklch(.59 .2 355.89);
+  --primary: oklch(.54 .14 350);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(.64 .1 187.38);
   --secondary-foreground: oklch(1 0 0);
@@ -211,7 +211,7 @@ html[class*="theme-"] .theme-toggle-btn {
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(.52 .03 219.14);
   --input: oklch(.52 .03 219.14);
-  --ring: oklch(.59 .2 355.89);
+  --ring: oklch(.54 .14 350);
 }
 
 /* ============ Vintage Paper ============ */

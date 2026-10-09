@@ -36,9 +36,20 @@ export function ThemeProvider({ children }) {
     const classesToRemove = Array.from(root.classList).filter(c => c.startsWith("theme-") || c === "dark");
     classesToRemove.forEach(c => root.classList.remove(c));
     
+    // Determine the effective theme based on the required mapping matrix
+    let effectiveTheme = theme;
+    
+    if (theme === "original") {
+      effectiveTheme = mode === "dark" ? "vercel" : "retro-arcade";
+    } else if (theme === "retro-arcade" && mode === "light") {
+      effectiveTheme = "original"; // Use old Original light palette
+    } else if (theme === "vercel" && mode === "dark") {
+      effectiveTheme = "original"; // Use old Original dark palette
+    }
+
     // Add new theme class (only if NOT original)
-    if (theme && theme !== "original") {
-      root.classList.add(`theme-${theme}`);
+    if (effectiveTheme && effectiveTheme !== "original") {
+      root.classList.add(`theme-${effectiveTheme}`);
     }
     
     // Add dark class if dark mode
