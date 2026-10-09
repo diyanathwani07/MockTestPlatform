@@ -1,4 +1,4 @@
-import { unregisterDeviceToken } from '../utils/pushNotifications';
+import { initPushNotifications, unregisterDeviceToken } from '../utils/pushNotifications';
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
@@ -31,6 +31,14 @@ export function AuthProvider({ children }) {
     setRole(data.user.role);
     setPermissions(data.user.permissions || []);
     setUser(data.user);
+
+    // Initialize or re-register push notifications now that JWT is available
+    // Run asynchronously to avoid blocking the UI login flow
+    setTimeout(() => {
+      initPushNotifications().catch(err => {
+        console.error("[AuthContext] Failed to initialize push notifications after login:", err);
+      });
+    }, 100);
   };
 
   const logout = async () => {
