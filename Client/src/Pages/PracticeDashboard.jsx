@@ -100,7 +100,11 @@ function PracticeDashboard() {
           ) : (
             <div className="practice-grid">
               {filteredQuizzes.map((quiz, index) => {
-                const color = subjectColors[index % subjectColors.length];
+                const color = {
+                  bg: 'color-mix(in srgb, var(--primary) 15%, transparent)',
+                  text: 'var(--primary)',
+                  dot: 'var(--primary)'
+                };
                 const questionCount = quiz.questionCount || 
                   (quiz.isModular && quiz.sections
                     ? quiz.sections.reduce((sum, sec) => sum + (sec.sectionId?.questions?.length || 0), 0)

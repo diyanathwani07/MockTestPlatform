@@ -141,7 +141,7 @@ function SubjectResults() {
                   { bg: "#FCE7F3", text: "#9D174D", dot: "#DB2777" },
                   { bg: "#F0FDF4", text: "#14532D", dot: "#15803D" },
                 ];
-                const color = subjectColors[index % subjectColors.length];
+                const color = { bg: 'color-mix(in srgb, var(--primary) 15%, transparent)', text: 'var(--primary)', dot: 'var(--primary)' };
 
                 return (
                   <div 
