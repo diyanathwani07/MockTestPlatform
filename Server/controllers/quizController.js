@@ -23,7 +23,8 @@ const createQuiz = async (req, res) => {
     if (bodyData.examName) {
       const ExamSeries = require("../models/ExamSeries");
       const slug = bodyData.examName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      let series = await ExamSeries.findOne({ $or: [{ slug }, { title: { $regex: new RegExp(`^${bodyData.examName}$`, "i") } }] });
+      const safeName = bodyData.examName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      let series = await ExamSeries.findOne({ $or: [{ slug }, { title: { $regex: new RegExp(`^${safeName}$`, "i") } }] });
       if (!series) {
         series = await ExamSeries.create({
           title: bodyData.examName,
@@ -207,7 +208,8 @@ const updateQuiz = async (req, res) => {
     if (updateData.examName) {
       const ExamSeries = require("../models/ExamSeries");
       const slug = updateData.examName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      let series = await ExamSeries.findOne({ $or: [{ slug }, { title: { $regex: new RegExp(`^${updateData.examName}$`, "i") } }] });
+      const safeName = updateData.examName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      let series = await ExamSeries.findOne({ $or: [{ slug }, { title: { $regex: new RegExp(`^${safeName}$`, "i") } }] });
       if (!series) {
         series = await ExamSeries.create({
           title: updateData.examName,
@@ -231,6 +233,7 @@ const updateQuiz = async (req, res) => {
           isPublished: true,
         });
       }
+      updateData.examSeriesId = ungroupedSeries._id;
     }
 
     const isBpsc = (updateData.examName && updateData.examName.toUpperCase().includes("BPSC")) || (updateData.title && updateData.title.toUpperCase().includes("BPSC")) || updateData.markingPattern === "bpsc";
@@ -372,7 +375,7 @@ const updateQuiz = async (req, res) => {
     res.json(quiz);
   } catch (error) {
     console.error("Update Quiz Error:", error);
-    res.status(500).json({ message: "Failed to update quiz.", error: error.message });
+    res.status(500).json({ message: "Error: " + error.message, error: error.message, stack: error.stack });
   }
 };
 
