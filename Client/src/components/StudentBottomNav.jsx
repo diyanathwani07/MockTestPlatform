@@ -199,7 +199,7 @@ const StudentBottomNav = () => {
           </svg>
 
           {/* Exam Icon */}
-          <ClipboardList size={22} className="text-white relative z-10 -top-[2px]" strokeWidth={2.5} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+          <ClipboardList size={22} className="relative z-10 -top-[2px]" strokeWidth={2.5} style={{ color: 'var(--primary-foreground)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
         </NavLink>
       </div>
 

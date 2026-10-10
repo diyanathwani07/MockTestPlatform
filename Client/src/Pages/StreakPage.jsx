@@ -201,7 +201,7 @@ function StreakPage() {
                   background: 'var(--primary)', display: 'flex', alignItems: 'center', 
                   justifyContent: 'center', boxShadow: '0 4px 10px color-mix(in srgb, var(--primary) 30%, transparent)' 
                 }}>
-                  <Flame size={20} color="white" fill="white" />
+                  <Flame size={20} color="var(--primary-foreground)" fill="var(--primary-foreground)" />
                 </div>
               ) : dayObj.isFreeze ? (
                 <div style={{ 
@@ -398,3 +398,4 @@ function StreakPage() {
 }
 
 export default StreakPage;
+
