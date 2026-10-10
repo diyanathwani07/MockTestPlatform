@@ -216,16 +216,16 @@ function parseQuestionsFromText(text) {
   const sections = [];
 
   // Split by section markers (e.g., "Section: Aptitude", "Section 1")
-  const sectionChunks = text.split(/\n(?=(?:(?:Section|Part|Subject)\s*[:\-]\s*|(?:Section|Part|Subject)\s+[A-Za-z0-9]+\s*\n|\d+\)\s+[^=:\n]{2,80}\n))/i).filter(Boolean);
+    const sectionChunks = text.split(/\n(?=(?:(?:Section|Part)\s*[:\-]\s*|\bSubject\s*:\s*|(?:Section|Part)\s+(?:I|II|III|IV|V|VI|VII|VIII|IX|X|[1-9]|10)\s*\n|\d+\)\s+(?:Child Development|Pedagogy|Hindi|English|Mathematics|Environmental Studies|Science|Social Science|Physics|Chemistry|Biology|History|Geography|Polity|Economics|Reasoning|Aptitude|General Knowledge|GK|General Awareness|General Studies)\b))/i).filter(Boolean);
 
   for (const chunk of sectionChunks) {
     let sectionTitle = "Default";
     let chunkText = chunk.trim();
 
-    const sectionMatch = chunkText.match(/^(?:(?:Section|Part|Subject)\s*[:\-]?\s*|\d+\)\s*)(.+)/i);
+    const sectionMatch = chunkText.match(/^(?:(?:Section|Part)\s*[:\-]?\s*|\bSubject\s*:\s*|\d+\)\s*)(.+)/i);
     if (sectionMatch) {
       sectionTitle = sectionMatch[1].trim();
-      chunkText = chunkText.replace(/^(?:(?:Section|Part|Subject)\s*[:\-]?\s*|\d+\)\s*)(.+)/i, "").trim();
+      chunkText = chunkText.replace(/^(?:(?:Section|Part)\s*[:\-]?\s*|\bSubject\s*:\s*|\d+\)\s*)(.+)/i, "").trim();
     }
 
     const questions = [];
