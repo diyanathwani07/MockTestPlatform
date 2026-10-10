@@ -11,6 +11,7 @@ console.log("Cloud Project:", process.env.GOOGLE_CLOUD_PROJECT);
 console.log("==========================");
 
 const quizRoutes = require("./routes/quizRoutes");
+const deviceRoutes = require("./routes/deviceRoutes");
 const authRoutes = require("./routes/authRoutes");
 const adminResultRoutes = require("./routes/adminResultRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
@@ -135,6 +136,7 @@ app.get("/", (req, res) => {
 });
 
 
+app.use("/api/devices", deviceRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/results", resultRoutes);
