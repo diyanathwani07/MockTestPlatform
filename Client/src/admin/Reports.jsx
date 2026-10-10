@@ -6,6 +6,34 @@ import { BarChart3, TrendingUp, CheckSquare, XSquare, User, FileText, BookOpen, 
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
+
+const TextExpander = ({ text, maxLength = 30 }) => {
+  const [expanded, setExpanded] = React.useState(false);
+  if (!text) return <span>-</span>;
+  if (text.length <= maxLength) return <span style={{ whiteSpace: "nowrap" }}>{text}</span>;
+  
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', maxWidth: "250px" }}>
+      <span style={{ 
+        whiteSpace: expanded ? 'normal' : 'nowrap', 
+        overflow: 'hidden', 
+        textOverflow: 'ellipsis', 
+        wordBreak: 'break-word',
+        display: 'block',
+        width: '100%'
+      }}>
+        {expanded ? text : `${text.substring(0, maxLength)}...`}
+      </span>
+      <button 
+        onClick={() => setExpanded(!expanded)} 
+        style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '11px', fontWeight: 'bold', padding: 0, marginTop: '4px', cursor: 'pointer' }}
+      >
+        {expanded ? "Show Less" : "Show More"}
+      </button>
+    </div>
+  );
+};
+
 function Reports() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -175,8 +203,8 @@ function Reports() {
                         </div>
                       </td>
 
-                      <td style={{ fontWeight: 600, color: "var(--text-primary)", whiteSpace: "nowrap" }}>{r.quizId?.title || r.quizTitle || "Untitled Quiz"}</td>
-                      <td style={{ whiteSpace: "nowrap" }}>{r.quizId?.subject || r.subject || "General"}</td>
+                      <td style={{ fontWeight: 600, color: "var(--text-primary)" }}><TextExpander text={r.quizId?.title || r.quizTitle || "Untitled Quiz"} maxLength={35} /></td>
+                      <td><TextExpander text={r.quizId?.subject || r.subject || "General"} maxLength={35} /></td>
                       <td style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{r.score} / {r.total}</td>
                       <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{Number(r.percentage || 0).toFixed(1)}%</td>
                       

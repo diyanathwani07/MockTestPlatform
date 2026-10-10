@@ -176,7 +176,7 @@ input.force-quiz-input:focus {
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
-  border-color: var(--violet);
+  border-color: var(--primary);
   background-color: var(--bg-card);
   box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.12);
 }
@@ -385,7 +385,7 @@ input.force-quiz-input:focus {
   padding: 12px;
   border: 2px dashed var(--border-input);
   border-radius: 10px;
-  color: var(--violet);
+  color: var(--primary);
   font-size: 13px;
   font-weight: 600;
   background: transparent;
@@ -397,7 +397,7 @@ input.force-quiz-input:focus {
 }
 
 .add-question-btn:hover {
-  border-color: var(--violet);
+  border-color: var(--primary);
   background-color: var(--option-hover);
 }
 
@@ -447,7 +447,7 @@ input.force-quiz-input:focus {
 .btn-save-draft {
   background: var(--bg-card);
   border: 1.5px solid var(--border-input);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 13.5px;
   font-weight: 600;
   padding: 10px 20px;

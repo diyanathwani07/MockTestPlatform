@@ -33,7 +33,7 @@ function AdminDashboard() {
   const [explorerPage, setExplorerPage] = useState(1);
   const [explorerPath, setExplorerPath] = useState([]);
   const [activityPage, setActivityPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 4;
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   
@@ -953,7 +953,7 @@ function AdminDashboard() {
                 {/* Attempts Overview Donut & Status Cards */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                   {/* Quiz Status Mini Grid */}
-                  <div className="form-card" style={{ margin: 0, padding: "20px" }}>
+                  <div className="form-card activity-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column" }}>
                     <h3 className="dashboard-card-title" style={{ marginBottom: "16px" }}>Quiz Status</h3>
                     <div className="dashboard-status-grid">
                       <div style={{ padding: "10px 14px", background: "var(--bg-input)", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
@@ -1025,9 +1025,9 @@ function AdminDashboard() {
                     </h3>
                     
                     <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&lt;</button>
-                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{explorerPage}</button>
-                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&gt;</button>
+                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&lt;</button>
+                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "#fff" }}>{explorerPage}</button>
+                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&gt;</button>
                     </div>
                   </div>
 
@@ -1098,12 +1098,12 @@ function AdminDashboard() {
                   <div className="dashboard-card-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
                     <h3 className="dashboard-card-title" style={{ margin: 0 }}>Recent Activity</h3>
                     <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&lt;</button>
-                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{activityPage}</button>
-                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>&gt;</button>
+                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&lt;</button>
+                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "#fff" }}>{activityPage}</button>
+                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&gt;</button>
                     </div>
                   </div>
-                  <div className="recent-activities-list">
+                  <div className="recent-activities-list" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px", minHeight: "300px" }}>
                     {currentActivities.map((act, i) => {
                       const renderIcon = (emoji) => {
                         switch (emoji) {
