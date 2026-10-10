@@ -216,16 +216,16 @@ function parseQuestionsFromText(text) {
   const sections = [];
 
   // Split by section markers (e.g., "Section: Aptitude", "Section 1")
-    const sectionChunks = text.split(/\n(?=(?:(?:Section|Part)\s*[:\-]\s*|\bSubject\s*:\s*|(?:\d+\)|(?:Section|Part)\s+(?:[IVX]+|\d+)?)\s+(?:Child Development|Pedagogy|Hindi|English|Mathematics|Environmental Studies|Science|Social Science|Physics|Chemistry|Biology|History|Geography|Polity|Economics|Reasoning|Aptitude|General Knowledge|GK|General Awareness|General Studies)\b))/i).filter(Boolean);
+    const sectionChunks = text.split(new RegExp("\\n(?=(?:(?:Section|Part)\\s*[:\\-]?\\s*(?:[IVX]+|\\d+)?\\s*|\\bSubject\\s*:\\s*|(?:\\d+|[IVX]+)[\\)\\\.]\\s*)(?:Child Development|Pedagogy|Hindi|English|Sanskrit|Urdu|Language|Mathematics|Maths|Math|Environmental Studies|EVS|Science|Social Science|Social Studies|Physics|Chemistry|Biology|History|Geography|Polity|Economics|Reasoning|Aptitude|General Knowledge|GK|General Awareness|General Studies|\u092C\u093E\u0932 \u0935\u093F\u0915\u093E\u0938|\u0939\u093F\u0928\u094D\u0926\u0940|\u0905\u0902\u0917\u094D\u0930\u0947\u091C\u0940|\u0938\u0902\u0938\u094D\u0915\u0943\u0924|\u0917\u0923\u093F\u0924|\u0935\u093F\u091C\u094D\u091E\u093E\u0928|\u0938\u093E\u092E\u093E\u091C\u093F\u0915|\u092A\u0930\u094D\u092F\u093E\u0935\u0930\u0923)(?:\\s|$|/|\\-|\\.|,|&))", "i")).filter(Boolean);
 
   for (const chunk of sectionChunks) {
     let sectionTitle = "Default";
     let chunkText = chunk.trim();
 
-    const sectionMatch = chunkText.match(/^(?:(?:Section|Part)\s*[:\-]?\s*(?:[IVX]+|\d+)?\s*|\bSubject\s*:\s*|\d+\)\s*)(.+)/i);
+    const sectionMatch = chunkText.match(new RegExp(`^(?:(?:Section|Part)\\s*[:\\-]?\\s*(?:[IVX]+|\\d+)?\\s*|\\bSubject\\s*:\\s*|(?:\\d+|[IVX]+)[\\)\\.]\\s*)(.+)`, 'i'));
     if (sectionMatch) {
       sectionTitle = sectionMatch[1].trim();
-      chunkText = chunkText.replace(/^(?:(?:Section|Part)\s*[:\-]?\s*(?:[IVX]+|\d+)?\s*|\bSubject\s*:\s*|\d+\)\s*)(.+)/i, "").trim();
+      chunkText = chunkText.replace(new RegExp(`^(?:(?:Section|Part)\\s*[:\\-]?\\s*(?:[IVX]+|\\d+)?\\s*|\\bSubject\\s*:\\s*|(?:\\d+|[IVX]+)[\\)\\.]\\s*)(.+)`, 'i'), "").trim();
     }
 
     const questions = [];
