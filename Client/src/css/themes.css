@@ -1,5 +1,6 @@
 /* ============ Centralized Variable Bridge Mapping ============ */
 :root,
+body.dark-mode,
 html[class*="theme-"],
 html[class*="theme-"] body,
 html[class*="theme-"] body.dark-mode,

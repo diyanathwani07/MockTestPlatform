@@ -40,7 +40,7 @@
 
   /* Brand */
   --violet:         var(--primary);
-  --violet-dark:    #2D1B69;
+  --violet-dark:    var(--primary-dark, var(--primary));
   --gold:           #F4C842;
   --green:          #1aa971;
   --red:            #e2436b;
@@ -83,19 +83,19 @@
 
 [data-theme="dark"], body.dark-mode {
   /* Bottom Nav Variables */
-  --bottom-nav-start: #1A1A2A;
-  --bottom-nav-end: #0D0D16;
+  --bottom-nav-start: var(--bg-card);
+  --bottom-nav-end: var(--bg-page);
   --bottom-nav-text: #A7A3BD;
 
   /* Backgrounds */
-  --bg-page:        #0D0D16;
-  --bg-card:        #1A1A2A;
-  --bg-panel:       #1A1A2A;
+  --bg-page:        var(--bg-page);
+  --bg-card:        var(--bg-card);
+  --bg-panel:       var(--bg-card);
   --bg-input:       #171727;
   --bg-header:      #171727;
-  --bg-sidebar:     #11111C;
-  --hero-bg:        linear-gradient(135deg, #1E1B4B 0%, #2D1B69 100%);
-  --icon-bg:        #4F22C5;
+  --bg-sidebar:     var(--bg-sidebar);
+  --hero-bg:        linear-gradient(135deg, var(--bg-card) 0%, var(--primary-dark, var(--primary)) 100%);
+  --icon-bg:        var(--primary);
   --icon-color:     #ffffff;
 
   /* Text */
@@ -104,13 +104,13 @@
   --text-muted:     #6b6880;
 
   /* Sidebar Links */
-  --sidebar-active-bg: #6D35D9;
+  --sidebar-active-bg: var(--primary);
   --sidebar-active-text: #ffffff;
   --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
 
   /* Borders */
-  --border-color:   #292941;
-  --border-input:   #292941;
+  --border-color:   var(--border-color);
+  --border-input:   var(--border-color);
 
   /* Cards */
   --card-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
@@ -398,8 +398,8 @@ body.dark-mode .pill-thumb-slider {
 }
 
 body.dark-mode .theme-pill-switch {
-  background-color: #131428;
-  border-color: #2D1B69;
+  background-color: var(--bg-card);
+  border-color: var(--primary-dark, var(--primary));
 }
 
 /* ── UNIFIED PROFESSIONAL SEARCH BARS ── */
@@ -435,7 +435,7 @@ body.dark-mode .theme-pill-switch {
 .pill-search-container:focus-within,
 .me-search-wrapper:focus-within {
   border-color: var(--violet) !important;
-  box-shadow: 0 0 0 2px rgba(110, 63, 243, 0.15) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 0.15) !important;
 }
 
 /* Ensure inner inputs have no borders, backgrounds, or independent padding */
@@ -460,10 +460,10 @@ body.dark-mode .theme-pill-switch {
 
 /* ── LEADERBOARD DARK MODE PILLARS ── */
 body.dark-mode .lb-pillar {
-  background: linear-gradient(180deg, rgba(110, 63, 243, 0.15) 0%, rgba(110, 63, 243, 0) 100%) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 0.15) 0%, color-mix(in srgb, var(--primary) 0) 100%) !important;
 }
 body.dark-mode .lb-spot-1 .lb-pillar {
-  background: linear-gradient(180deg, rgba(110, 63, 243, 0.25) 0%, rgba(110, 63, 243, 0) 100%) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 0.25) 0%, color-mix(in srgb, var(--primary) 0) 100%) !important;
 }
 /* ============================================
    GLOBAL DESIGN SYSTEM POLISH (DARK MODE)
@@ -491,7 +491,7 @@ body.dark-mode .desktop-legal-card,
 body.dark-mode .mp-profile-summary,
 body.dark-mode .result-summary,
 body.dark-mode .result-details {
-  border: 1px solid var(--border-color, #292941) !important;
+  border: 1px solid var(--border-color, var(--border-color)) !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
@@ -504,7 +504,7 @@ body.dark-mode .custom-quiz-item:hover,
 body.dark-mode .mp-menu-item:hover,
 body.dark-mode .option-card:hover {
   box-shadow: none !important;
-  border-color: #6D35D9 !important;
+  border-color: var(--primary) !important;
 }
 
 /* 2. Global Badges as Professional Metadata */
@@ -515,9 +515,9 @@ body.dark-mode .question-badge,
 body.dark-mode .practice-subject-badge,
 body.dark-mode .badge,
 body.dark-mode .mp-badge-student {
-  background: #232338 !important;
+  background: var(--bg-input) !important;
   color: #C8C3E8 !important;
-  border: 1px solid #292941 !important;
+  border: 1px solid var(--border-color) !important;
   box-shadow: none !important;
   font-weight: 600 !important;
   font-size: 11px !important;
@@ -551,14 +551,14 @@ body.dark-mode .role-admin {
 body.dark-mode .btn-primary:hover,
 body.dark-mode .practice-start-btn:hover,
 body.dark-mode .manage-command-btn.primary:hover {
-  background: #6D35D9 !important;
+  background: var(--primary) !important;
   box-shadow: none !important;
 }
 
 /* 4. Subdued active sidebar link */
 body.dark-mode .sidebar-link.active,
 body.dark-mode .admin-sidebar-nav a.active {
-  background: #6D35D9 !important;
+  background: var(--primary) !important;
   color: #FFFFFF !important;
   box-shadow: none !important;
   border-color: transparent !important;

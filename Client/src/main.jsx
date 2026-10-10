@@ -8,6 +8,7 @@ import { ConfirmProvider } from "./context/ConfirmContext";
 import { SidebarProvider } from "./context/SidebarContext";
 import { ExamProvider } from "./context/ExamContext";
 import ChangeExamModal from "./components/ChangeExamModal";
+import "./index.css";
 import "./css/theme.css";
 import "./css/themes.css";
 import "katex/dist/katex.min.css";
