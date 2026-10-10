@@ -142,37 +142,31 @@ function StreakPage() {
         <div className="sd-content" style={{ paddingTop: "20px" }}>
 
       {/* Hero Banner */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 60%, black) 100%)',
-        borderRadius: '24px',
-        padding: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'relative',
-        overflow: 'hidden',
-        marginBottom: '24px',
-        boxShadow: '0 10px 25px rgba(249, 115, 22, 0.2)'
-      }}>
+      <div 
+        className="relative flex items-center justify-between overflow-hidden mb-6 p-5 sm:p-6 shadow-lg"
+        style={{ 
+          background: 'linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 60%, black) 100%)',
+          borderRadius: '24px',
+          boxShadow: '0 10px 25px rgba(249, 115, 22, 0.2)'
+        }}
+      >
         {/* Background Decorative Circles */}
         <div style={{ position: 'absolute', right: '-20px', top: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
         <div style={{ position: 'absolute', right: '40px', bottom: '-40px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
 
         {/* Mascot */}
-        <div style={{ width: '120px', height: '120px', zIndex: 1 }}>
+        <div className="w-[80px] h-[80px] sm:w-[120px] sm:h-[120px] shrink-0 z-10">
           <DotLottieReact src="/mascot.lottie" loop autoplay />
         </div>
 
         {/* Streak Info */}
-        <div style={{ zIndex: 1, textAlign: 'right', flex: 1 }}>
-          <h1 style={{ color: 'white', fontSize: '36px', margin: '0 0 8px 0', fontWeight: '800' }}>{stats.current} days</h1>
-          <div style={{ 
-            display: 'inline-flex', alignItems: 'center', gap: '6px', 
-            background: 'rgba(255,255,255,0.2)', padding: '6px 12px', 
-            borderRadius: '20px', backdropFilter: 'blur(4px)' 
-          }}>
-            <Flame size={14} color="white" fill="white" />
-            <span style={{ color: 'white', fontSize: '13px', fontWeight: '500' }}>
+        <div className="z-10 text-right flex-1 ml-3 sm:ml-4 flex flex-col items-end justify-center">
+          <h1 className="text-white text-2xl sm:text-4xl font-extrabold mb-2 sm:mb-3 leading-none">
+            {stats.current} days
+          </h1>
+          <div className="inline-flex items-center gap-1.5 bg-white/20 px-3 py-1.5 sm:py-2 rounded-2xl backdrop-blur-sm max-w-full">
+            <Flame size={16} color="white" fill="white" className="shrink-0" />
+            <span className="text-white text-[11px] sm:text-sm font-medium leading-tight text-left">
               {stats.current > 0 ? "You're on fire! Keep it going!" : "Start your streak today!"}
             </span>
           </div>
@@ -398,4 +392,6 @@ function StreakPage() {
 }
 
 export default StreakPage;
+
+
 
