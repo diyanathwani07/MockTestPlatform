@@ -3,8 +3,8 @@ export const themes = [
     name: "original",
     label: "Original",
     activeColor: {
-      light: "oklch(0.53 0.25 285.5)",
-      dark: "oklch(0.53 0.25 285.5)"
+      light: "oklch(0.62 0.08 65.54)",
+      dark: "oklch(1 0 0)"
     }
   },
   {
@@ -43,7 +43,7 @@ export const themes = [
     name: "vintage-paper",
     label: "Vintage Paper",
     activeColor: {
-      light: "oklch(0.62 0.08 65.54)",
+      light: "oklch(0.53 0.25 285.5)",
       dark: "oklch(0.73 0.06 66.7)"
     }
   },
