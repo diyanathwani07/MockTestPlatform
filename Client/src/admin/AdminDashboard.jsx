@@ -283,7 +283,7 @@ function AdminDashboard() {
                     cursor: "pointer", 
                     border: "none",
                     background: activeDashboardView === "main" ? "var(--primary)" : "transparent",
-                    color: activeDashboardView === "main" ? "#fff" : "var(--text-secondary, #6B7280)",
+                    color: activeDashboardView === "main" ? "var(--primary-foreground)" : "var(--text-secondary, #6B7280)",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
                   }}
@@ -1026,7 +1026,7 @@ function AdminDashboard() {
                     
                     <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                       <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&lt;</button>
-                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "#fff" }}>{explorerPage}</button>
+                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{explorerPage}</button>
                       <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&gt;</button>
                     </div>
                   </div>
@@ -1099,7 +1099,7 @@ function AdminDashboard() {
                     <h3 className="dashboard-card-title" style={{ margin: 0 }}>Recent Activity</h3>
                     <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                       <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&lt;</button>
-                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "#fff" }}>{activityPage}</button>
+                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{activityPage}</button>
                       <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&gt;</button>
                     </div>
                   </div>
