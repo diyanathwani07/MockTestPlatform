@@ -19,6 +19,7 @@ html[class*="theme-"] :is(body, #root, *) {
   --violet: var(--primary) !important;
   --hero-bg: linear-gradient(135deg, var(--card) 0%, var(--background) 100%) !important;
   --sidebar-active-bg: var(--primary) !important;
+  --icon-bg: var(--secondary) !important;
   --sidebar-active-text: var(--primary-foreground) !important;
   --sidebar-hover-bg: var(--accent) !important;
   --bottom-nav-start: var(--card) !important;

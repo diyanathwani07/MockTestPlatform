@@ -1,23 +1,23 @@
 :root {
-  --background: #EBEBEB;
-  --foreground: #171719;
-  --card: #FFFFFF;
-  --card-foreground: #171719;
-  --popover: #FFFFFF;
-  --popover-foreground: #171719;
-  --primary: #8A55FC;
+  --background: #f7f2e3;
+  --foreground: #4a4037;
+  --card: #fffcf4;
+  --card-foreground: #4a4037;
+  --popover: #fffcf4;
+  --popover-foreground: #4a4037;
+  --primary: #a87c51;
   --primary-foreground: #ffffff;
-  --secondary: #B3A7F6;
-  --secondary-foreground: #171719;
-  --muted: #E5E5E7;
-  --muted-foreground: #6D6F75;
-  --accent: #c084fc;
-  --accent-foreground: #ffffff;
-  --destructive: #e2436b;
+  --secondary: #e0d6c2;
+  --secondary-foreground: #5c4d3f;
+  --muted: #ebe4d6;
+  --muted-foreground: #7e6b55;
+  --accent: #d2c7aa;
+  --accent-foreground: #4a4037;
+  --destructive: #b44c38;
   --destructive-foreground: #ffffff;
-  --border: #E5E5E7;
-  --input: #E5E5E7;
-  --ring: #8A55FC;
+  --border: #dad0bb;
+  --input: #dad0bb;
+  --ring: #a87c51;
 
   /* Legacy variable aliases mapped to shadcn vars */
   --primary-strong: var(--primary);

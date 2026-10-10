@@ -14,14 +14,14 @@
   --bottom-nav-text: #64748B;
 
   /* Backgrounds */
-  --bg-page:        #FBF1FF;
+  --bg-page:        var(--background, #FBF1FF);
   --bg-card:        #ffffff;
   --bg-panel:       #ffffff;
   --bg-input:       #FCFBFF;
   --bg-header:      #ffffff;
   --bg-sidebar:     #ffffff;
-  --hero-bg:        linear-gradient(135deg, #F8F5FF 0%, #F4EFFF 100%);
-  --icon-bg:        #F3E8FF;
+  --hero-bg:        linear-gradient(135deg, var(--card, #F8F5FF) 0%, var(--background, #F4EFFF) 100%);
+  --icon-bg:        var(--secondary, #F3E8FF);
   --icon-color:     var(--primary);
 
   /* Text */
@@ -30,7 +30,7 @@
   --text-muted:     #a8a5bd;
 
   /* Sidebar Links */
-  --sidebar-active-bg: #F3E8FF;
+  --sidebar-active-bg: var(--secondary, #F3E8FF);
   --sidebar-active-text: var(--primary);
   --sidebar-hover-bg: #F9FAFB;
 
