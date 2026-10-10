@@ -45,26 +45,7 @@
   --green:          #1aa971;
   --red:            #e2436b;
 
-  /* shadcn/ui Theme Variables mapped to App Theme */
-  --background:     var(--bg-page);
-  --foreground:     var(--text-primary);
-  --card:           var(--bg-card);
-  --card-foreground: var(--text-primary);
-  --popover:        var(--bg-card);
-  --popover-foreground: var(--text-primary);
-  --primary:        var(--violet);
-  --primary-foreground: #ffffff;
-  --secondary:      var(--bg-input);
-  --secondary-foreground: var(--text-primary);
-  --muted:          var(--bg-input);
-  --muted-foreground: var(--text-muted);
-  --accent:         var(--option-hover);
-  --accent-foreground: var(--text-primary);
-  --destructive:    var(--red);
-  --destructive-foreground: #ffffff;
-  --border:         var(--border-color);
-  --input:          var(--border-color);
-  --ring:           var(--violet);
+  /* Removed circular shadcn mapping */
   --radius:         0.5rem;
 
   /* Cards */
@@ -88,9 +69,9 @@
   --bottom-nav-text: #A7A3BD;
 
   /* Backgrounds */
-  --bg-page:        var(--bg-page);
-  --bg-card:        var(--bg-card);
-  --bg-panel:       var(--bg-card);
+  
+  
+  
   --bg-input:       #171727;
   --bg-header:      #171727;
   --bg-sidebar:     var(--bg-sidebar);
