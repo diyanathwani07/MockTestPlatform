@@ -102,10 +102,12 @@ function StudentSidebar() {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={toggleSidebar} aria-label="Toggle Navigation Sidebar">
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {/* Mobile Toggle Button (only shown when closed so it never overlaps the logo) */}
+      {!isOpen && (
+        <button className="mobile-sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle Navigation Sidebar">
+          <Menu size={24} />
+        </button>
+      )}
 
       {/* Overlay for mobile */}
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
@@ -129,38 +131,65 @@ function StudentSidebar() {
           />
         </div>
 
-        <div className="sidebar-logo" style={{ display: "flex", justifyContent: collapsed ? "center" : "space-between", alignItems: "center", padding: collapsed ? "0" : "0 16px", position: "relative", zIndex: 2, height: "64px" }}>
+        <div className="sidebar-logo" style={{ display: "flex", justifyContent: collapsed ? "center" : "space-between", alignItems: "center", padding: collapsed ? "0 12px" : "0 16px", position: "relative", zIndex: 2, height: "64px" }}>
           {!collapsed && <Logo />}
           
-          <button
-            onClick={toggleSidebarCollapse}
-            title="Toggle Sidebar (Ctrl+B)"
-            aria-label="Toggle Sidebar"
-            className="hidden sm:inline-flex"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-              background: collapsed ? "var(--violet)" : "transparent",
-              color: collapsed ? "#ffffff" : "var(--text-secondary)",
-              cursor: "pointer",
-              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-              padding: 0,
-              flexShrink: 0
-            }}
-            onMouseEnter={(e) => {
-              if (!collapsed) e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
-            }}
-            onMouseLeave={(e) => {
-              if (!collapsed) e.currentTarget.style.background = "transparent";
-            }}
-          >
-            <PanelLeft size={16} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <button
+              onClick={toggleSidebarCollapse}
+              title="Toggle Sidebar Panel (Ctrl+B)"
+              aria-label="Toggle Sidebar Panel"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                background: collapsed ? "var(--violet)" : "transparent",
+                color: collapsed ? "#ffffff" : "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                padding: 0,
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                if (!collapsed) e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
+              }}
+              onMouseLeave={(e) => {
+                if (!collapsed) e.currentTarget.style.background = "transparent";
+              }}
+            >
+              <PanelLeft size={16} />
+            </button>
+
+            {/* Mobile close button inside header */}
+            {!collapsed && (
+              <button
+                onClick={() => setIsOpen(false)}
+                className="sm:hidden"
+                title="Close Sidebar"
+                aria-label="Close Sidebar"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                  background: "transparent",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                  padding: 0,
+                  flexShrink: 0
+                }}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
         </div>
 
         <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>
