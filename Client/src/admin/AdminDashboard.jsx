@@ -992,9 +992,9 @@ function AdminDashboard() {
               {/* 3. BOTTOM THREE-COLUMN GRID: EXPLORER, ACTIVITY */}
               <div className="dashboard-three-column-grid">
                 {/* Quiz Explorer (Spans 2 columns) */}
-                <div className="form-card quiz-explorer-card" style={{ margin: 0, padding: "24px", gridColumn: "span 2", display: "flex", flexDirection: "column" }}>
-                  <div className="dashboard-card-title-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "16px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-                    <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px", margin: 0 }}>
+                <div className="form-card quiz-explorer-card" style={{ margin: 0, padding: "16px 18px", gridColumn: "span 2", display: "flex", flexDirection: "column" }}>
+                  <div className="dashboard-card-title-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "12px", marginBottom: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                    <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "15px", margin: 0 }}>
                       <span 
                         style={{ cursor: "pointer", color: explorerPath.length === 0 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }} 
                         onClick={() => { setExplorerPath([]); setExplorerPage(1); }}
@@ -1024,14 +1024,14 @@ function AdminDashboard() {
                       )}
                     </h3>
                     
-                    <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&lt;</button>
-                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{explorerPage}</button>
-                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&gt;</button>
+                    <div className="pagination-controls" style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1} style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px", color: "var(--text-primary)" }}>&lt;</button>
+                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px" }}>{explorerPage}</button>
+                      <button className="page-nav-btn" onClick={() => setExplorerPage(Math.min(Math.max(1, Math.ceil(explorerList.length / itemsPerPage)), explorerPage + 1))} disabled={explorerPage >= Math.max(1, Math.ceil(explorerList.length / itemsPerPage))} style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px", color: "var(--text-primary)" }}>&gt;</button>
                     </div>
                   </div>
 
-                  <div className="explorer-list" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px", minHeight: "300px" }}>
+                  <div className="explorer-list" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
                     {explorerList.slice((explorerPage - 1) * itemsPerPage, explorerPage * itemsPerPage).map((item, idx) => (
                       <div key={idx} className="explorer-item" onClick={() => {
                         if (explorerView === "exams") {
@@ -1042,8 +1042,8 @@ function AdminDashboard() {
                           setExplorerPage(1);
                         }
                       }} style={{ 
-                        padding: "16px 20px", 
-                        borderRadius: "10px", 
+                        padding: "10px 14px", 
+                        borderRadius: "8px", 
                         display: "flex", 
                         justifyContent: "space-between", 
                         alignItems: "center",
@@ -1052,16 +1052,16 @@ function AdminDashboard() {
                         background: "var(--bg-card)",
                         transition: "all 0.2s"
                       }}
-                      onMouseOver={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "var(--border-input)"; } }}
+                      onMouseOver={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 3px 8px rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = "var(--border-input)"; } }}
                       onMouseOut={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            {explorerView === "exams" ? <GraduationCap size={20} strokeWidth={2} /> : explorerView === "subjects" ? <Library size={20} strokeWidth={2} /> : <File size={20} strokeWidth={2} />}
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <div style={{ width: "34px", height: "34px", borderRadius: "8px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {explorerView === "exams" ? <GraduationCap size={18} strokeWidth={2} /> : explorerView === "subjects" ? <Library size={18} strokeWidth={2} /> : <File size={18} strokeWidth={2} />}
                           </div>
                           <div>
-                            <p style={{ margin: 0, fontWeight: "600", color: "var(--text-primary)", fontSize: "14.5px" }}>{item.name}</p>
-                            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
+                            <p style={{ margin: 0, fontWeight: "600", color: "var(--text-primary)", fontSize: "13.5px" }}>{item.name}</p>
+                            <p style={{ margin: 0, fontSize: "11.5px", color: "var(--text-secondary)", marginTop: "2px" }}>
                               {explorerView === "exams" ? `${item.count} Subjects • ${item.totalQuizzes} Quizzes` : 
                                explorerView === "subjects" ? `${item.count} Quizzes` : 
                                `Created: ${item.date}`}
@@ -1069,13 +1069,13 @@ function AdminDashboard() {
                           </div>
                         </div>
                         {explorerView !== "quizzes" && (
-                          <div style={{ color: "var(--text-muted)", display: "flex", alignItems: "center" }}><ArrowRight size={16} strokeWidth={2.5} /></div>
+                          <div style={{ color: "var(--text-muted)", display: "flex", alignItems: "center" }}><ArrowRight size={15} strokeWidth={2.5} /></div>
                         )}
                         {explorerView === "quizzes" && (
                           <span style={{ 
-                            fontSize: "12px", 
-                            padding: "6px 12px", 
-                            borderRadius: "8px", 
+                            fontSize: "11px", 
+                            padding: "4px 8px", 
+                            borderRadius: "6px", 
                             background: item.status === "Published" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)", 
                             color: item.status === "Published" ? "#10B981" : "#F59E0B",
                             fontWeight: "700" 
@@ -1086,7 +1086,7 @@ function AdminDashboard() {
                       </div>
                     ))}
                     {explorerList.length === 0 && (
-                      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "14px" }}>
+                      <div style={{ flex: 1, padding: "24px 0", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "13.5px" }}>
                         No data found for this selection.
                       </div>
                     )}
@@ -1094,25 +1094,25 @@ function AdminDashboard() {
                 </div>
 
                 {/* Recent Activity */}
-                <div className="form-card" style={{ margin: 0, padding: "20px" }}>
-                  <div className="dashboard-card-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
-                    <h3 className="dashboard-card-title" style={{ margin: 0 }}>Recent Activity</h3>
-                    <div className="pagination-controls" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&lt;</button>
-                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px" }}>{activityPage}</button>
-                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages} style={{ margin: 0, width: "36px", height: "36px", minHeight: "36px", color: "var(--text-primary)" }}>&gt;</button>
+                <div className="form-card" style={{ margin: 0, padding: "16px 18px", display: "flex", flexDirection: "column" }}>
+                  <div className="dashboard-card-title-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "12px", marginBottom: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                    <h3 className="dashboard-card-title" style={{ margin: 0, fontSize: "15px" }}>Recent Activity</h3>
+                    <div className="pagination-controls" style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.max(1, activityPage - 1))} disabled={activityPage === 1} style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px", color: "var(--text-primary)" }}>&lt;</button>
+                      <button className="page-nav-btn active-page" style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px" }}>{activityPage}</button>
+                      <button className="page-nav-btn" onClick={() => setActivityPage(Math.min(totalActivityPages, activityPage + 1))} disabled={activityPage === totalActivityPages} style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px", color: "var(--text-primary)" }}>&gt;</button>
                     </div>
                   </div>
-                  <div className="recent-activities-list" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px", minHeight: "300px" }}>
+                  <div className="recent-activities-list" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0", justifyContent: "flex-start" }}>
                     {currentActivities.map((act, i) => {
                       const renderIcon = (emoji) => {
                         switch (emoji) {
-                          case '➕': return <Plus size={16} strokeWidth={2.5} />;
-                          case '📖': return <BookOpen size={16} strokeWidth={2.5} />;
-                          case '🚫': return <Ban size={16} strokeWidth={2.5} />;
-                          case '👥': return <User size={16} strokeWidth={2.5} />;
-                          case '✏️': return <Edit3 size={16} strokeWidth={2.5} />;
-                          case '❓': return <HelpCircle size={16} strokeWidth={2.5} />;
+                          case '➕': return <Plus size={14} strokeWidth={2.5} />;
+                          case '📖': return <BookOpen size={14} strokeWidth={2.5} />;
+                          case '🚫': return <Ban size={14} strokeWidth={2.5} />;
+                          case '👥': return <User size={14} strokeWidth={2.5} />;
+                          case '✏️': return <Edit3 size={14} strokeWidth={2.5} />;
+                          case '❓': return <HelpCircle size={14} strokeWidth={2.5} />;
                           default: return emoji;
                         }
                       };
