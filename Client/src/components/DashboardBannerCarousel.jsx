@@ -5,6 +5,17 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../css/DashboardBannerCarousel.css';
 
+export const optimizeBannerImage = (url, width = 1080) => {
+  if (!url || typeof url !== 'string') return url;
+  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
+    if (url.includes('/image/upload/f_auto') || url.includes('/image/upload/q_auto')) {
+      return url;
+    }
+    return url.replace('/image/upload/', `/image/upload/f_auto,q_auto:good,w_${width},c_limit/`);
+  }
+  return url;
+};
+
 const MOCK_BANNERS = [
   {
     id: 1,
@@ -111,6 +122,17 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
     };
   }, [isPaused, paginate, banners.length]);
 
+  useEffect(() => {
+    if (banners && banners.length > 0) {
+      banners.forEach((b) => {
+        if (b.image) {
+          const img = new Image();
+          img.src = optimizeBannerImage(b.image, 1080);
+        }
+      });
+    }
+  }, [banners]);
+
   if (!banners || banners.length === 0) return null;
 
   return (
@@ -157,7 +179,17 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
               }
             }}
           >
-            <div className={`banner-bg-image ${isPureImage ? 'full-width' : ''}`} style={{ backgroundImage: `url(${activeBanner.image})` }}></div>
+            <div className={`banner-bg-image ${isPureImage ? 'full-width' : ''}`}>
+              <img
+                src={optimizeBannerImage(activeBanner.image, 1080)}
+                alt={activeBanner.title || activeBanner.category || "PrepMark Banner"}
+                fetchPriority={imageIndex === 0 ? "high" : "auto"}
+                loading={imageIndex === 0 ? "eager" : "lazy"}
+                decoding="async"
+                draggable={false}
+                className={`banner-bg-img-element ${isPureImage ? 'full-width' : ''}`}
+              />
+            </div>
             {!isPureImage && (
               <>
                 <div className="banner-gradient-overlay"></div>

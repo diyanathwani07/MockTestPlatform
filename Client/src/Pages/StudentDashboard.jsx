@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
+const LazyDotLottie = React.lazy(() => 
+  import('@lottiefiles/dotlottie-react').then(m => ({ default: m.DotLottieReact }))
+);
+
+const SafeLottie = ({ src, loop = true, autoplay = true, style }) => (
+  <React.Suspense fallback={<div style={{ width: style?.width || "80px", height: style?.height || "80px", margin: "0 auto" }} />}>
+    <LazyDotLottie src={src} loop={loop} autoplay={autoplay} style={style} />
+  </React.Suspense>
+);
 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -17,7 +26,7 @@ const ScoreTrendChart = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="sd-empty-chart">
-        <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><DotLottieReact src="/idk.lottie" loop autoplay /></div>
+        <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><SafeLottie src="/idk.lottie" loop autoplay /></div>
         <p>Attempt some mocks to see your performance trend.</p>
       </div>
     );
@@ -170,7 +179,7 @@ function StudentDashboard() {
 
   const upcomingSeriesList = recentAvailable.length === 0 ? (
     <div className="sd-empty-upcoming">
-      <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><DotLottieReact src="/idk.lottie" loop autoplay /></div>
+      <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><SafeLottie src="/idk.lottie" loop autoplay /></div>
       <p>No available series right now.</p>
     </div>
   ) : recentAvailable.map((series) => {
@@ -182,7 +191,7 @@ function StudentDashboard() {
             <span className="day">{d.getDate()}</span>
           </div>
           <div className="sd-upcoming-info">
-            <h4>{series.title}</h4>
+            <h3>{series.title}</h3>
             <p style={{ marginTop: "4px" }}>
               Category: {series.category || "General"}
             </p>
@@ -251,27 +260,27 @@ function StudentDashboard() {
         <div className="sd-hero-graphic">
           <div className="ambient-glow-circle-1"></div>
           <div className="ambient-glow-circle-2"></div>
-          {/* Generate 20 floating particles with different styles */}
-          {Array.from({ length: 20 }).map((_, index) => {
-            const size = Math.floor(Math.random() * 3) + 2; // 2px to 4px
-            const left = Math.floor(Math.random() * 70) + 30; // 30% to 100% (right side decorative)
-            const delay = (index * 0.8).toFixed(1);
-            const duration = (15 + Math.random() * 15).toFixed(1);
-            return (
-              <div 
-                key={index} 
-                className="ambient-particle"
-                style={{
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  left: `${left}%`,
-                  bottom: `-${size}px`,
-                  animationDelay: `${delay}s`,
-                  animationDuration: `${duration}s`
-                }}
-              ></div>
-            );
-          })}
+          {[
+            { size: 3, left: 35, delay: 0, duration: 18 },
+            { size: 2, left: 52, delay: 1.5, duration: 22 },
+            { size: 4, left: 68, delay: 3, duration: 16 },
+            { size: 3, left: 82, delay: 4.5, duration: 20 },
+            { size: 2, left: 45, delay: 6, duration: 24 },
+            { size: 3, left: 90, delay: 7.5, duration: 19 }
+          ].map((p, index) => (
+            <div 
+              key={index} 
+              className="ambient-particle"
+              style={{
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                left: `${p.left}%`,
+                bottom: `-${p.size}px`,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`
+              }}
+            ></div>
+          ))}
         </div>
       </div>
 
@@ -345,7 +354,7 @@ function StudentDashboard() {
             <div className="sd-upcoming-list">
               {recentAvailable.length === 0 ? (
                 <div className="sd-empty-upcoming">
-                  <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><DotLottieReact src="/idk.lottie" loop autoplay /></div>
+                  <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><SafeLottie src="/idk.lottie" loop autoplay /></div>
                   <p>No available series right now.</p>
                 </div>
               ) : (
@@ -357,7 +366,7 @@ function StudentDashboard() {
                         <Layers size={20} />
                       </div>
                       <div className="sd-upcoming-info">
-                        <h4>{series.title}</h4>
+                        <h3>{series.title}</h3>
                         <p style={{ marginTop: "4px" }}>
                           Category: {series.category || "General"}
                         </p>

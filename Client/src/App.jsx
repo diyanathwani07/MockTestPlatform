@@ -69,8 +69,17 @@ const RefundPolicy = lazy(() => import("./Pages/RefundPolicy"));
 
 function App() {
   useEffect(() => {
-    // Initialize native push notifications (Capacitor only)
-    initPushNotifications();
+    // Defer push notification setup to keep initial page load and TBT completely unblocked
+    const deferInit = () => {
+      initPushNotifications();
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const handle = window.requestIdleCallback(deferInit, { timeout: 4000 });
+      return () => window.cancelIdleCallback(handle);
+    } else {
+      const timer = setTimeout(deferInit, 3000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (

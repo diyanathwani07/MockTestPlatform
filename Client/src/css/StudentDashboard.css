@@ -762,7 +762,8 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
   flex: 1;
 }
 
-.sd-upcoming-info h4 {
+.sd-upcoming-info h4,
+.sd-upcoming-info h3 {
   margin: 0 0 6px 0;
   font-size: 15px;
   font-weight: 700;

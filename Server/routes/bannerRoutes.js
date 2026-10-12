@@ -5,12 +5,27 @@ const AuditLog = require('../models/AuditLog');
 const { protect } = require('../middleware/authMiddleware');
 const { adminOnly } = require('../middleware/adminMiddleware');
 
+const optimizeImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
+    if (!url.includes('/image/upload/f_auto') && !url.includes('/image/upload/q_auto')) {
+      return url.replace('/image/upload/', '/image/upload/f_auto,q_auto:good,w_1080,c_limit/');
+    }
+  }
+  return url;
+};
+
 // @route   GET /api/banners
 // @desc    Get all active banners (public)
 router.get('/', async (req, res) => {
   try {
     const banners = await Banner.find({ isActive: true }).sort({ order: 1, createdAt: -1 });
-    res.json(banners);
+    const optimized = banners.map(b => {
+      const doc = b.toObject();
+      if (doc.image) doc.image = optimizeImageUrl(doc.image);
+      return doc;
+    });
+    res.json(optimized);
   } catch (error) {
     res.status(500).json({ message: 'Server Error fetching banners' });
   }

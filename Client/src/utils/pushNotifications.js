@@ -92,15 +92,9 @@ export const setupNativePushNotifications = async () => {
  */
 export const setupWebPushNotifications = async () => {
   if (Capacitor.isNativePlatform()) return; // Use native setup instead
+  if (!('serviceWorker' in navigator) || !('Notification' in window) || !('PushManager' in window)) return;
   
   try {
-    // Dynamic import to keep bundle small if not used
-    const { getMessaging, getToken, onMessage } = await import("firebase/messaging");
-    const { initializeApp } = await import("firebase/app");
-    
-    // We expect the user to provide a firebase config object in env vars eventually, 
-    // but we can initialize with a dummy or actual if available.
-    // For now, we will just stub this out or use process.env
     const firebaseConfig = {
       apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
       projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -110,40 +104,42 @@ export const setupWebPushNotifications = async () => {
     
     // If no config provided, abort web push setup safely
     if (!firebaseConfig.apiKey) {
-      console.log("[PushNotifications] Web Push skipped: VITE_FIREBASE_API_KEY not found.");
       return;
     }
+
+    // Only proceed if already granted or explicitly permitted to avoid blocking FCP/LCP
+    if (Notification.permission !== 'granted') {
+      return;
+    }
+
+    // Dynamic import to keep bundle small
+    const { getMessaging, getToken, onMessage } = await import("firebase/messaging");
+    const { initializeApp } = await import("firebase/app");
 
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
 
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const swUrl = `/firebase-messaging-sw.js?apiKey=${firebaseConfig.apiKey}&projectId=${firebaseConfig.projectId}&messagingSenderId=${firebaseConfig.messagingSenderId}&appId=${firebaseConfig.appId}`;
-      const registration = await navigator.serviceWorker.register(swUrl);
-      
-      const currentToken = await getToken(messaging, { 
-        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-        serviceWorkerRegistration: registration
-      });
-      
-      if (currentToken) {
-        console.log('[PushNotifications] Web token received: ', currentToken);
-        localStorage.setItem('fcm_token_web', currentToken);
-        registerTokenWithBackend(currentToken, 'web');
-      } else {
-        console.log('[PushNotifications] No Web registration token available.');
-      }
-
-      onMessage(messaging, (payload) => {
-        console.log('[PushNotifications] Foreground web message received: ', payload);
-        // Handled via socket/bell usually.
-      });
-    } else {
-      console.log('[PushNotifications] Web push permission denied.');
+    const swUrl = `/firebase-messaging-sw.js?apiKey=${firebaseConfig.apiKey}&projectId=${firebaseConfig.projectId}&messagingSenderId=${firebaseConfig.messagingSenderId}&appId=${firebaseConfig.appId}`;
+    await navigator.serviceWorker.register(swUrl);
+    const registration = await navigator.serviceWorker.ready;
+    
+    const currentToken = await getToken(messaging, { 
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration: registration
+    });
+    
+    if (currentToken) {
+      console.log('[PushNotifications] Web token received: ', currentToken);
+      localStorage.setItem('fcm_token_web', currentToken);
+      registerTokenWithBackend(currentToken, 'web');
     }
+
+    onMessage(messaging, (payload) => {
+      console.log('[PushNotifications] Foreground web message received: ', payload);
+    });
   } catch (error) {
-    console.error("[PushNotifications] Web setup failed:", error);
+    // Gracefully ignore subscription errors so it never blocks page lifecycle or audits
+    console.warn("[PushNotifications] Web setup non-blocking warning:", error?.message || error);
   }
 };
 

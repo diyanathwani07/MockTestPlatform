@@ -8,7 +8,7 @@ import StudentChatbot from "./StudentChatbot";
 import { useSidebar } from "../context/SidebarContext";
 import { useExam } from "../context/ExamContext";
 import axios from "axios";
-import PixelSnow from "./shadcn-space/animations/PixelSnow";
+const PixelSnow = React.lazy(() => import("./shadcn-space/animations/PixelSnow"));
 
 function StudentSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -113,23 +113,27 @@ function StudentSidebar() {
       {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
       <aside className={`student-sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
-        {/* Animated PixelSnow Background (Winter Only) */}
-        <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
-          <PixelSnow
-            color="#ffffff"
-            flakeSize={0.015}
-            minFlakeSize={1.0}
-            pixelResolution={240}
-            speed={0.4}
-            density={0.15}
-            direction={95}
-            brightness={0.85}
-            depthFade={15}
-            farPlane={15}
-            gamma={0.4545}
-            variant="round"
-          />
-        </div>
+        {/* Animated PixelSnow Background (Desktop Only, Winter) */}
+        {typeof window !== 'undefined' && window.innerWidth > 768 && !collapsed && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
+            <React.Suspense fallback={null}>
+              <PixelSnow
+                color="#ffffff"
+                flakeSize={0.015}
+                minFlakeSize={1.0}
+                pixelResolution={240}
+                speed={0.4}
+                density={0.15}
+                direction={95}
+                brightness={0.85}
+                depthFade={15}
+                farPlane={15}
+                gamma={0.4545}
+                variant="round"
+              />
+            </React.Suspense>
+          </div>
+        )}
 
         <div className="sidebar-logo" style={{ display: "flex", justifyContent: collapsed ? "center" : "space-between", alignItems: "center", padding: collapsed ? "0 12px" : "0 16px", position: "relative", zIndex: 2, height: "64px" }}>
           {!collapsed && <Logo />}
