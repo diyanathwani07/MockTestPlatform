@@ -167,10 +167,12 @@ app.use("/api/admin/ai-plans", require("./routes/aiPlanRoutes"));
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/admin/revenue", revenueRoutes);
 app.use("/api/taxonomies", require("./routes/taxonomyRoutes"));
-// Background Scheduler: Checks every 30 seconds for due scheduled quizzes and publishes them
+// Background Scheduler: Checks every 30 seconds for due scheduled quizzes to publish and expired quizzes to unpublish
 setInterval(async () => {
   try {
     const now = new Date();
+
+    // 1. Publish due scheduled quizzes
     const scheduledQuizzes = await Quiz.find({
       status: "Scheduled",
       published: false,
@@ -186,8 +188,25 @@ setInterval(async () => {
         console.log(`[Scheduler] Successfully published quiz: "${quiz.title}" (ID: ${quiz._id})`);
       }
     }
+
+    // 2. Unpublish / Expire quizzes whose availability window has passed
+    const expiredQuizzes = await Quiz.find({
+      status: "Published",
+      published: true,
+      unpublishDate: { $ne: null, $lte: now }
+    });
+
+    if (expiredQuizzes.length > 0) {
+      console.log(`[Scheduler] Found ${expiredQuizzes.length} quiz(zes) to unpublish/expire.`);
+      for (const quiz of expiredQuizzes) {
+        quiz.status = "Expired";
+        quiz.published = false;
+        await quiz.save();
+        console.log(`[Scheduler] Successfully unpublished/expired quiz: "${quiz.title}" (ID: ${quiz._id})`);
+      }
+    }
   } catch (error) {
-    console.error("[Scheduler Error] Failed to process scheduled quizzes:", error);
+    console.error("[Scheduler Error] Failed to process scheduled/expired quizzes:", error);
   }
 }, 30000);
 

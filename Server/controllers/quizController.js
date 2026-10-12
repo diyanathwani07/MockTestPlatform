@@ -165,6 +165,18 @@ const getQuizById = async (req, res) => {
     }
 
     if (isStudent && quiz) {
+      const isAvailable = (quiz.published === true || quiz.status === "Published") &&
+        (!quiz.unpublishDate || new Date() < new Date(quiz.unpublishDate)) &&
+        (!quiz.scheduledDate || new Date() >= new Date(quiz.scheduledDate));
+
+      if (!isAvailable) {
+        return res.status(403).json({
+          message: quiz.unpublishDate && new Date() >= new Date(quiz.unpublishDate)
+            ? "This exam is no longer available. The scheduled test window has ended."
+            : "This exam is not currently available."
+        });
+      }
+
       let resultsReleased = true;
       if (quiz.resultReleaseMode === "scheduled" && quiz.resultReleaseDate) {
         resultsReleased = new Date() >= new Date(quiz.resultReleaseDate);

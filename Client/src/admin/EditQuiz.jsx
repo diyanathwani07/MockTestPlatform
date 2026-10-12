@@ -118,6 +118,18 @@ function EditQuiz() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+
+  // Auto-Unpublish / Expiry states
+  const [hasUnpublishDate, setHasUnpublishDate] = useState(false);
+  const [unpublishDate, setUnpublishDate] = useState("");
+  const [unpublishHour, setUnpublishHour] = useState("12");
+  const [unpublishMinute, setUnpublishMinute] = useState("00");
+  const [unpublishPeriod, setUnpublishPeriod] = useState("PM");
+  const [showUnpublishDatePicker, setShowUnpublishDatePicker] = useState(false);
+  const [showUnpublishTimePicker, setShowUnpublishTimePicker] = useState(false);
+  const [unpublishCalendarMonth, setUnpublishCalendarMonth] = useState(new Date().getMonth());
+  const [unpublishCalendarYear, setUnpublishCalendarYear] = useState(new Date().getFullYear());
+  const [unpublishDateTime, setUnpublishDateTime] = useState("");
   const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
   const [editingPlanIndex, setEditingPlanIndex] = useState(-1);
 
@@ -287,6 +299,19 @@ function EditQuiz() {
     const hr24Str = String(hr24).padStart(2, "0");
     const formatted = `${dateVal}T${hr24Str}:${minVal}`;
     setScheduledDateTime(formatted);
+  };
+
+  const updateUnpublishDateTime = (dateVal, hrVal, minVal, periodVal) => {
+    if (!dateVal) {
+      setUnpublishDateTime("");
+      return;
+    }
+    let hr24 = parseInt(hrVal, 10);
+    if (periodVal === "PM" && hr24 < 12) hr24 += 12;
+    if (periodVal === "AM" && hr24 === 12) hr24 = 0;
+    const hr24Str = String(hr24).padStart(2, "0");
+    const formatted = `${dateVal}T${hr24Str}:${minVal}`;
+    setUnpublishDateTime(formatted);
   };
 
   const [questions, setQuestions] = useState([]);
@@ -542,6 +567,41 @@ function EditQuiz() {
           const today = new Date();
           setCalendarMonth(today.getMonth());
           setCalendarYear(today.getFullYear());
+        }
+
+        if (dbQuiz.unpublishDate) {
+          setHasUnpublishDate(true);
+          const unpubD = new Date(dbQuiz.unpublishDate);
+          if (!isNaN(unpubD.getTime())) {
+            const yyyy = unpubD.getFullYear();
+            const mm = String(unpubD.getMonth() + 1).padStart(2, "0");
+            const dd = String(unpubD.getDate()).padStart(2, "0");
+            setUnpublishDate(`${yyyy}-${mm}-${dd}`);
+
+            let hours = unpubD.getHours();
+            const minutes = String(unpubD.getMinutes()).padStart(2, "0");
+            const period = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const hoursStr = String(hours).padStart(2, "0");
+
+            setUnpublishHour(hoursStr);
+            setUnpublishMinute(minutes);
+            setUnpublishPeriod(period);
+            setUnpublishCalendarMonth(unpubD.getMonth());
+            setUnpublishCalendarYear(unpubD.getFullYear());
+            setUnpublishDateTime(formatDateTimeLocal(dbQuiz.unpublishDate));
+          }
+        } else {
+          setHasUnpublishDate(false);
+          setUnpublishDate("");
+          setUnpublishHour("12");
+          setUnpublishMinute("00");
+          setUnpublishPeriod("PM");
+          setUnpublishDateTime("");
+          const today = new Date();
+          setUnpublishCalendarMonth(today.getMonth());
+          setUnpublishCalendarYear(today.getFullYear());
         }
 
         // Handle modular sections if present
@@ -1099,6 +1159,23 @@ function EditQuiz() {
       setMessage({ text: "Please select a Date and Time for scheduling.", type: "status-error" });
       return false;
     }
+    if (hasUnpublishDate) {
+      if (!unpublishDateTime) {
+        setMessage({ text: "Please select an Unpublish Date and Time.", type: "status-error" });
+        return false;
+      }
+      const unpubDateObj = new Date(unpublishDateTime);
+      const pubDateObj = isScheduled && scheduledDateTime ? new Date(scheduledDateTime) : new Date();
+      if (unpubDateObj <= pubDateObj) {
+        setMessage({
+          text: isScheduled
+            ? "Unpublish Date & Time must be after the Scheduled Publish Date & Time."
+            : "Unpublish Date & Time must be set in the future.",
+          type: "status-error"
+        });
+        return false;
+      }
+    }
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.questionEnglish || !q.questionEnglish.trim()) {
@@ -1150,6 +1227,8 @@ function EditQuiz() {
         statusVal = "Draft";
       }
 
+      let unpublishDateVal = hasUnpublishDate && unpublishDateTime ? new Date(unpublishDateTime) : null;
+
       // Save modularly using single quiz modular helper
       await saveSingleQuizModular({
         quizMeta: {
@@ -1159,6 +1238,7 @@ function EditQuiz() {
         questions,
         isPublishing: publishedVal,
         scheduledDate: scheduledDateVal,
+        unpublishDate: unpublishDateVal,
         quizId: id,
         existingSectionId: sectionIdToUpdate,
       });
@@ -2197,6 +2277,161 @@ function EditQuiz() {
                             </span>
                           </div>
                         )}
+
+                        {/* Auto-Unpublish / Availability Window */}
+                        <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed var(--border-color)" }}>
+                          <label className="checkbox-toggle-label">
+                            <input
+                              type="checkbox"
+                              checked={hasUnpublishDate}
+                              onChange={(e) => {
+                                setHasUnpublishDate(e.target.checked);
+                                if (e.target.checked && !unpublishDate) {
+                                  const baseDate = scheduledDate || new Date().toISOString().split("T")[0];
+                                  setUnpublishDate(baseDate);
+                                  updateUnpublishDateTime(baseDate, unpublishHour, unpublishMinute, unpublishPeriod);
+                                }
+                              }}
+                            />
+                            <span>Auto-Unpublish / Available Until</span>
+                          </label>
+
+                          {hasUnpublishDate && (
+                            <div className="scheduled-datetime-wrapper" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+
+                              {/* Unpublish Date Picker */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                                <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Unpublish Date</label>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowUnpublishDatePicker(!showUnpublishDatePicker)}
+                                  style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                                >
+                                  <span>{unpublishDate ? formatDateDisplay(unpublishDate) : "Select Date"}</span>
+                                  <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
+                                </button>
+
+                                {showUnpublishDatePicker && (
+                                  <div className="picker-popover-modal" style={{ position: "absolute", top: "105%", left: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "12px", width: "260px", boxSizing: "border-box" }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                                      <button type="button" onClick={() => { if (unpublishCalendarMonth === 0) { setUnpublishCalendarMonth(11); setUnpublishCalendarYear(unpublishCalendarYear - 1); } else { setUnpublishCalendarMonth(unpublishCalendarMonth - 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&lt;</button>
+                                      <span style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)" }}>
+                                        {["January","February","March","April","May","June","July","August","September","October","November","December"][unpublishCalendarMonth]} {unpublishCalendarYear}
+                                      </span>
+                                      <button type="button" onClick={() => { if (unpublishCalendarMonth === 11) { setUnpublishCalendarMonth(0); setUnpublishCalendarYear(unpublishCalendarYear + 1); } else { setUnpublishCalendarMonth(unpublishCalendarMonth + 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&gt;</button>
+                                    </div>
+
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", textAlign: "center" }}>
+                                      {["S","M","T","W","T","F","S"].map((d, idx) => (
+                                        <span key={idx} style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)" }}>{d}</span>
+                                      ))}
+                                    </div>
+
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
+                                      {generateCustomCalendarDays(unpublishCalendarYear, unpublishCalendarMonth).map((cell, idx) => {
+                                        const cellDateStr = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
+                                        const isSelected = cellDateStr === unpublishDate;
+                                        return (
+                                          <div
+                                            key={idx}
+                                            onClick={() => { setUnpublishDate(cellDateStr); updateUnpublishDateTime(cellDateStr, unpublishHour, unpublishMinute, unpublishPeriod); setShowUnpublishDatePicker(false); }}
+                                            style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "28px", fontSize: "12px", fontWeight: isSelected ? "700" : "500", borderRadius: "50%", cursor: "pointer", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : cell.isCurrentMonth ? "var(--text-primary)" : "var(--text-muted)", border: isSelected ? "2px solid rgba(110,63,243,0.2)" : "none", boxSizing: "border-box" }}
+                                          >
+                                            {cell.day}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1.5px solid var(--border-color)", paddingTop: "8px", marginTop: "4px" }}>
+                                      <button type="button" onClick={() => { setUnpublishDate(""); setUnpublishDateTime(""); setShowUnpublishDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--red)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Clear</button>
+                                      <button type="button" onClick={() => { const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth()+1).padStart(2,"0"); const dd = String(today.getDate()).padStart(2,"0"); const todayStr = `${yyyy}-${mm}-${dd}`; setUnpublishDate(todayStr); setUnpublishCalendarMonth(today.getMonth()); setUnpublishCalendarYear(today.getFullYear()); updateUnpublishDateTime(todayStr, unpublishHour, unpublishMinute, unpublishPeriod); setShowUnpublishDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--violet)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Today</button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Unpublish Time Picker */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                                <label style={{ fontSize: "10.5px", fontWeight: "700", color: "var(--text-secondary)" }}>Unpublish Time</label>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowUnpublishTimePicker(!showUnpublishTimePicker)}
+                                  style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                                >
+                                  <span>{`${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`}</span>
+                                  <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+                                </button>
+
+                                {showUnpublishTimePicker && (
+                                  <div className="picker-popover-modal" style={{ position: "absolute", top: "105%", right: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "14px", width: "240px" }}>
+                                    <div style={{ display: "flex", height: "180px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
+
+                                      {/* Hours */}
+                                      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", paddingRight: "4px" }} className="time-scroll-col">
+                                        {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
+                                          const isSelected = hr === unpublishHour;
+                                          return (
+                                            <div key={hr} onClick={() => { setUnpublishHour(hr); updateUnpublishDateTime(unpublishDate, hr, unpublishMinute, unpublishPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                              {hr}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+
+                                      <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                      {/* Minutes */}
+                                      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }} className="time-scroll-col">
+                                        {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
+                                          const isSelected = min === unpublishMinute;
+                                          return (
+                                            <div key={min} onClick={() => { setUnpublishMinute(min); updateUnpublishDateTime(unpublishDate, unpublishHour, min, unpublishPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                              {min}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+
+                                      <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                      {/* AM/PM */}
+                                      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px", justifyContent: "center" }}>
+                                        {["AM", "PM"].map(p => {
+                                          const isSelected = p === unpublishPeriod;
+                                          return (
+                                            <div key={p} onClick={() => { setUnpublishPeriod(p); updateUnpublishDateTime(unpublishDate, unpublishHour, unpublishMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
+                                              {p}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+
+                                    <button type="button" onClick={() => setShowUnpublishTimePicker(false)} style={{ padding: "8px 12px", border: "1.5px solid var(--border-input)", borderRadius: "10px", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "center" }}>
+                                      Select Time
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              <span className="info-text-sm" style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", display: "inline-block" }}>
+                                Quiz will automatically unpublish and become unavailable at this date & time.
+                              </span>
+
+                              {unpublishDateTime && (
+                                <div style={{ marginTop: "6px", padding: "8px 12px", borderRadius: "8px", backgroundColor: "rgba(110, 63, 243, 0.08)", border: "1px solid rgba(110, 63, 243, 0.2)", fontSize: "12px", color: "var(--violet)", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+                                  <span>⏳</span>
+                                  <span>
+                                    {isScheduled && scheduledDateTime
+                                      ? `Window: ${formatDateDisplay(scheduledDate)} ${scheduledHour}:${scheduledMinute} ${scheduledPeriod} → ${formatDateDisplay(unpublishDate)} ${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`
+                                      : `Available until: ${formatDateDisplay(unpublishDate)} ${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -2972,7 +3207,9 @@ function EditQuiz() {
                     <span className="status-dot" style={{ backgroundColor: isScheduled ? "var(--gold)" : "var(--text-muted)" }}></span>
                     <span style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-secondary)" }}>
                       {isScheduled
-                        ? `Status: Scheduled for ${scheduledDateTime ? new Date(scheduledDateTime).toLocaleDateString('en-GB').split('/').join('-') + ', ' + new Date(scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "..."}`
+                        ? `Status: Scheduled for ${scheduledDateTime ? new Date(scheduledDateTime).toLocaleDateString('en-GB').split('/').join('-') + ', ' + new Date(scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "..."}${hasUnpublishDate && unpublishDateTime ? ` (until ${new Date(unpublishDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })})` : ""}`
+                        : hasUnpublishDate && unpublishDateTime
+                        ? `Status: Live upon publishing until ${new Date(unpublishDateTime).toLocaleDateString('en-GB').split('/').join('-') + ', ' + new Date(unpublishDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`
                         : `Status: Ready (${quizMeta.status})`
                       }
                     </span>

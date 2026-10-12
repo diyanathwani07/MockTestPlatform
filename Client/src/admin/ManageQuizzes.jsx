@@ -1020,17 +1020,34 @@ function ManageQuizzes() {
                         </div>
 
                         {/* Bottom Row: Type & Status */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                           <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", backgroundColor: "var(--bg-sidebar)", padding: "4px 10px", borderRadius: "6px" }}>
                             {quiz.quizType === "practice" ? "Practice Set" : (quiz.sections && quiz.sections.length > 1 ? "Full Length" : "Sectional")}
                           </span>
-                          <span style={{
-                            backgroundColor: quiz.status === "Published" ? "#E4F8F0" : "#F1F5F9",
-                            color: quiz.status === "Published" ? "#10B981" : "#475569",
-                            padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700"
-                          }}>
-                            {quiz.status || "Draft"}
-                          </span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+                            <span style={{
+                              backgroundColor: 
+                                quiz.status === "Published" ? "#E4F8F0" : 
+                                quiz.status === "Scheduled" ? "#EFF6FF" : 
+                                quiz.status === "Expired" ? "#FEF3C7" : "#F1F5F9",
+                              color: 
+                                quiz.status === "Published" ? "#10B981" : 
+                                quiz.status === "Scheduled" ? "#3B82F6" : 
+                                quiz.status === "Expired" ? "#D97706" : "#475569",
+                              padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700"
+                            }}>
+                              {quiz.status || "Draft"}
+                            </span>
+                            {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
+                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                                📅 {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              </span>
+                            ) : quiz.scheduledDate ? (
+                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                                🕒 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
                       </div>
                     );
@@ -1150,17 +1167,33 @@ function ManageQuizzes() {
                             <span style={{
                               backgroundColor: 
                                 quiz.status === "Published" ? "#E4F8F0" : 
-                                quiz.status === "Scheduled" ? "#EFF6FF" : "#F1F5F9",
+                                quiz.status === "Scheduled" ? "#EFF6FF" : 
+                                quiz.status === "Expired" ? "#FEF3C7" : "#F1F5F9",
                               color: 
                                 quiz.status === "Published" ? "#10B981" : 
-                                quiz.status === "Scheduled" ? "#3B82F6" : "#475569",
+                                quiz.status === "Scheduled" ? "#3B82F6" : 
+                                quiz.status === "Expired" ? "#D97706" : "#475569",
                               padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: "700", display: "inline-block", width: "max-content"
                             }}>
                               {quiz.status || "Draft"}
                             </span>
-                            {quiz.scheduledDate && (
+                            {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
+                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                                📅 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              </span>
+                            ) : quiz.scheduledDate ? (
                               <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
                                 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              </span>
+                            ) : null}
+                            {quiz.status === "Published" && quiz.unpublishDate && (
+                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                                ⏳ Closes: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              </span>
+                            )}
+                            {quiz.status === "Expired" && quiz.unpublishDate && (
+                              <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "600" }}>
+                                Ended: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             )}
                           </div>

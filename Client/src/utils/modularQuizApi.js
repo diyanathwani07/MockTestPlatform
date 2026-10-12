@@ -184,6 +184,7 @@ export const saveModularQuiz = async ({
     published: isPublishing,
     status: isPublishing ? "Published" : quizMeta.status || "Draft",
     scheduledDate: quizMeta.scheduledDate || null,
+    unpublishDate: quizMeta.unpublishDate || null,
     quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
     publishAs: quizMeta.publishAs || "exam",
     shuffleQuestions: quizMeta.shuffleQuestions || false,
@@ -277,7 +278,7 @@ export const saveModularPractice = async ({
   return res.data;
 };
 
-export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing, scheduledDate, quizId, existingSectionId }) => {
+export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing, scheduledDate, unpublishDate, quizId, existingSectionId }) => {
   const questionIds = await bulkCreateQuestions(questions, quizMeta.subject);
 
   let sectionId = existingSectionId;
@@ -310,7 +311,8 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     duration,
     published: isPublishing,
     status: isPublishing ? "Published" : quizMeta.status || "Draft",
-    scheduledDate: scheduledDate || null,
+    scheduledDate: scheduledDate || quizMeta.scheduledDate || null,
+    unpublishDate: unpublishDate || quizMeta.unpublishDate || null,
     sections: [{ sectionId, mode: "linked", order: 0 }],
     questions: [],
     isModular: true,

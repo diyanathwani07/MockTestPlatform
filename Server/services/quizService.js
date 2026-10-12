@@ -158,6 +158,7 @@ const createQuiz = async (data) => {
     lockPreviousQuestions: data.lockPreviousQuestions || false,
     status: data.status || "Draft",
     scheduledDate: data.scheduledDate || null,
+    unpublishDate: data.unpublishDate || null,
     published: data.published || false,
     quizType: data.quizType || "exam",
     publishAs: data.publishAs || "exam",
