@@ -1141,18 +1141,37 @@ const CreateCustomQuiz = () => {
                   display: "flex", 
                   justifyContent: "space-between", 
                   alignItems: "center", 
-                  padding: "16px 20px", 
+                  padding: "14px 18px", 
                   borderRadius: "12px", 
                   background: "var(--bg-card, #131428)",
                   border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
                   marginBottom: "20px",
-                  gap: "16px",
+                  gap: "12px",
                   flexWrap: "wrap"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", maxWidth: "320px" }}>
-                  <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", whiteSpace: "nowrap" }}>Filter by Attempt Date:</span>
-                  <MuiDatePicker value={selectedDate} onChange={setSelectedDate} label="mm-dd-yyyy" />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", width: "100%", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>Filter by Attempt Date:</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <MuiDatePicker value={selectedDate} onChange={setSelectedDate} label="mm-dd-yyyy" />
+                    {selectedDate && (
+                      <button 
+                        onClick={() => setSelectedDate("")}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "var(--text-muted)",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          padding: "4px 8px",
+                          textDecoration: "underline"
+                        }}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1190,7 +1209,7 @@ const CreateCustomQuiz = () => {
                             <FileText size={28} strokeWidth={1.5} />
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                            <h4 style={{ margin: "0", fontSize: "16px", fontWeight: "700", color: "#ffffff", lineHeight: "1.4", wordBreak: "break-word" }}>
+                            <h4 style={{ margin: "0", fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.4", wordBreak: "break-word" }}>
                               {res.subject || res.quizTitle || "Custom Test"}
                             </h4>
                             <div style={{ fontSize: "13px", color: "var(--text-muted, #94a3b8)", marginTop: "2px" }}>
@@ -1225,7 +1244,7 @@ const CreateCustomQuiz = () => {
                             <span style={{ fontSize: "12px", color: "var(--text-muted)", display: "block" }}>{((res.score / (res.total || 1)) * 100).toFixed(0)}%</span>
                           </div>
 
-                          <div className="stat-divider" style={{ width: "1px", height: "40px", background: "rgba(255,255,255,0.08)" }}></div>
+                          <div className="stat-divider" style={{ width: "1px", height: "40px", background: "var(--border-color, rgba(255,255,255,0.08))" }}></div>
 
                           {/* Accuracy */}
                           <div style={{ textAlign: "center", minWidth: "60px" }}>
@@ -1234,7 +1253,7 @@ const CreateCustomQuiz = () => {
                             <span style={{ fontSize: "12px", color: "transparent", display: "block" }}>_</span>
                           </div>
 
-                          <div className="stat-divider" style={{ width: "1px", height: "40px", background: "rgba(255,255,255,0.08)" }}></div>
+                          <div className="stat-divider" style={{ width: "1px", height: "40px", background: "var(--border-color, rgba(255,255,255,0.08))" }}></div>
 
                           {/* Rank */}
                           <div style={{ textAlign: "center", minWidth: "60px" }}>
@@ -1277,19 +1296,19 @@ const CreateCustomQuiz = () => {
                               width: "100%",
                               padding: "8px 16px",
                               borderRadius: "8px",
-                              border: "1px solid rgba(255,255,255,0.8)",
-                              background: "#ffffff",
-                              color: "#000000",
+                              border: "1px solid var(--border-color, rgba(0,0,0,0.15))",
+                              background: "var(--bg-card, #ffffff)",
+                              color: "var(--text-primary, #000000)",
                               fontWeight: "600",
                               fontSize: "13px",
                               cursor: "pointer",
                               transition: "all 0.2s"
                             }}
                             onMouseEnter={(e) => {
-                              e.target.style.background = "#f1f5f9";
+                              e.target.style.background = "var(--option-hover, #f1f5f9)";
                             }}
                             onMouseLeave={(e) => {
-                              e.target.style.background = "#ffffff";
+                              e.target.style.background = "var(--bg-card, #ffffff)";
                             }}
                           >
                             Reattempt
@@ -1311,6 +1330,9 @@ const CreateCustomQuiz = () => {
               })()}
             </div>
           )}
+
+          {/* Clearance spacer for mobile bottom navigation bar & floating chatbot */}
+          <div style={{ height: "130px", width: "100%", flexShrink: 0 }} />
         </div>
       </div>
 

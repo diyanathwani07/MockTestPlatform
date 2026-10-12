@@ -571,7 +571,7 @@ body.dark-mode .mobile-sidebar-toggle {
 
 @media (max-width: 768px) {
   .admin-navbar {
-    padding: 16px 16px 16px 70px;
+    padding: 12px 14px 12px 70px;
     flex-wrap: nowrap;
     gap: 8px;
   }
@@ -589,7 +589,7 @@ body.dark-mode .mobile-sidebar-toggle {
     gap: 5px;
   }
   .navbar-page-title {
-    font-size: 16px;
+    font-size: 15px;
   }
   .navbar-right-controls {
     gap: 8px;
