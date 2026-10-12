@@ -245,7 +245,7 @@
   background: var(--option-hover);
   transform: translateY(-4px);
   border-color: color-mix(in srgb, var(--primary) 35%, transparent);
-  box-shadow: 0 12px 32px -8px color-mix(in srgb, var(--primary) 22%, transparent);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4);
 }
 
 .me-exam-top {
@@ -325,7 +325,7 @@
   font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 25%, transparent);
+  box-shadow: none;
   width: 100%;
   justify-content: center;
   display: flex;
@@ -371,7 +371,7 @@
 }
 
 .me-btn-primary:hover {
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 40%, transparent);
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
@@ -734,6 +734,13 @@ body.dark-mode .me-exam-card,
   background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .me-btn-primary,
+.dark .me-btn-primary,
+body.dark-mode .me-btn-primary:hover,
+.dark .me-btn-primary:hover {
+  box-shadow: none !important;
 }
 
 .sr-score-box {
