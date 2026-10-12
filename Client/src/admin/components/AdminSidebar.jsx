@@ -9,7 +9,8 @@ import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
-import PixelSnow from '../../components/shadcn-space/animations/PixelSnow';
+
+const PixelSnow = React.lazy(() => import('../../components/shadcn-space/animations/PixelSnow'));
 
 const NAV_ITEMS = [
   { to: "/admin/dashboard",      icon: LayoutDashboard, label: "Dashboard",           permission: "dashboard" },
@@ -33,6 +34,7 @@ function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { collapsed, toggleSidebarCollapse } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [snowReady, setSnowReady] = useState(false);
   const { hasPermission, logout } = useAuth();
   const navigate = useNavigate();
   const { toggleThemePicker } = useTheme();
@@ -41,6 +43,19 @@ function AdminSidebar() {
     logout();
     navigate("/");
   };
+
+  React.useEffect(() => {
+    // Only mount heavy ambient effects when browser is idle to protect TBT & LCP
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(() => setSnowReady(true), { timeout: 2000 });
+        return () => window.cancelIdleCallback(id);
+      } else {
+        const timer = setTimeout(() => setSnowReady(true), 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -62,22 +77,26 @@ function AdminSidebar() {
 
       <aside className={`admin-sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
         {/* Animated PixelSnow Background (Winter) */}
-        <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
-          <PixelSnow
-            color="#ffffff"
-            flakeSize={0.015}
-            minFlakeSize={1.0}
-            pixelResolution={240}
-            speed={0.4}
-            density={0.15}
-            direction={95}
-            brightness={0.85}
-            depthFade={15}
-            farPlane={15}
-            gamma={0.4545}
-            variant="round"
-          />
-        </div>
+        {snowReady && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
+            <React.Suspense fallback={null}>
+              <PixelSnow
+                color="#ffffff"
+                flakeSize={0.015}
+                minFlakeSize={1.0}
+                pixelResolution={240}
+                speed={0.4}
+                density={0.15}
+                direction={95}
+                brightness={0.85}
+                depthFade={15}
+                farPlane={15}
+                gamma={0.4545}
+                variant="round"
+              />
+            </React.Suspense>
+          </div>
+        )}
 
         <div className="sidebar-logo" style={{ display: "flex", justifyContent: collapsed ? "center" : "space-between", alignItems: "center", padding: collapsed ? "0" : "0 16px", position: "relative", zIndex: 2, height: "64px" }}>
           {!collapsed && <Logo />}

@@ -9,6 +9,7 @@ import { usePreview } from "../context/PreviewContext";
 import NotificationBell from "./NotificationBell";
 import { useSidebar } from "../context/SidebarContext";
 import "../css/admin/AdminLayout.css"; // Reuse admin navbar styles
+import { optimizeAvatar } from "../utils/imageOptimizer";
 
 function StudentNavbar({ title, onNavigateBack }) {
   const { toggleTheme } = useTheme(); 
@@ -95,7 +96,15 @@ function StudentNavbar({ title, onNavigateBack }) {
               style={{ overflow: 'hidden', padding: 0 }}
             >
               {storedUser.avatar ? (
-                <img src={storedUser.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+                <img 
+                  src={optimizeAvatar(storedUser.avatar, 120)} 
+                  width="40"
+                  height="40"
+                  loading="lazy"
+                  decoding="async"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  alt="Avatar" 
+                />
               ) : (
                 initials
               )}

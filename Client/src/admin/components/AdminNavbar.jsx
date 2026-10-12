@@ -9,6 +9,7 @@ import NotificationBell from "../../components/NotificationBell";
 import { useSidebar } from "../../context/SidebarContext";
 import "../../css/admin/AdminLayout.css";
 import { useConfirm } from "../../context/ConfirmContext";
+import { optimizeAvatar } from "../../utils/imageOptimizer";
 
 function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard" }) {
   const confirm = useConfirm();
@@ -55,7 +56,15 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
                 style={{ overflow: 'hidden', padding: 0 }}
               >
                 {storedUser.avatar ? (
-                  <img src={storedUser.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+                  <img 
+                    src={optimizeAvatar(storedUser.avatar, 120)} 
+                    width="40"
+                    height="40"
+                    loading="lazy"
+                    decoding="async"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    alt="Avatar" 
+                  />
                 ) : (
                   initials
                 )}

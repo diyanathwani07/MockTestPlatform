@@ -257,7 +257,9 @@ export default function PixelSnow({
     });
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(container.offsetWidth, container.offsetHeight);
+    const initW = container.clientWidth || container.offsetWidth || 300;
+    const initH = container.clientHeight || container.offsetHeight || 600;
+    renderer.setSize(initW, initH);
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
@@ -267,7 +269,7 @@ export default function PixelSnow({
       fragmentShader,
       uniforms: {
         uTime: { value: 0 },
-        uResolution: { value: new Vector2(container.offsetWidth, container.offsetHeight) },
+        uResolution: { value: new Vector2(initW, initH) },
         uFlakeSize: { value: flakeSize },
         uMinFlakeSize: { value: minFlakeSize },
         uPixelResolution: { value: pixelResolution },

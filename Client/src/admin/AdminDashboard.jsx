@@ -378,6 +378,7 @@ function AdminDashboard() {
                       <select 
                         value={rangeDays} 
                         onChange={(e) => setRangeDays(parseInt(e.target.value, 10))}
+                        aria-label="Select date range for support performance"
                         style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
                       >
                         <option value={7}>Last 7 Days</option>
@@ -758,6 +759,7 @@ function AdminDashboard() {
                       <select 
                         value={rangeDays} 
                         onChange={(e) => setRangeDays(parseInt(e.target.value, 10))}
+                        aria-label="Select date range for analytics"
                         style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
                       >
                         <option value={7}>Last 7 Days</option>
