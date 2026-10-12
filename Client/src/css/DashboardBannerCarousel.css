@@ -15,7 +15,7 @@
 @media (max-width: 768px) {
   .dashboard-banner-container {
     height: auto;
-    aspect-ratio: 16 / 8;
+    aspect-ratio: 16 / 9;
     margin-bottom: 10px;
     border-radius: var(--border-radius-md, 12px);
   }
@@ -275,7 +275,7 @@
 }
 
 .banner-slide.pure-image-slide .banner-bg-img-element.full-width {
-  object-fit: fill;
+  object-fit: cover;
   width: 100%;
   height: 100%;
 }

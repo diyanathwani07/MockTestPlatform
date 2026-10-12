@@ -37,7 +37,21 @@ function StudentSidebar() {
   const [hasSubscription, setHasSubscription] = useState(getInitialSubscriptionStatus);
   const [isLogoutHovered, setIsLogoutHovered] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [snowReady, setSnowReady] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Only mount heavy ambient effects when browser is idle to protect TBT & LCP
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(() => setSnowReady(true), { timeout: 2000 });
+        return () => window.cancelIdleCallback(id);
+      } else {
+        const timer = setTimeout(() => setSnowReady(true), 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -114,7 +128,7 @@ function StudentSidebar() {
 
       <aside className={`student-sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         {/* Animated PixelSnow Background (Desktop Only, Winter) */}
-        {typeof window !== 'undefined' && window.innerWidth > 768 && !collapsed && (
+        {snowReady && typeof window !== 'undefined' && window.innerWidth > 768 && !collapsed && (
           <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }}>
             <React.Suspense fallback={null}>
               <PixelSnow

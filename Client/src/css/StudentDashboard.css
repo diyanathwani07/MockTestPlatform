@@ -388,6 +388,8 @@ body:not(.dark-mode) .sd-hero-target-pill .target-text {
   background: rgba(255, 255, 255, 0.2);
   pointer-events: none;
   animation: floatParticle 22s linear infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 body:not(.dark-mode) .ambient-particle {
@@ -580,11 +582,14 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
 .sd-stat-icon-wrapper.orange { background: rgba(249, 115, 22, 0.15); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.2); }
 .sd-stat-icon-wrapper.blue { background: color-mix(in srgb, var(--secondary) 15%, transparent); color: #93c5fd; border: 1px solid color-mix(in srgb, var(--secondary) 20%, transparent); }
 
-.sd-stat-info h3 {
+.sd-stat-info h3,
+.sd-stat-info .sd-stat-value {
   margin: 0 0 4px 0;
+  display: block;
   font-size: 24px;
   font-weight: 800;
   color: var(--text-primary);
+  line-height: 1.2;
 }
 
 .sd-stat-info p {

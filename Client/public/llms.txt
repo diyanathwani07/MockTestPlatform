@@ -1,0 +1,13 @@
+# PrepMark - Mock Tests & Preparation Platform
+
+> PrepMark is an interactive test preparation platform offering mock exams, timed practice tests, custom quiz creation, and real-time performance analytics for students preparing for competitive examinations.
+
+## Core Features
+- [Mock Tests](https://prepmark.vercel.app/dashboard/exams): Full-length mock test series with instant scoring and detailed question solutions.
+- [Practice Modules](https://prepmark.vercel.app/dashboard/practice): Topic-wise timed and untimed question sets for self-paced learning.
+- [Custom Quiz Creator](https://prepmark.vercel.app/dashboard/create-custom-quiz): Build personalized practice tests tailored to specific subjects and difficulty levels.
+- [Analytics & Results](https://prepmark.vercel.app/dashboard/results): Comprehensive performance metrics, accuracy rates, and leaderboard insights.
+
+## Documentation & Help
+- [Student Dashboard](https://prepmark.vercel.app/dashboard): Central student hub for overview stats, current streaks, and target exam progress.
+- [Help & Support](https://prepmark.vercel.app/dashboard/help): User guides, frequently asked questions, and student support ticketing.

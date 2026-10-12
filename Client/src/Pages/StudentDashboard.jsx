@@ -299,7 +299,7 @@ function StudentDashboard() {
               <ClipboardList size={24} />
             </div>
             <div className="sd-stat-info">
-              <h3>{mocksAttempted}</h3>
+              <span className="sd-stat-value">{mocksAttempted}</span>
               <p>Mocks Attempted</p>
             </div>
           </div>
@@ -309,7 +309,7 @@ function StudentDashboard() {
               <TrendingUp size={24} />
             </div>
             <div className="sd-stat-info">
-              <h3>{averageScore}%</h3>
+              <span className="sd-stat-value">{averageScore}%</span>
               <p>Average Score</p>
             </div>
           </div>
@@ -319,7 +319,7 @@ function StudentDashboard() {
               <Target size={24} />
             </div>
             <div className="sd-stat-info">
-              <h3>{bestScore}</h3>
+              <span className="sd-stat-value">{bestScore}</span>
               <p>Best Score</p>
               <span className="sd-stat-meta orange-text">{bestScoreExam}</span>
             </div>
@@ -330,7 +330,7 @@ function StudentDashboard() {
               <Calendar size={24} />
             </div>
             <div className="sd-stat-info">
-              <h3>{availableCount}</h3>
+              <span className="sd-stat-value">{availableCount}</span>
               <p>Exam Series</p>
             </div>
           </div>

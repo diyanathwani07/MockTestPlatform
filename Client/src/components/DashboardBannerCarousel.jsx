@@ -5,13 +5,20 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../css/DashboardBannerCarousel.css';
 
-export const optimizeBannerImage = (url, width = 1080) => {
+export const optimizeBannerImage = (url, width = 800) => {
   if (!url || typeof url !== 'string') return url;
   if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
-    if (url.includes('/image/upload/f_auto') || url.includes('/image/upload/q_auto')) {
+    // If it already contains an older width transformation, update it to width
+    if (url.includes('/image/upload/f_auto,q_auto:good,w_1080,c_limit/')) {
+      return url.replace('/image/upload/f_auto,q_auto:good,w_1080,c_limit/', `/image/upload/f_auto,q_auto,w_${width},c_limit/`);
+    }
+    if (url.includes('/image/upload/f_auto') || url.includes('/image/upload/q_')) {
       return url;
     }
-    return url.replace('/image/upload/', `/image/upload/f_auto,q_auto:good,w_${width},c_limit/`);
+    return url.replace('/image/upload/', `/image/upload/f_auto,q_auto,w_${width},c_limit/`);
+  }
+  if (url.includes('images.unsplash.com')) {
+    return url.replace(/w=\d+/, `w=${width}`).replace(/q=\d+/, 'q=70');
   }
   return url;
 };
@@ -19,7 +26,7 @@ export const optimizeBannerImage = (url, width = 1080) => {
 const MOCK_BANNERS = [
   {
     id: 1,
-    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1200&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=70&w=800&auto=format&fit=crop",
     category: "New Launch",
     title: "BPSC TRE 4.0",
     description: "Prepare smarter with full-length mock tests tailored to the latest pattern.",
@@ -29,7 +36,7 @@ const MOCK_BANNERS = [
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1200&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=70&w=800&auto=format&fit=crop",
     category: "Announcement",
     title: "New Mock Tests Added",
     description: "Practice the latest exam patterns and track your all-India ranking.",
@@ -39,7 +46,7 @@ const MOCK_BANNERS = [
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=70&w=800&auto=format&fit=crop",
     category: "Pro Tip",
     title: "Analyze Your Weaknesses",
     description: "Use our AI-driven score trend to identify which subjects need more focus.",
@@ -123,15 +130,18 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
   }, [isPaused, paginate, banners.length]);
 
   useEffect(() => {
-    if (banners && banners.length > 0) {
-      banners.forEach((b) => {
-        if (b.image) {
+    // Only preload next banner after initial mount settles to avoid competing for initial network bandwidth
+    if (banners && banners.length > 1) {
+      const timer = setTimeout(() => {
+        const nextIdx = (imageIndex + 1) % banners.length;
+        if (banners[nextIdx]?.image) {
           const img = new Image();
-          img.src = optimizeBannerImage(b.image, 1080);
+          img.src = optimizeBannerImage(banners[nextIdx].image, 800);
         }
-      });
+      }, 2500);
+      return () => clearTimeout(timer);
     }
-  }, [banners]);
+  }, [banners, imageIndex]);
 
   if (!banners || banners.length === 0) return null;
 
@@ -181,12 +191,14 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
           >
             <div className={`banner-bg-image ${isPureImage ? 'full-width' : ''}`}>
               <img
-                src={optimizeBannerImage(activeBanner.image, 1080)}
+                src={optimizeBannerImage(activeBanner.image, 800)}
                 alt={activeBanner.title || activeBanner.category || "PrepMark Banner"}
                 fetchPriority={imageIndex === 0 ? "high" : "auto"}
                 loading={imageIndex === 0 ? "eager" : "lazy"}
                 decoding="async"
                 draggable={false}
+                width="800"
+                height="450"
                 className={`banner-bg-img-element ${isPureImage ? 'full-width' : ''}`}
               />
             </div>

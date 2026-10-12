@@ -52,7 +52,12 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
             return (
               <div 
                 className="avatar-neon-trigger" 
+                role="button"
+                tabIndex={0}
+                aria-label="Open admin profile menu"
+                aria-expanded={profileOpen}
                 onClick={() => { setProfileOpen(!profileOpen); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setProfileOpen(!profileOpen); } }}
                 style={{ overflow: 'hidden', padding: 0 }}
               >
                 {storedUser.avatar ? (

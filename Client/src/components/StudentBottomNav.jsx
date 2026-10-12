@@ -154,6 +154,7 @@ const StudentBottomNav = () => {
         {/* Pin Shape Link */}
         <NavLink 
           to="/dashboard/exams"
+          aria-label="Exams"
           className={({ isActive }) => `relative w-[56px] h-[61px] flex justify-center items-center pointer-events-auto transition-transform active:scale-95 ${isActive ? 'scale-105' : ''}`}
         >
           {/* Main Pin Shape */}
@@ -213,12 +214,14 @@ const StudentBottomNav = () => {
           <NavLink 
             to="/dashboard"
             end
+            aria-label="Dashboard"
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(Home, "Dashboard", isActive)}
           </NavLink>
           <NavLink 
             to="/dashboard/practice"
+            aria-label="Practice"
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(Target, "Practice", isActive)}
@@ -232,12 +235,14 @@ const StudentBottomNav = () => {
         <div className="flex-[0.43] flex justify-around items-center h-full">
           <NavLink 
             to="/dashboard/create-custom-quiz"
+            aria-label="Custom Quiz"
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(FilePlus, "Custom", isActive)}
           </NavLink>
           <NavLink 
             to="/dashboard/results"
+            aria-label="Results"
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(LineChart, "Results", isActive)}

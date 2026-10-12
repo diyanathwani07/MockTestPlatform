@@ -92,7 +92,12 @@ function StudentNavbar({ title, onNavigateBack }) {
           <div className="profile-dropdown-wrapper">
             <div 
               className="avatar-neon-trigger" 
+              role="button"
+              tabIndex={0}
+              aria-label="Open profile menu"
+              aria-expanded={profileOpen}
               onClick={() => { setProfileOpen(!profileOpen); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setProfileOpen(!profileOpen); } }}
               style={{ overflow: 'hidden', padding: 0 }}
             >
               {storedUser.avatar ? (

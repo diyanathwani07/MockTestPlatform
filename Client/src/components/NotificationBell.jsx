@@ -191,6 +191,7 @@ export default function NotificationBell() {
         onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
         title={unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}` : "Notifications"}
+        aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : "Notifications"}
       >
         <Bell size={20} />
         {unreadCount > 0 && (
