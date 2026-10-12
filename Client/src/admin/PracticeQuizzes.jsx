@@ -4,7 +4,7 @@ import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
 import DocxParser from "./components/DocxParser";
-import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, ArrowRightLeft, Search } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, Clock, ArrowRightLeft, Search } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
 import { useConfirm } from "../context/ConfirmContext";
 
@@ -749,7 +749,7 @@ function PracticeQuizzes() {
                 style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-color)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
               >
                 <span>{`${scheduledHour}:${scheduledMinute} ${scheduledPeriod}`}</span>
-                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+                <Clock size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
               </button>
 
               {showTimePicker && (

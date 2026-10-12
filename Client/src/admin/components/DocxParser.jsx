@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import mammoth from "mammoth";
+import { FileText, Upload } from "lucide-react";
 
 /**
  * DocxParser Component (Bilingual Options Version)
@@ -114,8 +115,18 @@ function DocxParser({ onQuestionsLoaded }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1 1 auto", minWidth: "150px" }}>
-        <span style={{ fontSize: "12.5px", fontWeight: "700", color: "var(--text-primary)" }}>
-          {dragActive ? "🔥 Drop your .docx file here!" : "📄 Import Qs (.docx) or Drag & Drop"}
+        <span style={{ fontSize: "12.5px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "7px" }}>
+          {dragActive ? (
+            <>
+              <Upload size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
+              <span>Drop your .docx file here!</span>
+            </>
+          ) : (
+            <>
+              <FileText size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
+              <span>Import Qs (.docx) or Drag & Drop</span>
+            </>
+          )}
         </span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
@@ -181,14 +192,17 @@ function DocxParser({ onQuestionsLoaded }) {
             gap: "6px", 
             padding: "6px 12px", 
             borderRadius: "6px", 
-            backgroundColor: "var(--primary)",
-            color: "var(--primary-foreground)",
-            fontSize: "12px",
-            fontWeight: "700",
-            transition: "all 0.2s",
-            boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+            backgroundColor: "var(--primary)", 
+            color: "var(--primary-foreground)", 
+            fontSize: "12px", 
+            fontWeight: "700", 
+            transition: "all 0.2s", 
+            boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)",
+            whiteSpace: "nowrap",
+            flexShrink: 0
           }}>
-            <span>{parsing ? "Parsing..." : "📥 Import"}</span>
+            <Upload size={13} style={{ flexShrink: 0 }} />
+            <span>{parsing ? "Parsing..." : "Import"}</span>
           </div>
         </label>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { Sparkles } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
@@ -563,7 +564,9 @@ function CreateQuizMulti() {
 
           {activeSection && (
             <div className="form-card compact-card import-container-mobile-only" style={{ gap: "10px", alignItems: "center", margin: "0 auto 20px auto", maxWidth: "1200px", width: "calc(100% - 48px)", boxSizing: "border-box" }}>
-              <DocxParser onQuestionsLoaded={handleDocxImport} />
+              <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+                <DocxParser onQuestionsLoaded={handleDocxImport} />
+              </div>
               <button
                 type="button"
                 onClick={() => setAiPanelOpen(!aiPanelOpen)}
@@ -582,10 +585,13 @@ function CreateQuizMulti() {
                   height: "40px",
                   boxSizing: "border-box",
                   transition: "all 0.2s ease",
-                  boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                  boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0
                 }}
               >
-                ✨ AI Generate
+                <Sparkles size={16} />
+                <span>AI Generate</span>
               </button>
             </div>
           )}
@@ -1500,7 +1506,9 @@ function CreateQuizMulti() {
                       </button>
                     </div>
                      <div className="import-container-desktop-only" style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0 }}>
-                      <DocxParser onQuestionsLoaded={handleDocxImport} />
+                      <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+                        <DocxParser onQuestionsLoaded={handleDocxImport} />
+                      </div>
                       <button
                         type="button"
                         onClick={() => setAiPanelOpen(!aiPanelOpen)}
@@ -1519,10 +1527,13 @@ function CreateQuizMulti() {
                           height: "40px",
                           boxSizing: "border-box",
                           transition: "all 0.2s ease",
-                          boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                          boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)",
+                          whiteSpace: "nowrap",
+                          flexShrink: 0
                         }}
                       >
-                        ✨ AI Generate
+                        <Sparkles size={16} />
+                        <span>AI Generate</span>
                       </button>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Info } from "lucide-react";
+import { Info, Calendar, Clock, Sparkles } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
@@ -1270,8 +1270,9 @@ function EditQuiz() {
         <div className="admin-content">
           <div className="create-quiz-page">
             {pageLoading ? (
-              <div style={{ textAlign: "center", padding: "50px", fontSize: "16px", color: "var(--text-secondary)" }}>
-                ⏳ Pulling quiz record from MongoDB...
+              <div style={{ textAlign: "center", padding: "50px", fontSize: "16px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <Clock size={18} style={{ color: "var(--violet)" }} />
+                <span>Pulling quiz record from MongoDB...</span>
               </div>
             ) : (
               <>
@@ -1867,7 +1868,9 @@ function EditQuiz() {
                   <div className="admin-quiz-right-panel">
                     {/* 4. Docx Parser Card */}
                     <div className="form-card compact-card" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                      <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
+                      <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+                        <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
+                      </div>
                       <button
                         type="button"
                         onClick={() => setAiPanelOpen(!aiPanelOpen)}
@@ -1886,10 +1889,13 @@ function EditQuiz() {
                           height: "40px",
                           boxSizing: "border-box",
                           transition: "all 0.2s ease",
-                          boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)"
+                          boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)",
+                          whiteSpace: "nowrap",
+                          flexShrink: 0
                         }}
                       >
-                        ✨ AI Generate
+                        <Sparkles size={16} />
+                        <span>AI Generate</span>
                       </button>
                     </div>
 
@@ -1939,7 +1945,7 @@ function EditQuiz() {
                                 }}
                               >
                                 <span>{scheduledDate ? formatDateDisplay(scheduledDate) : "Select Date"}</span>
-                                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
+                                <Calendar size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                               </button>
 
                               {showDatePicker && (
@@ -2135,7 +2141,7 @@ function EditQuiz() {
                                 }}
                               >
                                 <span>{`${scheduledHour}:${scheduledMinute} ${scheduledPeriod}`}</span>
-                                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+                                <Clock size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                               </button>
 
                               {showTimePicker && (
@@ -2308,7 +2314,7 @@ function EditQuiz() {
                                   style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                                 >
                                   <span>{unpublishDate ? formatDateDisplay(unpublishDate) : "Select Date"}</span>
-                                  <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
+                                  <Calendar size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                                 </button>
 
                                 {showUnpublishDatePicker && (
@@ -2360,7 +2366,7 @@ function EditQuiz() {
                                   style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                                 >
                                   <span>{`${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`}</span>
-                                  <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+                                  <Clock size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                                 </button>
 
                                 {showUnpublishTimePicker && (
@@ -2421,7 +2427,7 @@ function EditQuiz() {
 
                               {unpublishDateTime && (
                                 <div style={{ marginTop: "6px", padding: "8px 12px", borderRadius: "8px", backgroundColor: "rgba(110, 63, 243, 0.08)", border: "1px solid rgba(110, 63, 243, 0.2)", fontSize: "12px", color: "var(--violet)", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-                                  <span>⏳</span>
+                                  <Clock size={14} style={{ color: "var(--violet)", flexShrink: 0 }} />
                                   <span>
                                     {isScheduled && scheduledDateTime
                                       ? `Window: ${formatDateDisplay(scheduledDate)} ${scheduledHour}:${scheduledMinute} ${scheduledPeriod} → ${formatDateDisplay(unpublishDate)} ${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`
@@ -2499,7 +2505,7 @@ function EditQuiz() {
                                          style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                                        >
                                          <span>{resultReleaseDateOnly ? formatDateDisplay(resultReleaseDateOnly) : "Select Date"}</span>
-                                         <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
+                                         <Calendar size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                                        </button>
 
                                        {showResultReleaseDatePicker && (
@@ -2551,7 +2557,7 @@ function EditQuiz() {
                                          style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                                        >
                                          <span>{`${resultReleaseHour}:${resultReleaseMinute} ${resultReleasePeriod}`}</span>
-                                         <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+                                         <Clock size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                                        </button>
 
                                        {showResultReleaseTimePicker && (
@@ -2711,7 +2717,7 @@ function EditQuiz() {
                                          style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                                        >
                                          <span>{practiceResultReleaseDateOnly ? formatDateDisplay(practiceResultReleaseDateOnly) : "Select Date"}</span>
-                                         <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>📅</span>
+                                         <Calendar size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                                        </button>
 
                                        {showPracticeResultReleaseDatePicker && (
@@ -2763,7 +2769,7 @@ function EditQuiz() {
                                          style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
                                        >
                                          <span>{`${practiceResultReleaseHour}:${practiceResultReleaseMinute} ${practiceResultReleasePeriod}`}</span>
-                                         <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>🕒</span>
+                                         <Clock size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                                        </button>
 
                                        {showPracticeResultReleaseTimePicker && (

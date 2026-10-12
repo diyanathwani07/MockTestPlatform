@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Eye, Edit2, Calendar, Trash2, Copy, Search, EyeOff, UploadCloud, Tag, AlertTriangle, X, FileText, CheckCircle, ChevronDown, ChevronUp, Grid, List, User } from "lucide-react";
+import { Eye, Edit2, Calendar, Clock, Trash2, Copy, Search, EyeOff, UploadCloud, Tag, AlertTriangle, X, FileText, CheckCircle, ChevronDown, ChevronUp, Grid, List, User } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
 import { useConfirm } from "../context/ConfirmContext";
 import { useAuth } from "../context/AuthContext";
@@ -1039,12 +1039,14 @@ function ManageQuizzes() {
                               {quiz.status || "Draft"}
                             </span>
                             {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
-                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600" }}>
-                                📅 {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                <Clock size={11} style={{ flexShrink: 0 }} />
+                                {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             ) : quiz.scheduledDate ? (
-                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600" }}>
-                                🕒 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}
+                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                <Calendar size={11} style={{ flexShrink: 0 }} />
+                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}
                               </span>
                             ) : null}
                           </div>
@@ -1178,8 +1180,9 @@ function ManageQuizzes() {
                               {quiz.status || "Draft"}
                             </span>
                             {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
-                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
-                                📅 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                <Calendar size={12} style={{ flexShrink: 0 }} />
+                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             ) : quiz.scheduledDate ? (
                               <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
@@ -1187,8 +1190,9 @@ function ManageQuizzes() {
                               </span>
                             ) : null}
                             {quiz.status === "Published" && quiz.unpublishDate && (
-                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
-                                ⏳ Closes: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                <Clock size={12} style={{ flexShrink: 0 }} />
+                                Closes: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             )}
                             {quiz.status === "Expired" && quiz.unpublishDate && (
