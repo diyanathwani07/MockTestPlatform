@@ -181,9 +181,9 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
             <button
               onClick={handleExportCSV}
               style={{
-                backgroundColor: "var(--violet, #8b5cf6)",
+                backgroundColor: "var(--primary)",
                 border: "none",
-                color: "#ffffff",
+                color: "var(--primary-foreground)",
                 padding: "8px 14px",
                 borderRadius: "8px",
                 cursor: "pointer",
@@ -261,8 +261,8 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
                   fontSize: "12px",
                   fontWeight: "600",
                   cursor: "pointer",
-                  backgroundColor: statusFilter === f.val ? "var(--violet, #8b5cf6)" : "transparent",
-                  color: statusFilter === f.val ? "#ffffff" : "var(--text-secondary, #94a3b8)",
+                  backgroundColor: statusFilter === f.val ? "var(--primary)" : "transparent",
+                  color: statusFilter === f.val ? "var(--primary-foreground)" : "var(--text-secondary)",
                 }}
               >
                 {f.label}

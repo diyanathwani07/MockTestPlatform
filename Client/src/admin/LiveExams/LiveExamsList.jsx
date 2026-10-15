@@ -288,9 +288,9 @@ export default function LiveExamsList() {
                   setShowCreateModal(true);
                 }}
                 style={{
-                  backgroundColor: "var(--violet, #8b5cf6)",
+                  backgroundColor: "var(--primary)",
                   border: "none",
-                  color: "#ffffff",
+                  color: "var(--primary-foreground)",
                   padding: "10px 18px",
                   borderRadius: "10px",
                   cursor: "pointer",
@@ -299,7 +299,7 @@ export default function LiveExamsList() {
                   gap: "8px",
                   fontSize: "14px",
                   fontWeight: "700",
-                  boxShadow: "0 4px 14px rgba(139, 92, 246, 0.4)",
+                  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.15)",
                 }}
               >
                 <Plus size={18} /> Schedule Live Exam
@@ -414,8 +414,8 @@ export default function LiveExamsList() {
                     fontSize: "13px",
                     fontWeight: "600",
                     cursor: "pointer",
-                    backgroundColor: statusTab === tab.val ? "var(--violet, #8b5cf6)" : "transparent",
-                    color: statusTab === tab.val ? "#ffffff" : "var(--text-secondary)",
+                    backgroundColor: statusTab === tab.val ? "var(--primary)" : "transparent",
+                    color: statusTab === tab.val ? "var(--primary-foreground)" : "var(--text-secondary)",
                     transition: "all 0.15s ease",
                   }}
                 >
@@ -480,9 +480,9 @@ export default function LiveExamsList() {
                   setShowCreateModal(true);
                 }}
                 style={{
-                  backgroundColor: "var(--violet, #8b5cf6)",
+                  backgroundColor: "var(--primary)",
                   border: "none",
-                  color: "#ffffff",
+                  color: "var(--primary-foreground)",
                   padding: "8px 16px",
                   borderRadius: "8px",
                   cursor: "pointer",
@@ -568,14 +568,14 @@ export default function LiveExamsList() {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Calendar size={15} color="var(--violet, #8b5cf6)" />
+                        <Calendar size={15} color="var(--primary)" />
                         <span>
                           {startDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
                         </span>
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Clock size={15} color="var(--violet, #8b5cf6)" />
+                        <Clock size={15} color="var(--primary)" />
                         <span>
                           {startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} –{" "}
                           {endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ({exam.duration}m limit)

@@ -408,15 +408,15 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
               padding: "8px 12px",
               borderRadius: "8px",
               backgroundColor: "rgba(139, 92, 246, 0.08)",
-              border: "1px solid rgba(139, 92, 246, 0.2)",
-              color: "var(--text-secondary, #94a3b8)",
+              border: "1px solid var(--border-color)",
+              color: "var(--text-secondary)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
             }}
           >
             <span>
-              Total Scheduled Window: <strong style={{ color: "var(--violet, #8b5cf6)" }}>{windowMinutes} minutes</strong>
+              Total Scheduled Window: <strong style={{ color: "var(--primary)" }}>{windowMinutes} minutes</strong>
             </span>
             <span>
               Lobby opens: <strong>{entryWindowMinutes} mins before start</strong>
@@ -440,14 +440,14 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                   width: "100%",
                   padding: "9px 12px",
                   borderRadius: "10px",
-                  border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                  backgroundColor: "var(--bg-page, #12121a)",
-                  color: "var(--text-primary, #ffffff)",
+                  border: "1px solid var(--border-color)",
+                  backgroundColor: "var(--bg-page)",
+                  color: "var(--text-primary)",
                   fontSize: "13px",
                   outline: "none",
                 }}
               />
-              <span style={{ fontSize: "11px", color: "var(--text-muted, #64748b)" }}>
+              <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
                 Max permitted time per student
               </span>
             </div>
@@ -464,14 +464,14 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                   width: "100%",
                   padding: "9px 12px",
                   borderRadius: "10px",
-                  border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                  backgroundColor: "var(--bg-page, #12121a)",
-                  color: "var(--text-primary, #ffffff)",
+                  border: "1px solid var(--border-color)",
+                  backgroundColor: "var(--bg-page)",
+                  color: "var(--text-primary)",
                   fontSize: "13px",
                   outline: "none",
                 }}
               />
-              <span style={{ fontSize: "11px", color: "var(--text-muted, #64748b)" }}>
+              <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
                 Lobby opens this many mins prior
               </span>
             </div>
@@ -486,8 +486,8 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 gap: "10px",
                 padding: "10px 14px",
                 borderRadius: "10px",
-                backgroundColor: "var(--bg-page, #12121a)",
-                border: "1px solid var(--border-color, rgba(255,255,255,0.1))",
+                backgroundColor: "var(--bg-page)",
+                border: "1px solid var(--border-color)",
                 cursor: "pointer",
                 fontSize: "13px",
               }}
@@ -496,11 +496,11 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 type="checkbox"
                 checked={allowLateEntry}
                 onChange={(e) => setAllowLateEntry(e.target.checked)}
-                style={{ width: "16px", height: "16px", accentColor: "var(--violet, #8b5cf6)" }}
+                style={{ width: "16px", height: "16px", accentColor: "var(--primary)" }}
               />
               <div>
                 <strong>Allow Late Entry</strong>
-                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary, #94a3b8)" }}>
+                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>
                   Entry allowed until scheduled end
                 </p>
               </div>
@@ -513,8 +513,8 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 gap: "10px",
                 padding: "10px 14px",
                 borderRadius: "10px",
-                backgroundColor: "var(--bg-page, #12121a)",
-                border: "1px solid var(--border-color, rgba(255,255,255,0.1))",
+                backgroundColor: "var(--bg-page)",
+                border: "1px solid var(--border-color)",
                 cursor: "pointer",
                 fontSize: "13px",
               }}
@@ -523,11 +523,11 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 type="checkbox"
                 checked={autoSubmitOnDeadline}
                 onChange={(e) => setAutoSubmitOnDeadline(e.target.checked)}
-                style={{ width: "16px", height: "16px", accentColor: "var(--violet, #8b5cf6)" }}
+                style={{ width: "16px", height: "16px", accentColor: "var(--primary)" }}
               />
               <div>
                 <strong>Auto-Submit on Deadline</strong>
-                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary, #94a3b8)" }}>
+                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>
                   Closes active attempts at end time
                 </p>
               </div>
@@ -551,17 +551,17 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                   style={{
                     padding: "10px 12px",
                     borderRadius: "10px",
-                    border: `1.5px solid ${webcamRule === opt.val ? "var(--violet, #8b5cf6)" : "var(--border-color, rgba(255,255,255,0.1))"}`,
-                    backgroundColor: webcamRule === opt.val ? "rgba(139, 92, 246, 0.12)" : "var(--bg-page, #12121a)",
+                    border: `1.5px solid ${webcamRule === opt.val ? "var(--primary)" : "var(--border-color)"}`,
+                    backgroundColor: webcamRule === opt.val ? "var(--bg-card)" : "var(--bg-page)",
                     cursor: "pointer",
                     textAlign: "center",
                     transition: "all 0.15s ease",
                   }}
                 >
-                  <strong style={{ fontSize: "13px", display: "block", color: webcamRule === opt.val ? "var(--violet, #8b5cf6)" : "inherit" }}>
+                  <strong style={{ fontSize: "13px", display: "block", color: webcamRule === opt.val ? "var(--primary)" : "inherit" }}>
                     {opt.label}
                   </strong>
-                  <span style={{ fontSize: "11px", color: "var(--text-secondary, #94a3b8)" }}>{opt.desc}</span>
+                  <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{opt.desc}</span>
                 </div>
               ))}
             </div>
@@ -584,17 +584,17 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                   style={{
                     padding: "10px 12px",
                     borderRadius: "10px",
-                    border: `1.5px solid ${resultReleaseMode === opt.val ? "var(--violet, #8b5cf6)" : "var(--border-color, rgba(255,255,255,0.1))"}`,
-                    backgroundColor: resultReleaseMode === opt.val ? "rgba(139, 92, 246, 0.12)" : "var(--bg-page, #12121a)",
+                    border: `1.5px solid ${resultReleaseMode === opt.val ? "var(--primary)" : "var(--border-color)"}`,
+                    backgroundColor: resultReleaseMode === opt.val ? "var(--bg-card)" : "var(--bg-page)",
                     cursor: "pointer",
                     textAlign: "center",
                     transition: "all 0.15s ease",
                   }}
                 >
-                  <strong style={{ fontSize: "13px", display: "block", color: resultReleaseMode === opt.val ? "var(--violet, #8b5cf6)" : "inherit" }}>
+                  <strong style={{ fontSize: "13px", display: "block", color: resultReleaseMode === opt.val ? "var(--primary)" : "inherit" }}>
                     {opt.label}
                   </strong>
-                  <span style={{ fontSize: "11px", color: "var(--text-secondary, #94a3b8)" }}>{opt.desc}</span>
+                  <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{opt.desc}</span>
                 </div>
               ))}
             </div>
@@ -682,13 +682,13 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 padding: "10px 22px",
                 borderRadius: "10px",
                 border: "none",
-                backgroundColor: "var(--violet, #8b5cf6)",
-                color: "#ffffff",
+                backgroundColor: "var(--primary)",
+                color: "var(--primary-foreground)",
                 fontSize: "14px",
                 fontWeight: "700",
                 cursor: submitting ? "not-allowed" : "pointer",
                 opacity: submitting ? 0.7 : 1,
-                boxShadow: "0 4px 14px rgba(139, 92, 246, 0.4)",
+                boxShadow: "0 4px 14px rgba(0, 0, 0, 0.2)",
               }}
             >
               {submitting ? "Saving..." : editExam ? "Save Changes" : "Schedule Live Exam"}
