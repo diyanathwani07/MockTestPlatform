@@ -28,7 +28,7 @@ html[class*="theme-"] :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn) {
+:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -40,6 +40,15 @@ html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="backgroundColor
 html[class*="theme-"] .theme-toggle-btn {
   color: inherit !important;
 }
+
+/* Explicit contrast preservation for Live Examination buttons across all themes */
+:is(.live-btn-secondary, .live-btn-camera) {
+  color: var(--text-primary) !important;
+}
+:is(.live-btn-camera svg) {
+  color: var(--primary) !important;
+}
+
 
 /* Explicit contrast preservation for Leaderboard dropdown elements across all themes */
 :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [class*="lb-dropdown"]) {

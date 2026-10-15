@@ -441,11 +441,10 @@ function LiveExamLobby() {
                   type="button"
                   onClick={handleVerifyWebcam}
                   disabled={webcamStatus === "testing"}
-                  className="live-btn-secondary"
-                  style={{ gap: "8px" }}
+                  className="live-btn-camera"
                 >
-                  <Video size={16} />
-                  {webcamStatus === "testing" ? "Accessing Camera..." : "Test & Verify Camera"}
+                  <Video size={18} color="var(--primary)" />
+                  <span>{webcamStatus === "testing" ? "Accessing Camera..." : "Test & Verify Camera"}</span>
                 </button>
 
                 {webcamError && (
