@@ -167,6 +167,7 @@ app.use("/api/admin/ai-plans", require("./routes/aiPlanRoutes"));
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/admin/revenue", revenueRoutes);
 app.use("/api/taxonomies", require("./routes/taxonomyRoutes"));
+app.use("/api/live-exams", require("./routes/liveExamRoutes"));
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes to publish and expired quizzes to unpublish
 setInterval(async () => {
   try {

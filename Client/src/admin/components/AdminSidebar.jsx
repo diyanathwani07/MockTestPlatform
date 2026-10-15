@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
-  LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers, PanelLeft
+  LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers, PanelLeft, Radio
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: "/admin/dashboard",      icon: LayoutDashboard, label: "Dashboard",           permission: "dashboard" },
   { to: "/admin/create-quiz",    icon: Edit3,           label: "Create Quiz",         permission: "create_quiz" },
   { to: "/admin/manage-quizzes", icon: ClipboardList,   label: "Manage Quizzes",      permission: "edit_quiz" },
+  { to: "/admin/live-exams",     icon: Radio,           label: "Live Examinations",   permission: "edit_quiz" },
   { to: "/admin/exams",          icon: Layers,          label: "Manage Exams",        permission: "edit_quiz" },
   { to: "/admin/practice",       icon: BookOpen,        label: "Practice Modules",    permission: "manage_practice_tests" },
   { to: "/admin/flashcards",     icon: Layers,          label: "Flashcards",          permission: "edit_quiz" },
@@ -35,7 +36,7 @@ function AdminSidebar() {
   const { collapsed, toggleSidebarCollapse } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [snowReady, setSnowReady] = useState(false);
-  const { hasPermission, logout } = useAuth();
+  const { hasPermission, logout, role } = useAuth();
   const navigate = useNavigate();
   const { toggleThemePicker } = useTheme();
 
@@ -143,7 +144,7 @@ function AdminSidebar() {
         </div>
         <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>
           {NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
-            hasPermission(permission) ? (
+            (hasPermission(permission) || role === "admin" || role === "superadmin") ? (
               <NavLink
                 key={to}
                 to={to}
