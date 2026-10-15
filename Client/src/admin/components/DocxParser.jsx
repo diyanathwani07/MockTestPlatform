@@ -229,17 +229,52 @@ function DocxParser({ onQuestionsLoaded }) {
 function parseQuestionsFromText(text) {
   const sections = [];
 
-  // Split by section markers (e.g., "Section: Aptitude", "Section 1")
-    const sectionChunks = text.split(new RegExp(`\\n(?=(?:\\b(?:Section|Part|Subject)\\s*[:\\-]\\s*[^\\n]{1,60}\\s*(?:\\n|\$))|(?:(?:\\b(?:Section|Part)\\s+(?:[IVX]+|\\d+)\\s*)|(?:\\d+|[IVX]+)[\\)\\\.]\\s*)(?:Child Development and Pedagogy|Child Development & Pedagogy|Child Development|Pedagogy|Hindi|English|Sanskrit|Urdu|Language(?: I| II| 1| 2)?|Mathematics and Science|Mathematics & Science|Mathematics|Maths|Math|Environmental Studies|EVS|Science|Social Science|Social Studies|Physics|Chemistry|Biology|History|Geography|Polity|Economics|Reasoning|Aptitude|General Knowledge|GK|General Awareness|General Studies|\\u092C\\u093E\\u0932 \\u0935\\u093F\\u0915\\u093E\\u0938|\\u0939\\u093F\\u0928\\u094D\\u0926\\u0940|\\u0905\\u0902\\u0917\\u094D\\u0930\\u0947\\u091C\\u0940|\\u0938\\u0902\\u0938\\u094D\\u0915\\u0943\\u0924|\\u0917\\u0923\\u093F\\u0924|\\u0935\\u093F\\u091C\\u094D\\u091E\\u093E\\u0928|\\u0938\\u093E\\u092E\\u093E\\u091C\\u093F\\u0915|\\u092A\\u0930\\u094D\\u092F\\u093E\\u0935\\u0930\\u0923)(?:\\s*\\(.*?\\))?\\s*(?:\\n|\$))`, 'i')).filter(Boolean);
+  // Split by section markers (e.g., "Section: Aptitude", "Section 1", "Subject: Hindi")
+  const subjectWhitelist = '(?:Child Development and Pedagogy|Child Development & Pedagogy|Child Development|Pedagogy|Hindi|English|Sanskrit|Urdu|Language(?: I| II| 1| 2)?|Mathematics and Science|Mathematics & Science|Mathematics|Maths|Math|Environmental Studies|EVS|Science|Social Science|Social Studies|Physics|Chemistry|Biology|History|Geography|Polity|Economics|Reasoning|Aptitude|General Knowledge|GK|General Awareness|General Studies|\\u092C\\u093E\\u0932 \\u0935\\u093F\\u0915\\u093E\\u0938|\\u0939\\u093F\\u0928\\u094D\\u0926\\u0940|\\u0905\\u0902\\u0917\\u094D\\u0930\\u0947\\u091C\\u0940|\\u0938\\u0902\\u0938\\u094D\\u0915\\u0943\\u0924|\\u0917\\u0923\\u093F\\u0924|\\u0935\\u093F\\u091C\\u094D\\u091E\\u093E\\u0928|\\u0938\\u093E\\u092E\\u093E\\u091C\\u093F\\u0915|\\u092A\\u0930\\u094D\\u092F\\u093E\\u0935\\u0930\\u0923)(?:\\s*\\(.*?\\))?';
+
+  const sectionRegexPattern = [
+    // Branch 1: Explicit 'Section' or 'Part' with colon or spaced dash (supports custom names)
+    '(?:\\b(?:Section|Part)(?:\\s+(?:[IVXLCDM]+|\\d+|[A-Z]))?\\s*(?::|\\s+[-–—]\\s+)\\s*[^\\n]{1,60}\\s*(?:\\n|$))',
+    // Branch 2: 'Section 1' or 'Part A' on its own line
+    '(?:\\b(?:Section|Part)\\s+(?:[IVXLCDM]+|\\d+|[A-Z])\\s*(?:\\n|$))',
+    // Branch 3: Explicit 'Subject' with colon or spaced dash followed by whitelisted subject
+    '(?:\\bSubject\\s*(?::|\\s+[-–—]\\s+)\\s*' + subjectWhitelist + '\\s*(?:\\n|$))',
+    // Branch 4: Numbered or labeled whitelisted subjects (e.g. '1. Hindi', 'Part I: Child Development', 'Section 1 Hindi')
+    '(?:(?:(?:\\b(?:Section|Part)\\s+(?:[IVXLCDM]+|\\d+|[A-Z])\\s*)|(?:\\d+|[IVXLCDM]+|[A-Z])[\\)\\.]\\s*)' + subjectWhitelist + '\\s*(?:\\n|$))'
+  ].join('|');
+
+  const sectionChunks = text.split(new RegExp('\\n(?=' + sectionRegexPattern + ')', 'i')).filter(Boolean);
 
   for (const chunk of sectionChunks) {
     let sectionTitle = "Default";
     let chunkText = chunk.trim();
 
-    const sectionMatch = chunkText.match(/^(?:(?:Section|Part|Subject)\s*[:\-]\s*|(?:Section|Part)\s+(?:[IVX]+|\d+)\s*|(?:\d+|[IVX]+)[\)\.]\s*)(.+)/i);
-    if (sectionMatch) {
-      sectionTitle = sectionMatch[1].trim();
-      chunkText = chunkText.replace(/^(?:(?:Section|Part|Subject)\s*[:\-]\s*|(?:Section|Part)\s+(?:[IVX]+|\d+)\s*|(?:\d+|[IVX]+)[\)\.]\s*)(.+)/i, "").trim();
+    // 1. Explicit Section or Part with optional number/letter and colon/spaced-dash
+    let sMatch = chunkText.match(/^(?:Section|Part)(?:\s+(?:[IVXLCDM]+|\d+|[A-Z]))?\s*(?::|\s+[-–—]\s+)\s*([^\n]+)/i);
+    if (sMatch) {
+      sectionTitle = sMatch[1].trim();
+      chunkText = chunkText.replace(/^(?:Section|Part)(?:\s+(?:[IVXLCDM]+|\d+|[A-Z]))?\s*(?::|\s+[-–—]\s+)\s*[^\n]+(?:\n|$)/i, "").trim();
+    } else {
+      // 2. 'Section 1' or 'Part A' alone on a line
+      sMatch = chunkText.match(/^(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])(?:\s*[\:\.\)]\s*)?$/im);
+      if (sMatch) {
+        sectionTitle = sMatch[0].trim();
+        chunkText = chunkText.replace(/^(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])(?:\s*[\:\.\)]\s*)?(?:\n|$)/im, "").trim();
+      } else {
+        // 3. Explicit Subject with colon/spaced-dash
+        sMatch = chunkText.match(/^Subject\s*(?::|\s+[-–—]\s+)\s*([^\n]+)/i);
+        if (sMatch) {
+          sectionTitle = sMatch[1].trim();
+          chunkText = chunkText.replace(/^Subject\s*(?::|\s+[-–—]\s+)\s*[^\n]+(?:\n|$)/i, "").trim();
+        } else {
+          // 4. Numbered / Lettered / Part followed by subject name
+          sMatch = chunkText.match(/^(?:(?:(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])\s*)|(?:(?:\d+|[IVXLCDM]+|[A-Z])[\)\.]\s*))([^\n]+)/i);
+          if (sMatch) {
+            sectionTitle = sMatch[1].trim();
+            chunkText = chunkText.replace(/^(?:(?:(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])\s*)|(?:(?:\d+|[IVXLCDM]+|[A-Z])[\)\.]\s*))[^\n]+(?:\n|$)/i, "").trim();
+          }
+        }
+      }
     }
 
     const questions = [];
