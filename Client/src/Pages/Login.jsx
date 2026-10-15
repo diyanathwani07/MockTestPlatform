@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
 import { Eye, EyeOff, Sun, Moon, Mail, Lock, LogIn, ArrowLeft, User, Shield } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
@@ -12,8 +12,12 @@ import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toggleTheme, isDark } = useTheme();
   const { login } = useAuth();
+
+  const searchParams = new URLSearchParams(location.search);
+  const redirectTarget = searchParams.get("redirect") || sessionStorage.getItem("redirect_after_login");
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 560);
   const [step, setStep] = useState("landing");
@@ -36,6 +40,12 @@ function Login() {
       if (role === "admin" || role === "superadmin") {
         navigate("/admin");
       } else {
+        const target = redirectTarget || location.state?.from;
+        if (target) {
+          sessionStorage.removeItem("redirect_after_login");
+          navigate(target);
+          return;
+        }
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         if (user.onboardingCompleted === false && isMobile) { 
           navigate("/onboarding", { state: { skipIntro: true } }); 
@@ -92,7 +102,15 @@ function Login() {
           navigate("/onboarding", { state: { skipIntro: true } });
         }
       } else {
-        if (!res.data.user.onboardingCompleted && isMobile) { navigate("/onboarding", { state: { skipIntro: true } }); } else { navigate("/dashboard"); }
+        const target = redirectTarget || location.state?.from;
+        if (target) {
+          sessionStorage.removeItem("redirect_after_login");
+          navigate(target);
+        } else if (!res.data.user.onboardingCompleted && isMobile) {
+          navigate("/onboarding", { state: { skipIntro: true } });
+        } else {
+          navigate("/dashboard");
+        }
       }
     } catch (error) {
       alert(

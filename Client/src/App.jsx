@@ -32,6 +32,8 @@ const AdminAttempts = lazy(() => import("./admin/AdminAttempts"));
 const AdminScoreAnalytics = lazy(() => import("./admin/AdminScoreAnalytics"));
 const AdminBanners = lazy(() => import("./admin/AdminBanners"));
 const LiveExamsList = lazy(() => import("./admin/LiveExams/LiveExamsList"));
+const LiveExamLobby = lazy(() => import("./Pages/LiveExam/LiveExamLobby"));
+const LiveExamPlayer = lazy(() => import("./Pages/LiveExam/LiveExamPlayer"));
 
 const Login = lazy(() => import("./Pages/Login"));
 const StudentOnboarding = lazy(() => import("./Pages/StudentOnboarding"));
@@ -95,6 +97,18 @@ function App() {
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
+
+        {/* ================= LIVE EXAMINATION ROUTES ================= */}
+        <Route path="/live-exam/:slugOrToken" element={<LiveExamLobby />} />
+        <Route
+          path="/live-exam/play/:attemptId"
+          element={
+            <ProtectedRoute>
+              <LiveExamPlayer />
+            </ProtectedRoute>
+          }
+        />
+
 
         <Route
           path="/dashboard"

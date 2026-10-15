@@ -97,6 +97,27 @@ const liveExamAttemptSchema = new mongoose.Schema(
       default: null,
     },
 
+    feedback: {
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: null,
+      },
+      reaction: {
+        type: String,
+        default: "",
+      },
+      comments: {
+        type: String,
+        default: "",
+      },
+      submittedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+
     timeline: [
       {
         event: {

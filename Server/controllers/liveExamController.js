@@ -1,7 +1,11 @@
 const LiveExamination = require("../models/LiveExamination");
 const LiveExamAttempt = require("../models/LiveExamAttempt");
 const Quiz = require("../models/Quiz");
+const Result = require("../models/Result");
+const quizService = require("../services/quizService");
 const logAction = require("../utils/logger");
+const crypto = require("crypto");
+
 
 /**
  * Validates scheduling times and duration rules.
@@ -639,6 +643,717 @@ const getPublicLiveExamInfo = async (req, res) => {
   }
 };
 
+/**
+ * Strict sanitizer for student exam player (ZERO answer leakage).
+ * Removes correctAnswer, correctAnswerObfuscated, explanation, and option isCorrect flags.
+ */
+function sanitizeQuizForLivePlayer(quiz) {
+  if (!quiz) return null;
+  const raw = quiz.toObject ? quiz.toObject() : JSON.parse(JSON.stringify(quiz));
+
+  const scrubQuestion = (q) => {
+    if (!q) return;
+    delete q.correctAnswer;
+    delete q.correctAnswerObfuscated;
+    delete q.explanation;
+    delete q.explanations;
+    delete q.solution;
+    if (Array.isArray(q.options)) {
+      q.options = q.options.map((opt) => {
+        if (typeof opt === "object" && opt !== null) {
+          const optCopy = { ...opt };
+          delete optCopy.isCorrect;
+          return optCopy;
+        }
+        return opt;
+      });
+    }
+  };
+
+  if (Array.isArray(raw.questions)) {
+    raw.questions.forEach(scrubQuestion);
+  }
+
+  if (Array.isArray(raw.sections)) {
+    raw.sections.forEach((sec) => {
+      if (Array.isArray(sec.questions)) {
+        sec.questions.forEach(scrubQuestion);
+      }
+      if (sec.subsections) {
+        ["easy", "medium", "hard"].forEach((lvl) => {
+          if (Array.isArray(sec.subsections[lvl])) {
+            sec.subsections[lvl].forEach(scrubQuestion);
+          }
+        });
+      }
+    });
+  }
+
+  return raw;
+}
+
+/**
+ * Server-side grading engine: preserves standard and BPSC marking rules.
+ */
+function gradeQuizAttempt(quiz, userAnswers) {
+  let dbQuestions = quiz.questions || [];
+  let sectionResults = [];
+
+  if (dbQuestions.length === 0 && quiz.sections && quiz.sections.length > 0) {
+    const normalizedSections = quiz.sections.map((sec) => {
+      let qs = sec.questions || [];
+      if (sec.type === "coding" && sec.subsections) {
+        qs = [
+          ...(sec.subsections.easy || []),
+          ...(sec.subsections.medium || []),
+          ...(sec.subsections.hard || []),
+        ];
+      }
+      return qs.map((q) => {
+        const qObj = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
+        qObj.marksPerQuestion = sec.marksPerQuestion ?? quiz.marksPerQuestion ?? 1;
+        qObj.negativeMarking = sec.negativeMarking ?? quiz.negativeMarking ?? 0;
+        qObj.sectionId = sec._id;
+        qObj.sectionTitle = sec.title;
+        return qObj;
+      });
+    });
+    dbQuestions = normalizedSections.flat();
+  } else {
+    dbQuestions = dbQuestions.map((q) => {
+      const qObj = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
+      qObj.marksPerQuestion = quiz.marksPerQuestion ?? 1;
+      qObj.negativeMarking = quiz.negativeMarking ?? 0;
+      return qObj;
+    });
+  }
+
+  let score = 0;
+  let correct = 0;
+  let incorrect = 0;
+  let unanswered = 0;
+  const total = dbQuestions.length;
+
+  const difficultyBreakdown = {
+    easy: { correct: 0, total: 0 },
+    medium: { correct: 0, total: 0 },
+    hard: { correct: 0, total: 0 },
+  };
+
+  const sectionStatsMap = {};
+  const isBpsc = quiz.markingPattern === "bpsc";
+
+  dbQuestions.forEach((q, index) => {
+    const userAns = Array.isArray(userAnswers) ? userAnswers[index] : userAnswers ? userAnswers[index] : undefined;
+    const actualAnswer = q.correctAnswer;
+    const isCorrect =
+      userAns !== undefined &&
+      userAns !== null &&
+      String(userAns).trim().toLowerCase() === String(actualAnswer).trim().toLowerCase();
+    const isNotAttemptedOption =
+      userAns &&
+      (String(userAns).trim().toUpperCase() === "E" ||
+        String(userAns).trim().toLowerCase().includes("not attempted"));
+
+    const diff = (q.difficulty || "medium").toLowerCase();
+    if (difficultyBreakdown[diff]) {
+      difficultyBreakdown[diff].total++;
+      if (isCorrect) difficultyBreakdown[diff].correct++;
+    }
+
+    let qScore = 0;
+    if (isBpsc) {
+      if (userAns === undefined || userAns === null || userAns === "") {
+        incorrect++;
+        qScore = -(q.negativeMarking || 0);
+        score += qScore;
+      } else if (isNotAttemptedOption) {
+        unanswered++;
+      } else if (isCorrect) {
+        correct++;
+        qScore = q.marksPerQuestion || 1;
+        score += qScore;
+      } else {
+        incorrect++;
+        qScore = -(q.negativeMarking || 0);
+        score += qScore;
+      }
+    } else {
+      if (userAns === undefined || userAns === null || userAns === "") {
+        unanswered++;
+      } else if (isCorrect) {
+        correct++;
+        qScore = q.marksPerQuestion || 1;
+        score += qScore;
+      } else {
+        incorrect++;
+        qScore = -(q.negativeMarking || 0);
+        score += qScore;
+      }
+    }
+
+    if (q.sectionId) {
+      const secIdStr = q.sectionId.toString();
+      if (!sectionStatsMap[secIdStr]) {
+        sectionStatsMap[secIdStr] = {
+          sectionId: q.sectionId,
+          sectionTitle: q.sectionTitle,
+          score: 0,
+          correct: 0,
+          incorrect: 0,
+          total: 0,
+        };
+      }
+      sectionStatsMap[secIdStr].total++;
+      if (isCorrect) {
+        sectionStatsMap[secIdStr].correct++;
+        sectionStatsMap[secIdStr].score += q.marksPerQuestion || 1;
+      } else if (isBpsc) {
+        if (!isNotAttemptedOption) {
+          sectionStatsMap[secIdStr].incorrect++;
+          sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+        }
+      } else {
+        if (userAns !== undefined && userAns !== null && userAns !== "") {
+          sectionStatsMap[secIdStr].incorrect++;
+          sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+        }
+      }
+    }
+  });
+
+  if (Object.keys(sectionStatsMap).length > 0) {
+    sectionResults = Object.values(sectionStatsMap);
+  }
+
+  const percentage = total > 0 ? Number(((score / total) * 100).toFixed(2)) : 0;
+
+  return {
+    score,
+    total,
+    correct,
+    incorrect,
+    unanswered,
+    percentage,
+    sectionResults,
+    difficultyBreakdown,
+    dbQuestions,
+  };
+}
+
+/**
+ * GET student live exam state by slug or token
+ * GET /api/live-exams/student-state/:slugOrToken
+ */
+const getStudentLiveExamState = async (req, res) => {
+  try {
+    const { slugOrToken } = req.params;
+
+    const exam = await LiveExamination.findOne({
+      $or: [{ shareSlug: slugOrToken }, { shareToken: slugOrToken }],
+      isDeleted: false,
+    }).populate("quizId", "title examName subject passPercentage marksPerQuestion negativeMarking duration questions sections markingPattern");
+
+    if (!exam) {
+      return res.status(404).json({ message: "Live examination not found." });
+    }
+
+    const now = new Date();
+    const calculatedStatus = exam.getCalculatedStatus ? exam.getCalculatedStatus() : "scheduled";
+
+    // Find student attempt
+    const attempt = await LiveExamAttempt.findOne({
+      liveExamId: exam._id,
+      studentId: req.user._id,
+    }).lean();
+
+    const lobbyStartTime = new Date(new Date(exam.scheduledStartTime).getTime() - (exam.entryWindowMinutes || 15) * 60 * 1000);
+    const canEnterLobby = now >= lobbyStartTime && now < new Date(exam.scheduledEndTime) && exam.status !== "cancelled";
+
+    let canStart = false;
+    let startBlockReason = null;
+
+    if (exam.status === "cancelled" || exam.isDeleted) {
+      startBlockReason = "This examination has been cancelled.";
+    } else if (now >= new Date(exam.scheduledEndTime)) {
+      startBlockReason = "This examination has already ended.";
+    } else if (now < new Date(exam.scheduledStartTime)) {
+      startBlockReason = "The examination has not started yet. Please wait in the lobby.";
+    } else if (!exam.allowLateEntry && now > new Date(new Date(exam.scheduledStartTime).getTime() + (exam.entryWindowMinutes || 15) * 60 * 1000)) {
+      startBlockReason = "The allowed entry window has passed. Late entry is not permitted.";
+    } else if (attempt && ["submitted", "auto_submitted", "disqualified"].includes(attempt.status)) {
+      startBlockReason = "You have already submitted this examination.";
+    } else {
+      canStart = true;
+    }
+
+    // Question count calculation
+    let totalQuestionsCount = 0;
+    if (exam.quizId) {
+      if (Array.isArray(exam.quizId.questions) && exam.quizId.questions.length > 0) {
+        totalQuestionsCount = exam.quizId.questions.length;
+      } else if (Array.isArray(exam.quizId.sections)) {
+        exam.quizId.sections.forEach((s) => {
+          if (Array.isArray(s.questions)) totalQuestionsCount += s.questions.length;
+        });
+      }
+    }
+
+    res.json({
+      examId: exam._id,
+      title: exam.title,
+      instructions: exam.instructions,
+      scheduledStartTime: exam.scheduledStartTime,
+      scheduledEndTime: exam.scheduledEndTime,
+      duration: exam.duration,
+      entryWindowMinutes: exam.entryWindowMinutes,
+      allowLateEntry: exam.allowLateEntry,
+      webcamRule: exam.webcamRule,
+      shareSlug: exam.shareSlug,
+      calculatedStatus,
+      canEnterLobby,
+      canStart,
+      startBlockReason,
+      examName: exam.quizId?.examName || "Competitive Examination",
+      subject: exam.quizId?.subject || "General Studies",
+      totalQuestions: totalQuestionsCount,
+      marksPerQuestion: exam.quizId?.marksPerQuestion || 1,
+      negativeMarking: exam.quizId?.negativeMarking || 0,
+      passPercentage: exam.quizId?.passPercentage || 50,
+      attempt: attempt
+        ? {
+            _id: attempt._id,
+            status: attempt.status,
+            startedAt: attempt.startedAt,
+            serverDeadline: attempt.serverDeadline,
+            webcamStatus: attempt.webcamStatus,
+            lobbyJoinedAt: attempt.lobbyJoinedAt,
+            submittedAt: attempt.submittedAt,
+            resultId: attempt.resultId,
+            feedback: attempt.feedback,
+            answeredCount: attempt.answeredCount || 0,
+          }
+        : null,
+      serverTime: now.toISOString(),
+    });
+  } catch (error) {
+    console.error("Get Student Live Exam State Error:", error);
+    res.status(500).json({ message: "Failed to fetch student live exam state: " + error.message });
+  }
+};
+
+/**
+ * Student joins Lobby
+ * POST /api/live-exams/:id/join-lobby
+ */
+const joinLiveExamLobby = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const exam = await LiveExamination.findOne({ _id: id, isDeleted: false });
+    if (!exam) {
+      return res.status(404).json({ message: "Live examination not found." });
+    }
+
+    const now = new Date();
+    if (exam.status === "cancelled") {
+      return res.status(400).json({ message: "This examination has been cancelled." });
+    }
+    if (now >= new Date(exam.scheduledEndTime)) {
+      return res.status(400).json({ message: "This examination has already concluded." });
+    }
+
+    let attempt = await LiveExamAttempt.findOne({
+      liveExamId: exam._id,
+      studentId: req.user._id,
+    });
+
+    if (!attempt) {
+      attempt = await LiveExamAttempt.create({
+        liveExamId: exam._id,
+        studentId: req.user._id,
+        quizId: exam.quizId,
+        status: "in_lobby",
+        lobbyJoinedAt: now,
+        connectionStatus: "online",
+        timeline: [
+          {
+            event: "JOINED_LOBBY",
+            timestamp: now,
+            metadata: { ip: req.ip },
+          },
+        ],
+      });
+    } else {
+      if (attempt.status === "registered") {
+        attempt.status = "in_lobby";
+        attempt.lobbyJoinedAt = now;
+      }
+      attempt.connectionStatus = "online";
+      attempt.lastPingAt = now;
+      attempt.logTimelineEvent("ENTERED_LOBBY", { ip: req.ip });
+      await attempt.save();
+    }
+
+    res.json({
+      message: "Entered lobby successfully.",
+      attemptId: attempt._id,
+      status: attempt.status,
+      lobbyJoinedAt: attempt.lobbyJoinedAt,
+    });
+  } catch (error) {
+    console.error("Join Lobby Error:", error);
+    res.status(500).json({ message: "Failed to join lobby: " + error.message });
+  }
+};
+
+/**
+ * Start Exam Attempt (Server-Authoritative Timing)
+ * POST /api/live-exams/:id/start-attempt
+ */
+const startLiveExamAttempt = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { webcamStatus } = req.body;
+
+    const exam = await LiveExamination.findOne({ _id: id, isDeleted: false });
+    if (!exam) {
+      return res.status(404).json({ message: "Live examination not found." });
+    }
+
+    if (exam.status === "cancelled") {
+      return res.status(400).json({ message: "This examination has been cancelled." });
+    }
+
+    const now = new Date();
+    if (now >= new Date(exam.scheduledEndTime)) {
+      return res.status(400).json({ message: "This examination has already concluded." });
+    }
+
+    if (now < new Date(exam.scheduledStartTime)) {
+      return res.status(400).json({ message: "Examination has not started yet. Please wait in the lobby." });
+    }
+
+    if (!exam.allowLateEntry) {
+      const entryDeadline = new Date(new Date(exam.scheduledStartTime).getTime() + (exam.entryWindowMinutes || 15) * 60 * 1000);
+      if (now > entryDeadline) {
+        return res.status(400).json({ message: "The allowed entry window has closed. Late entry is not permitted." });
+      }
+    }
+
+    if (exam.webcamRule === "mandatory" && webcamStatus !== "granted") {
+      return res.status(400).json({ message: "Camera permission and readiness verification are required to start this examination." });
+    }
+
+    let attempt = await LiveExamAttempt.findOne({
+      liveExamId: exam._id,
+      studentId: req.user._id,
+    });
+
+    if (!attempt) {
+      attempt = new LiveExamAttempt({
+        liveExamId: exam._id,
+        studentId: req.user._id,
+        quizId: exam.quizId,
+      });
+    }
+
+    if (["submitted", "auto_submitted"].includes(attempt.status)) {
+      return res.status(400).json({ message: "You have already submitted this examination." });
+    }
+    if (attempt.status === "disqualified") {
+      return res.status(403).json({ message: "You have been disqualified from this examination." });
+    }
+
+    // Reconnection / Resume: keep existing startedAt and serverDeadline!
+    if (attempt.status === "in_progress") {
+      attempt.connectionStatus = "online";
+      attempt.lastPingAt = now;
+      attempt.logTimelineEvent("RECONNECTED", { ip: req.ip });
+      await attempt.save();
+
+      return res.json({
+        attemptId: attempt._id,
+        startedAt: attempt.startedAt,
+        serverDeadline: attempt.serverDeadline,
+        duration: exam.duration,
+        isResuming: true,
+      });
+    }
+
+    // Fresh start: serverDeadline = MIN(now + duration, scheduledEndTime)
+    const durationMs = exam.duration * 60 * 1000;
+    const computedDeadline = new Date(now.getTime() + durationMs);
+    const scheduledEnd = new Date(exam.scheduledEndTime);
+    const serverDeadline = computedDeadline < scheduledEnd ? computedDeadline : scheduledEnd;
+
+    attempt.status = "in_progress";
+    attempt.startedAt = now;
+    attempt.serverDeadline = serverDeadline;
+    attempt.webcamStatus = webcamStatus || (exam.webcamRule === "disabled" ? "none" : "pending");
+    attempt.connectionStatus = "online";
+    attempt.lastPingAt = now;
+    attempt.logTimelineEvent("STARTED_EXAM", {
+      startedAt: now,
+      serverDeadline,
+      webcamStatus: attempt.webcamStatus,
+    });
+
+    await attempt.save();
+
+    res.json({
+      attemptId: attempt._id,
+      startedAt: attempt.startedAt,
+      serverDeadline: attempt.serverDeadline,
+      duration: exam.duration,
+      isResuming: false,
+    });
+  } catch (error) {
+    console.error("Start Attempt Error:", error);
+    res.status(500).json({ message: "Failed to start exam attempt: " + error.message });
+  }
+};
+
+/**
+ * GET Play Data for Live Player (Zero Answer Leakage)
+ * GET /api/live-exams/attempts/:attemptId/play-data
+ */
+const getLiveExamPlayData = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const attempt = await LiveExamAttempt.findOne({
+      _id: attemptId,
+      studentId: req.user._id,
+    });
+
+    if (!attempt) {
+      return res.status(404).json({ message: "Attempt not found or access denied." });
+    }
+
+    const exam = await LiveExamination.findOne({ _id: attempt.liveExamId, isDeleted: false });
+    if (!exam) {
+      return res.status(404).json({ message: "Live examination not found." });
+    }
+
+    // Fetch quiz blueprint and sanitize questions
+    const rawQuiz = await quizService.previewQuiz(attempt.quizId);
+    if (!rawQuiz) {
+      return res.status(404).json({ message: "Exam questions blueprint not found." });
+    }
+
+    const sanitizedQuiz = sanitizeQuizForLivePlayer(rawQuiz);
+
+    res.json({
+      attemptId: attempt._id,
+      liveExamId: exam._id,
+      title: exam.title,
+      instructions: exam.instructions,
+      scheduledStartTime: exam.scheduledStartTime,
+      scheduledEndTime: exam.scheduledEndTime,
+      startedAt: attempt.startedAt,
+      serverDeadline: attempt.serverDeadline,
+      duration: exam.duration,
+      serverTime: new Date().toISOString(),
+      savedAnswers: attempt.savedAnswers || {},
+      currentQuestionIndex: attempt.currentQuestionIndex || 0,
+      status: attempt.status,
+      webcamRule: exam.webcamRule,
+      quiz: sanitizedQuiz,
+    });
+  } catch (error) {
+    console.error("Get Play Data Error:", error);
+    res.status(500).json({ message: "Failed to fetch examination questions: " + error.message });
+  }
+};
+
+/**
+ * SAVE in-progress answers and heartbeat (supports refresh / disconnection recovery)
+ * POST /api/live-exams/attempts/:attemptId/save-progress
+ */
+const saveLiveExamProgress = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const { savedAnswers, currentQuestionIndex, answeredCount } = req.body;
+
+    const attempt = await LiveExamAttempt.findOne({
+      _id: attemptId,
+      studentId: req.user._id,
+    });
+
+    if (!attempt) {
+      return res.status(404).json({ message: "Attempt not found." });
+    }
+
+    if (["submitted", "auto_submitted"].includes(attempt.status)) {
+      return res.status(400).json({ message: "Attempt already submitted." });
+    }
+
+    if (savedAnswers !== undefined) attempt.savedAnswers = savedAnswers;
+    if (currentQuestionIndex !== undefined) attempt.currentQuestionIndex = currentQuestionIndex;
+    if (answeredCount !== undefined) attempt.answeredCount = answeredCount;
+
+    attempt.lastPingAt = new Date();
+    attempt.connectionStatus = "online";
+
+    await attempt.save();
+
+    res.json({ success: true, savedAt: new Date().toISOString() });
+  } catch (error) {
+    console.error("Save Progress Error:", error);
+    res.status(500).json({ message: "Failed to save progress: " + error.message });
+  }
+};
+
+/**
+ * SUBMIT Exam Attempt (Manual or Auto-Submit on Deadline)
+ * POST /api/live-exams/attempts/:attemptId/submit
+ */
+const submitLiveExamAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const { userAnswers, timeTaken, isAutoSubmit = false } = req.body;
+
+    const attempt = await LiveExamAttempt.findOne({
+      _id: attemptId,
+      studentId: req.user._id,
+    });
+
+    if (!attempt) {
+      return res.status(404).json({ message: "Attempt not found." });
+    }
+
+    if (["submitted", "auto_submitted"].includes(attempt.status)) {
+      return res.json({
+        message: "Exam was already submitted.",
+        status: attempt.status,
+        resultId: attempt.resultId,
+        alreadySubmitted: true,
+      });
+    }
+
+    const exam = await LiveExamination.findOne({ _id: attempt.liveExamId });
+    if (!exam) {
+      return res.status(404).json({ message: "Live exam not found." });
+    }
+
+    const answersToGrade = userAnswers !== undefined ? userAnswers : attempt.savedAnswers || [];
+
+    // Load full quiz with answers for grading
+    const quiz = await quizService.previewQuiz(attempt.quizId);
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz blueprint not found for grading." });
+    }
+
+    const graded = gradeQuizAttempt(quiz, answersToGrade);
+    const shareId = crypto.randomBytes(4).toString("hex");
+
+    // Create Result document
+    const result = await Result.create({
+      userId: req.user._id,
+      quizId: quiz._id,
+      quizTitle: exam.title,
+      subject: quiz.subject || "General Studies",
+      examName: quiz.examName || exam.title,
+      passPercentage: quiz.passPercentage ?? 50,
+      score: graded.score,
+      total: graded.total,
+      correct: graded.correct,
+      incorrect: graded.incorrect,
+      percentage: graded.percentage,
+      timeTaken: timeTaken || 0,
+      shareId,
+      isPublic: true,
+      sectionResults: graded.sectionResults,
+      difficultyBreakdown: graded.difficultyBreakdown,
+      questions: graded.dbQuestions,
+      userAnswers: answersToGrade,
+      status: "submitted",
+    });
+
+    const now = new Date();
+    attempt.status = isAutoSubmit ? "auto_submitted" : "submitted";
+    attempt.submittedAt = now;
+    attempt.resultId = result._id;
+    attempt.savedAnswers = answersToGrade;
+    attempt.answeredCount = graded.correct + graded.incorrect;
+    attempt.logTimelineEvent(isAutoSubmit ? "AUTO_SUBMIT_DEADLINE" : "STUDENT_SUBMIT", {
+      timeTaken,
+      score: graded.score,
+      total: graded.total,
+      percentage: graded.percentage,
+    });
+
+    await attempt.save();
+
+    let showResultNow = exam.resultReleaseMode === "immediate";
+    if (exam.resultReleaseMode === "scheduled" && exam.resultReleaseDate) {
+      showResultNow = now >= new Date(exam.resultReleaseDate);
+    }
+
+    res.json({
+      success: true,
+      status: attempt.status,
+      submittedAt: attempt.submittedAt,
+      resultId: result._id,
+      resultReleaseMode: exam.resultReleaseMode,
+      resultReleaseDate: exam.resultReleaseDate,
+      showResultNow,
+    });
+  } catch (error) {
+    console.error("Submit Live Exam Error:", error);
+    res.status(500).json({ message: "Failed to submit live examination: " + error.message });
+  }
+};
+
+/**
+ * SUBMIT Live Exam Feedback
+ * POST /api/live-exams/attempts/:attemptId/feedback
+ */
+const submitLiveExamFeedback = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const { rating, reaction, comments } = req.body;
+
+    const attempt = await LiveExamAttempt.findOne({
+      _id: attemptId,
+      studentId: req.user._id,
+    });
+
+    if (!attempt) {
+      return res.status(404).json({ message: "Attempt not found." });
+    }
+
+    const now = new Date();
+    attempt.feedback = {
+      rating: rating ? Number(rating) : null,
+      reaction: reaction || "",
+      comments: comments ? comments.trim() : "",
+      submittedAt: now,
+    };
+
+    attempt.logTimelineEvent("SUBMITTED_FEEDBACK", {
+      rating,
+      reaction,
+    });
+
+    await attempt.save();
+
+    if (attempt.resultId) {
+      await Result.findByIdAndUpdate(attempt.resultId, {
+        reaction: reaction || "",
+        feedbackMessage: comments ? comments.trim() : "",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Feedback submitted successfully. Thank you!",
+    });
+  } catch (error) {
+    console.error("Submit Feedback Error:", error);
+    res.status(500).json({ message: "Failed to submit feedback: " + error.message });
+  }
+};
+
 module.exports = {
   createLiveExam,
   getLiveExams,
@@ -649,4 +1364,12 @@ module.exports = {
   getLiveExamAttendance,
   exportLiveExamAttendance,
   getPublicLiveExamInfo,
+  getStudentLiveExamState,
+  joinLiveExamLobby,
+  startLiveExamAttempt,
+  getLiveExamPlayData,
+  saveLiveExamProgress,
+  submitLiveExamAttempt,
+  submitLiveExamFeedback,
 };
+
