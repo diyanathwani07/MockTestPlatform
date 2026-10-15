@@ -105,7 +105,7 @@ function AdminSidebar() {
             onClick={toggleSidebarCollapse}
             title="Toggle Sidebar (Ctrl+B)"
             aria-label="Toggle Sidebar"
-            className="hidden sm:inline-flex"
+            className="sidebar-collapse-btn hidden sm:inline-flex"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -114,21 +114,31 @@ function AdminSidebar() {
               height: "32px",
               borderRadius: "8px",
               border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-              background: collapsed ? "var(--violet)" : "transparent",
-              color: collapsed ? "#ffffff" : "var(--text-secondary)",
+              background: collapsed ? "var(--primary)" : "transparent",
+              color: collapsed ? "var(--primary-foreground, #000000)" : "var(--text-secondary)",
               cursor: "pointer",
               transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
               padding: 0,
               flexShrink: 0
             }}
             onMouseEnter={(e) => {
-              if (!collapsed) e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
+              if (!collapsed) {
+                e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
+                e.currentTarget.style.color = "var(--text-primary)";
+              } else {
+                e.currentTarget.style.opacity = "0.9";
+              }
             }}
             onMouseLeave={(e) => {
-              if (!collapsed) e.currentTarget.style.background = "transparent";
+              if (!collapsed) {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              } else {
+                e.currentTarget.style.opacity = "1";
+              }
             }}
           >
-            <PanelLeft size={16} />
+            <PanelLeft size={16} style={{ stroke: collapsed ? "var(--primary-foreground, #000000)" : "currentColor", color: collapsed ? "var(--primary-foreground, #000000)" : "currentColor" }} />
           </button>
         </div>
         <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>

@@ -352,6 +352,43 @@ body.dark-mode .profile-floating-menu {
     display: none !important;
   }
 }
+
+.sidebar-collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.sidebar-collapse-btn:hover {
+  background: var(--bg-card-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary);
+}
+
+.admin-sidebar.collapsed .sidebar-collapse-btn {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-color: var(--primary) !important;
+}
+
+.admin-sidebar.collapsed .sidebar-collapse-btn svg {
+  color: var(--primary-foreground) !important;
+  stroke: var(--primary-foreground) !important;
+}
+
+.admin-sidebar.collapsed .sidebar-collapse-btn:hover {
+  opacity: 0.9;
+}
+
 .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; height: 70px; border-bottom: 1px solid var(--border-color, #E4E4E7); }
 .logo-emoji { font-size: 20px; }
 .logo-text { font-family: 'Fraunces', serif; color: var(--text-primary); font-size: 16px; font-weight: 600; }

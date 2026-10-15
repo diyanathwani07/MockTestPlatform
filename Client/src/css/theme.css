@@ -39,6 +39,7 @@
   --border-input:   #e4e1f0;
 
   /* Brand */
+  --primary-foreground: #ffffff;
   --violet:         var(--primary);
   --violet-dark:    var(--primary-dark, var(--primary));
   --gold:           #F4C842;
@@ -85,6 +86,7 @@
   --text-muted:     #6b6880;
 
   /* Sidebar Links */
+  --primary-foreground: #000000;
   --sidebar-active-bg: var(--primary);
   --sidebar-active-text: #ffffff;
   --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
