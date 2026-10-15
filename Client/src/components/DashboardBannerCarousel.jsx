@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../css/DashboardBannerCarousel.css';
 
-export const optimizeBannerImage = (url, width = 800) => {
+export const optimizeBannerImage = (url, width = 1200) => {
   if (!url || typeof url !== 'string') return url;
   if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
     // If it already contains an older width transformation, update it to width
@@ -136,7 +136,7 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
         const nextIdx = (imageIndex + 1) % banners.length;
         if (banners[nextIdx]?.image) {
           const img = new Image();
-          img.src = optimizeBannerImage(banners[nextIdx].image, 800);
+          img.src = optimizeBannerImage(banners[nextIdx].image, 1200);
         }
       }, 2500);
       return () => clearTimeout(timer);
@@ -191,14 +191,14 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
           >
             <div className={`banner-bg-image ${isPureImage ? 'full-width' : ''}`}>
               <img
-                src={optimizeBannerImage(activeBanner.image, 800)}
+                src={optimizeBannerImage(activeBanner.image, 1200)}
                 alt={activeBanner.title || activeBanner.category || "PrepMark Banner"}
                 fetchPriority={imageIndex === 0 ? "high" : "auto"}
                 loading={imageIndex === 0 ? "eager" : "lazy"}
                 decoding="async"
                 draggable={false}
-                width="800"
-                height="450"
+                width="1024"
+                height="576"
                 className={`banner-bg-img-element ${isPureImage ? 'full-width' : ''}`}
               />
             </div>
