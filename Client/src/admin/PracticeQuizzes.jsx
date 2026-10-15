@@ -18,8 +18,38 @@ function PracticeQuizzes() {
   const navigate = useNavigate();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const [dropdownPos, setDropdownPos] = useState({ top: null, bottom: null, right: 0, openUpwards: false });
+
+  const toggleActionDropdown = (e, quizId) => {
+    if (activeDropdown === quizId) {
+      setActiveDropdown(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dropdownHeight = 300;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const openUpwards = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+
+    setDropdownPos({
+      top: openUpwards ? null : Math.max(10, rect.bottom + 6),
+      bottom: openUpwards ? Math.max(10, window.innerHeight - rect.top + 6) : null,
+      right: Math.max(16, window.innerWidth - rect.right),
+      openUpwards
+    });
+    setActiveDropdown(quizId);
+  };
+
+  useEffect(() => {
+    if (!activeDropdown) return;
+    const handleScrollOrResize = () => setActiveDropdown(null);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [activeDropdown]);
   const [scheduleModal, setScheduleModal] = useState(null); // quiz object
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
@@ -526,15 +556,7 @@ function PracticeQuizzes() {
                         <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
                             <button
-                              onClick={(e) => {
-                                if (activeDropdown === quiz._id) {
-                                  setActiveDropdown(null);
-                                } else {
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-                                  setActiveDropdown(quiz._id);
-                                }
-                              }}
+                              onClick={(e) => toggleActionDropdown(e, quiz._id)}
                               style={{
                                 background: "transparent",
                                 border: "none",
@@ -561,14 +583,17 @@ function PracticeQuizzes() {
                                 {/* Floating context dropdown menu - fixed position to escape overflow clipping */}
                                 <div style={{
                                   position: "fixed",
-                                  top: `${dropdownPos.top}px`,
+                                  top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
+                                  bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : "auto",
                                   right: `${dropdownPos.right}px`,
                                   backgroundColor: "var(--bg-card)",
                                   border: "1.5px solid var(--border-color)",
                                   borderRadius: "10px",
                                   padding: "6px 0",
-                                  minWidth: "130px",
-                                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                                  minWidth: "140px",
+                                  maxHeight: "calc(100vh - 36px)",
+                                  overflowY: "auto",
+                                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
                                   zIndex: 9999,
                                   textAlign: "left"
                                 }}>

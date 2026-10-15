@@ -10,7 +10,8 @@ import { useAuth } from "../context/AuthContext";
 
 function ManageQuizzes() {
   const confirm = useConfirm();
-  const { user: currentUser, hasPermission } = useAuth();
+  const { user: currentUser, role: authRole, hasPermission } = useAuth();
+  const role = currentUser?.role || authRole;
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,7 +37,42 @@ function ManageQuizzes() {
   const [showConfigureExams, setShowConfigureExams] = useState(false);
   const [importedExamsList, setImportedExamsList] = useState([]);
   const [showPreviewSubmenu, setShowPreviewSubmenu] = useState(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const [dropdownPos, setDropdownPos] = useState({ top: null, bottom: null, right: 0, openUpwards: false });
+
+  const toggleActionDropdown = (e, quizId) => {
+    if (activeDropdown === quizId) {
+      setActiveDropdown(null);
+      setShowPreviewSubmenu(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dropdownHeight = 340;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const openUpwards = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+
+    setDropdownPos({
+      top: openUpwards ? null : Math.max(10, rect.bottom + 6),
+      bottom: openUpwards ? Math.max(10, window.innerHeight - rect.top + 6) : null,
+      right: Math.max(16, window.innerWidth - rect.right),
+      openUpwards
+    });
+    setActiveDropdown(quizId);
+  };
+
+  useEffect(() => {
+    if (!activeDropdown) return;
+    const handleScrollOrResize = () => {
+      setActiveDropdown(null);
+      setShowPreviewSubmenu(null);
+    };
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [activeDropdown]);
   const [selectedExportQuiz, setSelectedExportQuiz] = useState(null);
   const [viewMode, setViewMode] = useState("active"); // "active" or "recycle"
   const [ownershipTab, setOwnershipTab] = useState("mine"); // "mine" or "all"
@@ -903,7 +939,7 @@ function ManageQuizzes() {
           )}
 
           {/* ─── DATA TABLE ─── */}
-          <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: 0, overflowX: "auto", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
+          <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: 0, overflowX: "auto", minHeight: "340px", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
             {loading ? (
               <div style={{ padding: "64px 20px", textAlign: "center", color: "var(--text-secondary)", fontSize: "15px" }}>
                 ⏳ Loading quizzes from database...
@@ -940,21 +976,13 @@ function ManageQuizzes() {
                           {/* Actions button */}
                           <div style={{ position: "relative" }}>
                             <button 
-                              onClick={(e) => {
-                                if (activeDropdown === quiz._id) {
-                                  setActiveDropdown(null);
-                                } else {
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-                                  setActiveDropdown(quiz._id);
-                                }
-                              }}
+                              onClick={(e) => toggleActionDropdown(e, quiz._id)}
                               style={{ 
                                 background: "transparent", 
                                 border: "none", 
                                 color: "var(--text-primary)", 
                                 fontSize: "18px", 
-                                fontWeight: "bold",
+                                fontWeight: "bold", 
                                 cursor: "pointer", 
                                 outline: "none"
                               }}
@@ -963,17 +991,20 @@ function ManageQuizzes() {
                             </button>
                             {activeDropdown === quiz._id && (
                               <>
-                                <div onClick={() => setActiveDropdown(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }} />
+                                <div onClick={() => { setActiveDropdown(null); setShowPreviewSubmenu(null); }} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }} />
                                 <div style={{ 
                                   position: "fixed", 
-                                  top: `${dropdownPos.top}px`,
+                                  top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
+                                  bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : "auto",
                                   right: `${dropdownPos.right}px`, 
                                   backgroundColor: "var(--bg-card)", 
                                   border: "1.5px solid var(--border-color)", 
                                   borderRadius: "10px", 
                                   padding: "6px 0", 
-                                  minWidth: "130px", 
-                                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)", 
+                                  minWidth: "140px", 
+                                  maxHeight: "calc(100vh - 36px)",
+                                  overflowY: "auto",
+                                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)", 
                                   zIndex: 9999,
                                   textAlign: "left"
                                 }}>
@@ -1040,12 +1071,12 @@ function ManageQuizzes() {
                             </span>
                             {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
                               <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Clock size={11} style={{ flexShrink: 0 }} />
+                                <Clock size={11} style={{ color: "#3B82F6", flexShrink: 0 }} />
                                 {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             ) : quiz.scheduledDate ? (
                               <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Calendar size={11} style={{ flexShrink: 0 }} />
+                                <Calendar size={11} style={{ color: "#3B82F6", flexShrink: 0 }} />
                                 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}
                               </span>
                             ) : null}
@@ -1181,22 +1212,24 @@ function ManageQuizzes() {
                             </span>
                             {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
                               <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Calendar size={12} style={{ flexShrink: 0 }} />
+                                <Calendar size={12} style={{ color: "#3B82F6", flexShrink: 0 }} />
                                 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             ) : quiz.scheduledDate ? (
-                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                <Calendar size={12} style={{ color: "#3B82F6", flexShrink: 0 }} />
                                 {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             ) : null}
                             {quiz.status === "Published" && quiz.unpublishDate && (
                               <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Clock size={12} style={{ flexShrink: 0 }} />
+                                <Clock size={12} style={{ color: "#F59E0B", flexShrink: 0 }} />
                                 Closes: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             )}
                             {quiz.status === "Expired" && quiz.unpublishDate && (
-                              <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "600" }}>
+                              <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                <Clock size={12} style={{ color: "var(--red)", flexShrink: 0 }} />
                                 Ended: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                               </span>
                             )}
@@ -1206,23 +1239,15 @@ function ManageQuizzes() {
                         <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
                             <button 
-                              onClick={(e) => {
-                                if (activeDropdown === quiz._id) {
-                                  setActiveDropdown(null);
-                                } else {
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-                                  setActiveDropdown(quiz._id);
-                                }
-                              }}
+                              onClick={(e) => toggleActionDropdown(e, quiz._id)}
                               style={{ 
                                 background: "transparent", 
                                 border: "none", 
                                 color: "var(--text-primary)", 
                                 fontSize: "18px", 
-                                fontWeight: "bold",
+                                fontWeight: "bold", 
                                 cursor: "pointer", 
-                                padding: "4px 12px",
+                                padding: "4px 12px", 
                                 outline: "none"
                               }}
                               title="Quiz Actions"
@@ -1234,21 +1259,24 @@ function ManageQuizzes() {
                               <>
                                 {/* Global backdrop to dismiss dropdown on outer click */}
                                 <div 
-                                  onClick={() => setActiveDropdown(null)}
+                                  onClick={() => { setActiveDropdown(null); setShowPreviewSubmenu(null); }}
                                   style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
                                 />
                                 
                                 {/* Floating context dropdown menu */}
                                 <div style={{ 
                                   position: "fixed", 
-                                  top: `${dropdownPos.top}px`,
+                                  top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
+                                  bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : "auto",
                                   right: `${dropdownPos.right}px`, 
                                   backgroundColor: "var(--bg-card)", 
                                   border: "1.5px solid var(--border-color)", 
                                   borderRadius: "10px", 
                                   padding: "6px 0", 
-                                  minWidth: "130px", 
-                                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)", 
+                                  minWidth: "140px", 
+                                  maxHeight: "calc(100vh - 36px)",
+                                  overflowY: "auto",
+                                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)", 
                                   zIndex: 9999,
                                   textAlign: "left"
                                 }}>
@@ -1274,13 +1302,14 @@ function ManageQuizzes() {
                                           <div style={{ 
                                             position: "absolute", 
                                             left: "-135px", 
-                                            top: "0px",
+                                            top: dropdownPos.openUpwards ? "auto" : "0px",
+                                            bottom: dropdownPos.openUpwards ? "0px" : "auto",
                                             backgroundColor: "var(--bg-card)", 
                                             border: "1.5px solid var(--border-color)", 
                                             borderRadius: "10px", 
                                             padding: "6px 0", 
-                                            minWidth: "130px", 
-                                            boxShadow: "0 8px 24px rgba(0,0,0,0.12)", 
+                                            minWidth: "135px", 
+                                            boxShadow: "0 8px 24px rgba(0,0,0,0.2)", 
                                             zIndex: 99999,
                                             textAlign: "left"
                                           }}>

@@ -317,7 +317,7 @@ function AdminDashboard() {
               {/* Stat Cards */}
               <div className="stat-cards-grid">
                 <div className="stat-card accent-violet">
-                  <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "var(--primary)", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="stat-card-icon" style={{ background: "rgba(139, 92, 246, 0.15)", color: "#8B5CF6", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <FileText size={24} />
                   </div>
                   <div>
@@ -389,9 +389,9 @@ function AdminDashboard() {
 
                   {/* Legends */}
                   <div style={{ display: "flex", gap: "20px", marginBottom: "20px", fontSize: "12.5px", fontWeight: "600" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(110, 63, 243, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
-                      <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "var(--primary)" }}></span>
-                      <span style={{ color: "var(--primary)" }}>Created</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(139, 92, 246, 0.15)", padding: "4px 12px", borderRadius: "100px" }}>
+                      <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#8B5CF6" }}></span>
+                      <span style={{ color: "#8B5CF6" }}>Created</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
                       <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }}></span>
@@ -427,7 +427,7 @@ function AdminDashboard() {
                       const endX = width - 40;
                       const stepX = (endX - startX) / (supportChartData.length - 1);
 
-                      const pointsCreated = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsCreated), val: d.ticketsCreated, label: d.label, dataset: "Tickets Created", color: "var(--primary)" }));
+                      const pointsCreated = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsCreated), val: d.ticketsCreated, label: d.label, dataset: "Tickets Created", color: "#8B5CF6" }));
                       const pointsResolved = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsResolved), val: d.ticketsResolved, label: d.label, dataset: "Tickets Resolved", color: "#10B981" }));
 
                       const getSmoothPath = (pts) => {
@@ -621,7 +621,7 @@ function AdminDashboard() {
               <div className="stat-cards-grid">
                 {/* Card 1: Users */}
                 <div className="stat-card accent-violet" onClick={() => navigate("/admin/users")} style={{ cursor: "pointer" }}>
-                  <div className="stat-card-icon" style={{ background: "rgba(110, 63, 243, 0.08)", color: "var(--primary)", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="stat-card-icon" style={{ background: "rgba(139, 92, 246, 0.15)", color: "#8B5CF6", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Users size={24} />
                   </div>
                   <div>
@@ -633,12 +633,12 @@ function AdminDashboard() {
                     <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-users" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
+                          <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
                         </linearGradient>
                       </defs>
                       <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6 L100,30 L0,30 Z" fill="url(#gradient-users)" />
-                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6" fill="none" stroke="#8B5CF6" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
@@ -1058,7 +1058,7 @@ function AdminDashboard() {
                       onMouseOut={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <div style={{ width: "34px", height: "34px", borderRadius: "8px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.1)" : "rgba(110, 63, 243, 0.1)", color: explorerView === "quizzes" ? "#10B981" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ width: "34px", height: "34px", borderRadius: "8px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.15)" : explorerView === "subjects" ? "rgba(245, 158, 11, 0.15)" : "rgba(139, 92, 246, 0.15)", color: explorerView === "quizzes" ? "#10B981" : explorerView === "subjects" ? "#F59E0B" : "#8B5CF6", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             {explorerView === "exams" ? <GraduationCap size={18} strokeWidth={2} /> : explorerView === "subjects" ? <Library size={18} strokeWidth={2} /> : <File size={18} strokeWidth={2} />}
                           </div>
                           <div>
