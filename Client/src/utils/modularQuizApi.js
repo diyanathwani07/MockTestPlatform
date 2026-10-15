@@ -158,6 +158,8 @@ export const saveModularQuiz = async ({
   sections,
   quizId = null,
   isPublishing = false,
+  scheduledDate = null,
+  unpublishDate = null,
 }) => {
   const globalDuration =
     (parseInt(quizMeta.durationMin || 0, 10) * 60) +
@@ -183,8 +185,8 @@ export const saveModularQuiz = async ({
     breakBetweenSections: quizMeta.breakBetweenSections || 0,
     published: isPublishing,
     status: isPublishing ? "Published" : quizMeta.status || "Draft",
-    scheduledDate: quizMeta.scheduledDate || null,
-    unpublishDate: quizMeta.unpublishDate || null,
+    scheduledDate: scheduledDate || quizMeta.scheduledDate || null,
+    unpublishDate: unpublishDate || quizMeta.unpublishDate || null,
     quizType: quizMeta.publishAs === "practice" ? "practice" : "exam",
     publishAs: quizMeta.publishAs || "exam",
     shuffleQuestions: quizMeta.shuffleQuestions || false,

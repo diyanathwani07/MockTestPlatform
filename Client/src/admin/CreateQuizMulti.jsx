@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Calendar, Clock } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import DocxParser from "./components/DocxParser";
@@ -13,6 +13,19 @@ import { saveModularQuiz } from "../utils/modularQuizApi";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/CreateQuiz.css";
 import PaidPlanDrawer from "./components/PaidPlanDrawer";
+
+const formatDateTimeLocal = (dateString) => {
+  if (!dateString) return "";
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return "";
+  const pad = (num) => String(num).padStart(2, "0");
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 const emptyQuestion = () => ({
   questionEnglish: "",
@@ -101,6 +114,161 @@ function CreateQuizMulti() {
   const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
   const [editingPlanIndex, setEditingPlanIndex] = useState(-1);
 
+  const [seriesList, setSeriesList] = useState([]);
+
+  // Publication schedule states
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledHour, setScheduledHour] = useState("12");
+  const [scheduledMinute, setScheduledMinute] = useState("00");
+  const [scheduledPeriod, setScheduledPeriod] = useState("AM");
+  const [scheduledDateTime, setScheduledDateTime] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+
+  // Auto-Unpublish / Expiry states
+  const [hasUnpublishDate, setHasUnpublishDate] = useState(false);
+  const [unpublishDate, setUnpublishDate] = useState("");
+  const [unpublishHour, setUnpublishHour] = useState("12");
+  const [unpublishMinute, setUnpublishMinute] = useState("00");
+  const [unpublishPeriod, setUnpublishPeriod] = useState("PM");
+  const [unpublishDateTime, setUnpublishDateTime] = useState("");
+  const [showUnpublishDatePicker, setShowUnpublishDatePicker] = useState(false);
+  const [showUnpublishTimePicker, setShowUnpublishTimePicker] = useState(false);
+  const [unpublishCalendarMonth, setUnpublishCalendarMonth] = useState(new Date().getMonth());
+  const [unpublishCalendarYear, setUnpublishCalendarYear] = useState(new Date().getFullYear());
+
+  const parseDateTimeToCustom = (dateTimeString) => {
+    if (!dateTimeString) return { date: "", hour: "12", minute: "00", period: "AM" };
+    const dateObj = new Date(dateTimeString);
+    if (isNaN(dateObj.getTime())) return { date: "", hour: "12", minute: "00", period: "AM" };
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const dd = String(dateObj.getDate()).padStart(2, "0");
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    let hr24 = dateObj.getHours();
+    const minStr = String(dateObj.getMinutes()).padStart(2, "0");
+    let periodStr = "AM";
+    let hr12 = hr24;
+    if (hr24 >= 12) {
+      periodStr = "PM";
+      if (hr24 > 12) hr12 = hr24 - 12;
+    }
+    if (hr12 === 0) hr12 = 12;
+    const hrStr = String(hr12).padStart(2, "0");
+    return { date: dateStr, hour: hrStr, minute: minStr, period: periodStr };
+  };
+
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    if (parts.length !== 3) return dateStr;
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  };
+
+  const generateCalendarDays = () => {
+    const days = [];
+    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const firstDayOfWeek = new Date(calendarYear, calendarMonth, 1).getDay();
+    const prevMonthYear = calendarMonth === 0 ? calendarYear - 1 : calendarYear;
+    const prevMonth = calendarMonth === 0 ? 11 : calendarMonth - 1;
+    const daysInPrevMonth = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
+
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      days.push({ day: daysInPrevMonth - i, month: prevMonth, year: prevMonthYear, isCurrentMonth: false });
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({ day: i, month: calendarMonth, year: calendarYear, isCurrentMonth: true });
+    }
+    const nextMonthYear = calendarMonth === 11 ? calendarYear + 1 : calendarYear;
+    const nextMonth = calendarMonth === 11 ? 0 : calendarMonth + 1;
+    const remainingCells = 42 - days.length;
+    for (let i = 1; i <= remainingCells; i++) {
+      days.push({ day: i, month: nextMonth, year: nextMonthYear, isCurrentMonth: false });
+    }
+    return days;
+  };
+
+  const generateCustomCalendarDays = (year, month) => {
+    const days = [];
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayOfWeek = new Date(year, month, 1).getDay();
+    const prevMonthYear = month === 0 ? year - 1 : year;
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const daysInPrevMonth = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
+
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      days.push({ day: daysInPrevMonth - i, month: prevMonth, year: prevMonthYear, isCurrentMonth: false });
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({ day: i, month, year, isCurrentMonth: true });
+    }
+    const nextMonthYear = month === 11 ? year + 1 : year;
+    const nextMonth = month === 11 ? 0 : month + 1;
+    const remainingCells = 42 - days.length;
+    for (let i = 1; i <= remainingCells; i++) {
+      days.push({ day: i, month: nextMonth, year: nextMonthYear, isCurrentMonth: false });
+    }
+    return days;
+  };
+
+  const updateScheduledDateTime = (dateVal, hrVal, minVal, periodVal) => {
+    if (!dateVal) return;
+    let hr24 = parseInt(hrVal, 10);
+    if (periodVal === "PM" && hr24 < 12) hr24 += 12;
+    if (periodVal === "AM" && hr24 === 12) hr24 = 0;
+    const hr24Str = String(hr24).padStart(2, "0");
+    setScheduledDateTime(`${dateVal}T${hr24Str}:${minVal}`);
+  };
+
+  const updateUnpublishDateTime = (dateVal, hrVal, minVal, periodVal) => {
+    if (!dateVal) {
+      setUnpublishDateTime("");
+      return;
+    }
+    let hr24 = parseInt(hrVal, 10);
+    if (periodVal === "PM" && hr24 < 12) hr24 += 12;
+    if (periodVal === "AM" && hr24 === 12) hr24 = 0;
+    const hr24Str = String(hr24).padStart(2, "0");
+    setUnpublishDateTime(`${dateVal}T${hr24Str}:${minVal}`);
+  };
+
+  const fetchSeries = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setSeriesList(res.data || []);
+    } catch (err) {
+      console.error("Error fetching series list:", err);
+    }
+  };
+
+  const handleCreateNewSeriesShortcut = async () => {
+    const title = window.prompt("Enter new Exam Series Title (e.g. UPTET):");
+    if (!title || !title.trim()) return;
+
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/exam-series`, {
+        title: title.trim(),
+        category: "General"
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      alert("✅ Exam Series created successfully!");
+      await fetchSeries();
+      setQuizMeta(prev => ({ ...prev, examSeriesId: res.data._id, examName: res.data.title || prev.examName }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create Exam Series.");
+    }
+  };
+
+  useEffect(() => {
+    fetchSeries();
+  }, []);
+
   const handleSavePlan = (planData) => {
     setQuizMeta(prev => {
       let updatedPlans = [...(prev.plans || [])];
@@ -158,7 +326,7 @@ function CreateQuizMulti() {
             currency: dbQuiz.currency || "INR",
             plans: dbQuiz.plans || [],
             detailedDescription: dbQuiz.detailedDescription || "",
-            examSeriesId: dbQuiz.examSeriesId || "",
+            examSeriesId: dbQuiz.examSeriesId?._id || dbQuiz.examSeriesId || "",
             publishAs: dbQuiz.publishAs || "exam",
             resultReleaseMode: dbQuiz.resultReleaseMode || "immediate",
             resultReleaseDate: dbQuiz.resultReleaseDate || null,
@@ -169,6 +337,25 @@ function CreateQuizMulti() {
             practiceResultReleaseMode: dbQuiz.practiceResultReleaseMode || "immediate",
             practiceResultReleaseDate: dbQuiz.practiceResultReleaseDate || null,
           });
+
+          if (dbQuiz.scheduledDate) {
+            setIsScheduled(true);
+            const parsed = parseDateTimeToCustom(dbQuiz.scheduledDate);
+            setScheduledDate(parsed.date);
+            setScheduledHour(parsed.hour);
+            setScheduledMinute(parsed.minute);
+            setScheduledPeriod(parsed.period);
+            setScheduledDateTime(dbQuiz.scheduledDate);
+          }
+          if (dbQuiz.unpublishDate) {
+            setHasUnpublishDate(true);
+            const parsed = parseDateTimeToCustom(dbQuiz.unpublishDate);
+            setUnpublishDate(parsed.date);
+            setUnpublishHour(parsed.hour);
+            setUnpublishMinute(parsed.minute);
+            setUnpublishPeriod(parsed.period);
+            setUnpublishDateTime(dbQuiz.unpublishDate);
+          }
 
           if (dbQuiz.sections && dbQuiz.sections.length > 0) {
             const parsedSections = [];
@@ -490,7 +677,7 @@ function CreateQuizMulti() {
     setActiveSectionId(newSec.id);
   };
 
-  const handleSave = async (isPublishing = false) => {
+  const handleSave = async (submitType = "draft") => {
     setLoading(true);
     setMessage({ text: "", type: "" });
     try {
@@ -503,14 +690,58 @@ function CreateQuizMulti() {
         return;
       }
 
+      if (submitType !== "draft") {
+        if (isScheduled && !scheduledDateTime) {
+          setMessage({ text: "Please select a Date and Time for scheduling.", type: "error" });
+          setLoading(false);
+          return;
+        }
+        if (hasUnpublishDate) {
+          if (!unpublishDateTime) {
+            setMessage({ text: "Please select an Unpublish Date and Time.", type: "error" });
+            setLoading(false);
+            return;
+          }
+          const unpubDateObj = new Date(unpublishDateTime);
+          const pubDateObj = isScheduled && scheduledDateTime ? new Date(scheduledDateTime) : new Date();
+          if (unpubDateObj <= pubDateObj) {
+            setMessage({
+              text: isScheduled
+                ? "Unpublish Date & Time must be after the Scheduled Publish Date & Time."
+                : "Unpublish Date & Time must be set in the future.",
+              type: "error"
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      const isPublishing = submitType === "publish";
+      const scheduledDateVal = (submitType === "schedule" || isScheduled) && scheduledDateTime ? new Date(scheduledDateTime) : null;
+      const unpublishDateVal = hasUnpublishDate && unpublishDateTime ? new Date(unpublishDateTime) : null;
+      const finalStatus = submitType === "publish" ? "Published" : submitType === "schedule" ? "Scheduled" : "Draft";
+
+      const updatedQuizMeta = {
+        ...quizMeta,
+        status: finalStatus,
+        scheduledDate: scheduledDateVal,
+        unpublishDate: unpublishDateVal,
+      };
+
       await saveModularQuiz({
-        quizMeta,
+        quizMeta: updatedQuizMeta,
         sections,
         quizId: id || null,
         isPublishing,
+        scheduledDate: scheduledDateVal,
+        unpublishDate: unpublishDateVal,
       });
 
-      setMessage({ text: "Quiz saved successfully!", type: "success" });
+      setMessage({
+        text: `Assessment successfully saved as ${finalStatus}!`,
+        type: "success"
+      });
       setTimeout(() => navigate("/admin/manage-quizzes"), 1500);
     } catch (err) {
       console.error(err);
@@ -803,6 +1034,54 @@ function CreateQuizMulti() {
                             placeholder="e.g. Teaching Exams"
                             className="force-quiz-input"
                           />
+                        </div>
+                        <div className="form-field">
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <label>Exam Series</label>
+                            <button
+                              type="button"
+                              onClick={handleCreateNewSeriesShortcut}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "var(--violet, #8B5CF6)",
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                cursor: "pointer"
+                              }}
+                            >
+                              + New Series
+                            </button>
+                          </div>
+                          <select
+                            name="examSeriesId"
+                            value={quizMeta.examSeriesId || ""}
+                            onChange={(e) => {
+                              const selectedId = e.target.value;
+                              const seriesObj = seriesList.find((s) => s._id === selectedId);
+                              setQuizMeta((prev) => ({
+                                ...prev,
+                                examSeriesId: selectedId,
+                                examName: seriesObj ? seriesObj.title : prev.examName,
+                              }));
+                            }}
+                            className="force-quiz-input"
+                            style={{
+                              width: "100%",
+                              padding: "10px",
+                              borderRadius: "8px",
+                              border: "1px solid var(--border-color)",
+                              background: "var(--bg-panel)",
+                              color: "var(--text-primary)"
+                            }}
+                          >
+                            <option value="">-- None (Select Exam Series) --</option>
+                            {seriesList.map((s) => (
+                              <option key={s._id} value={s._id}>
+                                {s.title}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div className="form-field">
                           <label>Exam Name</label>
@@ -1253,29 +1532,356 @@ function CreateQuizMulti() {
                     </>
                   )}
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
+                </div>
+
+                {/* Publication Schedule Card */}
+                <div className="form-card" style={{ padding: "20px", marginBottom: 0 }}>
+                  <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)", fontSize: "16px" }}>Publication Schedule</h3>
+                  
+                  <div className="form-field" style={{ marginBottom: 0 }}>
+                    <label className="checkbox-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={isScheduled}
+                        onChange={(e) => setIsScheduled(e.target.checked)}
+                        style={{ width: "16px", height: "16px", accentColor: "#8B5CF6" }}
+                      />
+                      <span style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)" }}>Schedule for Later</span>
+                    </label>
+
+                    {isScheduled && (
+                      <div className="scheduled-datetime-wrapper" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+
+                        {/* Date Picker */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                          <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Date</label>
+                          <button
+                            type="button"
+                            onClick={() => setShowDatePicker(!showDatePicker)}
+                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                          >
+                            <span>{scheduledDate ? formatDateDisplay(scheduledDate) : "Select Date"}</span>
+                            <Calendar size={15} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+                          </button>
+
+                          {showDatePicker && (
+                            <div style={{ position: "absolute", top: "105%", left: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "12px", width: "260px", boxSizing: "border-box" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                                <button type="button" onClick={() => { if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); } else { setCalendarMonth(calendarMonth - 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&lt;</button>
+                                <span style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)" }}>
+                                  {["January","February","March","April","May","June","July","August","September","October","November","December"][calendarMonth]} {calendarYear}
+                                </span>
+                                <button type="button" onClick={() => { if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); } else { setCalendarMonth(calendarMonth + 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&gt;</button>
+                              </div>
+
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", textAlign: "center" }}>
+                                {["S","M","T","W","T","F","S"].map((d, idx) => (
+                                  <span key={idx} style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)" }}>{d}</span>
+                                ))}
+                              </div>
+
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
+                                {generateCalendarDays().map((cell, idx) => {
+                                  const cellDateStr = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
+                                  const isSelected = cellDateStr === scheduledDate;
+                                  return (
+                                    <div
+                                      key={idx}
+                                      onClick={() => { setScheduledDate(cellDateStr); updateScheduledDateTime(cellDateStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }}
+                                      style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "28px", fontSize: "12px", fontWeight: isSelected ? "700" : "500", borderRadius: "50%", cursor: "pointer", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : cell.isCurrentMonth ? "var(--text-primary)" : "var(--text-muted)", border: isSelected ? "2px solid rgba(110,63,243,0.2)" : "none", boxSizing: "border-box" }}
+                                    >
+                                      {cell.day}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1.5px solid var(--border-color)", paddingTop: "8px", marginTop: "4px" }}>
+                                <button type="button" onClick={() => { setScheduledDate(""); setScheduledDateTime(""); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--red, #EF4444)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Clear</button>
+                                <button type="button" onClick={() => { const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth()+1).padStart(2,"0"); const dd = String(today.getDate()).padStart(2,"0"); const todayStr = `${yyyy}-${mm}-${dd}`; setScheduledDate(todayStr); setCalendarMonth(today.getMonth()); setCalendarYear(today.getFullYear()); updateScheduledDateTime(todayStr, scheduledHour, scheduledMinute, scheduledPeriod); setShowDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--violet, #8B5CF6)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Today</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Time Picker */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                          <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)" }}>Publish Time</label>
+                          <button
+                            type="button"
+                            onClick={() => setShowTimePicker(!showTimePicker)}
+                            style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                          >
+                            <span>{`${scheduledHour}:${scheduledMinute} ${scheduledPeriod}`}</span>
+                            <Clock size={15} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+                          </button>
+
+                          {showTimePicker && (
+                            <div style={{ position: "absolute", top: "105%", right: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "14px", width: "240px" }}>
+                              <div style={{ display: "flex", height: "180px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
+
+                                {/* Hours */}
+                                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", paddingRight: "4px" }} className="time-scroll-col">
+                                  {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
+                                    const isSelected = hr === scheduledHour;
+                                    return (
+                                      <div key={hr} onClick={() => { setScheduledHour(hr); updateScheduledDateTime(scheduledDate, hr, scheduledMinute, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                        {hr}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                {/* Minutes */}
+                                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }} className="time-scroll-col">
+                                  {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
+                                    const isSelected = min === scheduledMinute;
+                                    return (
+                                      <div key={min} onClick={() => { setScheduledMinute(min); updateScheduledDateTime(scheduledDate, scheduledHour, min, scheduledPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                        {min}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                {/* AM/PM */}
+                                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px", justifyContent: "center" }}>
+                                  {["AM", "PM"].map(p => {
+                                    const isSelected = p === scheduledPeriod;
+                                    return (
+                                      <div key={p} onClick={() => { setScheduledPeriod(p); updateScheduledDateTime(scheduledDate, scheduledHour, scheduledMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
+                                        {p}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <button type="button" onClick={() => setShowTimePicker(false)} style={{ padding: "8px 12px", border: "1.5px solid var(--border-input)", borderRadius: "10px", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "center" }}>
+                                Select Time
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px", display: "inline-block" }}>
+                          Assessment will automatically publish at this date & time.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Auto-Unpublish / Availability Window */}
+                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed var(--border-color)" }}>
+                      <label className="checkbox-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={hasUnpublishDate}
+                          onChange={(e) => {
+                            setHasUnpublishDate(e.target.checked);
+                            if (e.target.checked && !unpublishDate) {
+                              const baseDate = scheduledDate || new Date().toISOString().split("T")[0];
+                              setUnpublishDate(baseDate);
+                              updateUnpublishDateTime(baseDate, unpublishHour, unpublishMinute, unpublishPeriod);
+                            }
+                          }}
+                          style={{ width: "16px", height: "16px", accentColor: "#F59E0B" }}
+                        />
+                        <span style={{ fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)" }}>Auto-Unpublish / Available Until</span>
+                      </label>
+
+                      {hasUnpublishDate && (
+                        <div className="scheduled-datetime-wrapper" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+
+                          {/* Unpublish Date Picker */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)" }}>Unpublish Date</label>
+                            <button
+                              type="button"
+                              onClick={() => setShowUnpublishDatePicker(!showUnpublishDatePicker)}
+                              style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                            >
+                              <span>{unpublishDate ? formatDateDisplay(unpublishDate) : "Select Date"}</span>
+                              <Calendar size={15} style={{ color: "#F59E0B", flexShrink: 0 }} />
+                            </button>
+
+                            {showUnpublishDatePicker && (
+                              <div style={{ position: "absolute", top: "105%", left: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "12px", width: "260px", boxSizing: "border-box" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                                  <button type="button" onClick={() => { if (unpublishCalendarMonth === 0) { setUnpublishCalendarMonth(11); setUnpublishCalendarYear(unpublishCalendarYear - 1); } else { setUnpublishCalendarMonth(unpublishCalendarMonth - 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&lt;</button>
+                                  <span style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)" }}>
+                                    {["January","February","March","April","May","June","July","August","September","October","November","December"][unpublishCalendarMonth]} {unpublishCalendarYear}
+                                  </span>
+                                  <button type="button" onClick={() => { if (unpublishCalendarMonth === 11) { setUnpublishCalendarMonth(0); setUnpublishCalendarYear(unpublishCalendarYear + 1); } else { setUnpublishCalendarMonth(unpublishCalendarMonth + 1); } }} style={{ background: "transparent", border: "none", color: "var(--text-primary)", fontSize: "14px", cursor: "pointer", padding: "4px 8px", fontWeight: "bold" }}>&gt;</button>
+                                </div>
+
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", textAlign: "center" }}>
+                                  {["S","M","T","W","T","F","S"].map((d, idx) => (
+                                    <span key={idx} style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)" }}>{d}</span>
+                                  ))}
+                                </div>
+
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
+                                  {generateCustomCalendarDays(unpublishCalendarYear, unpublishCalendarMonth).map((cell, idx) => {
+                                    const cellDateStr = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
+                                    const isSelected = cellDateStr === unpublishDate;
+                                    return (
+                                      <div
+                                        key={idx}
+                                        onClick={() => { setUnpublishDate(cellDateStr); updateUnpublishDateTime(cellDateStr, unpublishHour, unpublishMinute, unpublishPeriod); setShowUnpublishDatePicker(false); }}
+                                        style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "28px", fontSize: "12px", fontWeight: isSelected ? "700" : "500", borderRadius: "50%", cursor: "pointer", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : cell.isCurrentMonth ? "var(--text-primary)" : "var(--text-muted)", border: isSelected ? "2px solid rgba(110,63,243,0.2)" : "none", boxSizing: "border-box" }}
+                                      >
+                                        {cell.day}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1.5px solid var(--border-color)", paddingTop: "8px", marginTop: "4px" }}>
+                                  <button type="button" onClick={() => { setUnpublishDate(""); setUnpublishDateTime(""); setShowUnpublishDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--red, #EF4444)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Clear</button>
+                                  <button type="button" onClick={() => { const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth()+1).padStart(2,"0"); const dd = String(today.getDate()).padStart(2,"0"); const todayStr = `${yyyy}-${mm}-${dd}`; setUnpublishDate(todayStr); setUnpublishCalendarMonth(today.getMonth()); setUnpublishCalendarYear(today.getFullYear()); updateUnpublishDateTime(todayStr, unpublishHour, unpublishMinute, unpublishPeriod); setShowUnpublishDatePicker(false); }} style={{ background: "transparent", border: "none", color: "var(--violet, #8B5CF6)", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>Today</button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Unpublish Time Picker */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: "4px", position: "relative" }}>
+                            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-secondary)" }}>Unpublish Time</label>
+                            <button
+                              type="button"
+                              onClick={() => setShowUnpublishTimePicker(!showUnpublishTimePicker)}
+                              style={{ background: "var(--bg-input)", border: "1.5px solid var(--border-input)", borderRadius: "10px", padding: "10px 14px", fontSize: "13.5px", color: "var(--text-primary)", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box" }}
+                            >
+                              <span>{`${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`}</span>
+                              <Clock size={15} style={{ color: "#F59E0B", flexShrink: 0 }} />
+                            </button>
+
+                            {showUnpublishTimePicker && (
+                              <div style={{ position: "absolute", top: "105%", right: 0, zIndex: 1000, backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "16px", display: "flex", flexDirection: "column", gap: "14px", width: "240px" }}>
+                                <div style={{ display: "flex", height: "180px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
+
+                                  {/* Hours */}
+                                  <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", paddingRight: "4px" }} className="time-scroll-col">
+                                    {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map(hr => {
+                                      const isSelected = hr === unpublishHour;
+                                      return (
+                                        <div key={hr} onClick={() => { setUnpublishHour(hr); updateUnpublishDateTime(unpublishDate, hr, unpublishMinute, unpublishPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                          {hr}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+
+                                  <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                  {/* Minutes */}
+                                  <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }} className="time-scroll-col">
+                                    {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map(min => {
+                                      const isSelected = min === unpublishMinute;
+                                      return (
+                                        <div key={min} onClick={() => { setUnpublishMinute(min); updateUnpublishDateTime(unpublishDate, unpublishHour, min, unpublishPeriod); }} style={{ padding: "6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: isSelected ? "700" : "500", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-primary)", transition: "all 0.1s ease" }}>
+                                          {min}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+
+                                  <div style={{ width: "1px", backgroundColor: "var(--border-color)" }}></div>
+
+                                  {/* AM/PM */}
+                                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px", justifyContent: "center" }}>
+                                    {["AM", "PM"].map(p => {
+                                      const isSelected = p === unpublishPeriod;
+                                      return (
+                                        <div key={p} onClick={() => { setUnpublishPeriod(p); updateUnpublishDateTime(unpublishDate, unpublishHour, unpublishMinute, p); }} style={{ padding: "10px 6px", textAlign: "center", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "700", backgroundColor: isSelected ? "var(--violet, #8B5CF6)" : "transparent", color: isSelected ? "#ffffff" : "var(--text-secondary)", transition: "all 0.1s ease" }}>
+                                          {p}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                <button type="button" onClick={() => setShowUnpublishTimePicker(false)} style={{ padding: "8px 12px", border: "1.5px solid var(--border-input)", borderRadius: "10px", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", cursor: "pointer", textAlign: "center" }}>
+                                  Select Time
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px", display: "inline-block" }}>
+                            Assessment will automatically unpublish and become unavailable at this date & time.
+                          </span>
+
+                          {unpublishDateTime && (
+                            <div style={{ marginTop: "4px", padding: "8px 12px", borderRadius: "8px", backgroundColor: "rgba(245, 158, 11, 0.1)", border: "1px solid rgba(245, 158, 11, 0.25)", fontSize: "12px", color: "#F59E0B", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+                              <Clock size={14} style={{ color: "#F59E0B", flexShrink: 0 }} />
+                              <span>
+                                {isScheduled && scheduledDateTime
+                                  ? `Window: ${formatDateDisplay(scheduledDate)} ${scheduledHour}:${scheduledMinute} ${scheduledPeriod} → ${formatDateDisplay(unpublishDate)} ${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`
+                                  : `Available until: ${formatDateDisplay(unpublishDate)} ${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions & Status inside sidebar */}
+                  <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: isScheduled ? "var(--gold, #F59E0B)" : "var(--text-muted)" }}></span>
+                      <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                        {isScheduled
+                          ? `Scheduled for ${scheduledDate ? formatDateDisplay(scheduledDate) + ' ' + scheduledHour + ':' + scheduledMinute + ' ' + scheduledPeriod : "..."}`
+                          : hasUnpublishDate && unpublishDate
+                          ? `Live until ${formatDateDisplay(unpublishDate)} ${unpublishHour}:${unpublishMinute} ${unpublishPeriod}`
+                          : "Ready to Publish / Save"}
+                      </span>
+                    </div>
+
                     <button
-                      onClick={() => handleSave(false)}
+                      type="button"
+                      onClick={() => handleSave("draft")}
                       disabled={loading}
                       style={{
                         padding: "12px",
                         background: "var(--bg-input)",
                         color: "var(--text-main)",
-                        border: "1px solid var(--border-input)",
-                        borderRadius: "8px",
+                        border: "1.5px solid var(--border-input)",
+                        borderRadius: "10px",
                         cursor: "pointer",
-                        fontWeight: "600"
+                        fontWeight: "600",
+                        transition: "all 0.2s"
                       }}
                     >
                       Save as Draft
                     </button>
                     <button
-                      onClick={() => handleSave(true)}
+                      type="button"
+                      onClick={() => handleSave(isScheduled ? "schedule" : "publish")}
                       disabled={loading}
                       className="btn-primary"
-                      style={{ padding: "12px", borderRadius: "8px", cursor: "pointer", width: "100%", justifyContent: "center" }}
+                      style={{
+                        padding: "12px",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        width: "100%",
+                        justifyContent: "center",
+                        fontWeight: "700"
+                      }}
                     >
-                      Publish Assessment
+                      {loading
+                        ? "Processing..."
+                        : isScheduled
+                        ? "Schedule Assessment"
+                        : id
+                        ? "Update & Publish"
+                        : "Publish Assessment"}
                     </button>
                   </div>
                 </div>
