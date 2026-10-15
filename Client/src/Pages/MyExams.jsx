@@ -576,8 +576,27 @@ function MyExams() {
                             onClick={() => navigate(`/student/exams/${series._id}`)}
                             style={{ cursor: "pointer", height: "100%" }}
                           >
-                            {/* Top row: subject badge + completion status */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                            {/* Top row: Exam Title + completion status */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+                              <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.4, flex: 1 }}>
+                                {series.title}
+                              </h4>
+                              {isCompleted && (
+                                <span style={{ color: "#10B981", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", flexShrink: 0, marginTop: "1px" }}>
+                                  <CheckCircle2 size={13} /> Completed
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Thumbnail */}
+                            {series.thumbnail && (
+                              <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", flexShrink: 0 }}>
+                                <img src={series.thumbnail} alt={series.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              </div>
+                            )}
+
+                            {/* Subject badge below Exam title */}
+                            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                               {series.subjects && series.subjects.length > 0 ? (
                                 <span style={{
                                   background: "color-mix(in srgb, var(--primary) 20%, transparent)",
@@ -606,26 +625,6 @@ function MyExams() {
                                   {series.category || "General"}
                                 </span>
                               )}
-                              {isCompleted && (
-                                <span style={{ color: "#10B981", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
-                                  <CheckCircle2 size={13} /> Completed
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Title */}
-
-                            {series.thumbnail && (
-                              <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginBottom: "12px", marginTop: "8px", flexShrink: 0 }}>
-                                <img src={series.thumbnail} alt={series.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              </div>
-                            )}
-                            <div>
-
-                              <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
-                                {series.title}
-                              </h4>
-                              
                             </div>
 
                             {/* Stats row */}

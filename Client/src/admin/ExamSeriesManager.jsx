@@ -841,22 +841,22 @@ function ExamSeriesManager() {
                       position: "relative",
                       overflow: "hidden"
                     }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-                        <span style={{ background: "rgba(59, 130, 246, 0.1)", color: "#3B82F6", fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px" }}>
-                          {formData.category || "General"}
-                        </span>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+                        <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.4, flex: 1 }}>
+                          {formData.title || "Exam Series Title"}
+                        </h4>
                       </div>
                       
                       {formData.thumbnail && (
-                        <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginTop: "4px", flexShrink: 0 }}>
+                        <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", flexShrink: 0 }}>
                           <img src={formData.thumbnail} alt={formData.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                       )}
                       
                       <div>
-                        <h4 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px 0", lineHeight: 1.4 }}>
-                          {formData.title || "Exam Series Title"}
-                        </h4>
+                        <span style={{ display: "inline-block", background: "rgba(59, 130, 246, 0.1)", color: "#3B82F6", fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "100px" }}>
+                          {formData.subjects && formData.subjects.length > 0 ? formData.subjects[0] : (formData.category || "General")}
+                        </span>
                       </div>
                       
                       <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
