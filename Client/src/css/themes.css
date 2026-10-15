@@ -28,7 +28,7 @@ html[class*="theme-"] :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger) {
+:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],

@@ -186,9 +186,10 @@ function Leaderboard() {
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="lb-filter-select-mob"
+                  style={{ color: "var(--text-primary)" }}
                 >
-                  <span className="lb-dropdown-label-text">{selectedExam}</span>
-                  <ChevronDown size={15} style={{ flexShrink: 0, transition: "transform 0.2s", transform: isDropdownOpen ? "rotate(180deg)" : "none" }} />
+                  <span className="lb-dropdown-label-text" style={{ color: "var(--text-primary)" }}>{selectedExam}</span>
+                  <ChevronDown size={15} style={{ color: "var(--text-secondary)", flexShrink: 0, transition: "transform 0.2s", transform: isDropdownOpen ? "rotate(180deg)" : "none" }} />
                 </button>
 
                 {isDropdownOpen && (
@@ -201,12 +202,14 @@ function Leaderboard() {
                         value={examSearchQuery}
                         onChange={(e) => setExamSearchQuery(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
+                        style={{ color: "var(--text-primary)" }}
                       />
                     </div>
                     <div className="lb-dropdown-scroll-list">
                       <button
                         type="button"
                         className={`lb-dropdown-opt ${selectedExam === "All Exams" ? "active" : ""}`}
+                        style={{ color: selectedExam === "All Exams" ? "var(--primary, var(--violet))" : "var(--text-primary)" }}
                         onClick={() => {
                           setSelectedExam("All Exams");
                           setIsDropdownOpen(false);
@@ -223,6 +226,7 @@ function Leaderboard() {
                             key={i}
                             type="button"
                             className={`lb-dropdown-opt ${selectedExam === exam ? "active" : ""}`}
+                            style={{ color: selectedExam === exam ? "var(--primary, var(--violet))" : "var(--text-primary)" }}
                             onClick={() => {
                               setSelectedExam(exam);
                               setIsDropdownOpen(false);
@@ -565,7 +569,7 @@ function Leaderboard() {
                       textAlign: "left",
                       background: "var(--bg-input, #ffffff)",
                       border: "1px solid var(--border-color, #E4E4E7)",
-                      color: "var(--text-primary, #3F3F46)",
+                      color: "var(--text-primary)",
                       borderRadius: "12px",
                       cursor: "pointer",
                       fontWeight: "600",
@@ -641,7 +645,7 @@ function Leaderboard() {
                             border: "none",
                             borderRadius: "6px",
                             background: selectedExam === "All Exams" ? "var(--option-hover)" : "transparent",
-                            color: selectedExam === "All Exams" ? "var(--violet)" : "var(--text-primary, #1e1b4b)",
+                            color: selectedExam === "All Exams" ? "var(--primary, var(--violet))" : "var(--text-primary)",
                             fontSize: "13px",
                             fontWeight: selectedExam === "All Exams" ? "600" : "500",
                             cursor: "pointer"
@@ -668,7 +672,7 @@ function Leaderboard() {
                                 border: "none",
                                 borderRadius: "6px",
                                 background: selectedExam === exam ? "var(--option-hover)" : "transparent",
-                                color: selectedExam === exam ? "var(--violet)" : "var(--text-primary, #1e1b4b)",
+                                color: selectedExam === exam ? "var(--primary, var(--violet))" : "var(--text-primary)",
                                 fontSize: "13px",
                                 fontWeight: selectedExam === exam ? "600" : "500",
                                 cursor: "pointer"

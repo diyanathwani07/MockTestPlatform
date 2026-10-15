@@ -450,7 +450,7 @@ function CreatePracticeMulti() {
 
         <div className="admin-content create-quiz-page">
           <div
-            className="create-quiz-container animate-fade-in"
+            className="animate-fade-in"
             style={{ width: "100%" }}
           >
             {!id && (
@@ -483,11 +483,10 @@ function CreatePracticeMulti() {
                     style={{
                       padding: "8px 24px",
                       borderRadius: "8px",
-                      background: "var(--violet)",
+                      background: "var(--primary)",
                       color: "var(--primary-foreground)",
                       fontWeight: "600",
-                      border: "none",
-                      boxShadow: "0 2px 8px rgba(110, 63, 243, 0.25)"
+                      border: "none"
                     }}
                   >
                     Multi-Section
