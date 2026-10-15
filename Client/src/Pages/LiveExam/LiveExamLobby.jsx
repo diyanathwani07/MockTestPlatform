@@ -16,9 +16,11 @@ import {
   Lock,
   ChevronRight,
   RefreshCw,
+  Palette,
 } from "lucide-react";
 import Logo from "../../components/Logo";
 import ThemeToggle from "../../components/ThemeToggle";
+import { useTheme } from "../../context/ThemeContext";
 import "../../css/LiveExam.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
@@ -26,6 +28,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "";
 function LiveExamLobby() {
   const { slugOrToken } = useParams();
   const navigate = useNavigate();
+  const { toggleThemePicker } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -264,6 +267,17 @@ function LiveExamLobby() {
         </div>
         <div className="live-exam-header-right">
           <ThemeToggle />
+          <button
+            type="button"
+            onClick={toggleThemePicker}
+            className="live-btn-secondary"
+            style={{ padding: "6px 12px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            title="Themes & Colors"
+            aria-label="Customize Theme"
+          >
+            <Palette size={16} />
+            <span className="live-btn-theme-text" style={{ fontSize: "12px" }}>Theme</span>
+          </button>
           {isAuthenticated ? (
             <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", background: "rgba(255,255,255,0.05)", padding: "6px 14px", borderRadius: "20px" }}>
               <span>{user.fullName || "Candidate"}</span>

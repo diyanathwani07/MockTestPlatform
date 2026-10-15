@@ -19,10 +19,12 @@ import {
   MessageSquare,
   Home,
   ShieldAlert,
+  Palette,
 } from "lucide-react";
 import Logo from "../../components/Logo";
 import MathRenderer from "../../components/MathRenderer";
 import ThemeToggle from "../../components/ThemeToggle";
+import { useTheme } from "../../context/ThemeContext";
 import "../../css/LiveExam.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
@@ -30,6 +32,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "";
 function LiveExamPlayer() {
   const { attemptId } = useParams();
   const navigate = useNavigate();
+  const { isDark, toggleTheme, toggleThemePicker } = useTheme();
 
   const token = localStorage.getItem("token");
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -599,17 +602,36 @@ function LiveExamPlayer() {
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Light / Dark Mode Toggle */}
+          <ThemeToggle />
+
+          {/* Theme & Color Customizer Button */}
+          <button
+            type="button"
+            onClick={toggleThemePicker}
+            className="live-btn-secondary"
+            style={{ padding: "6px 12px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            title="Themes & Colors"
+            aria-label="Customize Theme"
+          >
+            <Palette size={16} />
+            <span className="live-btn-theme-text" style={{ fontSize: "12px" }}>Theme</span>
+          </button>
+
+          {/* Fullscreen Toggle */}
           <button
             type="button"
             onClick={toggleFullscreen}
             className="live-btn-secondary"
             style={{ padding: "6px 12px", fontSize: "12px" }}
-            title="Toggle Fullscreen"
+            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            aria-label="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
 
+          {/* Submit Exam Button */}
           <button
             type="button"
             onClick={() => setShowConfirmSubmit(true)}

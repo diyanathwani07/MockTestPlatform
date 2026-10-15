@@ -534,4 +534,9 @@
   .live-countdown-num {
     font-size: 24px;
   }
+
+  .live-btn-theme-text {
+    display: none;
+  }
 }
+
