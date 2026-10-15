@@ -41,6 +41,17 @@ html[class*="theme-"] .theme-toggle-btn {
   color: inherit !important;
 }
 
+/* Explicit contrast preservation for Leaderboard dropdown elements across all themes */
+:is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [class*="lb-dropdown"]) {
+  color: var(--text-primary) !important;
+}
+body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [class*="lb-dropdown"]) {
+  color: var(--text-primary, #F4F4F5) !important;
+}
+:is(.lb-dropdown-opt.active, [class*="lb-dropdown"].active) {
+  color: var(--primary, var(--violet)) !important;
+}
+
 /* ============ Kodama Grove ============ */
 .theme-kodama-grove {
   --background: #e3d7b3;

@@ -56,13 +56,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-input, #ffffff);
+  background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-color, #E4E4E7);
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary, #3F3F46);
+  color: var(--text-primary, #3F3F46) !important;
   cursor: pointer;
   outline: none;
   height: 42px;
@@ -71,6 +71,12 @@
 
 .lb-filter-select:hover, .lb-filter-select:focus {
   border-color: var(--violet);
+}
+
+body.dark-mode .lb-filter-select {
+  background: var(--bg-card, #18181b) !important;
+  border-color: var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+  color: var(--text-primary, #F4F4F5) !important;
 }
 
 .lb-search {
@@ -774,6 +780,48 @@ body.dark-mode .lb-search .lb-icon {
     background: var(--option-hover, rgba(110, 63, 243, 0.15)) !important;
     color: var(--primary, var(--violet)) !important;
     font-weight: 700;
+  }
+
+  /* Explicit Dark Mode Overrides for Leaderboard Dropdown */
+  body.dark-mode .lb-filter-select-mob,
+  body.dark-mode .lb-filter-select-mob span,
+  body.dark-mode .lb-filter-select-mob .lb-dropdown-label-text,
+  body.dark-mode .lb-filter-select,
+  body.dark-mode .lb-filter-select span,
+  body.dark-mode .lb-dropdown-opt,
+  body.dark-mode .lb-dropdown-popover button,
+  body.dark-mode .lb-dropdown-scroll-list button,
+  body.dark-mode .lb-dropdown-search-wrap input {
+    color: var(--text-primary, #F4F4F5) !important;
+  }
+
+  body.dark-mode .lb-filter-select-mob,
+  body.dark-mode .lb-filter-select {
+    background: var(--bg-card, #18181b) !important;
+    border-color: var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+  }
+
+  body.dark-mode .lb-dropdown-popover {
+    background: var(--bg-card, #18181b) !important;
+    border-color: var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  body.dark-mode .lb-dropdown-search-wrap {
+    background: var(--bg-input, rgba(255, 255, 255, 0.06)) !important;
+    border-color: var(--border-color, rgba(255, 255, 255, 0.12)) !important;
+  }
+
+  body.dark-mode .lb-dropdown-opt:hover,
+  body.dark-mode .lb-dropdown-scroll-list button:hover {
+    background: var(--bg-input, rgba(255, 255, 255, 0.08)) !important;
+    color: var(--text-primary, #F4F4F5) !important;
+  }
+
+  body.dark-mode .lb-dropdown-opt.active,
+  body.dark-mode .lb-dropdown-scroll-list button.active {
+    background: var(--option-hover, rgba(110, 63, 243, 0.2)) !important;
+    color: var(--primary, var(--violet, #A78BFA)) !important;
   }
 
   .lb-mobile-hero-card {

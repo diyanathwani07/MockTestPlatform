@@ -633,6 +633,7 @@ function Leaderboard() {
                       <div style={{ maxHeight: "200px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "2px" }}>
                         <button
                           type="button"
+                          className={`lb-dropdown-opt ${selectedExam === "All Exams" ? "active" : ""}`}
                           onClick={() => {
                             setSelectedExam("All Exams");
                             setIsDropdownOpen(false);
@@ -660,6 +661,7 @@ function Leaderboard() {
                             <button
                               key={i}
                               type="button"
+                              className={`lb-dropdown-opt ${selectedExam === exam ? "active" : ""}`}
                               onClick={() => {
                                 setSelectedExam(exam);
                                 setIsDropdownOpen(false);
