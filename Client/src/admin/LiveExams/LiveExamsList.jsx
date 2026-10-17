@@ -32,6 +32,7 @@ export default function LiveExamsList() {
   const confirm = useConfirm();
 
   const [exams, setExams] = useState([]);
+  const [counts, setCounts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusTab, setStatusTab] = useState("all");
@@ -50,6 +51,9 @@ export default function LiveExamsList() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setExams(res.data?.exams || []);
+      if (res.data?.counts) {
+        setCounts(res.data.counts);
+      }
     } catch (err) {
       console.error("Failed to fetch live examinations:", err);
     } finally {
@@ -123,11 +127,11 @@ export default function LiveExamsList() {
     }
   };
 
-  // Status counters
-  const totalCount = exams.length;
-  const liveCount = exams.filter((e) => e.status === "live" || e.status === "lobby").length;
-  const scheduledCount = exams.filter((e) => e.status === "scheduled").length;
-  const completedCount = exams.filter((e) => e.status === "completed").length;
+  // Status counters (use global counts from server across all exams; fallback to exams array)
+  const totalCount = counts ? counts.total : exams.length;
+  const liveCount = counts ? counts.live : exams.filter((e) => e.status === "live" || e.status === "lobby").length;
+  const scheduledCount = counts ? counts.scheduled : exams.filter((e) => e.status === "scheduled").length;
+  const completedCount = counts ? counts.completed : exams.filter((e) => e.status === "completed").length;
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -401,11 +405,11 @@ export default function LiveExamsList() {
           >
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {[
-                { val: "all", label: "All" },
-                { val: "live", label: "Live / Lobby" },
-                { val: "scheduled", label: "Scheduled" },
-                { val: "completed", label: "Completed" },
-                { val: "cancelled", label: "Cancelled" },
+                { val: "all", label: "All", count: counts?.total },
+                { val: "live", label: "Live / Lobby", count: counts?.live },
+                { val: "scheduled", label: "Scheduled", count: counts?.scheduled },
+                { val: "completed", label: "Completed", count: counts?.completed },
+                { val: "cancelled", label: "Cancelled", count: counts?.cancelled },
               ].map((tab) => (
                 <button
                   key={tab.val}
@@ -420,9 +424,32 @@ export default function LiveExamsList() {
                     backgroundColor: statusTab === tab.val ? "var(--primary)" : "transparent",
                     color: statusTab === tab.val ? "var(--primary-foreground)" : "var(--text-secondary)",
                     transition: "all 0.15s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
                   }}
                 >
-                  {tab.label}
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      style={{
+                        padding: "1px 6px",
+                        borderRadius: "10px",
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        backgroundColor:
+                          statusTab === tab.val
+                            ? "rgba(255, 255, 255, 0.25)"
+                            : "var(--border-color)",
+                        color:
+                          statusTab === tab.val
+                            ? "var(--primary-foreground)"
+                            : "var(--text-secondary)",
+                      }}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

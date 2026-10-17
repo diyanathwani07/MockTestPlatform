@@ -156,11 +156,44 @@ const createLiveExam = async (req, res) => {
 const getLiveExams = async (req, res) => {
   try {
     const { status, search, page = 1, limit = 20 } = req.query;
+    const now = new Date();
+
+    // Synchronize stored examination statuses in MongoDB based on elapsed / ongoing times
+    await Promise.all([
+      LiveExamination.updateMany(
+        {
+          isDeleted: false,
+          status: { $in: ["scheduled", "lobby", "live"] },
+          scheduledEndTime: { $lte: now },
+        },
+        { $set: { status: "completed" } }
+      ),
+      LiveExamination.updateMany(
+        {
+          isDeleted: false,
+          status: "scheduled",
+          scheduledStartTime: { $lte: now },
+          scheduledEndTime: { $gt: now },
+        },
+        { $set: { status: "live" } }
+      ),
+    ]);
 
     const query = { isDeleted: false };
 
     if (status && status !== "all") {
-      query.status = status;
+      if (status === "live") {
+        query.status = { $in: ["live", "lobby"] };
+      } else if (status === "completed") {
+        query.status = "completed";
+      } else if (status === "scheduled") {
+        query.status = "scheduled";
+        query.scheduledStartTime = { $gt: now };
+      } else if (status === "cancelled") {
+        query.status = "cancelled";
+      } else {
+        query.status = status;
+      }
     }
 
     if (search && search.trim()) {
@@ -174,7 +207,7 @@ const getLiveExams = async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
     const skip = (pageNum - 1) * limitNum;
 
-    const [exams, total] = await Promise.all([
+    const [exams, total, globalCounts] = await Promise.all([
       LiveExamination.find(query)
         .populate("quizId", "title subject examName duration passPercentage")
         .populate("createdBy", "fullName email")
@@ -183,7 +216,29 @@ const getLiveExams = async (req, res) => {
         .limit(limitNum)
         .lean(),
       LiveExamination.countDocuments(query),
+      LiveExamination.aggregate([
+        { $match: { isDeleted: false } },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            live: { $sum: { $cond: [{ $in: ["$status", ["live", "lobby"]] }, 1, 0] } },
+            scheduled: { $sum: { $cond: [{ $eq: ["$status", "scheduled"] }, 1, 0] } },
+            completed: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
+            cancelled: { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+          },
+        },
+      ]),
     ]);
+
+    const counts = globalCounts[0] || {
+      total: 0,
+      live: 0,
+      scheduled: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    delete counts._id;
 
     // Aggregate real-time attempt counts for each live exam
     const examIds = exams.map((e) => e._id);
@@ -209,7 +264,6 @@ const getLiveExams = async (req, res) => {
       statsMap[st._id.toString()] = st;
     });
 
-    const now = new Date();
     const enrichedExams = exams.map((exam) => {
       // Refresh status dynamically if scheduled/live times have elapsed
       let computedStatus = exam.status;
@@ -236,6 +290,7 @@ const getLiveExams = async (req, res) => {
 
     res.json({
       exams: enrichedExams,
+      counts,
       total,
       page: pageNum,
       totalPages: Math.ceil(total / limitNum),
