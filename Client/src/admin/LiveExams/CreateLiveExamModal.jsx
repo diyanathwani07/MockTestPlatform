@@ -139,7 +139,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
     setError("");
 
     if (!selectedQuizId) {
-      return setError("Please select an eligible quiz blueprint.");
+      return setError("Please select an eligible quiz / exam.");
     }
     if (!title.trim()) {
       return setError("Please provide an examination title.");
@@ -299,10 +299,10 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
             </div>
           )}
 
-          {/* 1. Quiz Blueprint Selector */}
+          {/* 1. Quiz / Exam Selector */}
           <div>
             <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
-              Select Quiz Blueprint <span style={{ color: "#ef4444" }}>*</span>
+              Select Quiz / Exam <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <select
               value={selectedQuizId}
@@ -319,7 +319,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 outline: "none",
               }}
             >
-              <option value="">-- Choose an active quiz blueprint --</option>
+              <option value="">-- Choose an active quiz / exam --</option>
               {quizzes.map((q) => (
                 <option key={q._id} value={q._id}>
                   {q.title} ({q.subject || q.examName || "Quiz"} • {q.duration || 30} mins)

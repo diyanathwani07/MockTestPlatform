@@ -427,7 +427,7 @@ export default function LiveExamsList() {
                           {getStatusBadge(exam.status)}
                         </div>
                         <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
-                          Blueprint: <strong style={{ color: "var(--text-primary)" }}>{exam.quizId?.title || "Exam"}</strong>
+                          Exam Name: <strong style={{ color: "var(--text-primary)" }}>{exam.quizId?.title || "Exam"}</strong>
                           {exam.quizId?.subject && ` • Subject: ${exam.quizId.subject}`}
                           {exam.quizId?.examName && ` • Category: ${exam.quizId.examName}`}
                         </p>
