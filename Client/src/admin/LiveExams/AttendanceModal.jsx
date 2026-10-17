@@ -127,6 +127,7 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
       }}
     >
       <div
+        className="attendance-modal-container"
         style={{
           backgroundColor: "var(--bg-card, #1e1e2d)",
           border: "1.5px solid var(--border-color, rgba(255,255,255,0.12))",
@@ -213,6 +214,7 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
 
         {/* Filter Bar */}
         <div
+          className="attendance-filter-bar"
           style={{
             padding: "14px 24px",
             backgroundColor: "var(--bg-page, #12121a)",
@@ -244,7 +246,7 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
             />
           </div>
 
-          <div style={{ display: "flex", gap: "6px" }}>
+          <div className="attendance-filter-pills" style={{ display: "flex", gap: "6px" }}>
             {[
               { val: "all", label: "All" },
               { val: "in_progress", label: "In Progress" },
@@ -272,7 +274,7 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
         </div>
 
         {/* Content Table */}
-        <div style={{ padding: "0", flex: 1, overflowY: "auto" }}>
+        <div className="attendance-table-wrap" style={{ padding: "0", flex: 1, overflowY: "auto", overflowX: "auto" }}>
           {loading ? (
             <div style={{ padding: "40px", textAlign: "center", color: "var(--text-secondary)" }}>
               Loading attendance data...
@@ -282,7 +284,7 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
               No attendance records found matching criteria.
             </div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "13px" }}>
+            <table className="attendance-table" style={{ width: "100%", minWidth: "600px", borderCollapse: "collapse", textAlign: "left", fontSize: "13px" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-color, rgba(255,255,255,0.1))", backgroundColor: "rgba(255,255,255,0.02)" }}>
                   <th style={{ padding: "12px 16px", fontWeight: "600", color: "var(--text-secondary)" }}>Student</th>

@@ -5,6 +5,7 @@ import AdminNavbar from "../components/AdminNavbar";
 import AdminSidebar from "../components/AdminSidebar";
 import CreateLiveExamModal from "./CreateLiveExamModal";
 import AttendanceModal from "./AttendanceModal";
+import "./LiveExamsList.css";
 import {
   Radio,
   Plus,
@@ -248,44 +249,19 @@ export default function LiveExamsList() {
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar title="Live Examinations" />
 
-        <div className="admin-content" style={{ flex: 1, padding: "24px", maxWidth: "1400px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+        <div className="admin-content live-exams-content">
           {/* Header Action Bar */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "24px",
-              flexWrap: "wrap",
-              gap: "16px",
-            }}
-          >
-            <div>
-              <h2 style={{ fontSize: "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-                Live Examinations
-              </h2>
-              <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text-secondary)" }}>
-                Schedule, monitor, and manage real-time timed mock examinations
-              </p>
+          <div className="live-exams-header">
+            <div className="live-exams-title-wrap">
+              <h2>Live Examinations</h2>
+              <p>Schedule, monitor, and manage real-time timed mock examinations</p>
             </div>
 
-            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div className="live-exams-header-actions">
               <button
                 onClick={fetchLiveExams}
                 title="Refresh examinations list"
-                style={{
-                  backgroundColor: "var(--bg-card)",
-                  border: "1px solid var(--border-color)",
-                  color: "var(--text-primary)",
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                }}
+                className="live-exams-refresh-btn"
               >
                 <RefreshCw size={15} /> Refresh
               </button>
@@ -294,20 +270,7 @@ export default function LiveExamsList() {
                   setEditingExam(null);
                   setShowCreateModal(true);
                 }}
-                style={{
-                  backgroundColor: "var(--primary)",
-                  border: "none",
-                  color: "var(--primary-foreground)",
-                  padding: "10px 18px",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "14px",
-                  fontWeight: "700",
-                  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.15)",
-                }}
+                className="live-exams-create-btn"
               >
                 <Plus size={18} /> Schedule Live Exam
               </button>
@@ -315,95 +278,31 @@ export default function LiveExamsList() {
           </div>
 
           {/* Metric Counter Cards */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "16px",
-              marginBottom: "24px",
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: "var(--bg-card)",
-                border: "1.5px solid var(--border-color)",
-                borderRadius: "14px",
-                padding: "16px 20px",
-              }}
-            >
-              <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600", textTransform: "uppercase" }}>
-                Total Exams
-              </span>
-              <h3 style={{ margin: "6px 0 0", fontSize: "24px", fontWeight: "800", color: "var(--text-primary)" }}>
-                {totalCount}
-              </h3>
+          <div className="live-exams-metrics-grid">
+            <div className="live-exams-metric-card">
+              <span className="live-exams-metric-label">Total Exams</span>
+              <h3 className="live-exams-metric-value">{totalCount}</h3>
             </div>
 
-            <div
-              style={{
-                backgroundColor: "var(--bg-card)",
-                border: "1.5px solid var(--border-color)",
-                borderRadius: "14px",
-                padding: "16px 20px",
-              }}
-            >
-              <span style={{ fontSize: "12px", color: "#10b981", fontWeight: "600", textTransform: "uppercase" }}>
-                Active / Live Now
-              </span>
-              <h3 style={{ margin: "6px 0 0", fontSize: "24px", fontWeight: "800", color: "#10b981" }}>
-                {liveCount}
-              </h3>
+            <div className="live-exams-metric-card">
+              <span className="live-exams-metric-label" style={{ color: "#10b981" }}>Active / Live Now</span>
+              <h3 className="live-exams-metric-value" style={{ color: "#10b981" }}>{liveCount}</h3>
             </div>
 
-            <div
-              style={{
-                backgroundColor: "var(--bg-card)",
-                border: "1.5px solid var(--border-color)",
-                borderRadius: "14px",
-                padding: "16px 20px",
-              }}
-            >
-              <span style={{ fontSize: "12px", color: "#3b82f6", fontWeight: "600", textTransform: "uppercase" }}>
-                Scheduled Ahead
-              </span>
-              <h3 style={{ margin: "6px 0 0", fontSize: "24px", fontWeight: "800", color: "#3b82f6" }}>
-                {scheduledCount}
-              </h3>
+            <div className="live-exams-metric-card">
+              <span className="live-exams-metric-label" style={{ color: "#3b82f6" }}>Scheduled Ahead</span>
+              <h3 className="live-exams-metric-value" style={{ color: "#3b82f6" }}>{scheduledCount}</h3>
             </div>
 
-            <div
-              style={{
-                backgroundColor: "var(--bg-card)",
-                border: "1.5px solid var(--border-color)",
-                borderRadius: "14px",
-                padding: "16px 20px",
-              }}
-            >
-              <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600", textTransform: "uppercase" }}>
-                Completed
-              </span>
-              <h3 style={{ margin: "6px 0 0", fontSize: "24px", fontWeight: "800", color: "var(--text-primary)" }}>
-                {completedCount}
-              </h3>
+            <div className="live-exams-metric-card">
+              <span className="live-exams-metric-label">Completed</span>
+              <h3 className="live-exams-metric-value">{completedCount}</h3>
             </div>
           </div>
 
           {/* Search & Status Filters */}
-          <div
-            style={{
-              backgroundColor: "var(--bg-card)",
-              border: "1.5px solid var(--border-color)",
-              borderRadius: "16px",
-              padding: "16px 20px",
-              marginBottom: "24px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <div className="live-exams-filter-bar">
+            <div className="live-exams-tabs-wrap">
               {[
                 { val: "all", label: "All", count: counts?.total },
                 { val: "live", label: "Live / Lobby", count: counts?.live },
@@ -414,29 +313,17 @@ export default function LiveExamsList() {
                 <button
                   key={tab.val}
                   onClick={() => setStatusTab(tab.val)}
+                  className="live-exams-tab-btn"
                   style={{
-                    padding: "7px 14px",
-                    borderRadius: "8px",
-                    border: "none",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    cursor: "pointer",
                     backgroundColor: statusTab === tab.val ? "var(--primary)" : "transparent",
                     color: statusTab === tab.val ? "var(--primary-foreground)" : "var(--text-secondary)",
-                    transition: "all 0.15s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
                   }}
                 >
                   <span>{tab.label}</span>
                   {tab.count !== undefined && (
                     <span
+                      className="live-exams-tab-badge"
                       style={{
-                        padding: "1px 6px",
-                        borderRadius: "10px",
-                        fontSize: "11px",
-                        fontWeight: "700",
                         backgroundColor:
                           statusTab === tab.val
                             ? "rgba(255, 255, 255, 0.25)"
@@ -454,7 +341,7 @@ export default function LiveExamsList() {
               ))}
             </div>
 
-            <form onSubmit={handleSearchSubmit} style={{ position: "relative", minWidth: "260px" }}>
+            <form onSubmit={handleSearchSubmit} className="live-exams-search-form">
               <Search
                 size={16}
                 style={{
@@ -470,16 +357,7 @@ export default function LiveExamsList() {
                 placeholder="Search live exams..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px 8px 36px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border-color)",
-                  backgroundColor: "var(--bg-page)",
-                  color: "var(--text-primary)",
-                  fontSize: "13px",
-                  outline: "none",
-                }}
+                className="live-exams-search-input"
               />
             </form>
           </div>
@@ -533,22 +411,17 @@ export default function LiveExamsList() {
                 return (
                   <div
                     key={exam._id}
+                    className="live-exam-card"
                     style={{
-                      backgroundColor: "var(--bg-card)",
                       border: `1.5px solid ${isLive ? "rgba(16, 185, 129, 0.4)" : "var(--border-color)"}`,
-                      borderRadius: "16px",
-                      padding: "20px 24px",
                       boxShadow: isLive ? "0 4px 20px rgba(16, 185, 129, 0.08)" : "0 4px 15px rgba(0,0,0,0.02)",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "14px",
                     }}
                   >
                     {/* Card Top Row */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                          <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "var(--text-primary)" }}>
+                    <div className="live-exam-card-header">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="live-exam-title-row">
+                          <h3 className="live-exam-card-title">
                             {exam.title}
                           </h3>
                           {getStatusBadge(exam.status)}
@@ -564,19 +437,11 @@ export default function LiveExamsList() {
                       <button
                         onClick={() => handleCopyLink(exam)}
                         title="Copy student share link"
+                        className="live-exam-share-btn"
                         style={{
                           backgroundColor: copiedId === exam._id ? "rgba(16, 185, 129, 0.15)" : "var(--bg-page)",
                           border: `1px solid ${copiedId === exam._id ? "#10b981" : "var(--border-color)"}`,
                           color: copiedId === exam._id ? "#10b981" : "var(--text-primary)",
-                          padding: "6px 14px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          fontSize: "12px",
-                          fontWeight: "600",
-                          transition: "all 0.15s ease",
                         }}
                       >
                         {copiedId === exam._id ? <Check size={14} /> : <Copy size={14} />}
@@ -585,26 +450,15 @@ export default function LiveExamsList() {
                     </div>
 
                     {/* Metadata Badges Row */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "18px",
-                        flexWrap: "wrap",
-                        fontSize: "13px",
-                        color: "var(--text-secondary)",
-                        paddingTop: "6px",
-                        borderTop: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div className="live-exam-meta-grid">
+                      <div className="live-exam-meta-item">
                         <Calendar size={15} color="var(--primary)" />
                         <span>
                           {startDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
                         </span>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <div className="live-exam-meta-item">
                         <Clock size={15} color="var(--primary)" />
                         <span>
                           {startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} –{" "}
@@ -612,7 +466,7 @@ export default function LiveExamsList() {
                         </span>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <div className="live-exam-meta-item">
                         <Video size={15} color={exam.webcamRule === "mandatory" ? "#f59e0b" : "#64748b"} />
                         <span>
                           Webcam:{" "}
@@ -622,14 +476,14 @@ export default function LiveExamsList() {
                         </span>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <div className="live-exam-meta-item">
                         <Users size={15} color="var(--text-secondary)" />
                         <span>
                           Attempts: <strong>{exam.stats?.total || 0}</strong> (Taking: {exam.stats?.inProgress || 0} • Submitted: {exam.stats?.submitted || 0})
                         </span>
                       </div>
 
-                      <div>
+                      <div className="live-exam-meta-item">
                         <span>
                           Results: <strong style={{ textTransform: "capitalize" }}>{exam.resultReleaseMode}</strong>
                         </span>
@@ -637,31 +491,14 @@ export default function LiveExamsList() {
                     </div>
 
                     {/* Action Buttons Row */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "center",
-                        gap: "10px",
-                        paddingTop: "10px",
-                        borderTop: "1px solid var(--border-color)",
-                        flexWrap: "wrap",
-                      }}
-                    >
+                    <div className="live-exam-actions-row">
                       <button
                         onClick={() => setAttendanceExam(exam)}
+                        className="live-exam-action-btn"
                         style={{
                           backgroundColor: "var(--bg-page)",
                           border: "1px solid var(--border-color)",
                           color: "var(--text-primary)",
-                          padding: "7px 14px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          fontSize: "12px",
-                          fontWeight: "600",
                         }}
                       >
                         <Users size={14} /> Attendance ({exam.stats?.total || 0})
@@ -673,19 +510,11 @@ export default function LiveExamsList() {
                           setShowCreateModal(true);
                         }}
                         title="Edit examination details, webcam rules, results, or reschedule"
+                        className="live-exam-action-btn"
                         style={{
                           backgroundColor: "var(--bg-page)",
                           border: "1px solid var(--border-color)",
                           color: "var(--text-primary)",
-                          padding: "7px 14px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          fontSize: "12px",
-                          fontWeight: "600",
-                          transition: "all 0.15s ease",
                         }}
                       >
                         <Edit2 size={14} /> Edit
@@ -694,17 +523,11 @@ export default function LiveExamsList() {
                       {isLive && (
                         <button
                           onClick={() => handleEndExam(exam)}
+                          className="live-exam-action-btn"
                           style={{
                             backgroundColor: "rgba(239, 68, 68, 0.12)",
                             border: "1px solid rgba(239, 68, 68, 0.3)",
                             color: "#ef4444",
-                            padding: "7px 14px",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "12px",
                             fontWeight: "700",
                           }}
                         >
@@ -715,19 +538,11 @@ export default function LiveExamsList() {
                       <button
                         onClick={() => handleDeleteExam(exam)}
                         title={exam.status === "completed" ? "Delete examination record" : "Cancel examination"}
+                        className={`live-exam-action-btn ${isLive ? "" : "delete-full-width"}`}
                         style={{
                           backgroundColor: "rgba(239, 68, 68, 0.08)",
                           border: "1px solid rgba(239, 68, 68, 0.25)",
                           color: "#ef4444",
-                          padding: "7px 12px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          fontSize: "12px",
-                          fontWeight: "600",
-                          transition: "all 0.15s ease",
                         }}
                       >
                         <Trash2 size={14} /> {exam.status === "completed" ? "Delete" : "Cancel"}

@@ -226,6 +226,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
       }}
     >
       <div
+        className="live-exam-modal-container"
         style={{
           backgroundColor: "var(--bg-card, #1e1e2d)",
           border: "1.5px solid var(--border-color, rgba(255,255,255,0.12))",
@@ -242,6 +243,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
       >
         {/* Modal Header */}
         <div
+          className="live-exam-modal-header"
           style={{
             padding: "20px 24px",
             borderBottom: "1px solid var(--border-color, rgba(255,255,255,0.1))",
@@ -277,7 +279,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} style={{ padding: "24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "18px" }}>
+        <form onSubmit={handleSubmit} className="live-exam-modal-body" style={{ padding: "24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "18px" }}>
           {error && (
             <div
               style={{
@@ -351,8 +353,8 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
           </div>
 
           {/* 3. Schedule Timings Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: "12px" }}>
-            <div>
+          <div className="live-exam-timings-grid" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: "12px" }}>
+            <div className="live-exam-date-col">
               <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
                 Scheduled Date <span style={{ color: "#ef4444" }}>*</span>
               </label>
@@ -666,6 +668,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
 
           {/* Modal Footer */}
           <div
+            className="live-exam-modal-footer"
             style={{
               display: "flex",
               justifyContent: "flex-end",
