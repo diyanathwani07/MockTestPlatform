@@ -6,8 +6,10 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import "../css/StudentDashboard.css"; // Reuse premium dashboard themes
 import MuiDatePicker from "../components/MuiDatePicker";
+import { useExam } from "../context/ExamContext";
 
 const CreateCustomQuiz = () => {
+  const { selectedExam: contextExam, selectedSubject: contextSubject } = useExam();
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [quantity, setQuantity] = useState(10);
@@ -106,25 +108,51 @@ const CreateCustomQuiz = () => {
         const examsSet = new Set();
         const subjectsMap = {}; // examName -> Set of subjects
         
-                  quizzesList.forEach(q => {
-            const exName = (q.examName && q.examName.trim()) ? q.examName.trim() : "General";
-            examsSet.add(exName);
-            if (!subjectsMap[exName]) {
-              subjectsMap[exName] = new Set();
-            }
-            if (q.subject && q.subject.trim()) {
-              subjectsMap[exName].add(q.subject.trim());
-            }
-          });
-// Convert sets to arrays
-        const finalExams = Array.from(examsSet);
+        quizzesList.forEach(q => {
+          const exName = (q.examName && q.examName.trim()) ? q.examName.trim() : "General";
+          examsSet.add(exName);
+          if (!subjectsMap[exName]) {
+            subjectsMap[exName] = new Set();
+          }
+          if (q.subject && q.subject.trim()) {
+            q.subject.split(/[,•|/]/).forEach(s => {
+              const trimmed = s.trim();
+              if (trimmed && trimmed.length > 1) {
+                subjectsMap[exName].add(trimmed);
+              }
+            });
+          }
+          if (Array.isArray(q.sections)) {
+            q.sections.forEach(sec => {
+              const secTitle = sec?.title || sec?.sectionId?.title;
+              if (secTitle && secTitle.trim()) {
+                subjectsMap[exName].add(secTitle.trim());
+              }
+            });
+          }
+        });
+
+        const contextExamName = contextExam?.title || contextExam?.examName || contextExam?.name;
+        if (contextExamName) {
+          examsSet.add(contextExamName);
+        }
+
+        // Convert sets to arrays
+        const finalExams = Array.from(examsSet).sort();
         const finalSubjectsMap = {};
         Object.keys(subjectsMap).forEach(key => {
-          finalSubjectsMap[key] = Array.from(subjectsMap[key]);
+          finalSubjectsMap[key] = Array.from(subjectsMap[key]).sort();
         });
 
         setExams(finalExams);
         setExamSubjects(finalSubjectsMap);
+
+        // Pre-select target exam from context or first exam
+        setSelectedExam(prev => {
+          if (prev) return prev;
+          if (contextExamName && finalExams.includes(contextExamName)) return contextExamName;
+          return finalExams[0] || "";
+        });
 
         // Fetch custom quizzes
         const responseCustom = await axios.get(
@@ -304,6 +332,17 @@ const CreateCustomQuiz = () => {
   };
 
   const quantityOptions = [5, 10, 15, 20, 25, 30, 50];
+
+  // Dynamically compute available subjects for AI selector
+  const examSpecificSubjects = selectedExam && examSubjects[selectedExam] ? examSubjects[selectedExam] : [];
+  const allKnownSubjects = Array.from(new Set([
+    ...subjects,
+    ...Object.values(examSubjects).flat()
+  ])).filter(Boolean).sort();
+
+  const currentAiSubjectOptions = (selectedExam && examSpecificSubjects.length > 0)
+    ? examSpecificSubjects
+    : (allKnownSubjects.length > 0 ? allKnownSubjects : subjects);
 
   return (
     <div className="sd-layout">
@@ -721,11 +760,35 @@ const CreateCustomQuiz = () => {
                         <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Select Exam</label>
                         <select
                           value={selectedExam}
-                          onChange={(e) => { setSelectedExam(e.target.value); setSelectedAiSubject(""); }}
-                          style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--bg-input, #fafafa)", color: "var(--text-primary)", border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))", outline: "none", fontSize: "14px" }}
+                          onChange={(e) => {
+                            const newExam = e.target.value;
+                            setSelectedExam(newExam);
+                            if (newExam && examSubjects[newExam]?.length > 0) {
+                              if (!examSubjects[newExam].includes(selectedAiSubject)) {
+                                setSelectedAiSubject("");
+                              }
+                            }
+                          }}
+                          style={{
+                            width: "100%",
+                            padding: "10px 12px",
+                            borderRadius: "8px",
+                            background: "var(--bg-input, #fafafa)",
+                            color: "var(--text-primary)",
+                            border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                            outline: "none",
+                            fontSize: "14px",
+                            cursor: "pointer"
+                          }}
                         >
-                          <option value="">-- Choose target Exam --</option>
-                          {exams.map((ex, idx) => <option key={idx} value={ex}>{ex}</option>)}
+                          <option value="" style={{ backgroundColor: "var(--bg-card, #1e1e2d)", color: "var(--text-primary, #ffffff)" }}>
+                            -- Choose target Exam --
+                          </option>
+                          {exams.map((ex, idx) => (
+                            <option key={idx} value={ex} style={{ backgroundColor: "var(--bg-card, #1e1e2d)", color: "var(--text-primary, #ffffff)" }}>
+                              {ex}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
@@ -734,12 +797,36 @@ const CreateCustomQuiz = () => {
                         <label style={{ display: "block", fontSize: "13.5px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>Select Subject</label>
                         <select
                           value={selectedAiSubject}
-                          onChange={(e) => setSelectedAiSubject(e.target.value)}
-                          disabled={!selectedExam}
-                          style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "var(--bg-input, #fafafa)", color: "var(--text-primary)", border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))", outline: "none", fontSize: "14px", cursor: !selectedExam ? "not-allowed" : "pointer" }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setSelectedAiSubject(val);
+                            if (!selectedExam && val) {
+                              const matchingExam = Object.keys(examSubjects).find(ex => examSubjects[ex]?.includes(val));
+                              if (matchingExam) {
+                                setSelectedExam(matchingExam);
+                              }
+                            }
+                          }}
+                          style={{
+                            width: "100%",
+                            padding: "10px 12px",
+                            borderRadius: "8px",
+                            background: "var(--bg-input, #fafafa)",
+                            color: "var(--text-primary)",
+                            border: "1.5px solid var(--border-color, rgba(255,255,255,0.1))",
+                            outline: "none",
+                            fontSize: "14px",
+                            cursor: "pointer"
+                          }}
                         >
-                          <option value="">{!selectedExam ? "-- Select Exam First --" : (examSubjects[selectedExam] && examSubjects[selectedExam].length > 0 ? "-- Choose target Subject --" : "-- No Subjects Available --")}</option>
-                          {examSubjects[selectedExam]?.map((sub, idx) => <option key={idx} value={sub}>{sub}</option>)}
+                          <option value="" style={{ backgroundColor: "var(--bg-card, #1e1e2d)", color: "var(--text-primary, #ffffff)" }}>
+                            {currentAiSubjectOptions.length > 0 ? "-- Choose target Subject --" : "-- Loading Subjects... --"}
+                          </option>
+                          {currentAiSubjectOptions.map((sub, idx) => (
+                            <option key={idx} value={sub} style={{ backgroundColor: "var(--bg-card, #1e1e2d)", color: "var(--text-primary, #ffffff)" }}>
+                              {sub}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
@@ -966,9 +1053,13 @@ const CreateCustomQuiz = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          if (!selectedExam || !selectedAiSubject) {
-                            alert("Please select target Exam and Subject.");
+                          if (!selectedAiSubject) {
+                            alert("Please select a target Subject.");
                             return;
+                          }
+                          if (!selectedExam) {
+                            const matchingExam = Object.keys(examSubjects).find(ex => examSubjects[ex]?.includes(selectedAiSubject));
+                            setSelectedExam(matchingExam || "General");
                           }
                           setShowAiConfirmModal(true);
                         }}
