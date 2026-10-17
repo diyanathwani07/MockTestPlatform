@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +7,6 @@ import '../css/DashboardBannerCarousel.css';
 export const optimizeBannerImage = (url, width = 1200) => {
   if (!url || typeof url !== 'string') return url;
   if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
-    // If it already contains an older width transformation, update it to width
     if (url.includes('/image/upload/f_auto,q_auto:good,w_1080,c_limit/')) {
       return url.replace('/image/upload/f_auto,q_auto:good,w_1080,c_limit/', `/image/upload/f_auto,q_auto,w_${width},c_limit/`);
     }
@@ -56,35 +54,21 @@ const MOCK_BANNERS = [
   }
 ];
 
-const slideVariants = {
-  enter: (direction) => ({
-    x: direction > 0 ? 1000 : -1000,
-    opacity: 0
-  }),
-  center: {
-    zIndex: 1,
-    x: 0,
-    opacity: 1
-  },
-  exit: (direction) => ({
-    zIndex: 0,
-    x: direction < 0 ? 1000 : -1000,
-    opacity: 0
-  })
-};
-
-const swipeConfidenceThreshold = 10000;
-const swipePower = (offset, velocity) => {
-  return Math.abs(offset) * velocity;
-};
-
 export default function DashboardBannerCarousel({ previewBanners = null }) {
-  const [[page, direction], setPage] = useState([0, 0]);
-  const [isPaused, setIsPaused] = useState(false);
   const [dbBanners, setDbBanners] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!previewBanners);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [withTransition, setWithTransition] = useState(true);
+  const touchStartX = useRef(0);
   const navigate = useNavigate();
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (previewBanners) return;
@@ -101,156 +85,231 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
       }
     };
     fetchBanners();
-  }, []);
+  }, [previewBanners]);
 
-  
-  const banners = previewBanners || (dbBanners.length > 0 ? dbBanners : MOCK_BANNERS);
-  const imageIndex = ((page % banners.length) + banners.length) % banners.length;
-  const activeBanner = banners[imageIndex];
-  const isPureImage = !activeBanner.title || activeBanner.title.trim() === "";
+  const rawBanners = previewBanners || (dbBanners.length > 0 ? dbBanners : MOCK_BANNERS);
 
+  // If banners array is 2, duplicate once so infinite loop has sufficient buffer
+  const carouselList = rawBanners.length === 2 
+    ? [...rawBanners, ...rawBanners] 
+    : rawBanners;
 
-  const paginate = useCallback((newDirection) => {
-    setPage([page + newDirection, newDirection]);
-  }, [page]);
+  // Cloned looped array: 1 before start, 1 after end
+  const loopedItems = rawBanners.length > 1
+    ? [carouselList[carouselList.length - 1], ...carouselList, carouselList[0]]
+    : rawBanners;
 
+  const handleNext = useCallback(() => {
+    if (!withTransition) return;
+    setCurrentIndex(prev => prev + 1);
+  }, [withTransition]);
+
+  const handlePrev = useCallback(() => {
+    if (!withTransition) return;
+    setCurrentIndex(prev => prev - 1);
+  }, [withTransition]);
+
+  // Auto-slide effect (every 4.5s)
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (rawBanners.length <= 1 || isPaused || !withTransition) return;
+    const timer = setInterval(() => {
+      handleNext();
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [rawBanners.length, isPaused, withTransition, handleNext]);
 
-    let timer;
-    if (!isPaused) {
-      timer = setInterval(() => {
-        paginate(1);
-      }, 4500);
+  // Handle transition end for seamless infinite loop
+  const handleTransitionEnd = () => {
+    if (rawBanners.length <= 1) return;
+    if (currentIndex === 0) {
+      setWithTransition(false);
+      setCurrentIndex(carouselList.length);
+    } else if (currentIndex === carouselList.length + 1) {
+      setWithTransition(false);
+      setCurrentIndex(1);
     }
+  };
 
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isPaused, paginate, banners.length]);
-
+  // Re-enable transition after seamless jump
   useEffect(() => {
-    // Only preload next banner after initial mount settles to avoid competing for initial network bandwidth
-    if (banners && banners.length > 1) {
-      const timer = setTimeout(() => {
-        const nextIdx = (imageIndex + 1) % banners.length;
-        if (banners[nextIdx]?.image) {
-          const img = new Image();
-          img.src = optimizeBannerImage(banners[nextIdx].image, 1200);
-        }
-      }, 2500);
-      return () => clearTimeout(timer);
+    if (!withTransition) {
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setWithTransition(true);
+        });
+      });
+      return () => cancelAnimationFrame(raf);
     }
-  }, [banners, imageIndex]);
+  }, [withTransition]);
 
-  if (!banners || banners.length === 0) return null;
+  if (!rawBanners || rawBanners.length === 0) return null;
+
+  // Case 1: Single banner (rendered centered, compact, and minimal)
+  if (rawBanners.length === 1) {
+    const banner = rawBanners[0];
+    const isPureImage = !banner.title || banner.title.trim() === "";
+
+    return (
+      <div className="tp-banner-single-wrapper">
+        <div 
+          className="tp-banner-card single-card"
+          onClick={() => { if (isPureImage && banner.ctaRoute) navigate(banner.ctaRoute); }}
+          style={{ cursor: isPureImage && banner.ctaRoute ? 'pointer' : 'default' }}
+        >
+          <img
+            src={optimizeBannerImage(banner.image, 1200)}
+            alt={banner.title || banner.category || "PrepMark Banner"}
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            draggable={false}
+            className="tp-banner-img"
+          />
+          {!isPureImage && (
+            <div className="tp-banner-content-overlay">
+              <div className={`tp-banner-content align-${banner.align || 'left'}`}>
+                {banner.category && <span className="tp-banner-category">{banner.category}</span>}
+                <h2 className="tp-banner-title">{banner.title}</h2>
+                {banner.description && <p className="tp-banner-desc">{banner.description}</p>}
+                {banner.ctaLabel && (
+                  <button 
+                    className="tp-banner-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (banner.ctaRoute) navigate(banner.ctaRoute);
+                    }}
+                  >
+                    {banner.ctaLabel}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Case 2: Multiple banners (Teaching Pariksha compact center-peeking carousel)
+  const slideWidth = isMobile ? 100 : 62;
+  const sidePeek = isMobile ? 0 : 19;
+  const gap = isMobile ? 0 : 16;
+  const transformX = `calc(${sidePeek}% - (${currentIndex} * ${slideWidth}% + ${currentIndex * gap}px))`;
+  const activeDotIndex = ((currentIndex - 1) % rawBanners.length + rawBanners.length) % rawBanners.length;
 
   return (
     <div 
-      className="dashboard-banner-container"
+      className="tp-banner-carousel-root"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => {
-        // slight delay before resuming auto-scroll
+      onTouchStart={(e) => {
+        touchStartX.current = e.touches[0].clientX;
+        setIsPaused(true);
+      }}
+      onTouchEnd={(e) => {
+        const diff = e.changedTouches[0].clientX - touchStartX.current;
+        if (diff < -45) {
+          handleNext();
+        } else if (diff > 45) {
+          handlePrev();
+        }
         setTimeout(() => setIsPaused(false), 2000);
       }}
     >
-      <div className="banner-viewport">
-        <AnimatePresence initial={false} custom={direction} mode="popLayout">
-          <motion.div
-            key={page}
-            className={`banner-slide ${isPureImage ? 'pure-image-slide' : `align-${activeBanner.align || 'left'}`}`}
-            onClick={() => { if (isPureImage && activeBanner.ctaRoute) navigate(activeBanner.ctaRoute); }}
-            style={{ cursor: isPureImage && activeBanner.ctaRoute ? 'pointer' : 'default' }}
-            custom={direction}
-            variants={prefersReducedMotion ? {
-              enter: { opacity: 0 },
-              center: { opacity: 1 },
-              exit: { opacity: 0 }
-            } : slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
-            }}
-            drag={banners.length > 1 ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(e, { offset, velocity }) => {
-              const swipe = swipePower(offset.x, velocity.x);
+      <div className="tp-carousel-viewport">
+        <div 
+          className="tp-carousel-track"
+          onTransitionEnd={handleTransitionEnd}
+          style={{
+            transform: `translateX(${transformX})`,
+            transition: withTransition ? 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)' : 'none'
+          }}
+        >
+          {loopedItems.map((banner, index) => {
+            const isActive = index === currentIndex;
+            const isPureImage = !banner.title || banner.title.trim() === "";
 
-              if (swipe < -swipeConfidenceThreshold) {
-                paginate(1);
-              } else if (swipe > swipeConfidenceThreshold) {
-                paginate(-1);
-              }
-            }}
-          >
-            <div className={`banner-bg-image ${isPureImage ? 'full-width' : ''}`}>
-              <img
-                src={optimizeBannerImage(activeBanner.image, 1200)}
-                alt={activeBanner.title || activeBanner.category || "PrepMark Banner"}
-                fetchPriority={imageIndex === 0 ? "high" : "auto"}
-                loading={imageIndex === 0 ? "eager" : "lazy"}
-                decoding="async"
-                draggable={false}
-                width="1024"
-                height="576"
-                className={`banner-bg-img-element ${isPureImage ? 'full-width' : ''}`}
-              />
-            </div>
-            {!isPureImage && (
-              <>
-                <div className="banner-gradient-overlay"></div>
-                <div className="banner-content">
-                  {activeBanner.category && (
-                    <span className="banner-category">{activeBanner.category}</span>
-                  )}
-                  <h2 className="banner-title">{activeBanner.title}</h2>
-                  <p className="banner-desc">{activeBanner.description}</p>
-                  
-                  {activeBanner.ctaLabel && (
-                    <button 
-                      className="banner-cta"
-                      onClick={() => navigate(activeBanner.ctaRoute)}
-                      aria-label={activeBanner.ctaLabel}
-                    >
-                      {activeBanner.ctaLabel}
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-          </motion.div>
-        </AnimatePresence>
+            return (
+              <div
+                key={`${banner._id || banner.id || index}-${index}`}
+                className={`tp-banner-slide ${isActive ? 'is-active' : 'is-peek'}`}
+                onClick={() => {
+                  if (index < currentIndex) {
+                    handlePrev();
+                  } else if (index > currentIndex) {
+                    handleNext();
+                  } else if (isPureImage && banner.ctaRoute) {
+                    navigate(banner.ctaRoute);
+                  }
+                }}
+              >
+                <img
+                  src={optimizeBannerImage(banner.image, 1200)}
+                  alt={banner.title || banner.category || "PrepMark Banner"}
+                  fetchPriority={isActive ? "high" : "auto"}
+                  loading={isActive ? "eager" : "lazy"}
+                  decoding="async"
+                  draggable={false}
+                  className="tp-banner-img"
+                />
+
+                {!isPureImage && (
+                  <div className="tp-banner-content-overlay">
+                    <div className={`tp-banner-content align-${banner.align || 'left'}`}>
+                      {banner.category && <span className="tp-banner-category">{banner.category}</span>}
+                      <h2 className="tp-banner-title">{banner.title}</h2>
+                      {banner.description && <p className="tp-banner-desc">{banner.description}</p>}
+                      {banner.ctaLabel && (
+                        <button 
+                          className="tp-banner-cta"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (banner.ctaRoute) navigate(banner.ctaRoute);
+                          }}
+                        >
+                          {banner.ctaLabel}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {banners.length > 1 && (
-        <>
-          <button className="banner-nav-btn prev" onClick={() => paginate(-1)} aria-label="Previous banner">
-            <ChevronLeft size={20} />
-          </button>
-          <button className="banner-nav-btn next" onClick={() => paginate(1)} aria-label="Next banner">
-            <ChevronRight size={20} />
-          </button>
+      {/* Navigation Arrows */}
+      <button 
+        className="tp-banner-nav-btn prev"
+        onClick={handlePrev}
+        aria-label="Previous banner"
+      >
+        <ChevronLeft size={22} />
+      </button>
 
-          <div className="banner-pagination">
-            {banners.map((_, index) => (
-              <button
-                key={index}
-                className={`pagination-dot ${index === imageIndex ? 'active' : ''}`}
-                onClick={() => {
-                  setPage([page + (index - imageIndex), index - imageIndex]);
-                }}
-                aria-label={`Go to banner ${index + 1}`}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      <button 
+        className="tp-banner-nav-btn next"
+        onClick={handleNext}
+        aria-label="Next banner"
+      >
+        <ChevronRight size={22} />
+      </button>
+
+      {/* Pagination Dots */}
+      <div className="tp-banner-pagination">
+        {rawBanners.map((_, dotIdx) => (
+          <button
+            key={dotIdx}
+            className={`tp-pagination-dot ${dotIdx === activeDotIndex ? 'is-active' : ''}`}
+            onClick={() => {
+              setWithTransition(true);
+              setCurrentIndex(dotIdx + 1);
+            }}
+            aria-label={`Go to banner ${dotIdx + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

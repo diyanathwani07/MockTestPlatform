@@ -1683,21 +1683,22 @@ body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
 
 /* --- BANNER SPACING FIXES --- */
 .sd-banner-wrapper {
-  padding: 24px 40px 0 40px;
+  padding: 16px 32px 0 32px;
   width: 100%;
-  max-width: 1400px;
+  max-width: 1300px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1024px) {
   .sd-banner-wrapper {
-    padding: 24px 24px 0 24px;
+    padding: 16px 20px 0 20px;
   }
 }
 
 @media (max-width: 768px) {
   .sd-banner-wrapper {
-    padding: 16px 16px 0 16px !important;
+    padding: 12px 14px 0 14px !important;
   }
 }
 
