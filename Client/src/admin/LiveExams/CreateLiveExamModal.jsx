@@ -56,12 +56,19 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
       setInstructions(editExam.instructions || "");
       if (editExam.scheduledStartTime) {
         const start = new Date(editExam.scheduledStartTime);
-        setScheduledDate(start.toISOString().split("T")[0]);
-        setStartTime(start.toTimeString().slice(0, 5));
+        const yyyy = start.getFullYear();
+        const mm = String(start.getMonth() + 1).padStart(2, "0");
+        const dd = String(start.getDate()).padStart(2, "0");
+        setScheduledDate(`${yyyy}-${mm}-${dd}`);
+        const hh = String(start.getHours()).padStart(2, "0");
+        const min = String(start.getMinutes()).padStart(2, "0");
+        setStartTime(`${hh}:${min}`);
       }
       if (editExam.scheduledEndTime) {
         const end = new Date(editExam.scheduledEndTime);
-        setEndTime(end.toTimeString().slice(0, 5));
+        const hh = String(end.getHours()).padStart(2, "0");
+        const min = String(end.getMinutes()).padStart(2, "0");
+        setEndTime(`${hh}:${min}`);
       }
       setDuration(editExam.duration || 60);
       setEntryWindowMinutes(editExam.entryWindowMinutes !== undefined ? editExam.entryWindowMinutes : 15);
@@ -70,13 +77,22 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
       setWebcamRule(editExam.webcamRule || "disabled");
       setResultReleaseMode(editExam.resultReleaseMode || "manual");
       if (editExam.resultReleaseDate) {
-        setResultReleaseDate(new Date(editExam.resultReleaseDate).toISOString().slice(0, 16));
+        const rel = new Date(editExam.resultReleaseDate);
+        const yyyy = rel.getFullYear();
+        const mm = String(rel.getMonth() + 1).padStart(2, "0");
+        const dd = String(rel.getDate()).padStart(2, "0");
+        const hh = String(rel.getHours()).padStart(2, "0");
+        const min = String(rel.getMinutes()).padStart(2, "0");
+        setResultReleaseDate(`${yyyy}-${mm}-${dd}T${hh}:${min}`);
       }
     } else {
       // Default to tomorrow 10:00 AM - 12:00 PM
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      setScheduledDate(tomorrow.toISOString().split("T")[0]);
+      const yyyy = tomorrow.getFullYear();
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+      const dd = String(tomorrow.getDate()).padStart(2, "0");
+      setScheduledDate(`${yyyy}-${mm}-${dd}`);
       setStartTime("10:00");
       setEndTime("12:00");
       setDuration(60);

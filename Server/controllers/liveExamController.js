@@ -305,13 +305,9 @@ const getLiveExamById = async (req, res) => {
  */
 const updateLiveExam = async (req, res) => {
   try {
-    const exam = await LiveExamination.findOne({ _id: req.params.id, isDeleted: false });
+    const exam = await LiveExamination.findById(req.params.id);
     if (!exam) {
       return res.status(404).json({ message: "Live examination not found." });
-    }
-
-    if (exam.status === "completed" || exam.status === "cancelled") {
-      return res.status(400).json({ message: `Cannot modify an examination that is already ${exam.status}.` });
     }
 
     const {
@@ -359,6 +355,23 @@ const updateLiveExam = async (req, res) => {
     if (webcamRule) exam.webcamRule = webcamRule;
     if (newReleaseMode) exam.resultReleaseMode = newReleaseMode;
     exam.resultReleaseDate = newReleaseDate ? new Date(newReleaseDate) : null;
+
+    // Recalculate status based on the updated time window
+    const now = new Date();
+    const scheduledStart = new Date(newStart);
+    const scheduledEnd = new Date(newEnd);
+    if (now >= scheduledEnd) {
+      exam.status = "completed";
+    } else if (now >= scheduledStart) {
+      exam.status = "live";
+    } else {
+      exam.status = "scheduled";
+    }
+
+    if (exam.isDeleted) {
+      exam.isDeleted = false;
+      exam.deletedAt = null;
+    }
 
     await exam.save();
 

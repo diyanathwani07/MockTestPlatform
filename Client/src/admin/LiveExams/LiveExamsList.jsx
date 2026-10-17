@@ -99,11 +99,14 @@ export default function LiveExamsList() {
   };
 
   const handleDeleteExam = async (exam) => {
+    const isCompleted = exam.status === "completed";
     const confirmed = await confirm({
-      title: "Cancel Examination?",
-      message: `Are you sure you want to cancel "${exam.title}"? This will cancel the examination and revoke student access.`,
+      title: isCompleted ? "Delete Examination Record?" : "Cancel Examination?",
+      message: isCompleted
+        ? `Are you sure you want to delete "${exam.title}"? This will remove this examination record from the active list.`
+        : `Are you sure you want to cancel "${exam.title}"? This will cancel the examination and revoke student access.`,
       type: "danger",
-      confirmText: "Cancel Exam",
+      confirmText: isCompleted ? "Delete Exam" : "Cancel Exam",
     });
 
     if (!confirmed) return;
@@ -637,29 +640,29 @@ export default function LiveExamsList() {
                         <Users size={14} /> Attendance ({exam.stats?.total || 0})
                       </button>
 
-                      {exam.status !== "completed" && exam.status !== "cancelled" && (
-                        <button
-                          onClick={() => {
-                            setEditingExam(exam);
-                            setShowCreateModal(true);
-                          }}
-                          style={{
-                            backgroundColor: "var(--bg-page)",
-                            border: "1px solid var(--border-color)",
-                            color: "var(--text-primary)",
-                            padding: "7px 14px",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "12px",
-                            fontWeight: "600",
-                          }}
-                        >
-                          <Edit2 size={14} /> Edit
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          setEditingExam(exam);
+                          setShowCreateModal(true);
+                        }}
+                        title="Edit examination details, webcam rules, results, or reschedule"
+                        style={{
+                          backgroundColor: "var(--bg-page)",
+                          border: "1px solid var(--border-color)",
+                          color: "var(--text-primary)",
+                          padding: "7px 14px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <Edit2 size={14} /> Edit
+                      </button>
 
                       {isLive && (
                         <button
@@ -682,23 +685,26 @@ export default function LiveExamsList() {
                         </button>
                       )}
 
-                      {exam.status !== "completed" && (
-                        <button
-                          onClick={() => handleDeleteExam(exam)}
-                          title="Cancel examination"
-                          style={{
-                            backgroundColor: "transparent",
-                            border: "none",
-                            color: "#ef4444",
-                            padding: "7px 10px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleDeleteExam(exam)}
+                        title={exam.status === "completed" ? "Delete examination record" : "Cancel examination"}
+                        style={{
+                          backgroundColor: "rgba(239, 68, 68, 0.08)",
+                          border: "1px solid rgba(239, 68, 68, 0.25)",
+                          color: "#ef4444",
+                          padding: "7px 12px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <Trash2 size={14} /> {exam.status === "completed" ? "Delete" : "Cancel"}
+                      </button>
                     </div>
                   </div>
                 );
