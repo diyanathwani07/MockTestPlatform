@@ -494,6 +494,13 @@
   flex-shrink: 0;
 }
 
+.live-player-bottombar-left,
+.live-player-bottombar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* Offline Banner */
 .live-offline-banner {
   background: #b45309;
@@ -508,10 +515,285 @@
   gap: 8px;
 }
 
+/* Desktop helpers for mobile-toggleable elements */
+.btn-short-text {
+  display: none;
+}
+
+.btn-full-text {
+  display: inline;
+}
+
+.mobile-palette-header {
+  display: none;
+}
+
+.live-mobile-palette-btn {
+  display: none;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 768px) {
+  /* Header */
+  .live-exam-header {
+    height: 56px;
+    padding: 0 12px;
+  }
+
+  .live-exam-header-left {
+    gap: 8px;
+  }
+
+  .live-header-pill {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .live-exam-header-right {
+    gap: 6px;
+  }
+
+  .live-header-user-pill {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    max-width: 90px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .live-btn-theme-picker {
+    padding: 6px 8px !important;
+  }
+
+  .live-btn-theme-text {
+    display: none !important;
+  }
+
+  /* Lobby Container & Card */
+  .live-lobby-container {
+    margin: 14px auto 28px;
+    padding: 0 12px 28px;
+  }
+
+  .live-card {
+    padding: 16px 14px !important;
+    margin-bottom: 14px !important;
+    border-radius: 14px !important;
+  }
+
+  .live-exam-title {
+    font-size: 20px !important;
+    margin: 10px 0 6px !important;
+    line-height: 1.35 !important;
+    word-break: break-word;
+  }
+
+  .live-exam-subtitle {
+    font-size: 12.5px !important;
+    margin-bottom: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* 2x2 Clean Grid for Meta Items on Mobile */
+  .live-meta-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin-top: 14px !important;
+  }
+
+  .live-meta-item {
+    padding: 9px 10px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .live-meta-icon {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 7px !important;
+  }
+
+  .live-meta-icon svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .live-meta-label {
+    font-size: 10px !important;
+    letter-spacing: 0.3px;
+  }
+
+  .live-meta-val {
+    font-size: 12.5px !important;
+    margin-top: 1px !important;
+  }
+
+  /* Countdown Box */
+  .live-countdown-box {
+    padding: 16px 10px !important;
+    margin-bottom: 14px !important;
+    border-radius: 14px !important;
+  }
+
+  .live-countdown-title {
+    font-size: 11.5px !important;
+    margin-bottom: 10px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .live-countdown-digits {
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+  }
+
+  .live-countdown-unit {
+    padding: 8px 6px !important;
+    min-width: 44px !important;
+    flex: 1 1 0 !important;
+    max-width: 72px !important;
+    border-radius: 10px !important;
+  }
+
+  .live-countdown-num {
+    font-size: 22px !important;
+  }
+
+  .live-countdown-lbl {
+    font-size: 9px !important;
+    margin-top: 2px !important;
+  }
+
+  /* Webcam Check Card */
+  .live-webcam-card {
+    border-left-width: 3px !important;
+  }
+
+  .webcam-preview-wrapper {
+    max-width: 100% !important;
+    border-radius: 10px !important;
+  }
+
+  .live-btn-camera {
+    width: 100% !important;
+    padding: 11px 16px !important;
+    font-size: 14px !important;
+  }
+
+  /* Instructions */
+  .live-instructions-list {
+    padding-left: 16px !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+
+  .live-action-section {
+    margin-top: 20px !important;
+  }
+
+  .live-btn-primary {
+    width: 100% !important;
+    padding: 12px 20px !important;
+    font-size: 15px !important;
+  }
+
+  .live-btn-secondary {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* Sign in banner */
+  .live-signin-banner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px !important;
+    text-align: center;
+  }
+
+  /* Player Mobile Optimizations */
+  .live-player-topbar {
+    height: 52px !important;
+    padding: 0 8px !important;
+    gap: 6px !important;
+    justify-content: space-between !important;
+  }
+
+  .live-player-brand-wrap {
+    flex-shrink: 0 !important;
+    gap: 6px !important;
+  }
+
+  .live-player-brand-wrap span,
+  .live-player-exam-title {
+    display: none !important;
+  }
+
+  .live-player-brand-wrap svg {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .live-player-timer {
+    padding: 4px 10px !important;
+    font-size: 13.5px !important;
+    border-radius: 16px !important;
+    gap: 5px !important;
+    margin: 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .live-player-timer svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .live-player-topbar-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .live-btn-theme-picker,
+  .live-btn-fullscreen,
+  .live-player-theme-toggle {
+    display: none !important;
+  }
+
+  .live-mobile-palette-btn {
+    display: inline-flex !important;
+    padding: 6px 8px !important;
+    border-radius: 8px !important;
+  }
+
+  .live-player-submit-btn {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+  }
+
   .live-player-sidebar {
     display: none;
+  }
+
+  .live-player-sidebar.mobile-open {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    top: 52px;
+    width: 100% !important;
+    z-index: 999;
+    background: var(--bg-card);
+    overflow-y: auto;
+  }
+
+  .mobile-palette-header {
+    display: flex !important;
   }
 
   .live-player-body {
@@ -519,24 +801,106 @@
   }
 
   .live-player-main {
-    padding: 16px;
+    padding: 12px 10px !important;
   }
 
-  .live-countdown-digits {
-    gap: 8px;
+  /* Bottom Action Bar */
+  .live-player-bottombar {
+    height: 54px !important;
+    padding: 6px 8px !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
   }
 
-  .live-countdown-unit {
-    padding: 8px 12px;
-    min-width: 50px;
+  .live-player-bottombar-left,
+  .live-player-bottombar-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex: 1 1 50% !important;
+    min-width: 0 !important;
+  }
+
+  .live-player-bottombar .live-btn-secondary,
+  .live-player-bottombar .live-btn-primary {
+    flex: 1 1 0 !important;
+    width: 0 !important;
+    padding: 8px 4px !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+    gap: 3px !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .live-player-bottombar svg {
+    width: 13px !important;
+    height: 13px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .btn-full-text {
+    display: none !important;
+  }
+
+  .btn-short-text {
+    display: inline !important;
+  }
+}
+
+/* Extra small devices (<= 380px) */
+@media (max-width: 380px) {
+  .live-header-pill {
+    display: none !important;
   }
 
   .live-countdown-num {
-    font-size: 24px;
+    font-size: 19px !important;
   }
 
-  .live-btn-theme-text {
-    display: none;
+  .live-meta-val {
+    font-size: 11.5px !important;
+  }
+
+  .live-meta-grid {
+    gap: 6px !important;
+  }
+
+  .live-meta-item {
+    padding: 8px 6px !important;
+  }
+
+  .live-player-timer {
+    padding: 3px 6px !important;
+    font-size: 12px !important;
+    gap: 4px !important;
+  }
+
+  .live-player-submit-btn {
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .live-player-bottombar {
+    padding: 4px !important;
+    gap: 4px !important;
+  }
+
+  .live-player-bottombar-left,
+  .live-player-bottombar-right {
+    gap: 4px !important;
+  }
+
+  .live-player-bottombar .live-btn-secondary,
+  .live-player-bottombar .live-btn-primary {
+    padding: 7px 2px !important;
+    font-size: 10.5px !important;
+    gap: 2px !important;
   }
 }
 

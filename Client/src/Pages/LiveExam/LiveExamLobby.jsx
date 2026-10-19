@@ -261,7 +261,7 @@ function LiveExamLobby() {
       <header className="live-exam-header">
         <div className="live-exam-header-left">
           <Logo />
-          <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--primary)", textTransform: "uppercase", letterSpacing: "1px", background: "rgba(124, 58, 237, 0.12)", padding: "4px 10px", borderRadius: "6px" }}>
+          <span className="live-header-pill" style={{ fontSize: "13px", fontWeight: "700", color: "var(--primary)", textTransform: "uppercase", letterSpacing: "1px", background: "rgba(124, 58, 237, 0.12)", padding: "4px 10px", borderRadius: "6px" }}>
             Live Exam
           </span>
         </div>
@@ -270,7 +270,7 @@ function LiveExamLobby() {
           <button
             type="button"
             onClick={toggleThemePicker}
-            className="live-btn-secondary"
+            className="live-btn-secondary live-btn-theme-picker"
             style={{ padding: "6px 12px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
             title="Themes & Colors"
             aria-label="Customize Theme"
@@ -279,7 +279,7 @@ function LiveExamLobby() {
             <span className="live-btn-theme-text" style={{ fontSize: "12px" }}>Theme</span>
           </button>
           {isAuthenticated ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", background: "rgba(255,255,255,0.05)", padding: "6px 14px", borderRadius: "20px" }}>
+            <div className="live-header-user-pill" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", background: "rgba(255,255,255,0.05)", padding: "6px 14px", borderRadius: "20px" }}>
               <span>{user.fullName || "Candidate"}</span>
             </div>
           ) : (
@@ -298,7 +298,7 @@ function LiveExamLobby() {
       <div className="live-lobby-container">
         {/* Banner if not authenticated */}
         {!isAuthenticated && (
-          <div style={{ background: "rgba(124, 58, 237, 0.12)", border: "1.5px solid var(--primary)", borderRadius: "14px", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "20px" }}>
+          <div className="live-signin-banner" style={{ background: "rgba(124, 58, 237, 0.12)", border: "1.5px solid var(--primary)", borderRadius: "14px", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "20px" }}>
             <div>
               <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>Sign in required</div>
               <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Please log in to your PrepMark account to record your attendance and begin.</div>
@@ -477,7 +477,7 @@ function LiveExamLobby() {
             <HelpCircle size={18} color="var(--primary)" /> Important Examination Instructions
           </h3>
 
-          <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.7" }}>
+          <ul className="live-instructions-list" style={{ margin: 0, paddingLeft: "20px", color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.7" }}>
             <li><strong>Server-Authoritative Clock:</strong> The countdown timer is synced with the official examination server. When time expires, your answers will automatically submit.</li>
             <li><strong>Network & Disconnection Safety:</strong> Your selected answers are periodically auto-saved. If you experience a brief disconnection or accidental page refresh, simply return to this link to resume.</li>
             <li><strong>Single Attempt Rule:</strong> You are permitted exactly one attempt. Once submitted, answers cannot be edited.</li>
@@ -488,7 +488,7 @@ function LiveExamLobby() {
 
         {/* Action Button Section */}
         {!isAlreadySubmitted && (
-          <div style={{ textAlign: "center", marginTop: "32px" }}>
+          <div className="live-action-section" style={{ textAlign: "center", marginTop: "32px" }}>
             {!isAuthenticated ? (
               <Link
                 to={`/login?redirect=/live-exam/${slugOrToken}`}

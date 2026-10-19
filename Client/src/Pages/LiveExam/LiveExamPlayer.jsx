@@ -20,6 +20,8 @@ import {
   Home,
   ShieldAlert,
   Palette,
+  Grid,
+  X,
 } from "lucide-react";
 import Logo from "../../components/Logo";
 import MathRenderer from "../../components/MathRenderer";
@@ -65,6 +67,7 @@ function LiveExamPlayer() {
   // Fullscreen State
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [tabWarning, setTabWarning] = useState(false);
+  const [showMobilePalette, setShowMobilePalette] = useState(false);
 
   // Post-Submission & Feedback State
   const [submissionComplete, setSubmissionComplete] = useState(false);
@@ -367,6 +370,7 @@ function LiveExamPlayer() {
   const handleJumpToQuestion = (idx) => {
     if (idx >= 0 && idx < questions.length) {
       setCurrentQuestionIndex(idx);
+      setShowMobilePalette(false);
       if (questions[idx]?.sectionId) {
         setActiveSectionId(questions[idx].sectionId);
       }
@@ -588,7 +592,7 @@ function LiveExamPlayer() {
 
       {/* Top Bar */}
       <header className="live-player-topbar">
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        <div className="live-player-brand-wrap" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <Logo />
           <div className="live-player-exam-title" title={examData.title}>
             {examData.title}
@@ -602,15 +606,28 @@ function LiveExamPlayer() {
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div className="live-player-topbar-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Mobile Question Palette Toggle */}
+          <button
+            type="button"
+            onClick={() => setShowMobilePalette((prev) => !prev)}
+            className="live-btn-secondary live-mobile-palette-btn"
+            title="Question Palette"
+            aria-label="Toggle Question Palette"
+          >
+            {showMobilePalette ? <X size={16} /> : <Grid size={16} />}
+          </button>
+
           {/* Light / Dark Mode Toggle */}
-          <ThemeToggle />
+          <div className="live-player-theme-toggle">
+            <ThemeToggle />
+          </div>
 
           {/* Theme & Color Customizer Button */}
           <button
             type="button"
             onClick={toggleThemePicker}
-            className="live-btn-secondary"
+            className="live-btn-secondary live-btn-theme-picker"
             style={{ padding: "6px 12px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
             title="Themes & Colors"
             aria-label="Customize Theme"
@@ -623,7 +640,7 @@ function LiveExamPlayer() {
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="live-btn-secondary"
+            className="live-btn-secondary live-btn-fullscreen"
             style={{ padding: "6px 12px", fontSize: "12px" }}
             title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             aria-label="Toggle Fullscreen"
@@ -635,10 +652,11 @@ function LiveExamPlayer() {
           <button
             type="button"
             onClick={() => setShowConfirmSubmit(true)}
-            className="live-btn-primary"
-            style={{ padding: "8px 18px", fontSize: "13px", background: "#ef4444", boxShadow: "0 2px 10px rgba(239, 68, 68, 0.4)" }}
+            className="live-btn-primary live-player-submit-btn"
+            style={{ background: "#ef4444", boxShadow: "0 2px 10px rgba(239, 68, 68, 0.4)" }}
           >
-            Submit Exam
+            <span className="btn-full-text">Submit Exam</span>
+            <span className="btn-short-text">Submit</span>
           </button>
         </div>
       </header>
@@ -771,7 +789,39 @@ function LiveExamPlayer() {
         </div>
 
         {/* Right: Question Palette Sidebar */}
-        <aside className="live-player-sidebar">
+        <aside className={`live-player-sidebar ${showMobilePalette ? "mobile-open" : ""}`}>
+          {/* Mobile Header with close button */}
+          <div
+            className="mobile-palette-header"
+            style={{
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "12px 16px",
+              borderBottom: "1px solid var(--border-color)",
+            }}
+          >
+            <span style={{ fontWeight: "700", fontSize: "14px" }}>Question Palette</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={() => setShowMobilePalette(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "4px",
+                }}
+                aria-label="Close palette"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+
           {/* Candidate Card */}
           <div style={{ padding: "16px", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ width: "38px", height: "38px", borderRadius: "50%", background: "var(--primary)", color: "var(--primary-foreground)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "800", fontSize: "15px" }}>
@@ -830,37 +880,39 @@ function LiveExamPlayer() {
 
       {/* Bottom Action Bar */}
       <footer className="live-player-bottombar">
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="live-player-bottombar-left">
           <button
             type="button"
             onClick={handleClearResponse}
             disabled={userAnswers[currentQuestionIndex] === null}
             className="live-btn-secondary"
-            style={{ padding: "8px 16px", fontSize: "13px" }}
           >
-            Clear Response
+            <span className="btn-full-text">Clear Response</span>
+            <span className="btn-short-text">Clear</span>
           </button>
 
           <button
             type="button"
             onClick={toggleReview}
             className="live-btn-secondary"
-            style={{ padding: "8px 16px", fontSize: "13px", color: reviewQuestions.includes(currentQuestionIndex) ? "#8b5cf6" : "var(--text-primary)" }}
+            style={{ color: reviewQuestions.includes(currentQuestionIndex) ? "#8b5cf6" : "var(--text-primary)" }}
           >
             <Bookmark size={15} />
-            {reviewQuestions.includes(currentQuestionIndex) ? "Marked for Review" : "Mark for Review"}
+            <span className="btn-full-text">{reviewQuestions.includes(currentQuestionIndex) ? "Marked for Review" : "Mark for Review"}</span>
+            <span className="btn-short-text">{reviewQuestions.includes(currentQuestionIndex) ? "Marked" : "Review"}</span>
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="live-player-bottombar-right">
           <button
             type="button"
             onClick={handlePrev}
             disabled={currentQuestionIndex === 0}
             className="live-btn-secondary"
-            style={{ padding: "8px 18px", fontSize: "13px" }}
           >
-            <ChevronLeft size={16} /> Previous
+            <ChevronLeft size={16} />
+            <span className="btn-full-text">Previous</span>
+            <span className="btn-short-text">Prev</span>
           </button>
 
           <button
@@ -868,9 +920,10 @@ function LiveExamPlayer() {
             onClick={handleNext}
             disabled={currentQuestionIndex >= questions.length - 1}
             className="live-btn-primary"
-            style={{ padding: "8px 22px", fontSize: "13px" }}
           >
-            Save & Next <ChevronRight size={16} />
+            <span className="btn-full-text">Save & Next</span>
+            <span className="btn-short-text">Next</span>
+            <ChevronRight size={16} />
           </button>
         </div>
       </footer>
