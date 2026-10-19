@@ -92,6 +92,13 @@ function LiveExamPlayer() {
         const data = res.data;
         setExamData(data);
 
+        // If attempt is already submitted or auto-submitted, show completion state immediately
+        if (data.status === "submitted" || data.status === "auto_submitted") {
+          setSubmissionComplete(true);
+          setLoading(false);
+          return;
+        }
+
         // Normalize Questions (Single or Multi-Section)
         let flatQuestions = [];
         let extractedSections = [];
@@ -161,8 +168,17 @@ function LiveExamPlayer() {
         if (data.serverDeadline) {
           const deadlineTime = new Date(data.serverDeadline).getTime();
           const serverTime = data.serverTime ? new Date(data.serverTime).getTime() : Date.now();
-          const diffSeconds = Math.max(0, Math.floor((deadlineTime - serverTime) / 1000));
-          setRemainingSeconds(diffSeconds);
+          const diffSeconds = Math.floor((deadlineTime - serverTime) / 1000);
+          if (diffSeconds > 0) {
+            setRemainingSeconds(diffSeconds);
+          } else if (data.duration && data.status === "in_progress") {
+            // If server deadline is zero or in the past but attempt is actively in progress, fallback to exam duration in seconds
+            setRemainingSeconds(data.duration * 60);
+          } else {
+            setRemainingSeconds(0);
+          }
+        } else if (data.duration) {
+          setRemainingSeconds(data.duration * 60);
         }
       } catch (err) {
         console.error("Failed to load play data:", err);
@@ -915,16 +931,32 @@ function LiveExamPlayer() {
             <span className="btn-short-text">Prev</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={currentQuestionIndex >= questions.length - 1}
-            className="live-btn-primary"
-          >
-            <span className="btn-full-text">Save & Next</span>
-            <span className="btn-short-text">Next</span>
-            <ChevronRight size={16} />
-          </button>
+          {currentQuestionIndex < questions.length - 1 ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="live-btn-primary"
+            >
+              <span className="btn-full-text">Save & Next</span>
+              <span className="btn-short-text">Next</span>
+              <ChevronRight size={16} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowConfirmSubmit(true)}
+              className="live-btn-primary"
+              style={{
+                background: "#ef4444",
+                borderColor: "#ef4444",
+                boxShadow: "0 2px 10px rgba(239, 68, 68, 0.4)",
+              }}
+            >
+              <span className="btn-full-text">Submit Exam</span>
+              <span className="btn-short-text">Submit</span>
+              <CheckCircle2 size={16} />
+            </button>
+          )}
         </div>
       </footer>
 

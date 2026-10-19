@@ -1137,8 +1137,22 @@ const startLiveExamAttempt = async (req, res) => {
       return res.status(403).json({ message: "You have been disqualified from this examination." });
     }
 
-    // Reconnection / Resume: keep existing startedAt and serverDeadline!
+    // Reconnection / Resume: keep existing startedAt and serverDeadline unless exam was rescheduled/expired within window
     if (attempt.status === "in_progress") {
+      const scheduledEnd = new Date(exam.scheduledEndTime);
+      const scheduledStart = new Date(exam.scheduledStartTime);
+      const isPastOrRescheduled =
+        !attempt.serverDeadline ||
+        (attempt.startedAt && new Date(attempt.startedAt) < scheduledStart) ||
+        (new Date(attempt.serverDeadline) <= now && now < scheduledEnd);
+
+      if (isPastOrRescheduled) {
+        const durationMs = exam.duration * 60 * 1000;
+        const computedDeadline = new Date(now.getTime() + durationMs);
+        attempt.startedAt = now;
+        attempt.serverDeadline = computedDeadline < scheduledEnd ? computedDeadline : scheduledEnd;
+      }
+
       attempt.connectionStatus = "online";
       attempt.lastPingAt = now;
       attempt.logTimelineEvent("RECONNECTED", { ip: req.ip });
@@ -1211,6 +1225,25 @@ const getLiveExamPlayData = async (req, res) => {
     const rawQuiz = await quizService.previewQuiz(attempt.quizId);
     if (!rawQuiz) {
       return res.status(404).json({ message: "Exam questions blueprint not found." });
+    }
+
+    // Recalculate deadline if rescheduled or expired while active window is ongoing
+    const now = new Date();
+    if (attempt.status === "in_progress") {
+      const scheduledEnd = new Date(exam.scheduledEndTime);
+      const scheduledStart = new Date(exam.scheduledStartTime);
+      const isPastOrRescheduled =
+        !attempt.serverDeadline ||
+        (attempt.startedAt && new Date(attempt.startedAt) < scheduledStart) ||
+        (new Date(attempt.serverDeadline) <= now && now < scheduledEnd);
+
+      if (isPastOrRescheduled) {
+        const durationMs = exam.duration * 60 * 1000;
+        const computedDeadline = new Date(now.getTime() + durationMs);
+        attempt.startedAt = now;
+        attempt.serverDeadline = computedDeadline < scheduledEnd ? computedDeadline : scheduledEnd;
+        await attempt.save();
+      }
     }
 
     const sanitizedQuiz = sanitizeQuizForLivePlayer(rawQuiz);
