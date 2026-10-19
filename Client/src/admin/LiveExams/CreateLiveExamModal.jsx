@@ -2,6 +2,16 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { X, Calendar, Clock, Video, ShieldAlert, CheckCircle, Info, Copy, ExternalLink, AlertTriangle } from "lucide-react";
 
+const getDurationInMinutes = (dur) => {
+  if (!dur || isNaN(dur)) return 30;
+  const num = Number(dur);
+  // Modular quizzes store duration in seconds (e.g., 600s = 10m, 1800s = 30m, 3600s = 60m, 7200s = 120m, 9000s = 150m)
+  if (num >= 300) {
+    return Math.round(num / 60);
+  }
+  return Math.round(num);
+};
+
 export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editExam = null }) {
   const [quizzes, setQuizzes] = useState([]);
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
@@ -70,7 +80,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
         const min = String(end.getMinutes()).padStart(2, "0");
         setEndTime(`${hh}:${min}`);
       }
-      setDuration(editExam.duration || 60);
+      setDuration(getDurationInMinutes(editExam.duration || 60));
       setEntryWindowMinutes(editExam.entryWindowMinutes !== undefined ? editExam.entryWindowMinutes : 15);
       setAllowLateEntry(editExam.allowLateEntry !== undefined ? editExam.allowLateEntry : true);
       setAutoSubmitOnDeadline(editExam.autoSubmitOnDeadline !== undefined ? editExam.autoSubmitOnDeadline : true);
@@ -118,7 +128,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
         setTitle(`${chosen.title} - Live Exam`);
       }
       if (chosen.duration) {
-        setDuration(chosen.duration);
+        setDuration(getDurationInMinutes(chosen.duration));
       }
     }
   };
@@ -178,7 +188,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
         instructions: instructions.trim(),
         scheduledStartTime: scheduledStartTime.toISOString(),
         scheduledEndTime: scheduledEndTime.toISOString(),
-        duration: Number(duration),
+        duration: getDurationInMinutes(duration),
         entryWindowMinutes: Number(entryWindowMinutes),
         allowLateEntry,
         autoSubmitOnDeadline,
@@ -322,7 +332,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
               <option value="">-- Choose an active quiz / exam --</option>
               {quizzes.map((q) => (
                 <option key={q._id} value={q._id}>
-                  {q.title} ({q.subject || q.examName || "Quiz"} • {q.duration || 30} mins)
+                  {q.title} ({q.subject || q.examName || "Quiz"} • {getDurationInMinutes(q.duration)} mins)
                 </option>
               ))}
             </select>

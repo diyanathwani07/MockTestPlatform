@@ -25,7 +25,11 @@ function validateExamSchedule({ scheduledStartTime, scheduledEndTime, duration, 
   }
 
   const windowMinutes = Math.floor((end.getTime() - start.getTime()) / (60 * 1000));
-  const dur = Number(duration);
+  let dur = Number(duration);
+  // Auto-normalize if provided in seconds (e.g., 600s = 10m, 1800s = 30m, 3600s = 60m)
+  if (dur >= 300) {
+    dur = Math.round(dur / 60);
+  }
 
   if (isNaN(dur) || dur <= 0) {
     return "Exam duration must be a positive number of minutes.";
@@ -121,7 +125,7 @@ const createLiveExam = async (req, res) => {
       instructions: instructions ? instructions.trim() : "",
       scheduledStartTime: new Date(scheduledStartTime),
       scheduledEndTime: new Date(scheduledEndTime),
-      duration: Number(duration),
+      duration: Number(duration) >= 300 ? Math.round(Number(duration) / 60) : Number(duration),
       entryWindowMinutes: Number(entryWindowMinutes),
       allowLateEntry: Boolean(allowLateEntry),
       autoSubmitOnDeadline: Boolean(autoSubmitOnDeadline),
@@ -403,7 +407,8 @@ const updateLiveExam = async (req, res) => {
     if (instructions !== undefined) exam.instructions = instructions ? instructions.trim() : "";
     exam.scheduledStartTime = new Date(newStart);
     exam.scheduledEndTime = new Date(newEnd);
-    exam.duration = Number(newDuration);
+    const finalDuration = Number(newDuration);
+    exam.duration = finalDuration >= 300 ? Math.round(finalDuration / 60) : finalDuration;
     if (newEntryMin !== undefined) exam.entryWindowMinutes = Number(newEntryMin);
     if (allowLateEntry !== undefined) exam.allowLateEntry = Boolean(allowLateEntry);
     if (autoSubmitOnDeadline !== undefined) exam.autoSubmitOnDeadline = Boolean(autoSubmitOnDeadline);
