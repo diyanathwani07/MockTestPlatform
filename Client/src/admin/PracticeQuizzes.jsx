@@ -18,6 +18,7 @@ function PracticeQuizzes() {
   const navigate = useNavigate();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: null, bottom: null, right: 0, openUpwards: false });
 
   const toggleActionDropdown = (e, quizId) => {
