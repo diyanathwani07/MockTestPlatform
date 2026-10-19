@@ -114,7 +114,11 @@ function AdminAttempts() {
                         onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                         <td style={{ padding: "12px 16px" }}>
-                          <div style={{ fontWeight: "600", color: "var(--text-primary)" }}>{a.studentName}</div>
+                          <div style={{ fontWeight: "600", color: "var(--text-primary)" }}>
+                            {a.studentName && a.studentName !== "Deleted User"
+                              ? a.studentName
+                              : a.studentEmail ? a.studentEmail.split("@")[0] : "Deleted User"}
+                          </div>
                           <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{a.studentEmail}</div>
                         </td>
                         <td style={{ padding: "12px 16px", color: "var(--text-primary)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.quizTitle}</td>

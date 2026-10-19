@@ -243,7 +243,7 @@ const getSharedResult = async (req, res) => {
       incorrect: result.incorrect,
       timeTaken: result.timeTaken,
       createdAt: result.createdAt,
-      studentName: result.userId ? (result.userId.name || result.userId.fullName) : "Student",
+      studentName: result.userId ? (result.userId.fullName || result.userId.name) : "Student",
       isVerified: true,
       resultId: result._id,
       shareId: result.shareId
@@ -351,14 +351,16 @@ const updateResultFeedback = async (req, res) => {
 const getAllAttempts = async (req, res) => {
   try {
     const results = await Result.find()
-      .populate("userId", "name email")
+      .populate("userId", "fullName name email")
       .populate("quizId", "title")
       .sort({ createdAt: -1 })
       .select("userId quizId quizTitle score total percentage timeTaken createdAt passPercentage");
 
     const formatted = results.map(r => ({
       _id: r._id,
-      studentName: r.userId?.name || "Deleted User",
+      studentName: r.userId
+        ? (r.userId.fullName || r.userId.name || (r.userId.email ? r.userId.email.split("@")[0] : "Student"))
+        : "Deleted User",
       studentEmail: r.userId?.email || "",
       quizTitle: r.quizId?.title || r.quizTitle || "Untitled Quiz",
       score: r.score,
