@@ -28,7 +28,7 @@ html[class*="theme-"] :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera) {
+:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -37,7 +37,9 @@ html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background:none
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: none"],
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: rgba"],
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="backgroundColor: rgba"],
-html[class*="theme-"] .theme-toggle-btn {
+html[class*="theme-"] .theme-toggle-btn,
+html[class*="theme-"] .sidebar-link,
+html[class*="theme-"] .logout-btn {
   color: inherit !important;
 }
 
@@ -47,6 +49,18 @@ html[class*="theme-"] .theme-toggle-btn {
 }
 :is(.live-btn-camera svg) {
   color: var(--primary) !important;
+}
+
+/* Explicit contrast preservation for refresh buttons across all platforms and themes */
+:is([class*="refresh"], .live-exams-refresh-btn, .revenue-refresh-btn, .refresh-btn, button[title*="refresh" i], button[aria-label*="refresh" i]) {
+  color: var(--text-primary) !important;
+}
+:is([class*="refresh"], .live-exams-refresh-btn, .revenue-refresh-btn, .refresh-btn, button[title*="refresh" i], button[aria-label*="refresh" i]) svg {
+  color: var(--text-primary) !important;
+  stroke: currentColor !important;
+}
+:is([class*="refresh"], .live-exams-refresh-btn, .revenue-refresh-btn, .refresh-btn):hover {
+  color: var(--text-primary) !important;
 }
 
 

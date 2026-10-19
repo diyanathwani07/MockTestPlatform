@@ -1416,14 +1416,31 @@ body.dark-mode .mobile-sidebar-toggle {
 
 /* ── SIDEBAR LOG OUT HOVER OVERRIDES ── */
 .sidebar-link.logout-btn {
-  color: var(--text-muted, #94A3B8) !important;
+  color: var(--text-secondary, #64748B) !important;
   transition: all 0.2s ease !important;
   cursor: pointer !important;
   border: none !important;
-  background: none !important;
+  background: transparent !important;
   width: 100% !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
+
+body:not(.dark-mode) .sidebar-link.logout-btn {
+  color: #1a1a1a !important;
+}
+body:not(.dark-mode) .sidebar-link.logout-btn svg {
+  color: #1a1a1a !important;
+  stroke: currentColor !important;
+}
+
+body.dark-mode .sidebar-link.logout-btn {
+  color: #B0ADC6 !important;
+}
+body.dark-mode .sidebar-link.logout-btn svg {
+  color: #B0ADC6 !important;
+  stroke: currentColor !important;
+}
+
 .sidebar-link.logout-btn:hover {
   background: rgba(239, 68, 68, 0.1) !important;
   color: #ef4444 !important;
@@ -1433,22 +1450,32 @@ body.dark-mode .mobile-sidebar-toggle {
 }
 .sidebar-link.logout-btn:hover svg {
   color: #ef4444 !important;
+  stroke: #ef4444 !important;
   transform: translateX(4px);
 }
 
 /* ── LIGHT MODE SIDEBAR LINKS OVERRIDES ── */
-body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn) {
+body:not(.dark-mode) .sidebar-link:not(.active) {
   color: #1a1a1a !important; /* Elegant dark charcoal/black */
 }
-body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn) svg {
+body:not(.dark-mode) .sidebar-link:not(.active) svg {
   color: #1a1a1a !important;
+  stroke: currentColor !important;
 }
-body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover {
+body:not(.dark-mode) .sidebar-link:not(.active):hover {
   background: rgba(0, 0, 0, 0.06) !important;
   color: #000000 !important;
 }
-body:not(.dark-mode) .sidebar-link:not(.active):not(.logout-btn):hover svg {
+body:not(.dark-mode) .sidebar-link:not(.active):hover svg {
   color: #000000 !important;
+}
+body:not(.dark-mode) .sidebar-link.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+body:not(.dark-mode) .sidebar-link.logout-btn:hover svg {
+  color: #ef4444 !important;
+  stroke: #ef4444 !important;
 }
 
 

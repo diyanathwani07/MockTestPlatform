@@ -424,6 +424,46 @@ body.dark-mode .sidebar-link.active {
 }
 .sidebar-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 
+/* Admin Sidebar Logout Button */
+.admin-sidebar .sidebar-link.logout-btn {
+  color: var(--text-secondary, #64748B) !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  border: none !important;
+  width: 100% !important;
+  text-align: left !important;
+  transition: all 0.2s ease !important;
+}
+
+body:not(.dark-mode) .admin-sidebar .sidebar-link.logout-btn {
+  color: #1a1a1a !important;
+}
+
+body:not(.dark-mode) .admin-sidebar .sidebar-link.logout-btn svg {
+  color: #1a1a1a !important;
+  stroke: currentColor !important;
+}
+
+body.dark-mode .admin-sidebar .sidebar-link.logout-btn {
+  color: #B0ADC6 !important;
+}
+
+body.dark-mode .admin-sidebar .sidebar-link.logout-btn svg {
+  color: #B0ADC6 !important;
+  stroke: currentColor !important;
+}
+
+.admin-sidebar .sidebar-link.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.admin-sidebar .sidebar-link.logout-btn:hover svg {
+  color: #ef4444 !important;
+  stroke: #ef4444 !important;
+  transform: translateX(4px);
+}
+
 .logout-link { margin-top: 12px; border-top: 1px solid var(--border-color, #E4E4E7); padding-top: 16px; color: #e2436b; }
 .logout-link:hover { background: rgba(226, 67, 107, 0.1); color: #e2436b; }
 
@@ -608,9 +648,9 @@ body.dark-mode .mobile-sidebar-toggle {
 
 @media (max-width: 768px) {
   .admin-navbar {
-    padding: 12px 14px 12px 70px;
-    flex-wrap: nowrap;
-    gap: 8px;
+    padding: 10px 12px 10px 62px !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
   }
   .notif-panel {
     position: fixed !important;
@@ -622,15 +662,21 @@ body.dark-mode .mobile-sidebar-toggle {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
   }
   .navbar-breadcrumb-row {
-    font-size: 15px;
-    gap: 5px;
+    font-size: 14px !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
   }
   .navbar-page-title {
-    font-size: 15px;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    letter-spacing: -0.2px !important;
   }
   .navbar-right-controls {
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
   }
   .admin-content {
     padding: 16px 10px;

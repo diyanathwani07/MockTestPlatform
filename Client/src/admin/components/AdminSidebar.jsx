@@ -166,7 +166,12 @@ function AdminSidebar() {
             onClick={() => setShowLogoutConfirm(true)} 
             className="sidebar-link logout-btn" 
             style={{ 
-              borderRadius: "12px"
+              borderRadius: "12px",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              width: "100%",
+              textAlign: "left"
             }}
           >
             <LogOut size={20} />
