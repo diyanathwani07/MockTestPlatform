@@ -368,82 +368,160 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
             </div>
           )}
 
-          {/* 1. Quiz / Exam Selector with Type Search */}
+          {/* 1. Quiz / Exam Selector with Direct Type Search */}
           <div ref={dropdownRef} style={{ position: "relative", zIndex: isQuizDropdownOpen ? 50 : 1 }}>
             <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
               Select Quiz / Exam <span style={{ color: "#ef4444" }}>*</span>
             </label>
 
-            {/* Dropdown Trigger */}
+            {/* Direct Input Combobox */}
             <div
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                if (!editExam) {
-                  setIsQuizDropdownOpen((prev) => !prev);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  if (!editExam) setIsQuizDropdownOpen((prev) => !prev);
-                } else if (e.key === "Escape") {
-                  setIsQuizDropdownOpen(false);
-                }
-              }}
               style={{
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: "10px",
-                border: isQuizDropdownOpen
-                  ? "1.5px solid var(--primary, #7c3aed)"
-                  : "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                backgroundColor: editExam
-                  ? "rgba(255,255,255,0.03)"
-                  : "var(--bg-page, #12121a)",
-                color: "var(--text-primary, #ffffff)",
-                fontSize: "14px",
-                outline: "none",
+                position: "relative",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                cursor: editExam ? "not-allowed" : "pointer",
-                transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-                boxShadow: isQuizDropdownOpen ? "0 0 0 3px rgba(124, 58, 237, 0.2)" : "none",
-                userSelect: "none",
+                width: "100%",
               }}
             >
-              <div style={{ flex: 1, minWidth: 0, marginRight: "10px" }}>
-                {selectedQuiz ? (
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "6px", flexWrap: "wrap", overflow: "hidden" }}>
-                    <span style={{ fontWeight: "600", color: "var(--text-primary)" }}>
-                      {selectedQuiz.title}
-                    </span>
-                    <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.85 }}>
-                      ({selectedQuiz.subject || selectedQuiz.examName || "Quiz"} • {getDurationInMinutes(selectedQuiz.duration)} mins)
-                    </span>
-                  </div>
-                ) : (
-                  <span style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
-                    -- Choose an active quiz / exam --
-                  </span>
+              <Search
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: "14px",
+                  color: isQuizDropdownOpen ? "var(--primary, #7c3aed)" : "var(--text-secondary)",
+                  pointerEvents: "none",
+                  zIndex: 2,
+                }}
+              />
+              <input
+                ref={searchInputRef}
+                type="text"
+                disabled={Boolean(editExam)}
+                value={
+                  isQuizDropdownOpen
+                    ? quizSearch
+                    : selectedQuiz
+                    ? `${selectedQuiz.title} (${selectedQuiz.subject || selectedQuiz.examName || "Quiz"} • ${getDurationInMinutes(selectedQuiz.duration)} mins)`
+                    : ""
+                }
+                placeholder="Type to search or select quiz / exam..."
+                onFocus={() => {
+                  if (!editExam) {
+                    setIsQuizDropdownOpen(true);
+                    setQuizSearch("");
+                  }
+                }}
+                onClick={() => {
+                  if (!editExam && !isQuizDropdownOpen) {
+                    setIsQuizDropdownOpen(true);
+                    setQuizSearch("");
+                  }
+                }}
+                onChange={(e) => {
+                  setQuizSearch(e.target.value);
+                  if (!isQuizDropdownOpen) setIsQuizDropdownOpen(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (filteredQuizzes.length > 0) {
+                      handleQuizSelect(filteredQuizzes[0]._id);
+                      setIsQuizDropdownOpen(false);
+                      setQuizSearch("");
+                    }
+                  } else if (e.key === "Escape") {
+                    setIsQuizDropdownOpen(false);
+                  }
+                }}
+                style={{
+                  width: "100%",
+                  padding: "10px 42px 10px 38px",
+                  borderRadius: "10px",
+                  border: isQuizDropdownOpen
+                    ? "1.5px solid var(--primary, #7c3aed)"
+                    : "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                  backgroundColor: editExam ? "rgba(255,255,255,0.03)" : "var(--bg-page, #12121a)",
+                  color: "var(--text-primary, #ffffff)",
+                  fontSize: "14px",
+                  outline: "none",
+                  cursor: editExam ? "not-allowed" : "text",
+                  boxShadow: isQuizDropdownOpen ? "0 0 0 3px rgba(124, 58, 237, 0.2)" : "none",
+                  transition: "all 0.15s ease",
+                  textOverflow: "ellipsis",
+                }}
+              />
+
+              {/* Action Icons: Clear & Toggle Dropdown */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  zIndex: 2,
+                }}
+              >
+                {(selectedQuizId || quizSearch) && !editExam && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQuizSelect("");
+                      setQuizSearch("");
+                      searchInputRef.current?.focus();
+                    }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--text-secondary)",
+                      cursor: "pointer",
+                      padding: "4px",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                    title="Clear selection"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
+
+                {!editExam && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsQuizDropdownOpen((prev) => !prev);
+                      if (!isQuizDropdownOpen) {
+                        setQuizSearch("");
+                        setTimeout(() => searchInputRef.current?.focus(), 50);
+                      }
+                    }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: isQuizDropdownOpen ? "var(--primary, #7c3aed)" : "var(--text-secondary)",
+                      cursor: "pointer",
+                      padding: "4px",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                    title="Toggle dropdown"
+                  >
+                    <ChevronDown
+                      size={18}
+                      style={{
+                        transform: isQuizDropdownOpen ? "rotate(180deg)" : "none",
+                        transition: "transform 0.2s ease",
+                      }}
+                    />
+                  </button>
                 )}
               </div>
-
-              {!editExam && (
-                <ChevronDown
-                  size={18}
-                  style={{
-                    transform: isQuizDropdownOpen ? "rotate(180deg)" : "none",
-                    transition: "transform 0.2s ease",
-                    color: isQuizDropdownOpen ? "var(--primary, #7c3aed)" : "var(--text-secondary)",
-                    flexShrink: 0,
-                  }}
-                />
-              )}
             </div>
 
-            {/* Dropdown Menu with Search Input */}
+            {/* Dropdown Menu */}
             {isQuizDropdownOpen && !editExam && (
               <div
                 style={{
@@ -459,91 +537,24 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
-                  maxHeight: "340px",
+                  maxHeight: "300px",
                 }}
               >
-                {/* Search Bar Input */}
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    borderBottom: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                    backgroundColor: "var(--bg-page, #12121a)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 2,
-                  }}
-                >
-                  <Search size={16} style={{ color: "var(--primary, #7c3aed)", flexShrink: 0 }} />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={quizSearch}
-                    onChange={(e) => setQuizSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        if (filteredQuizzes.length > 0) {
-                          handleQuizSelect(filteredQuizzes[0]._id);
-                          setIsQuizDropdownOpen(false);
-                          setQuizSearch("");
-                        }
-                      } else if (e.key === "Escape") {
-                        setIsQuizDropdownOpen(false);
-                      }
-                    }}
-                    placeholder="Type to search quiz / exam..."
-                    style={{
-                      width: "100%",
-                      background: "transparent",
-                      border: "none",
-                      outline: "none",
-                      color: "var(--text-primary, #ffffff)",
-                      fontSize: "13px",
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  {quizSearch && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setQuizSearch("");
-                        searchInputRef.current?.focus();
-                      }}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--text-secondary)",
-                        cursor: "pointer",
-                        padding: "2px",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                      title="Clear search"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-
                 {/* Search Match Counter Badge */}
                 {quizSearch.trim() && (
                   <div
                     style={{
-                      padding: "6px 14px",
+                      padding: "7px 14px",
                       fontSize: "11px",
                       color: "var(--text-secondary)",
-                      backgroundColor: "rgba(124, 58, 237, 0.06)",
+                      backgroundColor: "rgba(124, 58, 237, 0.08)",
                       borderBottom: "1px solid var(--border-color, rgba(255,255,255,0.06))",
                       display: "flex",
                       justifyContent: "space-between",
                     }}
                   >
-                    <span>Found {filteredQuizzes.length} match{filteredQuizzes.length === 1 ? "" : "es"}</span>
-                    <span>Press Enter to pick 1st match</span>
+                    <span>Found {filteredQuizzes.length} match{filteredQuizzes.length === 1 ? "" : "es"} for "{quizSearch}"</span>
+                    <span>Press Enter to select 1st</span>
                   </div>
                 )}
 
@@ -551,7 +562,7 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 <div
                   style={{
                     overflowY: "auto",
-                    maxHeight: "250px",
+                    maxHeight: "260px",
                     display: "flex",
                     flexDirection: "column",
                   }}
