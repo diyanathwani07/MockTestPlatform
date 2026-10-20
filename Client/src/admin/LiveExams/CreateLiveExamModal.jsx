@@ -1,6 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { X, Calendar, Clock, Video, ShieldAlert, CheckCircle, Info, Copy, ExternalLink, AlertTriangle } from "lucide-react";
+import {
+  X,
+  Calendar,
+  Clock,
+  Video,
+  ShieldAlert,
+  CheckCircle,
+  Info,
+  Copy,
+  ExternalLink,
+  AlertTriangle,
+  Search,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 
 const getDurationInMinutes = (dur) => {
   if (!dur || isNaN(dur)) return 30;
@@ -33,6 +47,38 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
   const [webcamRule, setWebcamRule] = useState("disabled");
   const [resultReleaseMode, setResultReleaseMode] = useState("manual");
   const [resultReleaseDate, setResultReleaseDate] = useState("");
+
+  // Searchable Quiz Dropdown State
+  const [isQuizDropdownOpen, setIsQuizDropdownOpen] = useState(false);
+  const [quizSearch, setQuizSearch] = useState("");
+  const dropdownRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  // Close dropdown on click outside & focus search input on open
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsQuizDropdownOpen(false);
+      }
+    };
+    if (isQuizDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 50);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isQuizDropdownOpen]);
+
+  // Reset dropdown when modal opens or closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsQuizDropdownOpen(false);
+      setQuizSearch("");
+    }
+  }, [isOpen]);
 
   // Fetch available quizzes for blueprint selection
   useEffect(() => {
@@ -132,6 +178,19 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
       }
     }
   };
+
+  // Filter quizzes by search query (matches title, subject, examName, or category)
+  const filteredQuizzes = quizzes.filter((q) => {
+    if (!quizSearch.trim()) return true;
+    const term = quizSearch.toLowerCase().trim();
+    const titleMatch = q.title && q.title.toLowerCase().includes(term);
+    const subjectMatch = q.subject && q.subject.toLowerCase().includes(term);
+    const examNameMatch = q.examName && q.examName.toLowerCase().includes(term);
+    const categoryMatch = q.category && q.category.toLowerCase().includes(term);
+    return Boolean(titleMatch || subjectMatch || examNameMatch || categoryMatch);
+  });
+
+  const selectedQuiz = quizzes.find((q) => q._id === selectedQuizId);
 
   // Calculate total window minutes dynamically
   const calculateWindowMinutes = () => {
@@ -309,33 +368,281 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
             </div>
           )}
 
-          {/* 1. Quiz / Exam Selector */}
-          <div>
+          {/* 1. Quiz / Exam Selector with Type Search */}
+          <div ref={dropdownRef} style={{ position: "relative", zIndex: isQuizDropdownOpen ? 50 : 1 }}>
             <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
               Select Quiz / Exam <span style={{ color: "#ef4444" }}>*</span>
             </label>
-            <select
-              value={selectedQuizId}
-              onChange={(e) => handleQuizSelect(e.target.value)}
-              disabled={Boolean(editExam)}
+
+            {/* Dropdown Trigger */}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                if (!editExam) {
+                  setIsQuizDropdownOpen((prev) => !prev);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (!editExam) setIsQuizDropdownOpen((prev) => !prev);
+                } else if (e.key === "Escape") {
+                  setIsQuizDropdownOpen(false);
+                }
+              }}
               style={{
                 width: "100%",
                 padding: "10px 14px",
                 borderRadius: "10px",
-                border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                backgroundColor: "var(--bg-page, #12121a)",
+                border: isQuizDropdownOpen
+                  ? "1.5px solid var(--primary, #7c3aed)"
+                  : "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                backgroundColor: editExam
+                  ? "rgba(255,255,255,0.03)"
+                  : "var(--bg-page, #12121a)",
                 color: "var(--text-primary, #ffffff)",
                 fontSize: "14px",
                 outline: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                cursor: editExam ? "not-allowed" : "pointer",
+                transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                boxShadow: isQuizDropdownOpen ? "0 0 0 3px rgba(124, 58, 237, 0.2)" : "none",
+                userSelect: "none",
               }}
             >
-              <option value="">-- Choose an active quiz / exam --</option>
-              {quizzes.map((q) => (
-                <option key={q._id} value={q._id}>
-                  {q.title} ({q.subject || q.examName || "Quiz"} • {getDurationInMinutes(q.duration)} mins)
-                </option>
-              ))}
-            </select>
+              <div style={{ flex: 1, minWidth: 0, marginRight: "10px" }}>
+                {selectedQuiz ? (
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "6px", flexWrap: "wrap", overflow: "hidden" }}>
+                    <span style={{ fontWeight: "600", color: "var(--text-primary)" }}>
+                      {selectedQuiz.title}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.85 }}>
+                      ({selectedQuiz.subject || selectedQuiz.examName || "Quiz"} • {getDurationInMinutes(selectedQuiz.duration)} mins)
+                    </span>
+                  </div>
+                ) : (
+                  <span style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+                    -- Choose an active quiz / exam --
+                  </span>
+                )}
+              </div>
+
+              {!editExam && (
+                <ChevronDown
+                  size={18}
+                  style={{
+                    transform: isQuizDropdownOpen ? "rotate(180deg)" : "none",
+                    transition: "transform 0.2s ease",
+                    color: isQuizDropdownOpen ? "var(--primary, #7c3aed)" : "var(--text-secondary)",
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Dropdown Menu with Search Input */}
+            {isQuizDropdownOpen && !editExam && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 6px)",
+                  left: 0,
+                  right: 0,
+                  backgroundColor: "var(--bg-card, #1e1e2d)",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.15))",
+                  borderRadius: "12px",
+                  boxShadow: "0 14px 35px rgba(0, 0, 0, 0.45)",
+                  zIndex: 100,
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                  maxHeight: "340px",
+                }}
+              >
+                {/* Search Bar Input */}
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderBottom: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                    backgroundColor: "var(--bg-page, #12121a)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 2,
+                  }}
+                >
+                  <Search size={16} style={{ color: "var(--primary, #7c3aed)", flexShrink: 0 }} />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={quizSearch}
+                    onChange={(e) => setQuizSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (filteredQuizzes.length > 0) {
+                          handleQuizSelect(filteredQuizzes[0]._id);
+                          setIsQuizDropdownOpen(false);
+                          setQuizSearch("");
+                        }
+                      } else if (e.key === "Escape") {
+                        setIsQuizDropdownOpen(false);
+                      }
+                    }}
+                    placeholder="Type to search quiz / exam..."
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: "var(--text-primary, #ffffff)",
+                      fontSize: "13px",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {quizSearch && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setQuizSearch("");
+                        searchInputRef.current?.focus();
+                      }}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--text-secondary)",
+                        cursor: "pointer",
+                        padding: "2px",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                      title="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Search Match Counter Badge */}
+                {quizSearch.trim() && (
+                  <div
+                    style={{
+                      padding: "6px 14px",
+                      fontSize: "11px",
+                      color: "var(--text-secondary)",
+                      backgroundColor: "rgba(124, 58, 237, 0.06)",
+                      borderBottom: "1px solid var(--border-color, rgba(255,255,255,0.06))",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>Found {filteredQuizzes.length} match{filteredQuizzes.length === 1 ? "" : "es"}</span>
+                    <span>Press Enter to pick 1st match</span>
+                  </div>
+                )}
+
+                {/* Quizzes List */}
+                <div
+                  style={{
+                    overflowY: "auto",
+                    maxHeight: "250px",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Default/Reset Option */}
+                  <div
+                    onClick={() => {
+                      handleQuizSelect("");
+                      setIsQuizDropdownOpen(false);
+                      setQuizSearch("");
+                    }}
+                    style={{
+                      padding: "10px 14px",
+                      fontSize: "13px",
+                      color: "var(--text-secondary)",
+                      fontStyle: "italic",
+                      cursor: "pointer",
+                      borderBottom: "1px dashed var(--border-color, rgba(255,255,255,0.08))",
+                      backgroundColor: !selectedQuizId ? "rgba(124, 58, 237, 0.12)" : "transparent",
+                      transition: "background-color 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(124, 58, 237, 0.1)")}
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = !selectedQuizId ? "rgba(124, 58, 237, 0.12)" : "transparent")
+                    }
+                  >
+                    -- Choose an active quiz / exam --
+                  </div>
+
+                  {loadingQuizzes ? (
+                    <div style={{ padding: "18px", textAlign: "center", fontSize: "13px", color: "var(--text-secondary)" }}>
+                      Loading quizzes...
+                    </div>
+                  ) : filteredQuizzes.length === 0 ? (
+                    <div style={{ padding: "20px 16px", textAlign: "center", color: "var(--text-secondary)", fontSize: "13px" }}>
+                      No quiz found matching "{quizSearch}"
+                    </div>
+                  ) : (
+                    filteredQuizzes.map((q) => {
+                      const isSelected = q._id === selectedQuizId;
+                      return (
+                        <div
+                          key={q._id}
+                          onClick={() => {
+                            handleQuizSelect(q._id);
+                            setIsQuizDropdownOpen(false);
+                            setQuizSearch("");
+                          }}
+                          style={{
+                            padding: "10px 14px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "10px",
+                            borderBottom: "1px solid var(--border-color, rgba(255,255,255,0.05))",
+                            backgroundColor: isSelected ? "rgba(124, 58, 237, 0.15)" : "transparent",
+                            transition: "background-color 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
+                          }}
+                        >
+                          <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+                            <span
+                              style={{
+                                fontSize: "13.5px",
+                                fontWeight: isSelected ? "700" : "500",
+                                color: isSelected ? "var(--primary, #a78bfa)" : "var(--text-primary)",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {q.title}
+                            </span>
+                            <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.85 }}>
+                              {q.subject || q.examName || "Quiz"} • {getDurationInMinutes(q.duration)} mins
+                            </span>
+                          </div>
+                          {isSelected && <Check size={16} color="var(--primary, #a78bfa)" style={{ flexShrink: 0 }} />}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 2. Examination Title */}
