@@ -247,7 +247,14 @@ export default function LiveExamsList() {
       <AdminSidebar />
 
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
-        <AdminNavbar title="Live Examinations" />
+        <AdminNavbar
+          title={
+            <span className="live-nav-title">
+              <span className="title-full">Live Examinations</span>
+              <span className="title-short">Live Exams</span>
+            </span>
+          }
+        />
 
         <div className="admin-content live-exams-content">
           {/* Header Action Bar */}
@@ -262,8 +269,10 @@ export default function LiveExamsList() {
                 onClick={fetchLiveExams}
                 title="Refresh examinations list"
                 className="live-exams-refresh-btn"
+                style={{ color: "var(--text-primary)" }}
               >
-                <RefreshCw size={15} /> Refresh
+                <RefreshCw size={15} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
+                <span>Refresh</span>
               </button>
               <button
                 onClick={() => {
@@ -272,7 +281,9 @@ export default function LiveExamsList() {
                 }}
                 className="live-exams-create-btn"
               >
-                <Plus size={18} /> Schedule Live Exam
+                <Plus size={18} />
+                <span className="btn-full-text">Schedule Live Exam</span>
+                <span className="btn-short-text">Schedule Exam</span>
               </button>
             </div>
           </div>
@@ -280,22 +291,33 @@ export default function LiveExamsList() {
           {/* Metric Counter Cards */}
           <div className="live-exams-metrics-grid">
             <div className="live-exams-metric-card">
-              <span className="live-exams-metric-label">Total Exams</span>
+              <span className="live-exams-metric-label">
+                <span className="metric-label-full">Total Exams</span>
+                <span className="metric-label-short">Total</span>
+              </span>
               <h3 className="live-exams-metric-value">{totalCount}</h3>
             </div>
 
             <div className="live-exams-metric-card">
-              <span className="live-exams-metric-label" style={{ color: "#10b981" }}>Active / Live Now</span>
+              <span className="live-exams-metric-label" style={{ color: "#10b981" }}>
+                <span className="metric-label-full">Active / Live Now</span>
+                <span className="metric-label-short">Live Now</span>
+              </span>
               <h3 className="live-exams-metric-value" style={{ color: "#10b981" }}>{liveCount}</h3>
             </div>
 
             <div className="live-exams-metric-card">
-              <span className="live-exams-metric-label" style={{ color: "#3b82f6" }}>Scheduled Ahead</span>
+              <span className="live-exams-metric-label" style={{ color: "#3b82f6" }}>
+                <span className="metric-label-full">Scheduled Ahead</span>
+                <span className="metric-label-short">Scheduled</span>
+              </span>
               <h3 className="live-exams-metric-value" style={{ color: "#3b82f6" }}>{scheduledCount}</h3>
             </div>
 
             <div className="live-exams-metric-card">
-              <span className="live-exams-metric-label">Completed</span>
+              <span className="live-exams-metric-label">
+                Completed
+              </span>
               <h3 className="live-exams-metric-value">{completedCount}</h3>
             </div>
           </div>
@@ -304,11 +326,11 @@ export default function LiveExamsList() {
           <div className="live-exams-filter-bar">
             <div className="live-exams-tabs-wrap">
               {[
-                { val: "all", label: "All", count: counts?.total },
-                { val: "live", label: "Live / Lobby", count: counts?.live },
-                { val: "scheduled", label: "Scheduled", count: counts?.scheduled },
-                { val: "completed", label: "Completed", count: counts?.completed },
-                { val: "cancelled", label: "Cancelled", count: counts?.cancelled },
+                { val: "all", fullLabel: "All", shortLabel: "All", count: counts?.total },
+                { val: "live", fullLabel: "Live / Lobby", shortLabel: "Live", count: counts?.live },
+                { val: "scheduled", fullLabel: "Scheduled", shortLabel: "Scheduled", count: counts?.scheduled },
+                { val: "completed", fullLabel: "Completed", shortLabel: "Completed", count: counts?.completed },
+                { val: "cancelled", fullLabel: "Cancelled", shortLabel: "Cancelled", count: counts?.cancelled },
               ].map((tab) => (
                 <button
                   key={tab.val}
@@ -319,7 +341,8 @@ export default function LiveExamsList() {
                     color: statusTab === tab.val ? "var(--primary-foreground)" : "var(--text-secondary)",
                   }}
                 >
-                  <span>{tab.label}</span>
+                  <span className="tab-label-full">{tab.fullLabel}</span>
+                  <span className="tab-label-short">{tab.shortLabel}</span>
                   {tab.count !== undefined && (
                     <span
                       className="live-exams-tab-badge"

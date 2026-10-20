@@ -1063,9 +1063,37 @@ function EditQuiz() {
 
     setQuestions(prev => {
       const isFirstEmpty = prev.length === 1 && 
-                           !prev[0].questionEnglish.trim() && 
-                           !prev[0].questionHindi.trim();
+                           !prev[0].questionEnglish?.trim() && 
+                           !prev[0].questionHindi?.trim();
       const existingQs = isFirstEmpty ? [] : prev;
+      if (existingQs.length === 0) return mapped;
+
+      const dupCount = mapped.filter(newQ => {
+        const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+        const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+        return existingQs.some(exQ => {
+          const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+          const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+          return (newEn && exEn && newEn === exEn) || (newHi && exHi && newHi === exHi);
+        });
+      }).length;
+
+      if (dupCount > 0) {
+        const replace = window.confirm(
+          `This quiz already has ${existingQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE existing questions.\nClick Cancel to APPEND only unique questions.`
+        );
+        if (replace) return mapped;
+        const unique = mapped.filter(newQ => {
+          const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+          const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+          return !existingQs.some(exQ => {
+            const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+            const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+            return (newEn && exEn && newEn === exEn) || (newHi && exHi && newHi === exHi);
+          });
+        });
+        return [...existingQs, ...unique];
+      }
       return [...existingQs, ...mapped];
     });
     
@@ -2877,7 +2905,7 @@ function EditQuiz() {
                   <div className="form-card header-questions-card">
                       <div className="questions-title-row">
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Assessment Questions</h3>
+                          <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Questions</h3>
                         </div>
                         <div className="questions-title-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
                           <button

@@ -378,11 +378,11 @@ function ExamSeriesManager() {
                   />
                 </div>
                 
-                <button onClick={fetchSeries} style={{ 
+                <button onClick={fetchSeries} className="live-exams-refresh-btn" style={{ 
                   display: "flex", alignItems: "center", justifyContent: "center",
                   width: "40px", height: "40px", borderRadius: "10px",
                   backgroundColor: "var(--bg-page)", border: "1px solid var(--border-color)",
-                  color: "var(--text-primary)", cursor: "pointer"
+                  color: "var(--text-primary)", cursor: "pointer", padding: 0
                 }} title="Refresh">
                   <RefreshCw size={16} />
                 </button>

@@ -122,16 +122,22 @@
   padding: 7px 14px;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary, #ffffff) !important;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   height: 36px;
 }
 
+.revenue-refresh-btn svg {
+  color: var(--text-primary, #ffffff) !important;
+  stroke: currentColor;
+}
+
 .revenue-refresh-btn:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary, #ffffff) !important;
 }
 
 /* Common Card Surface */

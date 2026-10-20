@@ -21,7 +21,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "12px", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
+      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"
@@ -35,7 +35,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
         <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700" }}>{title}</span>
       </div>
 
-      <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center" }}>
         <UniversalSearch />
         {/* Theme Toggle Button */}
         <ThemeToggle />

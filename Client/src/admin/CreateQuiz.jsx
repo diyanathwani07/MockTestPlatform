@@ -553,6 +553,17 @@ function CreateQuiz() {
   };
 
   const handleQuestionsLoaded = (parsedSections, sourceInfo, promptText) => {
+    if (parsedSections && parsedSections.length > 1) {
+      const sectionNames = parsedSections.map(s => s.sectionTitle).join(", ");
+      const switchMode = window.confirm(
+        `This document contains ${parsedSections.length} separate sections: ${sectionNames}.\n\nWould you like to switch to the Multi-Section Quiz Builder to keep each section separate?\n\nClick OK to switch to Multi-Section Builder.\nClick Cancel to merge all sections into this single quiz.`
+      );
+      if (switchMode) {
+        navigate("/admin/create-quiz-multi");
+        return;
+      }
+    }
+
     let flatQuestions = [];
     if (parsedSections && parsedSections.length > 0) {
       parsedSections.forEach(sec => {
@@ -609,9 +620,37 @@ function CreateQuiz() {
 
     setQuestions(prev => {
       const isFirstEmpty = prev.length === 1 && 
-                           !prev[0].questionEnglish.trim() && 
-                           !prev[0].questionHindi.trim();
+                           !prev[0].questionEnglish?.trim() && 
+                           !prev[0].questionHindi?.trim();
       const existingQs = isFirstEmpty ? [] : prev;
+      if (existingQs.length === 0) return mapped;
+
+      const dupCount = mapped.filter(newQ => {
+        const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+        const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+        return existingQs.some(exQ => {
+          const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+          const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+          return (newEn && exEn && newEn === exEn) || (newHi && exHi && newHi === exHi);
+        });
+      }).length;
+
+      if (dupCount > 0) {
+        const replace = window.confirm(
+          `This quiz already has ${existingQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE existing questions.\nClick Cancel to APPEND only unique questions.`
+        );
+        if (replace) return mapped;
+        const unique = mapped.filter(newQ => {
+          const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+          const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+          return !existingQs.some(exQ => {
+            const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+            const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+            return (newEn && exEn && newEn === exEn) || (newHi && exHi && newHi === exHi);
+          });
+        });
+        return [...existingQs, ...unique];
+      }
       return [...existingQs, ...mapped];
     });
     setExpandedQuestions({ 0: true });
@@ -903,48 +942,59 @@ function CreateQuiz() {
               @media (max-width: 768px) {
                 .import-container-mobile-only {
                   display: flex !important;
-                  margin-bottom: 20px;
+                  flex-direction: column !important;
+                  align-items: stretch !important;
+                  gap: 10px !important;
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  margin: 0 0 16px 0 !important;
+                  padding: 12px !important;
+                  box-sizing: border-box !important;
                 }
                 .import-container-desktop-only {
+                  display: none !important;
+                }
+                .docx-drag-text {
                   display: none !important;
                 }
               }
             `}</style>
 
-            <div className="form-card compact-card import-container-mobile-only" style={{ gap: "10px", alignItems: "center" }}>
-              <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+            <div className="form-card compact-card import-container-mobile-only">
+              <div style={{ width: "100%", minWidth: 0 }}>
                 <DocxParser onQuestionsLoaded={handleQuestionsLoaded} />
               </div>
               <button
                 type="button"
                 onClick={() => setAiPanelOpen(!aiPanelOpen)}
                 style={{
+                  width: "100%",
                   padding: "10px 14px",
                   border: "none",
                   borderRadius: "10px",
                   backgroundColor: "var(--primary)",
                   color: "var(--primary-foreground)",
-                  fontSize: "12.5px",
+                  fontSize: "13px",
                   fontWeight: "700",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: "6px",
-                  height: "40px",
+                  justifyContent: "center",
+                  gap: "7px",
+                  height: "42px",
                   boxSizing: "border-box",
                   transition: "all 0.2s ease",
                   boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0
+                  whiteSpace: "nowrap"
                 }}
               >
                 <Sparkles size={16} />
-                <span>AI Generate</span>
+                <span>{aiPanelOpen ? "Close AI Generator" : "AI Generate Questions"}</span>
               </button>
             </div>
 
             {aiPanelOpen && (
-              <div className="import-container-mobile-only" style={{ width: "100%" }}>
+              <div className="import-container-mobile-only" style={{ width: "100%", padding: 0, margin: "0 0 16px 0" }}>
                 <AIQuestionGenerator
                   quizMeta={quizMeta}
                   activeSection={{ marksPerQuestion: quizMeta.marksPerQuestion || 1, negativeMarking: quizMeta.negativeMarking || 0 }}
@@ -2286,7 +2336,7 @@ function CreateQuiz() {
                     style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px", flexWrap: "wrap", gap: "12px" }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Assessment Questions</h3>
+                      <h3 className="form-card-title" style={{ margin: 0, border: "none", padding: 0 }}>Questions</h3>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }} onClick={(e) => e.stopPropagation()}>
                       {questions.length > 0 && (

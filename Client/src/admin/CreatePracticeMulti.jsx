@@ -310,6 +310,34 @@ function CreatePracticeMulti() {
     });
   };
 
+  const filterDuplicateQuestions = (existingList = [], incomingList = []) => {
+    return incomingList.filter(newQ => {
+      const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+      const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+      return !existingList.some(exQ => {
+        const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+        const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+        if (newEn && exEn && newEn === exEn) return true;
+        if (newHi && exHi && newHi === exHi) return true;
+        return false;
+      });
+    });
+  };
+
+  const countDuplicateQuestions = (existingList = [], incomingList = []) => {
+    return incomingList.filter(newQ => {
+      const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+      const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+      return existingList.some(exQ => {
+        const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+        const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+        if (newEn && exEn && newEn === exEn) return true;
+        if (newHi && exHi && newHi === exHi) return true;
+        return false;
+      });
+    }).length;
+  };
+
   const handleDocxImport = (parsedSections) => {
     if (!parsedSections || parsedSections.length === 0) return;
 
@@ -317,10 +345,26 @@ function CreatePracticeMulti() {
       const mappedQs = mapParsedQuestions(parsedSections[0].questions);
       const activeQs = getActiveQuestions();
       const isFirstEmpty = activeQs.length === 1 && 
-                           !activeQs[0].questionEnglish.trim() && 
-                           !activeQs[0].questionHindi.trim();
-      const existingQs = isFirstEmpty ? [] : activeQs;
-      setActiveQuestions([...existingQs, ...mappedQs]);
+                           !activeQs[0].questionEnglish?.trim() && 
+                           !activeQs[0].questionHindi?.trim();
+      if (isFirstEmpty || activeQs.length === 0) {
+        setActiveQuestions(mappedQs);
+      } else {
+        const dupCount = countDuplicateQuestions(activeQs, mappedQs);
+        if (dupCount > 0) {
+          const replace = window.confirm(
+            `This section already contains ${activeQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE the existing questions with the imported file.\nClick Cancel to APPEND only new unique questions.`
+          );
+          if (replace) {
+            setActiveQuestions(mappedQs);
+          } else {
+            const uniqueNew = filterDuplicateQuestions(activeQs, mappedQs);
+            setActiveQuestions([...activeQs, ...uniqueNew]);
+          }
+        } else {
+          setActiveQuestions([...activeQs, ...mappedQs]);
+        }
+      }
       setMessage({ text: `Imported ${mappedQs.length} questions into the active section.`, type: "success" });
       return;
     }
@@ -330,8 +374,10 @@ function CreatePracticeMulti() {
 
     const isFreshSection =
       newSections.length === 1 &&
-      newSections[0].questions.length === 1 &&
-      newSections[0].questions[0].questionEnglish === "";
+      (newSections[0].questions.length === 0 ||
+        (newSections[0].questions.length === 1 &&
+          !newSections[0].questions[0].questionEnglish?.trim() &&
+          !newSections[0].questions[0].questionHindi?.trim()));
 
     parsedSections.forEach((parsedSec, index) => {
       const mappedQs = mapParsedQuestions(parsedSec.questions);
@@ -340,8 +386,27 @@ function CreatePracticeMulti() {
       if (index === 0 && parsedSec.sectionTitle === "Default") {
         const activeSecIndex = newSections.findIndex(s => s.id === activeSectionId);
         if (activeSecIndex !== -1) {
-          const currentQs = newSections[activeSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
-          newSections[activeSecIndex].questions = [...currentQs, ...mappedQs];
+          const currentQs = newSections[activeSecIndex].questions.filter(
+            q => (q.questionEnglish || "").trim() !== "" || (q.questionHindi || "").trim() !== ""
+          );
+          if (currentQs.length === 0) {
+            newSections[activeSecIndex].questions = mappedQs;
+          } else {
+            const dupCount = countDuplicateQuestions(currentQs, mappedQs);
+            if (dupCount > 0) {
+              const replace = window.confirm(
+                `Section "${newSections[activeSecIndex].title}" already has ${currentQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE existing questions.\nClick Cancel to APPEND only unique questions.`
+              );
+              if (replace) {
+                newSections[activeSecIndex].questions = mappedQs;
+              } else {
+                const uniqueNew = filterDuplicateQuestions(currentQs, mappedQs);
+                newSections[activeSecIndex].questions = [...currentQs, ...uniqueNew];
+              }
+            } else {
+              newSections[activeSecIndex].questions = [...currentQs, ...mappedQs];
+            }
+          }
         }
       } else {
         const existingSecIndex = newSections.findIndex(
@@ -349,8 +414,27 @@ function CreatePracticeMulti() {
         );
 
         if (existingSecIndex !== -1) {
-          const currentQs = newSections[existingSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
-          newSections[existingSecIndex].questions = [...currentQs, ...mappedQs];
+          const currentQs = newSections[existingSecIndex].questions.filter(
+            q => (q.questionEnglish || "").trim() !== "" || (q.questionHindi || "").trim() !== ""
+          );
+          if (currentQs.length === 0) {
+            newSections[existingSecIndex].questions = mappedQs;
+          } else {
+            const dupCount = countDuplicateQuestions(currentQs, mappedQs);
+            if (dupCount > 0) {
+              const replace = window.confirm(
+                `Section "${newSections[existingSecIndex].title}" already has ${currentQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE existing questions.\nClick Cancel to APPEND only unique questions.`
+              );
+              if (replace) {
+                newSections[existingSecIndex].questions = mappedQs;
+              } else {
+                const uniqueNew = filterDuplicateQuestions(currentQs, mappedQs);
+                newSections[existingSecIndex].questions = [...currentQs, ...uniqueNew];
+              }
+            } else {
+              newSections[existingSecIndex].questions = [...currentQs, ...mappedQs];
+            }
+          }
         } else if (isFreshSection && index === 0) {
           newSections[0].title = parsedSec.sectionTitle;
           newSections[0].questions = mappedQs;
@@ -364,7 +448,7 @@ function CreatePracticeMulti() {
     });
 
     setSections(newSections);
-    setActiveSectionId(newSections[newSections.length - 1].id);
+    setActiveSectionId(newSections[0]?.id || newSections[newSections.length - 1].id);
     setMessage({
       text: `Imported ${totalImported} questions across ${parsedSections.length} section(s).`,
       type: "success"

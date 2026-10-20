@@ -1374,11 +1374,17 @@ const bulkImportQuizzes = async (req, res) => {
       // Helper to create valid questions from rows
       const createQuestionsFromRows = async (rowsToProcess) => {
         const questionIds = [];
+        const seenQuestions = new Set();
         for (const row of rowsToProcess) {
           const hasQuestionData = row.questionEnglish || row.optionA || row.optionB || row.optionC || row.optionD || row.correctAnswer;
           if (!hasQuestionData) continue;
 
           const englishText = (row.questionEnglish || "").trim();
+          const hindiText = (row.questionHindi || "").trim();
+          const dupKey = (englishText || hindiText).toLowerCase();
+          if (dupKey && seenQuestions.has(dupKey)) continue;
+          if (dupKey) seenQuestions.add(dupKey);
+
           const ansLetter = (row.correctAnswer || "").trim().toUpperCase();
           const optionA = (row.optionA || "").trim();
           const optionB = (row.optionB || "").trim();

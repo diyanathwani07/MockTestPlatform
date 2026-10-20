@@ -561,6 +561,34 @@ function CreateQuizMulti() {
     });
   };
 
+  const filterDuplicateQuestions = (existingList = [], incomingList = []) => {
+    return incomingList.filter(newQ => {
+      const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+      const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+      return !existingList.some(exQ => {
+        const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+        const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+        if (newEn && exEn && newEn === exEn) return true;
+        if (newHi && exHi && newHi === exHi) return true;
+        return false;
+      });
+    });
+  };
+
+  const countDuplicateQuestions = (existingList = [], incomingList = []) => {
+    return incomingList.filter(newQ => {
+      const newEn = (newQ.questionEnglish || "").trim().toLowerCase();
+      const newHi = (newQ.questionHindi || "").trim().toLowerCase();
+      return existingList.some(exQ => {
+        const exEn = (exQ.questionEnglish || "").trim().toLowerCase();
+        const exHi = (exQ.questionHindi || "").trim().toLowerCase();
+        if (newEn && exEn && newEn === exEn) return true;
+        if (newHi && exHi && newHi === exHi) return true;
+        return false;
+      });
+    }).length;
+  };
+
   const handleDocxImport = (parsedSections, sourceInfo, promptText, sourceUrl) => {
     if (!parsedSections || parsedSections.length === 0) return;
 
@@ -586,10 +614,26 @@ function CreateQuizMulti() {
       const mappedQs = mapParsedQuestions(parsedSections[0].questions);
       const activeQs = getActiveQuestions();
       const isFirstEmpty = activeQs.length === 1 && 
-                           !activeQs[0].questionEnglish.trim() && 
-                           !activeQs[0].questionHindi.trim();
-      const existingQs = isFirstEmpty ? [] : activeQs;
-      setActiveQuestions([...existingQs, ...mappedQs]);
+                           !activeQs[0].questionEnglish?.trim() && 
+                           !activeQs[0].questionHindi?.trim();
+      if (isFirstEmpty || activeQs.length === 0) {
+        setActiveQuestions(mappedQs);
+      } else {
+        const dupCount = countDuplicateQuestions(activeQs, mappedQs);
+        if (dupCount > 0) {
+          const replace = window.confirm(
+            `This section already contains ${activeQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE the existing questions with the imported file.\nClick Cancel to APPEND only new unique questions.`
+          );
+          if (replace) {
+            setActiveQuestions(mappedQs);
+          } else {
+            const uniqueNew = filterDuplicateQuestions(activeQs, mappedQs);
+            setActiveQuestions([...activeQs, ...uniqueNew]);
+          }
+        } else {
+          setActiveQuestions([...activeQs, ...mappedQs]);
+        }
+      }
 
       if (sourceInfo) {
         setMessage({ text: `✅ ${mappedQs.length} questions generated from ${sourceInfo}`, type: "success" });
@@ -604,8 +648,10 @@ function CreateQuizMulti() {
 
     const isFreshSection =
       newSections.length === 1 &&
-      newSections[0].questions.length === 1 &&
-      newSections[0].questions[0].questionEnglish === "";
+      (newSections[0].questions.length === 0 ||
+        (newSections[0].questions.length === 1 &&
+          !newSections[0].questions[0].questionEnglish?.trim() &&
+          !newSections[0].questions[0].questionHindi?.trim()));
 
     parsedSections.forEach((parsedSec, index) => {
       const mappedQs = mapParsedQuestions(parsedSec.questions);
@@ -614,8 +660,27 @@ function CreateQuizMulti() {
       if (index === 0 && parsedSec.sectionTitle === "Default") {
         const activeSecIndex = newSections.findIndex(s => s.id === activeSectionId);
         if (activeSecIndex !== -1) {
-          const currentQs = newSections[activeSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
-          newSections[activeSecIndex].questions = [...currentQs, ...mappedQs];
+          const currentQs = newSections[activeSecIndex].questions.filter(
+            q => (q.questionEnglish || "").trim() !== "" || (q.questionHindi || "").trim() !== ""
+          );
+          if (currentQs.length === 0) {
+            newSections[activeSecIndex].questions = mappedQs;
+          } else {
+            const dupCount = countDuplicateQuestions(currentQs, mappedQs);
+            if (dupCount > 0) {
+              const replace = window.confirm(
+                `Section "${newSections[activeSecIndex].title}" already has ${currentQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE existing questions.\nClick Cancel to APPEND only unique questions.`
+              );
+              if (replace) {
+                newSections[activeSecIndex].questions = mappedQs;
+              } else {
+                const uniqueNew = filterDuplicateQuestions(currentQs, mappedQs);
+                newSections[activeSecIndex].questions = [...currentQs, ...uniqueNew];
+              }
+            } else {
+              newSections[activeSecIndex].questions = [...currentQs, ...mappedQs];
+            }
+          }
         }
       } else {
         const existingSecIndex = newSections.findIndex(
@@ -623,8 +688,27 @@ function CreateQuizMulti() {
         );
 
         if (existingSecIndex !== -1) {
-          const currentQs = newSections[existingSecIndex].questions.filter(q => q.questionEnglish.trim() !== "");
-          newSections[existingSecIndex].questions = [...currentQs, ...mappedQs];
+          const currentQs = newSections[existingSecIndex].questions.filter(
+            q => (q.questionEnglish || "").trim() !== "" || (q.questionHindi || "").trim() !== ""
+          );
+          if (currentQs.length === 0) {
+            newSections[existingSecIndex].questions = mappedQs;
+          } else {
+            const dupCount = countDuplicateQuestions(currentQs, mappedQs);
+            if (dupCount > 0) {
+              const replace = window.confirm(
+                `Section "${newSections[existingSecIndex].title}" already has ${currentQs.length} question(s) (${dupCount} duplicate match).\n\nClick OK to REPLACE existing questions.\nClick Cancel to APPEND only unique questions.`
+              );
+              if (replace) {
+                newSections[existingSecIndex].questions = mappedQs;
+              } else {
+                const uniqueNew = filterDuplicateQuestions(currentQs, mappedQs);
+                newSections[existingSecIndex].questions = [...currentQs, ...uniqueNew];
+              }
+            } else {
+              newSections[existingSecIndex].questions = [...currentQs, ...mappedQs];
+            }
+          }
         } else if (isFreshSection && index === 0) {
           newSections[0].title = parsedSec.sectionTitle;
           newSections[0].questions = mappedQs;
@@ -638,7 +722,7 @@ function CreateQuizMulti() {
     });
 
     setSections(newSections);
-    setActiveSectionId(newSections[newSections.length - 1].id);
+    setActiveSectionId(newSections[0]?.id || newSections[newSections.length - 1].id);
 
     if (sourceInfo) {
       setMessage({
@@ -746,7 +830,7 @@ function CreateQuizMulti() {
     } catch (err) {
       console.error(err);
       setMessage({
-        text: err?.response?.data?.message || "Failed to save quiz.",
+        text: err?.response?.data?.message || (err?.message ? `Failed to save: ${err.message}` : "Failed to save quiz."),
         type: "error"
       });
     }
@@ -785,50 +869,61 @@ function CreateQuizMulti() {
             @media (max-width: 768px) {
               .import-container-mobile-only {
                 display: flex !important;
-                margin-bottom: 20px;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 0 16px 0 !important;
+                padding: 12px !important;
+                box-sizing: border-box !important;
               }
               .import-container-desktop-only {
+                display: none !important;
+              }
+              .docx-drag-text {
                 display: none !important;
               }
             }
           `}</style>
 
           {activeSection && (
-            <div className="form-card compact-card import-container-mobile-only" style={{ gap: "10px", alignItems: "center", margin: "0 auto 20px auto", maxWidth: "1200px", width: "calc(100% - 48px)", boxSizing: "border-box" }}>
-              <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+            <div className="form-card compact-card import-container-mobile-only">
+              <div style={{ width: "100%", minWidth: 0 }}>
                 <DocxParser onQuestionsLoaded={handleDocxImport} />
               </div>
               <button
                 type="button"
                 onClick={() => setAiPanelOpen(!aiPanelOpen)}
                 style={{
+                  width: "100%",
                   padding: "10px 14px",
                   border: "none",
                   borderRadius: "10px",
                   backgroundColor: "var(--primary)",
                   color: "var(--primary-foreground)",
-                  fontSize: "12.5px",
+                  fontSize: "13px",
                   fontWeight: "700",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: "6px",
-                  height: "40px",
+                  justifyContent: "center",
+                  gap: "7px",
+                  height: "42px",
                   boxSizing: "border-box",
                   transition: "all 0.2s ease",
                   boxShadow: "0 4px 12px rgba(110, 63, 243, 0.2)",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0
+                  whiteSpace: "nowrap"
                 }}
               >
                 <Sparkles size={16} />
-                <span>AI Generate</span>
+                <span>{aiPanelOpen ? "Close AI Generator" : "AI Generate Questions"}</span>
               </button>
             </div>
           )}
 
           {activeSection && aiPanelOpen && (
-            <div className="import-container-mobile-only" style={{ margin: "0 auto 20px auto", maxWidth: "1200px", width: "calc(100% - 48px)", boxSizing: "border-box" }}>
+            <div className="import-container-mobile-only" style={{ width: "100%", padding: 0, margin: "0 0 16px 0" }}>
               <AIQuestionGenerator
                 quizMeta={quizMeta}
                 activeSection={activeSection}

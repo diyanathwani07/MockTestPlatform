@@ -124,7 +124,7 @@ function DocxParser({ onQuestionsLoaded }) {
           ) : (
             <>
               <FileText size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
-              <span>Import Qs (.docx) or Drag & Drop</span>
+              <span>Import Qs (.docx)<span className="docx-drag-text"> or Drag & Drop</span></span>
             </>
           )}
         </span>
@@ -172,7 +172,7 @@ function DocxParser({ onQuestionsLoaded }) {
               "D. English Option / हिंदी विकल्प\n" +
               "Ans: A\n" +
               "Exp: Explanation here\n\n" +
-              "💡 Use 'Section: Name' above questions to automatically split sections!"
+              "💡 Multi-Section: Use '1) भाग 1 - भाषा', 'Part 1: English', or 'Section: Maths' to automatically split sections!"
             );
           }}
         >
@@ -229,18 +229,22 @@ function DocxParser({ onQuestionsLoaded }) {
 function parseQuestionsFromText(text) {
   const sections = [];
 
-  // Split by section markers (e.g., "Section: Aptitude", "Section 1", "Subject: Hindi")
-  const subjectWhitelist = '(?:Child Development and Pedagogy|Child Development & Pedagogy|Child Development|Pedagogy|Hindi|English|Sanskrit|Urdu|Language(?: I| II| 1| 2)?|Mathematics and Science|Mathematics & Science|Mathematics|Maths|Math|Environmental Studies|EVS|Science|Social Science|Social Studies|Physics|Chemistry|Biology|History|Geography|Polity|Economics|Reasoning|Aptitude|General Knowledge|GK|General Awareness|General Studies|\\u092C\\u093E\\u0932 \\u0935\\u093F\\u0915\\u093E\\u0938|\\u0939\\u093F\\u0928\\u094D\\u0926\\u0940|\\u0905\\u0902\\u0917\\u094D\\u0930\\u0947\\u091C\\u0940|\\u0938\\u0902\\u0938\\u094D\\u0915\\u0943\\u0924|\\u0917\\u0923\\u093F\\u0924|\\u0935\\u093F\\u091C\\u094D\\u091E\\u093E\\u0928|\\u0938\\u093E\\u092E\\u093E\\u091C\\u093F\\u0915|\\u092A\\u0930\\u094D\\u092F\\u093E\\u0935\\u0930\\u0923)(?:\\s*\\(.*?\\))?';
+  // Split by section markers (e.g., "Section: Aptitude", "Section 1", "Subject: Hindi", "1) भाग 1 - भाषा")
+  const subjectWhitelist = '(?:Child Development and Pedagogy|Child Development & Pedagogy|Child Development|Pedagogy|Hindi|English|Sanskrit|Urdu|Language(?: I| II| 1| 2)?|Mathematics and Science|Mathematics & Science|Mathematics|Maths|Math|Environmental Studies|EVS|Science|Social Science|Social Studies|Physics|Chemistry|Biology|History|Geography|Polity|Economics|Reasoning|Aptitude|General Knowledge|GK|General Awareness|General Studies|\\u092C\\u093E\\u0932 \\u0935\\u093F\\u0915\\u093E\\u0938|\\u0939\\u093F\\u0928\\u094D\\u0926\\u0940|\\u0905\\u0902\\u0917\\u094D\\u0930\\u0947\\u091C\\u0940|\\u0938\\u0902\\u0938\\u094D\\u0915\\u0943\\u0924|\\u0917\\u0923\\u093F\\u0924|\\u0935\\u093F\\u091C\\u094D\\u091E\\u093E\\u0928|\\u0938\\u093E\\u092E\\u093E\\u091C\\u093F\\u0915|\\u092A\\u0930\\u094D\\u092F\\u093E\\u0935\\u0930\\u0923|\\u092D\\u093E\\u0937\\u093E|\\u0938\\u093E\\u092E\\u093E\\u0928\\u094D\\u092F \\u0905\\u0927\\u094D\\u092F\\u092F\\u0928)(?:\\s*\\(.*?\\))?';
+
+  const prefix = '(?:\\b\\d{1,2}[\\)\\.]\\s*|\\([0-9IVXLCDMa-z]\\)\\s*)?';
+  const secWords = '(?:\\b(?:Section|Part)\\b|(?<![\\u0900-\\u097F])(?:भाग|खंड|खण्ड|अनुभाग)(?![\\u0900-\\u097F]))';
+  const secNum = '(?:\\s*[-–—]?\\s*(?:[IVXLCDM]+|\\d+|[A-Z]|[\\u0966-\\u096F]+))';
 
   const sectionRegexPattern = [
-    // Branch 1: Explicit 'Section' or 'Part' with colon or spaced dash (supports custom names)
-    '(?:\\b(?:Section|Part)(?:\\s+(?:[IVXLCDM]+|\\d+|[A-Z]))?\\s*(?::|\\s+[-–—]\\s+)\\s*[^\\n]{1,60}\\s*(?:\\n|$))',
-    // Branch 2: 'Section 1' or 'Part A' on its own line
-    '(?:\\b(?:Section|Part)\\s+(?:[IVXLCDM]+|\\d+|[A-Z])\\s*(?:\\n|$))',
-    // Branch 3: Explicit 'Subject' with colon or spaced dash followed by whitelisted subject
-    '(?:\\bSubject\\s*(?::|\\s+[-–—]\\s+)\\s*' + subjectWhitelist + '\\s*(?:\\n|$))',
-    // Branch 4: Numbered or labeled whitelisted subjects (e.g. '1. Hindi', 'Part I: Child Development', 'Section 1 Hindi')
-    '(?:(?:(?:\\b(?:Section|Part)\\s+(?:[IVXLCDM]+|\\d+|[A-Z])\\s*)|(?:\\d+|[IVXLCDM]+|[A-Z])[\\)\\.]\\s*)' + subjectWhitelist + '\\s*(?:\\n|$))'
+    // Branch 1: Explicit Section/Part/भाग/खंड with number and optional separator (: or -) and custom title
+    '(?:' + prefix + secWords + secNum + '?\\s*(?::|\\s+[-–—]\\s+|[-–—])\\s*[^\\n]{1,60}\\s*(?:\\n|$))',
+    // Branch 2: Section/Part/भाग alone with number on its own line
+    '(?:' + prefix + secWords + secNum + '\\s*(?:\\n|$))',
+    // Branch 3: Explicit Subject or विषय with colon or dash followed by whitelisted subject
+    '(?:(?:\\bSubject\\b|(?<![\\u0900-\\u097F])विषय(?![\\u0900-\\u097F]))\\s*(?::|\\s+[-–—]\\s+|[-–—])\\s*' + subjectWhitelist + '\\s*(?:\\n|$))',
+    // Branch 4: Numbered or labeled whitelisted subjects (e.g. '1. Hindi', '1) Child Development and Pedagogy', 'Part I: Child Development')
+    '(?:(?:(?:\\b(?:Section|Part)\\b|(?<![\\u0900-\\u097F])(?:भाग|खंड|खण्ड)(?![\\u0900-\\u097F]))\\s*(?:[IVXLCDM]+|\\d+|[A-Z]|[\\u0966-\\u096F]+)?\\s*|(?:\\d+|[IVXLCDM]+|[A-Z])[\\)\\.]\\s*)' + subjectWhitelist + '\\s*(?:\\n|$))'
   ].join('|');
 
   const sectionChunks = text.split(new RegExp('\\n(?=' + sectionRegexPattern + ')', 'i')).filter(Boolean);
@@ -249,29 +253,29 @@ function parseQuestionsFromText(text) {
     let sectionTitle = "Default";
     let chunkText = chunk.trim();
 
-    // 1. Explicit Section or Part with optional number/letter and colon/spaced-dash
-    let sMatch = chunkText.match(/^(?:Section|Part)(?:\s+(?:[IVXLCDM]+|\d+|[A-Z]))?\s*(?::|\s+[-–—]\s+)\s*([^\n]+)/i);
+    // 1. Explicit Section/Part/भाग/खंड with number and separator (: or -)
+    let sMatch = chunkText.match(/^(?:(?:\d+[\)\.]|\([0-9IVXLCDMa-z]\))\s*)?(?:(?:Section|Part)\b|(?:भाग|खंड|खण्ड|अनुभाग))(?::|\s+[-–—]\s+|[-–—]|\s*[-–—]?\s*(?:[IVXLCDM]+|\d+|[A-Z]|[\u0966-\u096F]+)\s*(?::|\s+[-–—]\s+|[-–—]))\s*([^\n]+)/i);
     if (sMatch) {
-      sectionTitle = sMatch[1].trim();
-      chunkText = chunkText.replace(/^(?:Section|Part)(?:\s+(?:[IVXLCDM]+|\d+|[A-Z]))?\s*(?::|\s+[-–—]\s+)\s*[^\n]+(?:\n|$)/i, "").trim();
+      sectionTitle = sMatch[1].trim().replace(/^[\:\-–—\s]+|[\:\-–—\s]+$/g, "");
+      chunkText = chunkText.replace(/^(?:(?:\d+[\)\.]|\([0-9IVXLCDMa-z]\))\s*)?(?:(?:Section|Part)\b|(?:भाग|खंड|खण्ड|अनुभाग))(?::|\s+[-–—]\s+|[-–—]|\s*[-–—]?\s*(?:[IVXLCDM]+|\d+|[A-Z]|[\u0966-\u096F]+)\s*(?::|\s+[-–—]\s+|[-–—]))\s*[^\n]+(?:\n|$)/i, "").trim();
     } else {
-      // 2. 'Section 1' or 'Part A' alone on a line
-      sMatch = chunkText.match(/^(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])(?:\s*[\:\.\)]\s*)?$/im);
+      // 2. Numbered / Lettered subject header, e.g. "1) Child Development and Pedagogy"
+      sMatch = chunkText.match(/^(?:(?:\d+|[IVXLCDM]+|[A-Z])[\)\.]\s*)([^\n]+)/i);
       if (sMatch) {
-        sectionTitle = sMatch[0].trim();
-        chunkText = chunkText.replace(/^(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])(?:\s*[\:\.\)]\s*)?(?:\n|$)/im, "").trim();
+        sectionTitle = sMatch[1].trim().replace(/^[\:\-–—\s]+|[\:\-–—\s]+$/g, "");
+        chunkText = chunkText.replace(/^(?:(?:\d+|[IVXLCDM]+|[A-Z])[\)\.]\s*)[^\n]+(?:\n|$)/i, "").trim();
       } else {
-        // 3. Explicit Subject with colon/spaced-dash
-        sMatch = chunkText.match(/^Subject\s*(?::|\s+[-–—]\s+)\s*([^\n]+)/i);
+        // 3. Section/Part/भाग alone with number, e.g. "Section 1", "भाग 1"
+        sMatch = chunkText.match(/^(?:(?:\d+[\)\.]|\([0-9IVXLCDMa-z]\))\s*)?(?:(?:Section|Part)\b|(?:भाग|खंड|खण्ड|अनुभाग))\s*[-–—]?\s*(?:[IVXLCDM]+|\d+|[A-Z]|[\u0966-\u096F]+)(?:\s*[\:\.\)]\s*)?$/im);
         if (sMatch) {
-          sectionTitle = sMatch[1].trim();
-          chunkText = chunkText.replace(/^Subject\s*(?::|\s+[-–—]\s+)\s*[^\n]+(?:\n|$)/i, "").trim();
+          sectionTitle = sMatch[0].trim().replace(/^[\:\-–—\s]+|[\:\-–—\s]+$/g, "");
+          chunkText = chunkText.replace(/^(?:(?:\d+[\)\.]|\([0-9IVXLCDMa-z]\))\s*)?(?:(?:Section|Part)\b|(?:भाग|खंड|खण्ड|अनुभाग))\s*[-–—]?\s*(?:[IVXLCDM]+|\d+|[A-Z]|[\u0966-\u096F]+)(?:\s*[\:\.\)]\s*)?(?:\n|$)/im, "").trim();
         } else {
-          // 4. Numbered / Lettered / Part followed by subject name
-          sMatch = chunkText.match(/^(?:(?:(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])\s*)|(?:(?:\d+|[IVXLCDM]+|[A-Z])[\)\.]\s*))([^\n]+)/i);
+          // 4. Explicit Subject / विषय with colon or dash
+          sMatch = chunkText.match(/^(?:Subject\b|विषय)\s*(?::|\s+[-–—]\s+|[-–—])\s*([^\n]+)/i);
           if (sMatch) {
-            sectionTitle = sMatch[1].trim();
-            chunkText = chunkText.replace(/^(?:(?:(?:Section|Part)\s+(?:[IVXLCDM]+|\d+|[A-Z])\s*)|(?:(?:\d+|[IVXLCDM]+|[A-Z])[\)\.]\s*))[^\n]+(?:\n|$)/i, "").trim();
+            sectionTitle = sMatch[1].trim().replace(/^[\:\-–—\s]+|[\:\-–—\s]+$/g, "");
+            chunkText = chunkText.replace(/^(?:Subject\b|विषय)\s*(?::|\s+[-–—]\s+|[-–—])\s*[^\n]+(?:\n|$)/i, "").trim();
           }
         }
       }

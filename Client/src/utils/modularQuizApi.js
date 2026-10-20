@@ -48,13 +48,21 @@ const bulkCreateQuestions = async (questions, subject) => {
   const valid = filterValidQuestions(questions);
   if (valid.length === 0) return [];
 
-  const res = await axios.post(
-    `${API()}/api/questions/bulk`,
-    { questions: valid.map((q) => sanitizeQuestion(q, subject)) },
-    { headers: authHeaders() }
-  );
-  const questionsData = Array.isArray(res.data) ? res.data : (res.data.questions || []);
-  return questionsData.map((q) => q._id);
+  const CHUNK_SIZE = 60;
+  const allIds = [];
+
+  for (let i = 0; i < valid.length; i += CHUNK_SIZE) {
+    const chunk = valid.slice(i, i + CHUNK_SIZE);
+    const res = await axios.post(
+      `${API()}/api/questions/bulk`,
+      { questions: chunk.map((q) => sanitizeQuestion(q, subject)) },
+      { headers: authHeaders(), timeout: 60000 }
+    );
+    const questionsData = Array.isArray(res.data) ? res.data : (res.data.questions || []);
+    allIds.push(...questionsData.map((q) => q._id));
+  }
+
+  return allIds;
 };
 
 const createSectionDoc = async (section, questionIds, subsections) => {

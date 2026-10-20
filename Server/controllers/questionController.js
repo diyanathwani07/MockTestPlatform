@@ -54,11 +54,11 @@ const bulkCreateQuestions = async (req, res) => {
       return res.status(400).json({ message: "An array of questions is required." });
     }
 
-    const resultList = [];
-    let createdCount = 0;
-    let updatedCount = 0;
+    const resultList = new Array(questions.length);
+    const toInsertWithIndex = [];
+    const toUpdateWithIndex = [];
 
-    for (const q of questions) {
+    questions.forEach((q, idx) => {
       const fields = {
         questionEnglish: q.questionEnglish,
         questionHindi: q.questionHindi || "",
@@ -74,48 +74,51 @@ const bulkCreateQuestions = async (req, res) => {
         createdBy: req.user?._id,
       };
 
-      if (q._id) {
-        const existing = await Question.findById(q._id);
-        if (existing) {
-          const isOptionsChanged = JSON.stringify(existing.options) !== JSON.stringify(fields.options);
-          const isExplanationsChanged = JSON.stringify(existing.explanations) !== JSON.stringify(fields.explanations);
-          const isTagsChanged = JSON.stringify(existing.tags) !== JSON.stringify(fields.tags);
-          const hasChanged = isOptionsChanged || isExplanationsChanged || isTagsChanged ||
-            existing.questionEnglish !== fields.questionEnglish ||
-            existing.questionHindi !== fields.questionHindi ||
-            existing.correctAnswer !== fields.correctAnswer ||
-            existing.explanation !== fields.explanation ||
-            existing.difficulty !== fields.difficulty ||
-            existing.subject !== fields.subject ||
-            String(existing.questionBankId) !== String(fields.questionBankId);
-
-          if (hasChanged) {
-            const updated = await Question.findByIdAndUpdate(q._id, { $set: fields }, { new: true });
-            resultList.push(updated);
-            updatedCount++;
-          } else {
-            resultList.push(existing);
-          }
-        } else {
-          const created = await Question.create(fields);
-          resultList.push(created);
-          createdCount++;
-        }
+      if (q._id && String(q._id).length === 24) {
+        toUpdateWithIndex.push({ idx, id: q._id, fields });
       } else {
-        const created = await Question.create(fields);
-        resultList.push(created);
-        createdCount++;
+        toInsertWithIndex.push({ idx, fields });
       }
+    });
+
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    // 1. Bulk insert new questions in ONE single database operation
+    if (toInsertWithIndex.length > 0) {
+      const docsToInsert = toInsertWithIndex.map(item => item.fields);
+      const inserted = await Question.insertMany(docsToInsert, { ordered: true });
+      toInsertWithIndex.forEach((item, i) => {
+        resultList[item.idx] = inserted[i];
+      });
+      createdCount = inserted.length;
     }
 
+    // 2. Bulk update existing questions in ONE single database operation
+    if (toUpdateWithIndex.length > 0) {
+      const bulkOps = toUpdateWithIndex.map(item => ({
+        updateOne: {
+          filter: { _id: item.id },
+          update: { $set: item.fields },
+          upsert: false
+        }
+      }));
+      await Question.bulkWrite(bulkOps, { ordered: false });
+      toUpdateWithIndex.forEach(item => {
+        resultList[item.idx] = { _id: item.id, ...item.fields };
+      });
+      updatedCount = toUpdateWithIndex.length;
+    }
+
+    // Non-blocking audit logging
     if (createdCount > 0) {
-      await logAction("BULK_CREATE_QUESTIONS", req.user?.fullName || "Admin", `Imported ${createdCount} questions`, "Question", req.ip);
+      logAction("BULK_CREATE_QUESTIONS", req.user?.fullName || "Admin", `Imported ${createdCount} questions`, "Question", req.ip).catch(() => {});
     }
     if (updatedCount > 0) {
-      await logAction("BULK_UPDATE_QUESTIONS", req.user?.fullName || "Admin", `Updated ${updatedCount} questions`, "Question", req.ip);
+      logAction("BULK_UPDATE_QUESTIONS", req.user?.fullName || "Admin", `Updated ${updatedCount} questions`, "Question", req.ip).catch(() => {});
     }
 
-    res.status(200).json(resultList);
+    res.status(200).json(resultList.filter(Boolean));
   } catch (error) {
     console.error("Bulk Create Questions Error:", error);
     res.status(500).json({ message: "Failed to bulk create questions.", error: error.message });

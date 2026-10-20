@@ -164,6 +164,7 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
             <button
               onClick={fetchAttendance}
               title="Refresh attendance data"
+              className="live-exams-refresh-btn"
               style={{
                 backgroundColor: "var(--bg-page, #12121a)",
                 border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
