@@ -250,7 +250,12 @@ function LiveExamLobby() {
   }
 
   const isLiveNow = countdownType === "end";
-  const isCompleted = exam.status === "completed" || (countdownType === "none" && timeRemaining.totalMs === 0 && new Date() > new Date(exam.scheduledEndTime));
+  const nowMs = Date.now() + serverOffsetMs;
+  const isPastEndTime = exam.scheduledEndTime && nowMs >= new Date(exam.scheduledEndTime).getTime();
+  const isCompleted =
+    exam.status === "completed" ||
+    isPastEndTime ||
+    (countdownType === "none" && timeRemaining.totalMs === 0 && new Date() > new Date(exam.scheduledEndTime));
   const attempt = studentState?.attempt;
   const isAlreadySubmitted = attempt && ["submitted", "auto_submitted"].includes(attempt.status);
   const isInProgress = attempt && attempt.status === "in_progress";
@@ -401,8 +406,8 @@ function LiveExamLobby() {
           </div>
         )}
 
-        {/* Existing Attempt Warning / Status */}
-        {isAlreadySubmitted && (
+        {/* Existing Attempt Warning / Status (when exam is still ongoing) */}
+        {isAlreadySubmitted && !isCompleted && (
           <div className="live-card" style={{ borderColor: "#10b981", textAlign: "center" }}>
             <CheckCircle2 size={44} color="#10b981" style={{ margin: "0 auto 12px" }} />
             <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "6px" }}>Examination Completed</h2>
@@ -417,8 +422,54 @@ function LiveExamLobby() {
           </div>
         )}
 
-        {/* Webcam Readiness Check Section */}
-        {exam.webcamRule !== "disabled" && !isAlreadySubmitted && (
+        {/* Concluded / Ended Status Card (clean message when exam has ended) */}
+        {isCompleted && (
+          <div className="live-card" style={{ textAlign: "center", padding: "36px 20px" }}>
+            <div
+              style={{
+                width: "56px",
+                height: "56px",
+                borderRadius: "50%",
+                background: "rgba(16, 185, 129, 0.12)",
+                color: "#10b981",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+              }}
+            >
+              <CheckCircle2 size={32} />
+            </div>
+            <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
+              The Examination Has Ended
+            </h2>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", maxWidth: "420px", margin: "0 auto 24px", lineHeight: "1.6" }}>
+              The scheduled time window for this live examination has concluded. Submissions are now closed.
+            </p>
+
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+              {attempt?.resultId && (
+                <Link
+                  to={`/result/${attempt.resultId}`}
+                  className="live-btn-primary"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", textDecoration: "none" }}
+                >
+                  View Result & Analysis <ArrowRight size={16} />
+                </Link>
+              )}
+              <Link
+                to="/dashboard"
+                className={attempt?.resultId ? "live-btn-secondary" : "live-btn-primary"}
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px", textDecoration: "none" }}
+              >
+                Back to Dashboard
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Webcam Readiness Check Section (only shown when exam is active/upcoming) */}
+        {exam.webcamRule !== "disabled" && !isAlreadySubmitted && !isCompleted && (
           <div className="live-card live-webcam-card">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -471,23 +522,25 @@ function LiveExamLobby() {
           </div>
         )}
 
-        {/* Instructions Card */}
-        <div className="live-card">
-          <h3 style={{ fontSize: "16px", fontWeight: "700", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-            <HelpCircle size={18} color="var(--primary)" /> Important Examination Instructions
-          </h3>
+        {/* Instructions Card (only shown when exam is active/upcoming) */}
+        {!isCompleted && !isAlreadySubmitted && (
+          <div className="live-card">
+            <h3 style={{ fontSize: "16px", fontWeight: "700", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <HelpCircle size={18} color="var(--primary)" /> Important Examination Instructions
+            </h3>
 
-          <ul className="live-instructions-list" style={{ margin: 0, paddingLeft: "20px", color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.7" }}>
-            <li><strong>Server-Authoritative Clock:</strong> The countdown timer is synced with the official examination server. When time expires, your answers will automatically submit.</li>
-            <li><strong>Network & Disconnection Safety:</strong> Your selected answers are periodically auto-saved. If you experience a brief disconnection or accidental page refresh, simply return to this link to resume.</li>
-            <li><strong>Single Attempt Rule:</strong> You are permitted exactly one attempt. Once submitted, answers cannot be edited.</li>
-            <li><strong>Late Entry:</strong> {exam.allowLateEntry ? `Entry permitted up to ${exam.entryWindowMinutes || 15} minutes after start.` : "Late entry is strictly prohibited."}</li>
-            {exam.instructions && <li style={{ whiteSpace: "pre-line", marginTop: "8px" }}>{exam.instructions}</li>}
-          </ul>
-        </div>
+            <ul className="live-instructions-list" style={{ margin: 0, paddingLeft: "20px", color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.7" }}>
+              <li><strong>Server-Authoritative Clock:</strong> The countdown timer is synced with the official examination server. When time expires, your answers will automatically submit.</li>
+              <li><strong>Network & Disconnection Safety:</strong> Your selected answers are periodically auto-saved. If you experience a brief disconnection or accidental page refresh, simply return to this link to resume.</li>
+              <li><strong>Single Attempt Rule:</strong> You are permitted exactly one attempt. Once submitted, answers cannot be edited.</li>
+              <li><strong>Late Entry:</strong> {exam.allowLateEntry ? `Entry permitted up to ${exam.entryWindowMinutes || 15} minutes after start.` : "Late entry is strictly prohibited."}</li>
+              {exam.instructions && <li style={{ whiteSpace: "pre-line", marginTop: "8px" }}>{exam.instructions}</li>}
+            </ul>
+          </div>
+        )}
 
-        {/* Action Button Section */}
-        {!isAlreadySubmitted && (
+        {/* Action Button Section (only shown when exam is active/upcoming) */}
+        {!isAlreadySubmitted && !isCompleted && (
           <div className="live-action-section" style={{ textAlign: "center", marginTop: "32px" }}>
             {!isAuthenticated ? (
               <Link
@@ -506,10 +559,6 @@ function LiveExamLobby() {
                 style={{ width: "100%", maxWidth: "380px", background: "#10b981", boxShadow: "0 4px 14px rgba(16, 185, 129, 0.4)" }}
               >
                 {starting ? "Resuming..." : "Resume In-Progress Exam"} <ArrowRight size={18} />
-              </button>
-            ) : isCompleted ? (
-              <button disabled className="live-btn-primary" style={{ width: "100%", maxWidth: "380px" }}>
-                Examination Has Concluded
               </button>
             ) : (
               <button
