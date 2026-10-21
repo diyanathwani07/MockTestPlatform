@@ -5,6 +5,7 @@ import AdminSidebar from './AdminSidebar';
 import AdminNavbar from './AdminNavbar';
 import AvatarPickerModal from '../../components/AvatarPickerModal';
 import MobileProfileFlow from '../../components/ProfilePages/MobileProfileFlow';
+import '../../css/StudentProfile.css';
 
 function AdminProfile() {
   const navigate = useNavigate();
@@ -164,9 +165,26 @@ function AdminProfile() {
     <div className="admin-layout" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <AdminSidebar />
       <div className="admin-main" style={{ flex: 1, backgroundColor: 'var(--bg-main)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <AdminNavbar title={navTitle} />
+        <AdminNavbar 
+          title={navTitle} 
+          onNavigateBack={activeScreen !== "overview" ? () => setActiveScreen("overview") : undefined} 
+        />
         
-        <div className="sd-profile-container" style={{ padding: '0', flex: 1, overflow: 'auto' }}>
+        <div style={{
+          flex: 1,
+          maxWidth: isMobile ? '100%' : (activeScreen === 'overview' ? '1200px' : activeScreen === 'about' ? '100%' : '560px'),
+          margin: '0 auto',
+          width: '100%',
+          position: 'relative',
+          paddingTop: isMobile ? '0' : '24px',
+          paddingLeft: isMobile ? '0' : '32px',
+          paddingRight: isMobile ? '0' : '32px',
+          paddingBottom: '40px',
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: 'auto',
+          boxSizing: 'border-box'
+        }}>
           <MobileProfileFlow 
             user={user}
             adminId={adminId}

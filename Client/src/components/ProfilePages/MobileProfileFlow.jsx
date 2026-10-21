@@ -1,3 +1,4 @@
+import "../../css/StudentProfile.css";
 import { setupWebPushNotifications } from '../../utils/pushNotifications';
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -81,7 +82,7 @@ export default function MobileProfileFlow({
   const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   useEffect(() => {
-    if (activeScreen === "transactions") {
+    if (activeScreen === "transactions" && !isAdmin) {
       const fetchTransactions = async () => {
         setLoadingTransactions(true);
         try {
@@ -260,12 +261,14 @@ export default function MobileProfileFlow({
                   subtitle="View and manage your account information" 
                   onClick={() => setActiveScreen("account")} 
                 />
-                <MenuItem 
-                  icon={<Clock size={18} />} 
-                  title="Subscriptions & Order History" 
-                  subtitle="View your active plan, payments & order receipts" 
-                  onClick={() => setActiveScreen("transactions")} 
-                />
+                {!isAdmin && (
+                  <MenuItem 
+                    icon={<Clock size={18} />} 
+                    title="Subscriptions & Order History" 
+                    subtitle="View your active plan, payments & order receipts" 
+                    onClick={() => setActiveScreen("transactions")} 
+                  />
+                )}
                 <MenuItem 
                   icon={<Lock size={18} />} 
                   title="Change Password" 
