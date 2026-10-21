@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import StudentBottomNav from "./StudentBottomNav";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard, Palette, RefreshCw, PanelLeft } from "lucide-react";
+import { Home, FileText, LineChart, Trophy, LifeBuoy, Menu, X, BookOpen, PlusCircle, LogOut, CreditCard, Palette, RefreshCw, PanelLeft, Radio } from "lucide-react";
 import Logo from "./Logo";
 import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
@@ -231,6 +231,31 @@ function StudentSidebar() {
               <FileText size={20} />
               <span>My Exams</span>
             </NavLink>
+
+          <NavLink to="/dashboard/live-exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <Radio size={20} color="#ef4444" />
+            <span>Live Exams</span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: "9px",
+                fontWeight: "800",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+                padding: "2px 6px",
+                borderRadius: "8px",
+                backgroundColor: "rgba(239, 68, 68, 0.15)",
+                color: "#ef4444",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "3px",
+              }}
+            >
+              <span style={{ width: "4px", height: "4px", borderRadius: "50%", backgroundColor: "#ef4444" }} />
+              LIVE
+            </span>
+          </NavLink>
 
           {hasPurchasedPractice && (
             <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>

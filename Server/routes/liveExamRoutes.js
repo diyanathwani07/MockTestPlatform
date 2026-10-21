@@ -19,12 +19,14 @@ const {
   saveLiveExamProgress,
   submitLiveExamAttempt,
   submitLiveExamFeedback,
+  getStudentLiveExamsFeed,
 } = require("../controllers/liveExamController");
 
 // Public route for shared link resolution (zero answer leakage)
 router.get("/public/:slugOrToken", getPublicLiveExamInfo);
 
 // Protected Student Live Exam Routes
+router.get("/student-feed", protect, getStudentLiveExamsFeed);
 router.get("/student-state/:slugOrToken", protect, getStudentLiveExamState);
 router.post("/:id/join-lobby", protect, joinLiveExamLobby);
 router.post("/:id/start-attempt", protect, startLiveExamAttempt);

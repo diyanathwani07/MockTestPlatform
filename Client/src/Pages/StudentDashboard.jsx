@@ -17,7 +17,7 @@ import { useTheme } from "../context/ThemeContext";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { useExam } from "../context/ExamContext";
-import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info, Layers } from "lucide-react";
+import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info, Layers, Radio, Zap, ArrowRight } from "lucide-react";
 import DashboardBannerCarousel from "../components/DashboardBannerCarousel";
 import StreakCard from "../components/StreakCard";
 import "../css/StudentDashboard.css";
@@ -124,6 +124,7 @@ function StudentDashboard() {
   const [seriesList, setSeriesList] = useState([]);
   const [fetchError, setFetchError] = useState(false);
   const [showAverageInfo, setShowAverageInfo] = useState(false);
+  const [featuredLiveExam, setFeaturedLiveExam] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -151,6 +152,19 @@ function StudentDashboard() {
           setSeriesList(allSeries.filter(s => s._id === selectedExam._id));
         } else {
           setSeriesList(allSeries);
+        }
+
+        // Fetch active/upcoming live exam for alert banner
+        try {
+          const liveRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/live-exams/student-feed`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+          });
+          const feed = liveRes.data?.exams || [];
+          const liveNow = feed.find(e => e.status === "live" || e.status === "lobby");
+          const upcoming = feed.find(e => e.status === "scheduled");
+          setFeaturedLiveExam(liveNow || upcoming || null);
+        } catch (e) {
+          // Non-blocking for dashboard
         }
       } catch (error) {
         console.error("Error fetching dashboard data", error);
@@ -289,6 +303,168 @@ function StudentDashboard() {
         {fetchError && (
           <div style={{ backgroundColor: "#FEE2E2", color: "#B91C1C", border: "1px solid #FCA5A5", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
             ⚠️ Failed to load your attempt history. Please check your network connection or log in again.
+          </div>
+        )}
+
+        {/* Live Examination Banner (Dynamic Alert) */}
+        {featuredLiveExam && (
+          <div
+            onClick={() => {
+              if (featuredLiveExam.myAttempt?.status === "in_progress") {
+                navigate(`/live-exam/play/${featuredLiveExam.myAttempt.attemptId}`);
+              } else {
+                navigate(`/live-exam/${featuredLiveExam.shareSlug || featuredLiveExam.shareToken}`);
+              }
+            }}
+            style={{
+              padding: "16px 20px",
+              borderRadius: "16px",
+              marginBottom: "22px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "14px",
+              cursor: "pointer",
+              background:
+                featuredLiveExam.status === "live"
+                  ? "linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(124, 58, 237, 0.15) 100%)"
+                  : featuredLiveExam.status === "lobby"
+                  ? "linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(124, 58, 237, 0.15) 100%)"
+                  : "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(124, 58, 237, 0.12) 100%)",
+              border:
+                featuredLiveExam.status === "live"
+                  ? "1.5px solid rgba(239, 68, 68, 0.45)"
+                  : featuredLiveExam.status === "lobby"
+                  ? "1.5px solid rgba(245, 158, 11, 0.45)"
+                  : "1.5px solid rgba(59, 130, 246, 0.35)",
+              boxShadow:
+                featuredLiveExam.status === "live"
+                  ? "0 4px 22px rgba(239, 68, 68, 0.18)"
+                  : "0 4px 18px rgba(0, 0, 0, 0.05)",
+              transition: "transform 0.15s ease",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+              <div
+                style={{
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "12px",
+                  backgroundColor:
+                    featuredLiveExam.status === "live"
+                      ? "rgba(239, 68, 68, 0.2)"
+                      : featuredLiveExam.status === "lobby"
+                      ? "rgba(245, 158, 11, 0.2)"
+                      : "rgba(59, 130, 246, 0.2)",
+                  color:
+                    featuredLiveExam.status === "live"
+                      ? "#ef4444"
+                      : featuredLiveExam.status === "lobby"
+                      ? "#d97706"
+                      : "#3b82f6",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {featuredLiveExam.status === "live" ? (
+                  <Radio size={22} />
+                ) : featuredLiveExam.status === "lobby" ? (
+                  <Zap size={22} />
+                ) : (
+                  <Calendar size={22} />
+                )}
+              </div>
+
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
+                  <span
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: "800",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                      backgroundColor:
+                        featuredLiveExam.status === "live"
+                          ? "rgba(239, 68, 68, 0.2)"
+                          : featuredLiveExam.status === "lobby"
+                          ? "rgba(245, 158, 11, 0.2)"
+                          : "rgba(59, 130, 246, 0.2)",
+                      color:
+                        featuredLiveExam.status === "live"
+                          ? "#ef4444"
+                          : featuredLiveExam.status === "lobby"
+                          ? "#d97706"
+                          : "#3b82f6",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                  >
+                    {featuredLiveExam.status === "live" ? (
+                      <>
+                        <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#ef4444" }} />
+                        LIVE EXAMINATION IN PROGRESS
+                      </>
+                    ) : featuredLiveExam.status === "lobby" ? (
+                      "EXAMINATION LOBBY OPEN"
+                    ) : (
+                      "UPCOMING ALL-INDIA LIVE EXAM"
+                    )}
+                  </span>
+
+                  <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                    {featuredLiveExam.examName} · {featuredLiveExam.duration} mins
+                  </span>
+                </div>
+
+                <div style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                  {featuredLiveExam.title}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <button
+                type="button"
+                className="live-btn-primary"
+                style={{
+                  fontSize: "12.5px",
+                  padding: "8px 18px",
+                  background:
+                    featuredLiveExam.status === "live"
+                      ? "#ef4444"
+                      : featuredLiveExam.status === "lobby"
+                      ? "#d97706"
+                      : "var(--primary)",
+                  borderColor:
+                    featuredLiveExam.status === "live"
+                      ? "#ef4444"
+                      : featuredLiveExam.status === "lobby"
+                      ? "#d97706"
+                      : "var(--primary)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                <span>
+                  {featuredLiveExam.myAttempt?.status === "in_progress"
+                    ? "Resume Exam"
+                    : featuredLiveExam.status === "live"
+                    ? "Join Exam Now"
+                    : featuredLiveExam.status === "lobby"
+                    ? "Enter Lobby"
+                    : "View Schedule"}
+                </span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
           </div>
         )}
         

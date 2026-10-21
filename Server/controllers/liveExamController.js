@@ -1460,6 +1460,152 @@ const submitLiveExamFeedback = async (req, res) => {
   }
 };
 
+/**
+ * GET Live Examinations Feed for Student Portal
+ * GET /api/live-exams/student-feed
+ */
+const getStudentLiveExamsFeed = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+    const now = new Date();
+
+    // 1. Keep status updated in background
+    await Promise.all([
+      LiveExamination.updateMany(
+        {
+          isDeleted: false,
+          status: { $in: ["scheduled", "lobby", "live"] },
+          scheduledEndTime: { $lte: now },
+        },
+        { $set: { status: "completed" } }
+      ),
+      LiveExamination.updateMany(
+        {
+          isDeleted: false,
+          status: "scheduled",
+          scheduledStartTime: { $lte: now },
+          scheduledEndTime: { $gt: now },
+        },
+        { $set: { status: "live" } }
+      ),
+    ]);
+
+    // 2. Fetch all non-deleted live exams
+    const exams = await LiveExamination.find({
+      isDeleted: false,
+      status: { $ne: "cancelled" },
+    })
+      .populate("quizId", "title subject examName duration marksPerQuestion negativeMarking passPercentage questions sections")
+      .sort({ scheduledStartTime: -1 })
+      .lean();
+
+    // 3. Fetch student's attempts for all these exams in one query
+    const examIds = exams.map((e) => e._id);
+    const studentAttempts = await LiveExamAttempt.find({
+      liveExamId: { $in: examIds },
+      studentId: studentId,
+    }).lean();
+
+    const attemptsMap = new Map();
+    studentAttempts.forEach((att) => {
+      attemptsMap.set(att.liveExamId.toString(), att);
+    });
+
+    let liveCount = 0;
+    let upcomingCount = 0;
+    let completedCount = 0;
+    let myAttemptsCount = 0;
+
+    const formattedExams = exams.map((exam) => {
+      const startTime = new Date(exam.scheduledStartTime);
+      const endTime = new Date(exam.scheduledEndTime);
+      const lobbyStartTime = new Date(startTime.getTime() - (exam.entryWindowMinutes || 15) * 60 * 1000);
+
+      let computedStatus = "scheduled";
+      if (exam.status === "completed" || now >= endTime) {
+        computedStatus = "completed";
+      } else if (now >= startTime && now < endTime) {
+        computedStatus = "live";
+      } else if (now >= lobbyStartTime && now < startTime) {
+        computedStatus = "lobby";
+      } else {
+        computedStatus = "scheduled";
+      }
+
+      if (computedStatus === "live" || computedStatus === "lobby") {
+        liveCount++;
+      } else if (computedStatus === "scheduled") {
+        upcomingCount++;
+      } else if (computedStatus === "completed") {
+        completedCount++;
+      }
+
+      // Check student attempt
+      const attempt = attemptsMap.get(exam._id.toString());
+      if (attempt) {
+        myAttemptsCount++;
+      }
+
+      // Calculate question count
+      let totalQuestions = 0;
+      if (exam.quizId) {
+        if (Array.isArray(exam.quizId.questions) && exam.quizId.questions.length > 0) {
+          totalQuestions = exam.quizId.questions.length;
+        } else if (Array.isArray(exam.quizId.sections)) {
+          exam.quizId.sections.forEach((s) => {
+            if (Array.isArray(s.questions)) totalQuestions += s.questions.length;
+          });
+        }
+      }
+
+      return {
+        _id: exam._id,
+        title: exam.title,
+        instructions: exam.instructions,
+        scheduledStartTime: exam.scheduledStartTime,
+        scheduledEndTime: exam.scheduledEndTime,
+        duration: exam.duration,
+        entryWindowMinutes: exam.entryWindowMinutes || 15,
+        allowLateEntry: exam.allowLateEntry !== undefined ? exam.allowLateEntry : true,
+        webcamRule: exam.webcamRule || "disabled",
+        shareSlug: exam.shareSlug,
+        shareToken: exam.shareToken,
+        resultReleaseMode: exam.resultReleaseMode,
+        status: computedStatus,
+        examName: exam.quizId?.examName || "Competitive Exam",
+        subject: exam.quizId?.subject || "General Studies",
+        marksPerQuestion: exam.quizId?.marksPerQuestion || 1,
+        negativeMarking: exam.quizId?.negativeMarking || 0,
+        totalQuestions: totalQuestions,
+        myAttempt: attempt
+          ? {
+              attemptId: attempt._id,
+              status: attempt.status,
+              startedAt: attempt.startedAt,
+              submittedAt: attempt.submittedAt,
+              resultId: attempt.resultId,
+            }
+          : null,
+      };
+    });
+
+    res.json({
+      exams: formattedExams,
+      counts: {
+        all: formattedExams.length,
+        live: liveCount,
+        upcoming: upcomingCount,
+        completed: completedCount,
+        myAttempts: myAttemptsCount,
+      },
+      serverTime: now.toISOString(),
+    });
+  } catch (error) {
+    console.error("Student Live Exams Feed Error:", error);
+    res.status(500).json({ message: "Failed to fetch student live exams: " + error.message });
+  }
+};
+
 module.exports = {
   createLiveExam,
   getLiveExams,
@@ -1471,6 +1617,7 @@ module.exports = {
   exportLiveExamAttendance,
   getPublicLiveExamInfo,
   getStudentLiveExamState,
+  getStudentLiveExamsFeed,
   joinLiveExamLobby,
   startLiveExamAttempt,
   getLiveExamPlayData,

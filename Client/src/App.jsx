@@ -34,6 +34,7 @@ const AdminBanners = lazy(() => import("./admin/AdminBanners"));
 const LiveExamsList = lazy(() => import("./admin/LiveExams/LiveExamsList"));
 const LiveExamLobby = lazy(() => import("./Pages/LiveExam/LiveExamLobby"));
 const LiveExamPlayer = lazy(() => import("./Pages/LiveExam/LiveExamPlayer"));
+const StudentLiveExams = lazy(() => import("./Pages/LiveExam/StudentLiveExams"));
 
 const Login = lazy(() => import("./Pages/Login"));
 const StudentOnboarding = lazy(() => import("./Pages/StudentOnboarding"));
@@ -212,6 +213,24 @@ function App() {
           element={
             <ProtectedRoute>
               <FlashcardStudyView />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/live-exams"
+          element={
+            <ProtectedRoute>
+              <StudentLiveExams />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/live-exams"
+          element={
+            <ProtectedRoute>
+              <StudentLiveExams />
             </ProtectedRoute>
           }
         />
