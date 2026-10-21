@@ -663,17 +663,6 @@ function LiveExamPlayer() {
           >
             {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
-
-          {/* Submit Exam Button */}
-          <button
-            type="button"
-            onClick={() => setShowConfirmSubmit(true)}
-            className="live-btn-primary live-player-submit-btn"
-            style={{ background: "#ef4444", boxShadow: "0 2px 10px rgba(239, 68, 68, 0.4)" }}
-          >
-            <span className="btn-full-text">Submit Exam</span>
-            <span className="btn-short-text">Submit</span>
-          </button>
         </div>
       </header>
 
