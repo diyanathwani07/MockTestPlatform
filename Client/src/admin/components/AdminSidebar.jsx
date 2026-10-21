@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
-  LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers, PanelLeft, Radio
+  LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
+  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
@@ -71,9 +72,16 @@ function AdminSidebar() {
 
   return (
     <>
-      <button className={`mobile-sidebar-toggle ${isOpen ? 'open-state' : ''}`} onClick={() => setIsOpen(!isOpen)} aria-label="Toggle Navigation Sidebar">
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {/* Mobile Toggle Button (only on screens <= 767px and only when closed) */}
+      {!isOpen && (
+        <button 
+          className="mobile-sidebar-toggle" 
+          onClick={() => setIsOpen(true)} 
+          aria-label="Open Navigation Sidebar"
+        >
+          <Menu size={22} />
+        </button>
+      )}
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
 
       <aside className={`admin-sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
@@ -99,48 +107,90 @@ function AdminSidebar() {
           </div>
         )}
 
-        <div className="sidebar-logo" style={{ display: "flex", justifyContent: collapsed ? "center" : "space-between", alignItems: "center", padding: collapsed ? "0" : "0 16px", position: "relative", zIndex: 2, height: "64px" }}>
+        <div 
+          className="sidebar-logo" 
+          style={{ 
+            display: "flex", 
+            justifyContent: collapsed ? "center" : "space-between", 
+            alignItems: "center", 
+            padding: collapsed ? "0 12px" : "0 16px", 
+            position: "relative", 
+            zIndex: 2, 
+            height: "64px" 
+          }}
+        >
           {!collapsed && <Logo />}
           
-          <button
-            onClick={toggleSidebarCollapse}
-            title="Toggle Sidebar (Ctrl+B)"
-            aria-label="Toggle Sidebar"
-            className="sidebar-collapse-btn hidden sm:inline-flex"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-              background: collapsed ? "var(--primary)" : "transparent",
-              color: collapsed ? "var(--primary-foreground, #000000)" : "var(--text-secondary)",
-              cursor: "pointer",
-              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-              padding: 0,
-              flexShrink: 0
-            }}
-            onMouseEnter={(e) => {
-              if (!collapsed) {
-                e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
-                e.currentTarget.style.color = "var(--text-primary)";
-              } else {
-                e.currentTarget.style.opacity = "0.9";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!collapsed) {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "var(--text-secondary)";
-              } else {
-                e.currentTarget.style.opacity = "1";
-              }
-            }}
-          >
-            <PanelLeft size={16} style={{ stroke: collapsed ? "var(--primary-foreground, #000000)" : "currentColor", color: collapsed ? "var(--primary-foreground, #000000)" : "currentColor" }} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            {/* Desktop collapse toggle */}
+            <button
+              onClick={toggleSidebarCollapse}
+              title={collapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+              aria-label={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              className="sidebar-collapse-btn hidden md:inline-flex"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "36px",
+                height: "36px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                background: collapsed ? "var(--primary)" : "transparent",
+                color: collapsed ? "var(--primary-foreground, #000000)" : "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                padding: 0,
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                if (!collapsed) {
+                  e.currentTarget.style.background = "var(--bg-card-hover, rgba(255,255,255,0.1))";
+                  e.currentTarget.style.color = "var(--text-primary)";
+                } else {
+                  e.currentTarget.style.opacity = "0.9";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!collapsed) {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--text-secondary)";
+                } else {
+                  e.currentTarget.style.opacity = "1";
+                }
+              }}
+            >
+              {collapsed ? (
+                <PanelLeftOpen size={18} style={{ stroke: "var(--primary-foreground, currentColor)" }} />
+              ) : (
+                <PanelLeftClose size={18} style={{ stroke: "currentColor" }} />
+              )}
+            </button>
+
+            {/* Mobile close button inside header (shown only when drawer is open on mobile) */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="md:hidden"
+              title="Close Sidebar"
+              aria-label="Close Sidebar"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                background: "transparent",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                padding: 0,
+                flexShrink: 0
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
         <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>
           {NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>

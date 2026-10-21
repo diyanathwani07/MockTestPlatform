@@ -268,6 +268,41 @@ router.post("/reset-password", passwordRecoveryLimiter, async (req, res) => {
 // PROTECT MIDDLEWARE
 const { protect } = require("../middleware/authMiddleware");
 
+// GET PROFILE
+router.get("/profile", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const avatarUrl = user.avatar || user.profilePicture || "";
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        id: user._id,
+        fullName: user.fullName || user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        role: user.role,
+        department: user.department,
+        permissions: user.permissions,
+        dateOfBirth: user.dateOfBirth,
+        gender: user.gender,
+        location: user.location,
+        bio: user.bio,
+        avatar: avatarUrl,
+        profilePicture: avatarUrl,
+        createdAt: user.createdAt,
+        notificationPreferences: user.notificationPreferences
+      }
+    });
+  } catch (error) {
+    console.error("Get Profile Error:", error);
+    res.status(500).json({ message: "Failed to fetch profile." });
+  }
+});
+
 // UPDATE PROFILE
 const logAction = require("../utils/logger");
 
@@ -318,7 +353,27 @@ router.put("/profile", protect, async (req, res) => {
       );
     }
     
+    const avatarResult = updatedUser.avatar || updatedUser.profilePicture || "";
     res.json({
+      success: true,
+      user: {
+        _id: updatedUser._id,
+        id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+        department: updatedUser.department,
+        permissions: updatedUser.permissions,
+        dateOfBirth: updatedUser.dateOfBirth,
+        gender: updatedUser.gender,
+        location: updatedUser.location,
+        bio: updatedUser.bio,
+        avatar: avatarResult,
+        profilePicture: avatarResult,
+        createdAt: updatedUser.createdAt,
+        notificationPreferences: updatedUser.notificationPreferences,
+      },
       _id: updatedUser._id,
       fullName: updatedUser.fullName,
       email: updatedUser.email,
@@ -328,8 +383,8 @@ router.put("/profile", protect, async (req, res) => {
       gender: updatedUser.gender,
       location: updatedUser.location,
       bio: updatedUser.bio,
-      avatar: updatedUser.avatar,
-      profilePicture: updatedUser.profilePicture,
+      avatar: avatarResult,
+      profilePicture: avatarResult,
       notificationPreferences: updatedUser.notificationPreferences,
     });
   } catch (error) {

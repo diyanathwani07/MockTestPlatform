@@ -194,10 +194,10 @@ export default function MobileProfileFlow({
         <div className="mp-profile-summary">
           <div className="mp-avatar-wrapper">
             <div className="mp-avatar">
-              {user.avatar ? (
-                <img src={user.avatar} alt="Profile" />
+              {(user.avatar || user.profilePicture) ? (
+                <img src={user.avatar || user.profilePicture} alt="Profile" />
               ) : (
-                <span>{initials}</span>
+                <span>{initials || (isAdmin ? "AD" : "ST")}</span>
               )}
             </div>
             {!previewMode && (
@@ -206,8 +206,8 @@ export default function MobileProfileFlow({
               </button>
             )}
           </div>
-          <h2 className="mp-name">{user.fullName || user.name || (isAdmin ? "Admin Name" : "Student Name")}</h2>
-          <p className="mp-student-id">{isAdmin ? `Admin ID: ${adminId || ""}` : `Student ID: ${studentId || ""}`}</p>
+          <h2 className="mp-name">{user.fullName || user.name || (isAdmin ? "Admin User" : "Student Name")}</h2>
+          <p className="mp-student-id">{isAdmin ? (adminId ? `Admin ID: ${adminId}` : "Admin ID: AD2026") : (studentId ? `Student ID: ${studentId}` : "")}</p>
           {isAdmin ? (
             <span className="mp-badge-student" style={{background: "var(--primary)", color: "var(--primary-foreground)"}}>Admin</span>
           ) : (

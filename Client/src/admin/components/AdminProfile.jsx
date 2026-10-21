@@ -5,16 +5,52 @@ import AdminSidebar from './AdminSidebar';
 import AdminNavbar from './AdminNavbar';
 import AvatarPickerModal from '../../components/AvatarPickerModal';
 import MobileProfileFlow from '../../components/ProfilePages/MobileProfileFlow';
+import '../../css/admin/AdminLayout.css';
 import '../../css/StudentProfile.css';
 
 function AdminProfile() {
   const navigate = useNavigate();
-  const [user, setUser] = useState({});
-  const [initials, setInitials] = useState('');
-  const [adminId, setAdminId] = useState('');
+
+  // Read stored user immediately for instant render without blank state
+  const getInitialUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || '{}');
+    } catch {
+      return {};
+    }
+  };
+
+  const initialStored = getInitialUser();
+  const [user, setUser] = useState(initialStored);
+
+  const computeInitials = (u) => {
+    const name = u?.fullName || u?.name || 'Admin';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0]?.slice(0, 2).toUpperCase() || 'AD';
+  };
+
+  const computeAdminId = (u) => {
+    const dateStr = new Date(u?.createdAt || Date.now()).getFullYear();
+    const rawId = u?._id || u?.id || '0001';
+    const shortId = String(rawId).slice(-4).toUpperCase();
+    return `AD${dateStr}${shortId}`;
+  };
+
+  const [initials, setInitials] = useState(() => computeInitials(initialStored));
+  const [adminId, setAdminId] = useState(() => computeAdminId(initialStored));
   const [isSaving, setIsSaving] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    fullName: initialStored.fullName || initialStored.name || '',
+    phone: initialStored.phone || '',
+    dateOfBirth: initialStored.dateOfBirth ? new Date(initialStored.dateOfBirth).toISOString().split('T')[0] : '',
+    gender: initialStored.gender || '',
+    location: initialStored.location || '',
+    bio: initialStored.bio || ''
+  });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 767);
   
   // For MobileProfileFlow internal routing
@@ -46,8 +82,9 @@ function AdminProfile() {
     setChangingPassword(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/change-password`,
+      const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+      await axios.put(
+        `${baseUrl}/api/auth/change-password`,
         { currentPassword: passwordData.currentPassword, newPassword: passwordData.newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -56,7 +93,7 @@ function AdminProfile() {
         setShowPasswordModal(false);
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         setActiveScreen('overview'); // go back to overview
-      }, 2000);
+      }, 1500);
     } catch (err) {
       setPasswordError(err.response?.data?.message || 'Failed to change password');
     } finally {
@@ -70,40 +107,28 @@ function AdminProfile() {
         const token = localStorage.getItem('token');
         if (!token) return navigate('/login');
 
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+        const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+        const res = await axios.get(`${baseUrl}/api/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        const u = res.data.user;
-        setUser(u);
-        
-        // Setup initials
-        let init = 'A';
-        if (u.fullName) {
-          const parts = u.fullName.split(' ');
-          if (parts.length > 1) {
-            init = (parts[0][0] + parts[1][0]).toUpperCase();
-          } else {
-            init = parts[0].substring(0, 2).toUpperCase();
-          }
+        const u = res.data?.user || res.data;
+        if (u) {
+          const merged = { ...getInitialUser(), ...u };
+          setUser(merged);
+          setInitials(computeInitials(merged));
+          setAdminId(computeAdminId(merged));
+          localStorage.setItem('user', JSON.stringify(merged));
+
+          setFormData({
+            fullName: merged.fullName || merged.name || '',
+            phone: merged.phone || '',
+            dateOfBirth: merged.dateOfBirth ? new Date(merged.dateOfBirth).toISOString().split('T')[0] : '',
+            gender: merged.gender || '',
+            location: merged.location || '',
+            bio: merged.bio || ''
+          });
         }
-        setInitials(init);
-
-        // Calculate a dummy Admin ID for display based on timestamp or mongo ID
-        const dateStr = new Date(u.createdAt || Date.now()).getFullYear();
-        const shortId = u._id ? u._id.substring(u._id.length - 4).toUpperCase() : '0000';
-        setAdminId(`AD${dateStr}${shortId}`);
-
-        // Init form data
-        setFormData({
-          fullName: u.fullName || u.name || '',
-          phone: u.phone || '',
-          dateOfBirth: u.dateOfBirth ? new Date(u.dateOfBirth).toISOString().split('T')[0] : '',
-          gender: u.gender || '',
-          location: u.location || '',
-          bio: u.bio || ''
-        });
-
       } catch (err) {
         console.error('Error fetching admin profile', err);
         if (err.response && err.response.status === 401) {
@@ -122,12 +147,16 @@ function AdminProfile() {
   const handleSelectAvatar = async (avatarUrl) => {
     try {
       const token = localStorage.getItem('token');
+      const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
       await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/auth/profile`,
+        `${baseUrl}/api/auth/profile`,
         { avatar: avatarUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser(prev => ({ ...prev, avatar: avatarUrl }));
+      const updatedUser = { ...user, avatar: avatarUrl, profilePicture: avatarUrl };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event('user-updated'));
       setShowAvatarPicker(false);
     } catch (err) {
       console.error('Error updating avatar:', err);
@@ -139,12 +168,18 @@ function AdminProfile() {
     setIsSaving(true);
     try {
       const token = localStorage.getItem('token');
+      const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
       const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/auth/profile`,
+        `${baseUrl}/api/auth/profile`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser(res.data.user);
+      const updated = res.data?.user || res.data;
+      const merged = { ...user, ...updated };
+      setUser(merged);
+      setInitials(computeInitials(merged));
+      localStorage.setItem('user', JSON.stringify(merged));
+      window.dispatchEvent(new Event('user-updated'));
       setActiveScreen('overview'); // Go back to overview after saving
     } catch (err) {
       console.error('Error saving profile', err);
@@ -154,7 +189,7 @@ function AdminProfile() {
     }
   };
 
-  // Determine navbar title dynamically if we want
+  // Determine navbar title dynamically
   let navTitle = "Admin Profile";
   if (activeScreen === "account") navTitle = "Admin Profile > Account Details";
   else if (activeScreen === "password") navTitle = "Admin Profile > Change Password";
@@ -172,44 +207,45 @@ function AdminProfile() {
         
         <div style={{
           flex: 1,
-          maxWidth: isMobile ? '100%' : (activeScreen === 'overview' ? '1200px' : activeScreen === 'about' ? '100%' : '560px'),
-          margin: '0 auto',
           width: '100%',
           position: 'relative',
-          paddingTop: isMobile ? '0' : '24px',
-          paddingLeft: isMobile ? '0' : '32px',
-          paddingRight: isMobile ? '0' : '32px',
-          paddingBottom: '40px',
+          padding: isMobile ? '16px 12px' : '28px 32px 40px',
           display: 'flex',
           flexDirection: 'column',
           overflowY: 'auto',
           boxSizing: 'border-box'
         }}>
-          <MobileProfileFlow 
-            user={user}
-            adminId={adminId}
-            isAdmin={true}
-            initials={initials}
-            previewMode={false}
-            showAvatarPicker={showAvatarPicker}
-            setShowAvatarPicker={setShowAvatarPicker}
-            handleSelectAvatar={handleSelectAvatar}
-            formData={formData}
-            setFormData={setFormData}
-            handleChange={handleChange}
-            handleSave={handleSave}
-            isSaving={isSaving}
-            passwordData={passwordData}
-            setPasswordData={setPasswordData}
-            handlePasswordSubmit={handlePasswordSubmit}
-            passwordError={passwordError}
-            passwordSuccess={passwordSuccess}
-            changingPassword={changingPassword}
-            setShowPasswordModal={setShowPasswordModal}
-            isDesktop={!isMobile}
-            activeScreen={activeScreen}
-            setActiveScreen={setActiveScreen}
-          />
+          <div style={{
+            width: '100%',
+            maxWidth: (activeScreen === 'overview' || activeScreen === 'about') ? '100%' : '600px',
+            margin: '0',
+          }}>
+            <MobileProfileFlow 
+              user={user}
+              adminId={adminId}
+              isAdmin={true}
+              initials={initials}
+              previewMode={false}
+              showAvatarPicker={showAvatarPicker}
+              setShowAvatarPicker={setShowAvatarPicker}
+              handleSelectAvatar={handleSelectAvatar}
+              formData={formData}
+              setFormData={setFormData}
+              handleChange={handleChange}
+              handleSave={handleSave}
+              isSaving={isSaving}
+              passwordData={passwordData}
+              setPasswordData={setPasswordData}
+              handlePasswordSubmit={handlePasswordSubmit}
+              passwordError={passwordError}
+              passwordSuccess={passwordSuccess}
+              changingPassword={changingPassword}
+              setShowPasswordModal={setShowPasswordModal}
+              isDesktop={!isMobile}
+              activeScreen={activeScreen}
+              setActiveScreen={setActiveScreen}
+            />
+          </div>
         </div>
       </div>
     </div>

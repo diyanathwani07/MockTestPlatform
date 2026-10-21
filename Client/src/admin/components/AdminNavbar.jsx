@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
-import { Sun, Moon, User, LogOut, Eye, ArrowLeft, PanelLeft } from "lucide-react";
+import { Sun, Moon, User, LogOut, Eye, ArrowLeft, PanelLeft, PanelLeftOpen } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import UniversalSearch from "../../components/UniversalSearch";
 import NotificationBell from "../../components/NotificationBell";
@@ -17,11 +17,58 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   const { collapsed, toggleSidebarCollapse } = useSidebar();
   const { setPreviewMode } = usePreview();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        setCurrentUser(JSON.parse(localStorage.getItem("user") || "{}"));
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("user-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("user-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
 
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
+        {collapsed && (
+          <button
+            onClick={toggleSidebarCollapse}
+            title="Expand Sidebar (Ctrl+B)"
+            aria-label="Expand Sidebar"
+            className="sidebar-collapse-btn hidden md:inline-flex"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              cursor: "pointer",
+              marginRight: "10px",
+              flexShrink: 0
+            }}
+          >
+            <PanelLeftOpen size={16} />
+          </button>
+        )}
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"
@@ -46,9 +93,9 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
         {/* Profile */}
         <div className="profile-dropdown-wrapper">
           {(() => {
-            const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-            const adminName = storedUser.fullName || storedUser.name || "Admin";
+            const adminName = currentUser.fullName || currentUser.name || "Admin";
             const initials = adminName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "AD";
+            const avatarUrl = currentUser.avatar || currentUser.profilePicture;
             return (
               <div 
                 className="avatar-neon-trigger" 
@@ -60,9 +107,9 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setProfileOpen(!profileOpen); } }}
                 style={{ overflow: 'hidden', padding: 0 }}
               >
-                {storedUser.avatar ? (
+                {avatarUrl ? (
                   <img 
-                    src={optimizeAvatar(storedUser.avatar, 120)} 
+                    src={optimizeAvatar(avatarUrl, 120)} 
                     width="40"
                     height="40"
                     loading="lazy"

@@ -122,18 +122,22 @@ body.dark-mode .simple-date-pill input[type="date"]::-webkit-calendar-picker-ind
    6. MOBILE SIDEBAR RESPONSIVENESS
    ========================================================================== */
 .mobile-sidebar-toggle {
-  display: none;
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  z-index: 1000;
-  background: var(--sidebar-active-bg, #F3E8FF);
-  color: var(--sidebar-active-text, var(--primary));
-  border: 1.5px solid rgba(110, 63, 243, 0.15);
-  border-radius: 8px;
-  padding: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(110, 63, 243, 0.08);
+  display: none !important;
+  position: fixed !important;
+  top: 14px !important;
+  left: 14px !important;
+  z-index: 1000 !important;
+  background: var(--bg-card, #FFFFFF) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color, #E4E4E7) !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  width: 38px !important;
+  height: 38px !important;
+  align-items: center;
+  justify-content: center;
 }
 
 body.dark-mode .mobile-sidebar-toggle {
@@ -148,33 +152,29 @@ body.dark-mode .mobile-sidebar-toggle {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 90;
+  z-index: 10000;
   backdrop-filter: blur(4px);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 767px) {
   .admin-sidebar {
-    position: fixed;
-    transform: translateX(-100%);
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: translateX(-100%) !important;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 95;
+    z-index: 10001 !important;
     height: 100vh;
     overflow-y: auto;
+    width: 260px !important;
   }
   
   .admin-sidebar.open {
-    transform: translateX(0);
+    transform: translateX(0) !important;
   }
   
   .mobile-sidebar-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .mobile-sidebar-toggle.open-state {
-    left: 265px;
+    display: flex !important;
   }
   
   .sidebar-overlay {
@@ -182,7 +182,7 @@ body.dark-mode .mobile-sidebar-toggle {
   }
   
   .admin-navbar {
-    padding-left: 70px; /* Space for the hamburger button */
+    padding-left: 64px !important; /* Space for the hamburger button */
   }
 }
 
