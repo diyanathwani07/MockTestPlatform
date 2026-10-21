@@ -499,8 +499,11 @@ function StudentLiveExams() {
 
                 const hasAttempt = Boolean(exam.myAttempt);
                 const attemptStatus = exam.myAttempt?.status;
-                const isInProgress = attemptStatus === "in_progress";
-                const isSubmitted = attemptStatus === "submitted" || attemptStatus === "auto_submitted";
+                const isInProgress = !isCompleted && attemptStatus === "in_progress";
+                const isSubmitted =
+                  attemptStatus === "submitted" ||
+                  attemptStatus === "auto_submitted" ||
+                  (isCompleted && hasAttempt && Boolean(exam.myAttempt?.resultId));
 
                 return (
                   <div
@@ -632,7 +635,13 @@ function StudentLiveExams() {
                         >
                           <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                             {isInProgress ? <Play size={13} /> : <CheckCircle2 size={13} />}
-                            {isInProgress ? "Attempt In Progress" : isSubmitted ? "Submitted Successfully" : "Registered"}
+                            {isInProgress
+                              ? "Attempt In Progress"
+                              : isSubmitted
+                              ? "Submitted Successfully"
+                              : isCompleted
+                              ? "Examination Concluded"
+                              : "Registered"}
                           </span>
                           {isSubmitted && exam.myAttempt?.resultId && (
                             <span style={{ fontSize: "11px", textDecoration: "underline" }}>Results Available</span>

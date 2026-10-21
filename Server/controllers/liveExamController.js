@@ -1201,6 +1201,83 @@ const startLiveExamAttempt = async (req, res) => {
 };
 
 /**
+ * Auto-submits and grades an attempt whose exam or deadline has passed.
+ */
+async function autoSubmitAttempt(attempt, exam) {
+  try {
+    if (!attempt || ["submitted", "auto_submitted", "disqualified"].includes(attempt.status)) {
+      return attempt;
+    }
+
+    const answersToGrade = attempt.savedAnswers || [];
+    let resultId = attempt.resultId || null;
+
+    if (attempt.status === "in_progress") {
+      try {
+        const quizIdToPreview = attempt.quizId || exam.quizId?._id || exam.quizId;
+        const quiz = await quizService.previewQuiz(quizIdToPreview);
+        if (quiz) {
+          const graded = gradeQuizAttempt(quiz, answersToGrade);
+          const shareId = crypto.randomBytes(4).toString("hex");
+          const scheduledEndTime = new Date(exam.scheduledEndTime);
+          const startedAt = attempt.startedAt ? new Date(attempt.startedAt) : scheduledEndTime;
+          const timeTaken = Math.max(0, Math.floor((scheduledEndTime.getTime() - startedAt.getTime()) / 1000));
+
+          const result = await Result.create({
+            userId: attempt.studentId,
+            quizId: quiz._id,
+            quizTitle: exam.title,
+            subject: quiz.subject || "General Studies",
+            examName: quiz.examName || exam.title,
+            passPercentage: quiz.passPercentage ?? 50,
+            score: graded.score,
+            total: graded.total,
+            correct: graded.correct,
+            incorrect: graded.incorrect,
+            percentage: graded.percentage,
+            timeTaken,
+            shareId,
+            isPublic: true,
+            sectionResults: graded.sectionResults,
+            difficultyBreakdown: graded.difficultyBreakdown,
+            questions: graded.dbQuestions,
+            userAnswers: answersToGrade,
+            status: "submitted",
+          });
+
+          resultId = result._id;
+          attempt.answeredCount = graded.correct + graded.incorrect;
+        }
+      } catch (err) {
+        console.error("Auto-grade error for attempt:", attempt._id, err);
+      }
+
+      attempt.status = "auto_submitted";
+      if (resultId) attempt.resultId = resultId;
+    } else {
+      // In lobby or registered without starting
+      attempt.status = "disqualified";
+    }
+
+    const examEndTime = new Date(exam.scheduledEndTime);
+    attempt.submittedAt = examEndTime <= new Date() ? examEndTime : new Date();
+
+    if (typeof attempt.logTimelineEvent === "function") {
+      attempt.logTimelineEvent("AUTO_SUBMIT_DEADLINE", {
+        reason: "Exam scheduled end time reached",
+        resultId,
+      });
+    }
+
+    await attempt.save();
+    return attempt;
+  } catch (error) {
+    console.error("Failed to autoSubmitAttempt for attempt:", attempt._id, error);
+    return attempt;
+  }
+}
+
+/**
  * GET Play Data for Live Player (Zero Answer Leakage)
  * GET /api/live-exams/attempts/:attemptId/play-data
  */
@@ -1221,6 +1298,23 @@ const getLiveExamPlayData = async (req, res) => {
       return res.status(404).json({ message: "Live examination not found." });
     }
 
+    const now = new Date();
+    const isExamEnded = exam.status === "completed" || new Date(exam.scheduledEndTime) <= now;
+    if (isExamEnded) {
+      if (["in_progress", "in_lobby", "ready", "registered"].includes(attempt.status)) {
+        await autoSubmitAttempt(attempt, exam);
+      }
+      return res.json({
+        attemptId: attempt._id,
+        liveExamId: exam._id,
+        title: exam.title,
+        status: attempt.status,
+        resultId: attempt.resultId,
+        alreadySubmitted: true,
+        message: "This examination has concluded.",
+      });
+    }
+
     // Fetch quiz blueprint and sanitize questions
     const rawQuiz = await quizService.previewQuiz(attempt.quizId);
     if (!rawQuiz) {
@@ -1228,7 +1322,6 @@ const getLiveExamPlayData = async (req, res) => {
     }
 
     // Recalculate deadline if rescheduled or expired while active window is ongoing
-    const now = new Date();
     if (attempt.status === "in_progress") {
       const scheduledEnd = new Date(exam.scheduledEndTime);
       const scheduledStart = new Date(exam.scheduledStartTime);
@@ -1499,7 +1592,27 @@ const getStudentLiveExamsFeed = async (req, res) => {
       .sort({ scheduledStartTime: -1 })
       .lean();
 
-    // 3. Fetch student's attempts for all these exams in one query
+    // 3. Auto-submit any expired/concluded attempts for this student
+    const examMap = new Map();
+    exams.forEach((e) => examMap.set(e._id.toString(), e));
+
+    const activeAttempts = await LiveExamAttempt.find({
+      studentId: studentId,
+      status: { $in: ["in_progress", "in_lobby", "ready", "registered"] },
+    });
+
+    for (const att of activeAttempts) {
+      const examDoc = examMap.get(att.liveExamId.toString());
+      if (examDoc) {
+        const isExamEnded = examDoc.status === "completed" || new Date(examDoc.scheduledEndTime) <= now;
+        const isDeadlinePassed = att.serverDeadline && new Date(att.serverDeadline) <= now;
+        if (isExamEnded || isDeadlinePassed) {
+          await autoSubmitAttempt(att, examDoc);
+        }
+      }
+    }
+
+    // 4. Fetch student's attempts for all these exams (now fully updated)
     const examIds = exams.map((e) => e._id);
     const studentAttempts = await LiveExamAttempt.find({
       liveExamId: { $in: examIds },
@@ -1580,9 +1693,9 @@ const getStudentLiveExamsFeed = async (req, res) => {
         myAttempt: attempt
           ? {
               attemptId: attempt._id,
-              status: attempt.status,
+              status: computedStatus === "completed" && attempt.status === "in_progress" ? "auto_submitted" : attempt.status,
               startedAt: attempt.startedAt,
-              submittedAt: attempt.submittedAt,
+              submittedAt: attempt.submittedAt || (computedStatus === "completed" ? exam.scheduledEndTime : null),
               resultId: attempt.resultId,
             }
           : null,
@@ -1624,5 +1737,6 @@ module.exports = {
   saveLiveExamProgress,
   submitLiveExamAttempt,
   submitLiveExamFeedback,
+  autoSubmitAttempt,
 };
 
