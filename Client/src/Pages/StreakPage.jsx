@@ -142,31 +142,24 @@ function StreakPage() {
         <div className="sd-content" style={{ paddingTop: "20px" }}>
 
       {/* Hero Banner */}
-      <div 
-        className="relative flex items-center justify-between overflow-hidden mb-6 p-5 sm:p-6 shadow-lg"
-        style={{ 
-          background: 'linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 60%, black) 100%)',
-          borderRadius: '24px',
-          boxShadow: '0 10px 25px rgba(249, 115, 22, 0.2)'
-        }}
-      >
+      <div className="streak-hero-banner">
         {/* Background Decorative Circles */}
-        <div style={{ position: 'absolute', right: '-20px', top: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
-        <div style={{ position: 'absolute', right: '40px', bottom: '-40px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
+        <div style={{ position: 'absolute', right: '-20px', top: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', right: '50px', bottom: '-40px', width: '110px', height: '110px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
 
         {/* Mascot */}
-        <div className="w-[80px] h-[80px] sm:w-[120px] sm:h-[120px] shrink-0 z-10">
-          <DotLottieReact src="/mascot.lottie" loop autoplay />
+        <div className="streak-hero-mascot">
+          <DotLottieReact src="/mascot.lottie" loop autoplay style={{ width: '100%', height: '100%' }} />
         </div>
 
         {/* Streak Info */}
-        <div className="z-10 text-right flex-1 ml-3 sm:ml-4 flex flex-col items-end justify-center">
-          <h1 className="text-white text-2xl sm:text-4xl font-extrabold mb-2 sm:mb-3 leading-none">
-            {stats.current} days
+        <div className="streak-hero-info">
+          <h1 className="streak-hero-title">
+            {stats.current} {stats.current === 1 ? 'Day' : 'Days'}
           </h1>
-          <div className="inline-flex items-center gap-1.5 bg-white/20 px-3 py-1.5 sm:py-2 rounded-2xl backdrop-blur-sm max-w-full">
-            <Flame size={16} color="white" fill="white" className="shrink-0" />
-            <span className="text-white text-[11px] sm:text-sm font-medium leading-tight text-left">
+          <div className="streak-hero-pill">
+            <Flame size={16} color="#ffffff" fill="#ffffff" style={{ flexShrink: 0 }} />
+            <span className="streak-hero-pill-text">
               {stats.current > 0 ? "You're on fire! Keep it going!" : "Start your streak today!"}
             </span>
           </div>
