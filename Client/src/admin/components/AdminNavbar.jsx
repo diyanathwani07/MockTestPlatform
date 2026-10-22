@@ -45,7 +45,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
-        {onNavigateBack && (
+        {onNavigateBack ? (
           <button
             onClick={onNavigateBack}
             className="navbar-back-btn"
@@ -67,6 +67,29 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
             aria-label="Go back"
           >
             <ArrowLeft size={18} />
+          </button>
+        ) : (
+          <button
+            onClick={toggleSidebarCollapse}
+            className="navbar-sidebar-collapse-btn hidden sm:inline-flex"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px',
+              marginRight: '6px',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              transition: 'all 0.15s ease',
+              flexShrink: 0
+            }}
+            title={collapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+            aria-label="Toggle sidebar"
+          >
+            <PanelLeft size={18} />
           </button>
         )}
         <span 
