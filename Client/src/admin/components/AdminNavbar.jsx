@@ -45,30 +45,6 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
-        {collapsed && (
-          <button
-            onClick={toggleSidebarCollapse}
-            title="Expand Sidebar (Ctrl+B)"
-            aria-label="Expand Sidebar"
-            className="sidebar-collapse-btn hidden md:inline-flex"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              cursor: "pointer",
-              marginRight: "10px",
-              flexShrink: 0
-            }}
-          >
-            <PanelLeftOpen size={16} />
-          </button>
-        )}
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"
