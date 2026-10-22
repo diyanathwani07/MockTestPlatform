@@ -471,7 +471,7 @@ function StudentDashboard() {
         {/* STATS ROW */}
         <div className="sd-stats-grid">
           <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/results")}>
-            <div className="sd-stat-icon-wrapper purple">
+            <div className="sd-stat-icon-wrapper">
               <ClipboardList size={24} />
             </div>
             <div className="sd-stat-info">
@@ -481,7 +481,7 @@ function StudentDashboard() {
           </div>
           
           <div className="sd-stat-card clickable" onClick={() => setShowAverageInfo(true)}>
-            <div className="sd-stat-icon-wrapper green">
+            <div className="sd-stat-icon-wrapper">
               <TrendingUp size={24} />
             </div>
             <div className="sd-stat-info">
@@ -491,18 +491,18 @@ function StudentDashboard() {
           </div>
           
           <div className={`sd-stat-card ${bestResult ? 'clickable' : ''}`} onClick={() => bestResult && navigate(`/results/${bestResult._id}`)}>
-            <div className="sd-stat-icon-wrapper orange">
+            <div className="sd-stat-icon-wrapper">
               <Target size={24} />
             </div>
             <div className="sd-stat-info">
               <span className="sd-stat-value">{bestScore}</span>
               <p>Best Score</p>
-              <span className="sd-stat-meta orange-text">{bestScoreExam}</span>
+              <span className="sd-stat-meta">{bestScoreExam}</span>
             </div>
           </div>
           
           <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/exams")}>
-            <div className="sd-stat-icon-wrapper blue">
+            <div className="sd-stat-icon-wrapper">
               <Calendar size={24} />
             </div>
             <div className="sd-stat-info">

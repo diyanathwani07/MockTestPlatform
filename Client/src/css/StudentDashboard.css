@@ -608,19 +608,37 @@ body:not(.dark-mode) .ambient-glow-circle-2 {
   justify-content: center;
   flex-shrink: 0;
   font-size: 24px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  transition: all 0.2s ease;
 }
 
-/* Light mode enhanced colors */
-body:not(.dark-mode) .sd-stat-icon-wrapper.purple { background: #f3e8ff; color: #6d28d9; border: 1px solid #e9d5ff; }
-body:not(.dark-mode) .sd-stat-icon-wrapper.green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-body:not(.dark-mode) .sd-stat-icon-wrapper.orange { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
-body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.sd-stat-icon-wrapper svg {
+  color: inherit;
+  stroke: currentColor;
+}
 
-/* Dark mode enhanced colors */
-.sd-stat-icon-wrapper.purple { background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.2); }
-.sd-stat-icon-wrapper.green { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.2); }
-.sd-stat-icon-wrapper.orange { background: rgba(249, 115, 22, 0.15); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.2); }
-.sd-stat-icon-wrapper.blue { background: color-mix(in srgb, var(--secondary) 15%, transparent); color: #93c5fd; border: 1px solid color-mix(in srgb, var(--secondary) 20%, transparent); }
+/* Light mode uniform cohesive color */
+body:not(.dark-mode) .sd-stat-icon-wrapper,
+body:not(.dark-mode) .sd-stat-icon-wrapper.purple,
+body:not(.dark-mode) .sd-stat-icon-wrapper.green,
+body:not(.dark-mode) .sd-stat-icon-wrapper.orange,
+body:not(.dark-mode) .sd-stat-icon-wrapper.blue {
+  background: #f3e8ff;
+  color: #6d28d9;
+  border: 1px solid #e9d5ff;
+}
+
+/* Dark mode uniform cohesive color */
+.sd-stat-icon-wrapper.purple,
+.sd-stat-icon-wrapper.green,
+.sd-stat-icon-wrapper.orange,
+.sd-stat-icon-wrapper.blue {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
 
 .sd-stat-info h3,
 .sd-stat-info .sd-stat-value {
@@ -644,6 +662,13 @@ body:not(.dark-mode) .sd-stat-icon-wrapper.blue { background: #dbeafe; color: #1
   margin-top: 6px;
   font-size: 12px;
   font-weight: 600;
+  color: var(--violet, #8B5CF6);
+}
+
+body.dark-mode .sd-stat-meta,
+.dark-mode .sd-stat-meta,
+[data-theme="dark"] .sd-stat-meta {
+  color: #c4b5fd;
 }
 .orange-text { color: #EA580C; }
 .blue-text { color: #2563EB; }
