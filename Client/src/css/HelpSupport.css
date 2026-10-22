@@ -487,33 +487,92 @@ body.dark-mode .hs-ticket-action:hover {
 }
 
 .hs-page-btn {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  background: transparent;
-  color: var(--text-secondary);
+  background: var(--bg-card);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hs-page-btn svg {
+  display: block;
+  flex-shrink: 0;
+  stroke: currentColor;
+  color: inherit;
 }
 
 .hs-page-btn:hover:not(:disabled) {
   border-color: var(--violet);
   color: var(--violet);
+  background: var(--option-hover);
 }
 
 .hs-page-btn.active {
-  background: var(--primary);
+  background: var(--violet);
   border-color: var(--violet);
-  color: #fff;
+  color: #fff !important;
 }
 
 .hs-page-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.35;
   cursor: not-allowed;
+  color: var(--text-secondary);
+}
+
+/* Dark mode enhanced pagination controls */
+body.dark-mode .hs-page-btn,
+.dark-mode .hs-page-btn,
+[data-theme="dark"] .hs-page-btn {
+  background: #19182a;
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #F5F3FF;
+}
+
+body.dark-mode .hs-page-btn svg,
+.dark-mode .hs-page-btn svg,
+[data-theme="dark"] .hs-page-btn svg {
+  color: #F5F3FF;
+  stroke: currentColor;
+}
+
+body.dark-mode .hs-page-btn:hover:not(:disabled),
+.dark-mode .hs-page-btn:hover:not(:disabled),
+[data-theme="dark"] .hs-page-btn:hover:not(:disabled) {
+  background: #25243E;
+  border-color: #8B5CF6;
+  color: #ffffff;
+}
+
+body.dark-mode .hs-page-btn.active,
+.dark-mode .hs-page-btn.active,
+[data-theme="dark"] .hs-page-btn.active {
+  background: #8B5CF6 !important;
+  border-color: #8B5CF6 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .hs-page-btn:disabled,
+.dark-mode .hs-page-btn:disabled,
+[data-theme="dark"] .hs-page-btn:disabled {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.35) !important;
+  opacity: 0.65;
+}
+
+body.dark-mode .hs-page-btn:disabled svg,
+.dark-mode .hs-page-btn:disabled svg,
+[data-theme="dark"] .hs-page-btn:disabled svg {
+  color: rgba(255, 255, 255, 0.4) !important;
+  stroke: currentColor;
 }
 
 /* Legend */

@@ -442,7 +442,7 @@ function HelpSupport() {
                         disabled={currentPage === 1} 
                         onClick={() => setCurrentPage(prev => prev - 1)}
                       >
-                        <ChevronLeft size={16} />
+                        <ChevronLeft size={18} strokeWidth={2.2} />
                       </button>
                       <button className="hs-page-btn active">{currentPage}</button>
                       <button 
@@ -450,7 +450,7 @@ function HelpSupport() {
                         disabled={currentPage * ticketsPerPage >= myTickets.length} 
                         onClick={() => setCurrentPage(prev => prev + 1)}
                       >
-                        <ChevronRight size={16} />
+                        <ChevronRight size={18} strokeWidth={2.2} />
                       </button>
                     </div>
                   )}
