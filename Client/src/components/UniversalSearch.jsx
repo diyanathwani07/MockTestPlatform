@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Search, Command, LayoutDashboard, BookOpen, PenTool, Target, Trophy, HelpCircle, User, Shield, Layers, FileText, BarChart, Users } from "lucide-react";
+import { Image, Search, Command, LayoutDashboard, BookOpen, PenTool, Target, Trophy, HelpCircle, User, Shield, Layers, FileText, BarChart, Users, Radio } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../css/UniversalSearch.css";
@@ -16,6 +16,7 @@ const UniversalSearch = () => {
 
   const studentLinks = [
     { name: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={18} /> },
+    { name: "Live Examinations", path: "/dashboard/live-exams", icon: <Radio size={18} /> },
     { name: "My Exams", path: "/dashboard/exams", icon: <BookOpen size={18} /> },
     { name: "Practice", path: "/dashboard/practice", icon: <PenTool size={18} /> },
     { name: "Custom Test", path: "/dashboard/create-custom-quiz", icon: <Target size={18} /> },
@@ -27,6 +28,7 @@ const UniversalSearch = () => {
 
   const adminLinks = [
     { name: "Admin Dashboard", path: "/admin/dashboard", icon: <LayoutDashboard size={18} /> },
+    { name: "Live Examinations", path: "/admin/live-exams", icon: <Radio size={18} /> },
     { name: "Manage Exams", path: "/admin/exams", icon: <Layers size={18} /> },
     { name: "Manage Quizzes", path: "/admin/manage-quizzes", icon: <FileText size={18} /> },
     { name: "Score Analytics", path: "/admin/score-analytics", icon: <BarChart size={18} /> },
