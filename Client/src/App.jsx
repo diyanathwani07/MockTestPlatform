@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { initPushNotifications } from './utils/pushNotifications';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
 import AdminRoute from "./components/AdminRoute";
@@ -95,8 +95,14 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
           <Route path="/onboarding" element={<StudentOnboarding />} />
+        {/* ================= LEGAL & POLICY ROUTES ================= */}
+        <Route path="/terms" element={<TermsConditions />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/terms-and-conditions" element={<TermsConditions />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/refunds" element={<RefundPolicy />} />
+        <Route path="/refund" element={<RefundPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
 
         {/* ================= LIVE EXAMINATION ROUTES ================= */}
@@ -693,6 +699,9 @@ function App() {
             </AdminRoute>
           }
         />
+
+        {/* Catch-all route to prevent blank screens */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
 
       </Routes>
       </Suspense>

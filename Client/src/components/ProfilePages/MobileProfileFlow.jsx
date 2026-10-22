@@ -315,24 +315,24 @@ export default function MobileProfileFlow({
                   <span className="dl-badge"><Shield size={14} /> Your privacy matters</span>
                 </div>
                 <div className="dl-grid">
-                  <a href="/terms" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
+                  <Link to="/terms" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <FileText size={20} style={{ color: 'var(--text-secondary)' }} />
                       <span style={{ fontWeight: '600' }}>Terms & Conditions</span>
                     </div>
-                  </a>
-                  <a href="/privacy" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
+                  </Link>
+                  <Link to="/privacy" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <Shield size={20} style={{ color: 'var(--text-secondary)' }} />
                       <span style={{ fontWeight: '600' }}>Privacy Policy</span>
                     </div>
-                  </a>
-                  <a href="/refunds" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
+                  </Link>
+                  <Link to="/refunds" className="dl-item" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <RefreshCw size={20} style={{ color: 'var(--text-secondary)' }} />
                       <span style={{ fontWeight: '600' }}>Refunds & Cancellation Policy</span>
                     </div>
-                  </a>
+                  </Link>
                 </div>
               </div>
             ) : (
