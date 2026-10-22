@@ -21,7 +21,7 @@ function HelpSupport() {
   const [myTickets, setMyTickets] = useState([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const ticketsPerPage = 5;
+  const ticketsPerPage = 6;
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
