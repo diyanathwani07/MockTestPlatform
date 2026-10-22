@@ -34,7 +34,7 @@ exports.createSeries = async (req, res) => {
       type: "NEW_EXAM_SERIES",
       title: "New exam series available",
       message: `"${series.title}" is now live.`,
-      link: `/exam-series/${series._id}`,
+      link: `/student/exams/${series._id}`,
       relatedId: series._id
     });
 
@@ -200,7 +200,7 @@ exports.updateSeries = async (req, res) => {
         type: "NEW_EXAM_SERIES",
         title: "New exam series available",
         message: `"${series.title}" is now live.`,
-        link: `/exam-series/${series._id}`,
+        link: `/student/exams/${series._id}`,
         relatedId: series._id
       });
     }

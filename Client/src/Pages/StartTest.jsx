@@ -22,8 +22,10 @@ function StartTest() {
   const [countdown, setCountdown] = useState(null); // null = not started
   const timerRef = useRef(null);
 
-  // If navigated from StudentDashboard, a quiz was already chosen — lock it
-  const preSelectedQuizId = location.state?.preSelectedQuizId || null;
+  // If navigated from StudentDashboard or notification link, a quiz was already chosen — lock it
+  const queryParams = new URLSearchParams(location.search);
+  const queryQuizId = queryParams.get("quizId") || queryParams.get("id");
+  const preSelectedQuizId = location.state?.preSelectedQuizId || location.state?.quizId || queryQuizId || null;
 
   // 🌐 Fetch all live quizzes from MongoDB
   useEffect(() => {
@@ -33,10 +35,27 @@ function StartTest() {
         const liveQuizzes = response.data;
         setQuizzes(liveQuizzes);
 
-        const preId = location.state?.preSelectedQuizId;
-        const preSelected = preId
+        const preId = preSelectedQuizId;
+        let preSelected = preId
           ? liveQuizzes.find((q) => q._id === preId)
-          : liveQuizzes[0];
+          : null;
+
+        // If not in standard published batch, fetch directly by ID
+        if (!preSelected && preId) {
+          try {
+            const singleRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${preId}`);
+            if (singleRes.data) {
+              preSelected = singleRes.data;
+              setQuizzes((prev) => [singleRes.data, ...prev.filter((q) => q._id !== singleRes.data._id)]);
+            }
+          } catch (e) {
+            console.error("Error fetching preselected quiz by id:", e);
+          }
+        }
+
+        if (!preSelected) {
+          preSelected = liveQuizzes[0];
+        }
 
         if (preSelected) setSelectedQuiz(preSelected);
       } catch (error) {
@@ -46,7 +65,7 @@ function StartTest() {
       }
     };
     fetchQuizzes();
-  }, []);
+  }, [preSelectedQuizId]);
 
   // ── Anti-Cheat: Disable Right-Click, F12, DevTools, and Run Debugger loop ──
   useEffect(() => {

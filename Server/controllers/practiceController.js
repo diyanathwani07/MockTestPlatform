@@ -247,7 +247,7 @@ const createPracticeQuiz = async (req, res) => {
         type: "NEW_PRACTICE_PUBLISHED",
         title: "New practice quiz available",
         message: `A new practice quiz "${createdQuiz.title}" (${createdQuiz.subject}) is now available to practice!`,
-        link: "/practice",
+        link: `/dashboard/practice/test/${createdQuiz._id}`,
         relatedId: createdQuiz._id
       });
       notifyContentTeamSlack(`📝 New practice quiz published: "${createdQuiz.title}" (${createdQuiz.subject})`);
@@ -315,7 +315,7 @@ const updatePracticeQuiz = async (req, res) => {
           type: "NEW_PRACTICE_PUBLISHED",
           title: "New practice quiz available",
           message: `A new practice quiz "${quiz.title}" (${quiz.subject}) is now available to practice!`,
-          link: "/practice",
+          link: `/dashboard/practice/test/${quiz._id}`,
           relatedId: quiz._id
         });
         notifyContentTeamSlack(`📝 New practice quiz published: "${quiz.title}" (${quiz.subject})`);

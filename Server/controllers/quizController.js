@@ -76,7 +76,7 @@ const createQuiz = async (req, res) => {
         type: "NEW_QUIZ_PUBLISHED",
         title: "New quiz available",
         message: `A new quiz "${quiz.title}" (${quiz.subject}) has just been published — go check it out!`,
-        link: "/dashboard",
+        link: `/start-test?quizId=${quiz._id}`,
         relatedId: quiz._id
       });
       notifyContentTeamSlack(`📚 New quiz published: "${quiz.title}" (${quiz.subject})`);
@@ -368,7 +368,7 @@ const updateQuiz = async (req, res) => {
         type: "NEW_QUIZ_PUBLISHED",
         title: "New quiz available",
         message: `A new quiz "${quiz.title}" (${quiz.subject}) has just been published — go check it out!`,
-        link: "/dashboard",
+        link: `/start-test?quizId=${quiz._id}`,
         relatedId: quiz._id
       });
       notifyContentTeamSlack(`📚 New quiz published: "${quiz.title}" (${quiz.subject})`);

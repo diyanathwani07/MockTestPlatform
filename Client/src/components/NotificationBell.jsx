@@ -103,7 +103,35 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleMarkAsRead = async (id, link) => {
+  const handleNotificationClick = async (n) => {
+    const id = n._id || n.id;
+    let targetLink = n.link;
+
+    // Smart link resolution for quiz / exam / series notifications
+    if (n.type === "NEW_QUIZ_PUBLISHED" && n.relatedId) {
+      targetLink = `/start-test?quizId=${n.relatedId}`;
+    } else if (n.type === "NEW_PRACTICE_PUBLISHED" && n.relatedId) {
+      targetLink = `/dashboard/practice/test/${n.relatedId}`;
+    } else if (n.type === "NEW_EXAM_SERIES" && n.relatedId) {
+      targetLink = `/student/exams/${n.relatedId}`;
+    } else if (n.type === "TICKET_REPLY" || n.type === "TICKET_STATUS_CHANGE") {
+      targetLink = `/dashboard/help`;
+    } else if (targetLink && targetLink.startsWith("/exam-series/")) {
+      targetLink = targetLink.replace("/exam-series/", "/student/exams/");
+    } else if ((!targetLink || targetLink === "/dashboard") && n.relatedId) {
+      if (n.title?.toLowerCase().includes("quiz") || n.message?.toLowerCase().includes("quiz")) {
+        targetLink = `/start-test?quizId=${n.relatedId}`;
+      } else if (n.title?.toLowerCase().includes("practice")) {
+        targetLink = `/dashboard/practice/test/${n.relatedId}`;
+      } else if (n.title?.toLowerCase().includes("series") || n.message?.toLowerCase().includes("series")) {
+        targetLink = `/student/exams/${n.relatedId}`;
+      }
+    } else if (!targetLink || targetLink === "/dashboard") {
+      if (n.message?.toLowerCase().includes("quiz") || n.title?.toLowerCase().includes("quiz")) {
+        targetLink = "/dashboard/exams";
+      }
+    }
+
     try {
       const token = localStorage.getItem("token");
       if (id) {
@@ -120,17 +148,20 @@ export default function NotificationBell() {
       
       // Update local state immediately for instant feedback
       setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+        prev.map((item) => (item._id === id ? { ...item, isRead: true } : item))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
 
       setIsOpen(false);
-      if (link) {
-        navigate(link);
+      if (targetLink) {
+        navigate(targetLink);
       }
     } catch (error) {
       console.error("[NotificationBell] Failed to mark as read:", error);
-      fetchNotifications();
+      setIsOpen(false);
+      if (targetLink) {
+        navigate(targetLink);
+      }
     }
   };
 
@@ -291,7 +322,7 @@ export default function NotificationBell() {
               notifications.map((n) => (
                 <div
                   key={n._id || n.id || `${n.title}-${n.createdAt}`}
-                  onClick={() => handleMarkAsRead(n._id, n.link)}
+                  onClick={() => handleNotificationClick(n)}
                   style={{
                     padding: "12px 16px",
                     borderBottom: "1px solid var(--border-color, rgba(255,255,255,0.05))",
