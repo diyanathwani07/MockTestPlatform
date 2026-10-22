@@ -458,7 +458,7 @@ const CreateCustomQuiz = () => {
                       transition: "all 0.2s"
                     }}
                   >
-                    AI Test Builder <span style={{ fontSize: "11px", backgroundColor: "rgba(144, 97, 249, 0.15)", padding: "2px 6px", borderRadius: "8px", color: "#9061F9", fontWeight: "800" }}>🔒 Premium</span>
+                    AI Test Builder
                   </button>
                 </div>
 
