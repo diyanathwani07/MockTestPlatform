@@ -470,7 +470,6 @@ body.dark-mode .sd-subject-card,
 body.dark-mode .custom-quiz-item,
 body.dark-mode .mp-menu-item,
 body.dark-mode .desktop-legal-card,
-body.dark-mode .mp-profile-summary,
 body.dark-mode .result-summary,
 body.dark-mode .result-details {
   border: 1px solid var(--border-color, var(--border-color)) !important;
@@ -495,8 +494,7 @@ body.dark-mode .status-badge,
 body.dark-mode .role-outline-badge,
 body.dark-mode .question-badge,
 body.dark-mode .practice-subject-badge,
-body.dark-mode .badge,
-body.dark-mode .mp-badge-student {
+body.dark-mode .badge {
   background: var(--bg-input) !important;
   color: #C8C3E8 !important;
   border: 1px solid var(--border-color) !important;

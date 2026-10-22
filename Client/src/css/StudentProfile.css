@@ -885,7 +885,11 @@ body.dark-mode .sp-badge {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .mp-avatar-wrapper {
@@ -956,13 +960,34 @@ body.dark-mode .sp-badge {
   margin: 0 0 6px 0;
 }
 
-.mp-badge-student {
+.mp-badge-student,
+.mp-badge-role {
   font-size: 12px;
   background: var(--bg-input, rgba(255,255,255,0.05));
   color: var(--text-secondary, #94A3B8);
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 20px;
-  font-weight: 500;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mp-badge-role.superadmin {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4) !important;
+}
+
+.mp-badge-role.admin {
+  background: var(--primary) !important;
+  color: var(--primary-foreground, #ffffff) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mp-badge-role.student {
+  background: var(--bg-input, rgba(255,255,255,0.08)) !important;
+  color: var(--text-secondary, #94A3B8) !important;
 }
 
 .mp-menu-group {
@@ -1423,7 +1448,8 @@ body.dark-mode .sp-badge {
     font-size: 14px;
   }
   
-  .mp-profile-summary .mp-badge-student {
+  .mp-profile-summary .mp-badge-student,
+  .mp-profile-summary .mp-badge-role {
     grid-row: 3;
     grid-column: 2;
     margin: 0;

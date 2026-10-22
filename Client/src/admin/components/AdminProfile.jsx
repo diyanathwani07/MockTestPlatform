@@ -24,19 +24,24 @@ function AdminProfile() {
   const [user, setUser] = useState(initialStored);
 
   const computeInitials = (u) => {
-    const name = u?.fullName || u?.name || 'Admin';
+    const isSuper = u?.role === 'superadmin';
+    const defaultInit = isSuper ? 'SA' : 'AD';
+    const name = u?.fullName || u?.name;
+    if (!name) return defaultInit;
     const parts = name.trim().split(/\s+/);
     if (parts.length > 1) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
-    return parts[0]?.slice(0, 2).toUpperCase() || 'AD';
+    return parts[0]?.slice(0, 2).toUpperCase() || defaultInit;
   };
 
   const computeAdminId = (u) => {
+    const isSuper = u?.role === 'superadmin';
+    const prefix = isSuper ? 'SA' : 'AD';
     const dateStr = new Date(u?.createdAt || Date.now()).getFullYear();
     const rawId = u?._id || u?.id || '0001';
     const shortId = String(rawId).slice(-4).toUpperCase();
-    return `AD${dateStr}${shortId}`;
+    return `${prefix}-${dateStr}-${shortId}`;
   };
 
   const [initials, setInitials] = useState(() => computeInitials(initialStored));
@@ -178,6 +183,7 @@ function AdminProfile() {
       const merged = { ...user, ...updated };
       setUser(merged);
       setInitials(computeInitials(merged));
+      setAdminId(computeAdminId(merged));
       localStorage.setItem('user', JSON.stringify(merged));
       window.dispatchEvent(new Event('user-updated'));
       setActiveScreen('overview'); // Go back to overview after saving
@@ -190,11 +196,14 @@ function AdminProfile() {
   };
 
   // Determine navbar title dynamically
-  let navTitle = "Admin Profile";
-  if (activeScreen === "account") navTitle = "Admin Profile > Account Details";
-  else if (activeScreen === "password") navTitle = "Admin Profile > Change Password";
-  else if (activeScreen === "language") navTitle = "Admin Profile > Language";
-  else if (activeScreen === "about") navTitle = "Admin Profile > About Us";
+  const isSuper = user?.role === 'superadmin';
+  const roleTitle = isSuper ? 'Super Admin' : 'Admin';
+
+  let navTitle = isMobile ? `${roleTitle} Profile` : `${roleTitle} Profile`;
+  if (activeScreen === "account") navTitle = isMobile ? "Account Details" : `${roleTitle} Profile > Account Details`;
+  else if (activeScreen === "password") navTitle = isMobile ? "Change Password" : `${roleTitle} Profile > Change Password`;
+  else if (activeScreen === "language") navTitle = isMobile ? "Language" : `${roleTitle} Profile > Language`;
+  else if (activeScreen === "about") navTitle = isMobile ? "About Us" : `${roleTitle} Profile > About Us`;
 
   return (
     <div className="admin-layout" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>

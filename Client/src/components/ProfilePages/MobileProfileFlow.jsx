@@ -168,7 +168,7 @@ export default function MobileProfileFlow({
   };
 
   const renderHeader = (title) => {
-    if (isDesktop) return null;
+    if (isDesktop || isAdmin) return null;
 
     return (
       <div className="mp-header" style={{ paddingLeft: title === "Profile" ? "60px" : "20px" }}>
@@ -197,7 +197,7 @@ export default function MobileProfileFlow({
               {(user.avatar || user.profilePicture) ? (
                 <img src={user.avatar || user.profilePicture} alt="Profile" />
               ) : (
-                <span>{initials || (isAdmin ? "AD" : "ST")}</span>
+                <span>{initials || (user.role === "superadmin" ? "SA" : isAdmin ? "AD" : "ST")}</span>
               )}
             </div>
             {!previewMode && (
@@ -206,12 +206,22 @@ export default function MobileProfileFlow({
               </button>
             )}
           </div>
-          <h2 className="mp-name">{user.fullName || user.name || (isAdmin ? "Admin User" : "Student Name")}</h2>
-          <p className="mp-student-id">{isAdmin ? (adminId ? `Admin ID: ${adminId}` : "Admin ID: AD2026") : (studentId ? `Student ID: ${studentId}` : "")}</p>
+          <h2 className="mp-name">{user.fullName || user.name || (user.role === "superadmin" ? "Super Admin" : isAdmin ? "Admin User" : "Student Name")}</h2>
+          <p className="mp-student-id">
+            {isAdmin ? (
+              user.role === "superadmin" 
+                ? (adminId ? `Super Admin ID: ${adminId}` : "Super Admin ID: SA-2026-0001")
+                : (adminId ? `Admin ID: ${adminId}` : "Admin ID: AD-2026-0001")
+            ) : (
+              studentId ? `Student ID: ${studentId}` : ""
+            )}
+          </p>
           {isAdmin ? (
-            <span className="mp-badge-student" style={{background: "var(--primary)", color: "var(--primary-foreground)"}}>Admin</span>
+            <span className={`mp-badge-role ${user.role === 'superadmin' ? 'superadmin' : 'admin'}`}>
+              {user.role === 'superadmin' ? 'Super Admin' : 'Admin'}
+            </span>
           ) : (
-            <span className="mp-badge-student">Student</span>
+            <span className="mp-badge-role student">Student</span>
           )}
         </div>
 

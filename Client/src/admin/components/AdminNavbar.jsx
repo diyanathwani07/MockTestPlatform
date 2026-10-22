@@ -11,7 +11,7 @@ import "../../css/admin/AdminLayout.css";
 import { useConfirm } from "../../context/ConfirmContext";
 import { optimizeAvatar } from "../../utils/imageOptimizer";
 
-function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard" }) {
+function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard", onNavigateBack }) {
   const confirm = useConfirm();
   const { toggleTheme } = useTheme(); 
   const { collapsed, toggleSidebarCollapse } = useSidebar();
@@ -45,6 +45,30 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
+        {onNavigateBack && (
+          <button
+            onClick={onNavigateBack}
+            className="navbar-back-btn"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px',
+              marginRight: '6px',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              transition: 'all 0.15s ease',
+              flexShrink: 0
+            }}
+            title="Go back"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={18} />
+          </button>
+        )}
         <span 
           onClick={() => navigate(parentLink)}
           className="hidden sm:inline navbar-breadcrumb-home"
@@ -105,7 +129,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
                 className="drop-link"
                 onClick={() => { setProfileOpen(false); navigate("/admin/profile"); }}
               >
-                <User size={16} style={{ marginRight: "8px" }} /> Admin Profile
+                <User size={16} style={{ marginRight: "8px" }} /> {currentUser?.role === 'superadmin' ? 'Super Admin Profile' : 'Admin Profile'}
               </div>
               <div 
                 className="drop-link"
