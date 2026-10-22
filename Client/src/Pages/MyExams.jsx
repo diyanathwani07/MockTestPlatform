@@ -630,7 +630,7 @@ function MyExams() {
                             {/* Stats row */}
                             <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
                               <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                <FileText size={13} /> {(series.paperCount || 0) + (series.flashcardCount || 0)} Items
+                                <FileText size={13} /> {(series.paperCount || 0) + (series.flashcardCount || 0)} {((series.paperCount || 0) + (series.flashcardCount || 0)) === 1 ? "Test" : "Tests"}
                               </span>
                               <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                 <CheckCircle2 size={13} /> {attemptedCount} Attempted

@@ -183,7 +183,7 @@ function ExamSeriesDetails() {
                     <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "13px", color: "var(--text-muted)", textAlign: "left" }}>
                       <span><strong>Category:</strong> {series.category || "General"}</span>
                       <span>•</span>
-                      <span><strong>Total Items:</strong> {quizzes.length + flashcardSets.length}</span>
+                      <span><strong>Total Tests:</strong> {quizzes.length + flashcardSets.length}</span>
                       <span>•</span>
                       <span><strong>Attempted:</strong> {quizzes.filter(q => attemptedQuizIds.includes(q._id)).length}</span>
                     </div>

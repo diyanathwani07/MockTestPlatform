@@ -861,7 +861,7 @@ function ExamSeriesManager() {
                       
                       <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
                         <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                          <FileText size={13} /> 2 Items
+                          <FileText size={13} /> 2 Tests
                         </span>
                         <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                           <CheckCircle size={13} /> 0 Attempted
