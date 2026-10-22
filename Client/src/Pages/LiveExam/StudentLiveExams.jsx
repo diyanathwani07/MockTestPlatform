@@ -43,6 +43,13 @@ function StudentLiveExams() {
   const [activeTab, setActiveTab] = useState("all"); // "all" | "live" | "upcoming" | "completed" | "myAttempts"
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExamCategory, setSelectedExamCategory] = useState("all");
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth <= 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchLiveExamsFeed = useCallback(async (isSilent = false) => {
     try {
@@ -122,13 +129,22 @@ function StudentLiveExams() {
       <div className="sd-main-content">
         <StudentNavbar title="Live Examinations" />
 
-        <div className="sd-content" style={{ padding: "24px 20px 80px", maxWidth: "1280px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+        <div 
+          className="sd-content" 
+          style={{ 
+            padding: isMobile ? "16px 14px 60px" : "24px 32px 80px", 
+            maxWidth: "100%", 
+            margin: "0", 
+            width: "100%", 
+            boxSizing: "border-box" 
+          }}
+        >
           
           {/* Hero Banner Card */}
           <div
             className="live-card"
             style={{
-              padding: "28px 24px",
+              padding: isMobile ? "20px 16px" : "28px 24px",
               background: "linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(30, 27, 75, 0.35) 100%)",
               border: "1.5px solid rgba(139, 92, 246, 0.3)",
               display: "flex",
@@ -487,8 +503,8 @@ function StudentLiveExams() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-                gap: "20px",
+                gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? "280px" : "330px"}, 1fr))`,
+                gap: isMobile ? "14px" : "20px",
               }}
             >
               {filteredExams.map((exam) => {
