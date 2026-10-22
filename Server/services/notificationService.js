@@ -6,6 +6,11 @@ const { admin } = require("../config/firebaseAdmin");
 
 async function sendFcmPush(userIds, title, message, link) {
   try {
+    if (!admin.apps || admin.apps.length === 0) {
+      console.warn("[FCM Push] Firebase Admin is not initialized. Skipping push delivery.");
+      return;
+    }
+
     const devices = await NotificationDevice.find({ userId: { $in: userIds } });
     if (devices.length === 0) return;
 
@@ -81,11 +86,12 @@ async function notifyUser(userId, { type, title, message, link = "", relatedId =
  */
 async function notifyAllStudents({ type, title, message, link = "", relatedId = null }) {
   try {
-    const activeStudents = await User.find({ role: "user", status: "Active", isDeleted: { $ne: true } }).select("_id");
-    if (activeStudents.length === 0) return [];
+    // Notify all active students as well as admins/superadmins so testers and students all receive updates
+    const activeRecipients = await User.find({ status: "Active", isDeleted: { $ne: true } }).select("_id role notificationPreferences");
+    if (activeRecipients.length === 0) return [];
 
-    const notificationsToInsert = activeStudents.map(student => ({
-      userId: student._id,
+    const notificationsToInsert = activeRecipients.map(recipient => ({
+      userId: recipient._id,
       type,
       title,
       message,
@@ -95,14 +101,14 @@ async function notifyAllStudents({ type, title, message, link = "", relatedId = 
 
     const result = await Notification.insertMany(notificationsToInsert, { ordered: false });
 
-    // Real-time WebSocket delivery to all active students
+    // Real-time WebSocket delivery to all active users
     result.forEach(n => {
       emitToUser(n.userId, "notification", n);
     });
 
-    // FCM Push for students who have it enabled
-    const enabledStudents = await User.find({ _id: { $in: activeStudents.map(s => s._id) }, 'notificationPreferences.push': { $ne: false } }).select("_id");
-    const enabledIds = enabledStudents.map(s => s._id);
+    // FCM Push for users who have it enabled (push !== false)
+    const enabledRecipients = activeRecipients.filter(u => u.notificationPreferences?.push !== false);
+    const enabledIds = enabledRecipients.map(s => s._id);
     if (enabledIds.length > 0) {
       await sendFcmPush(enabledIds, title, message, link);
     }

@@ -46,6 +46,12 @@ export const unregisterDeviceToken = async (token) => {
 export const setupNativePushNotifications = async () => {
   if (!Capacitor.isNativePlatform()) return;
   
+  // Re-register cached native token with backend if already stored from previous permission grant
+  const cachedToken = localStorage.getItem('fcm_token');
+  if (cachedToken) {
+    registerTokenWithBackend(cachedToken, 'android');
+  }
+
   let permStatus = await PushNotifications.checkPermissions();
 
   if (permStatus.receive === 'prompt') {

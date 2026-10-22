@@ -40,6 +40,7 @@ const { initSocket } = require("./services/socketService");
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const { initFirebaseAdmin } = require("./config/firebaseAdmin");
 const resultRoutes = require("./routes/resultRoutes");
 const examSeriesRoutes = require("./routes/examSeriesRoutes");
 const examStructureRoutes = require("./routes/examStructureRoutes");
@@ -59,6 +60,7 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 // MongoDB Connection
 connectDB().then(async () => {
+  initFirebaseAdmin();
   seedDepartments();
   startSubscriptionExpiryCron();
   const { syncLegacySubscriptions } = require("./utils/subscriptionUtils");
