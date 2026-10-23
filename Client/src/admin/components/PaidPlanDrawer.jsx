@@ -68,15 +68,29 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, existingPlans = [], cur
 
       updated[index] = { ...updated[index], [field]: value };
       
-      // Auto-calculate selling price when originalPrice or discountPercent changes
-      if (field === "originalPrice" || field === "discountPercent") {
-        const op = field === "originalPrice" ? value : updated[index].originalPrice;
-        const dp = field === "discountPercent" ? value : updated[index].discountPercent;
-        updated[index].price = Math.round(op * (1 - dp / 100));
-        if (updated[index].price < 0) updated[index].price = 0;
+      // Explicit discount edit: recalculate selling price based on discount
+      if (field === "discountPercent") {
+        const op = updated[index].originalPrice;
+        const dp = value;
+        if (op > 0) {
+          updated[index].price = Math.max(0, Math.round(op * (1 - dp / 100)));
+        }
       }
       
-      // Auto-calculate discount when selling price (price) changes
+      // Original price change: preserve user-typed selling price and update discount badge
+      if (field === "originalPrice") {
+        const op = value;
+        const currentPrice = updated[index].price;
+        if (currentPrice > 0 && op > 0) {
+          const calculatedDiscount = Math.round(((op - currentPrice) / op) * 100);
+          updated[index].discountPercent = calculatedDiscount >= 0 && calculatedDiscount <= 100 ? calculatedDiscount : 0;
+        } else if (!currentPrice && op > 0) {
+          updated[index].price = op;
+          updated[index].discountPercent = 0;
+        }
+      }
+      
+      // Authoritative selling price: update price directly and calculate discount badge
       if (field === "price") {
         const op = updated[index].originalPrice;
         const sp = value;
