@@ -245,12 +245,29 @@ const getLiveExams = async (req, res) => {
     delete counts._id;
 
     // Aggregate real-time attempt counts for each live exam
-    const examIds = exams.map((e) => e._id);
+    const examObjectIds = exams
+      .map((e) => {
+        try {
+          return new mongoose.Types.ObjectId(e._id);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+    const examStringIds = exams.map((e) => e._id.toString());
+
     const attemptStats = await LiveExamAttempt.aggregate([
-      { $match: { liveExamId: { $in: examIds } } },
+      {
+        $match: {
+          $or: [
+            { liveExamId: { $in: examObjectIds } },
+            { liveExamId: { $in: examStringIds } },
+          ],
+        },
+      },
       {
         $group: {
-          _id: "$liveExamId",
+          _id: { $toString: "$liveExamId" },
           total: { $sum: 1 },
           inLobby: { $sum: { $cond: [{ $eq: ["$status", "in_lobby"] }, 1, 0] } },
           inProgress: { $sum: { $cond: [{ $eq: ["$status", "in_progress"] }, 1, 0] } },
@@ -265,7 +282,9 @@ const getLiveExams = async (req, res) => {
 
     const statsMap = {};
     attemptStats.forEach((st) => {
-      statsMap[st._id.toString()] = st;
+      if (st._id) {
+        statsMap[st._id.toString()] = st;
+      }
     });
 
     const enrichedExams = exams.map((exam) => {

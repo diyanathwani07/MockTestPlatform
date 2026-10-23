@@ -44,9 +44,9 @@ export default function LiveExamsList() {
   const [editingExam, setEditingExam] = useState(null);
   const [attendanceExam, setAttendanceExam] = useState(null);
 
-  const fetchLiveExams = async () => {
+  const fetchLiveExams = async (showSpinner = true) => {
     try {
-      setLoading(true);
+      if (showSpinner) setLoading(true);
       const token = localStorage.getItem("token");
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/live-exams?status=${statusTab}&search=${search}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -58,12 +58,27 @@ export default function LiveExamsList() {
     } catch (err) {
       console.error("Failed to fetch live examinations:", err);
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLiveExams();
+    fetchLiveExams(true);
+
+    const interval = setInterval(() => {
+      // Silent real-time background refresh for attendance & attempt tracking
+      fetchLiveExams(false);
+    }, 12000);
+
+    const handleFocus = () => {
+      fetchLiveExams(false);
+    };
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, [statusTab]);
 
   const handleSearchSubmit = (e) => {
@@ -596,7 +611,25 @@ export default function LiveExamsList() {
       {attendanceExam && (
         <AttendanceModal
           isOpen={Boolean(attendanceExam)}
-          onClose={() => setAttendanceExam(null)}
+          onClose={() => {
+            setAttendanceExam(null);
+            fetchLiveExams(false);
+          }}
+          onAttendanceUpdated={(id, count) => {
+            setExams((prev) =>
+              prev.map((e) =>
+                e._id === id
+                  ? {
+                      ...e,
+                      stats: {
+                        ...(e.stats || {}),
+                        total: count,
+                      },
+                    }
+                  : e
+              )
+            );
+          }}
           examId={attendanceExam._id}
           examTitle={attendanceExam.title}
         />

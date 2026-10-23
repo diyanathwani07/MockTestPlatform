@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { X, Download, Search, Users, CheckCircle, Clock, Video, AlertCircle, RefreshCw } from "lucide-react";
 
-export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) {
+export default function AttendanceModal({ isOpen, onClose, examId, examTitle, onAttendanceUpdated }) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [search, setSearch] = useState("");
@@ -17,6 +17,9 @@ export default function AttendanceModal({ isOpen, onClose, examId, examTitle }) 
         headers: { Authorization: `Bearer ${token}` },
       });
       setData(res.data);
+      if (res.data?.attempts && onAttendanceUpdated) {
+        onAttendanceUpdated(examId, res.data.attempts.length, res.data.attempts);
+      }
     } catch (err) {
       console.error("Failed to fetch attendance:", err);
     } finally {
