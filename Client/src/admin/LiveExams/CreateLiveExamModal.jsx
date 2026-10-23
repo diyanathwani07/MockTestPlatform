@@ -972,14 +972,54 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
 
           {/* 8. Instructions */}
           <div>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
-              Exam Instructions (Optional)
-            </label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: "600" }}>
+                Important Examination Instructions
+              </label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setInstructions(
+`Server-Authoritative Clock: The countdown timer is synced with the official examination server. When time expires, your answers will automatically submit.
+Network & Disconnection Safety: Your selected answers are periodically auto-saved. If you experience a brief disconnection or accidental page refresh, simply return to this link to resume.
+Single Attempt Rule: You are permitted exactly one attempt. Once submitted, answers cannot be edited.
+Late Entry: Entry permitted up to 15 minutes after start.`
+                  )}
+                  style={{
+                    background: "rgba(110, 63, 243, 0.12)",
+                    border: "1px solid rgba(110, 63, 243, 0.3)",
+                    color: "var(--violet, #8B5CF6)",
+                    borderRadius: "6px",
+                    padding: "3px 8px",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    cursor: "pointer"
+                  }}
+                >
+                  Load Default Template
+                </button>
+                {instructions && (
+                  <button
+                    type="button"
+                    onClick={() => setInstructions("")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--text-muted, #94a3b8)",
+                      fontSize: "11px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
             <textarea
-              rows="3"
+              rows="6"
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              placeholder="e.g. Please ensure a stable internet connection. Use of external references or switching tabs is monitored."
+              placeholder={`Write custom instructions here. Each line will show as a bullet point in the student lobby.\nExample:\nNegative Marking: 0.25 marks deducted for wrong answers.\nCalculator Rule: No external calculators allowed.`}
               style={{
                 width: "100%",
                 padding: "10px 14px",
@@ -990,8 +1030,12 @@ export default function CreateLiveExamModal({ isOpen, onClose, onCreated, editEx
                 fontSize: "13px",
                 outline: "none",
                 resize: "vertical",
+                lineHeight: "1.5"
               }}
             />
+            <p style={{ margin: "4px 0 0 0", fontSize: "11.5px", color: "var(--text-muted, #94a3b8)" }}>
+              Tip: Each new line will be displayed as a distinct bullet point in the student lobby. Use "Title: Description" to bold headings.
+            </p>
           </div>
 
           {/* Modal Footer */}

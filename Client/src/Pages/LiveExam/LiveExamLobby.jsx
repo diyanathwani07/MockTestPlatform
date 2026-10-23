@@ -17,6 +17,9 @@ import {
   ChevronRight,
   RefreshCw,
   Palette,
+  Edit3,
+  X,
+  Check,
 } from "lucide-react";
 import Logo from "../../components/Logo";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -24,6 +27,48 @@ import { useTheme } from "../../context/ThemeContext";
 import "../../css/LiveExam.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
+
+const parseInstructions = (rawText, examData) => {
+  if (!rawText || !rawText.trim()) {
+    const lateEntryText = examData?.allowLateEntry
+      ? `Entry permitted up to ${examData?.entryWindowMinutes || 15} minutes after start.`
+      : "Late entry is strictly prohibited.";
+    return [
+      {
+        title: "Server-Authoritative Clock",
+        body: "The countdown timer is synced with the official examination server. When time expires, your answers will automatically submit.",
+      },
+      {
+        title: "Network & Disconnection Safety",
+        body: "Your selected answers are periodically auto-saved. If you experience a brief disconnection or accidental page refresh, simply return to this link to resume.",
+      },
+      {
+        title: "Single Attempt Rule",
+        body: "You are permitted exactly one attempt. Once submitted, answers cannot be edited.",
+      },
+      {
+        title: "Late Entry",
+        body: lateEntryText,
+      },
+    ];
+  }
+
+  const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  return lines.map((line) => {
+    const cleanLine = line.replace(/^([•\-\*]|\d+[\.\)])\s*/, "").trim();
+    const colonIdx = cleanLine.indexOf(":");
+    if (colonIdx > 0 && colonIdx < 45) {
+      return {
+        title: cleanLine.slice(0, colonIdx).trim(),
+        body: cleanLine.slice(colonIdx + 1).trim(),
+      };
+    }
+    return {
+      title: null,
+      body: cleanLine,
+    };
+  });
+};
 
 function LiveExamLobby() {
   const { slugOrToken } = useParams();
@@ -53,6 +98,42 @@ function LiveExamLobby() {
   const token = localStorage.getItem("token");
   const isAuthenticated = Boolean(token);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = Boolean(user && (user.role === "admin" || user.role === "superadmin"));
+
+  // Inline Instructions Editing State (Admin Only)
+  const [showEditInstructionsModal, setShowEditInstructionsModal] = useState(false);
+  const [instructionsDraft, setInstructionsDraft] = useState("");
+  const [savingInstructions, setSavingInstructions] = useState(false);
+  const [editInstructionsError, setEditInstructionsError] = useState("");
+
+  const handleOpenEditInstructions = () => {
+    setInstructionsDraft(exam?.instructions || "");
+    setEditInstructionsError("");
+    setShowEditInstructionsModal(true);
+  };
+
+  const handleSaveInstructions = async () => {
+    if (!exam?._id) return;
+    try {
+      setSavingInstructions(true);
+      setEditInstructionsError("");
+      await axios.put(
+        `${API_BASE}/api/live-exams/${exam._id}`,
+        { instructions: instructionsDraft },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setExam((prev) => ({
+        ...prev,
+        instructions: instructionsDraft.trim(),
+      }));
+      setShowEditInstructionsModal(false);
+    } catch (err) {
+      console.error("Error saving instructions:", err);
+      setEditInstructionsError(err.response?.data?.message || "Failed to update instructions.");
+    } finally {
+      setSavingInstructions(false);
+    }
+  };
 
   // Cleanup webcam stream on unmount
   useEffect(() => {
@@ -525,16 +606,46 @@ function LiveExamLobby() {
         {/* Instructions Card (only shown when exam is active/upcoming) */}
         {!isCompleted && !isAlreadySubmitted && (
           <div className="live-card">
-            <h3 style={{ fontSize: "16px", fontWeight: "700", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-              <HelpCircle size={18} color="var(--primary)" /> Important Examination Instructions
-            </h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "700", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                <HelpCircle size={18} color="var(--primary)" /> Important Examination Instructions
+              </h3>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={handleOpenEditInstructions}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "rgba(110, 63, 243, 0.12)",
+                    border: "1px solid rgba(110, 63, 243, 0.3)",
+                    color: "var(--primary, #8B5CF6)",
+                    borderRadius: "8px",
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <Edit3 size={13} /> Edit Instructions
+                </button>
+              )}
+            </div>
 
             <ul className="live-instructions-list" style={{ margin: 0, paddingLeft: "20px", color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.7" }}>
-              <li><strong>Server-Authoritative Clock:</strong> The countdown timer is synced with the official examination server. When time expires, your answers will automatically submit.</li>
-              <li><strong>Network & Disconnection Safety:</strong> Your selected answers are periodically auto-saved. If you experience a brief disconnection or accidental page refresh, simply return to this link to resume.</li>
-              <li><strong>Single Attempt Rule:</strong> You are permitted exactly one attempt. Once submitted, answers cannot be edited.</li>
-              <li><strong>Late Entry:</strong> {exam.allowLateEntry ? `Entry permitted up to ${exam.entryWindowMinutes || 15} minutes after start.` : "Late entry is strictly prohibited."}</li>
-              {exam.instructions && <li style={{ whiteSpace: "pre-line", marginTop: "8px" }}>{exam.instructions}</li>}
+              {parseInstructions(exam.instructions, exam).map((item, idx) => (
+                <li key={idx} style={{ marginBottom: "6px" }}>
+                  {item.title ? (
+                    <>
+                      <strong style={{ color: "var(--text-primary)" }}>{item.title}:</strong> {item.body}
+                    </>
+                  ) : (
+                    <span>{item.body}</span>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
         )}
@@ -584,6 +695,166 @@ function LiveExamLobby() {
                 The "Start Examination" button will automatically activate once the clock reaches start time.
               </p>
             )}
+          </div>
+        )}
+
+        {/* Inline Instructions Editor Modal (Admin Only) */}
+        {showEditInstructionsModal && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.75)",
+              backdropFilter: "blur(6px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 99999,
+              padding: "16px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "var(--bg-card, #1c1a2e)",
+                border: "1px solid var(--border-color, rgba(255, 255, 255, 0.15))",
+                borderRadius: "16px",
+                width: "100%",
+                maxWidth: "600px",
+                padding: "24px",
+                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5)",
+                color: "var(--text-primary, #ffffff)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Edit3 size={18} color="var(--primary)" /> Edit Examination Instructions
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowEditInstructionsModal(false)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-secondary, #94a3b8)",
+                    cursor: "pointer",
+                    padding: "4px",
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "var(--text-secondary, #94a3b8)", lineHeight: "1.5" }}>
+                Each line will be displayed as a bullet point in the student lobby. Use <strong>Title: Description</strong> to bold headings.
+              </p>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginBottom: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setInstructionsDraft(
+`Server-Authoritative Clock: The countdown timer is synced with the official examination server. When time expires, your answers will automatically submit.
+Network & Disconnection Safety: Your selected answers are periodically auto-saved. If you experience a brief disconnection or accidental page refresh, simply return to this link to resume.
+Single Attempt Rule: You are permitted exactly one attempt. Once submitted, answers cannot be edited.
+Late Entry: ${exam?.allowLateEntry ? `Entry permitted up to ${exam.entryWindowMinutes || 15} minutes after start.` : "Late entry is strictly prohibited."}`
+                    )
+                  }
+                  style={{
+                    background: "rgba(110, 63, 243, 0.12)",
+                    border: "1px solid rgba(110, 63, 243, 0.3)",
+                    color: "var(--primary, #8B5CF6)",
+                    borderRadius: "6px",
+                    padding: "4px 10px",
+                    fontSize: "11.5px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Load Default Template
+                </button>
+                {instructionsDraft && (
+                  <button
+                    type="button"
+                    onClick={() => setInstructionsDraft("")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--text-secondary, #94a3b8)",
+                      fontSize: "11.5px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <textarea
+                rows="7"
+                value={instructionsDraft}
+                onChange={(e) => setInstructionsDraft(e.target.value)}
+                placeholder={`Write your examination instructions here...\nExample:\nNegative Marking: 0.25 marks deducted for wrong answers.\nRough Sheets: Rough paper is allowed.`}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                  backgroundColor: "var(--bg-page, #12121a)",
+                  color: "var(--text-primary, #ffffff)",
+                  fontSize: "13px",
+                  outline: "none",
+                  resize: "vertical",
+                  lineHeight: "1.5",
+                  boxSizing: "border-box",
+                }}
+              />
+
+              {editInstructionsError && (
+                <div style={{ marginTop: "10px", color: "#ef4444", fontSize: "12.5px" }}>
+                  {editInstructionsError}
+                </div>
+              )}
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "18px" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditInstructionsModal(false)}
+                  disabled={savingInstructions}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    background: "transparent",
+                    border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                    color: "var(--text-primary, #ffffff)",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveInstructions}
+                  disabled={savingInstructions}
+                  style={{
+                    padding: "8px 20px",
+                    borderRadius: "8px",
+                    background: "var(--primary, #6366f1)",
+                    border: "none",
+                    color: "#ffffff",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  {savingInstructions ? "Saving..." : "Save Instructions"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
