@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const LiveExamination = require("../models/LiveExamination");
 const LiveExamAttempt = require("../models/LiveExamAttempt");
 const Quiz = require("../models/Quiz");
