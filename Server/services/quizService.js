@@ -288,36 +288,59 @@ const previewQuiz = async (quizId) => {
     return result;
   }
 
-  const populatedSections = [];
   const sortedRefs = [...quiz.sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const validSectionIds = [
+    ...new Set(
+      sortedRefs
+        .map((ref) => ref?.sectionId)
+        .filter((id) => id && mongoose.Types.ObjectId.isValid(id))
+        .map((id) => id.toString())
+    ),
+  ];
 
+  if (validSectionIds.length === 0) {
+    result.sections = [];
+    return result;
+  }
+
+  // Bulk query all modular sections and their questions in one DB round-trip (resolves N+1 query bottleneck)
+  let sections = [];
+  try {
+    sections = await Section.find({ _id: { $in: validSectionIds } })
+      .populate("questions")
+      .populate("subsections.easy")
+      .populate("subsections.medium")
+      .populate("subsections.hard");
+  } catch (e) {
+    console.error("Error bulk-populating sections in previewQuiz:", e);
+  }
+
+  const sectionMap = new Map();
+  sections.forEach((sec) => {
+    if (sec && sec._id) {
+      sectionMap.set(sec._id.toString(), sec);
+    }
+  });
+
+  const populatedSections = [];
   for (const ref of sortedRefs) {
-    if (!ref || !ref.sectionId || !mongoose.Types.ObjectId.isValid(ref.sectionId)) {
-      continue;
+    if (!ref || !ref.sectionId) continue;
+    const secIdStr = ref.sectionId.toString();
+    const section = sectionMap.get(secIdStr);
+    if (!section) continue;
+
+    const flattened = flattenSectionForClient(ref, section);
+    if (flattened.questions && flattened.questions.length > 0) {
+      flattened.questions = flattened.questions.map(formatQuestionForClient);
     }
-    try {
-      const section = await Section.findById(ref.sectionId)
-        .populate("questions")
-        .populate("subsections.easy")
-        .populate("subsections.medium")
-        .populate("subsections.hard");
-      if (section) {
-        const flattened = flattenSectionForClient(ref, section);
-        if (flattened.questions && flattened.questions.length > 0) {
-          flattened.questions = flattened.questions.map(formatQuestionForClient);
+    if (flattened.subsections) {
+      ["easy", "medium", "hard"].forEach((level) => {
+        if (flattened.subsections[level] && flattened.subsections[level].length > 0) {
+          flattened.subsections[level] = flattened.subsections[level].map(formatQuestionForClient);
         }
-        if (flattened.subsections) {
-          ["easy", "medium", "hard"].forEach(level => {
-            if (flattened.subsections[level] && flattened.subsections[level].length > 0) {
-              flattened.subsections[level] = flattened.subsections[level].map(formatQuestionForClient);
-            }
-          });
-        }
-        populatedSections.push(flattened);
-      }
-    } catch (e) {
-      console.error("Error populating section in previewQuiz:", ref.sectionId, e);
+      });
     }
+    populatedSections.push(flattened);
   }
 
   result.sections = populatedSections.filter(Boolean);
@@ -451,10 +474,24 @@ const countQuizQuestions = async (quiz) => {
     return count;
   }
 
+  const validIds = [
+    ...new Set(
+      (quiz.sections || [])
+        .map((r) => r?.sectionId)
+        .filter((id) => id && mongoose.Types.ObjectId.isValid(id))
+        .map((id) => id.toString())
+    ),
+  ];
+  if (!validIds.length) return 0;
+
+  const sections = await Section.find({ _id: { $in: validIds } }).select("type questions subsections");
+  const sectionMap = new Map(sections.map((s) => [s._id.toString(), s]));
+
   let total = 0;
   for (const ref of quiz.sections) {
-    const section = await Section.findById(ref.sectionId);
-    total += countSectionQuestions(section);
+    if (!ref || !ref.sectionId) continue;
+    const s = sectionMap.get(ref.sectionId.toString());
+    if (s) total += countSectionQuestions(s);
   }
   return total;
 };
@@ -475,6 +512,71 @@ const syncToPracticeQuiz = async (quizId, publishAs) => {
   const populatedQuiz = await previewQuiz(quizId);
   if (!populatedQuiz) return;
 
+  // Retrieve any existing practice quiz to preserve existing enriched explanation data on repeated sync
+  const existingPractice = await PracticeQuiz.findOne({ linkedExamId: quizId }).lean();
+  const existingQuestionsMap = new Map();
+  if (existingPractice && Array.isArray(existingPractice.questions)) {
+    existingPractice.questions.forEach((eq) => {
+      if (eq.questionEnglish) {
+        existingQuestionsMap.set(eq.questionEnglish.trim(), eq);
+      }
+    });
+  }
+
+  const mapQuestionToPractice = (q) => {
+    const qText = (q.questionEnglish || "").trim();
+    const existingQ = existingQuestionsMap.get(qText);
+
+    // Resolve correct explanation: source explanations.correct -> source explanation -> existing practice -> empty
+    const correctExpl =
+      q.explanations?.correct ||
+      q.explanation ||
+      existingQ?.explanations?.correct ||
+      "";
+
+    // Resolve incorrect explanations: source explanations.incorrect -> existing practice -> empty map/object
+    let incorrectExpl = {};
+    if (q.explanations?.incorrect) {
+      if (q.explanations.incorrect instanceof Map) {
+        incorrectExpl = Object.fromEntries(q.explanations.incorrect);
+      } else if (typeof q.explanations.incorrect === "object") {
+        incorrectExpl = { ...q.explanations.incorrect };
+      }
+    } else if (existingQ?.explanations?.incorrect) {
+      if (existingQ.explanations.incorrect instanceof Map) {
+        incorrectExpl = Object.fromEntries(existingQ.explanations.incorrect);
+      } else if (typeof existingQ.explanations.incorrect === "object") {
+        incorrectExpl = { ...existingQ.explanations.incorrect };
+      }
+    }
+
+    // Resolve concept summary: source -> existing practice -> empty
+    const conceptSummary =
+      q.explanations?.conceptSummary ||
+      existingQ?.explanations?.conceptSummary ||
+      "";
+
+    // Resolve did you know: source -> existing practice -> empty
+    const didYouKnow =
+      q.explanations?.didYouKnow ||
+      existingQ?.explanations?.didYouKnow ||
+      "";
+
+    return {
+      questionEnglish: q.questionEnglish,
+      questionHindi: q.questionHindi || "",
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      explanations: {
+        correct: correctExpl,
+        incorrect: incorrectExpl,
+        conceptSummary,
+        didYouKnow,
+      },
+      aiGenerated: q.aiGenerated !== undefined ? q.aiGenerated : (existingQ?.aiGenerated || false),
+    };
+  };
+
   const practiceQuestions = [];
 
   // Extract from modular sections
@@ -487,35 +589,13 @@ const syncToPracticeQuiz = async (quizId, publishAs) => {
         ...(sec.subsections?.hard || []),
       ];
       allQs.forEach((q) => {
-        practiceQuestions.push({
-          questionEnglish: q.questionEnglish,
-          questionHindi: q.questionHindi || "",
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-          explanations: {
-            correct: q.explanation || "",
-            incorrect: {},
-            conceptSummary: "",
-            didYouKnow: ""
-          }
-        });
+        practiceQuestions.push(mapQuestionToPractice(q));
       });
     });
   } else {
     // Extract from legacy questions
     (populatedQuiz.questions || []).forEach((q) => {
-      practiceQuestions.push({
-        questionEnglish: q.questionEnglish,
-        questionHindi: q.questionHindi || "",
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        explanations: {
-          correct: q.explanation || "",
-          incorrect: {},
-          conceptSummary: "",
-          didYouKnow: ""
-        }
-      });
+      practiceQuestions.push(mapQuestionToPractice(q));
     });
   }
 
@@ -552,6 +632,7 @@ const syncToPracticeQuiz = async (quizId, publishAs) => {
     pdfUrl: populatedQuiz.pdfUrl,
     pdfFileName: populatedQuiz.pdfFileName,
     allowDownload: populatedQuiz.allowDownload,
+    linkedExamId: quizId,
   };
 
   await PracticeQuiz.findOneAndUpdate(

@@ -452,6 +452,20 @@ const updateLiveExam = async (req, res) => {
       exam.deletedAt = null;
     }
 
+    // If the exam is rescheduled or extended into the future, unblock unsubmitted attempts
+    if (scheduledEnd > now) {
+      await LiveExamAttempt.updateMany(
+        {
+          liveExamId: exam._id,
+          status: "disqualified",
+          resultId: null,
+        },
+        {
+          $set: { status: "registered", startedAt: null, submittedAt: null },
+        }
+      );
+    }
+
     await exam.save();
 
     await logAction(
@@ -973,8 +987,14 @@ const getStudentLiveExamState = async (req, res) => {
       startBlockReason = "The examination has not started yet. Please wait in the lobby.";
     } else if (!exam.allowLateEntry && now > new Date(new Date(exam.scheduledStartTime).getTime() + (exam.entryWindowMinutes || 15) * 60 * 1000)) {
       startBlockReason = "The allowed entry window has passed. Late entry is not permitted.";
-    } else if (attempt && ["submitted", "auto_submitted", "disqualified"].includes(attempt.status)) {
+    } else if (attempt && ["submitted", "auto_submitted"].includes(attempt.status)) {
       startBlockReason = "You have already submitted this examination.";
+    } else if (
+      attempt &&
+      attempt.status === "disqualified" &&
+      (attempt.resultId || (attempt.submittedAt && new Date(attempt.submittedAt) >= new Date(exam.scheduledStartTime)))
+    ) {
+      startBlockReason = "You have been disqualified from this examination.";
     } else {
       canStart = true;
     }
@@ -1076,7 +1096,10 @@ const joinLiveExamLobby = async (req, res) => {
         ],
       });
     } else {
-      if (attempt.status === "registered") {
+      if (
+        attempt.status === "registered" ||
+        (attempt.status === "disqualified" && !attempt.resultId && (!attempt.submittedAt || new Date(attempt.submittedAt) < new Date(exam.scheduledStartTime)))
+      ) {
         attempt.status = "in_lobby";
         attempt.lobbyJoinedAt = now;
       }
@@ -1149,11 +1172,20 @@ const startLiveExamAttempt = async (req, res) => {
       });
     }
 
-    if (["submitted", "auto_submitted"].includes(attempt.status)) {
+    if (["submitted", "auto_submitted"].includes(attempt.status) || attempt.resultId) {
       return res.status(400).json({ message: "You have already submitted this examination." });
     }
     if (attempt.status === "disqualified") {
-      return res.status(403).json({ message: "You have been disqualified from this examination." });
+      const isEligibleToStart =
+        !attempt.resultId &&
+        (!attempt.submittedAt || new Date(attempt.submittedAt) < new Date(exam.scheduledStartTime)) &&
+        (!attempt.startedAt || new Date(attempt.startedAt) < new Date(exam.scheduledStartTime) || !attempt.savedAnswers || Object.keys(attempt.savedAnswers).length === 0);
+
+      if (isEligibleToStart) {
+        attempt.status = "in_lobby";
+      } else {
+        return res.status(403).json({ message: "You have been disqualified from this examination." });
+      }
     }
 
     // Reconnection / Resume: keep existing startedAt and serverDeadline unless exam was rescheduled/expired within window

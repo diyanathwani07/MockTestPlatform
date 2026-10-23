@@ -35,10 +35,11 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Determine Role and Validate Admin Key
+    // Determine Role: Only "admin" is allowed via registration, and only with a non-empty, strictly matched secret
     let finalRole = "user";
     if (role === "admin") {
-      if (adminSecretKey !== process.env.ADMIN_SECRET_KEY) {
+      const serverSecret = process.env.ADMIN_SECRET_KEY ? process.env.ADMIN_SECRET_KEY.trim() : "";
+      if (!serverSecret || !adminSecretKey || adminSecretKey !== serverSecret) {
         return res.status(400).json({
           success: false,
           message: "Invalid Admin Registration Key",

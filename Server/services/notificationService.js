@@ -4,42 +4,63 @@ const NotificationDevice = require("../models/NotificationDevice");
 const { emitToUser, emitToAdmin, emitToDepartment } = require("./socketService");
 const { admin } = require("../config/firebaseAdmin");
 
+const DB_BATCH_SIZE = 500;
+const FCM_MAX_TOKENS = 500; // Firebase Admin Multicast max allowed tokens per call
+
 async function sendFcmPush(userIds, title, message, link) {
   try {
     if (!admin.apps || admin.apps.length === 0) {
       console.warn("[FCM Push] Firebase Admin is not initialized. Skipping push delivery.");
       return;
     }
+    if (!Array.isArray(userIds) || userIds.length === 0) return;
 
-    const devices = await NotificationDevice.find({ userId: { $in: userIds } });
-    if (devices.length === 0) return;
+    // Fetch devices in bounded ID batches to avoid oversized Mongo $in queries
+    const allTokens = [];
+    for (let i = 0; i < userIds.length; i += DB_BATCH_SIZE) {
+      const chunk = userIds.slice(i, i + DB_BATCH_SIZE);
+      const devices = await NotificationDevice.find({ userId: { $in: chunk } }).select("token");
+      devices.forEach(d => {
+        if (d.token) allTokens.push(d.token);
+      });
+    }
 
-    const tokens = devices.map(d => d.token);
-    if (tokens.length === 0) return;
+    if (allTokens.length === 0) return;
+
+    // Deduplicate tokens
+    const uniqueTokens = [...new Set(allTokens)];
 
     const payload = {
       notification: { title, body: message },
       data: { link: link || "/" }
     };
 
-    const response = await admin.messaging().sendEachForMulticast({
-      tokens,
-      notification: payload.notification,
-      data: payload.data
-    });
+    // Firebase Multicast hard limit is 500 tokens per request; batch into slices of <= 500
+    for (let i = 0; i < uniqueTokens.length; i += FCM_MAX_TOKENS) {
+      const tokenBatch = uniqueTokens.slice(i, i + FCM_MAX_TOKENS);
+      try {
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens: tokenBatch,
+          notification: payload.notification,
+          data: payload.data
+        });
 
-    if (response.failureCount > 0) {
-      const failedTokens = [];
-      response.responses.forEach((resp, idx) => {
-        if (!resp.success) {
-          const errorCode = resp.error?.code;
-          if (errorCode === 'messaging/invalid-registration-token' || errorCode === 'messaging/registration-token-not-registered') {
-            failedTokens.push(tokens[idx]);
+        if (response.failureCount > 0) {
+          const failedTokens = [];
+          response.responses.forEach((resp, idx) => {
+            if (!resp.success) {
+              const errorCode = resp.error?.code;
+              if (errorCode === 'messaging/invalid-registration-token' || errorCode === 'messaging/registration-token-not-registered') {
+                failedTokens.push(tokenBatch[idx]);
+              }
+            }
+          });
+          if (failedTokens.length > 0) {
+            await NotificationDevice.deleteMany({ token: { $in: failedTokens } });
           }
         }
-      });
-      if (failedTokens.length > 0) {
-        await NotificationDevice.deleteMany({ token: { $in: failedTokens } });
+      } catch (batchErr) {
+        console.error(`[FCM Push] Batch send error (chunk ${i / FCM_MAX_TOKENS + 1}):`, batchErr.message);
       }
     }
   } catch (error) {
@@ -87,33 +108,41 @@ async function notifyUser(userId, { type, title, message, link = "", relatedId =
 async function notifyAllStudents({ type, title, message, link = "", relatedId = null }) {
   try {
     // Notify all active students as well as admins/superadmins so testers and students all receive updates
-    const activeRecipients = await User.find({ status: "Active", isDeleted: { $ne: true } }).select("_id role notificationPreferences");
-    if (activeRecipients.length === 0) return [];
+    const activeRecipients = await User.find({ status: "Active", isDeleted: { $ne: true } })
+      .select("_id role notificationPreferences")
+      .lean();
+    if (!activeRecipients || activeRecipients.length === 0) return [];
 
-    const notificationsToInsert = activeRecipients.map(recipient => ({
+    const allNotificationsToInsert = activeRecipients.map((recipient) => ({
       userId: recipient._id,
       type,
       title,
       message,
       link,
-      relatedId
+      relatedId,
     }));
 
-    const result = await Notification.insertMany(notificationsToInsert, { ordered: false });
+    // Bounded chunked insertion to protect memory, prevent event-loop stalls, and avoid Mongo payload limits
+    const allResults = [];
+    for (let i = 0; i < allNotificationsToInsert.length; i += DB_BATCH_SIZE) {
+      const batch = allNotificationsToInsert.slice(i, i + DB_BATCH_SIZE);
+      const inserted = await Notification.insertMany(batch, { ordered: false });
+      allResults.push(...inserted);
 
-    // Real-time WebSocket delivery to all active users
-    result.forEach(n => {
-      emitToUser(n.userId, "notification", n);
-    });
+      // Real-time WebSocket delivery per batch
+      inserted.forEach((n) => {
+        emitToUser(n.userId, "notification", n);
+      });
+    }
 
     // FCM Push for users who have it enabled (push !== false)
-    const enabledRecipients = activeRecipients.filter(u => u.notificationPreferences?.push !== false);
-    const enabledIds = enabledRecipients.map(s => s._id);
+    const enabledRecipients = activeRecipients.filter((u) => u.notificationPreferences?.push !== false);
+    const enabledIds = enabledRecipients.map((s) => s._id);
     if (enabledIds.length > 0) {
       await sendFcmPush(enabledIds, title, message, link);
     }
 
-    return result;
+    return allResults;
   } catch (error) {
     console.error("[NotificationService] Failed to bulk-notify students:", error);
     return [];
@@ -131,25 +160,31 @@ async function notifyDepartment(department, { type, title, message, link = "", r
       role: { $in: ["manager", "employee", "admin", "superadmin"] }, 
       status: "Active", 
       isDeleted: { $ne: true } 
-    }).select("_id");
+    }).select("_id").lean();
     
-    if (staff.length === 0) return [];
+    if (!staff || staff.length === 0) return [];
 
-    const notificationsToInsert = staff.map(user => ({
+    const notificationsToInsert = staff.map((user) => ({
       userId: user._id,
       type,
       title,
       message,
       link,
-      relatedId
+      relatedId,
     }));
 
-    const result = await Notification.insertMany(notificationsToInsert, { ordered: false });
+    const allResults = [];
+    for (let i = 0; i < notificationsToInsert.length; i += DB_BATCH_SIZE) {
+      const batch = notificationsToInsert.slice(i, i + DB_BATCH_SIZE);
+      const inserted = await Notification.insertMany(batch, { ordered: false });
+      allResults.push(...inserted);
 
-    // Real-time delivery to each user & the department room
-    result.forEach(n => {
-      emitToUser(n.userId, "notification", n);
-    });
+      // Real-time delivery to each user
+      inserted.forEach((n) => {
+        emitToUser(n.userId, "notification", n);
+      });
+    }
+
     emitToDepartment(department, "notification", {
       type,
       title,
@@ -157,7 +192,7 @@ async function notifyDepartment(department, { type, title, message, link = "", r
       link,
       relatedId,
       department,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     // --- NEW: Send Slack Notification ---

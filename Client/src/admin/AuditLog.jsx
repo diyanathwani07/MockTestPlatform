@@ -201,7 +201,7 @@ function AuditLog() {
       <div className="admin-main">
         <AdminNavbar title="Audit Log" />
 
-        <div className="admin-content">
+        <div className="admin-content" style={{ paddingBottom: "80px" }}>
 
           {/* ── Filters Row ── */}
           <div className="filters-row-scrollable" style={{ display: "flex", gap: "14px", marginBottom: "24px", alignItems: "center", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px", justifyContent: "flex-start" }}>
@@ -314,13 +314,18 @@ function AuditLog() {
               backgroundColor: "var(--bg-card)",
               borderRadius: "16px",
               border: "1.5px solid var(--border-color)",
-              overflowX: "auto",
-              WebkitOverflowScrolling: "touch",
               width: "100%",
               boxShadow: "var(--card-shadow)",
             }}
           >
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div
+              style={{
+                overflowX: "auto",
+                WebkitOverflowScrolling: "touch",
+                width: "100%",
+              }}
+            >
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr
                   style={{
@@ -477,10 +482,12 @@ function AuditLog() {
                 )}
               </tbody>
             </table>
+            </div>
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
               <div 
+                className="table-pagination-footer"
                 style={{ 
                   display: "flex", 
                   justifyContent: "space-between", 
@@ -489,7 +496,9 @@ function AuditLog() {
                   borderTop: "1px solid var(--border-color)",
                   fontSize: "13px",
                   color: "var(--text-muted)",
-                  background: "var(--bg-input)"
+                  background: "var(--bg-input)",
+                  borderBottomLeftRadius: "16px",
+                  borderBottomRightRadius: "16px"
                 }}
               >
                 <span>

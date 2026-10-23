@@ -192,8 +192,19 @@ function Quiz() {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
-        if (response.data.attemptId) {
-          setAttemptId(response.data.attemptId);
+        
+        // Start or resume an active attempt safely without creating orphans on preview
+        try {
+          const attemptRes = await axios.post(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/start-attempt`, {}, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+          });
+          if (attemptRes.data?.attemptId) {
+            setAttemptId(attemptRes.data.attemptId);
+          }
+        } catch (attemptErr) {
+          if (response.data.attemptId) {
+            setAttemptId(response.data.attemptId);
+          }
         }
         let rawQuestions = response.data.questions || [];
         

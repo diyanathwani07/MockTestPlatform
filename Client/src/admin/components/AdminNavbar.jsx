@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
-import { Sun, Moon, User, LogOut, Eye, ArrowLeft, PanelLeft, PanelLeftOpen } from "lucide-react";
+import { Sun, Moon, User, LogOut, Eye, ArrowLeft } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import UniversalSearch from "../../components/UniversalSearch";
 import NotificationBell from "../../components/NotificationBell";
-import { useSidebar } from "../../context/SidebarContext";
 import "../../css/admin/AdminLayout.css";
 import { useConfirm } from "../../context/ConfirmContext";
 import { optimizeAvatar } from "../../utils/imageOptimizer";
@@ -14,7 +13,6 @@ import { optimizeAvatar } from "../../utils/imageOptimizer";
 function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/dashboard", onNavigateBack }) {
   const confirm = useConfirm();
   const { toggleTheme } = useTheme(); 
-  const { collapsed, toggleSidebarCollapse } = useSidebar();
   const { setPreviewMode } = usePreview();
   const [profileOpen, setProfileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
@@ -45,7 +43,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   return (
     <header className="admin-navbar">
       <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
-        {onNavigateBack ? (
+        {onNavigateBack && (
           <button
             onClick={onNavigateBack}
             className="navbar-back-btn"
@@ -67,29 +65,6 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
             aria-label="Go back"
           >
             <ArrowLeft size={18} />
-          </button>
-        ) : (
-          <button
-            onClick={toggleSidebarCollapse}
-            className="navbar-sidebar-collapse-btn hidden sm:inline-flex"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '6px',
-              marginRight: '6px',
-              borderRadius: '8px',
-              color: 'var(--text-primary)',
-              transition: 'all 0.15s ease',
-              flexShrink: 0
-            }}
-            title={collapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
-            aria-label="Toggle sidebar"
-          >
-            <PanelLeft size={18} />
           </button>
         )}
         <span 

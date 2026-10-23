@@ -9,25 +9,38 @@ exports.purchaseExam = async (req, res) => {
     const { examId, gatewayTxnId } = req.body;
     if (!examId) return res.status(400).json({ message: "examId is required" });
 
+    // Validate item exists and resolve title & paid status
+    let item = await Quiz.findById(examId);
+    if (!item) {
+      const FlashcardSet = require("../models/FlashcardSet");
+      item = await FlashcardSet.findById(examId);
+    }
+    if (!item) {
+      return res.status(404).json({ message: "Exam or study material not found." });
+    }
+
+    // In production, unverified client calls cannot unlock paid content without a real payment gateway
+    const isProduction = process.env.NODE_ENV === "production";
+    const isExplicitDevSimulation = !isProduction && (process.env.ALLOW_PAYMENT_SIMULATION === "true" || process.env.ALLOW_PAYMENT_SIMULATION === undefined);
+
+    if (item.isPaid && !isExplicitDevSimulation) {
+      return res.status(402).json({
+        success: false,
+        message: "Payment verification failed. Real payment gateway verification is required in production."
+      });
+    }
+
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Idempotent purchase update: only append if not already present
     if (!user.purchasedExams.some(id => id.toString() === examId.toString())) {
       user.purchasedExams.push(examId);
       await user.save();
     }
 
-    let title = `ID: ${examId}`;
-    const exam = await Quiz.findById(examId);
-    if (exam) {
-      title = exam.title;
-    } else {
-      const FlashcardSet = require("../models/FlashcardSet");
-      const fc = await FlashcardSet.findById(examId);
-      if (fc) title = fc.title;
-    }
-
-    await logAction("PURCHASE_EXAM_SUCCESS", user.fullName, `${title} (Txn: ${gatewayTxnId || 'none'})`, "Purchase", req.ip);
+    const title = item.title || `ID: ${examId}`;
+    await logAction("PURCHASE_EXAM_SUCCESS", user.fullName, `${title} (Txn: ${gatewayTxnId || 'simulated'})`, "Purchase", req.ip);
     await notifyUser(req.user._id, {
       type: "PAYMENT_SUCCESS",
       title: "Purchase Successful",
@@ -52,19 +65,32 @@ exports.purchasePractice = async (req, res) => {
     const { practiceId, gatewayTxnId } = req.body;
     if (!practiceId) return res.status(400).json({ message: "practiceId is required" });
 
+    const practice = await PracticeQuiz.findById(practiceId);
+    if (!practice) {
+      return res.status(404).json({ message: "Practice quiz not found." });
+    }
+
+    const isProduction = process.env.NODE_ENV === "production";
+    const isExplicitDevSimulation = !isProduction && (process.env.ALLOW_PAYMENT_SIMULATION === "true" || process.env.ALLOW_PAYMENT_SIMULATION === undefined);
+
+    if (practice.isPaid && !isExplicitDevSimulation) {
+      return res.status(402).json({
+        success: false,
+        message: "Payment verification failed. Real payment gateway verification is required in production."
+      });
+    }
+
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Idempotent purchase update
     if (!user.purchasedPractice.some(id => id.toString() === practiceId.toString())) {
       user.purchasedPractice.push(practiceId);
       await user.save();
     }
 
-    let title = `ID: ${practiceId}`;
-    const practice = await PracticeQuiz.findById(practiceId);
-    if (practice) title = practice.title;
-
-    await logAction("PURCHASE_PRACTICE_SUCCESS", user.fullName, `${title} (Txn: ${gatewayTxnId || 'none'})`, "Purchase", req.ip);
+    const title = practice.title || `ID: ${practiceId}`;
+    await logAction("PURCHASE_PRACTICE_SUCCESS", user.fullName, `${title} (Txn: ${gatewayTxnId || 'simulated'})`, "Purchase", req.ip);
     await notifyUser(req.user._id, {
       type: "PAYMENT_SUCCESS",
       title: "Purchase Successful",

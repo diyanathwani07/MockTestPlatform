@@ -173,10 +173,10 @@ function StudentLiveExams() {
                 </div>
                 <div>
                   <h1 style={{ fontSize: "22px", fontWeight: "800", margin: 0, color: "var(--text-primary)" }}>
-                    All-India Live Examinations
+                    Live Examinations
                   </h1>
                   <p style={{ fontSize: "13.5px", color: "var(--text-secondary)", margin: "4px 0 0" }}>
-                    Compete in real-time with candidates across India. Synchronized timers, webcam proctoring, and All-India rank analytics.
+                    Compete in real-time with candidates. Synchronized timers, webcam proctoring, and rank analytics.
                   </p>
                 </div>
               </div>
@@ -480,8 +480,8 @@ function StudentLiveExams() {
                   : activeTab === "live"
                   ? "There are no exams running right now. Check out the upcoming schedule to prepare!"
                   : activeTab === "myAttempts"
-                  ? "Browse upcoming live exams and join them to benchmark your performance on the All-India leaderboard."
-                  : "Check back soon for new All-India live examination schedules."}
+                  ? "Browse upcoming live exams and join them to benchmark your performance on the leaderboard."
+                  : "Check back soon for new live examination schedules."}
               </p>
               {activeTab !== "all" && (
                 <button

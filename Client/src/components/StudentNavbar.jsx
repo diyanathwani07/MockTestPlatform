@@ -2,18 +2,16 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../context/ThemeContext";
-import { Sun, Moon, Bell, User, LogOut, Shield, PanelLeft, ArrowLeft } from "lucide-react";
+import { Sun, Moon, Bell, User, LogOut, Shield, ArrowLeft } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import UniversalSearch from "./UniversalSearch";
 import { usePreview } from "../context/PreviewContext";
 import NotificationBell from "./NotificationBell";
-import { useSidebar } from "../context/SidebarContext";
 import "../css/admin/AdminLayout.css"; // Reuse admin navbar styles
 import { optimizeAvatar } from "../utils/imageOptimizer";
 
 function StudentNavbar({ title, onNavigateBack }) {
   const { toggleTheme } = useTheme(); 
-  const { collapsed, toggleSidebarCollapse } = useSidebar();
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
@@ -32,7 +30,7 @@ function StudentNavbar({ title, onNavigateBack }) {
     <>
       <header className="admin-navbar" style={{ zIndex: 2000 }}>
         <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", color: "var(--text-secondary)" }}>
-          {onNavigateBack ? (
+          {onNavigateBack && (
             <button
               onClick={onNavigateBack}
               className="navbar-back-btn"
@@ -54,29 +52,6 @@ function StudentNavbar({ title, onNavigateBack }) {
               aria-label="Go back"
             >
               <ArrowLeft size={18} />
-            </button>
-          ) : (
-            <button
-              onClick={toggleSidebarCollapse}
-              className="navbar-sidebar-collapse-btn hidden sm:inline-flex"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '6px',
-                marginRight: '4px',
-                borderRadius: '8px',
-                color: 'var(--text-primary)',
-                transition: 'all 0.15s ease',
-                flexShrink: 0
-              }}
-              title={collapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
-              aria-label="Toggle sidebar"
-            >
-              <PanelLeft size={18} />
             </button>
           )}
           <span 

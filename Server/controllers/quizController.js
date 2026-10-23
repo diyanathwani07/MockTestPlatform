@@ -185,17 +185,14 @@ const getQuizById = async (req, res) => {
       }
       quiz.showResultAfterSubmission = (quiz.showResultAfterSubmission !== false) && resultsReleased;
 
-      // Automatically create an active attempt record for this user and quiz
+      // Attach existing active attempt if user is resuming, otherwise null (attempts are created via POST /api/quizzes/:id/start-attempt)
       const Result = require("../models/Result");
-      const attempt = await Result.create({
+      const existingAttempt = await Result.findOne({
         userId: req.user._id,
         quizId: quiz._id || quiz.id,
-        quizTitle: quiz.title,
-        subject: quiz.subject,
-        examName: quiz.examName,
-        status: "active",
-      });
-      quiz.attemptId = attempt._id;
+        status: "active"
+      }).sort({ createdAt: -1 });
+      quiz.attemptId = existingAttempt ? existingAttempt._id : null;
     }
 
     res.json(quiz);
@@ -1533,11 +1530,78 @@ const getQuizSuggestions = async (req, res) => {
   }
 };
 
+// @route   POST /api/quizzes/:id/start-attempt
+// @access  Private (Student)
+const startQuizAttempt = async (req, res) => {
+  try {
+    const quizId = req.params.id;
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz || quiz.isDeleted) {
+      return res.status(404).json({ message: "Quiz not found." });
+    }
+
+    const isStudent = req.user && req.user.role === "user";
+    if (isStudent) {
+      const isAvailable = (quiz.published === true || quiz.status === "Published") &&
+        (!quiz.unpublishDate || new Date() < new Date(quiz.unpublishDate)) &&
+        (!quiz.scheduledDate || new Date() >= new Date(quiz.scheduledDate));
+
+      if (!isAvailable) {
+        return res.status(403).json({
+          message: quiz.unpublishDate && new Date() >= new Date(quiz.unpublishDate)
+            ? "This exam is no longer available. The scheduled test window has ended."
+            : "This exam is not currently available."
+        });
+      }
+
+      // Check paid exam ownership
+      if (quiz.isPaid) {
+        const user = await User.findById(req.user._id).select("purchasedExams role");
+        const purchasedIds = (user?.purchasedExams || []).map(id => id.toString());
+        const parentSeriesId = quiz.examSeries ? quiz.examSeries.toString() : "";
+        const hasPurchased = purchasedIds.includes(quiz._id.toString()) || (parentSeriesId && purchasedIds.includes(parentSeriesId));
+        if (!hasPurchased && user?.role === "user") {
+          return res.status(403).json({ message: "You have not purchased this exam." });
+        }
+      }
+    }
+
+    // Idempotent attempt retrieval: if an active attempt already exists, return it
+    const Result = require("../models/Result");
+    let attempt = await Result.findOne({
+      userId: req.user._id,
+      quizId: quiz._id,
+      status: "active"
+    }).sort({ createdAt: -1 });
+
+    if (!attempt) {
+      attempt = await Result.create({
+        userId: req.user._id,
+        quizId: quiz._id,
+        quizTitle: quiz.title,
+        subject: quiz.subject,
+        examName: quiz.examName,
+        status: "active",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      attemptId: attempt._id,
+      quizId: quiz._id
+    });
+  } catch (error) {
+    console.error("Start Quiz Attempt Error:", error);
+    res.status(500).json({ message: "Failed to start quiz attempt.", error: error.message });
+  }
+};
+
 module.exports = {
   getQuizSuggestions,
   createQuiz,
   getQuizzes,
   getQuizById,
+  startQuizAttempt,
   updateQuiz,
   deleteQuiz,
   restoreQuiz,

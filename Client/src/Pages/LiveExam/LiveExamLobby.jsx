@@ -170,7 +170,11 @@ function LiveExamLobby() {
           setStudentState(stateRes.data);
 
           // If student has not yet entered lobby or in-progress, record lobby join
-          if (!stateRes.data.attempt || stateRes.data.attempt.status === "registered") {
+          const needsLobbyJoin =
+            !stateRes.data.attempt ||
+            stateRes.data.attempt.status === "registered" ||
+            (stateRes.data.attempt.status === "disqualified" && !stateRes.data.attempt.resultId);
+          if (needsLobbyJoin) {
             await axios.post(
               `${API_BASE}/api/live-exams/${pubRes.data._id}/join-lobby`,
               {},

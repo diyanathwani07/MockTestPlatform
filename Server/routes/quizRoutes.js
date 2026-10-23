@@ -8,6 +8,7 @@ const {
   createQuiz,
   getQuizzes,
   getQuizById,
+  startQuizAttempt,
   updateQuiz,
   deleteQuiz,
   getDashboardStats,
@@ -42,6 +43,7 @@ router.delete("/custom/:id", protect, deleteCustomQuiz);
 // Public/general quiz listing
 router.get("/", optionalProtect, getQuizzes);
 router.get("/:id", protect, getQuizById);
+router.post("/:id/start-attempt", protect, startQuizAttempt);
 router.post("/:id/submit", protect, submitQuiz);
 router.post("/attempts/:attemptId/submit", protect, submitQuiz);
 
