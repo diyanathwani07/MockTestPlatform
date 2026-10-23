@@ -107,28 +107,31 @@ export default function NotificationBell() {
     const id = n._id || n.id;
     let targetLink = n.link;
 
+    const role = localStorage.getItem("role");
+    const isAdmin = role === "admin" || role === "superadmin";
+
     // Smart link resolution for quiz / exam / series notifications
     if (n.type === "NEW_QUIZ_PUBLISHED" && n.relatedId) {
-      targetLink = `/start-test?quizId=${n.relatedId}`;
+      targetLink = isAdmin ? `/admin/manage-quizzes` : `/start-test?quizId=${n.relatedId}`;
     } else if (n.type === "NEW_PRACTICE_PUBLISHED" && n.relatedId) {
-      targetLink = `/dashboard/practice/test/${n.relatedId}`;
+      targetLink = isAdmin ? `/admin/practice` : `/dashboard/practice/test/${n.relatedId}`;
     } else if (n.type === "NEW_EXAM_SERIES" && n.relatedId) {
-      targetLink = `/student/exams/${n.relatedId}`;
-    } else if (n.type === "TICKET_REPLY" || n.type === "TICKET_STATUS_CHANGE") {
-      targetLink = `/dashboard/help`;
+      targetLink = isAdmin ? `/admin/exams` : `/student/exams/${n.relatedId}`;
+    } else if (n.type === "TICKET_REPLY" || n.type === "TICKET_STATUS_CHANGE" || n.type === "NEW_DEPARTMENT_TICKET") {
+      targetLink = isAdmin ? `/admin/tickets` : `/dashboard/help`;
     } else if (targetLink && targetLink.startsWith("/exam-series/")) {
-      targetLink = targetLink.replace("/exam-series/", "/student/exams/");
+      targetLink = isAdmin ? `/admin/exams` : targetLink.replace("/exam-series/", "/student/exams/");
     } else if ((!targetLink || targetLink === "/dashboard") && n.relatedId) {
       if (n.title?.toLowerCase().includes("quiz") || n.message?.toLowerCase().includes("quiz")) {
-        targetLink = `/start-test?quizId=${n.relatedId}`;
+        targetLink = isAdmin ? `/admin/manage-quizzes` : `/start-test?quizId=${n.relatedId}`;
       } else if (n.title?.toLowerCase().includes("practice")) {
-        targetLink = `/dashboard/practice/test/${n.relatedId}`;
+        targetLink = isAdmin ? `/admin/practice` : `/dashboard/practice/test/${n.relatedId}`;
       } else if (n.title?.toLowerCase().includes("series") || n.message?.toLowerCase().includes("series")) {
-        targetLink = `/student/exams/${n.relatedId}`;
+        targetLink = isAdmin ? `/admin/exams` : `/student/exams/${n.relatedId}`;
       }
     } else if (!targetLink || targetLink === "/dashboard") {
       if (n.message?.toLowerCase().includes("quiz") || n.title?.toLowerCase().includes("quiz")) {
-        targetLink = "/dashboard/exams";
+        targetLink = isAdmin ? `/admin/manage-quizzes` : "/dashboard/exams";
       }
     }
 

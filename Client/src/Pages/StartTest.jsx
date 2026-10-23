@@ -31,7 +31,9 @@ function StartTest() {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`);
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes?published=true`, { headers });
         const liveQuizzes = response.data;
         setQuizzes(liveQuizzes);
 
@@ -43,7 +45,7 @@ function StartTest() {
         // If not in standard published batch, fetch directly by ID
         if (!preSelected && preId) {
           try {
-            const singleRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${preId}`);
+            const singleRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/quizzes/${preId}`, { headers });
             if (singleRes.data) {
               preSelected = singleRes.data;
               setQuizzes((prev) => [singleRes.data, ...prev.filter((q) => q._id !== singleRes.data._id)]);
