@@ -443,32 +443,39 @@
   justify-content: center;
   transition: all 0.15s ease;
   position: relative;
+  background: var(--bg-card);
+  color: var(--text-primary) !important;
 }
 
 .palette-btn.current {
   box-shadow: 0 0 0 2px var(--primary);
+  border-color: var(--primary) !important;
   font-weight: 900;
+  color: var(--text-primary) !important;
 }
 
 .palette-btn.answered {
-  background: #10b981;
-  color: #ffffff;
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border-color: #10b981 !important;
 }
 
 .palette-btn.unanswered {
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 .palette-btn.review {
-  background: #8b5cf6;
-  color: #ffffff;
+  background: #8b5cf6 !important;
+  color: #ffffff !important;
+  border-color: #8b5cf6 !important;
 }
 
 .palette-btn.review-answered {
-  background: #8b5cf6;
-  color: #ffffff;
+  background: #8b5cf6 !important;
+  color: #ffffff !important;
+  border-color: #8b5cf6 !important;
 }
 
 .palette-btn.review-answered::after {

@@ -28,7 +28,7 @@ html[class*="theme-"] :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn) {
+:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -73,6 +73,59 @@ body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [
 }
 :is(.lb-dropdown-opt.active, [class*="lb-dropdown"].active) {
   color: var(--primary, var(--violet)) !important;
+}
+
+/* Explicit contrast preservation for Question Palette buttons across all themes */
+:is(.palette-btn, [class*="palette-btn"], .palette-grid button, .question-palette button) {
+  color: var(--text-primary) !important;
+}
+:is(.palette-btn.unanswered, [class*="palette-btn"].unanswered, .palette-grid button.unanswered, .palette-btn.q-not-visited) {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+:is(.palette-btn.answered, [class*="palette-btn"].answered, .palette-grid button.answered, .palette-btn.q-answered) {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border-color: #10b981 !important;
+}
+:is(.palette-btn.review, [class*="palette-btn"].review, .palette-btn.review-answered, [class*="palette-btn"].review-answered, .palette-btn.q-review) {
+  background: #8b5cf6 !important;
+  color: #ffffff !important;
+  border-color: #8b5cf6 !important;
+}
+:is(.palette-btn.current, [class*="palette-btn"].current, .palette-grid button.current, .palette-btn.active) {
+  box-shadow: 0 0 0 2px var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+:is(.palette-btn.current.unanswered, [class*="palette-btn"].current.unanswered, .palette-grid button.current.unanswered) {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+:is(.palette-btn.current.answered, [class*="palette-btn"].current.answered, .palette-grid button.current.answered) {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+/* Notification Dropdown Positioning across all layouts */
+.notif-dropdown {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  right: 0 !important;
+  width: 340px !important;
+  max-width: calc(100vw - 24px) !important;
+  z-index: 9999 !important;
+}
+
+@media (max-width: 768px) {
+  .notif-dropdown {
+    position: fixed !important;
+    top: 65px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 32px) !important;
+    right: auto !important;
+  }
 }
 
 /* ============ Kodama Grove ============ */

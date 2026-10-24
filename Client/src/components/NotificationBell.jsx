@@ -254,10 +254,17 @@ export default function NotificationBell() {
 
       {/* DROPDOWN PANEL */}
       {isOpen && (
-          <div
-            className="notif-dropdown"
-            style={{
-            maxHeight: "400px",
+        <div
+          className="notif-dropdown"
+          style={{
+            position: isMobile ? "fixed" : "absolute",
+            top: isMobile ? "65px" : "calc(100% + 8px)",
+            right: isMobile ? "auto" : 0,
+            left: isMobile ? "50%" : "auto",
+            transform: isMobile ? "translateX(-50%)" : "none",
+            width: isMobile ? "calc(100vw - 32px)" : "340px",
+            maxWidth: "calc(100vw - 24px)",
+            maxHeight: "420px",
             background: "var(--bg-panel, #121324)",
             border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
             borderRadius: "12px",

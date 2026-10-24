@@ -1158,7 +1158,7 @@ function QuizMulti() {
                 const isCurrent = currentQuestionIndex === idx;
 
                 let bg = "var(--bg-card)";
-                let col = "var(--text-secondary)";
+                let col = "var(--text-primary)";
                 let bdr = "1.5px solid var(--border-color)";
 
                 if (status === "answered") { bg = "#10B981"; col = "#FFF"; bdr = "none"; }

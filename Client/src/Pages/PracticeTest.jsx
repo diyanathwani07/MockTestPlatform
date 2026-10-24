@@ -919,7 +919,7 @@ function PracticeTest() {
                 const isVisited = visitedQuestions.includes(qIdx);
 
                 let bg = "var(--bg-page)";
-                let text = "var(--text-secondary)";
+                let text = "var(--text-primary)";
                 let border = "1px solid var(--border-color)";
 
                 if (isCurrent) {
@@ -936,7 +936,7 @@ function PracticeTest() {
                   border = "1px solid #F59E0B";
                 } else if (!isVisited) {
                   bg = "var(--bg-card)";
-                  text = "var(--text-secondary)";
+                  text = "var(--text-primary)";
                 }
 
                 return (

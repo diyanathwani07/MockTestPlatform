@@ -847,7 +847,7 @@ function LiveExamPlayer() {
               Answered ({totalAnswered})
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "rgba(255,255,255,0.1)", display: "inline-block" }}></span>
+              <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "var(--bg-card)", border: "1px solid var(--border-color)", display: "inline-block" }}></span>
               Unanswered ({questions.length - totalAnswered})
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
