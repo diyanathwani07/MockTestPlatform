@@ -66,7 +66,29 @@ const RevenueDashboard = lazy(() => import("./admin/RevenueDashboard"));
 const AiSubscribers = lazy(() => import("./admin/AiSubscribers"));
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
-import { SocketProvider } from "./context/SocketContext";
+import { SocketProvider, useSocket } from "./context/SocketContext";
+import incomingReminderService from "./services/incomingReminderService";
+import IncomingReminderModal from "./components/IncomingReminderModal";
+
+function IncomingReminderSocketListener() {
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleIncomingCall = (data) => {
+      console.log("[Socket] Received incoming-call event:", data);
+      incomingReminderService.handleIncomingReminder(data);
+    };
+
+    socket.on("incoming-call", handleIncomingCall);
+    return () => {
+      socket.off("incoming-call", handleIncomingCall);
+    };
+  }, [socket]);
+
+  return null;
+}
 const TermsConditions = lazy(() => import("./Pages/TermsConditions"));
 const PrivacyPolicy = lazy(() => import("./Pages/PrivacyPolicy"));
 const RefundPolicy = lazy(() => import("./Pages/RefundPolicy"));
@@ -706,6 +728,8 @@ function App() {
       </Routes>
       </Suspense>
       
+      <IncomingReminderSocketListener />
+      <IncomingReminderModal />
       <ThemePicker />
       </SocketProvider>
     </BrowserRouter>

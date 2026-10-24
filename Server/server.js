@@ -170,6 +170,11 @@ app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/admin/revenue", revenueRoutes);
 app.use("/api/taxonomies", require("./routes/taxonomyRoutes"));
 app.use("/api/live-exams", require("./routes/liveExamRoutes"));
+app.use("/api/ai-voice", require("./routes/aiVoiceRoutes"));
+app.use("/v1/api/ai-voice", require("./routes/aiVoiceRoutes"));
+app.use("/api/voice-settings", require("./routes/voiceSettingRoutes"));
+app.use("/api/admin/voice-settings", require("./routes/voiceSettingRoutes"));
+app.use("/v1/api/voice-settings", require("./routes/voiceSettingRoutes"));
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes to publish and expired quizzes to unpublish
 setInterval(async () => {
   try {
@@ -216,6 +221,20 @@ setInterval(async () => {
 // Initialize monthly audit log email scheduler
 const { startReportScheduler } = require("./services/reportScheduler");
 startReportScheduler();
+
+// Initialize AI Voice Reminder 1-minute background scheduler (Phase 3)
+const { initAiVoiceScheduler, stopAiVoiceScheduler } = require("./services/aiVoiceSchedulerService");
+initAiVoiceScheduler();
+
+// Graceful shutdown handlers
+process.on("SIGTERM", () => {
+  console.log("[Server] SIGTERM received. Shutting down gracefully...");
+  stopAiVoiceScheduler();
+});
+process.on("SIGINT", () => {
+  console.log("[Server] SIGINT received. Shutting down gracefully...");
+  stopAiVoiceScheduler();
+});
 
 // Start Server
 httpServer.listen(PORT, () => {

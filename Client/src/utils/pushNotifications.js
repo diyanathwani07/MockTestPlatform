@@ -1,6 +1,7 @@
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import axios from 'axios';
+import { incomingReminderService } from '../services/incomingReminderService';
 
 // Get base API URL
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -80,13 +81,20 @@ export const setupNativePushNotifications = async () => {
   // Listen for notifications received in foreground
   PushNotifications.addListener('pushNotificationReceived', (notification) => {
     console.log('[PushNotifications] Foreground push received: ', notification);
-    // Real-time socket will usually handle foreground UI updates, so we don't strictly need to do much here
+    const data = notification.data || notification.notification?.data;
+    if (data && data.type === 'INCOMING_CALL') {
+      incomingReminderService.handleIncomingReminder(data);
+    }
   });
 
   // Action performed when user taps on notification
   PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
     console.log('[PushNotifications] Push action performed: ', notification);
-    const data = notification.notification.data;
+    const data = notification.notification?.data || notification.data;
+    if (data && data.type === 'INCOMING_CALL') {
+      incomingReminderService.handleIncomingReminder(data);
+      return;
+    }
     if (data && data.link) {
       window.location.href = data.link;
     }

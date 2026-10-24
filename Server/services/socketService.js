@@ -1,6 +1,8 @@
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Schedule = require("../models/Schedule");
+const Call = require("../models/Call");
 
 let io = null;
 
@@ -75,6 +77,77 @@ function initSocket(httpServer) {
     }
 
     console.log(`[Socket] Connected: ${socket.user.fullName} (${userId}) | Role: ${role}${department ? ` | Dept: ${department}` : ""}`);
+
+    // Socket Signaling: Accept Call (Phase 5)
+    socket.on("accept-call", async (payload = {}) => {
+      try {
+        const { scheduleId } = payload;
+        if (!scheduleId) return;
+
+        const schedule = await Schedule.findOne({ _id: scheduleId, user: socket.user._id });
+        if (!schedule || schedule.status === "CANCELLED") return;
+
+        let call = await Call.findOne({ scheduleId: schedule._id, user: socket.user._id });
+        if (!call) {
+          call = await Call.create({
+            user: socket.user._id,
+            scheduleId: schedule._id,
+            callType: schedule.callType || "TASK_REMINDER",
+            status: "ONGOING",
+            startTime: new Date()
+          });
+        } else if (["INITIATED", "RINGING"].includes(call.status)) {
+          call.status = "ONGOING";
+          call.startTime = call.startTime || new Date();
+          await call.save();
+        }
+
+        if (!schedule.metadata) schedule.metadata = new Map();
+        schedule.metadata.set("acceptedAt", new Date().toISOString());
+        schedule.metadata.set("activeCallId", call._id.toString());
+        schedule.status = "COMPLETED";
+        await schedule.save();
+
+        emitToUser(socket.user._id, "call-accepted", {
+          callId: call._id,
+          scheduleId: schedule._id,
+          taskTitle: schedule.taskTitle,
+          taskDescription: schedule.taskDescription,
+          reminderAudioText: schedule.reminderAudioText,
+          durationSeconds: schedule.audioDurationSeconds || 0
+        });
+      } catch (err) {
+        console.error("[Socket] accept-call error:", err.message);
+      }
+    });
+
+    // Socket Signaling: End Call (Phase 5)
+    socket.on("end-call", async (payload = {}) => {
+      try {
+        const { callId, terminationReason } = payload;
+        if (!callId) return;
+
+        const call = await Call.findOne({ _id: callId, user: socket.user._id });
+        if (!call || ["COMPLETED", "REJECTED", "MISSED", "FAILED"].includes(call.status)) return;
+
+        call.status = "COMPLETED";
+        call.endTime = new Date();
+        call.terminationReason = terminationReason || "USER_HANGUP";
+        if (call.startTime) {
+          call.durationSeconds = Math.max(0, Math.round((call.endTime.getTime() - call.startTime.getTime()) / 1000));
+        }
+        await call.save();
+
+        emitToUser(socket.user._id, "call-ended", {
+          callId: call._id,
+          scheduleId: call.scheduleId,
+          durationSeconds: call.durationSeconds,
+          terminationReason: call.terminationReason
+        });
+      } catch (err) {
+        console.error("[Socket] end-call error:", err.message);
+      }
+    });
 
     socket.on("disconnect", (reason) => {
       console.log(`[Socket] Disconnected: ${socket.user.fullName} (${userId}) | Reason: ${reason}`);

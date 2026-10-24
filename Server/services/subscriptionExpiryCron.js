@@ -54,7 +54,7 @@ function startSubscriptionExpiryCron() {
             type: "SUBSCRIPTION_EXPIRED",
             title: "Your AI plan has expired",
             message: "Renew to keep using AI Test Builder.",
-            link: "/pricing"
+            link: "/dashboard/pricing"
           });
         } catch (err) {
           console.error(`[Subscription Cron] Failed to send notification to user ${studentId}:`, err);

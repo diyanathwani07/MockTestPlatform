@@ -209,6 +209,7 @@ function PricingPlans() {
                       const isActive = premiumStatus?.isPremium && String(premiumStatus?.activePlan) === String(plan._id);
                       return (
                         <button 
+                          className="pricing-card-btn"
                           onClick={() => !isActive && handleSubscribeClick(plan)}
                           disabled={success || isActive}
                           style={{
@@ -217,7 +218,7 @@ function PricingPlans() {
                             borderRadius: "8px",
                             border: "none",
                             background: isActive ? "#10B981" : "var(--violet)",
-                            color: isActive ? "#ffffff" : "#ffffff",
+                            color: isActive ? "#ffffff" : "var(--primary-foreground)",
                             fontWeight: "700",
                             fontSize: "14px",
                             cursor: isActive ? "default" : "pointer",

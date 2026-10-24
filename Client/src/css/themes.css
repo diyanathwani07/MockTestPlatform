@@ -128,6 +128,19 @@ body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [
   }
 }
 
+/* Explicit contrast preservation for Pricing Card CTA buttons across all themes */
+.pricing-card-btn:not(:disabled) {
+  color: var(--primary-foreground) !important;
+}
+.pricing-card-btn:not(:disabled) svg {
+  color: var(--primary-foreground) !important;
+  stroke: currentColor !important;
+}
+.pricing-card-btn:not(:disabled):hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
 /* ============ Kodama Grove ============ */
 .theme-kodama-grove {
   --background: #e3d7b3;

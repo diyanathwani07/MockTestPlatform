@@ -286,8 +286,12 @@ const CreateCustomQuiz = () => {
 
       alert("AI Custom Test generated successfully! Starting your test now...");
       
-      // Redirect directly to the existing test player
-      navigate(`/quiz/${response.data.quizId}`);
+      // Redirect directly to the appropriate test player
+      if (aiQuizType === "practice") {
+        navigate(`/dashboard/practice/test/${response.data.quizId}`);
+      } else {
+        navigate(`/quiz/${response.data.quizId}`);
+      }
     } catch (error) {
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -637,7 +641,7 @@ const CreateCustomQuiz = () => {
                         transition: "all 0.25s ease",
                         border: "none",
                         background: (loading || !selectedSubject) ? "var(--border-color, #333)" : "var(--violet)",
-                        color: (loading || !selectedSubject) ? "var(--text-muted, #777)" : "#ffffff",
+                        color: (loading || !selectedSubject) ? "var(--text-muted, #777)" : "var(--primary-foreground)",
                         boxShadow: (loading || !selectedSubject) ? "none" : "0 4px 10px color-mix(in srgb, var(--primary) 15%, transparent)"
                       }}
                     >

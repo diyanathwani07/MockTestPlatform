@@ -311,7 +311,14 @@ const getDashboardMetrics = async (req, res) => {
     const Quiz = require("../models/Quiz");
     const activePlansCount = await AiPlan.countDocuments({ status: "active" });
     const totalSubscribers = await User.countDocuments({ isPremium: true });
-    const aiTestsGenerated = await Quiz.countDocuments({ aiSourceType: { $ne: "", $exists: true } });
+    const aiTestsGenerated = await Quiz.countDocuments({
+      isDeleted: { $ne: true },
+      $or: [
+        { isAiGenerated: true },
+        { aiSourceType: { $ne: "", $exists: true } },
+        { title: { $regex: /^AI Test:/i } }
+      ]
+    });
     
     // Simple revenue projection from active plans selling prices
     const subscribers = await User.find({ isPremium: true, activePlan: { $ne: null } }).populate("activePlan");
