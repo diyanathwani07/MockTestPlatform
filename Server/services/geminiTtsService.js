@@ -171,11 +171,21 @@ async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemi
     };
   }
 
-  const response = await ai.models.generateContent({
-    model,
-    contents,
-    config
+  const timeoutPromise = new Promise((_, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("Gemini TTS request timed out after 15 seconds."));
+    }, 15000);
+    if (timer.unref) timer.unref();
   });
+
+  const response = await Promise.race([
+    ai.models.generateContent({
+      model,
+      contents,
+      config
+    }),
+    timeoutPromise
+  ]);
 
   const candidate = response?.candidates?.[0];
   if (!candidate || !candidate.content || !candidate.content.parts) {
@@ -286,8 +296,9 @@ async function generateReminderPcm({
     throw new Error("Voice audio generation is currently disabled by administrator.");
   }
 
-  // Determine language (detect if auto)
-  const resolvedLang = lang === "auto" || !lang ? detectLanguage(cleanText) : lang;
+  // Determine language (respect defaultLanguage strategy when set to auto)
+  const effectiveLangStrategy = (lang === "auto" || !lang) ? (settings.defaultLanguage || "auto") : lang;
+  const resolvedLang = effectiveLangStrategy === "auto" ? detectLanguage(cleanText) : effectiveLangStrategy;
   const selectedVoice =
     voice || (resolvedLang === "hi" ? settings.hindiVoice : settings.englishVoice) || "Aoede";
   const selectedPrompt =

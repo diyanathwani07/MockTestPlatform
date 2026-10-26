@@ -57,5 +57,6 @@ callSchema.pre("save", function () {
 });
 
 callSchema.index({ user: 1, createdAt: -1 });
+callSchema.index({ scheduleId: 1, user: 1 }, { unique: true });
 
 module.exports = mongoose.model("Call", callSchema);

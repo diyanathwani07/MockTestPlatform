@@ -5,18 +5,41 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 
 const Schedule = require("../models/Schedule");
+const Call = require("../models/Call");
 const NotificationDevice = require("../models/NotificationDevice");
 const { emitToUser } = require("./socketService");
 const { admin } = require("../config/firebaseAdmin");
+const { getVoiceSettingsSafe, isWithinCallingSchedule } = require("./voiceScheduleHelper");
 
 // Configuration parameters
 const LEASE_DURATION_MS = 3 * 60 * 1000; // 3 minutes claim lease
-const MAX_DISPATCH_ATTEMPTS = 3;
+const DEFAULT_MAX_DISPATCH_ATTEMPTS = 3;
 const BATCH_LIMIT = 50;
 const CALLER_NAME = "Teaching Pariksha AI";
 
 let activeCronJob = null;
 let isProcessingSweep = false;
+
+// In-memory operational metrics for production visibility & telemetry
+const schedulerMetrics = {
+  startedAt: new Date().toISOString(),
+  totalSweeps: 0,
+  totalDispatched: 0,
+  totalFailed: 0,
+  totalStaleCallsRecovered: 0,
+  totalStaleSchedulesCleaned: 0,
+  lastSweepAt: null,
+  lastSweepStats: null
+};
+
+function getSchedulerMetrics() {
+  return {
+    ...schedulerMetrics,
+    isRunning: isSchedulerRunning(),
+    activeCronJob: activeCronJob ? "scheduled (* * * * *)" : null,
+    uptimeSeconds: Math.round(process.uptime())
+  };
+}
 
 /**
  * Sends a high-priority data-only FCM push notification for an incoming AI voice reminder call.
@@ -106,12 +129,36 @@ async function dispatchDueSchedules(options = {}) {
   };
 
   try {
+    // 0. Check Master Voice Subsystem Switch & Permitted Calling Schedule
+    const voiceSettings = await getVoiceSettingsSafe();
+    if (voiceSettings && voiceSettings.enabled === false) {
+      // Disabling voice calls prevents new automated calls without deleting records or interrupting active calls
+      return stats;
+    }
+
+    if (voiceSettings && voiceSettings.callingSchedule?.enabled) {
+      const isAllowed = isWithinCallingSchedule(voiceSettings.callingSchedule, now);
+      if (!isAllowed) {
+        return stats;
+      }
+    }
+
+    const maxAttempts =
+      typeof voiceSettings?.retryRules?.maxRetryAttempts === "number"
+        ? voiceSettings.retryRules.maxRetryAttempts
+        : DEFAULT_MAX_DISPATCH_ATTEMPTS;
+
+    const retryDelayMinutes =
+      typeof voiceSettings?.retryRules?.retryDelayMinutes === "number"
+        ? voiceSettings.retryRules.retryDelayMinutes
+        : 15;
+
     // 1. Find candidates due for dispatch:
     // Either PENDING or stuck in PROCESSING with an expired lease, under max attempts.
     const candidates = await Schedule.find({
       scheduledTime: { $lte: now },
       preGeneratedAudioStatus: "READY",
-      dispatchAttempts: { $lt: MAX_DISPATCH_ATTEMPTS },
+      dispatchAttempts: { $lt: maxAttempts },
       $or: [
         { status: "PENDING" },
         { status: "PROCESSING", dispatchClaimExpiresAt: { $lte: now } }
@@ -157,6 +204,25 @@ async function dispatchDueSchedules(options = {}) {
       stats.claimed++;
 
       try {
+        // 2b. Boundary Check: Ensure service is still enabled before signaling user
+        // Prevents an already-claimed job from dispatching if an admin just disabled the subsystem
+        const latestSettings = await getVoiceSettingsSafe();
+        if (latestSettings && latestSettings.enabled === false) {
+          await Schedule.findOneAndUpdate(
+            { _id: claimed._id, dispatchClaimId: workerId },
+            {
+              $set: {
+                status: "PENDING",
+                dispatchClaimId: null,
+                dispatchClaimExpiresAt: null,
+                lastDispatchError: "Dispatch deferred: Voice reminder service disabled by administrator."
+              },
+              $inc: { dispatchAttempts: -1 }
+            }
+          ).catch(() => {});
+          continue;
+        }
+
         // 3. Audio Verification: Ensure pre-generated audio file actually exists on disk
         const audioPath = claimed.preGeneratedAudioPath;
         const audioExists = audioPath ? fs.existsSync(path.resolve(audioPath)) : false;
@@ -233,25 +299,103 @@ async function dispatchDueSchedules(options = {}) {
         stats.failed++;
         console.error(`[AiVoiceScheduler] Error dispatching schedule ${claimed._id}:`, itemError.message || itemError);
 
-        // If attempts reached max limit, mark as FAILED, otherwise allow recovery
-        const finalStatus = claimed.dispatchAttempts >= MAX_DISPATCH_ATTEMPTS ? "FAILED" : "PROCESSING";
+        // If attempts reached max limit, mark as FAILED, otherwise allow recovery with configured retry delay
+        const isMaxReached = claimed.dispatchAttempts >= maxAttempts;
+        const finalStatus = isMaxReached ? "FAILED" : "PROCESSING";
+        const retryExpiry = isMaxReached ? null : new Date(now.getTime() + retryDelayMinutes * 60 * 1000);
         await Schedule.findOneAndUpdate(
           { _id: claimed._id, dispatchClaimId: workerId },
           {
             $set: {
               status: finalStatus,
-              lastDispatchError: itemError.message || "Dispatch delivery error."
+              dispatchClaimExpiresAt: retryExpiry,
+              lastDispatchError: isMaxReached
+                ? `Exceeded maximum retry attempts (${maxAttempts}). ${itemError.message || ""}`.trim()
+                : itemError.message || "Dispatch delivery error."
             }
           }
         ).catch(() => {});
       }
     }
 
+    schedulerMetrics.totalSweeps++;
+    schedulerMetrics.totalDispatched += stats.dispatched;
+    schedulerMetrics.totalFailed += stats.failed;
+    schedulerMetrics.lastSweepAt = new Date().toISOString();
+    schedulerMetrics.lastSweepStats = { ...stats };
+
     return stats;
   } catch (error) {
+    schedulerMetrics.totalSweeps++;
+    schedulerMetrics.totalFailed += stats.failed;
+    schedulerMetrics.lastSweepAt = new Date().toISOString();
     console.error("[AiVoiceScheduler] Fatal error during dispatch sweep:", error.message || error);
     return stats;
   }
+}
+
+/**
+ * Sweeps and cleans up abandoned ONGOING sessions and orphaned DISPATCHED reminders.
+ * Handles server restart recovery and client disconnect timeouts.
+ */
+async function cleanStaleSessions(options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
+  const thresholdMs = options.thresholdMs || 15 * 60 * 1000; // 15 minutes
+  const staleThreshold = new Date(now.getTime() - thresholdMs);
+
+  const cleanupStats = {
+    staleCallsClosed: 0,
+    staleSchedulesCompleted: 0
+  };
+
+  try {
+    // 1. Close abandoned ONGOING calls older than the timeout threshold
+    const staleCalls = await Call.find({
+      status: "ONGOING",
+      startTime: { $lte: staleThreshold }
+    });
+
+    for (const call of staleCalls) {
+      call.status = "COMPLETED";
+      call.endTime = now;
+      call.terminationReason = "TIMEOUT";
+      if (call.startTime) {
+        call.durationSeconds = Math.max(0, Math.round((now.getTime() - call.startTime.getTime()) / 1000));
+      }
+      await call.save();
+      cleanupStats.staleCallsClosed++;
+
+      // Also ensure associated schedule is closed
+      await Schedule.findOneAndUpdate(
+        { _id: call.scheduleId },
+        { $set: { status: "COMPLETED" } }
+      ).catch(() => {});
+    }
+
+    // 2. Mark orphaned DISPATCHED schedules older than the threshold as COMPLETED
+    // Exclude any schedule currently associated with an active ONGOING call session
+    const activeOngoingCalls = (await Call.find({ status: "ONGOING" })) || [];
+    const activeScheduleIds = activeOngoingCalls.map(c => c.scheduleId).filter(Boolean);
+
+    const staleSchedules = await Schedule.updateMany(
+      {
+        status: "DISPATCHED",
+        dispatchedAt: { $lte: staleThreshold },
+        _id: { $nin: activeScheduleIds }
+      },
+      {
+        $set: { status: "COMPLETED" }
+      }
+    );
+    cleanupStats.staleSchedulesCompleted = staleSchedules.modifiedCount || staleSchedules.nModified || 0;
+  } catch (err) {
+    console.error("[AiVoiceScheduler] Error during stale session sweep:", err.message || err);
+  }
+
+  schedulerMetrics.totalStaleCallsRecovered += cleanupStats.staleCallsClosed;
+  schedulerMetrics.totalStaleSchedulesCleaned += cleanupStats.staleSchedulesCompleted;
+
+  return cleanupStats;
 }
 
 /**
@@ -273,6 +417,8 @@ function initAiVoiceScheduler() {
 
     isProcessingSweep = true;
     try {
+      // Run stale session cleanup alongside dispatch sweep
+      await cleanStaleSessions();
       const stats = await dispatchDueSchedules();
       if (stats.dispatched > 0 || stats.failed > 0) {
         console.log(`[AiVoiceScheduler] Sweep complete: ${stats.dispatched} dispatched, ${stats.failed} failed, ${stats.scanned} scanned.`);
@@ -309,10 +455,12 @@ function isSchedulerRunning() {
 
 module.exports = {
   dispatchDueSchedules,
+  cleanStaleSessions,
+  getSchedulerMetrics,
   sendIncomingCallFcmPush,
   initAiVoiceScheduler,
   stopAiVoiceScheduler,
   isSchedulerRunning,
   LEASE_DURATION_MS,
-  MAX_DISPATCH_ATTEMPTS
+  MAX_DISPATCH_ATTEMPTS: DEFAULT_MAX_DISPATCH_ATTEMPTS
 };

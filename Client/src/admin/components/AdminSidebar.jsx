@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
-  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio
+  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   { to: "/admin/reports",        icon: LineChart,       label: "Reports",             permission: "view_reports" },
   { to: "/admin/audit-log",      icon: FileText,        label: "Audit Log",           permission: "audit_logs" },
   { to: "/admin/tickets",        icon: LifeBuoy,        label: "Support Tickets",     permission: "support_tickets" },
+  { to: "/admin/voice-settings", icon: Volume2,         label: "Voice Settings",      permission: "manage_roles" },
   { to: "/admin/roles",          icon: Shield,          label: "Roles & Permissions", permission: "manage_roles" },
 ];
 

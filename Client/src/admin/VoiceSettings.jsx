@@ -1,0 +1,1813 @@
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import {
+  Volume2,
+  Mic,
+  Play,
+  Square,
+  Save,
+  RotateCcw,
+  Check,
+  AlertTriangle,
+  Clock,
+  Calendar,
+  RefreshCw,
+  Sparkles,
+  Languages,
+  PhoneCall,
+  Sliders,
+  CheckCircle2,
+  Info,
+  ShieldCheck,
+  Radio
+} from "lucide-react";
+import AdminSidebar from "./components/AdminSidebar";
+import AdminNavbar from "./components/AdminNavbar";
+import "../css/admin/AdminLayout.css";
+
+const API = import.meta.env.VITE_API_URL || "";
+
+const GEMINI_VOICES = [
+  { id: "Aoede", name: "Aoede", gender: "Female", description: "Clear, articulated, steady broadcasting tone (Recommended Default)" },
+  { id: "Charon", name: "Charon", gender: "Male", description: "Deep, authoritative, serious educational tone" },
+  { id: "Fenrir", name: "Fenrir", gender: "Male", description: "Resonant, bold, confident pacing" },
+  { id: "Kore", name: "Kore", gender: "Female", description: "Warm, supportive, calming student guide" },
+  { id: "Puck", name: "Puck", gender: "Male", description: "Energetic, dynamic, enthusiastic reminder voice" }
+];
+
+const WEEK_DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+];
+
+const TIMEZONES = [
+  { value: "Asia/Kolkata", label: "Asia/Kolkata (IST - UTC+05:30)" },
+  { value: "UTC", label: "UTC (Coordinated Universal Time)" },
+  { value: "America/New_York", label: "America/New_York (EST/EDT)" },
+  { value: "Europe/London", label: "Europe/London (GMT/BST)" }
+];
+
+const DEFAULT_SETTINGS = {
+  model: "gemini-2.5-flash-preview-tts",
+  englishVoice: "Aoede",
+  hindiVoice: "Aoede",
+  defaultLanguage: "auto",
+  englishPrompt:
+    "You are an articulate, professional news anchor and educator. Read this news report aloud clearly in an engaging, natural, steady broadcasting tone with precise pronunciation.",
+  hindiPrompt:
+    "आप एक पेशेवर और स्पष्ट समाचार वाचक (News Broadcaster) हैं। इस समाचार को सहज, प्रामाणिक और प्रभावशाली हिंदी उच्चारण में स्पष्ट रूप से पढ़कर सुनाएं। कठिन शब्दों और तकनीकी नामों का उच्चारण अत्यंत स्पष्ट रखें।",
+  callingSchedule: {
+    enabled: true,
+    allowedDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    startTime: "08:00",
+    endTime: "21:00",
+    timeZone: "Asia/Kolkata"
+  },
+  retryRules: {
+    maxRetryAttempts: 3,
+    retryDelayMinutes: 15
+  },
+  reminderDefaults: {
+    defaultTimingMinutes: 15,
+    defaultTemplateEnglish:
+      "Hello! This is your study reminder from Teaching Pariksha AI regarding: {taskTitle}.",
+    defaultTemplateHindi:
+      "नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
+  },
+  enabled: true
+};
+
+export default function VoiceSettings() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("voice"); // 'voice' | 'schedule' | 'retry' | 'templates'
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [originalSettings, setOriginalSettings] = useState(DEFAULT_SETTINGS);
+  const [updatedByMeta, setUpdatedByMeta] = useState(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  // Audio preview states
+  const [previewText, setPreviewText] = useState("Hello! This is a test reminder from Teaching Pariksha AI.");
+  const [previewLang, setPreviewLang] = useState("en");
+  const [previewVoice, setPreviewVoice] = useState("Aoede");
+  const [generatingPreview, setGeneratingPreview] = useState(false);
+  const [previewAudioUrl, setPreviewAudioUrl] = useState(null);
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [previewDuration, setPreviewDuration] = useState(null);
+  const audioRef = useRef(null);
+
+  const token = localStorage.getItem("token");
+
+  // Show auto-dismissing toast notification
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 4500);
+  };
+
+  // Check if form is dirty
+  const isDirty = JSON.stringify(settings) !== JSON.stringify(originalSettings);
+
+  // Warn before leaving if dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  // Fetch Voice Settings on Mount
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API}/api/voice-settings`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+
+      if (res.data?.success && res.data.settings) {
+        const fetched = {
+          ...DEFAULT_SETTINGS,
+          ...res.data.settings,
+          callingSchedule: {
+            ...DEFAULT_SETTINGS.callingSchedule,
+            ...(res.data.settings.callingSchedule || {})
+          },
+          retryRules: {
+            ...DEFAULT_SETTINGS.retryRules,
+            ...(res.data.settings.retryRules || {})
+          },
+          reminderDefaults: {
+            ...DEFAULT_SETTINGS.reminderDefaults,
+            ...(res.data.settings.reminderDefaults || {})
+          }
+        };
+
+        setSettings(fetched);
+        setOriginalSettings(fetched);
+        setUpdatedByMeta(res.data.settings.updatedBy || null);
+        setLastUpdatedAt(res.data.settings.updatedAt || null);
+        setPreviewVoice(fetched.englishVoice || "Aoede");
+      }
+    } catch (err) {
+      console.error("[VoiceSettings] Fetch error:", err);
+      showToast(err.response?.data?.error || "Failed to load voice configuration", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  // Save Settings
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    if (!token) {
+      showToast("Authentication required to save settings.", "error");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const res = await axios.put(`${API}/api/voice-settings`, settings, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (res.data?.success) {
+        const updated = {
+          ...DEFAULT_SETTINGS,
+          ...res.data.settings,
+          callingSchedule: {
+            ...DEFAULT_SETTINGS.callingSchedule,
+            ...(res.data.settings.callingSchedule || {})
+          },
+          retryRules: {
+            ...DEFAULT_SETTINGS.retryRules,
+            ...(res.data.settings.retryRules || {})
+          },
+          reminderDefaults: {
+            ...DEFAULT_SETTINGS.reminderDefaults,
+            ...(res.data.settings.reminderDefaults || {})
+          }
+        };
+
+        setSettings(updated);
+        setOriginalSettings(updated);
+        setUpdatedByMeta(res.data.settings.updatedBy || null);
+        setLastUpdatedAt(res.data.settings.updatedAt || new Date().toISOString());
+        showToast("Voice reminder settings saved successfully!", "success");
+      }
+    } catch (err) {
+      console.error("[VoiceSettings] Save error:", err);
+      showToast(err.response?.data?.error || "Failed to save settings. Please try again.", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Revert / Discard unsaved changes
+  const handleReset = () => {
+    setSettings(JSON.parse(JSON.stringify(originalSettings)));
+    showToast("Unsaved changes discarded", "info");
+  };
+
+  // Live Audio Sample Preview Generator
+  const handleGeneratePreview = async () => {
+    if (!previewText || previewText.trim() === "") {
+      showToast("Please enter a sample text to preview.", "error");
+      return;
+    }
+
+    try {
+      setGeneratingPreview(true);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlayingPreview(false);
+      }
+
+      const selectedPrompt =
+        previewLang === "hi" ? settings.hindiPrompt : settings.englishPrompt;
+
+      const res = await axios.post(
+        `${API}/api/voice-settings/test`,
+        {
+          sampleText: previewText.trim(),
+          lang: previewLang,
+          voice: previewVoice,
+          customPrompt: selectedPrompt
+        },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+
+      if (res.data?.success && res.data.audioUrl) {
+        setPreviewAudioUrl(res.data.audioUrl);
+        setPreviewDuration(res.data.durationSeconds || null);
+        showToast("Audio sample generated successfully! Playing preview...", "success");
+
+        // Auto play generated audio
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.load();
+            audioRef.current.play().then(() => {
+              setIsPlayingPreview(true);
+            }).catch(e => {
+              console.warn("Auto-play prevented by browser policy:", e);
+            });
+          }
+        }, 100);
+      } else {
+        throw new Error(res.data?.error || "Preview generation failed");
+      }
+    } catch (err) {
+      console.error("[VoiceSettings] Audio preview error:", err);
+      showToast(err.response?.data?.error || err.message || "Failed to generate audio sample preview", "error");
+    } finally {
+      setGeneratingPreview(false);
+    }
+  };
+
+  // Toggle playback of the current preview
+  const handleTogglePlayback = () => {
+    if (!audioRef.current || !previewAudioUrl) return;
+    if (isPlayingPreview) {
+      audioRef.current.pause();
+      setIsPlayingPreview(false);
+    } else {
+      audioRef.current.play().then(() => {
+        setIsPlayingPreview(true);
+      }).catch(err => {
+        console.error("Playback error:", err);
+        setIsPlayingPreview(false);
+      });
+    }
+  };
+
+  // Toggle allowed day helper
+  const toggleDay = (day) => {
+    const currentDays = settings.callingSchedule?.allowedDays || [];
+    let updated;
+    if (currentDays.includes(day)) {
+      if (currentDays.length === 1) {
+        showToast("At least one calling day must be permitted.", "error");
+        return;
+      }
+      updated = currentDays.filter(d => d !== day);
+    } else {
+      updated = [...currentDays, day];
+    }
+    setSettings(prev => ({
+      ...prev,
+      callingSchedule: { ...prev.callingSchedule, allowedDays: updated }
+    }));
+  };
+
+  // Select all days
+  const handleSelectAllDays = () => {
+    setSettings(prev => ({
+      ...prev,
+      callingSchedule: { ...prev.callingSchedule, allowedDays: [...WEEK_DAYS] }
+    }));
+  };
+
+  // Weekdays only
+  const handleSelectWeekdays = () => {
+    setSettings(prev => ({
+      ...prev,
+      callingSchedule: {
+        ...prev.callingSchedule,
+        allowedDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+      }
+    }));
+  };
+
+  // Weekends only
+  const handleSelectWeekends = () => {
+    setSettings(prev => ({
+      ...prev,
+      callingSchedule: {
+        ...prev.callingSchedule,
+        allowedDays: ["Saturday", "Sunday"]
+      }
+    }));
+  };
+
+  // Format date helper
+  const formatDateTime = (isoString) => {
+    if (!isoString) return "Never";
+    try {
+      const d = new Date(isoString);
+      return d.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch {
+      return isoString;
+    }
+  };
+
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+
+      <div className="admin-main">
+        <AdminNavbar title="Voice Settings" parentText="Dashboard" parentLink="/admin/dashboard" />
+
+        <div className="admin-content" style={{ maxWidth: "1280px", margin: "0 auto", paddingBottom: "80px" }}>
+          {/* Toast Notification Banner */}
+          {toast && (
+            <div
+              style={{
+                position: "fixed",
+                top: "24px",
+                right: "24px",
+                zIndex: 9999,
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "12px 20px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#ffffff",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
+                background:
+                  toast.type === "error"
+                    ? "#EF4444"
+                    : toast.type === "info"
+                    ? "#3B82F6"
+                    : "#10B981",
+                animation: "slideIn 0.25s ease-out"
+              }}
+            >
+              {toast.type === "error" ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
+              <span>{toast.message}</span>
+            </div>
+          )}
+
+          {/* Sticky Dirty Header Notice */}
+          {isDirty && (
+            <div
+              style={{
+                marginBottom: "20px",
+                padding: "12px 18px",
+                borderRadius: "12px",
+                background: "rgba(245, 158, 11, 0.12)",
+                border: "1px solid rgba(245, 158, 11, 0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "12px"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#F59E0B", fontWeight: 600, fontSize: "14px" }}>
+                <AlertTriangle size={18} />
+                <span>You have unsaved changes to voice settings.</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "var(--text-primary)",
+                    cursor: "pointer"
+                  }}
+                >
+                  Discard
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5"
+                  style={{
+                    background: "var(--primary)",
+                    color: "var(--primary-foreground, #000)",
+                    border: "none",
+                    cursor: "pointer"
+                  }}
+                >
+                  {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Page Top Header with Title, Status & Actions */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              gap: "16px",
+              marginBottom: "24px"
+            }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "10px",
+                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.25))",
+                    border: "1px solid rgba(139, 92, 246, 0.4)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--primary)"
+                  }}
+                >
+                  <Volume2 size={20} />
+                </div>
+                <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
+                  Voice Settings
+                </h1>
+                <span
+                  style={{
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    background: settings.enabled ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                    color: settings.enabled ? "#10B981" : "#EF4444",
+                    border: `1px solid ${settings.enabled ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+                  }}
+                >
+                  {settings.enabled ? "Subsystem Active" : "Subsystem Disabled"}
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>
+                Configure Gemini multimodal text-to-speech voices, automated calling schedules, retry escalation rules, and reminder defaults.
+              </p>
+              {lastUpdatedAt && (
+                <div style={{ marginTop: "6px", fontSize: "12px", color: "var(--text-muted)" }}>
+                  Last updated: <strong>{formatDateTime(lastUpdatedAt)}</strong>
+                  {updatedByMeta && (
+                    <span> by <strong>{updatedByMeta.fullName || updatedByMeta.name || updatedByMeta.email || "Admin"}</strong></span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <button
+                type="button"
+                onClick={fetchSettings}
+                disabled={loading}
+                title="Refresh from server"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "9px 14px",
+                  borderRadius: "10px",
+                  background: "var(--bg-card, rgba(255, 255, 255, 0.04))",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 500
+                }}
+              >
+                <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+                <span>Refresh</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving || !isDirty}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "9px 18px",
+                  borderRadius: "10px",
+                  background: isDirty ? "var(--primary)" : "rgba(255, 255, 255, 0.08)",
+                  color: isDirty ? "var(--primary-foreground, #000)" : "var(--text-muted)",
+                  border: "none",
+                  cursor: isDirty ? "pointer" : "not-allowed",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  transition: "all 0.15s ease"
+                }}
+              >
+                {saving ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
+                <span>{saving ? "Saving..." : "Save Changes"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Master Subsystem Toggle Card */}
+          <div
+            style={{
+              padding: "16px 20px",
+              borderRadius: "14px",
+              background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+              border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "16px",
+              flexWrap: "wrap"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "10px",
+                  background: settings.enabled ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.12)",
+                  color: settings.enabled ? "#10B981" : "#EF4444",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <PhoneCall size={22} />
+              </div>
+              <div>
+                <h3 style={{ margin: "0 0 2px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
+                  Master Voice Reminders Switch
+                </h3>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
+                  {settings.enabled
+                    ? "Voice calling sweeps and automated audio dispatch are globally active across all scheduled tasks."
+                    : "Voice calling subsystem is paused globally. Push notifications and scheduled timers will not trigger voice calls."}
+                </p>
+              </div>
+            </div>
+
+            <label
+              style={{
+                position: "relative",
+                display: "inline-flex",
+                alignItems: "center",
+                cursor: "pointer"
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={settings.enabled}
+                onChange={(e) => setSettings(prev => ({ ...prev, enabled: e.target.checked }))}
+                style={{ srOnly: true, width: 0, height: 0, opacity: 0 }}
+              />
+              <div
+                style={{
+                  width: "48px",
+                  height: "26px",
+                  background: settings.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "13px",
+                  position: "relative",
+                  transition: "background-color 0.2s"
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "3px",
+                    left: settings.enabled ? "25px" : "3px",
+                    width: "20px",
+                    height: "20px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                  }}
+                />
+              </div>
+            </label>
+          </div>
+
+          {/* Navigation Tabs */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              borderBottom: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+              marginBottom: "24px",
+              overflowX: "auto",
+              paddingBottom: "8px"
+            }}
+          >
+            {[
+              { id: "voice", label: "Voice & Language", icon: Mic },
+              { id: "schedule", label: "Calling Schedule", icon: Calendar },
+              { id: "retry", label: "Retry Rules", icon: Sliders },
+              { id: "templates", label: "Reminder Defaults", icon: Sparkles }
+            ].map(({ id, label, icon: Icon }) => {
+              const active = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveTab(id)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 18px",
+                    borderRadius: "10px",
+                    border: "none",
+                    background: active ? "var(--primary)" : "transparent",
+                    color: active ? "var(--primary-foreground, #000)" : "var(--text-secondary)",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: active ? "600" : "500",
+                    transition: "all 0.15s ease",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  <Icon size={16} />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* TAB 1: Voice & Language */}
+          {activeTab === "voice" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              {/* TTS Engine info banner */}
+              <div
+                style={{
+                  padding: "16px 20px",
+                  borderRadius: "12px",
+                  background: "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08))",
+                  border: "1px solid rgba(139, 92, 246, 0.25)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "16px",
+                  flexWrap: "wrap"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Sparkles size={22} style={{ color: "var(--primary)" }} />
+                  <div>
+                    <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      AI Model: {settings.model}
+                    </h4>
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                      Gemini Multimodal Live Audio Preview produces natural 24,000 Hz, 16-bit PCM voice synthesis with high intelligibility.
+                    </p>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    background: "rgba(139, 92, 246, 0.2)",
+                    color: "var(--primary)"
+                  }}
+                >
+                  Official Gemini TTS
+                </span>
+              </div>
+
+              {/* Language & Voice Selector Grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gap: "20px"
+                }}
+              >
+                {/* Default Language Selection */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                    Default Language Strategy
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                    Select how the system chooses between English and Hindi voice synthesis for task titles.
+                  </p>
+                  <select
+                    value={settings.defaultLanguage || "auto"}
+                    onChange={(e) => setSettings(prev => ({ ...prev, defaultLanguage: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
+                    }}
+                  >
+                    <option value="auto">Auto-Detect (Devanagari text triggers Hindi, Latin text triggers English)</option>
+                    <option value="en">Always English</option>
+                    <option value="hi">Always Hindi</option>
+                  </select>
+                </div>
+
+                {/* English Voice Selector */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                    English Voice Persona
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                    Voice model used for English reminder playback.
+                  </p>
+                  <select
+                    value={settings.englishVoice || "Aoede"}
+                    onChange={(e) => setSettings(prev => ({ ...prev, englishVoice: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
+                    }}
+                  >
+                    {GEMINI_VOICES.map(v => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} ({v.gender}) - {v.description}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Hindi Voice Selector */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                    Hindi Voice Persona
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                    Voice model used for Hindi reminder playback.
+                  </p>
+                  <select
+                    value={settings.hindiVoice || "Aoede"}
+                    onChange={(e) => setSettings(prev => ({ ...prev, hindiVoice: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
+                    }}
+                  >
+                    {GEMINI_VOICES.map(v => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} ({v.gender}) - {v.description}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Custom System Prompts */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+                  gap: "20px"
+                }}
+              >
+                {/* English Prompt */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      English System Instruction Prompt
+                    </label>
+                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                      {(settings.englishPrompt || "").length} chars
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
+                    Directs the Gemini TTS vocal delivery, cadence, and broadcast tone for English reminders.
+                  </p>
+                  <textarea
+                    rows={4}
+                    value={settings.englishPrompt || ""}
+                    onChange={(e) => setSettings(prev => ({ ...prev, englishPrompt: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                      resize: "vertical"
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSettings(prev => ({ ...prev, englishPrompt: DEFAULT_SETTINGS.englishPrompt }))}
+                    style={{
+                      marginTop: "8px",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--primary)",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      padding: 0
+                    }}
+                  >
+                    Reset to default English instruction
+                  </button>
+                </div>
+
+                {/* Hindi Prompt */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      Hindi System Instruction Prompt
+                    </label>
+                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                      {(settings.hindiPrompt || "").length} chars
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
+                    Directs Hindi pronunciation, news-anchor tone, and clarity for Sanskrit/Hindi academic vocabulary.
+                  </p>
+                  <textarea
+                    rows={4}
+                    value={settings.hindiPrompt || ""}
+                    onChange={(e) => setSettings(prev => ({ ...prev, hindiPrompt: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                      resize: "vertical"
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSettings(prev => ({ ...prev, hindiPrompt: DEFAULT_SETTINGS.hindiPrompt }))}
+                    style={{
+                      marginTop: "8px",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--primary)",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      padding: 0
+                    }}
+                  >
+                    Reset to default Hindi instruction
+                  </button>
+                </div>
+              </div>
+
+              {/* Real-time Voice Preview Tester Card */}
+              <div
+                style={{
+                  padding: "24px",
+                  borderRadius: "16px",
+                  background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01))",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      background: "rgba(139, 92, 246, 0.2)",
+                      color: "var(--primary)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
+                    <Volume2 size={18} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      Live Audio Sample Preview
+                    </h3>
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                      Test live Gemini TTS rendering with current persona settings before saving.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "16px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                      Preview Language
+                    </label>
+                    <select
+                      value={previewLang}
+                      onChange={(e) => {
+                        const l = e.target.value;
+                        setPreviewLang(l);
+                        if (l === "hi") {
+                          setPreviewText("नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपका अध्ययन अनुस्मारक है।");
+                          setPreviewVoice(settings.hindiVoice || "Aoede");
+                        } else {
+                          setPreviewText("Hello! This is a test reminder from Teaching Pariksha AI.");
+                          setPreviewVoice(settings.englishVoice || "Aoede");
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        background: "rgba(0, 0, 0, 0.25)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        fontSize: "13px"
+                      }}
+                    >
+                      <option value="en">English</option>
+                      <option value="hi">Hindi (हिंदी)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                      Preview Voice
+                    </label>
+                    <select
+                      value={previewVoice}
+                      onChange={(e) => setPreviewVoice(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        background: "rgba(0, 0, 0, 0.25)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        fontSize: "13px"
+                      }}
+                    >
+                      {GEMINI_VOICES.map(v => (
+                        <option key={v.id} value={v.id}>
+                          {v.name} ({v.gender})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                    Sample Reminder Text
+                  </label>
+                  <input
+                    type="text"
+                    value={previewText}
+                    onChange={(e) => setPreviewText(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                      color: "var(--text-primary)",
+                      fontSize: "13px"
+                    }}
+                  />
+                </div>
+
+                {/* Actions & Player */}
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={handleGeneratePreview}
+                    disabled={generatingPreview}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "9px 18px",
+                      borderRadius: "10px",
+                      background: "var(--primary)",
+                      color: "var(--primary-foreground, #000)",
+                      border: "none",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: generatingPreview ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    {generatingPreview ? <RefreshCw size={15} className="animate-spin" /> : <Play size={15} />}
+                    <span>{generatingPreview ? "Synthesizing Audio..." : "Generate & Test Audio"}</span>
+                  </button>
+
+                  {previewAudioUrl && (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "6px 14px",
+                        borderRadius: "10px",
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)"
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={handleTogglePlayback}
+                        style={{
+                          background: "var(--primary)",
+                          color: "var(--primary-foreground, #000)",
+                          border: "none",
+                          width: "28px",
+                          height: "28px",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {isPlayingPreview ? <Square size={12} /> : <Play size={12} />}
+                      </button>
+                      <span style={{ fontSize: "12px", color: "var(--text-primary)", fontWeight: 500 }}>
+                        {isPlayingPreview ? "Playing audio..." : "Preview ready"}
+                        {previewDuration ? ` (${previewDuration}s)` : ""}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Hidden audio element */}
+                  <audio
+                    ref={audioRef}
+                    src={previewAudioUrl || ""}
+                    onEnded={() => setIsPlayingPreview(false)}
+                    onError={() => setIsPlayingPreview(false)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: Calling Schedule */}
+          {activeTab === "schedule" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              {/* Schedule active switch */}
+              <div
+                style={{
+                  padding: "20px",
+                  borderRadius: "14px",
+                  background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "16px"
+                }}
+              >
+                <div>
+                  <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
+                    Enforce Calling Schedule Hours
+                  </h3>
+                  <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
+                    When enabled, automated reminders will strictly trigger only within the permitted time windows and days configured below.
+                  </p>
+                </div>
+                <label style={{ position: "relative", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={settings.callingSchedule?.enabled ?? true}
+                    onChange={(e) =>
+                      setSettings(prev => ({
+                        ...prev,
+                        callingSchedule: { ...prev.callingSchedule, enabled: e.target.checked }
+                      }))
+                    }
+                    style={{ srOnly: true, width: 0, height: 0, opacity: 0 }}
+                  />
+                  <div
+                    style={{
+                      width: "48px",
+                      height: "26px",
+                      background: settings.callingSchedule?.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
+                      borderRadius: "13px",
+                      position: "relative",
+                      transition: "background-color 0.2s"
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "3px",
+                        left: settings.callingSchedule?.enabled ? "25px" : "3px",
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        background: "#ffffff",
+                        transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                      }}
+                    />
+                  </div>
+                </label>
+              </div>
+
+              {/* Permitted Days Selector */}
+              <div
+                style={{
+                  padding: "20px",
+                  borderRadius: "14px",
+                  background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
+                  <div>
+                    <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      Permitted Calling Days
+                    </h4>
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                      Tasks scheduled on non-permitted days will not trigger voice calls.
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <button
+                      type="button"
+                      onClick={handleSelectAllDays}
+                      style={{
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        borderRadius: "6px",
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        cursor: "pointer"
+                      }}
+                    >
+                      All Days
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSelectWeekdays}
+                      style={{
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        borderRadius: "6px",
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Weekdays Only
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSelectWeekends}
+                      style={{
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        borderRadius: "6px",
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Weekends Only
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                  {WEEK_DAYS.map(day => {
+                    const isSelected = (settings.callingSchedule?.allowedDays || []).includes(day);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => toggleDay(day)}
+                        style={{
+                          padding: "8px 16px",
+                          borderRadius: "10px",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                          background: isSelected ? "var(--primary)" : "rgba(255, 255, 255, 0.05)",
+                          color: isSelected ? "var(--primary-foreground, #000)" : "var(--text-secondary)",
+                          border: isSelected ? "none" : "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        {isSelected && <Check size={14} />}
+                        <span>{day}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Time Window & Timezone Card */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                  gap: "20px"
+                }}
+              >
+                {/* Start Time */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                    Daily Window Start Time
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
+                    No automated voice calls before this hour.
+                  </p>
+                  <input
+                    type="time"
+                    value={settings.callingSchedule?.startTime || "08:00"}
+                    onChange={(e) =>
+                      setSettings(prev => ({
+                        ...prev,
+                        callingSchedule: { ...prev.callingSchedule, startTime: e.target.value }
+                      }))
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
+                    }}
+                  />
+                </div>
+
+                {/* End Time */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                    Daily Window End Time
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
+                    No automated voice calls after this hour.
+                  </p>
+                  <input
+                    type="time"
+                    value={settings.callingSchedule?.endTime || "21:00"}
+                    onChange={(e) =>
+                      setSettings(prev => ({
+                        ...prev,
+                        callingSchedule: { ...prev.callingSchedule, endTime: e.target.value }
+                      }))
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
+                    }}
+                  />
+                </div>
+
+                {/* Time Zone */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                    Operational Time Zone
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
+                    Reference time zone for calling window boundaries.
+                  </p>
+                  <select
+                    value={settings.callingSchedule?.timeZone || "Asia/Kolkata"}
+                    onChange={(e) =>
+                      setSettings(prev => ({
+                        ...prev,
+                        callingSchedule: { ...prev.callingSchedule, timeZone: e.target.value }
+                      }))
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
+                    }}
+                  >
+                    {TIMEZONES.map(tz => (
+                      <option key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: Retry Rules */}
+          {activeTab === "retry" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                  gap: "20px"
+                }}
+              >
+                {/* Max Retry Attempts */}
+                <div
+                  style={{
+                    padding: "22px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      Max Retry Attempts
+                    </label>
+                    <span
+                      style={{
+                        padding: "2px 10px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: "rgba(139, 92, 246, 0.15)",
+                        color: "var(--primary)"
+                      }}
+                    >
+                      {settings.retryRules?.maxRetryAttempts || 3} Attempts
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 16px 0" }}>
+                    Number of consecutive automated retry calls before marking a scheduled reminder as missed. (Range: 1 – 5).
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <input
+                      type="range"
+                      min={1}
+                      max={5}
+                      step={1}
+                      value={settings.retryRules?.maxRetryAttempts || 3}
+                      onChange={(e) =>
+                        setSettings(prev => ({
+                          ...prev,
+                          retryRules: {
+                            ...prev.retryRules,
+                            maxRetryAttempts: parseInt(e.target.value, 10)
+                          }
+                        }))
+                      }
+                      style={{ flex: 1, accentColor: "var(--primary)" }}
+                    />
+                    <input
+                      type="number"
+                      min={1}
+                      max={5}
+                      value={settings.retryRules?.maxRetryAttempts || 3}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val)) {
+                          setSettings(prev => ({
+                            ...prev,
+                            retryRules: {
+                              ...prev.retryRules,
+                              maxRetryAttempts: Math.max(1, Math.min(5, val))
+                            }
+                          }));
+                        }
+                      }}
+                      style={{
+                        width: "60px",
+                        padding: "6px 10px",
+                        borderRadius: "8px",
+                        background: "rgba(0, 0, 0, 0.25)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        textAlign: "center",
+                        fontSize: "14px",
+                        fontWeight: 600
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Retry Delay Minutes */}
+                <div
+                  style={{
+                    padding: "22px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      Retry Interval (Minutes)
+                    </label>
+                    <span
+                      style={{
+                        padding: "2px 10px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: "rgba(59, 130, 246, 0.15)",
+                        color: "#3B82F6"
+                      }}
+                    >
+                      {settings.retryRules?.retryDelayMinutes || 15} Mins
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 16px 0" }}>
+                    Waiting period between consecutive retry calls if the student did not answer. (Range: 1 – 60 mins).
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <input
+                      type="range"
+                      min={1}
+                      max={60}
+                      step={1}
+                      value={settings.retryRules?.retryDelayMinutes || 15}
+                      onChange={(e) =>
+                        setSettings(prev => ({
+                          ...prev,
+                          retryRules: {
+                            ...prev.retryRules,
+                            retryDelayMinutes: parseInt(e.target.value, 10)
+                          }
+                        }))
+                      }
+                      style={{ flex: 1, accentColor: "#3B82F6" }}
+                    />
+                    <input
+                      type="number"
+                      min={1}
+                      max={60}
+                      value={settings.retryRules?.retryDelayMinutes || 15}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val)) {
+                          setSettings(prev => ({
+                            ...prev,
+                            retryRules: {
+                              ...prev.retryRules,
+                              retryDelayMinutes: Math.max(1, Math.min(60, val))
+                            }
+                          }));
+                        }
+                      }}
+                      style={{
+                        width: "60px",
+                        padding: "6px 10px",
+                        borderRadius: "8px",
+                        background: "rgba(0, 0, 0, 0.25)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        textAlign: "center",
+                        fontSize: "14px",
+                        fontWeight: 600
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulation projection card */}
+              <div
+                style={{
+                  padding: "18px 22px",
+                  borderRadius: "14px",
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                }}
+              >
+                <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Info size={16} style={{ color: "var(--primary)" }} />
+                  <span>Escalation Timeline Simulation</span>
+                </h4>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }}>
+                  <div style={{ padding: "8px 14px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.25)", fontSize: "12px", color: "#10B981" }}>
+                    <strong>Initial Dispatch:</strong> At scheduled task time
+                  </div>
+                  {Array.from({ length: settings.retryRules?.maxRetryAttempts || 3 }).map((_, idx) => {
+                    const delay = (idx + 1) * (settings.retryRules?.retryDelayMinutes || 15);
+                    return (
+                      <div key={idx} style={{ padding: "8px 14px", borderRadius: "8px", background: "rgba(59, 130, 246, 0.1)", border: "1px solid rgba(59, 130, 246, 0.25)", fontSize: "12px", color: "#60A5FA" }}>
+                        <strong>Retry #{idx + 1}:</strong> +{delay} mins
+                      </div>
+                    );
+                  })}
+                  <div style={{ padding: "8px 14px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.25)", fontSize: "12px", color: "#F87171" }}>
+                    <strong>Resolution:</strong> Mark Missed after {((settings.retryRules?.maxRetryAttempts || 3) * (settings.retryRules?.retryDelayMinutes || 15))} mins total
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: Reminder Defaults & Templates */}
+          {activeTab === "templates" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              {/* Default Lead Timing */}
+              <div
+                style={{
+                  padding: "20px",
+                  borderRadius: "14px",
+                  background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                    Default Lead Time Before Task (Minutes)
+                  </label>
+                  <span
+                    style={{
+                      padding: "2px 10px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      background: "rgba(139, 92, 246, 0.15)",
+                      color: "var(--primary)"
+                    }}
+                  >
+                    {settings.reminderDefaults?.defaultTimingMinutes || 15} Mins Before
+                  </span>
+                </div>
+                <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                  When students create a reminder without specifying custom timing, the call triggers this many minutes prior to the scheduled exam/task. (0 = Exact time).
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", maxWidth: "400px" }}>
+                  <input
+                    type="number"
+                    min={0}
+                    max={1440}
+                    value={settings.reminderDefaults?.defaultTimingMinutes ?? 15}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val)) {
+                        setSettings(prev => ({
+                          ...prev,
+                          reminderDefaults: {
+                            ...prev.reminderDefaults,
+                            defaultTimingMinutes: Math.max(0, Math.min(1440, val))
+                          }
+                        }));
+                      }
+                    }}
+                    style={{
+                      width: "120px",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
+                    }}
+                  />
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                    minutes before scheduled task
+                  </span>
+                </div>
+              </div>
+
+              {/* Message Templates */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+                  gap: "20px"
+                }}
+              >
+                {/* English Template */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+                    English Reminder Message Template
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 10px 0" }}>
+                    Available placeholder variables: <code style={{ color: "var(--primary)" }}>{"{taskTitle}"}</code>
+                  </p>
+                  <textarea
+                    rows={4}
+                    value={settings.reminderDefaults?.defaultTemplateEnglish || ""}
+                    onChange={(e) =>
+                      setSettings(prev => ({
+                        ...prev,
+                        reminderDefaults: {
+                          ...prev.reminderDefaults,
+                          defaultTemplateEnglish: e.target.value
+                        }
+                      }))
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "13px",
+                      lineHeight: "1.5"
+                    }}
+                  />
+                  <div style={{ marginTop: "10px", padding: "10px 14px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.04)", fontSize: "12px" }}>
+                    <span style={{ color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Sample Rendered Output:</span>
+                    <span style={{ color: "var(--text-primary)" }}>
+                      {(settings.reminderDefaults?.defaultTemplateEnglish || "").replace("{taskTitle}", "CTET Mock Exam Paper 1")}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Hindi Template */}
+                <div
+                  style={{
+                    padding: "20px",
+                    borderRadius: "14px",
+                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  }}
+                >
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+                    Hindi Reminder Message Template
+                  </label>
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 10px 0" }}>
+                    Available placeholder variables: <code style={{ color: "var(--primary)" }}>{"{taskTitle}"}</code>
+                  </p>
+                  <textarea
+                    rows={4}
+                    value={settings.reminderDefaults?.defaultTemplateHindi || ""}
+                    onChange={(e) =>
+                      setSettings(prev => ({
+                        ...prev,
+                        reminderDefaults: {
+                          ...prev.reminderDefaults,
+                          defaultTemplateHindi: e.target.value
+                        }
+                      }))
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                      color: "var(--text-primary)",
+                      fontSize: "13px",
+                      lineHeight: "1.5"
+                    }}
+                  />
+                  <div style={{ marginTop: "10px", padding: "10px 14px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.04)", fontSize: "12px" }}>
+                    <span style={{ color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Sample Rendered Output:</span>
+                    <span style={{ color: "var(--text-primary)" }}>
+                      {(settings.reminderDefaults?.defaultTemplateHindi || "").replace("{taskTitle}", "सीटीईटी मॉक टेस्ट पेपर १")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

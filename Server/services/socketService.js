@@ -78,50 +78,63 @@ function initSocket(httpServer) {
 
     console.log(`[Socket] Connected: ${socket.user.fullName} (${userId}) | Role: ${role}${department ? ` | Dept: ${department}` : ""}`);
 
-    // Socket Signaling: Accept Call (Phase 5)
+    // Socket Signaling: Accept Call (Phase 5 & 6)
     socket.on("accept-call", async (payload = {}) => {
       try {
         const { scheduleId } = payload;
         if (!scheduleId) return;
 
         const schedule = await Schedule.findOne({ _id: scheduleId, user: socket.user._id });
-        if (!schedule || schedule.status === "CANCELLED") return;
+        if (!schedule || ["CANCELLED", "COMPLETED"].includes(schedule.status)) return;
 
-        let call = await Call.findOne({ scheduleId: schedule._id, user: socket.user._id });
-        if (!call) {
-          call = await Call.create({
-            user: socket.user._id,
-            scheduleId: schedule._id,
-            callType: schedule.callType || "TASK_REMINDER",
-            status: "ONGOING",
-            startTime: new Date()
-          });
-        } else if (["INITIATED", "RINGING"].includes(call.status)) {
-          call.status = "ONGOING";
-          call.startTime = call.startTime || new Date();
-          await call.save();
+        let call = null;
+        try {
+          call = await Call.findOneAndUpdate(
+            { scheduleId: schedule._id, user: socket.user._id },
+            {
+              $setOnInsert: {
+                user: socket.user._id,
+                scheduleId: schedule._id,
+                callType: schedule.callType || "TASK_REMINDER",
+                status: "ONGOING",
+                startTime: new Date()
+              }
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
+
+          if (call && ["INITIATED", "RINGING"].includes(call.status)) {
+            call.status = "ONGOING";
+            call.startTime = call.startTime || new Date();
+            await call.save();
+          }
+        } catch (callErr) {
+          if (callErr.code === 11000) {
+            call = await Call.findOne({ scheduleId: schedule._id, user: socket.user._id });
+          }
         }
 
         if (!schedule.metadata) schedule.metadata = new Map();
         schedule.metadata.set("acceptedAt", new Date().toISOString());
-        schedule.metadata.set("activeCallId", call._id.toString());
-        schedule.status = "COMPLETED";
+        if (call) schedule.metadata.set("activeCallId", call._id.toString());
         await schedule.save();
 
-        emitToUser(socket.user._id, "call-accepted", {
-          callId: call._id,
-          scheduleId: schedule._id,
-          taskTitle: schedule.taskTitle,
-          taskDescription: schedule.taskDescription,
-          reminderAudioText: schedule.reminderAudioText,
-          durationSeconds: schedule.audioDurationSeconds || 0
-        });
+        if (call) {
+          emitToUser(socket.user._id, "call-accepted", {
+            callId: call._id,
+            scheduleId: schedule._id,
+            taskTitle: schedule.taskTitle,
+            taskDescription: schedule.taskDescription,
+            reminderAudioText: schedule.reminderAudioText,
+            durationSeconds: schedule.audioDurationSeconds || 0
+          });
+        }
       } catch (err) {
         console.error("[Socket] accept-call error:", err.message);
       }
     });
 
-    // Socket Signaling: End Call (Phase 5)
+    // Socket Signaling: End Call (Phase 5 & 6)
     socket.on("end-call", async (payload = {}) => {
       try {
         const { callId, terminationReason } = payload;
@@ -137,6 +150,13 @@ function initSocket(httpServer) {
           call.durationSeconds = Math.max(0, Math.round((call.endTime.getTime() - call.startTime.getTime()) / 1000));
         }
         await call.save();
+
+        try {
+          await Schedule.findOneAndUpdate(
+            { _id: call.scheduleId, user: socket.user._id },
+            { $set: { status: "COMPLETED" } }
+          );
+        } catch (_) {}
 
         emitToUser(socket.user._id, "call-ended", {
           callId: call._id,

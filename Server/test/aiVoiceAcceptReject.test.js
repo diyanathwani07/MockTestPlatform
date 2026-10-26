@@ -47,6 +47,7 @@ test("PrepMark Phase 4: Accept and Reject Lifecycle & State Transitions", async 
 
   const originalCallFindOne = Call.findOne;
   const originalCallCreate = Call.create;
+  const originalCallFindOneAndUpdate = Call.findOneAndUpdate;
   Call.findOne = function () {
     return {
       select() {
@@ -54,6 +55,25 @@ test("PrepMark Phase 4: Accept and Reject Lifecycle & State Transitions", async 
       },
       then(resolve) {
         return resolve(null);
+      }
+    };
+  };
+  Call.findOneAndUpdate = function () {
+    return {
+      select() {
+        return this;
+      },
+      then(resolve) {
+        return resolve({
+          _id: new mongoose.Types.ObjectId(),
+          status: "ONGOING",
+          async save() {
+            return this;
+          }
+        });
+      },
+      catch() {
+        return this;
       }
     };
   };
@@ -89,6 +109,7 @@ test("PrepMark Phase 4: Accept and Reject Lifecycle & State Transitions", async 
   t.after(() => {
     Schedule.findOne = originalFindOne;
     Call.findOne = originalCallFindOne;
+    Call.findOneAndUpdate = originalCallFindOneAndUpdate;
     Call.create = originalCallCreate;
     memoryStore.clear();
   });
@@ -212,5 +233,47 @@ test("PrepMark Phase 4: Accept and Reject Lifecycle & State Transitions", async 
     const resReject = createMockRes();
     await rejectSchedule(req, resReject);
     assert.strictEqual(resReject.statusCode, 404);
+  });
+
+  // Test 6: Rejecting an already COMPLETED reminder is rejected with 400
+  await t.test("6. Rejecting an already COMPLETED reminder is rejected with 400", async () => {
+    const schedule = createTestDoc({
+      user: userA,
+      taskTitle: "Completed Schedule Reject Test",
+      status: "COMPLETED"
+    });
+
+    const req = {
+      user: { _id: userA },
+      params: { id: schedule._id.toString() }
+    };
+    const res = createMockRes();
+
+    await rejectSchedule(req, res);
+
+    assert.strictEqual(res.statusCode, 400);
+    assert.strictEqual(res.data.success, false);
+    assert.match(res.data.message, /already been completed/i);
+  });
+
+  // Test 7: Accepting an already COMPLETED reminder is rejected with 400
+  await t.test("7. Accepting an already COMPLETED reminder is rejected with 400", async () => {
+    const schedule = createTestDoc({
+      user: userA,
+      taskTitle: "Completed Schedule Accept Test",
+      status: "COMPLETED"
+    });
+
+    const req = {
+      user: { _id: userA },
+      params: { id: schedule._id.toString() }
+    };
+    const res = createMockRes();
+
+    await acceptSchedule(req, res);
+
+    assert.strictEqual(res.statusCode, 400);
+    assert.strictEqual(res.data.success, false);
+    assert.match(res.data.message, /already completed/i);
   });
 });

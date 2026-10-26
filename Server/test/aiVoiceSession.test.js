@@ -137,6 +137,58 @@ test("PrepMark Phase 5: Voice Session Lifecycle & Audio Streaming Suite", async 
     };
   };
 
+  // Mock Call.findOneAndUpdate
+  const originalCallFindOneAndUpdate = Call.findOneAndUpdate;
+  Call.findOneAndUpdate = function (query, update, options) {
+    return {
+      select() {
+        return this;
+      },
+      then(resolve) {
+        let doc = null;
+        for (const item of callStore.values()) {
+          if (
+            query.scheduleId &&
+            item.scheduleId.toString() === query.scheduleId.toString() &&
+            (!query.user || item.user.toString() === query.user.toString())
+          ) {
+            doc = item;
+            break;
+          }
+        }
+        if (!doc && options && options.upsert) {
+          const insertData = update.$setOnInsert || {};
+          const id = new mongoose.Types.ObjectId();
+          doc = {
+            _id: id,
+            user: insertData.user || query.user,
+            scheduleId: insertData.scheduleId || query.scheduleId,
+            callType: insertData.callType || "TASK_REMINDER",
+            status: insertData.status || "ONGOING",
+            startTime: insertData.startTime || new Date(),
+            endTime: null,
+            durationSeconds: 0,
+            terminationReason: null,
+            async save() {
+              if (this.startTime && this.endTime && this.endTime > this.startTime) {
+                this.durationSeconds = Math.max(0, Math.round((this.endTime.getTime() - this.startTime.getTime()) / 1000));
+              }
+              callStore.set(this._id.toString(), this);
+              return this;
+            }
+          };
+          callStore.set(id.toString(), doc);
+        } else if (doc && update.$set) {
+          Object.assign(doc, update.$set);
+        }
+        return resolve(doc);
+      },
+      catch() {
+        return this;
+      }
+    };
+  };
+
   // Mock Call.create
   const originalCallCreate = Call.create;
   Call.create = async function (data) {
@@ -194,6 +246,7 @@ test("PrepMark Phase 5: Voice Session Lifecycle & Audio Streaming Suite", async 
     Schedule.find = originalScheduleFind;
     Schedule.findOneAndUpdate = originalScheduleFindOneAndUpdate;
     Call.findOne = originalCallFindOne;
+    Call.findOneAndUpdate = originalCallFindOneAndUpdate;
     Call.create = originalCallCreate;
     if (fs.existsSync(tempPcmPath)) {
       try {

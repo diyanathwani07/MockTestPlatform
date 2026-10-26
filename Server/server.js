@@ -2,6 +2,9 @@ require("dotenv").config();
 const dns = require("dns");
 dns.setDefaultResultOrder("ipv4first");
 
+const { validateStartupEnv } = require("./config/validateEnv");
+validateStartupEnv();
+
 console.log("=== STARTUP DEBUG LOGS ===");
 console.log("GEMINI_API_KEY Exists:", !!process.env.GEMINI_API_KEY);
 console.log("API Key Length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
@@ -39,8 +42,11 @@ const { initSocket } = require("./services/socketService");
 
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
 const connectDB = require("./config/db");
 const { initFirebaseAdmin } = require("./config/firebaseAdmin");
+const { isSchedulerRunning, stopAiVoiceScheduler } = require("./services/aiVoiceSchedulerService");
+const { verifyCallIndexSafety, isVoiceSubsystemReady } = require("./config/dbIntegrity");
 const resultRoutes = require("./routes/resultRoutes");
 const examSeriesRoutes = require("./routes/examSeriesRoutes");
 const examStructureRoutes = require("./routes/examStructureRoutes");
@@ -58,39 +64,73 @@ app.set("trust proxy", true);
 // Change DNS
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
-// MongoDB Connection
-connectDB().then(async () => {
-  initFirebaseAdmin();
-  seedDepartments();
-  startSubscriptionExpiryCron();
-  const { syncLegacySubscriptions } = require("./utils/subscriptionUtils");
-  syncLegacySubscriptions();
-
-  // One-time database migration backfill: Group existing unlinked quizzes under a default 'Ungrouped Mocks' parent series
+// MongoDB Connection & Startup Initialization Lifecycle
+async function startServer() {
   try {
-    const unlinkedQuizzes = await Quiz.find({ examSeriesId: null, quizType: "exam" });
-    if (unlinkedQuizzes.length > 0) {
-      console.log(`[Migration] Found ${unlinkedQuizzes.length} unlinked quizzes. Creating default 'Ungrouped Mocks' series...`);
-      let ungroupedSeries = await ExamSeries.findOne({ slug: "ungrouped-mocks" });
-      if (!ungroupedSeries) {
-        ungroupedSeries = await ExamSeries.create({
-          title: "Ungrouped Mocks",
-          slug: "ungrouped-mocks",
-          description: "Quizzes that do not belong to any specific exam series.",
-          category: "General",
-          isPublished: true,
-        });
+    // 1. Await database connection before accepting any application traffic
+    await connectDB();
+
+    // 2. Initialize dependent services & static seeds
+    initFirebaseAdmin();
+    seedDepartments();
+    startSubscriptionExpiryCron();
+    const { syncLegacySubscriptions } = require("./utils/subscriptionUtils");
+    syncLegacySubscriptions();
+
+    // 3. One-time database migration backfill: Group existing unlinked quizzes under a default 'Ungrouped Mocks' parent series
+    try {
+      const unlinkedQuizzes = await Quiz.find({ examSeriesId: null, quizType: "exam" });
+      if (unlinkedQuizzes.length > 0) {
+        console.log(`[Migration] Found ${unlinkedQuizzes.length} unlinked quizzes. Creating default 'Ungrouped Mocks' series...`);
+        let ungroupedSeries = await ExamSeries.findOne({ slug: "ungrouped-mocks" });
+        if (!ungroupedSeries) {
+          ungroupedSeries = await ExamSeries.create({
+            title: "Ungrouped Mocks",
+            slug: "ungrouped-mocks",
+            description: "Quizzes that do not belong to any specific exam series.",
+            category: "General",
+            isPublished: true,
+          });
+        }
+        const result = await Quiz.updateMany(
+          { examSeriesId: null, quizType: "exam" },
+          { $set: { examSeriesId: ungroupedSeries._id } }
+        );
+        console.log(`[Migration] Backfilled ${result.modifiedCount} quizzes to 'Ungrouped Mocks'.`);
       }
-      const result = await Quiz.updateMany(
-        { examSeriesId: null, quizType: "exam" },
-        { $set: { examSeriesId: ungroupedSeries._id } }
-      );
-      console.log(`[Migration] Backfilled ${result.modifiedCount} quizzes to 'Ungrouped Mocks'.`);
+    } catch (err) {
+      console.error("[Migration Error] Failed to backfill unlinked quizzes:", err);
     }
-  } catch (err) {
-    console.error("[Migration Error] Failed to backfill unlinked quizzes:", err);
+
+    // 4. Non-destructive safety scan & Call unique compound index verification
+    const integrityCheck = await verifyCallIndexSafety();
+    if (!integrityCheck.safe) {
+      console.warn("[Startup Notice] AI Voice Reminder subsystem disabled due to integrity check findings.");
+    } else {
+      console.log("[Startup] Call unique compound index verified successfully ✅");
+    }
+
+    // 5. Initialize Schedulers
+    const { startReportScheduler } = require("./services/reportScheduler");
+    startReportScheduler();
+
+    // Initialize AI Voice Reminder 1-minute background scheduler only if voice subsystem is verified safe
+    const { initAiVoiceScheduler } = require("./services/aiVoiceSchedulerService");
+    if (isVoiceSubsystemReady()) {
+      initAiVoiceScheduler();
+    } else {
+      console.warn("[AiVoiceScheduler] Background scheduler skipped because voice subsystem is disabled.");
+    }
+
+    // 6. Start Server - only accept incoming HTTP and Socket.IO requests after initialization succeeds
+    httpServer.listen(PORT, () => {
+      console.log(`Server running on port ${PORT} with Socket.IO initialized 🚀`);
+    });
+  } catch (fatalError) {
+    console.error("[FATAL STARTUP ERROR] Server startup aborted:", fatalError.message || fatalError);
+    process.exit(1);
   }
-});
+}
 
 // Middleware
 const allowedOrigins = [
@@ -137,6 +177,25 @@ app.get("/", (req, res) => {
   res.send("Teaching Pariksha API Running 🚀");
 });
 
+// Operational Visibility & Health Check Endpoints
+app.get(["/health", "/api/health"], (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+  const schedulerStatus = isVoiceSubsystemReady()
+    ? (isSchedulerRunning() ? "running" : "stopped")
+    : "disabled_integrity_failure";
+  const isHealthy = dbStatus === "connected" && isVoiceSubsystemReady();
+
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? "healthy" : "degraded",
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+    services: {
+      database: dbStatus,
+      aiVoiceScheduler: schedulerStatus
+    }
+  });
+});
+
 
 app.use("/api/devices", deviceRoutes);
 app.use("/api/auth", authRoutes);
@@ -176,7 +235,7 @@ app.use("/api/voice-settings", require("./routes/voiceSettingRoutes"));
 app.use("/api/admin/voice-settings", require("./routes/voiceSettingRoutes"));
 app.use("/v1/api/voice-settings", require("./routes/voiceSettingRoutes"));
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes to publish and expired quizzes to unpublish
-setInterval(async () => {
+const quizPublishInterval = setInterval(async () => {
   try {
     const now = new Date();
 
@@ -217,14 +276,7 @@ setInterval(async () => {
     console.error("[Scheduler Error] Failed to process scheduled/expired quizzes:", error);
   }
 }, 30000);
-
-// Initialize monthly audit log email scheduler
-const { startReportScheduler } = require("./services/reportScheduler");
-startReportScheduler();
-
-// Initialize AI Voice Reminder 1-minute background scheduler (Phase 3)
-const { initAiVoiceScheduler, stopAiVoiceScheduler } = require("./services/aiVoiceSchedulerService");
-initAiVoiceScheduler();
+quizPublishInterval.unref();
 
 // Graceful shutdown handlers
 process.on("SIGTERM", () => {
@@ -236,7 +288,9 @@ process.on("SIGINT", () => {
   stopAiVoiceScheduler();
 });
 
-// Start Server
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} with Socket.IO initialized 🚀`);
-});
+// Start Server lifecycle only when executed directly as main process
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, httpServer, startServer };

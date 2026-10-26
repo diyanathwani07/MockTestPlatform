@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
+const { adminOnly } = require("../middleware/adminMiddleware");
 const { aiLimiter } = require("../middleware/rateLimiter");
 const {
   createSchedule,
@@ -15,7 +16,8 @@ const {
   acceptSchedule,
   rejectSchedule,
   endCallSession,
-  getSessionAudio
+  getSessionAudio,
+  getVoiceMetrics
 } = require("../controllers/aiVoiceController");
 
 // Schedule management endpoints (authenticated)
@@ -37,6 +39,9 @@ router.post("/schedule/:id/reject", protect, rejectSchedule);
 // Voice Session Lifecycle & Audio Streaming (Phase 5)
 router.post("/session/:callId/end", protect, endCallSession);
 router.get("/session/:callId/audio", protect, getSessionAudio);
+
+// Operational Telemetry & Health Metrics (Phase 7 & 8)
+router.get("/metrics", protect, adminOnly, getVoiceMetrics);
 
 // Call history endpoint (authenticated)
 router.get("/history", protect, getCallHistory);

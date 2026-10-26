@@ -8,6 +8,8 @@ const {
   createWavHeader
 } = require("../services/geminiTtsService");
 const { emitToUser } = require("../services/socketService");
+const { isVoiceSubsystemReady, getIntegrityDiagnostics } = require("../config/dbIntegrity");
+const { getVoiceSettingsSafe, isWithinCallingSchedule } = require("../services/voiceScheduleHelper");
 
 /**
  * Policy: Scheduled time must be in the future.
@@ -116,6 +118,22 @@ const generateScheduleAudioInternal = async (scheduleId, userId, force = false) 
  */
 const createSchedule = async (req, res) => {
   try {
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
+    // 0. Enforce Master Subsystem Switch
+    const voiceSettings = await getVoiceSettingsSafe();
+    if (voiceSettings && voiceSettings.enabled === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Voice reminder service is currently disabled by administrator."
+      });
+    }
+
     const {
       taskTitle,
       taskDescription = "",
@@ -161,20 +179,40 @@ const createSchedule = async (req, res) => {
       });
     }
 
-    // 4. Validate reminderAudioText (default to sensible message if empty)
+    // Enforce Permitted Calling Schedule
+    if (voiceSettings && voiceSettings.callingSchedule?.enabled) {
+      const isAllowed = isWithinCallingSchedule(voiceSettings.callingSchedule, parsedDate);
+      if (!isAllowed) {
+        return res.status(400).json({
+          success: false,
+          message: `Scheduled time falls outside permitted calling schedule (${voiceSettings.callingSchedule.startTime} - ${voiceSettings.callingSchedule.endTime} ${voiceSettings.callingSchedule.timeZone || "Asia/Kolkata"}).`
+        });
+      }
+    }
+
+    // 4. Validate language & default templates
+    const validLanguages = ["en", "hi", "auto"];
+    const resolvedLanguage = validLanguages.includes(language) ? language : "auto";
+
     let cleanAudioText = reminderAudioText;
     if (!cleanAudioText || typeof cleanAudioText !== "string" || cleanAudioText.trim() === "") {
-      cleanAudioText = `Hello! This is your automated AI reminder for: ${cleanTitle}.`;
+      const template =
+        resolvedLanguage === "hi"
+          ? voiceSettings?.reminderDefaults?.defaultTemplateHindi ||
+            "नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
+          : voiceSettings?.reminderDefaults?.defaultTemplateEnglish ||
+            "Hello! This is your study reminder from Teaching Pariksha AI regarding: {taskTitle}.";
+
+      const studentName = req.user?.name || req.user?.fullName || "Student";
+      cleanAudioText = template
+        .replace(/{taskTitle}/g, cleanTitle)
+        .replace(/{studentName}/g, studentName);
     } else {
       cleanAudioText = cleanAudioText.trim();
     }
     if (cleanAudioText.length > 1000) {
       return res.status(400).json({ success: false, message: "Reminder audio text cannot exceed 1000 characters." });
     }
-
-    // 5. Validate language
-    const validLanguages = ["en", "hi", "auto"];
-    const resolvedLanguage = validLanguages.includes(language) ? language : "auto";
 
     // 6. Create schedule document (owner derived strictly from authenticated user)
     const schedule = await Schedule.create({
@@ -219,6 +257,13 @@ const createSchedule = async (req, res) => {
  */
 const generateScheduleAudio = async (req, res) => {
   try {
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
     const force = req.body && req.body.force === true;
     const result = await generateScheduleAudioInternal(req.params.id, req.user._id, force);
 
@@ -245,6 +290,13 @@ const generateScheduleAudio = async (req, res) => {
  */
 const retryScheduleAudio = async (req, res) => {
   try {
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
     const result = await generateScheduleAudioInternal(req.params.id, req.user._id, true);
 
     res.json({
@@ -270,6 +322,13 @@ const getAudioStatus = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ success: false, message: "Invalid schedule ID format." });
+    }
+
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
     }
 
     const schedule = await Schedule.findOne({
@@ -341,6 +400,13 @@ const getScheduleById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid schedule ID format." });
     }
 
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
     const schedule = await Schedule.findOne({
       _id: req.params.id,
       user: req.user._id
@@ -368,6 +434,13 @@ const cancelSchedule = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ success: false, message: "Invalid schedule ID format." });
+    }
+
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
     }
 
     const schedule = await Schedule.findOne({
@@ -473,6 +546,13 @@ const acceptSchedule = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid schedule ID format." });
     }
 
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
     const schedule = await Schedule.findOne({
       _id: req.params.id,
       user: req.user._id
@@ -482,29 +562,44 @@ const acceptSchedule = async (req, res) => {
       return res.status(404).json({ success: false, message: "Schedule not found." });
     }
 
-    if (schedule.status === "CANCELLED") {
-      return res.status(400).json({ success: false, message: "Cannot accept a cancelled reminder." });
+    if (["CANCELLED", "COMPLETED"].includes(schedule.status)) {
+      return res.status(400).json({
+        success: false,
+        message: schedule.status === "CANCELLED"
+          ? "Cannot accept a cancelled reminder."
+          : "Cannot accept a reminder that is already completed."
+      });
     }
 
     // Atomically find or create the active Call session
     let call = null;
     try {
-      call = await Call.findOne({ scheduleId: schedule._id, user: req.user._id });
-      if (!call) {
-        call = await Call.create({
-          user: req.user._id,
-          scheduleId: schedule._id,
-          callType: schedule.callType || "TASK_REMINDER",
-          status: "ONGOING",
-          startTime: new Date()
-        });
-      } else if (call.status === "INITIATED" || call.status === "RINGING") {
+      call = await Call.findOneAndUpdate(
+        { scheduleId: schedule._id, user: req.user._id },
+        {
+          $setOnInsert: {
+            user: req.user._id,
+            scheduleId: schedule._id,
+            callType: schedule.callType || "TASK_REMINDER",
+            status: "ONGOING",
+            startTime: new Date()
+          }
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+
+      // If existing call was INITIATED or RINGING, promote to ONGOING
+      if (call && ["INITIATED", "RINGING"].includes(call.status)) {
         call.status = "ONGOING";
         call.startTime = call.startTime || new Date();
         await call.save();
       }
     } catch (callErr) {
-      console.warn("[AiVoiceController] Call session creation notice:", callErr.message || callErr);
+      if (callErr.code === 11000) {
+        call = await Call.findOne({ scheduleId: schedule._id, user: req.user._id });
+      } else {
+        console.warn("[AiVoiceController] Call session creation notice:", callErr.message || callErr);
+      }
     }
 
     if (!schedule.metadata) {
@@ -553,6 +648,13 @@ const rejectSchedule = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid schedule ID format." });
     }
 
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
     const schedule = await Schedule.findOne({
       _id: req.params.id,
       user: req.user._id
@@ -567,6 +669,13 @@ const rejectSchedule = async (req, res) => {
         success: true,
         message: "Reminder is already cancelled or rejected.",
         data: schedule
+      });
+    }
+
+    if (schedule.status === "COMPLETED") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reject a reminder that has already been completed."
       });
     }
 
@@ -682,6 +791,13 @@ const getSessionAudio = async (req, res) => {
       return res.status(404).json({ success: false, message: "Call session not found." });
     }
 
+    if (["REJECTED", "FAILED"].includes(call.status)) {
+      return res.status(403).json({
+        success: false,
+        message: "Cannot stream audio for a rejected or failed call session."
+      });
+    }
+
     const schedule = await Schedule.findOne({
       _id: call.scheduleId,
       user: req.user._id
@@ -709,6 +825,9 @@ const getSessionAudio = async (req, res) => {
     }
 
     const pcmBuffer = fs.readFileSync(pcmPath);
+    if (!pcmBuffer || pcmBuffer.length === 0) {
+      return res.status(404).json({ success: false, message: "Audio file is empty or corrupted." });
+    }
     // Wrap 24,000 Hz 16-bit mono PCM into standard WAV container
     const wavHeader = createWavHeader(pcmBuffer.length, 24000, 1, 16);
     const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
@@ -721,6 +840,35 @@ const getSessionAudio = async (req, res) => {
   } catch (error) {
     console.error("[AiVoiceController] Get Session Audio Error:", error.message || error);
     res.status(500).json({ success: false, message: "Failed to stream session audio." });
+  }
+};
+
+/**
+ * GET /api/ai-voice/metrics
+ * Returns operational telemetry for monitoring dashboards (authenticated).
+ */
+const getVoiceMetrics = async (req, res) => {
+  try {
+    const { getSchedulerMetrics } = require("../services/aiVoiceSchedulerService");
+    const activeCallsCount = await Call.countDocuments({ status: "ONGOING" });
+    const pendingSchedulesCount = await Schedule.countDocuments({ status: "PENDING" });
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      subsystemStatus: {
+        ready: isVoiceSubsystemReady(),
+        diagnostics: getIntegrityDiagnostics()
+      },
+      scheduler: getSchedulerMetrics(),
+      realtime: {
+        activeCallsCount,
+        pendingSchedulesCount
+      }
+    });
+  } catch (error) {
+    console.error("[AiVoiceController] Get Voice Metrics Error:", error.message || error);
+    res.status(500).json({ success: false, message: "Failed to retrieve voice metrics." });
   }
 };
 
@@ -738,5 +886,6 @@ module.exports = {
   acceptSchedule,
   rejectSchedule,
   endCallSession,
-  getSessionAudio
+  getSessionAudio,
+  getVoiceMetrics
 };

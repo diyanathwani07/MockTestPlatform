@@ -15,6 +15,7 @@ export default function IncomingReminderModal() {
   const audioRef = useRef(null);
   const callTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
+  const isCallActiveRef = useRef(false);
 
   // Subscribe to incoming reminder events from push/socket service
   useEffect(() => {
@@ -70,6 +71,7 @@ export default function IncomingReminderModal() {
   }, [sessionState]);
 
   const teardownCall = () => {
+    isCallActiveRef.current = false;
     if (audioRef.current) {
       try {
         audioRef.current.pause();
@@ -88,41 +90,58 @@ export default function IncomingReminderModal() {
   };
 
   const playAudio = async (url) => {
-    if (!url) return;
-    teardownCall();
+    if (!url || !isCallActiveRef.current) return;
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      } catch (_) {}
+      audioRef.current = null;
+    }
 
     const audio = new Audio(url);
     audioRef.current = audio;
 
     audio.onplay = () => {
-      setSessionState('PLAYING');
+      if (isCallActiveRef.current) {
+        setSessionState('PLAYING');
+      }
     };
 
     audio.onended = () => {
-      setSessionState('COMPLETED');
+      if (isCallActiveRef.current) {
+        setSessionState('COMPLETED');
+      }
     };
 
     audio.onerror = (e) => {
       console.warn('[IncomingReminderModal] Audio playback error:', e);
-      setErrorMessage('Audio playback failed. Please try replay.');
-      setSessionState('ERROR');
+      if (isCallActiveRef.current) {
+        setErrorMessage('Audio playback failed. Please try replay.');
+        setSessionState('ERROR');
+      }
     };
 
     try {
       await audio.play();
     } catch (err) {
       console.warn('[IncomingReminderModal] play() promise rejected:', err);
-      setErrorMessage('Playback prevented by browser policy. Tap Replay to listen.');
-      setSessionState('ERROR');
+      if (isCallActiveRef.current) {
+        setErrorMessage('Playback prevented by browser policy. Tap Replay to listen.');
+        setSessionState('ERROR');
+      }
     }
   };
 
   const handleAccept = async () => {
     if (!reminder) return;
+    isCallActiveRef.current = true;
     setSessionState('CONNECTING');
 
     try {
       const session = await incomingReminderService.acceptReminder(reminder.scheduleId);
+      if (!isCallActiveRef.current) return; // User hung up while accept was in-flight
+
       const activeCallId = session?.callId;
       setCallId(activeCallId);
 
@@ -134,6 +153,7 @@ export default function IncomingReminderModal() {
 
       // Fetch the pre-generated 24kHz PCM wrapped as WAV
       const url = await incomingReminderService.fetchSessionAudioBlob(activeCallId);
+      if (!isCallActiveRef.current) return; // User hung up while audio blob was downloading
       setAudioUrl(url);
 
       // Start polite 2-second delay to give user time to bring phone to ear / adjust audio
@@ -147,10 +167,13 @@ export default function IncomingReminderModal() {
         if (count <= 0) {
           clearInterval(countdownTimerRef.current);
           countdownTimerRef.current = null;
-          playAudio(url);
+          if (isCallActiveRef.current) {
+            playAudio(url);
+          }
         }
       }, 1000);
     } catch (err) {
+      if (!isCallActiveRef.current) return;
       console.error('[IncomingReminderModal] Accept error:', err);
       setErrorMessage('Could not load reminder audio.');
       setSessionState('ERROR');
@@ -174,6 +197,8 @@ export default function IncomingReminderModal() {
 
   const handleReplay = () => {
     if (audioUrl) {
+      isCallActiveRef.current = true;
+      setCallDuration(0);
       playAudio(audioUrl);
     }
   };

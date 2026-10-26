@@ -18,6 +18,7 @@ const AdminUsers = lazy(() => import("./admin/Users"));
 const AdminResults = lazy(() => import("./admin/Results"));
 const Reports = lazy(() => import("./admin/Reports"));
 const Settings = lazy(() => import("./admin/Settings"));
+const VoiceSettings = lazy(() => import("./admin/VoiceSettings"));
 
 
 const AuditLog = lazy(() => import("./admin/AuditLog")); // <── (Requires src/admin/AuditLog.jsx to exist!)
@@ -709,6 +710,15 @@ function App() {
           element={
             <AdminRoute>
               <ExamSeriesManager />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/voice-settings"
+          element={
+            <AdminRoute>
+              <VoiceSettings />
             </AdminRoute>
           }
         />

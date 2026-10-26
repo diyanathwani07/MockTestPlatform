@@ -45,10 +45,22 @@ const paymentLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// 6. Voice Audio Preview Limiter
+const voicePreviewLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 requests per minute
+  message: { success: false, error: "Too many voice preview requests. Please wait a minute before trying again." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { keyGeneratorIpFallback: false },
+  keyGenerator: (req) => req.user?._id?.toString() || req.ip || "admin-client"
+});
+
 module.exports = {
   apiLimiter,
   authLimiter,
   passwordRecoveryLimiter,
   aiLimiter,
   paymentLimiter,
+  voicePreviewLimiter,
 };
