@@ -19,8 +19,7 @@ import {
   CheckCircle2,
   Info,
   ShieldCheck,
-  Radio,
-  X
+  Radio
 } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -132,7 +131,7 @@ export default function VoiceSettings() {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
-    }, 5000);
+    }, 4500);
   };
 
   // Check if form is dirty
@@ -399,77 +398,99 @@ export default function VoiceSettings() {
           {/* Toast Notification Banner */}
           {toast && (
             <div
-              className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:top-6 z-[9999] max-w-md w-auto mx-auto sm:mx-0 flex items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl text-sm font-medium shadow-2xl transition-all duration-200"
               style={{
+                position: "fixed",
+                top: "24px",
+                right: "24px",
+                maxWidth: "calc(100vw - 32px)",
+                zIndex: 9999,
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "12px 20px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: "500",
                 color: "#ffffff",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
                 background:
                   toast.type === "error"
-                    ? "#DC2626"
+                    ? "#EF4444"
                     : toast.type === "info"
-                    ? "#2563EB"
-                    : "#059669",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                backdropFilter: "blur(8px)"
+                    ? "#3B82F6"
+                    : "#10B981",
+                wordBreak: "break-word",
+                animation: "slideIn 0.25s ease-out"
               }}
             >
-              <div className="flex items-start sm:items-center gap-2.5 min-w-0 flex-1">
-                {toast.type === "error" ? (
-                  <AlertTriangle size={18} className="shrink-0 mt-0.5 sm:mt-0 text-white" />
-                ) : (
-                  <CheckCircle2 size={18} className="shrink-0 mt-0.5 sm:mt-0 text-white" />
-                )}
-                <span className="break-words text-xs sm:text-sm leading-snug">{toast.message}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setToast(null)}
-                className="shrink-0 p-1 hover:bg-white/20 rounded-md transition-colors cursor-pointer text-white"
-                aria-label="Dismiss toast"
-              >
-                <X size={15} />
-              </button>
+              {toast.type === "error" ? <AlertTriangle size={18} style={{ flexShrink: 0 }} /> : <CheckCircle2 size={18} style={{ flexShrink: 0 }} />}
+              <span>{toast.message}</span>
             </div>
           )}
 
-          {/* Unsaved Changes Banner */}
+          {/* Sticky Dirty Header Notice */}
           {isDirty && (
             <div
-              className="mb-5 px-4 py-3 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-md"
               style={{
-                background: "linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.08))",
-                border: "1px solid rgba(245, 158, 11, 0.35)"
+                marginBottom: "24px",
+                padding: "14px 20px",
+                borderRadius: "14px",
+                background: "linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.06))",
+                border: "1px solid rgba(245, 158, 11, 0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "14px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
               }}
             >
-              <div className="flex items-center gap-2.5 font-semibold text-xs sm:text-sm" style={{ color: "#FBBF24" }}>
-                <AlertTriangle size={17} className="shrink-0" style={{ color: "#FBBF24" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#FBBF24", fontWeight: 600, fontSize: "14px" }}>
+                <AlertTriangle size={18} style={{ color: "#FBBF24" }} />
                 <span>You have unsaved changes to voice settings.</span>
               </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end shrink-0">
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer"
                   style={{
-                    background: "rgba(255, 255, 255, 0.06)",
-                    border: "1px solid rgba(245, 158, 11, 0.3)",
-                    color: "#FDE68A"
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "7px 14px",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    borderRadius: "9px",
+                    background: "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(245, 158, 11, 0.35)",
+                    color: "#FDE68A",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease"
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)")}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")}
                 >
-                  <RotateCcw size={12} />
+                  <RotateCcw size={13} />
                   <span>Discard</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-sm"
                   style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "7px 18px",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    borderRadius: "9px",
                     background: "#F59E0B",
                     color: "#000000",
                     border: "none",
-                    cursor: saving ? "not-allowed" : "pointer"
+                    cursor: saving ? "not-allowed" : "pointer",
+                    boxShadow: "0 2px 8px rgba(245, 158, 11, 0.3)",
+                    transition: "all 0.15s ease"
                   }}
                   onMouseEnter={(e) => !saving && (e.currentTarget.style.background = "#FBBF24")}
                   onMouseLeave={(e) => !saving && (e.currentTarget.style.background = "#F59E0B")}
@@ -482,24 +503,42 @@ export default function VoiceSettings() {
           )}
 
           {/* Page Top Header with Title, Status & Actions */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              gap: "16px",
+              marginBottom: "24px"
+            }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--primary)] shrink-0"
                   style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "10px",
                     background: "linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.25))",
-                    border: "1px solid rgba(139, 92, 246, 0.4)"
+                    border: "1px solid rgba(139, 92, 246, 0.4)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--primary)"
                   }}
                 >
                   <Volume2 size={20} />
                 </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] m-0">
+                <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
                   Voice Settings
                 </h1>
                 <span
-                  className="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0"
                   style={{
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: 600,
                     background: settings.enabled ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
                     color: settings.enabled ? "#10B981" : "#EF4444",
                     border: `1px solid ${settings.enabled ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
@@ -508,11 +547,11 @@ export default function VoiceSettings() {
                   {settings.enabled ? "Subsystem Active" : "Subsystem Disabled"}
                 </span>
               </div>
-              <p className="m-0 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+              <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>
                 Configure Gemini multimodal text-to-speech voices, automated calling schedules, retry escalation rules, and reminder defaults.
               </p>
               {lastUpdatedAt && (
-                <div className="mt-1.5 text-xs text-[var(--text-muted)]">
+                <div style={{ marginTop: "6px", fontSize: "12px", color: "var(--text-muted)" }}>
                   Last updated: <strong>{formatDateTime(lastUpdatedAt)}</strong>
                   {updatedByMeta && (
                     <span> by <strong>{updatedByMeta.fullName || updatedByMeta.name || updatedByMeta.email || "Admin"}</strong></span>
@@ -521,20 +560,27 @@ export default function VoiceSettings() {
               )}
             </div>
 
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end sm:justify-start shrink-0">
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button
                 type="button"
                 onClick={fetchSettings}
                 disabled={loading}
                 title="Refresh from server"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer"
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "9px 14px",
+                  borderRadius: "10px",
                   background: "var(--bg-card, rgba(255, 255, 255, 0.04))",
                   border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                  color: "var(--text-secondary)"
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 500
                 }}
               >
-                <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
                 <span>Refresh</span>
               </button>
 
@@ -542,15 +588,22 @@ export default function VoiceSettings() {
                 type="button"
                 onClick={handleSave}
                 disabled={saving || !isDirty}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer"
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "9px 18px",
+                  borderRadius: "10px",
                   background: isDirty ? "var(--primary)" : "rgba(255, 255, 255, 0.08)",
                   color: isDirty ? "var(--primary-foreground, #000)" : "var(--text-muted)",
                   border: "none",
-                  cursor: isDirty ? "pointer" : "not-allowed"
+                  cursor: isDirty ? "pointer" : "not-allowed",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  transition: "all 0.15s ease"
                 }}
               >
-                {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                {saving ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
                 <span>{saving ? "Saving..." : "Save Changes"}</span>
               </button>
             </div>
@@ -558,23 +611,39 @@ export default function VoiceSettings() {
 
           {/* Master Subsystem Toggle Card */}
           <div
-            className="p-4 sm:p-5 rounded-2xl bg-[var(--bg-card,rgba(255,255,255,0.03))] border border-[var(--border-color,rgba(255,255,255,0.08))] mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            style={{
+              padding: "16px 20px",
+              borderRadius: "14px",
+              background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+              border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "16px",
+              flexWrap: "wrap"
+            }}
           >
-            <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 sm:mt-0"
                 style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "10px",
                   background: settings.enabled ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.12)",
-                  color: settings.enabled ? "#10B981" : "#EF4444"
+                  color: settings.enabled ? "#10B981" : "#EF4444",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
                 }}
               >
-                <PhoneCall size={20} />
+                <PhoneCall size={22} />
               </div>
               <div>
-                <h3 className="m-0 mb-1 text-sm sm:text-base font-semibold text-[var(--text-primary)]">
+                <h3 style={{ margin: "0 0 2px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
                   Master Voice Reminders Switch
                 </h3>
-                <p className="m-0 text-xs sm:text-sm text-[var(--text-secondary)] leading-snug">
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
                   {settings.enabled
                     ? "Voice calling sweeps and automated audio dispatch are globally active across all scheduled tasks."
                     : "Voice calling subsystem is paused globally. Push notifications and scheduled timers will not trigger voice calls."}
@@ -582,27 +651,41 @@ export default function VoiceSettings() {
               </div>
             </div>
 
-            <label className="relative inline-flex items-center cursor-pointer self-end sm:self-center shrink-0">
+            <label
+              style={{
+                position: "relative",
+                display: "inline-flex",
+                alignItems: "center",
+                cursor: "pointer"
+              }}
+            >
               <input
                 type="checkbox"
                 checked={settings.enabled}
                 onChange={(e) => setSettings(prev => ({ ...prev, enabled: e.target.checked }))}
-                className="sr-only"
+                style={{ srOnly: true, width: 0, height: 0, opacity: 0 }}
               />
               <div
-                className="rounded-full transition-colors relative"
                 style={{
-                  background: settings.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
                   width: "48px",
-                  height: "26px"
+                  height: "26px",
+                  background: settings.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "13px",
+                  position: "relative",
+                  transition: "background-color 0.2s"
                 }}
               >
                 <div
-                  className="absolute top-[3px] rounded-full bg-white transition-all shadow-md"
                   style={{
+                    position: "absolute",
+                    top: "3px",
                     left: settings.enabled ? "25px" : "3px",
                     width: "20px",
-                    height: "20px"
+                    height: "20px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
                   }}
                 />
               </div>
@@ -611,8 +694,15 @@ export default function VoiceSettings() {
 
           {/* Navigation Tabs */}
           <div
-            className="flex items-center gap-2 border-b border-[var(--border-color,rgba(255,255,255,0.08))] mb-6 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none"
-            style={{ WebkitOverflowScrolling: "touch" }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              borderBottom: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+              marginBottom: "24px",
+              overflowX: "auto",
+              paddingBottom: "8px"
+            }}
           >
             {[
               { id: "voice", label: "Voice & Language", icon: Mic },
@@ -626,16 +716,23 @@ export default function VoiceSettings() {
                   key={id}
                   type="button"
                   onClick={() => setActiveTab(id)}
-                  className="inline-flex items-center gap-2 py-2 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 cursor-pointer"
                   style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 18px",
+                    borderRadius: "10px",
                     border: "none",
                     background: active ? "var(--primary)" : "transparent",
                     color: active ? "var(--primary-foreground, #000)" : "var(--text-secondary)",
+                    cursor: "pointer",
+                    fontSize: "14px",
                     fontWeight: active ? "600" : "500",
+                    transition: "all 0.15s ease",
                     whiteSpace: "nowrap"
                   }}
                 >
-                  <Icon size={15} />
+                  <Icon size={16} />
                   <span>{label}</span>
                 </button>
               );
@@ -644,29 +741,38 @@ export default function VoiceSettings() {
 
           {/* TAB 1: Voice & Language */}
           {activeTab === "voice" && (
-            <div className="flex flex-col gap-5 sm:gap-6">
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               {/* TTS Engine info banner */}
               <div
-                className="p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5"
                 style={{
+                  padding: "16px 20px",
+                  borderRadius: "12px",
                   background: "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08))",
-                  border: "1px solid rgba(139, 92, 246, 0.25)"
+                  border: "1px solid rgba(139, 92, 246, 0.25)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "16px",
+                  flexWrap: "wrap"
                 }}
               >
-                <div className="flex items-start sm:items-center gap-3 min-w-0">
-                  <Sparkles size={20} className="text-[var(--primary)] shrink-0 mt-0.5 sm:mt-0" />
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Sparkles size={22} style={{ color: "var(--primary)" }} />
                   <div>
-                    <h4 className="m-0 mb-0.5 text-sm font-semibold text-[var(--text-primary)]">
+                    <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                       AI Model: {settings.model}
                     </h4>
-                    <p className="m-0 text-xs text-[var(--text-secondary)] leading-snug">
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
                       Gemini Multimodal Live Audio Preview produces natural 24,000 Hz, 16-bit PCM voice synthesis with high intelligibility.
                     </p>
                   </div>
                 </div>
                 <span
-                  className="px-2.5 py-1 rounded-md text-xs font-semibold shrink-0"
                   style={{
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 600,
                     background: "rgba(139, 92, 246, 0.2)",
                     color: "var(--primary)"
                   }}
@@ -676,30 +782,39 @@ export default function VoiceSettings() {
               </div>
 
               {/* Language & Voice Selector Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                  gap: "20px"
+                }}
+              >
                 {/* Default Language Selection */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1.5">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
                     Default Language Strategy
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3.5 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
                     Select how the system chooses between English and Hindi voice synthesis for task titles.
                   </p>
                   <select
                     value={settings.defaultLanguage || "auto"}
                     onChange={(e) => setSettings(prev => ({ ...prev, defaultLanguage: e.target.value }))}
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
                     }}
                   >
                     <option value="auto">Auto-Detect (Devanagari text triggers Hindi, Latin text triggers English)</option>
@@ -710,27 +825,30 @@ export default function VoiceSettings() {
 
                 {/* English Voice Selector */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1.5">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
                     English Voice Persona
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3.5 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
                     Voice model used for English reminder playback.
                   </p>
                   <select
                     value={settings.englishVoice || "Aoede"}
                     onChange={(e) => setSettings(prev => ({ ...prev, englishVoice: e.target.value }))}
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
                     }}
                   >
                     {GEMINI_VOICES.map(v => (
@@ -743,27 +861,30 @@ export default function VoiceSettings() {
 
                 {/* Hindi Voice Selector */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1.5">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
                     Hindi Voice Persona
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3.5 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
                     Voice model used for Hindi reminder playback.
                   </p>
                   <select
                     value={settings.hindiVoice || "Aoede"}
                     onChange={(e) => setSettings(prev => ({ ...prev, hindiVoice: e.target.value }))}
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
                     }}
                   >
                     {GEMINI_VOICES.map(v => (
@@ -776,36 +897,45 @@ export default function VoiceSettings() {
               </div>
 
               {/* Custom System Prompts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+                  gap: "20px"
+                }}
+              >
                 {/* English Prompt */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-sm font-semibold text-[var(--text-primary)]">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                       English System Instruction Prompt
                     </label>
-                    <span className="text-[11px] text-[var(--text-muted)]">
+                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
                       {(settings.englishPrompt || "").length} chars
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
                     Directs the Gemini TTS vocal delivery, cadence, and broadcast tone for English reminders.
                   </p>
                   <textarea
                     rows={4}
                     value={settings.englishPrompt || ""}
                     onChange={(e) => setSettings(prev => ({ ...prev, englishPrompt: e.target.value }))}
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
                       color: "var(--text-primary)",
+                      fontSize: "13px",
                       lineHeight: "1.5",
                       resize: "vertical"
                     }}
@@ -813,7 +943,15 @@ export default function VoiceSettings() {
                   <button
                     type="button"
                     onClick={() => setSettings(prev => ({ ...prev, englishPrompt: DEFAULT_SETTINGS.englishPrompt }))}
-                    className="mt-2 text-xs text-[var(--primary)] hover:underline cursor-pointer p-0 bg-transparent border-none"
+                    style={{
+                      marginTop: "8px",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--primary)",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      padding: 0
+                    }}
                   >
                     Reset to default English instruction
                   </button>
@@ -821,33 +959,36 @@ export default function VoiceSettings() {
 
                 {/* Hindi Prompt */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-sm font-semibold text-[var(--text-primary)]">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                       Hindi System Instruction Prompt
                     </label>
-                    <span className="text-[11px] text-[var(--text-muted)]">
+                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
                       {(settings.hindiPrompt || "").length} chars
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
                     Directs Hindi pronunciation, news-anchor tone, and clarity for Sanskrit/Hindi academic vocabulary.
                   </p>
                   <textarea
                     rows={4}
                     value={settings.hindiPrompt || ""}
                     onChange={(e) => setSettings(prev => ({ ...prev, hindiPrompt: e.target.value }))}
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
                       color: "var(--text-primary)",
+                      fontSize: "13px",
                       lineHeight: "1.5",
                       resize: "vertical"
                     }}
@@ -855,7 +996,15 @@ export default function VoiceSettings() {
                   <button
                     type="button"
                     onClick={() => setSettings(prev => ({ ...prev, hindiPrompt: DEFAULT_SETTINGS.hindiPrompt }))}
-                    className="mt-2 text-xs text-[var(--primary)] hover:underline cursor-pointer p-0 bg-transparent border-none"
+                    style={{
+                      marginTop: "8px",
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--primary)",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      padding: 0
+                    }}
                   >
                     Reset to default Hindi instruction
                   </button>
@@ -864,35 +1013,41 @@ export default function VoiceSettings() {
 
               {/* Real-time Voice Preview Tester Card */}
               <div
-                className="p-4 sm:p-6 rounded-2xl"
                 style={{
+                  padding: "24px",
+                  borderRadius: "16px",
                   background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01))",
                   border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))"
                 }}
               >
-                <div className="flex items-center gap-3 mb-4">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                     style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
                       background: "rgba(139, 92, 246, 0.2)",
-                      color: "var(--primary)"
+                      color: "var(--primary)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
                     }}
                   >
                     <Volume2 size={18} />
                   </div>
                   <div>
-                    <h3 className="m-0 text-sm sm:text-base font-semibold text-[var(--text-primary)]">
+                    <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
                       Live Audio Sample Preview
                     </h3>
-                    <p className="m-0 text-xs text-[var(--text-secondary)]">
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
                       Test live Gemini TTS rendering with current persona settings before saving.
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "16px" }}>
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
                       Preview Language
                     </label>
                     <select
@@ -908,12 +1063,14 @@ export default function VoiceSettings() {
                           setPreviewVoice(settings.englishVoice || "Aoede");
                         }
                       }}
-                      className="w-full rounded-xl text-xs sm:text-sm"
                       style={{
+                        width: "100%",
                         padding: "8px 12px",
+                        borderRadius: "8px",
                         background: "rgba(0, 0, 0, 0.25)",
                         border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)"
+                        color: "var(--text-primary)",
+                        fontSize: "13px"
                       }}
                     >
                       <option value="en">English</option>
@@ -922,18 +1079,20 @@ export default function VoiceSettings() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
                       Preview Voice
                     </label>
                     <select
                       value={previewVoice}
                       onChange={(e) => setPreviewVoice(e.target.value)}
-                      className="w-full rounded-xl text-xs sm:text-sm"
                       style={{
+                        width: "100%",
                         padding: "8px 12px",
+                        borderRadius: "8px",
                         background: "rgba(0, 0, 0, 0.25)",
                         border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)"
+                        color: "var(--text-primary)",
+                        fontSize: "13px"
                       }}
                     >
                       {GEMINI_VOICES.map(v => (
@@ -945,46 +1104,58 @@ export default function VoiceSettings() {
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
                     Sample Reminder Text
                   </label>
                   <input
                     type="text"
                     value={previewText}
                     onChange={(e) => setPreviewText(e.target.value)}
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "8px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "13px"
                     }}
                   />
                 </div>
 
                 {/* Actions & Player */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
                   <button
                     type="button"
                     onClick={handleGeneratePreview}
                     disabled={generatingPreview}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer"
                     style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "9px 18px",
+                      borderRadius: "10px",
                       background: "var(--primary)",
                       color: "var(--primary-foreground, #000)",
                       border: "none",
+                      fontSize: "13px",
+                      fontWeight: 600,
                       cursor: generatingPreview ? "not-allowed" : "pointer"
                     }}
                   >
-                    {generatingPreview ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />}
+                    {generatingPreview ? <RefreshCw size={15} className="animate-spin" /> : <Play size={15} />}
                     <span>{generatingPreview ? "Synthesizing Audio..." : "Generate & Test Audio"}</span>
                   </button>
 
                   {previewAudioUrl && (
                     <div
-                      className="w-full sm:w-auto inline-flex items-center justify-center sm:justify-start gap-2.5 px-3.5 py-2 rounded-xl"
                       style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "6px 14px",
+                        borderRadius: "10px",
                         background: "rgba(255, 255, 255, 0.06)",
                         border: "1px solid rgba(255, 255, 255, 0.1)"
                       }}
@@ -992,18 +1163,22 @@ export default function VoiceSettings() {
                       <button
                         type="button"
                         onClick={handleTogglePlayback}
-                        className="rounded-full flex items-center justify-center cursor-pointer shrink-0"
                         style={{
                           background: "var(--primary)",
                           color: "var(--primary-foreground, #000)",
                           border: "none",
                           width: "28px",
-                          height: "28px"
+                          height: "28px",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer"
                         }}
                       >
                         {isPlayingPreview ? <Square size={12} /> : <Play size={12} />}
                       </button>
-                      <span className="text-xs font-medium text-[var(--text-primary)]">
+                      <span style={{ fontSize: "12px", color: "var(--text-primary)", fontWeight: 500 }}>
                         {isPlayingPreview ? "Playing audio..." : "Preview ready"}
                         {previewDuration ? ` (${previewDuration}s)` : ""}
                       </span>
@@ -1024,24 +1199,29 @@ export default function VoiceSettings() {
 
           {/* TAB 2: Calling Schedule */}
           {activeTab === "schedule" && (
-            <div className="flex flex-col gap-5 sm:gap-6">
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               {/* Schedule active switch */}
               <div
-                className="p-4 sm:p-5 rounded-2xl flex items-center justify-between gap-4"
                 style={{
+                  padding: "20px",
+                  borderRadius: "14px",
                   background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
-                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "16px"
                 }}
               >
                 <div>
-                  <h3 className="m-0 mb-1 text-sm sm:text-base font-semibold text-[var(--text-primary)]">
+                  <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
                     Enforce Calling Schedule Hours
                   </h3>
-                  <p className="m-0 text-xs sm:text-sm text-[var(--text-secondary)] leading-snug">
+                  <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
                     When enabled, automated reminders will strictly trigger only within the permitted time windows and days configured below.
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <label style={{ position: "relative", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
                   <input
                     type="checkbox"
                     checked={settings.callingSchedule?.enabled ?? true}
@@ -1051,22 +1231,28 @@ export default function VoiceSettings() {
                         callingSchedule: { ...prev.callingSchedule, enabled: e.target.checked }
                       }))
                     }
-                    className="sr-only"
+                    style={{ srOnly: true, width: 0, height: 0, opacity: 0 }}
                   />
                   <div
-                    className="rounded-full transition-colors relative"
                     style={{
-                      background: settings.callingSchedule?.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
                       width: "48px",
-                      height: "26px"
+                      height: "26px",
+                      background: settings.callingSchedule?.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
+                      borderRadius: "13px",
+                      position: "relative",
+                      transition: "background-color 0.2s"
                     }}
                   >
                     <div
-                      className="absolute top-[3px] rounded-full bg-white transition-all shadow-md"
                       style={{
+                        position: "absolute",
+                        top: "3px",
                         left: settings.callingSchedule?.enabled ? "25px" : "3px",
                         width: "20px",
-                        height: "20px"
+                        height: "20px",
+                        borderRadius: "50%",
+                        background: "#ffffff",
+                        transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                       }}
                     />
                   </div>
@@ -1075,30 +1261,34 @@ export default function VoiceSettings() {
 
               {/* Permitted Days Selector */}
               <div
-                className="p-4 sm:p-5 rounded-2xl"
                 style={{
+                  padding: "20px",
+                  borderRadius: "14px",
                   background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                   border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                 }}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "14px" }}>
                   <div>
-                    <h4 className="m-0 mb-0.5 text-sm font-semibold text-[var(--text-primary)]">
+                    <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                       Permitted Calling Days
                     </h4>
-                    <p className="m-0 text-xs text-[var(--text-secondary)]">
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
                       Tasks scheduled on non-permitted days will not trigger voice calls.
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <button
                       type="button"
                       onClick={handleSelectAllDays}
-                      className="px-2.5 py-1 text-xs rounded-lg cursor-pointer transition-colors"
                       style={{
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        borderRadius: "6px",
                         background: "rgba(255, 255, 255, 0.06)",
                         border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)"
+                        color: "var(--text-primary)",
+                        cursor: "pointer"
                       }}
                     >
                       All Days
@@ -1106,11 +1296,14 @@ export default function VoiceSettings() {
                     <button
                       type="button"
                       onClick={handleSelectWeekdays}
-                      className="px-2.5 py-1 text-xs rounded-lg cursor-pointer transition-colors"
                       style={{
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        borderRadius: "6px",
                         background: "rgba(255, 255, 255, 0.06)",
                         border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)"
+                        color: "var(--text-primary)",
+                        cursor: "pointer"
                       }}
                     >
                       Weekdays Only
@@ -1118,11 +1311,14 @@ export default function VoiceSettings() {
                     <button
                       type="button"
                       onClick={handleSelectWeekends}
-                      className="px-2.5 py-1 text-xs rounded-lg cursor-pointer transition-colors"
                       style={{
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        borderRadius: "6px",
                         background: "rgba(255, 255, 255, 0.06)",
                         border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)"
+                        color: "var(--text-primary)",
+                        cursor: "pointer"
                       }}
                     >
                       Weekends Only
@@ -1130,7 +1326,7 @@ export default function VoiceSettings() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                   {WEEK_DAYS.map(day => {
                     const isSelected = (settings.callingSchedule?.allowedDays || []).includes(day);
                     return (
@@ -1138,14 +1334,22 @@ export default function VoiceSettings() {
                         key={day}
                         type="button"
                         onClick={() => toggleDay(day)}
-                        className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium cursor-pointer transition-all"
                         style={{
+                          padding: "8px 16px",
+                          borderRadius: "10px",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
                           background: isSelected ? "var(--primary)" : "rgba(255, 255, 255, 0.05)",
                           color: isSelected ? "var(--primary-foreground, #000)" : "var(--text-secondary)",
-                          border: isSelected ? "none" : "1px solid var(--border-color, rgba(255, 255, 255, 0.1))"
+                          border: isSelected ? "none" : "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px"
                         }}
                       >
-                        {isSelected && <Check size={13} />}
+                        {isSelected && <Check size={14} />}
                         <span>{day}</span>
                       </button>
                     );
@@ -1154,19 +1358,26 @@ export default function VoiceSettings() {
               </div>
 
               {/* Time Window & Timezone Card */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                  gap: "20px"
+                }}
+              >
                 {/* Start Time */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
                     Daily Window Start Time
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
                     No automated voice calls before this hour.
                   </p>
                   <input
@@ -1178,28 +1389,31 @@ export default function VoiceSettings() {
                         callingSchedule: { ...prev.callingSchedule, startTime: e.target.value }
                       }))
                     }
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
                     }}
                   />
                 </div>
 
                 {/* End Time */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
                     Daily Window End Time
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
                     No automated voice calls after this hour.
                   </p>
                   <input
@@ -1211,28 +1425,31 @@ export default function VoiceSettings() {
                         callingSchedule: { ...prev.callingSchedule, endTime: e.target.value }
                       }))
                     }
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
                     }}
                   />
                 </div>
 
                 {/* Time Zone */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl sm:col-span-2 lg:col-span-1"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
                     Operational Time Zone
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-3 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
                     Reference time zone for calling window boundaries.
                   </p>
                   <select
@@ -1243,12 +1460,14 @@ export default function VoiceSettings() {
                         callingSchedule: { ...prev.callingSchedule, timeZone: e.target.value }
                       }))
                     }
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
                     }}
                   >
                     {TIMEZONES.map(tz => (
@@ -1264,23 +1483,33 @@ export default function VoiceSettings() {
 
           {/* TAB 3: Retry Rules */}
           {activeTab === "retry" && (
-            <div className="flex flex-col gap-5 sm:gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                  gap: "20px"
+                }}
+              >
                 {/* Max Retry Attempts */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "22px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-sm font-semibold text-[var(--text-primary)]">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                       Max Retry Attempts
                     </label>
                     <span
-                      className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
                       style={{
+                        padding: "2px 10px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
                         background: "rgba(139, 92, 246, 0.15)",
                         color: "var(--primary)"
                       }}
@@ -1288,10 +1517,10 @@ export default function VoiceSettings() {
                       {settings.retryRules?.maxRetryAttempts || 3} Attempts
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-4 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 16px 0" }}>
                     Number of consecutive automated retry calls before marking a scheduled reminder as missed. (Range: 1 – 5).
                   </p>
-                  <div className="flex items-center gap-3">
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <input
                       type="range"
                       min={1}
@@ -1307,8 +1536,7 @@ export default function VoiceSettings() {
                           }
                         }))
                       }
-                      className="flex-1"
-                      style={{ accentColor: "var(--primary)" }}
+                      style={{ flex: 1, accentColor: "var(--primary)" }}
                     />
                     <input
                       type="number"
@@ -1327,12 +1555,16 @@ export default function VoiceSettings() {
                           }));
                         }
                       }}
-                      className="w-14 text-center rounded-xl font-semibold text-sm"
                       style={{
-                        padding: "6px 8px",
+                        width: "60px",
+                        padding: "6px 10px",
+                        borderRadius: "8px",
                         background: "rgba(0, 0, 0, 0.25)",
                         border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)"
+                        color: "var(--text-primary)",
+                        textAlign: "center",
+                        fontSize: "14px",
+                        fontWeight: 600
                       }}
                     />
                   </div>
@@ -1340,19 +1572,23 @@ export default function VoiceSettings() {
 
                 {/* Retry Delay Minutes */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "22px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-sm font-semibold text-[var(--text-primary)]">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                       Retry Interval (Minutes)
                     </label>
                     <span
-                      className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
                       style={{
+                        padding: "2px 10px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
                         background: "rgba(59, 130, 246, 0.15)",
                         color: "#3B82F6"
                       }}
@@ -1360,10 +1596,10 @@ export default function VoiceSettings() {
                       {settings.retryRules?.retryDelayMinutes || 15} Mins
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-4 leading-snug">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 16px 0" }}>
                     Waiting period between consecutive retry calls if the student did not answer. (Range: 1 – 60 mins).
                   </p>
-                  <div className="flex items-center gap-3">
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <input
                       type="range"
                       min={1}
@@ -1379,8 +1615,7 @@ export default function VoiceSettings() {
                           }
                         }))
                       }
-                      className="flex-1"
-                      style={{ accentColor: "#3B82F6" }}
+                      style={{ flex: 1, accentColor: "#3B82F6" }}
                     />
                     <input
                       type="number"
@@ -1399,12 +1634,16 @@ export default function VoiceSettings() {
                           }));
                         }
                       }}
-                      className="w-14 text-center rounded-xl font-semibold text-sm"
                       style={{
-                        padding: "6px 8px",
+                        width: "60px",
+                        padding: "6px 10px",
+                        borderRadius: "8px",
                         background: "rgba(0, 0, 0, 0.25)",
                         border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)"
+                        color: "var(--text-primary)",
+                        textAlign: "center",
+                        fontSize: "14px",
+                        fontWeight: 600
                       }}
                     />
                   </div>
@@ -1413,29 +1652,30 @@ export default function VoiceSettings() {
 
               {/* Simulation projection card */}
               <div
-                className="p-4 sm:p-5 rounded-2xl"
                 style={{
+                  padding: "18px 22px",
+                  borderRadius: "14px",
                   background: "rgba(255, 255, 255, 0.02)",
                   border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                 }}
               >
-                <h4 className="m-0 mb-2 text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                  <Info size={16} className="text-[var(--primary)]" />
+                <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Info size={16} style={{ color: "var(--primary)" }} />
                   <span>Escalation Timeline Simulation</span>
                 </h4>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <div className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.25)", color: "#10B981" }}>
-                    <strong>Initial Dispatch:</strong> At task time
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }}>
+                  <div style={{ padding: "8px 14px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.25)", fontSize: "12px", color: "#10B981" }}>
+                    <strong>Initial Dispatch:</strong> At scheduled task time
                   </div>
                   {Array.from({ length: settings.retryRules?.maxRetryAttempts || 3 }).map((_, idx) => {
                     const delay = (idx + 1) * (settings.retryRules?.retryDelayMinutes || 15);
                     return (
-                      <div key={idx} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: "rgba(59, 130, 246, 0.1)", border: "1px solid rgba(59, 130, 246, 0.25)", color: "#60A5FA" }}>
+                      <div key={idx} style={{ padding: "8px 14px", borderRadius: "8px", background: "rgba(59, 130, 246, 0.1)", border: "1px solid rgba(59, 130, 246, 0.25)", fontSize: "12px", color: "#60A5FA" }}>
                         <strong>Retry #{idx + 1}:</strong> +{delay} mins
                       </div>
                     );
                   })}
-                  <div className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.25)", color: "#F87171" }}>
+                  <div style={{ padding: "8px 14px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.25)", fontSize: "12px", color: "#F87171" }}>
                     <strong>Resolution:</strong> Mark Missed after {((settings.retryRules?.maxRetryAttempts || 3) * (settings.retryRules?.retryDelayMinutes || 15))} mins total
                   </div>
                 </div>
@@ -1445,22 +1685,26 @@ export default function VoiceSettings() {
 
           {/* TAB 4: Reminder Defaults & Templates */}
           {activeTab === "templates" && (
-            <div className="flex flex-col gap-5 sm:gap-6">
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               {/* Default Lead Timing */}
               <div
-                className="p-4 sm:p-5 rounded-2xl"
                 style={{
+                  padding: "20px",
+                  borderRadius: "14px",
                   background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                   border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                 }}
               >
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-sm font-semibold text-[var(--text-primary)]">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                     Default Lead Time Before Task (Minutes)
                   </label>
                   <span
-                    className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
                     style={{
+                      padding: "2px 10px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: 600,
                       background: "rgba(139, 92, 246, 0.15)",
                       color: "var(--primary)"
                     }}
@@ -1468,10 +1712,10 @@ export default function VoiceSettings() {
                     {settings.reminderDefaults?.defaultTimingMinutes || 15} Mins Before
                   </span>
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] m-0 mb-3.5 leading-snug">
+                <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
                   When students create a reminder without specifying custom timing, the call triggers this many minutes prior to the scheduled exam/task. (0 = Exact time).
                 </p>
-                <div className="flex items-center gap-3 max-w-sm">
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", maxWidth: "400px" }}>
                   <input
                     type="number"
                     min={0}
@@ -1489,34 +1733,43 @@ export default function VoiceSettings() {
                         }));
                       }
                     }}
-                    className="w-24 rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "120px",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)"
+                      color: "var(--text-primary)",
+                      fontSize: "14px"
                     }}
                   />
-                  <span className="text-xs sm:text-sm text-[var(--text-secondary)]">
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
                     minutes before scheduled task
                   </span>
                 </div>
               </div>
 
               {/* Message Templates */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+                  gap: "20px"
+                }}
+              >
                 {/* English Template */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
                     English Reminder Message Template
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-2.5">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 10px 0" }}>
                     Available placeholder variables: <code style={{ color: "var(--primary)" }}>{"{taskTitle}"}</code>
                   </p>
                   <textarea
@@ -1531,18 +1784,20 @@ export default function VoiceSettings() {
                         }
                       }))
                     }
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
                       color: "var(--text-primary)",
+                      fontSize: "13px",
                       lineHeight: "1.5"
                     }}
                   />
-                  <div className="mt-2.5 p-3 rounded-xl text-xs" style={{ background: "rgba(255, 255, 255, 0.04)" }}>
-                    <span className="block mb-1 text-[var(--text-muted)] font-medium">Sample Rendered Output:</span>
-                    <span className="text-[var(--text-primary)]">
+                  <div style={{ marginTop: "10px", padding: "10px 14px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.04)", fontSize: "12px" }}>
+                    <span style={{ color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Sample Rendered Output:</span>
+                    <span style={{ color: "var(--text-primary)" }}>
                       {(settings.reminderDefaults?.defaultTemplateEnglish || "").replace("{taskTitle}", "CTET Mock Exam Paper 1")}
                     </span>
                   </div>
@@ -1550,16 +1805,17 @@ export default function VoiceSettings() {
 
                 {/* Hindi Template */}
                 <div
-                  className="p-4 sm:p-5 rounded-2xl"
                   style={{
+                    padding: "20px",
+                    borderRadius: "14px",
                     background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
                     border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
                   }}
                 >
-                  <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1">
+                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
                     Hindi Reminder Message Template
                   </label>
-                  <p className="text-xs text-[var(--text-secondary)] m-0 mb-2.5">
+                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 10px 0" }}>
                     Available placeholder variables: <code style={{ color: "var(--primary)" }}>{"{taskTitle}"}</code>
                   </p>
                   <textarea
@@ -1574,18 +1830,20 @@ export default function VoiceSettings() {
                         }
                       }))
                     }
-                    className="w-full rounded-xl text-xs sm:text-sm"
                     style={{
+                      width: "100%",
                       padding: "10px 14px",
+                      borderRadius: "10px",
                       background: "rgba(0, 0, 0, 0.25)",
                       border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
                       color: "var(--text-primary)",
+                      fontSize: "13px",
                       lineHeight: "1.5"
                     }}
                   />
-                  <div className="mt-2.5 p-3 rounded-xl text-xs" style={{ background: "rgba(255, 255, 255, 0.04)" }}>
-                    <span className="block mb-1 text-[var(--text-muted)] font-medium">Sample Rendered Output:</span>
-                    <span className="text-[var(--text-primary)]">
+                  <div style={{ marginTop: "10px", padding: "10px 14px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.04)", fontSize: "12px" }}>
+                    <span style={{ color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Sample Rendered Output:</span>
+                    <span style={{ color: "var(--text-primary)" }}>
                       {(settings.reminderDefaults?.defaultTemplateHindi || "").replace("{taskTitle}", "सीटीईटी मॉक टेस्ट पेपर १")}
                     </span>
                   </div>
