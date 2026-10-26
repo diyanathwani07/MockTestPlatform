@@ -386,18 +386,37 @@ const testVoicePreview = async (req, res) => {
     });
   } catch (error) {
     console.error("Error testing voice sample:", error.message || error);
+    let rawMsg = error.message || "";
+    try {
+      if (typeof rawMsg === "string" && (rawMsg.trim().startsWith("{") || rawMsg.includes('"message"'))) {
+        const parsed = JSON.parse(rawMsg);
+        if (parsed.error && parsed.error.message) {
+          rawMsg = parsed.error.message;
+        } else if (parsed.message) {
+          rawMsg = parsed.message;
+        }
+      }
+    } catch (_) {
+      // Not JSON string, keep as is
+    }
+
     let safeMessage = "Failed to generate voice preview";
-    const msg = error.message || "";
-    if (msg.includes("API_KEY") || msg.includes("key=") || msg.includes("CREDENTIALS")) {
+    if (rawMsg.includes("API_KEY") || rawMsg.includes("key=") || rawMsg.includes("CREDENTIALS")) {
       safeMessage = "TTS service configuration error: GEMINI_API_KEY is not configured or invalid.";
-    } else if (msg.includes("429") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("rate limit")) {
+    } else if (rawMsg.includes("429") || rawMsg.toLowerCase().includes("quota") || rawMsg.toLowerCase().includes("rate limit")) {
       safeMessage = "Gemini TTS quota exceeded. Please check your Google AI account quota.";
-    } else if (msg.toLowerCase().includes("timeout") || msg.toLowerCase().includes("timed out")) {
+    } else if (rawMsg.toLowerCase().includes("timeout") || rawMsg.toLowerCase().includes("timed out")) {
       safeMessage = "TTS synthesis timed out after 15 seconds. Please try again.";
-    } else if (msg.includes("Malformed WAV") || msg.includes("Invalid raw PCM")) {
+    } else if (rawMsg.includes("Malformed WAV") || rawMsg.includes("Invalid raw PCM")) {
       safeMessage = "TTS service returned unreadable audio format.";
-    } else if (msg) {
-      safeMessage = msg.replace(/key=[a-zA-Z0-9_\-]+/gi, "key=REDACTED");
+    } else if (
+      rawMsg.toLowerCase().includes("internal error") ||
+      rawMsg.toLowerCase().includes("troubleshooting") ||
+      rawMsg.includes("INTERNAL")
+    ) {
+      safeMessage = "Gemini TTS upstream service experienced a temporary internal error. Please retry in a moment.";
+    } else if (rawMsg) {
+      safeMessage = rawMsg.replace(/key=[a-zA-Z0-9_\-]+/gi, "key=REDACTED");
     }
     res.status(500).json({ success: false, error: safeMessage });
   }

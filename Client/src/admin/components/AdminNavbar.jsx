@@ -76,7 +76,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
         >
           {parentText}
         </span>
-        <span className="hidden sm:inline" style={{ color: "var(--text-muted)" }}>&gt;</span>
+        <span className="hidden sm:inline-block" style={{ color: "var(--text-muted)", margin: "0 8px", display: "inline-block" }}>&gt;</span>
         <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700" }}>{title}</span>
       </div>
 

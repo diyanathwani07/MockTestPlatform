@@ -171,37 +171,55 @@ async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemi
     };
   }
 
-  const timeoutPromise = new Promise((_, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error("Gemini TTS request timed out after 15 seconds."));
-    }, 15000);
-    if (timer.unref) timer.unref();
-  });
+  const candidateModels = [
+    ...new Set([model || "gemini-2.5-flash-preview-tts", "gemini-2.0-flash", "gemini-2.5-flash"])
+  ].filter(Boolean);
 
-  const response = await Promise.race([
-    ai.models.generateContent({
-      model,
-      contents,
-      config
-    }),
-    timeoutPromise
-  ]);
+  let lastError = null;
 
-  const candidate = response?.candidates?.[0];
-  if (!candidate || !candidate.content || !candidate.content.parts) {
-    throw new Error("Gemini TTS provider returned an empty or malformed response.");
+  for (const currentModel of candidateModels) {
+    try {
+      const timeoutPromise = new Promise((_, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error(`Gemini TTS request (${currentModel}) timed out after 15 seconds.`));
+        }, 15000);
+        if (timer.unref) timer.unref();
+      });
+
+      const response = await Promise.race([
+        ai.models.generateContent({
+          model: currentModel,
+          contents,
+          config
+        }),
+        timeoutPromise
+      ]);
+
+      const candidate = response?.candidates?.[0];
+      if (!candidate || !candidate.content || !candidate.content.parts) {
+        throw new Error(`Gemini TTS model ${currentModel} returned an empty or malformed response.`);
+      }
+
+      // Find inline audio part
+      const audioPart = candidate.content.parts.find(
+        p => p.inlineData && p.inlineData.data
+      );
+
+      if (!audioPart || !audioPart.inlineData.data) {
+        throw new Error(`Gemini TTS model ${currentModel} response did not contain audio data.`);
+      }
+
+      return Buffer.from(audioPart.inlineData.data, "base64");
+    } catch (err) {
+      lastError = err;
+      const errMsg = err?.message || String(err);
+      console.warn(
+        `[geminiTtsService] Model ${currentModel} failed: ${errMsg.slice(0, 150)}. Trying fallback candidate...`
+      );
+    }
   }
 
-  // Find inline audio part
-  const audioPart = candidate.content.parts.find(
-    p => p.inlineData && p.inlineData.data
-  );
-
-  if (!audioPart || !audioPart.inlineData.data) {
-    throw new Error("Gemini TTS provider response did not contain audio data.");
-  }
-
-  return Buffer.from(audioPart.inlineData.data, "base64");
+  throw lastError || new Error("All Gemini TTS candidate models failed to produce audio.");
 }
 
 /**
