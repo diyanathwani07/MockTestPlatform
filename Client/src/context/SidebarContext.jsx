@@ -12,6 +12,8 @@ export function SidebarProvider({ children }) {
     }
   });
 
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   useEffect(() => {
     localStorage.setItem("sidebar_collapsed", JSON.stringify(collapsed));
   }, [collapsed]);
@@ -29,9 +31,19 @@ export function SidebarProvider({ children }) {
   }, []);
 
   const toggleSidebarCollapse = () => setCollapsed((prev) => !prev);
+  const toggleMobileOpen = () => setMobileOpen((prev) => !prev);
 
   return (
-    <SidebarContext.Provider value={{ collapsed, setCollapsed, toggleSidebarCollapse }}>
+    <SidebarContext.Provider
+      value={{
+        collapsed,
+        setCollapsed,
+        toggleSidebarCollapse,
+        mobileOpen,
+        setMobileOpen,
+        toggleMobileOpen
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   );
@@ -40,7 +52,14 @@ export function SidebarProvider({ children }) {
 export function useSidebar() {
   const context = useContext(SidebarContext);
   if (!context) {
-    return { collapsed: false, setCollapsed: () => {}, toggleSidebarCollapse: () => {} };
+    return {
+      collapsed: false,
+      setCollapsed: () => {},
+      toggleSidebarCollapse: () => {},
+      mobileOpen: false,
+      setMobileOpen: () => {},
+      toggleMobileOpen: () => {}
+    };
   }
   return context;
 }

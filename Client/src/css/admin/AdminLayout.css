@@ -580,7 +580,7 @@ body.dark-mode .page-nav-btn { border-color: var(--border-color); color: var(--t
   position: fixed !important;
   top: 14px !important;
   left: 14px !important;
-  z-index: 1000 !important;
+  z-index: 3000 !important;
   background: var(--bg-card, #FFFFFF) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-color, #E4E4E7) !important;

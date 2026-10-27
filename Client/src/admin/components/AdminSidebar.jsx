@@ -34,8 +34,7 @@ const NAV_ITEMS = [
 ];
 
 function AdminSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { collapsed, toggleSidebarCollapse } = useSidebar();
+  const { collapsed, toggleSidebarCollapse, mobileOpen: isOpen, setMobileOpen: setIsOpen } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [snowReady, setSnowReady] = useState(false);
   const { hasPermission, logout, role } = useAuth();

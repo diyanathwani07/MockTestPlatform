@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Search, Command, LayoutDashboard, BookOpen, PenTool, Target, Trophy, HelpCircle, User, Shield, Layers, FileText, BarChart, Users, Radio } from "lucide-react";
+import { Image, Search, Command, LayoutDashboard, BookOpen, PenTool, Target, Trophy, HelpCircle, User, Shield, Layers, FileText, BarChart, Users, Radio, Volume2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../css/UniversalSearch.css";
@@ -35,11 +35,15 @@ const UniversalSearch = () => {
     { name: "Flashcards", path: "/admin/flashcards", icon: <BookOpen size={18} /> },
     { name: "User Management", path: "/admin/users", icon: <Users size={18} /> },
     { name: "Manage Banners", path: "/admin/banners", icon: <Image size={18} /> },
+    { name: "Voice Settings", path: "/admin/voice-settings", icon: <Volume2 size={18} />, keywords: "voice settings tts speech audio reminder word docx gemini" },
   ];
 
   const links = isAdmin ? adminLinks : studentLinks;
 
-  const filteredLinks = links.filter(link => link.name.toLowerCase().includes(query.toLowerCase()));
+  const filteredLinks = links.filter(link => {
+    const q = query.toLowerCase();
+    return link.name.toLowerCase().includes(q) || (link.keywords && link.keywords.toLowerCase().includes(q));
+  });
 
   useEffect(() => {
     const handleKeyDown = (e) => {

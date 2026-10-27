@@ -11,8 +11,7 @@ import axios from "axios";
 const PixelSnow = React.lazy(() => import("./shadcn-space/animations/PixelSnow"));
 
 function StudentSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { collapsed, toggleSidebarCollapse } = useSidebar();
+  const { collapsed, toggleSidebarCollapse, mobileOpen: isOpen, setMobileOpen: setIsOpen } = useSidebar();
   const { selectedExam, selectedStructure, selectedSubject, openChangeExamModal } = useExam();
 
   // ── Read from cache first so sidebar never flickers on navigation ──
