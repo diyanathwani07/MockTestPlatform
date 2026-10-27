@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import mammoth from "mammoth";
 import {
   Volume2,
   Mic,
@@ -375,44 +376,62 @@ export default function VoiceSettings() {
     setDocxWarning(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", target);
+      let text = "";
 
-      const res = await axios.post(`${API}/api/voice-settings/extract-docx`, formData, {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+      // 1. Instant client-side parsing with Mammoth (takes ~5-10ms)
+      try {
+        const arrayBuffer = await target.arrayBuffer();
+        const clientResult = await mammoth.extractRawText({ arrayBuffer });
+        text = (clientResult?.value || "").trim();
+      } catch (clientErr) {
+        console.warn("[VoiceSettings] Client-side extraction error, falling back to server:", clientErr);
+      }
 
-      if (res.data?.success) {
-        const text = res.data.text || "";
-        setDocxText(text);
-        const charCount = res.data.characterCount || text.length;
-        const wordCount = res.data.wordCount || (text.trim() ? text.trim().split(/\s+/).length : 0);
-        setDocxStats({ charCount, wordCount });
+      // 2. If client parsing didn't produce text, fall back to backend endpoint
+      if (!text) {
+        const formData = new FormData();
+        formData.append("file", target);
 
-        // Auto-detect Hindi script: U+0900 to U+097F
-        const isHindi = /[\u0900-\u097F]/.test(text);
-        if (isHindi) {
-          setDocxLang("hi");
-          setDocxVoice(settings.hindiVoice || "Aoede");
+        const res = await axios.post(`${API}/api/voice-settings/extract-docx`, formData, {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          }
+        });
+
+        if (res.data?.success) {
+          text = res.data.text || "";
         } else {
-          setDocxLang("en");
-          setDocxVoice(settings.englishVoice || "Aoede");
+          throw new Error(res.data?.error || "Failed to extract text from Word document.");
         }
+      }
 
-        if (res.data.exceedsLimit) {
-          const warn =
-            res.data.warning ||
-            `Document contains ${charCount.toLocaleString()} characters. Single speech generation limit is 3,000 characters. Please trim the text before generating.`;
-          setDocxWarning(warn);
-          showToast(`Extracted ${charCount.toLocaleString()} chars. (TTS limit: 3,000 chars)`, "info");
-        } else {
-          setDocxWarning(null);
-          showToast(`Successfully extracted ${charCount.toLocaleString()} characters (${wordCount.toLocaleString()} words)!`, "success");
-        }
+      if (!text) {
+        throw new Error("The uploaded Word document contains no readable text.");
+      }
+
+      setDocxText(text);
+      const charCount = text.length;
+      const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+      setDocxStats({ charCount, wordCount });
+
+      // Auto-detect Hindi script: U+0900 to U+097F
+      const isHindi = /[\u0900-\u097F]/.test(text);
+      if (isHindi) {
+        setDocxLang("hi");
+        setDocxVoice(settings.hindiVoice || "Aoede");
       } else {
-        throw new Error(res.data?.error || "Failed to extract text from Word document.");
+        setDocxLang("en");
+        setDocxVoice(settings.englishVoice || "Aoede");
+      }
+
+      if (charCount > 3000) {
+        const warn =
+          `Document contains ${charCount.toLocaleString()} characters. Single speech generation limit is 3,000 characters. Please trim the text before generating.`;
+        setDocxWarning(warn);
+        showToast(`Extracted ${charCount.toLocaleString()} chars. (TTS limit: 3,000 chars)`, "info");
+      } else {
+        setDocxWarning(null);
+        showToast(`Extracted ${charCount.toLocaleString()} characters (${wordCount.toLocaleString()} words) instantly!`, "success");
       }
     } catch (err) {
       console.error("[VoiceSettings] DOCX extraction error:", err);
@@ -727,32 +746,7 @@ export default function VoiceSettings() {
                   onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")}
                 >
                   <RotateCcw size={13} />
-                  <span>Discard</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "7px 18px",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    borderRadius: "9px",
-                    background: "#F59E0B",
-                    color: "#000000",
-                    border: "none",
-                    cursor: saving ? "not-allowed" : "pointer",
-                    boxShadow: "0 2px 8px rgba(245, 158, 11, 0.3)",
-                    transition: "all 0.15s ease"
-                  }}
-                  onMouseEnter={(e) => !saving && (e.currentTarget.style.background = "#FBBF24")}
-                  onMouseLeave={(e) => !saving && (e.currentTarget.style.background = "#F59E0B")}
-                >
-                  {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
-                  <span>{saving ? "Saving..." : "Save Changes"}</span>
+                  <span>Discard Changes</span>
                 </button>
               </div>
             </div>

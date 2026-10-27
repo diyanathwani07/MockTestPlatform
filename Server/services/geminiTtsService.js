@@ -17,6 +17,12 @@ function _setTtsProviderForTesting(fn) {
   _mockProvider = fn;
 }
 
+// In-memory cache for synthesized voice samples (capped at 50 items)
+const _sampleCache = new Map();
+function getSampleCacheKey(text, voice, lang, prompt) {
+  return crypto.createHash("md5").update(`${text}|${voice}|${lang}|${prompt}`).digest("hex");
+}
+
 /**
  * Detects whether the input text is Hindi (Devanagari) or English.
  * Returns 'hi' if Hindi characters are present, otherwise 'en'.
@@ -171,9 +177,8 @@ async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemi
   const candidateModels = [
     ...new Set([
       model || "gemini-2.5-flash-preview-tts",
-      "gemini-3.8-flash-tts",
-      "gemini-3.8-flash-lite-tts",
-      "gemini-2.5-pro-preview-tts"
+      "gemini-2.5-pro-preview-tts",
+      "gemini-2.0-flash"
     ])
   ].filter(Boolean);
 
@@ -183,8 +188,8 @@ async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemi
     try {
       const timeoutPromise = new Promise((_, reject) => {
         const timer = setTimeout(() => {
-          reject(new Error(`Gemini TTS request (${currentModel}) timed out after 30 seconds.`));
-        }, 30000);
+          reject(new Error(`Gemini TTS request (${currentModel}) timed out after 20 seconds.`));
+        }, 20000);
         if (timer.unref) timer.unref();
       });
 
@@ -262,6 +267,11 @@ async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", custo
     customPrompt || (lang === "hi" ? settings.hindiPrompt : settings.englishPrompt) || "";
   const model = settings.model || "gemini-2.5-flash-preview-tts";
 
+  const cacheKey = getSampleCacheKey(cleanText, selectedVoice, lang, selectedPrompt);
+  if (_sampleCache.has(cacheKey)) {
+    return _sampleCache.get(cacheKey);
+  }
+
   const rawAudio = await callGeminiTts({
     text: cleanText,
     voice: selectedVoice,
@@ -273,11 +283,19 @@ async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", custo
   const audioUrl = pcmToWavDataUrl(pcmBuffer, 24000, 1, 16);
   const durationSeconds = Math.round((pcmBuffer.length / (24000 * 2)) * 10) / 10;
 
-  return {
+  const result = {
     audioUrl,
     voice: selectedVoice,
     durationSeconds
   };
+
+  if (_sampleCache.size >= 50) {
+    const oldestKey = _sampleCache.keys().next().value;
+    _sampleCache.delete(oldestKey);
+  }
+  _sampleCache.set(cacheKey, result);
+
+  return result;
 }
 
 /**
