@@ -1,4 +1,5 @@
 const VoiceSetting = require("../models/VoiceSetting");
+const mammoth = require("mammoth");
 const { testVoiceSample } = require("../services/geminiTtsService");
 const { isValidTimeZone, VALID_DAYS, timeToMinutes } = require("../services/voiceScheduleHelper");
 
@@ -343,10 +344,10 @@ const testVoicePreview = async (req, res) => {
       });
     }
     const cleanSampleText = sampleText.trim();
-    if (cleanSampleText.length > 1000) {
+    if (cleanSampleText.length > 3000) {
       return res.status(400).json({
         success: false,
-        error: "sampleText cannot exceed 1000 characters."
+        error: "Text cannot exceed 3,000 characters for speech generation."
       });
     }
 
@@ -406,7 +407,7 @@ const testVoicePreview = async (req, res) => {
     } else if (rawMsg.includes("429") || rawMsg.toLowerCase().includes("quota") || rawMsg.toLowerCase().includes("rate limit") || rawMsg.includes("RESOURCE_EXHAUSTED")) {
       safeMessage = "Gemini TTS quota exceeded. Please check your Google AI account quota.";
     } else if (rawMsg.toLowerCase().includes("timeout") || rawMsg.toLowerCase().includes("timed out")) {
-      safeMessage = "TTS synthesis timed out after 15 seconds. Please try again.";
+      safeMessage = "TTS synthesis timed out after 30 seconds. Please try again.";
     } else if (rawMsg.includes("Malformed WAV") || rawMsg.includes("Invalid raw PCM")) {
       safeMessage = "TTS service returned unreadable audio format.";
     } else if (
@@ -422,9 +423,76 @@ const testVoicePreview = async (req, res) => {
   }
 };
 
+// 4. Extract Plain Text from Word Document (.docx)
+const extractDocxText = async (req, res) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({
+        success: false,
+        error: "No Word document file uploaded. Please select a .docx file."
+      });
+    }
+
+    const originalName = req.file.originalname || "document.docx";
+    if (!originalName.toLowerCase().endsWith(".docx")) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid file type. Only Word documents (.docx) are supported."
+      });
+    }
+
+    // Extract raw plain text using Mammoth
+    let extractionResult;
+    try {
+      extractionResult = await mammoth.extractRawText({ buffer: req.file.buffer });
+    } catch (parseErr) {
+      console.error("[VoiceSettings] Mammoth extraction error:", parseErr.message);
+      return res.status(400).json({
+        success: false,
+        error: "Failed to parse document. The file may be damaged, corrupted, or not a valid .docx document."
+      });
+    }
+
+    const rawText = (extractionResult?.value || "").trim();
+
+    if (!rawText) {
+      return res.status(400).json({
+        success: false,
+        error: "The uploaded Word document contains no readable text."
+      });
+    }
+
+    const characterCount = rawText.length;
+    const wordCount = rawText.split(/\s+/).filter(Boolean).length;
+    const maxSpeechLimit = 3000;
+    const exceedsLimit = characterCount > maxSpeechLimit;
+
+    res.json({
+      success: true,
+      fileName: originalName,
+      fileSize: req.file.size,
+      text: rawText,
+      characterCount,
+      wordCount,
+      maxSpeechLimit,
+      exceedsLimit,
+      warning: exceedsLimit
+        ? `Document contains ${characterCount.toLocaleString()} characters. The maximum single-turn speech synthesis limit is ${maxSpeechLimit.toLocaleString()} characters. Please trim the text before generating audio.`
+        : null
+    });
+  } catch (error) {
+    console.error("[VoiceSettings] extractDocxText unhandled error:", error.message || error);
+    res.status(500).json({
+      success: false,
+      error: "An unexpected error occurred while processing the document."
+    });
+  }
+};
+
 module.exports = {
   getVoiceSettings,
   updateVoiceSettings,
-  testVoicePreview
+  testVoicePreview,
+  extractDocxText
 };
 

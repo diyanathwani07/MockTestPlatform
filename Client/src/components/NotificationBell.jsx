@@ -37,6 +37,7 @@ export default function NotificationBell() {
         setUnreadCount(res.data.unreadCount || 0);
       }
     } catch (error) {
+      if (error.response?.status === 401) return;
       console.error("[NotificationBell] Failed to fetch notifications:", error);
     }
   }, []);

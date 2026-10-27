@@ -154,9 +154,12 @@ function StudentSidebar() {
           
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <button
-              onClick={toggleSidebarCollapse}
+              onClick={() => {
+                if (isOpen) setIsOpen(false);
+                toggleSidebarCollapse();
+              }}
               className="sidebar-collapse-btn"
-              title="Toggle Sidebar Panel (Ctrl+B)"
+              title={collapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
               aria-label="Toggle Sidebar Panel"
               style={{
                 display: "inline-flex",
@@ -192,32 +195,6 @@ function StudentSidebar() {
             >
               <PanelLeft size={16} style={{ stroke: collapsed ? "var(--primary-foreground, #000000)" : "currentColor", color: collapsed ? "var(--primary-foreground, #000000)" : "currentColor" }} />
             </button>
-
-            {/* Mobile close button inside header */}
-            {!collapsed && (
-              <button
-                onClick={() => setIsOpen(false)}
-                className="sm:hidden"
-                title="Close Sidebar"
-                aria-label="Close Sidebar"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-                  background: "transparent",
-                  color: "var(--text-secondary)",
-                  cursor: "pointer",
-                  padding: 0,
-                  flexShrink: 0
-                }}
-              >
-                <X size={18} />
-              </button>
-            )}
           </div>
         </div>
 

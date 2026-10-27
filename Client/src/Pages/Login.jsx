@@ -37,6 +37,13 @@ function Login() {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
     if (token && role) {
+      try {
+        const exp = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).exp;
+        if (exp && exp * 1000 < Date.now()) {
+          localStorage.clear();
+          return;
+        }
+      } catch (_) {}
       if (role === "admin" || role === "superadmin") {
         navigate("/admin");
       } else {

@@ -441,11 +441,29 @@ function StudentLiveExams() {
           ) : error ? (
             <div className="live-card" style={{ textAlign: "center", padding: "40px 20px", borderColor: "rgba(239, 68, 68, 0.3)" }}>
               <AlertCircle size={40} color="#ef4444" style={{ margin: "0 auto 12px" }} />
-              <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "8px" }}>Failed to Load Live Exams</h3>
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "18px" }}>{error}</p>
-              <button type="button" onClick={() => fetchLiveExamsFeed()} className="live-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                <RefreshCw size={15} /> Try Again
-              </button>
+              <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "8px" }}>
+                {error.toLowerCase().includes("token") || error.toLowerCase().includes("expired") ? "Session Expired" : "Failed to Load Live Exams"}
+              </h3>
+              <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "18px" }}>
+                {error.toLowerCase().includes("token") || error.toLowerCase().includes("expired") ? "Your session has expired. Please log in again to continue." : error}
+              </p>
+              {error.toLowerCase().includes("token") || error.toLowerCase().includes("expired") ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.clear();
+                    navigate("/");
+                  }}
+                  className="live-btn-primary"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
+                >
+                  Log In Again
+                </button>
+              ) : (
+                <button type="button" onClick={() => fetchLiveExamsFeed()} className="live-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                  <RefreshCw size={15} /> Try Again
+                </button>
+              )}
             </div>
           ) : filteredExams.length === 0 ? (
             /* Empty State */

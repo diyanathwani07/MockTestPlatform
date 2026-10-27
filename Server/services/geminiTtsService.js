@@ -183,8 +183,8 @@ async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemi
     try {
       const timeoutPromise = new Promise((_, reject) => {
         const timer = setTimeout(() => {
-          reject(new Error(`Gemini TTS request (${currentModel}) timed out after 15 seconds.`));
-        }, 15000);
+          reject(new Error(`Gemini TTS request (${currentModel}) timed out after 30 seconds.`));
+        }, 30000);
         if (timer.unref) timer.unref();
       });
 
@@ -233,8 +233,8 @@ async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", custo
   }
 
   const cleanText = sampleText.trim();
-  if (cleanText.length > 1000) {
-    throw new Error("Sample text cannot exceed 1000 characters.");
+  if (cleanText.length > 3000) {
+    throw new Error("Sample text cannot exceed 3000 characters.");
   }
 
   // Fetch or default VoiceSettings safely

@@ -12,6 +12,17 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const t    = localStorage.getItem("token");
+    // shortcut: client-side exp check only, upgrade if server token revocation is needed
+    if (t) {
+      try {
+        const exp = JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).exp;
+        if (exp && exp * 1000 < Date.now()) {
+          localStorage.clear();
+          setLoading(false);
+          return;
+        }
+      } catch (_) {}
+    }
     const r    = localStorage.getItem("role");
     const p    = localStorage.getItem("permissions");
     const u    = localStorage.getItem("user");

@@ -49,6 +49,10 @@ export const SocketProvider = ({ children }) => {
     newSocket.on("connect_error", (err) => {
       console.warn("[Socket] Real-time connection error:", err.message);
       setIsConnected(false);
+      // shortcut: stop reconnecting on invalid token, upgrade if reconnect re-reads token
+      if (err?.message && err.message.toLowerCase().includes("token")) {
+        newSocket.disconnect();
+      }
     });
 
     newSocket.on("disconnect", (reason) => {

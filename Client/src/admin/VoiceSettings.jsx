@@ -19,7 +19,11 @@ import {
   CheckCircle2,
   Info,
   ShieldCheck,
-  Radio
+  Radio,
+  FileText,
+  UploadCloud,
+  FileAudio,
+  Trash2
 } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -123,6 +127,25 @@ export default function VoiceSettings() {
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [previewDuration, setPreviewDuration] = useState(null);
   const audioRef = useRef(null);
+
+  // Word-to-Speech (DOCX Import) states
+  const [docxFile, setDocxFile] = useState(null);
+  const [docxFileName, setDocxFileName] = useState("");
+  const [docxFileSize, setDocxFileSize] = useState(0);
+  const [docxText, setDocxText] = useState("");
+  const [docxStats, setDocxStats] = useState({ charCount: 0, wordCount: 0 });
+  const [docxExtracting, setDocxExtracting] = useState(false);
+  const [docxGeneratingAudio, setDocxGeneratingAudio] = useState(false);
+  const [docxVoice, setDocxVoice] = useState("Aoede");
+  const [docxLang, setDocxLang] = useState("en");
+  const [docxAudioUrl, setDocxAudioUrl] = useState(null);
+  const [isPlayingDocxAudio, setIsPlayingDocxAudio] = useState(false);
+  const [docxAudioDuration, setDocxAudioDuration] = useState(null);
+  const [docxDragActive, setDocxDragActive] = useState(false);
+  const [docxError, setDocxError] = useState(null);
+  const [docxWarning, setDocxWarning] = useState(null);
+  const docxFileInputRef = useRef(null);
+  const docxAudioRef = useRef(null);
 
   const token = localStorage.getItem("token");
 
@@ -312,6 +335,10 @@ export default function VoiceSettings() {
       audioRef.current.pause();
       setIsPlayingPreview(false);
     } else {
+      if (docxAudioRef.current && isPlayingDocxAudio) {
+        docxAudioRef.current.pause();
+        setIsPlayingDocxAudio(false);
+      }
       audioRef.current.play().then(() => {
         setIsPlayingPreview(true);
       }).catch(err => {
@@ -319,6 +346,235 @@ export default function VoiceSettings() {
         setIsPlayingPreview(false);
       });
     }
+  };
+
+  // Execute DOCX extraction via backend API
+  const executeDocxExtraction = async (fileToExtract) => {
+    const target = fileToExtract || docxFile;
+    if (!target) {
+      showToast("Please choose a Word document (.docx) first.", "error");
+      return;
+    }
+
+    if (!target.name.toLowerCase().endsWith(".docx")) {
+      const err = "Invalid file type. Only Word documents (.docx) are supported.";
+      setDocxError(err);
+      showToast(err, "error");
+      return;
+    }
+
+    if (target.size > 10 * 1024 * 1024) {
+      const err = "Document exceeds the maximum 10 MB file size limit.";
+      setDocxError(err);
+      showToast(err, "error");
+      return;
+    }
+
+    setDocxExtracting(true);
+    setDocxError(null);
+    setDocxWarning(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", target);
+
+      const res = await axios.post(`${API}/api/voice-settings/extract-docx`, formData, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
+
+      if (res.data?.success) {
+        const text = res.data.text || "";
+        setDocxText(text);
+        const charCount = res.data.characterCount || text.length;
+        const wordCount = res.data.wordCount || (text.trim() ? text.trim().split(/\s+/).length : 0);
+        setDocxStats({ charCount, wordCount });
+
+        // Auto-detect Hindi script: U+0900 to U+097F
+        const isHindi = /[\u0900-\u097F]/.test(text);
+        if (isHindi) {
+          setDocxLang("hi");
+          setDocxVoice(settings.hindiVoice || "Aoede");
+        } else {
+          setDocxLang("en");
+          setDocxVoice(settings.englishVoice || "Aoede");
+        }
+
+        if (res.data.exceedsLimit) {
+          const warn =
+            res.data.warning ||
+            `Document contains ${charCount.toLocaleString()} characters. Single speech generation limit is 3,000 characters. Please trim the text before generating.`;
+          setDocxWarning(warn);
+          showToast(`Extracted ${charCount.toLocaleString()} chars. (TTS limit: 3,000 chars)`, "info");
+        } else {
+          setDocxWarning(null);
+          showToast(`Successfully extracted ${charCount.toLocaleString()} characters (${wordCount.toLocaleString()} words)!`, "success");
+        }
+      } else {
+        throw new Error(res.data?.error || "Failed to extract text from Word document.");
+      }
+    } catch (err) {
+      console.error("[VoiceSettings] DOCX extraction error:", err);
+      const errMsg = extractErrorMessage(err, "Failed to extract text from Word document.");
+      setDocxError(errMsg);
+      showToast(errMsg, "error");
+    } finally {
+      setDocxExtracting(false);
+    }
+  };
+
+  // Handle file selection from drag-and-drop or file picker
+  const handleDocxFileSelect = (file) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".docx")) {
+      const err = "Invalid file type. Please select a valid .docx Word document.";
+      setDocxError(err);
+      showToast(err, "error");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      const err = "Selected document exceeds 10 MB limit.";
+      setDocxError(err);
+      showToast(err, "error");
+      return;
+    }
+
+    setDocxFile(file);
+    setDocxFileName(file.name);
+    setDocxFileSize(file.size);
+    setDocxError(null);
+    setDocxWarning(null);
+    setDocxAudioUrl(null);
+    if (docxAudioRef.current) {
+      docxAudioRef.current.pause();
+      setIsPlayingDocxAudio(false);
+    }
+
+    // Auto-trigger text extraction
+    executeDocxExtraction(file);
+  };
+
+  // Handle manual edits to extracted text
+  const handleDocxTextChange = (e) => {
+    const val = e.target.value;
+    setDocxText(val);
+    const charCount = val.length;
+    const wordCount = val.trim() ? val.trim().split(/\s+/).length : 0;
+    setDocxStats({ charCount, wordCount });
+
+    if (charCount > 3000) {
+      setDocxWarning(`Text exceeds single speech synthesis limit of 3,000 characters (${charCount.toLocaleString()} / 3,000). Please trim to generate speech.`);
+    } else {
+      setDocxWarning(null);
+    }
+  };
+
+  // Generate speech from Word doc text via Gemini TTS
+  const handleGenerateDocxSpeech = async () => {
+    if (!docxText || !docxText.trim()) {
+      showToast("Please extract or enter text before generating speech.", "error");
+      return;
+    }
+
+    if (docxText.length > 3000) {
+      showToast(`Text exceeds the 3,000 character limit (${docxText.length.toLocaleString()} chars). Please shorten before generating speech.`, "error");
+      return;
+    }
+
+    try {
+      setDocxGeneratingAudio(true);
+      if (docxAudioRef.current) {
+        docxAudioRef.current.pause();
+        setIsPlayingDocxAudio(false);
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlayingPreview(false);
+      }
+
+      const selectedPrompt =
+        docxLang === "hi" ? settings.hindiPrompt : settings.englishPrompt;
+
+      const res = await axios.post(
+        `${API}/api/voice-settings/test`,
+        {
+          sampleText: docxText.trim(),
+          lang: docxLang,
+          voice: docxVoice,
+          customPrompt: selectedPrompt
+        },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+
+      if (res.data?.success && res.data.audioUrl) {
+        setDocxAudioUrl(res.data.audioUrl);
+        setDocxAudioDuration(res.data.durationSeconds || null);
+        showToast("Speech generated successfully! Playing audio...", "success");
+
+        // Auto play generated audio
+        setTimeout(() => {
+          if (docxAudioRef.current) {
+            docxAudioRef.current.load();
+            docxAudioRef.current.play().then(() => {
+              setIsPlayingDocxAudio(true);
+            }).catch(e => {
+              console.warn("Auto-play prevented by browser policy:", e);
+            });
+          }
+        }, 100);
+      } else {
+        throw new Error(res.data?.error || "Speech generation failed.");
+      }
+    } catch (err) {
+      console.error("[VoiceSettings] docx TTS error:", err);
+      showToast(extractErrorMessage(err, "Failed to generate speech from document text."), "error");
+    } finally {
+      setDocxGeneratingAudio(false);
+    }
+  };
+
+  // Toggle playback of docx generated audio
+  const handleToggleDocxPlayback = () => {
+    if (!docxAudioRef.current || !docxAudioUrl) return;
+    if (isPlayingDocxAudio) {
+      docxAudioRef.current.pause();
+      setIsPlayingDocxAudio(false);
+    } else {
+      if (audioRef.current && isPlayingPreview) {
+        audioRef.current.pause();
+        setIsPlayingPreview(false);
+      }
+      docxAudioRef.current.play().then(() => {
+        setIsPlayingDocxAudio(true);
+      }).catch(err => {
+        console.error("Playback error:", err);
+        setIsPlayingDocxAudio(false);
+      });
+    }
+  };
+
+  // Clear docx state
+  const handleClearDocx = () => {
+    setDocxFile(null);
+    setDocxFileName("");
+    setDocxFileSize(0);
+    setDocxText("");
+    setDocxStats({ charCount: 0, wordCount: 0 });
+    setDocxError(null);
+    setDocxWarning(null);
+    setDocxAudioUrl(null);
+    setDocxAudioDuration(null);
+    setIsPlayingDocxAudio(false);
+    if (docxAudioRef.current) {
+      docxAudioRef.current.pause();
+    }
+    if (docxFileInputRef.current) {
+      docxFileInputRef.current.value = "";
+    }
+    showToast("Word document and speech player reset.", "info");
   };
 
   // Toggle allowed day helper
@@ -1197,6 +1453,461 @@ export default function VoiceSettings() {
                     src={previewAudioUrl || ""}
                     onEnded={() => setIsPlayingPreview(false)}
                     onError={() => setIsPlayingPreview(false)}
+                  />
+                </div>
+              </div>
+
+              {/* Word-to-Speech Converter (DOCX Import) */}
+              <div
+                style={{
+                  padding: "24px",
+                  borderRadius: "14px",
+                  background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                  border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "10px",
+                        background: "rgba(16, 185, 129, 0.12)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#10B981"
+                      }}
+                    >
+                      <FileAudio size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
+                        Word-to-Speech Converter
+                      </h3>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                        Import a Word (.docx) document, extract plain text, review or edit, and generate voice audio.
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      background: "rgba(255, 255, 255, 0.06)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                      color: "var(--text-secondary)",
+                      fontWeight: 500
+                    }}
+                  >
+                    Max 3,000 chars / 10 MB docx
+                  </span>
+                </div>
+
+                {/* File Upload Drop Area */}
+                <input
+                  type="file"
+                  ref={docxFileInputRef}
+                  accept=".docx"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleDocxFileSelect(e.target.files[0]);
+                    }
+                  }}
+                  style={{ display: "none" }}
+                />
+
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDocxDragActive(true);
+                  }}
+                  onDragLeave={() => setDocxDragActive(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDocxDragActive(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      handleDocxFileSelect(e.dataTransfer.files[0]);
+                    }
+                  }}
+                  onClick={() => {
+                    if (docxFileInputRef.current) {
+                      docxFileInputRef.current.click();
+                    }
+                  }}
+                  style={{
+                    border: docxDragActive
+                      ? "2px dashed var(--primary)"
+                      : "2px dashed var(--border-color, rgba(255, 255, 255, 0.15))",
+                    borderRadius: "12px",
+                    padding: "24px 16px",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    background: docxDragActive
+                      ? "rgba(16, 185, 129, 0.05)"
+                      : "rgba(0, 0, 0, 0.15)",
+                    transition: "all 0.2s ease",
+                    marginBottom: "16px"
+                  }}
+                >
+                  <UploadCloud
+                    size={36}
+                    style={{
+                      margin: "0 auto 8px auto",
+                      color: docxDragActive ? "var(--primary)" : "var(--text-secondary)"
+                    }}
+                  />
+                  <p style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>
+                    {docxFile ? docxFileName : "Click or drag & drop a .docx Word document here"}
+                  </p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                    {docxFile
+                      ? `${(docxFileSize / 1024).toFixed(1)} KB • Click or drop another document to replace`
+                      : "Supports standard Microsoft Word (.docx) files up to 10 MB"}
+                  </p>
+                </div>
+
+                {/* File info and extraction action if file is selected */}
+                {docxFile && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: "10px",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(255, 255, 255, 0.04)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                      marginBottom: "16px"
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                      <FileText size={16} color="var(--primary)" style={{ flexShrink: 0 }} />
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "var(--text-primary)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "280px"
+                        }}
+                      >
+                        {docxFileName}
+                      </span>
+                      <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                        ({(docxFileSize / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          executeDocxExtraction(docxFile);
+                        }}
+                        disabled={docxExtracting}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(255, 255, 255, 0.08)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.15))",
+                          color: "var(--text-primary)",
+                          fontSize: "12px",
+                          fontWeight: 500,
+                          cursor: docxExtracting ? "not-allowed" : "pointer"
+                        }}
+                      >
+                        {docxExtracting ? <RefreshCw size={13} className="animate-spin" /> : <FileText size={13} />}
+                        <span>{docxExtracting ? "Extracting..." : "Re-extract"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClearDocx();
+                        }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "6px 10px",
+                          borderRadius: "8px",
+                          background: "transparent",
+                          border: "1px solid rgba(239, 68, 68, 0.3)",
+                          color: "#EF4444",
+                          fontSize: "12px",
+                          fontWeight: 500,
+                          cursor: "pointer"
+                        }}
+                      >
+                        <Trash2 size={13} />
+                        <span>Clear</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Banner */}
+                {docxError && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "10px",
+                      padding: "12px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(239, 68, 68, 0.1)",
+                      border: "1px solid rgba(239, 68, 68, 0.3)",
+                      marginBottom: "16px",
+                      color: "#EF4444",
+                      fontSize: "13px"
+                    }}
+                  >
+                    <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                    <div style={{ flex: 1 }}>{docxError}</div>
+                  </div>
+                )}
+
+                {/* Limit Warning Banner */}
+                {docxWarning && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "10px",
+                      padding: "12px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(245, 158, 11, 0.1)",
+                      border: "1px solid rgba(245, 158, 11, 0.3)",
+                      marginBottom: "16px",
+                      color: "#F59E0B",
+                      fontSize: "13px"
+                    }}
+                  >
+                    <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                    <div style={{ flex: 1 }}>{docxWarning}</div>
+                  </div>
+                )}
+
+                {/* Text Area for Review & Editing */}
+                <div style={{ marginBottom: "16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px", flexWrap: "wrap", gap: "8px" }}>
+                    <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+                      Extracted Text (Review & Edit)
+                    </label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "12px" }}>
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: docxStats.charCount > 3000 ? "#EF4444" : docxStats.charCount > 0 ? "#10B981" : "var(--text-secondary)"
+                        }}
+                      >
+                        {docxStats.charCount.toLocaleString()} / 3,000 chars
+                      </span>
+                      {docxStats.wordCount > 0 && (
+                        <span style={{ color: "var(--text-secondary)" }}>
+                          ({docxStats.wordCount.toLocaleString()} words)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={docxText}
+                    onChange={handleDocxTextChange}
+                    placeholder="Extracted plain text will appear here once you upload a .docx file. You can also paste or edit text directly before synthesizing audio..."
+                    style={{
+                      width: "100%",
+                      padding: "12px 14px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.25)",
+                      border: docxStats.charCount > 3000
+                        ? "1px solid rgba(239, 68, 68, 0.5)"
+                        : "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                      color: "var(--text-primary)",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                      outline: "none"
+                    }}
+                  />
+                </div>
+
+                {/* Voice and Language Selectors */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    gap: "14px",
+                    marginBottom: "18px"
+                  }}
+                >
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                      Target Voice
+                    </label>
+                    <select
+                      value={docxVoice}
+                      onChange={(e) => setDocxVoice(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "9px 12px",
+                        borderRadius: "8px",
+                        background: "rgba(0, 0, 0, 0.25)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        fontSize: "13px"
+                      }}
+                    >
+                      {GEMINI_VOICES.map(v => (
+                        <option key={v.id} value={v.id}>
+                          {v.name} ({v.gender})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                      Language Mode
+                    </label>
+                    <select
+                      value={docxLang}
+                      onChange={(e) => setDocxLang(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "9px 12px",
+                        borderRadius: "8px",
+                        background: "rgba(0, 0, 0, 0.25)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                        color: "var(--text-primary)",
+                        fontSize: "13px"
+                      }}
+                    >
+                      <option value="en">English (Broadcast Tone)</option>
+                      <option value="hi">Hindi (हिंदी प्रामाणिक वाचक)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Actions & Player */}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={handleGenerateDocxSpeech}
+                    disabled={docxGeneratingAudio || !docxText.trim() || docxStats.charCount > 3000}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "10px 18px",
+                      borderRadius: "10px",
+                      background: docxStats.charCount > 3000 || !docxText.trim()
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "var(--primary)",
+                      color: docxStats.charCount > 3000 || !docxText.trim()
+                        ? "var(--text-secondary)"
+                        : "var(--primary-foreground, #000)",
+                      border: "none",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: docxGeneratingAudio || !docxText.trim() || docxStats.charCount > 3000 ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    {docxGeneratingAudio ? <RefreshCw size={15} className="animate-spin" /> : <Play size={15} />}
+                    <span>{docxGeneratingAudio ? "Synthesizing Audio..." : "Generate Speech"}</span>
+                  </button>
+
+                  {docxText && (
+                    <button
+                      type="button"
+                      onClick={handleClearDocx}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        background: "transparent",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.15))",
+                        color: "var(--text-secondary)",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        cursor: "pointer"
+                      }}
+                    >
+                      <Trash2 size={14} />
+                      <span>Clear</span>
+                    </button>
+                  )}
+
+                  {docxAudioUrl && (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "6px 14px",
+                        borderRadius: "10px",
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)"
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={handleToggleDocxPlayback}
+                        style={{
+                          background: "var(--primary)",
+                          color: "var(--primary-foreground, #000)",
+                          border: "none",
+                          width: "28px",
+                          height: "28px",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {isPlayingDocxAudio ? <Square size={12} /> : <Play size={12} />}
+                      </button>
+                      <span style={{ fontSize: "12px", color: "var(--text-primary)", fontWeight: 500 }}>
+                        {isPlayingDocxAudio ? "Playing speech..." : "Speech ready"}
+                        {docxAudioDuration ? ` (${docxAudioDuration}s)` : ""}
+                      </span>
+                      <a
+                        href={docxAudioUrl}
+                        download={`voice-${docxVoice.toLowerCase()}-${Date.now()}.wav`}
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--primary)",
+                          textDecoration: "underline",
+                          marginLeft: "6px"
+                        }}
+                      >
+                        Download WAV
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Hidden audio element for Word-to-Speech */}
+                  <audio
+                    ref={docxAudioRef}
+                    src={docxAudioUrl || ""}
+                    onEnded={() => setIsPlayingDocxAudio(false)}
+                    onError={() => setIsPlayingDocxAudio(false)}
                   />
                 </div>
               </div>
