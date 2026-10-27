@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
-  LineChart, FileText, Settings, X, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
+  LineChart, FileText, Settings, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
   PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
@@ -112,8 +112,9 @@ function AdminSidebar() {
           className="sidebar-logo" 
           style={{ 
             display: "flex", 
-            justifyContent: collapsed ? "center" : "space-between", 
+            justifyContent: collapsed ? "center" : "flex-start", 
             alignItems: "center", 
+            gap: "12px",
             padding: collapsed ? "0" : "0 16px", 
             position: "relative", 
             zIndex: 2, 
@@ -153,14 +154,15 @@ function AdminSidebar() {
             </button>
           ) : (
             <>
-              <Logo />
-              
-              {/* Desktop collapse button */}
+              {/* Sidebar collapse/toggle button shifted to left side */}
               <button
-                onClick={toggleSidebarCollapse}
-                title="Collapse Sidebar (Ctrl+B)"
-                aria-label="Collapse Sidebar"
-                className="sidebar-collapse-btn hidden md:inline-flex"
+                onClick={() => {
+                  if (isOpen) setIsOpen(false);
+                  toggleSidebarCollapse();
+                }}
+                title={isOpen ? "Close Sidebar" : "Collapse Sidebar (Ctrl+B)"}
+                aria-label={isOpen ? "Close Sidebar" : "Collapse Sidebar"}
+                className="sidebar-collapse-btn"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -188,31 +190,7 @@ function AdminSidebar() {
                 <PanelLeftClose size={18} style={{ stroke: "currentColor" }} />
               </button>
 
-              {/* Mobile drawer close button (only when open on mobile screen) */}
-              {isOpen && (
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="md:hidden"
-                  title="Close Sidebar"
-                  aria-label="Close Sidebar"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-                    background: "transparent",
-                    color: "var(--text-secondary)",
-                    cursor: "pointer",
-                    padding: 0,
-                    flexShrink: 0
-                  }}
-                >
-                  <X size={18} />
-                </button>
-              )}
+              <Logo />
             </>
           )}
         </div>
