@@ -165,14 +165,16 @@ async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemi
     }
   };
 
-  if (prompt && typeof prompt === "string" && prompt.trim() !== "") {
-    config.systemInstruction = {
-      parts: [{ text: prompt.trim() }]
-    };
-  }
+  // Dedicated Gemini TTS models do not support developer systemInstruction.
+  // Style and delivery are governed natively by the prebuilt voice configuration.
 
   const candidateModels = [
-    ...new Set([model || "gemini-2.5-flash-preview-tts", "gemini-2.0-flash", "gemini-2.5-flash"])
+    ...new Set([
+      model || "gemini-2.5-flash-preview-tts",
+      "gemini-3.8-flash-tts",
+      "gemini-3.8-flash-lite-tts",
+      "gemini-2.5-pro-preview-tts"
+    ])
   ].filter(Boolean);
 
   let lastError = null;
@@ -235,8 +237,13 @@ async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", custo
     throw new Error("Sample text cannot exceed 1000 characters.");
   }
 
-  // Fetch or default VoiceSettings
-  let settings = await VoiceSetting.findOne();
+  // Fetch or default VoiceSettings safely
+  let settings = null;
+  try {
+    settings = await VoiceSetting.findOne();
+  } catch (_) {
+    settings = null;
+  }
   if (!settings) {
     settings = {
       model: "gemini-2.5-flash-preview-tts",
@@ -296,7 +303,12 @@ async function generateReminderPcm({
   }
 
   // Check voice settings and administrative enablement
-  let settings = await VoiceSetting.findOne();
+  let settings = null;
+  try {
+    settings = await VoiceSetting.findOne();
+  } catch (_) {
+    settings = null;
+  }
   if (!settings) {
     settings = {
       model: "gemini-2.5-flash-preview-tts",

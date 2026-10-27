@@ -403,7 +403,7 @@ const testVoicePreview = async (req, res) => {
     let safeMessage = "Failed to generate voice preview";
     if (rawMsg.includes("API_KEY") || rawMsg.includes("key=") || rawMsg.includes("CREDENTIALS")) {
       safeMessage = "TTS service configuration error: GEMINI_API_KEY is not configured or invalid.";
-    } else if (rawMsg.includes("429") || rawMsg.toLowerCase().includes("quota") || rawMsg.toLowerCase().includes("rate limit")) {
+    } else if (rawMsg.includes("429") || rawMsg.toLowerCase().includes("quota") || rawMsg.toLowerCase().includes("rate limit") || rawMsg.includes("RESOURCE_EXHAUSTED")) {
       safeMessage = "Gemini TTS quota exceeded. Please check your Google AI account quota.";
     } else if (rawMsg.toLowerCase().includes("timeout") || rawMsg.toLowerCase().includes("timed out")) {
       safeMessage = "TTS synthesis timed out after 15 seconds. Please try again.";
