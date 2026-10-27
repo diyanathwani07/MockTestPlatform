@@ -669,7 +669,7 @@ export default function VoiceSettings() {
       <div className="admin-main">
         <AdminNavbar title="Voice Settings" parentText="Dashboard" parentLink="/admin/dashboard" />
 
-        <div className="admin-content" style={{ maxWidth: "1280px", margin: "0 auto", paddingBottom: "80px" }}>
+        <div className="admin-content" style={{ maxWidth: "1280px", margin: 0, paddingBottom: "80px" }}>
           {/* Toast Notification Banner */}
           {toast && (
             <div
