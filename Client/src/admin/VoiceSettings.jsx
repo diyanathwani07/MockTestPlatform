@@ -669,23 +669,29 @@ export default function VoiceSettings() {
                 style={{
                   width: "48px",
                   height: "26px",
-                  background: settings.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
+                  background: settings.enabled ? "#10B981" : "rgba(255, 255, 255, 0.14)",
+                  border: settings.enabled
+                    ? "1px solid rgba(16, 185, 129, 0.6)"
+                    : "1px solid rgba(255, 255, 255, 0.18)",
                   borderRadius: "13px",
                   position: "relative",
-                  transition: "background-color 0.2s"
+                  boxShadow: settings.enabled
+                    ? "0 0 10px rgba(16, 185, 129, 0.35)"
+                    : "inset 0 1px 3px rgba(0, 0, 0, 0.3)",
+                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                 }}
               >
                 <div
                   style={{
                     position: "absolute",
-                    top: "3px",
-                    left: settings.enabled ? "25px" : "3px",
+                    top: "2px",
+                    left: settings.enabled ? "24px" : "2px",
                     width: "20px",
                     height: "20px",
                     borderRadius: "50%",
                     background: "#ffffff",
-                    transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.4)",
+                    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                   }}
                 />
               </div>
@@ -1237,22 +1243,29 @@ export default function VoiceSettings() {
                     style={{
                       width: "48px",
                       height: "26px",
-                      background: settings.callingSchedule?.enabled ? "var(--primary)" : "rgba(255, 255, 255, 0.2)",
+                      background: settings.callingSchedule?.enabled ? "#10B981" : "rgba(255, 255, 255, 0.14)",
+                      border: settings.callingSchedule?.enabled
+                        ? "1px solid rgba(16, 185, 129, 0.6)"
+                        : "1px solid rgba(255, 255, 255, 0.18)",
                       borderRadius: "13px",
                       position: "relative",
-                      transition: "background-color 0.2s"
+                      boxShadow: settings.callingSchedule?.enabled
+                        ? "0 0 10px rgba(16, 185, 129, 0.35)"
+                        : "inset 0 1px 3px rgba(0, 0, 0, 0.3)",
+                      transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                     }}
                   >
                     <div
                       style={{
                         position: "absolute",
-                        top: "3px",
-                        left: settings.callingSchedule?.enabled ? "25px" : "3px",
+                        top: "2px",
+                        left: settings.callingSchedule?.enabled ? "24px" : "2px",
                         width: "20px",
                         height: "20px",
                         borderRadius: "50%",
                         background: "#ffffff",
-                        transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.4)",
+                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                       }}
                     />
                   </div>
