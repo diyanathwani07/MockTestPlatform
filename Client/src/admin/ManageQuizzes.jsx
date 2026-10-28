@@ -7,6 +7,8 @@ import { Eye, Edit2, Calendar, Clock, Trash2, Copy, Search, EyeOff, UploadCloud,
 import MuiDatePicker from "../components/MuiDatePicker";
 import { useConfirm } from "../context/ConfirmContext";
 import { useAuth } from "../context/AuthContext";
+import { Bell } from "lucide-react";
+import ExamReminderModal from "../components/ExamReminderModal";
 
 function ManageQuizzes() {
   const confirm = useConfirm();
@@ -19,6 +21,7 @@ function ManageQuizzes() {
   const [filterType, setFilterType] = useState("All");
   const [expandedQuizTitles, setExpandedQuizTitles] = useState({});
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [reminderModalQuiz, setReminderModalQuiz] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -1012,6 +1015,7 @@ function ManageQuizzes() {
                                     <>
                                       <div onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title } }); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Eye size={15} /> Preview</div>
                                       <div onClick={() => { setActiveDropdown(null); handleDuplicateQuiz(quiz._id); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Copy size={15} /> Duplicate Quiz</div>
+                                      <div onClick={() => { setActiveDropdown(null); setReminderModalQuiz(quiz); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Bell size={15} /> Voice Reminder</div>
                                       {(() => {
                                         const hasEditPermission = isMine || role === "superadmin" || hasPermission("edit_others_quizzes") || hasPermission("manage_all_quizzes");
                                         if (!hasEditPermission) return null;
@@ -1350,6 +1354,7 @@ function ManageQuizzes() {
                                       >
                                         <Copy size={15} /> Duplicate Quiz
                                       </div>
+                                      <div onClick={() => { setActiveDropdown(null); setReminderModalQuiz(quiz); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Bell size={15} /> Voice Reminder</div>
 
                                       {(() => {
                                         const isMine = checkIsMine(quiz);
@@ -1646,6 +1651,16 @@ function ManageQuizzes() {
 
         </div>
       </div>
+
+      {reminderModalQuiz && (
+        <ExamReminderModal
+          quiz={reminderModalQuiz}
+          onClose={() => setReminderModalQuiz(null)}
+          onScheduled={() => {
+            setReminderModalQuiz(null);
+          }}
+        />
+      )}
     </div>
   );
 }

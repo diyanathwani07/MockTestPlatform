@@ -24,8 +24,13 @@ import {
   FileText,
   UploadCloud,
   FileAudio,
-  Trash2
+  Trash2,
+  Bell,
+  Plus,
+  Search,
+  Users
 } from "lucide-react";
+import ExamReminderModal from "../components/ExamReminderModal";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
@@ -148,6 +153,16 @@ export default function VoiceSettings() {
   const docxFileInputRef = useRef(null);
   const docxAudioRef = useRef(null);
 
+  // Exam Reminders Tab states
+  const [scheduledReminders, setScheduledReminders] = useState([]);
+  const [loadingReminders, setLoadingReminders] = useState(false);
+  const [reminderFilter, setReminderFilter] = useState("ALL");
+  const [reminderSearch, setReminderSearch] = useState("");
+  const [reminderModalQuiz, setReminderModalQuiz] = useState(null);
+  const [eligibleQuizzes, setEligibleQuizzes] = useState([]);
+  const [showQuizPicker, setShowQuizPicker] = useState(false);
+  const [cancellingReminderId, setCancellingReminderId] = useState(null);
+
   const token = localStorage.getItem("token");
 
   // Show auto-dismissing toast notification
@@ -216,6 +231,58 @@ export default function VoiceSettings() {
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  const fetchScheduledReminders = async () => {
+    try {
+      setLoadingReminders(true);
+      const res = await axios.get(`${API}/api/ai-voice/exam-reminders`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.data?.success) {
+        setScheduledReminders(res.data.data || []);
+      }
+    } catch (err) {
+      console.warn("Could not load exam reminders:", err.message);
+    } finally {
+      setLoadingReminders(false);
+    }
+  };
+
+  const fetchEligibleQuizzes = async () => {
+    try {
+      const res = await axios.get(`${API}/api/ai-voice/eligible-exams`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.data?.success) {
+        setEligibleQuizzes(res.data.data || []);
+      }
+    } catch (err) {
+      console.warn("Could not load eligible quizzes:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "reminders") {
+      fetchScheduledReminders();
+      fetchEligibleQuizzes();
+    }
+  }, [activeTab]);
+
+  const handleCancelReminderAdmin = async (id, taskTitle) => {
+    if (!window.confirm(`Are you sure you want to cancel the voice reminder for "${taskTitle}"?`)) return;
+    try {
+      setCancellingReminderId(id);
+      await axios.patch(`${API}/api/ai-voice/exam-reminder/${id}/cancel`, {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      showToast("Voice reminder cancelled successfully.");
+      fetchScheduledReminders();
+    } catch (err) {
+      showToast(extractErrorMessage(err, "Failed to cancel reminder."), "error");
+    } finally {
+      setCancellingReminderId(null);
+    }
+  };
 
   // Save Settings
   const handleSave = async (e) => {
@@ -964,7 +1031,8 @@ export default function VoiceSettings() {
               { id: "voice", label: "Voice & Language", icon: Mic },
               { id: "schedule", label: "Calling Schedule", icon: Calendar },
               { id: "retry", label: "Retry Rules", icon: Sliders },
-              { id: "templates", label: "Reminder Defaults", icon: Sparkles }
+              { id: "templates", label: "Reminder Defaults", icon: Sparkles },
+              { id: "reminders", label: "Exam Reminders", icon: Bell }
             ].map(({ id, label, icon: Icon }) => {
               const active = activeTab === id;
               return (
@@ -2568,6 +2636,384 @@ export default function VoiceSettings() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* TAB 5: SCHEDULED EXAM REMINDERS */}
+          {activeTab === "reminders" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* Top Action Bar */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  padding: "16px 20px",
+                  background: "var(--bg-card)",
+                  borderRadius: "14px",
+                  border: "1px solid var(--border-color)"
+                }}
+              >
+                <div>
+                  <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
+                    Scheduled Exam & Quiz Reminders
+                  </h3>
+                  <span style={{ fontSize: "12.5px", color: "var(--text-muted)" }}>
+                    Monitor, filter, and manage automated voice dispatches across all mock examinations
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <button
+                    type="button"
+                    onClick={fetchScheduledReminders}
+                    disabled={loadingReminders}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-color)",
+                      background: "transparent",
+                      color: "var(--text-secondary)",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      fontWeight: "600"
+                    }}
+                  >
+                    <RefreshCw size={14} className={loadingReminders ? "animate-spin" : ""} /> Refresh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuizPicker(true)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "9px 18px",
+                      borderRadius: "8px",
+                      border: "none",
+                      background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                      color: "#ffffff",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      fontWeight: "700",
+                      boxShadow: "0 4px 14px rgba(124, 58, 237, 0.4)"
+                    }}
+                  >
+                    <Plus size={16} /> Schedule Exam Reminder
+                  </button>
+                </div>
+              </div>
+
+              {/* Filters & Search */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  {["ALL", "PENDING", "DISPATCHED", "COMPLETED", "CANCELLED", "FAILED"].map((statusKey) => {
+                    const isSelected = reminderFilter === statusKey;
+                    return (
+                      <button
+                        key={statusKey}
+                        type="button"
+                        onClick={() => setReminderFilter(statusKey)}
+                        style={{
+                          padding: "6px 14px",
+                          borderRadius: "100px",
+                          border: isSelected ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
+                          background: isSelected ? "rgba(138, 85, 252, 0.15)" : "transparent",
+                          color: isSelected ? "var(--primary)" : "var(--text-secondary)",
+                          fontSize: "12px",
+                          fontWeight: isSelected ? "700" : "500",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease"
+                        }}
+                      >
+                        {statusKey === "ALL" ? "All Reminders" : statusKey.charAt(0) + statusKey.slice(1).toLowerCase()}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "var(--bg-input, rgba(255,255,255,0.05))",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: "8px",
+                    padding: "6px 12px",
+                    minWidth: "220px"
+                  }}
+                >
+                  <Search size={14} style={{ color: "var(--text-muted)" }} />
+                  <input
+                    type="text"
+                    placeholder="Search by exam or recipient..."
+                    value={reminderSearch}
+                    onChange={(e) => setReminderSearch(e.target.value)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: "var(--text-primary)",
+                      fontSize: "12.5px",
+                      width: "100%"
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Reminders Table */}
+              <div
+                style={{
+                  background: "var(--bg-card)",
+                  borderRadius: "14px",
+                  border: "1px solid var(--border-color)",
+                  overflow: "hidden"
+                }}
+              >
+                {loadingReminders ? (
+                  <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                    <RefreshCw size={24} className="animate-spin" style={{ margin: "0 auto 12px" }} />
+                    <div>Loading scheduled voice reminders...</div>
+                  </div>
+                ) : (() => {
+                  const filtered = scheduledReminders.filter((rem) => {
+                    if (reminderFilter !== "ALL" && rem.status !== reminderFilter) return false;
+                    if (reminderSearch.trim()) {
+                      const q = reminderSearch.toLowerCase();
+                      const title = (rem.taskTitle || rem.quiz?.title || "").toLowerCase();
+                      const student = (rem.user?.fullName || rem.user?.name || rem.user?.email || "").toLowerCase();
+                      return title.includes(q) || student.includes(q);
+                    }
+                    return true;
+                  });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div style={{ padding: "48px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+                        <Bell size={32} style={{ margin: "0 auto 12px", opacity: 0.4 }} />
+                        <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+                          No voice reminders found
+                        </div>
+                        <div style={{ fontSize: "12.5px" }}>
+                          {scheduledReminders.length === 0
+                            ? "No voice reminders have been scheduled yet. Click 'Schedule Exam Reminder' to create one."
+                            : "No reminders match the active search or status filter."}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "13px" }}>
+                        <thead>
+                          <tr style={{ borderBottom: "1px solid var(--border-color)", background: "rgba(255,255,255,0.02)", color: "var(--text-muted)", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                            <th style={{ padding: "14px 18px", fontWeight: "700" }}>Target Exam</th>
+                            <th style={{ padding: "14px 18px", fontWeight: "700" }}>Recipient</th>
+                            <th style={{ padding: "14px 18px", fontWeight: "700" }}>Scheduled Dispatch</th>
+                            <th style={{ padding: "14px 18px", fontWeight: "700" }}>Status</th>
+                            <th style={{ padding: "14px 18px", fontWeight: "700" }}>Attempts</th>
+                            <th style={{ padding: "14px 18px", fontWeight: "700", textAlign: "right" }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filtered.map((rem) => {
+                            const isPending = rem.status === "PENDING";
+                            const isDispatched = rem.status === "DISPATCHED";
+                            const isCompleted = rem.status === "COMPLETED";
+                            const isCancelled = rem.status === "CANCELLED";
+                            const isFailed = rem.status === "FAILED";
+
+                            const statusColor = isPending ? "#3b82f6" : isDispatched ? "#8a55fc" : isCompleted ? "#10b981" : isCancelled ? "#94a3b8" : "#ef4444";
+                            const statusBg = isPending ? "rgba(59, 130, 246, 0.12)" : isDispatched ? "rgba(138, 85, 252, 0.12)" : isCompleted ? "rgba(16, 185, 129, 0.12)" : isCancelled ? "rgba(148, 163, 184, 0.12)" : "rgba(239, 68, 68, 0.12)";
+
+                            return (
+                              <tr key={rem._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
+                                <td style={{ padding: "14px 18px" }}>
+                                  <div style={{ fontWeight: "600", color: "var(--text-primary)" }}>
+                                    {rem.taskTitle || rem.quiz?.title || "Exam Paper"}
+                                  </div>
+                                  <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "2px" }}>
+                                    {rem.quiz?.subject ? `${rem.quiz.subject} • ` : ""}{rem.reminderTimingType ? rem.reminderTimingType.replace(/_/g, " ") : "Custom"}
+                                  </div>
+                                </td>
+                                <td style={{ padding: "14px 18px" }}>
+                                  <div style={{ fontWeight: "500", color: "var(--text-primary)" }}>
+                                    {rem.user?.fullName || rem.user?.name || "Student"}
+                                  </div>
+                                  <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                                    {rem.user?.email || ""}
+                                  </div>
+                                </td>
+                                <td style={{ padding: "14px 18px" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--text-primary)" }}>
+                                    <Clock size={13} style={{ color: "var(--primary)" }} />
+                                    <span>
+                                      {new Date(rem.scheduledTime).toLocaleString("en-GB", {
+                                        day: "numeric",
+                                        month: "short",
+                                        hour: "numeric",
+                                        minute: "2-digit"
+                                      })}
+                                    </span>
+                                  </div>
+                                  <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+                                    {rem.timeZone || "Asia/Kolkata"}
+                                  </div>
+                                </td>
+                                <td style={{ padding: "14px 18px" }}>
+                                  <span
+                                    style={{
+                                      display: "inline-block",
+                                      padding: "3px 10px",
+                                      borderRadius: "100px",
+                                      fontSize: "11px",
+                                      fontWeight: "700",
+                                      color: statusColor,
+                                      background: statusBg
+                                    }}
+                                  >
+                                    {rem.status}
+                                  </span>
+                                  {rem.lastDispatchError && (
+                                    <div style={{ fontSize: "10.5px", color: "#f87171", marginTop: "3px", maxWidth: "200px" }} title={rem.lastDispatchError}>
+                                      {rem.lastDispatchError.slice(0, 45)}...
+                                    </div>
+                                  )}
+                                </td>
+                                <td style={{ padding: "14px 18px", color: "var(--text-secondary)" }}>
+                                  {rem.dispatchAttempts || 0} / 3
+                                </td>
+                                <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                                  {isPending && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCancelReminderAdmin(rem._id, rem.taskTitle)}
+                                      disabled={cancellingReminderId === rem._id}
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                        padding: "6px 12px",
+                                        borderRadius: "6px",
+                                        border: "1px solid rgba(239,68,68,0.3)",
+                                        background: "rgba(239,68,68,0.1)",
+                                        color: "#ef4444",
+                                        cursor: "pointer",
+                                        fontSize: "12px",
+                                        fontWeight: "600"
+                                      }}
+                                    >
+                                      <Trash2 size={12} />
+                                      {cancellingReminderId === rem._id ? "Cancelling..." : "Cancel"}
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Quiz Picker Modal to Schedule Reminder */}
+          {showQuizPicker && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.65)",
+                backdropFilter: "blur(4px)",
+                zIndex: 10000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "16px"
+              }}
+              onClick={() => setShowQuizPicker(false)}
+            >
+              <div
+                style={{
+                  background: "var(--bg-card, #1e1b2e)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "16px",
+                  width: "100%",
+                  maxWidth: "500px",
+                  maxHeight: "80vh",
+                  overflowY: "auto",
+                  padding: "20px",
+                  color: "var(--text-primary)"
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h4 style={{ margin: 0, fontSize: "16px", fontWeight: "700" }}>Select Exam or Quiz</h4>
+                  <button onClick={() => setShowQuizPicker(false)} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
+                    <X size={18} />
+                  </button>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {eligibleQuizzes.length === 0 ? (
+                    <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>
+                      No active exams or quizzes found to schedule reminders for.
+                    </div>
+                  ) : (
+                    eligibleQuizzes.map((quiz) => (
+                      <div
+                        key={quiz._id}
+                        onClick={() => {
+                          setReminderModalQuiz(quiz);
+                          setShowQuizPicker(false);
+                        }}
+                        style={{
+                          padding: "12px 14px",
+                          borderRadius: "10px",
+                          border: "1px solid var(--border-color)",
+                          background: "var(--bg-input, rgba(255,255,255,0.03))",
+                          cursor: "pointer",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          transition: "all 0.15s ease"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.borderColor = "var(--primary)"}
+                        onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--border-color)"}
+                      >
+                        <div>
+                          <div style={{ fontWeight: "600", fontSize: "13.5px" }}>{quiz.title}</div>
+                          <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "2px" }}>
+                            {quiz.subject || "General"} • {quiz.duration} mins
+                          </div>
+                        </div>
+                        <span style={{ fontSize: "12px", color: "var(--primary)", fontWeight: "600" }}>Select →</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Exam Reminder Modal */}
+          {reminderModalQuiz && (
+            <ExamReminderModal
+              quiz={reminderModalQuiz}
+              onClose={() => setReminderModalQuiz(null)}
+              onScheduled={() => {
+                setReminderModalQuiz(null);
+                fetchScheduledReminders();
+                showToast("Voice reminder scheduled successfully!");
+              }}
+            />
           )}
         </div>
       </div>

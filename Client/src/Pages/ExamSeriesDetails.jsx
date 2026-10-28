@@ -6,7 +6,8 @@ import StudentNavbar from "../components/StudentNavbar";
 import QuizDetailsModal from "../components/QuizDetailsModal";
 import { useExam } from "../context/ExamContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, BookOpen, AlertCircle, FileText, CheckCircle } from "lucide-react";
+import { ArrowLeft, Clock, BookOpen, AlertCircle, FileText, CheckCircle, Bell } from "lucide-react";
+import ExamReminderModal from "../components/ExamReminderModal";
 import "../css/StudentDashboard.css";
 import "../css/MyExams.css";
 
@@ -22,6 +23,7 @@ function ExamSeriesDetails() {
   const [activeFilter, setActiveFilter] = useState("All"); // All, Single Subject, Full Length Mock, Practice, Flashcards
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuizForDetails, setSelectedQuizForDetails] = useState(null);
+  const [reminderModalQuiz, setReminderModalQuiz] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -420,6 +422,25 @@ function ExamSeriesDetails() {
 
                         {/* Actions at bottom */}
                         <div style={{ display: "flex", gap: "8px", marginTop: "auto", width: "100%" }}>
+                          <button 
+                            type="button"
+                            title="Schedule Voice Reminder" 
+                            onClick={(e) => { e.stopPropagation(); setReminderModalQuiz(quiz); }}
+                            style={{ 
+                              padding: "8px 12px", 
+                              borderRadius: "8px", 
+                              border: "1.5px solid var(--border-color)", 
+                              background: "transparent", 
+                              color: "var(--text-secondary)", 
+                              cursor: "pointer", 
+                              display: "inline-flex", 
+                              alignItems: "center", 
+                              justifyContent: "center", 
+                              flexShrink: 0 
+                            }}
+                          >
+                            <Bell size={14} />
+                          </button>
                           {quiz.isPaid && !quiz.isPurchased ? (
                             <button 
                               className="me-btn-primary" 

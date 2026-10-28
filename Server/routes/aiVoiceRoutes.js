@@ -17,8 +17,18 @@ const {
   rejectSchedule,
   endCallSession,
   getSessionAudio,
-  getVoiceMetrics
+  getVoiceMetrics,
+  scheduleExamReminder,
+  getExamReminders,
+  cancelExamReminder,
+  getEligibleExamsForReminders
 } = require("../controllers/aiVoiceController");
+
+// Exam & Quiz Voice Reminder endpoints
+router.post("/exam-reminder", protect, aiLimiter, scheduleExamReminder);
+router.get("/exam-reminders", protect, getExamReminders);
+router.patch("/exam-reminder/:id/cancel", protect, cancelExamReminder);
+router.get("/eligible-exams", protect, getEligibleExamsForReminders);
 
 // Schedule management endpoints (authenticated)
 router.post("/schedule", protect, aiLimiter, createSchedule);

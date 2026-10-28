@@ -38,8 +38,39 @@ const scheduleSchema = new mongoose.Schema(
     },
     callType: {
       type: String,
-      enum: ["TASK_REMINDER", "CUSTOM"],
+      enum: ["TASK_REMINDER", "CUSTOM", "EXAM_REMINDER", "QUIZ_REMINDER"],
       default: "TASK_REMINDER"
+    },
+    quiz: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Quiz",
+      default: null,
+      index: true
+    },
+    liveExam: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "LiveExamination",
+      default: null,
+      index: true
+    },
+    examSeries: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ExamSeries",
+      default: null,
+      index: true
+    },
+    scheduledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+    reminderTimingType: {
+      type: String,
+      default: "CUSTOM"
+    },
+    examDateTime: {
+      type: Date,
+      default: null
     },
     status: {
       type: String,
@@ -111,6 +142,7 @@ const scheduleSchema = new mongoose.Schema(
 
 // Compound index for hot queries: user schedules and upcoming cron sweeps
 scheduleSchema.index({ user: 1, status: 1, scheduledTime: 1 });
+scheduleSchema.index({ quiz: 1, user: 1, status: 1 });
 scheduleSchema.index({ status: 1, scheduledTime: 1 });
 scheduleSchema.index({ status: 1, scheduledTime: 1, preGeneratedAudioStatus: 1 });
 

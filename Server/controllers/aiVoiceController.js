@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const Schedule = require("../models/Schedule");
 const Call = require("../models/Call");
+const Quiz = require("../models/Quiz");
+const User = require("../models/User");
+const AuditLog = require("../models/AuditLog");
 const {
   generateReminderPcm,
   deleteAudioFile,
@@ -872,6 +875,385 @@ const getVoiceMetrics = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/ai-voice/exam-reminder
+ * Schedules an automated voice reminder for an exam or quiz.
+ */
+const scheduleExamReminder = async (req, res) => {
+  try {
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
+    // 0. Enforce Master Voice Subsystem Switch
+    const voiceSettings = await getVoiceSettingsSafe();
+    if (voiceSettings && voiceSettings.enabled === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Voice reminder service is currently disabled by administrator."
+      });
+    }
+
+    const {
+      quizId,
+      timingType = "30_MIN_BEFORE",
+      customScheduledTime = null,
+      recipients = null,
+      reminderAudioText = null,
+      language = "auto",
+      voice = null
+    } = req.body;
+
+    // 1. Validate Quiz / Exam
+    if (!quizId || !mongoose.Types.ObjectId.isValid(quizId)) {
+      return res.status(400).json({ success: false, message: "Valid quiz or exam ID is required." });
+    }
+
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz || quiz.isDeleted) {
+      return res.status(404).json({ success: false, message: "Quiz or exam not found." });
+    }
+
+    const userRole = req.user.role;
+    const isAdminOrTeacher = userRole === "admin" || userRole === "superadmin" || userRole === "teacher" || userRole === "manager";
+
+    // Students can only view & schedule for published quizzes they are taking
+    if (!isAdminOrTeacher) {
+      const isAvailable = quiz.published || quiz.status === "Published" || quiz.status === "Scheduled";
+      if (!isAvailable) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not authorized to schedule a reminder for an unpublished quiz."
+        });
+      }
+    }
+
+    // 2. Derive base exam date and calculate target reminder time
+    let examDateObj = quiz.scheduledDate ? new Date(quiz.scheduledDate) : null;
+    if (!examDateObj || isNaN(examDateObj.getTime())) {
+      examDateObj = customScheduledTime ? new Date(customScheduledTime) : new Date(Date.now() + 24 * 60 * 60 * 1000);
+    }
+
+    let targetScheduledTime = null;
+    const validIntervals = {
+      "15_MIN_BEFORE": 15 * 60 * 1000,
+      "30_MIN_BEFORE": 30 * 60 * 1000,
+      "1_HOUR_BEFORE": 60 * 60 * 1000,
+      "1_DAY_BEFORE": 24 * 60 * 60 * 1000
+    };
+
+    if (timingType === "EXACT_TIME") {
+      if (!customScheduledTime) {
+        return res.status(400).json({ success: false, message: "A specific scheduled date and time is required for EXACT_TIME mode." });
+      }
+      targetScheduledTime = new Date(customScheduledTime);
+    } else if (validIntervals[timingType]) {
+      targetScheduledTime = new Date(examDateObj.getTime() - validIntervals[timingType]);
+    } else {
+      targetScheduledTime = new Date(examDateObj.getTime() - 30 * 60 * 1000);
+    }
+
+    if (isNaN(targetScheduledTime.getTime())) {
+      return res.status(400).json({ success: false, message: "Invalid scheduled reminder time computed." });
+    }
+
+    // 3. Timing Policies: Must be in future (> now)
+    const now = new Date();
+    if (targetScheduledTime.getTime() - now.getTime() < MIN_FUTURE_BUFFER_MS) {
+      return res.status(400).json({
+        success: false,
+        message: "The calculated reminder time is in the past. Please choose a future reminder time or interval."
+      });
+    }
+
+    // 4. Enforce Permitted Calling Schedule (Master Window)
+    if (voiceSettings && voiceSettings.callingSchedule?.enabled) {
+      const isAllowed = isWithinCallingSchedule(voiceSettings.callingSchedule, targetScheduledTime);
+      if (!isAllowed) {
+        const { startTime, endTime, timeZone } = voiceSettings.callingSchedule;
+        return res.status(400).json({
+          success: false,
+          message: `The reminder time (${targetScheduledTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}) falls outside the permitted calling window (${startTime} - ${endTime} ${timeZone || "Asia/Kolkata"}).`
+        });
+      }
+    }
+
+    // 5. Determine Target Recipients
+    let targetStudents = [];
+    if (!isAdminOrTeacher) {
+      targetStudents = [req.user];
+    } else {
+      if (Array.isArray(recipients) && recipients.length > 0) {
+        const validIds = recipients.filter(id => mongoose.Types.ObjectId.isValid(id));
+        targetStudents = await User.find({ _id: { $in: validIds }, status: "Active", isDeleted: { $ne: true } })
+          .select("_id name fullName email role")
+          .limit(100);
+      } else {
+        targetStudents = [req.user];
+      }
+    }
+
+    if (targetStudents.length === 0) {
+      return res.status(400).json({ success: false, message: "No eligible recipients found for this reminder." });
+    }
+
+    // 6. Template Placeholder Resolution
+    const resolvedLanguage = ["en", "hi", "auto"].includes(language) ? language : "auto";
+    const defaultTpl = resolvedLanguage === "hi"
+      ? (voiceSettings?.reminderDefaults?.defaultTemplateHindi || "नमस्ते {studentName}! टीचिंग परीक्षा AI की ओर से आपकी परीक्षा '{taskTitle}' {examDate} को निर्धारित है। कृपया समय पर तैयार रहें।")
+      : (voiceSettings?.reminderDefaults?.defaultTemplateEnglish || "Hello {studentName}! This is your PrepMark voice reminder: your exam '{taskTitle}' is scheduled for {examDate}. Please be ready!");
+
+    const rawTemplate = (typeof reminderAudioText === "string" && reminderAudioText.trim()) ? reminderAudioText.trim() : defaultTpl;
+
+    const tz = voiceSettings?.callingSchedule?.timeZone || "Asia/Kolkata";
+    const formattedExamDate = examDateObj.toLocaleDateString("en-GB", { timeZone: tz, day: "numeric", month: "short", year: "numeric" });
+    const formattedExamTime = examDateObj.toLocaleTimeString("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true });
+
+    // 7. Duplicate Check & Document Creation
+    const createdSchedules = [];
+    const skippedUsers = [];
+
+    for (const student of targetStudents) {
+      const existing = await Schedule.findOne({
+        user: student._id,
+        quiz: quiz._id,
+        status: { $in: ["PENDING", "PROCESSING"] }
+      });
+
+      if (existing) {
+        skippedUsers.push(student.name || student.fullName || student._id);
+        if (targetStudents.length === 1) {
+          return res.status(409).json({
+            success: false,
+            message: `A voice reminder is already active for "${quiz.title}". Next run: ${new Date(existing.scheduledTime).toLocaleString("en-GB", { timeZone: tz })}`,
+            existingSchedule: existing
+          });
+        }
+        continue;
+      }
+
+      const studentName = student.fullName || student.name || "Student";
+      const finalAudioText = rawTemplate
+        .replace(/{taskTitle}/g, quiz.title)
+        .replace(/{studentName}/g, studentName)
+        .replace(/{examDate}/g, formattedExamDate)
+        .replace(/{examTime}/g, formattedExamTime);
+
+      const schedule = await Schedule.create({
+        user: student._id,
+        quiz: quiz._id,
+        scheduledBy: req.user._id,
+        callType: "EXAM_REMINDER",
+        taskTitle: quiz.title,
+        taskDescription: `Scheduled reminder for ${quiz.title} (${quiz.subject || "General"})`,
+        reminderAudioText: finalAudioText.slice(0, 1000),
+        scheduledTime: targetScheduledTime,
+        timeZone: tz,
+        status: "PENDING",
+        language: resolvedLanguage,
+        voice: voice || voiceSettings?.englishVoice || "Aoede",
+        reminderTimingType: timingType,
+        examDateTime: examDateObj,
+        preGeneratedAudioStatus: "PENDING"
+      });
+
+      createdSchedules.push(schedule);
+
+      // Async Audio Pre-generation
+      setImmediate(async () => {
+        try {
+          await generateScheduleAudioInternal(schedule._id, student._id);
+        } catch (audioErr) {
+          console.warn(`[AiVoiceController] Pre-gen error for schedule ${schedule._id}:`, audioErr.message || audioErr);
+        }
+      });
+    }
+
+    // 8. Audit Logging for Admin actions
+    if (isAdminOrTeacher && createdSchedules.length > 0) {
+      try {
+        await AuditLog.create({
+          action: "SCHEDULE_EXAM_REMINDER",
+          performedBy: req.user.email || req.user.name || req.user._id.toString(),
+          details: `Scheduled voice reminder for quiz "${quiz.title}" (${quiz._id}) for ${createdSchedules.length} recipient(s). Scheduled time: ${targetScheduledTime.toISOString()}`,
+          module: "VOICE_REMINDERS",
+          ipAddress: req.ip || req.connection.remoteAddress
+        });
+      } catch (auditErr) {
+        console.warn("[AiVoiceController] Audit log write warning:", auditErr.message);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: createdSchedules.length === 1
+        ? "Exam voice reminder scheduled successfully."
+        : `Scheduled voice reminders for ${createdSchedules.length} student(s).`,
+      count: createdSchedules.length,
+      skippedCount: skippedUsers.length,
+      nextScheduledTime: targetScheduledTime,
+      data: createdSchedules.length === 1 ? createdSchedules[0] : createdSchedules
+    });
+  } catch (error) {
+    console.error("[AiVoiceController] Schedule Exam Reminder Error:", error.message || error);
+    res.status(500).json({ success: false, message: "Failed to schedule exam reminder." });
+  }
+};
+
+/**
+ * GET /api/ai-voice/exam-reminders
+ * Retrieves scheduled exam voice reminders with role-scoped authorization.
+ */
+const getExamReminders = async (req, res) => {
+  try {
+    const userRole = req.user.role;
+    const isAdminOrTeacher = userRole === "admin" || userRole === "superadmin" || userRole === "teacher" || userRole === "manager";
+
+    const query = {
+      $or: [
+        { callType: "EXAM_REMINDER" },
+        { quiz: { $ne: null } }
+      ]
+    };
+
+    if (!isAdminOrTeacher) {
+      query.user = req.user._id;
+    }
+
+    if (req.query.quizId && mongoose.Types.ObjectId.isValid(req.query.quizId)) {
+      query.quiz = req.query.quizId;
+    }
+
+    if (req.query.status) {
+      const allowed = ["PENDING", "PROCESSING", "DISPATCHED", "COMPLETED", "CANCELLED", "FAILED"];
+      const upper = req.query.status.toUpperCase();
+      if (allowed.includes(upper)) {
+        query.status = upper;
+      }
+    }
+
+    const reminders = await Schedule.find(query)
+      .populate("quiz", "title subject examName duration scheduledDate status published")
+      .populate("user", "name fullName email role")
+      .populate("scheduledBy", "name fullName email")
+      .sort({ scheduledTime: 1, createdAt: -1 })
+      .limit(100);
+
+    res.json({
+      success: true,
+      count: reminders.length,
+      data: reminders
+    });
+  } catch (error) {
+    console.error("[AiVoiceController] Get Exam Reminders Error:", error.message || error);
+    res.status(500).json({ success: false, message: "Failed to fetch exam reminders." });
+  }
+};
+
+/**
+ * PATCH /api/ai-voice/exam-reminder/:id/cancel
+ * Cancels a pending exam reminder with authorization check.
+ */
+const cancelExamReminder = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid schedule ID." });
+    }
+
+    const userRole = req.user.role;
+    const isAdminOrTeacher = userRole === "admin" || userRole === "superadmin" || userRole === "teacher" || userRole === "manager";
+
+    const query = { _id: req.params.id };
+    if (!isAdminOrTeacher) {
+      query.user = req.user._id;
+    }
+
+    const schedule = await Schedule.findOne(query);
+    if (!schedule) {
+      return res.status(404).json({ success: false, message: "Reminder schedule not found." });
+    }
+
+    if (["COMPLETED", "PROCESSING"].includes(schedule.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel a reminder that is already ${schedule.status.toLowerCase()}.`
+      });
+    }
+
+    if (schedule.status === "CANCELLED") {
+      return res.json({
+        success: true,
+        message: "Reminder is already cancelled.",
+        data: schedule
+      });
+    }
+
+    schedule.status = "CANCELLED";
+    await schedule.save();
+
+    if (isAdminOrTeacher) {
+      try {
+        await AuditLog.create({
+          action: "CANCEL_EXAM_REMINDER",
+          performedBy: req.user.email || req.user.name || req.user._id.toString(),
+          details: `Cancelled voice reminder for task "${schedule.taskTitle}" (${schedule._id})`,
+          module: "VOICE_REMINDERS",
+          ipAddress: req.ip || req.connection.remoteAddress
+        });
+      } catch (err) {}
+    }
+
+    res.json({
+      success: true,
+      message: "Exam reminder cancelled successfully.",
+      data: schedule
+    });
+  } catch (error) {
+    console.error("[AiVoiceController] Cancel Exam Reminder Error:", error.message || error);
+    res.status(500).json({ success: false, message: "Failed to cancel exam reminder." });
+  }
+};
+
+/**
+ * GET /api/ai-voice/eligible-exams
+ * Returns exams/quizzes available for scheduling reminders based on user role.
+ */
+const getEligibleExamsForReminders = async (req, res) => {
+  try {
+    const userRole = req.user.role;
+    const isAdminOrTeacher = userRole === "admin" || userRole === "superadmin" || userRole === "teacher" || userRole === "manager";
+
+    let query = { isDeleted: false };
+    if (!isAdminOrTeacher) {
+      query = {
+        isDeleted: false,
+        $or: [
+          { published: true },
+          { status: "Published" },
+          { status: "Scheduled" }
+        ]
+      };
+    }
+
+    const quizzes = await Quiz.find(query)
+      .select("title subject examName duration scheduledDate status published quizType")
+      .sort({ scheduledDate: -1, createdAt: -1 })
+      .limit(100);
+
+    res.json({
+      success: true,
+      count: quizzes.length,
+      data: quizzes
+    });
+  } catch (error) {
+    console.error("[AiVoiceController] Get Eligible Exams Error:", error.message || error);
+    res.status(500).json({ success: false, message: "Failed to retrieve eligible exams." });
+  }
+};
+
 module.exports = {
   createSchedule,
   generateScheduleAudio,
@@ -887,5 +1269,9 @@ module.exports = {
   rejectSchedule,
   endCallSession,
   getSessionAudio,
-  getVoiceMetrics
+  getVoiceMetrics,
+  scheduleExamReminder,
+  getExamReminders,
+  cancelExamReminder,
+  getEligibleExamsForReminders
 };
