@@ -113,16 +113,16 @@ function MyExams() {
   }, []);
 
   const getFilterLabel = () => {
-    if (selectedFilter === "all") return "Filter By: All";
+    if (selectedFilter === "all") return isMobile ? "All Series" : "Filter By: All";
     if (selectedFilter.startsWith("exam:")) {
       const examTitle = selectedFilter.replace("exam:", "");
-      return `Filter By: ${examTitle}`;
+      return isMobile ? examTitle : `Filter By: ${examTitle}`;
     }
     if (selectedFilter.startsWith("exam_subject:")) {
       const [examTitle, subjectName] = selectedFilter.replace("exam_subject:", "").split("|");
-      return `Filter By: ${examTitle} • ${subjectName}`;
+      return isMobile ? `${subjectName}` : `Filter By: ${examTitle} • ${subjectName}`;
     }
-    return "Filter By: All";
+    return isMobile ? "All Series" : "Filter By: All";
   };
 
   // Attempt status lookup
@@ -317,22 +317,23 @@ function MyExams() {
                     <input 
                       type="text" 
                       className="me-search-input" 
-                      placeholder="Search series or subjects..." 
+                      placeholder={isMobile ? "Search series..." : "Search series or subjects..."} 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  <div style={{ display: "flex", gap: "10px" }}>
+                  <div style={{ display: "flex", gap: "10px", flexShrink: 0 }}>
                     {/* Single Filter Dropdown */}
                     <div ref={dropdownRef} style={{ position: "relative", zIndex: 999 }}>
                       <button 
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className="me-filter-btn"
                         style={{ 
-                          paddingLeft: "16px", 
-                          paddingRight: "16px",
+                          paddingLeft: isMobile ? "10px" : "16px", 
+                          paddingRight: isMobile ? "10px" : "16px",
                           cursor: "pointer", 
-                          minWidth: "180px", 
+                          minWidth: isMobile ? "auto" : "180px", 
+                          maxWidth: isMobile ? "130px" : "200px",
                           background: "var(--bg-card)", 
                           color: "var(--text-primary)",
                           border: "1.5px solid var(--border-color)",
@@ -349,7 +350,7 @@ function MyExams() {
                           whiteSpace: "nowrap", 
                           overflow: "hidden", 
                           textOverflow: "ellipsis",
-                          maxWidth: "180px"
+                          maxWidth: isMobile ? "85px" : "180px"
                         }}>
                           {getFilterLabel()}
                         </span>

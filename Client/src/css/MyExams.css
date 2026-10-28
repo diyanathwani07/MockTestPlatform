@@ -620,28 +620,41 @@
     gap: 16px;
   }
   
+  .me-premium-layout .me-tabs,
   .me-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-    background: var(--bg-card, #FFFFFF);
-    border: 1.5px solid var(--border-color, #ECE9F7);
-    padding: 6px;
-    border-radius: 12px;
-    width: 100%;
-    box-sizing: border-box;
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    background: var(--bg-card, #FFFFFF) !important;
+    border: 1.5px solid var(--border-color, #ECE9F7) !important;
+    padding: 6px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   
+  .me-premium-layout .me-tabs::-webkit-scrollbar,
+  .me-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  .me-premium-layout .me-tab-btn,
   .me-tab-btn {
-    text-align: center;
-    padding: 10px 4px;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    box-sizing: border-box;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    text-align: center !important;
   }
   
   .me-search-filter {
@@ -721,10 +734,6 @@
   
   .me-stat-card:last-child {
     border-bottom: none;
-  }
-  
-  .me-tab-btn {
-    flex: 1 1 100%;
   }
 }
 
