@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
-import { useSidebar } from "../../context/SidebarContext";
-import { Sun, Moon, User, LogOut, Eye, ArrowLeft, Menu } from "lucide-react";
+import { Sun, Moon, User, LogOut, Eye, ArrowLeft } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import UniversalSearch from "../../components/UniversalSearch";
 import NotificationBell from "../../components/NotificationBell";
@@ -15,7 +14,6 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   const confirm = useConfirm();
   const { toggleTheme } = useTheme(); 
   const { setPreviewMode } = usePreview();
-  const { collapsed, toggleSidebarCollapse, setMobileOpen } = useSidebar();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(() => {
@@ -82,35 +80,6 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
           flex: "1 1 auto"
         }}
       >
-        {/* Universal Sidebar Toggle Clicker (Visible on desktop; mobile uses fixed hamburger) */}
-        <button
-          onClick={() => {
-            if (typeof window !== "undefined" && window.innerWidth <= 767) {
-              setMobileOpen(true);
-            } else {
-              toggleSidebarCollapse();
-            }
-          }}
-          className="navbar-sidebar-toggle-btn hidden md:inline-flex"
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "6px",
-            marginRight: "6px",
-            borderRadius: "8px",
-            color: "var(--text-primary)",
-            transition: "all 0.15s ease",
-            flexShrink: 0
-          }}
-          title="Toggle navigation sidebar (Ctrl+B)"
-          aria-label="Toggle navigation sidebar"
-        >
-          <Menu size={19} />
-        </button>
-
         {onNavigateBack && (
           <button
             onClick={onNavigateBack}
