@@ -32,7 +32,17 @@ async function sendFcmPush(userIds, title, message, link) {
 
     const payload = {
       notification: { title, body: message },
-      data: { link: link || "/" }
+      data: { link: link || "/" },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "default",
+          sound: "default",
+          priority: "high",
+          defaultVibrateTimings: true,
+          defaultSound: true
+        }
+      }
     };
 
     // Firebase Multicast hard limit is 500 tokens per request; batch into slices of <= 500
@@ -42,7 +52,8 @@ async function sendFcmPush(userIds, title, message, link) {
         const response = await admin.messaging().sendEachForMulticast({
           tokens: tokenBatch,
           notification: payload.notification,
-          data: payload.data
+          data: payload.data,
+          android: payload.android
         });
 
         if (response.failureCount > 0) {

@@ -47,6 +47,21 @@ export const unregisterDeviceToken = async (token) => {
 export const setupNativePushNotifications = async () => {
   if (!Capacitor.isNativePlatform()) return;
   
+  // Create default notification channel with High importance for heads-up popups on Android
+  try {
+    await PushNotifications.createChannel({
+      id: 'default',
+      name: 'Default Notifications',
+      description: 'General notifications and updates',
+      importance: 5, // High importance (shows popup heads-up banner)
+      visibility: 1, // Public on lockscreen
+      sound: 'default',
+      vibration: true,
+    });
+  } catch (channelErr) {
+    console.warn('[PushNotifications] Could not create channel:', channelErr);
+  }
+
   // Re-register cached native token with backend if already stored from previous permission grant
   const cachedToken = localStorage.getItem('fcm_token');
   if (cachedToken) {
@@ -55,7 +70,7 @@ export const setupNativePushNotifications = async () => {
 
   let permStatus = await PushNotifications.checkPermissions();
 
-  if (permStatus.receive === 'prompt') {
+  if (permStatus.receive !== 'granted') {
     permStatus = await PushNotifications.requestPermissions();
   }
 

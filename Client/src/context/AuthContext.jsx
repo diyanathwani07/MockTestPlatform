@@ -31,6 +31,15 @@ export function AuthProvider({ children }) {
     setPermissions(p ? JSON.parse(p) : []);
     setUser(u ? JSON.parse(u) : null);
     setLoading(false);
+
+    // Initialize push notifications on app startup if authenticated
+    if (t) {
+      setTimeout(() => {
+        initPushNotifications().catch(err => {
+          console.error("[AuthContext] Failed to initialize push notifications on startup:", err);
+        });
+      }, 500);
+    }
   }, []);
 
   const login = (data) => {
