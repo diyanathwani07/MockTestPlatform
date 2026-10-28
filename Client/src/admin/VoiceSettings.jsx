@@ -847,7 +847,7 @@ export default function VoiceSettings() {
                 >
                   <Volume2 size={20} />
                 </div>
-                <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
+                <h1 style={{ fontSize: "24px", fontWeight: "700", fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: "var(--text-primary)", margin: 0 }}>
                   Voice Settings
                 </h1>
                 <span
@@ -1141,10 +1141,28 @@ export default function VoiceSettings() {
                       fontSize: "14px"
                     }}
                   >
-                    <option value="auto">Auto-Detect (Devanagari text triggers Hindi, Latin text triggers English)</option>
+                    <option value="auto">Auto-Detect (Hindi / English)</option>
                     <option value="en">Always English</option>
                     <option value="hi">Always Hindi</option>
                   </select>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                      fontSize: "12px",
+                      color: "var(--text-secondary)",
+                      lineHeight: "1.4"
+                    }}
+                  >
+                    {settings.defaultLanguage === "hi"
+                      ? "All reminders are generated using the Hindi voice model."
+                      : settings.defaultLanguage === "en"
+                      ? "All reminders are generated using the English voice model."
+                      : "Devanagari text triggers Hindi synthesis, Latin text triggers English."}
+                  </div>
                 </div>
 
                 {/* English Voice Selector */}
@@ -1177,10 +1195,27 @@ export default function VoiceSettings() {
                   >
                     {GEMINI_VOICES.map(v => (
                       <option key={v.id} value={v.id}>
-                        {v.name} ({v.gender}) - {v.description}
+                        {v.name} ({v.gender})
                       </option>
                     ))}
                   </select>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                      fontSize: "12px",
+                      color: "var(--text-secondary)",
+                      lineHeight: "1.4"
+                    }}
+                  >
+                    <strong style={{ color: "var(--text-primary)" }}>
+                      {GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.name} ({GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.gender}):
+                    </strong>{" "}
+                    {GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.description}
+                  </div>
                 </div>
 
                 {/* Hindi Voice Selector */}
@@ -1213,10 +1248,27 @@ export default function VoiceSettings() {
                   >
                     {GEMINI_VOICES.map(v => (
                       <option key={v.id} value={v.id}>
-                        {v.name} ({v.gender}) - {v.description}
+                        {v.name} ({v.gender})
                       </option>
                     ))}
                   </select>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                      fontSize: "12px",
+                      color: "var(--text-secondary)",
+                      lineHeight: "1.4"
+                    }}
+                  >
+                    <strong style={{ color: "var(--text-primary)" }}>
+                      {GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.name} ({GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.gender}):
+                    </strong>{" "}
+                    {GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.description}
+                  </div>
                 </div>
               </div>
 

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
-import { Sun, Moon, User, LogOut, Eye, ArrowLeft } from "lucide-react";
+import { useSidebar } from "../../context/SidebarContext";
+import { Sun, Moon, User, LogOut, Eye, ArrowLeft, Menu } from "lucide-react";
 import ThemeToggle from "../../components/ThemeToggle";
 import UniversalSearch from "../../components/UniversalSearch";
 import NotificationBell from "../../components/NotificationBell";
@@ -14,6 +15,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   const confirm = useConfirm();
   const { toggleTheme } = useTheme(); 
   const { setPreviewMode } = usePreview();
+  const { collapsed, toggleSidebarCollapse, setMobileOpen } = useSidebar();
   const [profileOpen, setProfileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -42,7 +44,37 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Fraunces', serif" }}>
+      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+        {/* Universal Sidebar Toggle Clicker */}
+        <button
+          onClick={() => {
+            if (typeof window !== "undefined" && window.innerWidth <= 767) {
+              setMobileOpen(true);
+            } else {
+              toggleSidebarCollapse();
+            }
+          }}
+          className="navbar-sidebar-toggle-btn"
+          style={{
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "6px",
+            marginRight: "6px",
+            borderRadius: "8px",
+            color: "var(--text-primary)",
+            transition: "all 0.15s ease",
+            flexShrink: 0
+          }}
+          title="Toggle navigation sidebar (Ctrl+B)"
+          aria-label="Toggle navigation sidebar"
+        >
+          <Menu size={19} />
+        </button>
+
         {onNavigateBack && (
           <button
             onClick={onNavigateBack}
@@ -99,66 +131,89 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
                 className="avatar-neon-trigger" 
                 role="button"
                 tabIndex={0}
-                aria-label="Open admin profile menu"
-                aria-expanded={profileOpen}
-                onClick={() => { setProfileOpen(!profileOpen); }}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setProfileOpen(!profileOpen); } }}
-                style={{ overflow: 'hidden', padding: 0 }}
+                aria-label="User profile options"
+                onClick={() => setProfileOpen(!profileOpen)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setProfileOpen(!profileOpen);
+                  }
+                }}
               >
                 {avatarUrl ? (
                   <img 
-                    src={optimizeAvatar(avatarUrl, 120)} 
-                    width="40"
-                    height="40"
+                    src={optimizeAvatar(avatarUrl, 72)} 
+                    alt={adminName} 
+                    className="avatar-image-neon"
                     loading="lazy"
                     decoding="async"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                    alt="Avatar" 
+                    width={36}
+                    height={36}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      if (e.target.nextSibling) {
+                        e.target.nextSibling.style.display = 'flex';
+                      }
+                    }}
                   />
-                ) : (
-                  initials
-                )}
+                ) : null}
+                <div 
+                  className="avatar-fallback-neon"
+                  style={{ display: avatarUrl ? 'none' : 'flex' }}
+                >
+                  {initials}
+                </div>
               </div>
             );
           })()}
+
           {profileOpen && (
-            <div className="profile-floating-menu">
-              <div 
-                className="drop-link"
+            <div className="profile-glass-menu">
+              <div className="profile-menu-header">
+                <span className="profile-menu-name">{currentUser.fullName || currentUser.name || "Admin User"}</span>
+                <span className="profile-menu-email">{currentUser.email || "admin@prepmark.com"}</span>
+              </div>
+              <div className="profile-menu-divider" />
+              <button 
+                className="profile-menu-item"
                 onClick={() => { setProfileOpen(false); navigate("/admin/profile"); }}
               >
-                <User size={16} style={{ marginRight: "8px" }} /> {currentUser?.role === 'superadmin' ? 'Super Admin Profile' : 'Admin Profile'}
-              </div>
-              <div 
-                className="drop-link"
-                onClick={() => {
-                  setProfileOpen(false);
-                  setPreviewMode(true);
-                  navigate("/dashboard");
+                <User size={15} />
+                <span>My Profile</span>
+              </button>
+              <button 
+                className="profile-menu-item"
+                onClick={() => { 
+                  setProfileOpen(false); 
+                  setPreviewMode(true); 
+                  navigate("/student-dashboard"); 
                 }}
               >
-                <Eye size={16} style={{ marginRight: "8px" }} /> Student Preview
-              </div>
-              <div 
-                className="drop-link"
+                <Eye size={15} />
+                <span>Student View</span>
+              </button>
+              <div className="profile-menu-divider" />
+              <button 
+                className="profile-menu-item danger"
                 onClick={async () => {
                   setProfileOpen(false);
                   const isConfirmed = await confirm({
-                    title: "Logout Admin",
-                    message: "Are you sure you want to securely end your administrative session?",
-                    confirmText: "Logout",
+                    title: "Logout Confirmation",
+                    message: "Are you sure you want to log out of the Admin Portal?",
+                    confirmText: "Log Out",
                     cancelText: "Cancel",
                     type: "danger"
                   });
                   if (isConfirmed) {
                     localStorage.removeItem("token");
                     localStorage.removeItem("user");
-                    window.location.href = "/login";
+                    navigate("/login");
                   }
                 }}
               >
-                <LogOut size={16} style={{ marginRight: "8px" }} /> Logout
-              </div>
+                <LogOut size={15} />
+                <span>Log Out</span>
+              </button>
             </div>
           )}
         </div>
