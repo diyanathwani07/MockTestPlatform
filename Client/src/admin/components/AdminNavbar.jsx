@@ -257,7 +257,5 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
     </header>
   );
 }
-  );
-}
 
 export default AdminNavbar;
