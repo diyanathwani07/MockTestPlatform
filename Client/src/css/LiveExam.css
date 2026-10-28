@@ -48,6 +48,16 @@
   box-sizing: border-box;
 }
 
+.sd-live-exams-content {
+  padding-top: 14px !important;
+}
+
+@media (min-width: 769px) {
+  .sd-live-exams-content {
+    padding-top: 24px !important;
+  }
+}
+
 .live-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);

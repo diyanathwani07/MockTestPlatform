@@ -130,9 +130,9 @@ function StudentLiveExams() {
         <StudentNavbar title="Live Examinations" />
 
         <div 
-          className="sd-content" 
+          className="sd-content sd-live-exams-content" 
           style={{ 
-            padding: isMobile ? "16px 14px 60px" : "24px 32px 80px", 
+            padding: isMobile ? "14px 12px 60px" : "24px 32px 80px", 
             maxWidth: "100%", 
             margin: "0", 
             width: "100%", 
@@ -144,39 +144,42 @@ function StudentLiveExams() {
           <div
             className="live-card"
             style={{
-              padding: isMobile ? "20px 16px" : "28px 24px",
+              padding: isMobile ? "16px 14px" : "26px 24px",
               background: "linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(30, 27, 75, 0.35) 100%)",
               border: "1.5px solid rgba(139, 92, 246, 0.3)",
+              borderRadius: isMobile ? "14px" : "16px",
               display: "flex",
               flexDirection: "column",
-              gap: "14px",
+              gap: isMobile ? "10px" : "14px",
               position: "relative",
               overflow: "hidden",
+              marginBottom: isMobile ? "14px" : "20px",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: isMobile ? "10px" : "12px", minWidth: 0 }}>
                 <div
                   style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "12px",
+                    width: isMobile ? "36px" : "44px",
+                    height: isMobile ? "36px" : "44px",
+                    borderRadius: "10px",
                     background: "rgba(124, 58, 237, 0.25)",
                     border: "1px solid var(--primary)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     color: "var(--primary)",
+                    flexShrink: 0,
                   }}
                 >
-                  <Radio size={24} />
+                  <Radio size={isMobile ? 18 : 24} />
                 </div>
                 <div>
-                  <h1 style={{ fontSize: "22px", fontWeight: "800", margin: 0, color: "var(--text-primary)" }}>
+                  <h1 style={{ fontSize: isMobile ? "17px" : "22px", fontWeight: "800", margin: 0, color: "var(--text-primary)", letterSpacing: "-0.2px" }}>
                     Live Examinations
                   </h1>
-                  <p style={{ fontSize: "13.5px", color: "var(--text-secondary)", margin: "4px 0 0" }}>
-                    Compete in real-time with candidates. Synchronized timers, webcam proctoring, and rank analytics.
+                  <p style={{ fontSize: isMobile ? "12px" : "13.5px", color: "var(--text-secondary)", margin: "2px 0 0", lineHeight: "1.3" }}>
+                    {isMobile ? "Real-time timed exams with rank analytics." : "Compete in real-time with candidates. Synchronized timers, webcam proctoring, and rank analytics."}
                   </p>
                 </div>
               </div>
@@ -186,44 +189,78 @@ function StudentLiveExams() {
                 onClick={() => fetchLiveExamsFeed(true)}
                 disabled={refreshing}
                 className="live-btn-secondary"
-                style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 16px", fontSize: "13px" }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: isMobile ? "6px 10px" : "8px 16px",
+                  fontSize: isMobile ? "12px" : "13px",
+                  borderRadius: "8px",
+                  alignSelf: isMobile ? "flex-start" : "center",
+                }}
               >
-                <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
-                <span>{refreshing ? "Refreshing..." : "Refresh Feed"}</span>
+                <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
+                <span>{refreshing ? "..." : (isMobile ? "Refresh" : "Refresh Feed")}</span>
               </button>
             </div>
 
-            {/* Quick Metrics Bar */}
-            <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-                <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: counts.live > 0 ? "#ef4444" : "var(--text-secondary)", boxShadow: counts.live > 0 ? "0 0 8px #ef4444" : "none" }} />
-                <span style={{ color: "var(--text-secondary)" }}>Active Live:</span>
-                <strong style={{ color: counts.live > 0 ? "#ef4444" : "var(--text-primary)" }}>{counts.live} Ongoing</strong>
+            {/* Quick Metrics Bar: 3-column compact strip */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: isMobile ? "6px" : "16px",
+                paddingTop: "8px",
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: isMobile ? "11.5px" : "13px" }}>
+                <span
+                  style={{
+                    width: "7px",
+                    height: "7px",
+                    borderRadius: "50%",
+                    background: counts.live > 0 ? "#ef4444" : "var(--text-secondary)",
+                    boxShadow: counts.live > 0 ? "0 0 6px #ef4444" : "none",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ color: "var(--text-secondary)" }}>{isMobile ? "Live:" : "Active Live:"}</span>
+                <strong style={{ color: counts.live > 0 ? "#ef4444" : "var(--text-primary)" }}>
+                  {counts.live} {isMobile ? "" : "Ongoing"}
+                </strong>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-                <Calendar size={14} color="#3b82f6" />
-                <span style={{ color: "var(--text-secondary)" }}>Upcoming:</span>
-                <strong style={{ color: "var(--text-primary)" }}>{counts.upcoming} Scheduled</strong>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: isMobile ? "11.5px" : "13px" }}>
+                <Calendar size={isMobile ? 12 : 14} color="#3b82f6" style={{ flexShrink: 0 }} />
+                <span style={{ color: "var(--text-secondary)" }}>{isMobile ? "Upc:" : "Upcoming:"}</span>
+                <strong style={{ color: "var(--text-primary)" }}>
+                  {counts.upcoming} {isMobile ? "" : "Scheduled"}
+                </strong>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-                <Award size={14} color="#10b981" />
-                <span style={{ color: "var(--text-secondary)" }}>My Attempts:</span>
-                <strong style={{ color: "var(--text-primary)" }}>{counts.myAttempts} Exams</strong>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: isMobile ? "11.5px" : "13px" }}>
+                <Award size={isMobile ? 12 : 14} color="#10b981" style={{ flexShrink: 0 }} />
+                <span style={{ color: "var(--text-secondary)" }}>{isMobile ? "Mine:" : "My Attempts:"}</span>
+                <strong style={{ color: "var(--text-primary)" }}>
+                  {counts.myAttempts} {isMobile ? "" : "Exams"}
+                </strong>
               </div>
             </div>
           </div>
 
-          {/* Navigation Tabs */}
+          {/* Navigation Tabs (Smooth touch scroll on mobile) */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
+              gap: isMobile ? "6px" : "8px",
               overflowX: "auto",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
               paddingBottom: "4px",
-              marginBottom: "20px",
+              marginBottom: isMobile ? "14px" : "20px",
             }}
           >
             <button
@@ -233,22 +270,23 @@ function StudentLiveExams() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "10px",
-                fontSize: "13.5px",
+                gap: "6px",
+                padding: isMobile ? "6px 12px" : "8px 18px",
+                borderRadius: isMobile ? "8px" : "10px",
+                fontSize: isMobile ? "12px" : "13.5px",
                 fontWeight: "600",
                 cursor: "pointer",
                 border: activeTab === "all" ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
                 backgroundColor: activeTab === "all" ? "rgba(124, 58, 237, 0.15)" : "var(--bg-card)",
                 color: activeTab === "all" ? "var(--primary)" : "var(--text-secondary)",
                 whiteSpace: "nowrap",
+                flexShrink: 0,
                 transition: "all 0.15s ease",
               }}
             >
-              <Layers size={16} />
+              <Layers size={isMobile ? 14 : 16} />
               <span>All Exams</span>
-              <span style={{ fontSize: "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: "10px" }}>{counts.all}</span>
+              <span style={{ fontSize: isMobile ? "10px" : "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: isMobile ? "1px 5px" : "2px 7px", borderRadius: "10px" }}>{counts.all}</span>
             </button>
 
             <button
@@ -258,22 +296,23 @@ function StudentLiveExams() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "10px",
-                fontSize: "13.5px",
+                gap: "6px",
+                padding: isMobile ? "6px 12px" : "8px 18px",
+                borderRadius: isMobile ? "8px" : "10px",
+                fontSize: isMobile ? "12px" : "13.5px",
                 fontWeight: "600",
                 cursor: "pointer",
                 border: activeTab === "live" ? "1.5px solid #ef4444" : "1px solid var(--border-color)",
                 backgroundColor: activeTab === "live" ? "rgba(239, 68, 68, 0.15)" : "var(--bg-card)",
                 color: activeTab === "live" ? "#ef4444" : "var(--text-secondary)",
                 whiteSpace: "nowrap",
+                flexShrink: 0,
                 transition: "all 0.15s ease",
               }}
             >
-              <Zap size={16} color={counts.live > 0 ? "#ef4444" : "currentColor"} />
+              <Zap size={isMobile ? 14 : 16} color={counts.live > 0 ? "#ef4444" : "currentColor"} />
               <span>Live Now</span>
-              <span style={{ fontSize: "11px", opacity: 0.9, background: counts.live > 0 ? "rgba(239, 68, 68, 0.25)" : "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: "10px" }}>{counts.live}</span>
+              <span style={{ fontSize: isMobile ? "10px" : "11px", opacity: 0.9, background: counts.live > 0 ? "rgba(239, 68, 68, 0.25)" : "rgba(255,255,255,0.08)", padding: isMobile ? "1px 5px" : "2px 7px", borderRadius: "10px" }}>{counts.live}</span>
             </button>
 
             <button
@@ -283,22 +322,23 @@ function StudentLiveExams() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "10px",
-                fontSize: "13.5px",
+                gap: "6px",
+                padding: isMobile ? "6px 12px" : "8px 18px",
+                borderRadius: isMobile ? "8px" : "10px",
+                fontSize: isMobile ? "12px" : "13.5px",
                 fontWeight: "600",
                 cursor: "pointer",
                 border: activeTab === "upcoming" ? "1.5px solid #3b82f6" : "1px solid var(--border-color)",
                 backgroundColor: activeTab === "upcoming" ? "rgba(59, 130, 246, 0.15)" : "var(--bg-card)",
                 color: activeTab === "upcoming" ? "#3b82f6" : "var(--text-secondary)",
                 whiteSpace: "nowrap",
+                flexShrink: 0,
                 transition: "all 0.15s ease",
               }}
             >
-              <Calendar size={16} />
+              <Calendar size={isMobile ? 14 : 16} />
               <span>Upcoming</span>
-              <span style={{ fontSize: "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: "10px" }}>{counts.upcoming}</span>
+              <span style={{ fontSize: isMobile ? "10px" : "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: isMobile ? "1px 5px" : "2px 7px", borderRadius: "10px" }}>{counts.upcoming}</span>
             </button>
 
             <button
@@ -308,22 +348,23 @@ function StudentLiveExams() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "10px",
-                fontSize: "13.5px",
+                gap: "6px",
+                padding: isMobile ? "6px 12px" : "8px 18px",
+                borderRadius: isMobile ? "8px" : "10px",
+                fontSize: isMobile ? "12px" : "13.5px",
                 fontWeight: "600",
                 cursor: "pointer",
                 border: activeTab === "completed" ? "1.5px solid #10b981" : "1px solid var(--border-color)",
                 backgroundColor: activeTab === "completed" ? "rgba(16, 185, 129, 0.15)" : "var(--bg-card)",
                 color: activeTab === "completed" ? "#10b981" : "var(--text-secondary)",
                 whiteSpace: "nowrap",
+                flexShrink: 0,
                 transition: "all 0.15s ease",
               }}
             >
-              <CheckCircle2 size={16} />
+              <CheckCircle2 size={isMobile ? 14 : 16} />
               <span>Concluded</span>
-              <span style={{ fontSize: "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: "10px" }}>{counts.completed}</span>
+              <span style={{ fontSize: isMobile ? "10px" : "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: isMobile ? "1px 5px" : "2px 7px", borderRadius: "10px" }}>{counts.completed}</span>
             </button>
 
             <button
@@ -333,22 +374,23 @@ function StudentLiveExams() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "10px",
-                fontSize: "13.5px",
+                gap: "6px",
+                padding: isMobile ? "6px 12px" : "8px 18px",
+                borderRadius: isMobile ? "8px" : "10px",
+                fontSize: isMobile ? "12px" : "13.5px",
                 fontWeight: "600",
                 cursor: "pointer",
                 border: activeTab === "myAttempts" ? "1.5px solid #f59e0b" : "1px solid var(--border-color)",
                 backgroundColor: activeTab === "myAttempts" ? "rgba(245, 158, 11, 0.15)" : "var(--bg-card)",
                 color: activeTab === "myAttempts" ? "#d97706" : "var(--text-secondary)",
                 whiteSpace: "nowrap",
+                flexShrink: 0,
                 transition: "all 0.15s ease",
               }}
             >
-              <Award size={16} />
+              <Award size={isMobile ? 14 : 16} />
               <span>My Attempts</span>
-              <span style={{ fontSize: "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: "10px" }}>{counts.myAttempts}</span>
+              <span style={{ fontSize: isMobile ? "10px" : "11px", opacity: 0.8, background: "rgba(255,255,255,0.08)", padding: isMobile ? "1px 5px" : "2px 7px", borderRadius: "10px" }}>{counts.myAttempts}</span>
             </button>
           </div>
 
@@ -359,13 +401,13 @@ function StudentLiveExams() {
               alignItems: "center",
               justifyContent: "space-between",
               flexWrap: "wrap",
-              gap: "14px",
-              marginBottom: "24px",
+              gap: isMobile ? "10px" : "14px",
+              marginBottom: isMobile ? "16px" : "24px",
             }}
           >
             {/* Search Input */}
-            <div style={{ position: "relative", flex: 1, minWidth: "260px" }}>
-              <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
+            <div style={{ position: "relative", flex: 1, minWidth: isMobile ? "100%" : "260px" }}>
+              <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
               <input
                 type="text"
                 value={searchQuery}
@@ -373,12 +415,12 @@ function StudentLiveExams() {
                 placeholder="Search live exams by title, exam, or subject..."
                 style={{
                   width: "100%",
-                  padding: "10px 38px 10px 40px",
+                  padding: isMobile ? "8px 34px 8px 34px" : "10px 38px 10px 40px",
                   borderRadius: "10px",
                   border: "1px solid var(--border-color)",
                   backgroundColor: "var(--bg-card)",
                   color: "var(--text-primary)",
-                  fontSize: "13.5px",
+                  fontSize: isMobile ? "13px" : "13.5px",
                   outline: "none",
                   boxSizing: "border-box",
                 }}
@@ -399,23 +441,35 @@ function StudentLiveExams() {
                     padding: "2px",
                   }}
                 >
-                  <X size={15} />
+                  <X size={14} />
                 </button>
               )}
             </div>
 
             {/* Exam Categories Filter Pills */}
             {categories.length > 2 && (
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", overflowX: "auto" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  overflowX: "auto",
+                  WebkitOverflowScrolling: "touch",
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                  width: isMobile ? "100%" : "auto",
+                  paddingBottom: isMobile ? "2px" : "0",
+                }}
+              >
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setSelectedExamCategory(cat)}
                     style={{
-                      padding: "6px 14px",
+                      padding: isMobile ? "5px 11px" : "6px 14px",
                       borderRadius: "8px",
-                      fontSize: "12px",
+                      fontSize: isMobile ? "11.5px" : "12px",
                       fontWeight: "700",
                       cursor: "pointer",
                       border: selectedExamCategory === cat ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
@@ -423,6 +477,7 @@ function StudentLiveExams() {
                       color: selectedExamCategory === cat ? "var(--primary)" : "var(--text-secondary)",
                       textTransform: cat === "all" ? "capitalize" : "uppercase",
                       whiteSpace: "nowrap",
+                      flexShrink: 0,
                     }}
                   >
                     {cat === "all" ? "All Targets" : cat}
@@ -521,8 +576,8 @@ function StudentLiveExams() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? "280px" : "330px"}, 1fr))`,
-                gap: isMobile ? "14px" : "20px",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(330px, 1fr))",
+                gap: isMobile ? "12px" : "20px",
               }}
             >
               {filteredExams.map((exam) => {
@@ -545,6 +600,8 @@ function StudentLiveExams() {
                     className="live-card"
                     style={{
                       margin: 0,
+                      padding: isMobile ? "14px" : "22px",
+                      borderRadius: isMobile ? "14px" : "16px",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
@@ -560,26 +617,26 @@ function StudentLiveExams() {
                   >
                     <div>
                       {/* Card Header Badge & Target */}
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? "10px" : "14px", flexWrap: "wrap", gap: "6px" }}>
                         {isLive ? (
-                          <span className="live-badge live-badge-live" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                            <Radio size={14} /> LIVE NOW
+                          <span className="live-badge live-badge-live" style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: isMobile ? "3px 8px" : "4px 12px", fontSize: isMobile ? "11px" : "12px" }}>
+                            <Radio size={isMobile ? 12 : 14} /> LIVE NOW
                           </span>
                         ) : isLobby ? (
-                          <span className="live-badge live-badge-lobby" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                            <Hourglass size={14} /> LOBBY OPEN
+                          <span className="live-badge live-badge-lobby" style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: isMobile ? "3px 8px" : "4px 12px", fontSize: isMobile ? "11px" : "12px" }}>
+                            <Hourglass size={isMobile ? 12 : 14} /> LOBBY OPEN
                           </span>
                         ) : isCompleted ? (
-                          <span className="live-badge live-badge-completed" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                            <CheckCircle2 size={14} /> CONCLUDED
+                          <span className="live-badge live-badge-completed" style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: isMobile ? "3px 8px" : "4px 12px", fontSize: isMobile ? "11px" : "12px" }}>
+                            <CheckCircle2 size={isMobile ? 12 : 14} /> CONCLUDED
                           </span>
                         ) : (
-                          <span className="live-badge live-badge-scheduled" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                            <Calendar size={14} /> UPCOMING
+                          <span className="live-badge live-badge-scheduled" style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: isMobile ? "3px 8px" : "4px 12px", fontSize: isMobile ? "11px" : "12px" }}>
+                            <Calendar size={isMobile ? 12 : 14} /> UPCOMING
                           </span>
                         )}
 
-                        <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                        <span style={{ fontSize: isMobile ? "11.5px" : "12px", color: "var(--text-secondary)", fontWeight: "600" }}>
                           {exam.examName} · {exam.subject}
                         </span>
                       </div>
@@ -587,11 +644,11 @@ function StudentLiveExams() {
                       {/* Exam Title */}
                       <h3
                         style={{
-                          fontSize: "17px",
+                          fontSize: isMobile ? "15.5px" : "17px",
                           fontWeight: "700",
                           color: "var(--text-primary)",
-                          lineHeight: "1.4",
-                          marginBottom: "10px",
+                          lineHeight: "1.35",
+                          marginBottom: isMobile ? "8px" : "10px",
                         }}
                       >
                         {exam.title}
@@ -602,13 +659,13 @@ function StudentLiveExams() {
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: "8px",
-                          fontSize: "13px",
+                          gap: "6px",
+                          fontSize: isMobile ? "12px" : "13px",
                           color: "var(--text-secondary)",
-                          marginBottom: "16px",
+                          marginBottom: isMobile ? "12px" : "16px",
                         }}
                       >
-                        <Calendar size={15} color="var(--primary)" style={{ flexShrink: 0 }} />
+                        <Calendar size={isMobile ? 13 : 15} color="var(--primary)" style={{ flexShrink: 0 }} />
                         <span>{formatScheduleRange(exam.scheduledStartTime, exam.scheduledEndTime)}</span>
                       </div>
 
@@ -617,31 +674,31 @@ function StudentLiveExams() {
                         style={{
                           display: "grid",
                           gridTemplateColumns: "1fr 1fr",
-                          gap: "10px",
-                          marginBottom: "18px",
-                          padding: "12px 14px",
-                          borderRadius: "12px",
+                          gap: isMobile ? "6px 8px" : "10px",
+                          marginBottom: isMobile ? "12px" : "18px",
+                          padding: isMobile ? "8px 10px" : "12px 14px",
+                          borderRadius: isMobile ? "10px" : "12px",
                           backgroundColor: "rgba(255, 255, 255, 0.03)",
                           border: "1px solid var(--border-color)",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px" }}>
-                          <Clock size={15} color="var(--primary)" />
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: isMobile ? "11.5px" : "12.5px" }}>
+                          <Clock size={isMobile ? 13 : 15} color="var(--primary)" />
                           <span><strong>{exam.duration}</strong> Mins</span>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px" }}>
-                          <HelpCircle size={15} color="#3b82f6" />
-                          <span><strong>{exam.totalQuestions || "—"}</strong> Questions</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: isMobile ? "11.5px" : "12.5px" }}>
+                          <HelpCircle size={isMobile ? 13 : 15} color="#3b82f6" />
+                          <span><strong>{exam.totalQuestions || "—"}</strong> Qs</span>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px" }}>
-                          <Award size={15} color="#10b981" />
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: isMobile ? "11.5px" : "12.5px" }}>
+                          <Award size={isMobile ? 13 : 15} color="#10b981" />
                           <span>+{exam.marksPerQuestion} / -{exam.negativeMarking}</span>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px" }}>
-                          <Video size={15} color={exam.webcamRule === "mandatory" ? "#ef4444" : "var(--text-secondary)"} />
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: isMobile ? "11.5px" : "12.5px" }}>
+                          <Video size={isMobile ? 13 : 15} color={exam.webcamRule === "mandatory" ? "#ef4444" : "var(--text-secondary)"} />
                           <span style={{ textTransform: "capitalize" }}>{exam.webcamRule === "mandatory" ? "Camera Req." : "Camera Off"}</span>
                         </div>
                       </div>
@@ -650,11 +707,11 @@ function StudentLiveExams() {
                       {hasAttempt && (
                         <div
                           style={{
-                            padding: "8px 12px",
+                            padding: isMobile ? "6px 10px" : "8px 12px",
                             borderRadius: "8px",
-                            fontSize: "12px",
+                            fontSize: isMobile ? "11.5px" : "12px",
                             fontWeight: "600",
-                            marginBottom: "16px",
+                            marginBottom: isMobile ? "12px" : "16px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "space-between",
@@ -668,24 +725,24 @@ function StudentLiveExams() {
                           }}
                         >
                           <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                            {isInProgress ? <Play size={13} /> : <CheckCircle2 size={13} />}
+                            {isInProgress ? <Play size={12} /> : <CheckCircle2 size={12} />}
                             {isInProgress
-                              ? "Attempt In Progress"
+                              ? "In Progress"
                               : isSubmitted
-                              ? "Submitted Successfully"
+                              ? "Submitted"
                               : isCompleted
-                              ? "Examination Concluded"
+                              ? "Concluded"
                               : "Registered"}
                           </span>
                           {isSubmitted && exam.myAttempt?.resultId && (
-                            <span style={{ fontSize: "11px", textDecoration: "underline" }}>Results Available</span>
+                            <span style={{ fontSize: "11px", textDecoration: "underline" }}>Results</span>
                           )}
                         </div>
                       )}
                     </div>
 
                     {/* Card Footer Action CTA */}
-                    <div style={{ marginTop: "12px" }}>
+                    <div style={{ marginTop: isMobile ? "8px" : "12px" }}>
                       {isInProgress ? (
                         <button
                           type="button"
@@ -699,9 +756,13 @@ function StudentLiveExams() {
                             alignItems: "center",
                             justifyContent: "center",
                             gap: "8px",
+                            padding: isMobile ? "10px 12px" : "12px 20px",
+                            fontSize: isMobile ? "13px" : "14px",
+                            borderRadius: isMobile ? "10px" : "12px",
+                            minHeight: "42px",
                           }}
                         >
-                          <Play size={16} /> Resume Examination <ArrowRight size={16} />
+                          <Play size={15} /> Resume Examination <ArrowRight size={15} />
                         </button>
                       ) : isSubmitted ? (
                         exam.myAttempt?.resultId ? (
@@ -716,9 +777,13 @@ function StudentLiveExams() {
                               gap: "8px",
                               textDecoration: "none",
                               boxSizing: "border-box",
+                              padding: isMobile ? "10px 12px" : "12px 20px",
+                              fontSize: isMobile ? "13px" : "14px",
+                              borderRadius: isMobile ? "10px" : "12px",
+                              minHeight: "42px",
                             }}
                           >
-                            <Award size={16} /> View Result & Analysis <ArrowRight size={16} />
+                            <Award size={15} /> View Result & Analysis <ArrowRight size={15} />
                           </Link>
                         ) : (
                           <button
@@ -731,9 +796,13 @@ function StudentLiveExams() {
                               justifyContent: "center",
                               gap: "8px",
                               opacity: 0.85,
+                              padding: isMobile ? "10px 12px" : "12px 20px",
+                              fontSize: isMobile ? "13px" : "14px",
+                              borderRadius: isMobile ? "10px" : "12px",
+                              minHeight: "42px",
                             }}
                           >
-                            <CheckCircle2 size={16} color="#10b981" /> Submitted (Results Scheduled)
+                            <CheckCircle2 size={15} color="#10b981" /> Submitted (Results Scheduled)
                           </button>
                         )
                       ) : isLive ? (
@@ -750,9 +819,13 @@ function StudentLiveExams() {
                             gap: "8px",
                             textDecoration: "none",
                             boxSizing: "border-box",
+                            padding: isMobile ? "10px 12px" : "12px 20px",
+                            fontSize: isMobile ? "13px" : "14px",
+                            borderRadius: isMobile ? "10px" : "12px",
+                            minHeight: "42px",
                           }}
                         >
-                          <Zap size={16} /> Join Examination Now <ArrowRight size={16} />
+                          <Zap size={15} /> Join Examination Now <ArrowRight size={15} />
                         </Link>
                       ) : isLobby ? (
                         <Link
@@ -768,9 +841,13 @@ function StudentLiveExams() {
                             gap: "8px",
                             textDecoration: "none",
                             boxSizing: "border-box",
+                            padding: isMobile ? "10px 12px" : "12px 20px",
+                            fontSize: isMobile ? "13px" : "14px",
+                            borderRadius: isMobile ? "10px" : "12px",
+                            minHeight: "42px",
                           }}
                         >
-                          <Hourglass size={16} /> Enter Lobby Readiness <ArrowRight size={16} />
+                          <Hourglass size={15} /> Enter Lobby Readiness <ArrowRight size={15} />
                         </Link>
                       ) : isScheduled ? (
                         <Link
@@ -784,9 +861,13 @@ function StudentLiveExams() {
                             gap: "8px",
                             textDecoration: "none",
                             boxSizing: "border-box",
+                            padding: isMobile ? "10px 12px" : "12px 20px",
+                            fontSize: isMobile ? "13px" : "14px",
+                            borderRadius: isMobile ? "10px" : "12px",
+                            minHeight: "42px",
                           }}
                         >
-                          <Calendar size={16} /> View Lobby & Syllabus <ChevronRight size={16} />
+                          <Calendar size={15} /> View Lobby & Syllabus <ChevronRight size={15} />
                         </Link>
                       ) : (
                         <button
@@ -800,9 +881,13 @@ function StudentLiveExams() {
                             gap: "8px",
                             opacity: 0.6,
                             cursor: "not-allowed",
+                            padding: isMobile ? "10px 12px" : "12px 20px",
+                            fontSize: isMobile ? "13px" : "14px",
+                            borderRadius: isMobile ? "10px" : "12px",
+                            minHeight: "42px",
                           }}
                         >
-                          <CheckCircle2 size={16} /> Examination Concluded
+                          <CheckCircle2 size={15} /> Examination Concluded
                         </button>
                       )}
                     </div>

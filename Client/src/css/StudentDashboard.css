@@ -1774,7 +1774,7 @@ body:not(.dark-mode) .sidebar-link.logout-btn:hover svg {
 /* --- MOBILE SPACING FIX --- */
 @media (max-width: 768px) {
   .sd-content {
-    padding: 0 14px 40px !important;
+    padding: 14px 14px 40px !important;
   }
   .sd-hero {
     margin: 12px 14px 16px 14px !important;
