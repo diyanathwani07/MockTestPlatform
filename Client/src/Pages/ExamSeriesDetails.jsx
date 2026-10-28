@@ -425,7 +425,12 @@ function ExamSeriesDetails() {
                           <button 
                             type="button"
                             title="Schedule Voice Reminder" 
-                            onClick={(e) => { e.stopPropagation(); setReminderModalQuiz(quiz); }}
+                            aria-label={`Schedule Voice Reminder for ${quiz.title}`}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setReminderModalQuiz(quiz); 
+                            }}
+                            className="schedule-voice-reminder-btn"
                             style={{ 
                               padding: "8px 12px", 
                               borderRadius: "8px", 
@@ -436,7 +441,18 @@ function ExamSeriesDetails() {
                               display: "inline-flex", 
                               alignItems: "center", 
                               justifyContent: "center", 
-                              flexShrink: 0 
+                              flexShrink: 0,
+                              transition: "all 0.15s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "var(--primary)";
+                              e.currentTarget.style.borderColor = "var(--primary)";
+                              e.currentTarget.style.transform = "scale(1.05)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "var(--text-secondary)";
+                              e.currentTarget.style.borderColor = "var(--border-color)";
+                              e.currentTarget.style.transform = "scale(1)";
                             }}
                           >
                             <Bell size={14} />
@@ -510,6 +526,15 @@ function ExamSeriesDetails() {
         <QuizDetailsModal 
           quiz={selectedQuizForDetails} 
           onClose={() => setSelectedQuizForDetails(null)} 
+        />
+      )}
+      {reminderModalQuiz && (
+        <ExamReminderModal 
+          quiz={reminderModalQuiz} 
+          onClose={() => setReminderModalQuiz(null)}
+          onScheduled={() => {
+            setReminderModalQuiz(null);
+          }}
         />
       )}
     </div>

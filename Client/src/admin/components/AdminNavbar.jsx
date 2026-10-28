@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { useTheme } from "../../context/ThemeContext";
 import { usePreview } from "../../context/PreviewContext";
@@ -17,6 +17,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
   const { setPreviewMode } = usePreview();
   const { collapsed, toggleSidebarCollapse, setMobileOpen } = useSidebar();
   const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("user") || "{}");
@@ -25,6 +26,30 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
     }
   });
   const navigate = useNavigate();
+
+  // Handle click outside and Escape key to close profile dropdown cleanly
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    }
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        setProfileOpen(false);
+      }
+    }
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [profileOpen]);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -44,8 +69,20 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
 
   return (
     <header className="admin-navbar">
-      <div className="navbar-left-breadcrumbs navbar-breadcrumb-row" style={{ display: "flex", alignItems: "center", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
-        {/* Universal Sidebar Toggle Clicker */}
+      <div 
+        className="navbar-left-breadcrumbs navbar-breadcrumb-row" 
+        style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          fontWeight: "600", 
+          color: "var(--text-secondary)", 
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+          minWidth: 0,
+          overflow: "hidden",
+          flex: "1 1 auto"
+        }}
+      >
+        {/* Universal Sidebar Toggle Clicker (Visible on desktop; mobile uses fixed hamburger) */}
         <button
           onClick={() => {
             if (typeof window !== "undefined" && window.innerWidth <= 767) {
@@ -54,12 +91,11 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
               toggleSidebarCollapse();
             }
           }}
-          className="navbar-sidebar-toggle-btn"
+          className="navbar-sidebar-toggle-btn hidden md:inline-flex"
           style={{
             background: "transparent",
             border: "none",
             cursor: "pointer",
-            display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
             padding: "6px",
@@ -112,7 +148,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
         <span className="navbar-page-title" style={{ color: "var(--text-primary)", fontWeight: "700" }}>{title}</span>
       </div>
 
-      <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center" }}>
+      <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
         <UniversalSearch />
         {/* Theme Toggle Button */}
         <ThemeToggle />
@@ -121,7 +157,7 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
         <NotificationBell />
 
         {/* Profile */}
-        <div className="profile-dropdown-wrapper">
+        <div className="profile-dropdown-wrapper" ref={profileRef}>
           {(() => {
             const adminName = currentUser.fullName || currentUser.name || "Admin";
             const initials = adminName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "AD";
@@ -219,6 +255,8 @@ function AdminNavbar({ title, parentText = "Dashboard", parentLink = "/admin/das
         </div>
       </div>
     </header>
+  );
+}
   );
 }
 

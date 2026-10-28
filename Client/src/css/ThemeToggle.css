@@ -1,16 +1,20 @@
 .theme-toggle-btn {
   background: transparent;
   border: none;
-  color: inherit;
+  color: var(--text-primary);
   cursor: pointer;
-  padding: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s;
+  border-radius: 50%;
+  transition: transform 0.15s ease, background-color 0.15s ease;
   box-shadow: none;
 }
 
 .theme-toggle-btn:hover {
-  transform: scale(1.18);
+  transform: scale(1.1);
+  background-color: var(--option-hover, rgba(110, 63, 243, 0.08));
 }
