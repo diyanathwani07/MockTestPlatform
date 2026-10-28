@@ -899,6 +899,7 @@ const scheduleExamReminder = async (req, res) => {
 
     const {
       quizId,
+      examDate = null,
       timingType = "30_MIN_BEFORE",
       customScheduledTime = null,
       recipients = null,
@@ -932,7 +933,7 @@ const scheduleExamReminder = async (req, res) => {
     }
 
     // 2. Derive base exam date and calculate target reminder time
-    let examDateObj = quiz.scheduledDate ? new Date(quiz.scheduledDate) : null;
+    let examDateObj = examDate ? new Date(examDate) : (quiz.scheduledDate ? new Date(quiz.scheduledDate) : null);
     if (!examDateObj || isNaN(examDateObj.getTime())) {
       examDateObj = customScheduledTime ? new Date(customScheduledTime) : new Date(Date.now() + 24 * 60 * 60 * 1000);
     }
@@ -949,6 +950,8 @@ const scheduleExamReminder = async (req, res) => {
       if (!customScheduledTime) {
         return res.status(400).json({ success: false, message: "A specific scheduled date and time is required for EXACT_TIME mode." });
       }
+      targetScheduledTime = new Date(customScheduledTime);
+    } else if (customScheduledTime && !isNaN(new Date(customScheduledTime).getTime())) {
       targetScheduledTime = new Date(customScheduledTime);
     } else if (validIntervals[timingType]) {
       targetScheduledTime = new Date(examDateObj.getTime() - validIntervals[timingType]);

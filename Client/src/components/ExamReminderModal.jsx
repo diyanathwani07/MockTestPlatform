@@ -35,10 +35,50 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
 
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  // Derive initial exam date object
-  const examDateObj = quiz?.scheduledDate
-    ? new Date(quiz.scheduledDate)
-    : new Date(Date.now() + 24 * 60 * 60 * 1000);
+  // Format quiz duration cleanly (converting stored seconds >= 60 to minutes)
+  const formatDuration = (val) => {
+    if (!val && val !== 0) return "Standard Duration";
+    const num = Number(val);
+    if (isNaN(num)) return `${val} mins`;
+    const mins = num >= 60 ? Math.round(num / 60) : num;
+    return `${mins} mins`;
+  };
+
+  // State for user's planned exam date and time
+  const [examDate, setExamDate] = useState(() => {
+    if (quiz?.scheduledDate) {
+      const d = new Date(quiz.scheduledDate);
+      if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
+    }
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    return tomorrow.toISOString().split("T")[0];
+  });
+
+  const [examTime, setExamTime] = useState(() => {
+    if (quiz?.scheduledDate) {
+      const d = new Date(quiz.scheduledDate);
+      if (!isNaN(d.getTime())) return d.toTimeString().slice(0, 5);
+    }
+    return "10:00";
+  });
+
+  // Derive dynamic exam date object from user's selection
+  const examDateObj = React.useMemo(() => {
+    try {
+      if (examDate && examTime) {
+        const [y, m, d] = examDate.split("-").map(Number);
+        const [hh, mm] = examTime.split(":").map(Number);
+        return new Date(y, m - 1, d, hh, mm);
+      }
+      if (examDate) {
+        const [y, m, d] = examDate.split("-").map(Number);
+        return new Date(y, m - 1, d, 10, 0);
+      }
+    } catch {
+      // fallback
+    }
+    return new Date(Date.now() + 24 * 60 * 60 * 1000);
+  }, [examDate, examTime]);
 
   // Compute calculated reminder time based on timingType
   const calculateReminderTime = () => {
@@ -126,10 +166,11 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
 
       const payload = {
         quizId: quiz._id,
+        examDate: examDateObj.toISOString(),
         timingType,
         customScheduledTime: timingType === "EXACT_TIME" ? calculatedTime.toISOString() : null,
         language,
-        voice,
+        voice: isAdminOrTeacher ? voice : (voice || "Aoede"),
         reminderAudioText: customMessage.trim() || null,
         recipients: (isAdminOrTeacher && recipientMode === "enrolled") ? "ALL_ENROLLED" : null
       };
@@ -277,7 +318,7 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
               </span>
               <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
                 <Clock size={13} style={{ color: "var(--primary, #8a55fc)" }} />
-                {quiz?.duration ? `${quiz.duration} mins` : "Standard Duration"}
+                {formatDuration(quiz?.duration)}
               </span>
               {quiz?.subject && (
                 <span style={{ padding: "2px 8px", borderRadius: "100px", background: "rgba(138,85,252,0.15)", color: "var(--primary, #8a55fc)", fontWeight: "600", fontSize: "11px" }}>
@@ -490,11 +531,57 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
               </div>
             )}
 
-            {/* Language & Voice Row */}
+            {/* Planned Exam Date & Time (Gives user choice for exam date/time) */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
-                  Language
+                  Planned Exam Date
+                </label>
+                <input
+                  type="date"
+                  value={examDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setExamDate(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "9px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                    backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
+                    color: "var(--text-primary, #ffffff)",
+                    fontSize: "13px",
+                    boxSizing: "border-box"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
+                  Planned Exam Time
+                </label>
+                <input
+                  type="time"
+                  value={examTime}
+                  onChange={(e) => setExamTime(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "9px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                    backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
+                    color: "var(--text-primary, #ffffff)",
+                    fontSize: "13px",
+                    boxSizing: "border-box"
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Language & Voice Row (Gemini Voice is hidden for students, only visible to Admins/Teachers) */}
+            <div style={{ display: "grid", gridTemplateColumns: isAdminOrTeacher ? "1fr 1fr" : "1fr", gap: "12px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
+                  Call Language
                 </label>
                 <select
                   value={language}
@@ -511,34 +598,36 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                 >
                   <option value="en" style={{ background: "#1e1b2e" }}>English</option>
                   <option value="hi" style={{ background: "#1e1b2e" }}>Hindi (हिंदी)</option>
-                  <option value="auto" style={{ background: "#1e1b2e" }}>Auto Detect</option>
+                  <option value="auto" style={{ background: "#1e1b2e" }}>Auto Detect (Hindi / English)</option>
                 </select>
               </div>
 
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
-                  Gemini Voice
-                </label>
-                <select
-                  value={voice}
-                  onChange={(e) => setVoice(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                    backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
-                    color: "var(--text-primary, #ffffff)",
-                    fontSize: "13px"
-                  }}
-                >
-                  <option value="Aoede" style={{ background: "#1e1b2e" }}>Aoede (Female, Balanced)</option>
-                  <option value="Charon" style={{ background: "#1e1b2e" }}>Charon (Male, Deep)</option>
-                  <option value="Fenrir" style={{ background: "#1e1b2e" }}>Fenrir (Male, Energetic)</option>
-                  <option value="Kore" style={{ background: "#1e1b2e" }}>Kore (Female, Calming)</option>
-                  <option value="Puck" style={{ background: "#1e1b2e" }}>Puck (Male, Youthful)</option>
-                </select>
-              </div>
+              {isAdminOrTeacher && (
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
+                    Gemini Voice (Admin only)
+                  </label>
+                  <select
+                    value={voice}
+                    onChange={(e) => setVoice(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "9px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                      backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
+                      color: "var(--text-primary, #ffffff)",
+                      fontSize: "13px"
+                    }}
+                  >
+                    <option value="Aoede" style={{ background: "#1e1b2e" }}>Aoede (Female, Balanced)</option>
+                    <option value="Charon" style={{ background: "#1e1b2e" }}>Charon (Male, Deep)</option>
+                    <option value="Fenrir" style={{ background: "#1e1b2e" }}>Fenrir (Male, Energetic)</option>
+                    <option value="Kore" style={{ background: "#1e1b2e" }}>Kore (Female, Calming)</option>
+                    <option value="Puck" style={{ background: "#1e1b2e" }}>Puck (Male, Youthful)</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* Custom Message / Placeholders */}
