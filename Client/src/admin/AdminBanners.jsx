@@ -4,6 +4,7 @@ import DashboardBannerCarousel from "../components/DashboardBannerCarousel";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { Plus, Edit2, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminBanners.css";
@@ -139,7 +140,7 @@ export default function AdminBanners() {
 
       <div className="al-content-card">
         {loading ? (
-          <p>Loading banners...</p>
+          <SkeletonTable rows={4} columns={5} style={{ border: "none" }} />
         ) : banners.length === 0 ? (
           <p>No banners found. Create one to display it on the student dashboard.</p>
         ) : (

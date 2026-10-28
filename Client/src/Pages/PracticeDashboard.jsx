@@ -6,6 +6,7 @@ import axios from "axios";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { BookOpen, Clock, HelpCircle, Search } from "lucide-react";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 import "../css/Practice.css";
 
@@ -85,9 +86,10 @@ function PracticeDashboard() {
           </div>
 
           {loading ? (
-            <div className="sd-loading">
-              <div className="sd-spinner"></div>
-              <p>Loading available practice modules...</p>
+            <div className="practice-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
             </div>
           ) : filteredQuizzes.length === 0 ? (
             <div className="sd-empty">

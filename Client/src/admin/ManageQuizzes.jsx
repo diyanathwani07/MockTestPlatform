@@ -9,6 +9,7 @@ import { useConfirm } from "../context/ConfirmContext";
 import { useAuth } from "../context/AuthContext";
 import { Bell } from "lucide-react";
 import ExamReminderModal from "../components/ExamReminderModal";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 function ManageQuizzes() {
   const confirm = useConfirm();
@@ -944,9 +945,7 @@ function ManageQuizzes() {
           {/* ─── DATA TABLE ─── */}
           <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: 0, overflowX: "auto", minHeight: "340px", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
             {loading ? (
-              <div style={{ padding: "64px 20px", textAlign: "center", color: "var(--text-secondary)", fontSize: "15px" }}>
-                ⏳ Loading quizzes from database...
-              </div>
+              <SkeletonTable rows={6} columns={5} style={{ border: "none", borderRadius: "16px" }} />
             ) : isMobile ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "16px" }}>
                 {filteredQuizzes.length > 0 ? (

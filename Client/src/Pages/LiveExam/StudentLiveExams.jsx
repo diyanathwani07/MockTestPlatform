@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import StudentSidebar from "../../components/StudentSidebar";
 import StudentNavbar from "../../components/StudentNavbar";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "../../css/LiveExam.css";
 import "../../css/StudentDashboard.css";
 
@@ -489,9 +490,16 @@ function StudentLiveExams() {
 
           {/* Loading State */}
           {loading ? (
-            <div style={{ textAlign: "center", padding: "60px 20px" }}>
-              <div className="loader" style={{ width: "42px", height: "42px", border: "4px solid var(--primary)", borderBottomColor: "transparent", borderRadius: "50%", margin: "0 auto 16px", animation: "rotation 1s linear infinite" }} />
-              <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Loading live examinations...</p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(330px, 1fr))",
+                gap: isMobile ? "12px" : "20px",
+              }}
+            >
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
             </div>
           ) : error ? (
             <div className="live-card" style={{ textAlign: "center", padding: "40px 20px", borderColor: "rgba(239, 68, 68, 0.3)" }}>

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { FileText, CheckCircle, Target } from "lucide-react";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css"; 
 import "../css/Practice.css";
 
@@ -53,9 +54,10 @@ function StudentResults() {
         <StudentNavbar title="Results" />
         <div className="sd-content" style={{ paddingTop: '20px' }}>
           {loading ? (
-            <div className="sd-loading">
-              <div className="sd-spinner"></div>
-              <p>Loading results...</p>
+            <div className="practice-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
             </div>
           ) : examNames.length === 0 ? (
             <div className="sd-empty">

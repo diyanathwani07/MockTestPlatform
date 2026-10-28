@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 const AVAILABLE_FEATURES = [
   "AI Test Builder",
@@ -390,9 +391,7 @@ function AdminAiPlans() {
             overflow: "hidden"
           }}>
             {loading ? (
-              <div style={{ textAlign: "center", padding: "40px", color: "var(--text-secondary)" }}>
-                Loading AI Plans...
-              </div>
+              <SkeletonTable rows={4} columns={6} style={{ border: "none" }} />
             ) : plans.length === 0 ? (
               <div style={{ textAlign: "center", padding: "40px", color: "var(--text-secondary)" }}>
                 No AI subscription plans configured. Create one to get started!

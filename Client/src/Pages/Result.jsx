@@ -11,6 +11,7 @@ import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target,
 import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
+import { Skeleton, SkeletonCard, SkeletonStatCard } from "@/components/ui/skeleton";
 
 const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   const ratings = [
@@ -574,9 +575,37 @@ function Result() {
     return (
       <div className="result-page">
         <QuizHeader title={examTitle} showInstructions={false} />
-        <div className="result-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-          <div className="sd-spinner"></div>
-          <p style={{ marginTop: '16px', color: 'var(--text-secondary)', fontWeight: 500 }}>Fetching your latest result...</p>
+        <div style={{ maxWidth: "1200px", margin: "24px auto", padding: "0 20px", width: "100%", boxSizing: "border-box" }}>
+          {/* Skeleton Hero Score Card */}
+          <SkeletonCard style={{ padding: "32px", marginBottom: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+                <Skeleton circle width={100} height={100} />
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <Skeleton width={200} height={28} rounded={8} />
+                  <Skeleton width={140} height={16} rounded={4} />
+                  <Skeleton width={90} height={24} rounded={12} />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <Skeleton width={120} height={40} rounded={10} />
+                <Skeleton width={120} height={40} rounded={10} />
+              </div>
+            </div>
+          </SkeletonCard>
+
+          {/* Skeleton Stats Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "28px" }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonStatCard key={i} />
+            ))}
+          </div>
+
+          {/* Skeleton Content Card */}
+          <SkeletonCard style={{ padding: "28px", minHeight: "260px" }}>
+            <Skeleton width={160} height={20} rounded={6} style={{ marginBottom: "16px" }} />
+            <Skeleton width="100%" height={180} rounded={10} />
+          </SkeletonCard>
         </div>
       </div>
     );

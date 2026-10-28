@@ -4,6 +4,7 @@ import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { Users, User, ClipboardList, HelpCircle, Trophy, TrendingUp, Plus, BookOpen, Ban, Edit3, ArrowRight, FileText, Package, CalendarDays, GraduationCap, Library, File, AlertCircle, Clock, CheckCircle2, Trash2 } from "lucide-react";
+import { Skeleton, SkeletonStatCard } from "@/components/ui/skeleton";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -626,7 +627,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Total Users</p>
-                    <p className="stat-card-value">{loading ? "—" : formatNumber(usersCount)}</p>
+                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(usersCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 12.5% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
@@ -650,7 +651,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Total Quizzes</p>
-                    <p className="stat-card-value">{loading ? "—" : formatNumber(quizzesCount)}</p>
+                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(quizzesCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 8.4% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
@@ -674,7 +675,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Total Questions</p>
-                    <p className="stat-card-value">{loading ? "—" : formatNumber(questionsCount)}</p>
+                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(questionsCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 15.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
@@ -698,7 +699,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Total Attempts</p>
-                    <p className="stat-card-value">{loading ? "—" : formatNumber(attemptsCount)}</p>
+                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(attemptsCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 18.7% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
@@ -722,7 +723,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Average Score</p>
-                    <p className="stat-card-value">{loading ? "—" : averageScoreCount}</p>
+                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : averageScoreCount}</div>
                     <span className="stat-card-trend" style={{ color: "#9D174D", fontWeight: "600", fontSize: "11px", display: "flex", alignItems: "center", gap: "3px", marginTop: "4px" }}>
                       ↑ 5.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span>
                     </span>

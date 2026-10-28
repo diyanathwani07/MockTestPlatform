@@ -5,6 +5,7 @@ import AdminNavbar from "../components/AdminNavbar";
 import AdminSidebar from "../components/AdminSidebar";
 import CreateLiveExamModal from "./CreateLiveExamModal";
 import AttendanceModal from "./AttendanceModal";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "./LiveExamsList.css";
 import {
   Radio,
@@ -402,8 +403,10 @@ export default function LiveExamsList() {
 
           {/* Live Examinations List Cards */}
           {loading ? (
-            <div style={{ padding: "60px", textAlign: "center", color: "var(--text-secondary)" }}>
-              Loading examinations...
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
             </div>
           ) : exams.length === 0 ? (
             <div

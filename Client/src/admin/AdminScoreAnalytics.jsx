@@ -3,6 +3,7 @@ import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { TrendingUp, Search, ChevronLeft, ChevronRight, BarChart3 } from "lucide-react";
+import { SkeletonTable } from "@/components/ui/skeleton";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -110,7 +111,7 @@ function AdminScoreAnalytics() {
           {/* Table */}
           <div className="form-card" style={{ margin: 0, padding: 0, overflow: "hidden" }}>
             {loading ? (
-              <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>Loading analytics...</div>
+              <SkeletonTable rows={8} columns={6} style={{ border: "none" }} />
             ) : filtered.length === 0 ? (
               <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>No quiz data found.</div>
             ) : (

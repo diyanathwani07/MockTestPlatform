@@ -1,0 +1,127 @@
+/* ==========================================================================
+   PrepMark Skeleton Loading UI - Modern Shimmer & Responsive Placeholders
+   Supports Light & Dark Modes, Prefers-Reduced-Motion, Mobile Responsive
+   ========================================================================== */
+
+.prepmark-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.07);
+  border-radius: 8px;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+body.dark-mode .prepmark-skeleton {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Shimmer Animation */
+.prepmark-skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 100%
+  );
+  animation: prepmark-shimmer 1.6s infinite ease-in-out;
+}
+
+body.dark-mode .prepmark-skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+@keyframes prepmark-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .prepmark-skeleton::after {
+    animation: none !important;
+    display: none !important;
+  }
+}
+
+/* Skeleton Card Container */
+.skeleton-card-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Skeleton Table Container */
+.skeleton-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 14px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.skeleton-table-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+}
+
+.skeleton-table-row:last-child {
+  border-bottom: none;
+}
+
+/* Stat Card Skeleton */
+.skeleton-stat-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .skeleton-card-container {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 10px;
+  }
+  .skeleton-stat-card {
+    padding: 14px;
+    border-radius: 12px;
+    gap: 12px;
+  }
+  .skeleton-table-row {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+}

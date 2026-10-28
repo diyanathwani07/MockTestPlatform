@@ -6,6 +6,7 @@ import StudentNavbar from "../components/StudentNavbar";
 import { Sparkles, Check, Loader2, ArrowRight } from "lucide-react";
 import "../css/StudentDashboard.css";
 import PhonePeGateway from "../components/PhonePeGateway";
+import { SkeletonCard, Skeleton } from "@/components/ui/skeleton";
 
 function PricingPlans() {
   const navigate = useNavigate();
@@ -111,8 +112,30 @@ function PricingPlans() {
 
           {/* Cards Grid */}
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px", color: "var(--text-secondary)" }}>
-              <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "var(--violet)" }} />
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 320px))",
+              gap: "24px",
+              justifyContent: "center"
+            }}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonCard key={i} style={{ padding: "28px", minHeight: "380px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <Skeleton width={120} height={22} rounded={6} />
+                    <Skeleton width={80} height={32} rounded={8} />
+                    <Skeleton width="90%" height={14} rounded={4} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <div key={j} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          <Skeleton circle width={16} height={16} />
+                          <Skeleton width="75%" height={13} rounded={4} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Skeleton width="100%" height={44} rounded={10} style={{ marginTop: "20px" }} />
+                </SkeletonCard>
+              ))}
             </div>
           ) : plans.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--text-secondary)", fontSize: "14.5px" }}>

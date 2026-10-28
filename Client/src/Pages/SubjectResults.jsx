@@ -10,6 +10,7 @@ import "../css/StudentResults.css";
 import "../css/Practice.css";
 import "../css/MyExams.css";
 import MuiDatePicker from "../components/MuiDatePicker";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 
 function SubjectResults() {
   const { subject } = useParams();
@@ -121,8 +122,10 @@ function SubjectResults() {
           </div>
 
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "40px" }}>
-              <div className="sd-spinner"></div>
+            <div className="practice-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
             </div>
           ) : !selectedSubjectTab ? (
             /* Subject Containers/Cards Grid */

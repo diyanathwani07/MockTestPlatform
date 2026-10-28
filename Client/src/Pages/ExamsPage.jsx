@@ -4,6 +4,7 @@ import { Lock, Unlock, ShoppingCart, Loader2, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 
 function ExamsPage() {
@@ -82,10 +83,10 @@ function ExamsPage() {
           )}
 
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '16px', color: 'var(--text-secondary)' }}>
-              <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--violet)' }} />
-              <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-              <p style={{ fontSize: '15px', fontWeight: '500' }}>Loading exams...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
             </div>
           ) : (
             (() => {

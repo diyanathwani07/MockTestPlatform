@@ -6,6 +6,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import { Search, Plus, Trash2, Edit2, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Layers, BookOpen, ArrowUp, ArrowDown, FileText, CheckCircle } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 function ExamSeriesManager() {
   const [seriesList, setSeriesList] = useState([]);
@@ -415,10 +416,7 @@ function ExamSeriesManager() {
               overflow: "hidden"
             }}>
               {loading ? (
-                <div style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
-                  <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', marginBottom: "12px" }} />
-                  <div>Loading Exam Series details...</div>
-                </div>
+                <SkeletonTable rows={6} columns={6} style={{ border: "none" }} />
               ) : filteredSeries.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
                   <Search size={32} style={{ opacity: 0.5, marginBottom: "12px" }} />

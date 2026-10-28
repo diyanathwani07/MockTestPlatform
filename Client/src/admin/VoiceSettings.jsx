@@ -33,6 +33,7 @@ import {
 import ExamReminderModal from "../components/ExamReminderModal";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
+import { Skeleton, SkeletonCard, SkeletonTable } from "@/components/ui/skeleton";
 import "../css/admin/AdminLayout.css";
 
 const API = import.meta.env.VITE_API_URL || "";
@@ -2827,10 +2828,7 @@ export default function VoiceSettings() {
                 }}
               >
                 {loadingReminders ? (
-                  <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-                    <RefreshCw size={24} className="animate-spin" style={{ margin: "0 auto 12px" }} />
-                    <div>Loading scheduled voice reminders...</div>
-                  </div>
+                  <SkeletonTable rows={5} columns={6} style={{ border: "none" }} />
                 ) : (() => {
                   const filtered = scheduledReminders.filter((rem) => {
                     if (reminderFilter !== "ALL" && rem.status !== reminderFilter) return false;

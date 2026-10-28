@@ -8,6 +8,7 @@ import { useExam } from "../context/ExamContext";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, BookOpen, AlertCircle, FileText, CheckCircle, Bell } from "lucide-react";
 import ExamReminderModal from "../components/ExamReminderModal";
+import { Skeleton, SkeletonCard, SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 import "../css/MyExams.css";
 
@@ -166,7 +167,32 @@ function ExamSeriesDetails() {
           </div>
 
           {loading ? (
-            <div className="me-shimmer" style={{ height: "300px", borderRadius: "20px" }}></div>
+            <div>
+              {/* Skeleton Header Card */}
+              <SkeletonCard style={{ width: "100%", marginBottom: "32px", padding: "28px" }}>
+                <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                  <Skeleton width={64} height={64} rounded={16} style={{ flexShrink: 0 }} />
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <Skeleton width="50%" height={26} rounded={6} />
+                    <div style={{ display: "flex", gap: "12px" }}>
+                      <Skeleton width={100} height={16} rounded={4} />
+                      <Skeleton width={120} height={16} rounded={4} />
+                      <Skeleton width={80} height={16} rounded={4} />
+                    </div>
+                  </div>
+                </div>
+                <div style={{ marginTop: "20px" }}>
+                  <Skeleton width="100%" height={8} rounded={4} />
+                </div>
+              </SkeletonCard>
+
+              {/* Skeleton Papers Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <SkeletonExamCard key={i} />
+                ))}
+              </div>
+            </div>
           ) : !series ? (
             <div className="me-empty-state">
               <AlertCircle size={40} color="red" />

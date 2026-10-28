@@ -4,6 +4,7 @@ import { Lock, Unlock, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 
 function PracticePage() {
@@ -50,7 +51,11 @@ function PracticePage() {
         <StudentNavbar title="My Practice" />
         <div className="sd-content" style={{ paddingTop: '20px' }}>
           {loading ? (
-            <p>Loading...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
+            </div>
           ) : (
             (() => {
               const purchasedPractice = practice.filter((item) => item.isPurchased);

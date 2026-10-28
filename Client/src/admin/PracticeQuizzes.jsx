@@ -7,6 +7,7 @@ import DocxParser from "./components/DocxParser";
 import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, Clock, ArrowRightLeft, Search } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
 import { useConfirm } from "../context/ConfirmContext";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 function PracticeQuizzes() {
   const confirm = useConfirm();
@@ -456,9 +457,7 @@ function PracticeQuizzes() {
             WebkitOverflowScrolling: "touch"
           }}>
             {loading ? (
-              <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-                Loading practice quizzes...
-              </div>
+              <SkeletonTable rows={5} columns={5} style={{ border: "none" }} />
             ) : filteredQuizzes.length === 0 ? (
               <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
                 No practice quizzes found. Create one to get started!

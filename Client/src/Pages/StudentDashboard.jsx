@@ -20,6 +20,7 @@ import { useExam } from "../context/ExamContext";
 import { ClipboardList, Clock, Edit3, BookOpen, TrendingUp, Target, Calendar, ChevronRight, X, Info, Layers, Radio, Zap, ArrowRight } from "lucide-react";
 import DashboardBannerCarousel from "../components/DashboardBannerCarousel";
 import StreakCard from "../components/StreakCard";
+import { Skeleton, SkeletonStatCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 
 const ScoreTrendChart = ({ data }) => {
@@ -126,53 +127,55 @@ function StudentDashboard() {
   const [showAverageInfo, setShowAverageInfo] = useState(false);
   const [featuredLiveExam, setFeaturedLiveExam] = useState(null);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const userId = user.id || user._id;
-        if (!userId) return;
-        
-        // Fetch results for the user
-        const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-        setResults(resultsRes.data);
-        
-        // Fetch published parent Exam Series (with optional selectedExam filter)
-        const seriesUrl = selectedExam
-          ? `${import.meta.env.VITE_API_URL}/api/exam-series`
-          : `${import.meta.env.VITE_API_URL}/api/exam-series`;
-        const seriesRes = await axios.get(seriesUrl, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-        const allSeries = Array.isArray(seriesRes.data) ? seriesRes.data : [];
-        if (selectedExam && selectedExam._id) {
-          setSeriesList(allSeries.filter(s => s._id === selectedExam._id));
-        } else {
-          setSeriesList(allSeries);
-        }
-
-        // Fetch active/upcoming live exam for alert banner
-        try {
-          const liveRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/live-exams/student-feed`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-          });
-          const feed = liveRes.data?.exams || [];
-          const liveNow = feed.find(e => e.status === "live" || e.status === "lobby");
-          const upcoming = feed.find(e => e.status === "scheduled");
-          setFeaturedLiveExam(liveNow || upcoming || null);
-        } catch (e) {
-          // Non-blocking for dashboard
-        }
-      } catch (error) {
-        console.error("Error fetching dashboard data", error);
-        setFetchError(true);
-      } finally {
-        setLoading(false);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setFetchError(false);
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = user.id || user._id;
+      if (!userId) return;
+      
+      // Fetch results for the user
+      const resultsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${userId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setResults(resultsRes.data);
+      
+      // Fetch published parent Exam Series (with optional selectedExam filter)
+      const seriesUrl = selectedExam
+        ? `${import.meta.env.VITE_API_URL}/api/exam-series`
+        : `${import.meta.env.VITE_API_URL}/api/exam-series`;
+      const seriesRes = await axios.get(seriesUrl, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      const allSeries = Array.isArray(seriesRes.data) ? seriesRes.data : [];
+      if (selectedExam && selectedExam._id) {
+        setSeriesList(allSeries.filter(s => s._id === selectedExam._id));
+      } else {
+        setSeriesList(allSeries);
       }
-    };
+
+      // Fetch active/upcoming live exam for alert banner
+      try {
+        const liveRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/live-exams/student-feed`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+        const feed = liveRes.data?.exams || [];
+        const liveNow = feed.find(e => e.status === "live" || e.status === "lobby");
+        const upcoming = feed.find(e => e.status === "scheduled");
+        setFeaturedLiveExam(liveNow || upcoming || null);
+      } catch (e) {
+        // Non-blocking for dashboard
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data", error);
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
   }, [selectedExam]);
 
@@ -301,8 +304,24 @@ function StudentDashboard() {
       {/* ── MAIN CONTENT ── */}
       <div className="sd-content">
         {fetchError && (
-          <div style={{ backgroundColor: "#FEE2E2", color: "#B91C1C", border: "1px solid #FCA5A5", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
-            ⚠️ Failed to load your attempt history. Please check your network connection or log in again.
+          <div style={{ backgroundColor: "#FEE2E2", color: "#B91C1C", border: "1px solid #FCA5A5", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+            <span>⚠️ Failed to load your attempt history. Please check your network connection or log in again.</span>
+            <button
+              type="button"
+              onClick={fetchDashboardData}
+              style={{
+                background: "#B91C1C",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 14px",
+                fontSize: "12.5px",
+                fontWeight: "700",
+                cursor: "pointer"
+              }}
+            >
+              Retry
+            </button>
           </div>
         )}
 
@@ -470,46 +489,54 @@ function StudentDashboard() {
         
         {/* STATS ROW */}
         <div className="sd-stats-grid">
-          <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/results")}>
-            <div className="sd-stat-icon-wrapper">
-              <ClipboardList size={24} />
-            </div>
-            <div className="sd-stat-info">
-              <span className="sd-stat-value">{mocksAttempted}</span>
-              <p>Mocks Attempted</p>
-            </div>
-          </div>
-          
-          <div className="sd-stat-card clickable" onClick={() => setShowAverageInfo(true)}>
-            <div className="sd-stat-icon-wrapper">
-              <TrendingUp size={24} />
-            </div>
-            <div className="sd-stat-info">
-              <span className="sd-stat-value">{averageScore}%</span>
-              <p>Average Score</p>
-            </div>
-          </div>
-          
-          <div className={`sd-stat-card ${bestResult ? 'clickable' : ''}`} onClick={() => bestResult && navigate(`/results/${bestResult._id}`)}>
-            <div className="sd-stat-icon-wrapper">
-              <Target size={24} />
-            </div>
-            <div className="sd-stat-info">
-              <span className="sd-stat-value">{bestScore}</span>
-              <p>Best Score</p>
-              <span className="sd-stat-meta">{bestScoreExam}</span>
-            </div>
-          </div>
-          
-          <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/exams")}>
-            <div className="sd-stat-icon-wrapper">
-              <Calendar size={24} />
-            </div>
-            <div className="sd-stat-info">
-              <span className="sd-stat-value">{availableCount}</span>
-              <p>Exam Series</p>
-            </div>
-          </div>
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonStatCard key={i} />
+            ))
+          ) : (
+            <>
+              <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/results")}>
+                <div className="sd-stat-icon-wrapper">
+                  <ClipboardList size={24} />
+                </div>
+                <div className="sd-stat-info">
+                  <span className="sd-stat-value">{mocksAttempted}</span>
+                  <p>Mocks Attempted</p>
+                </div>
+              </div>
+              
+              <div className="sd-stat-card clickable" onClick={() => setShowAverageInfo(true)}>
+                <div className="sd-stat-icon-wrapper">
+                  <TrendingUp size={24} />
+                </div>
+                <div className="sd-stat-info">
+                  <span className="sd-stat-value">{averageScore}%</span>
+                  <p>Average Score</p>
+                </div>
+              </div>
+              
+              <div className={`sd-stat-card ${bestResult ? 'clickable' : ''}`} onClick={() => bestResult && navigate(`/results/${bestResult._id}`)}>
+                <div className="sd-stat-icon-wrapper">
+                  <Target size={24} />
+                </div>
+                <div className="sd-stat-info">
+                  <span className="sd-stat-value">{bestScore}</span>
+                  <p>Best Score</p>
+                  <span className="sd-stat-meta">{bestScoreExam}</span>
+                </div>
+              </div>
+              
+              <div className="sd-stat-card clickable" onClick={() => navigate("/dashboard/exams")}>
+                <div className="sd-stat-icon-wrapper">
+                  <Calendar size={24} />
+                </div>
+                <div className="sd-stat-info">
+                  <span className="sd-stat-value">{availableCount}</span>
+                  <p>Exam Series</p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* BOTTOM SECTION */}
@@ -517,7 +544,17 @@ function StudentDashboard() {
           
           {/* LEFT: PERFORMANCE CHART */}
           <div className="sd-performance-section" style={{ padding: 0, border: "none", background: "transparent", boxShadow: "none", display: "flex", flexDirection: "column", height: "100%" }}>
-            <StreakCard results={results} />
+            {loading ? (
+              <div className="skeleton-card-container" style={{ height: "320px", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <Skeleton width={140} height={20} rounded={6} />
+                  <Skeleton width={80} height={20} rounded={6} />
+                </div>
+                <Skeleton width="100%" height={220} rounded={12} />
+              </div>
+            ) : (
+              <StreakCard results={results} />
+            )}
           </div>
 
           {/* RIGHT: AVAILABLE SERIES */}
@@ -528,7 +565,19 @@ function StudentDashboard() {
             </div>
             
             <div className="sd-upcoming-list">
-              {recentAvailable.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="sd-upcoming-item" style={{ pointerEvents: "none" }}>
+                    <div className="sd-upcoming-date" style={{ background: "transparent", border: "none" }}>
+                      <Skeleton width={40} height={40} rounded={10} />
+                    </div>
+                    <div className="sd-upcoming-info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <Skeleton width="75%" height={16} rounded={4} />
+                      <Skeleton width="45%" height={12} rounded={4} />
+                    </div>
+                  </div>
+                ))
+              ) : recentAvailable.length === 0 ? (
                 <div className="sd-empty-upcoming">
                   <div style={{ width: "80px", height: "80px", margin: "0 auto" }}><SafeLottie src="/idk.lottie" loop autoplay /></div>
                   <p>No available series right now.</p>

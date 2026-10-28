@@ -5,7 +5,8 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { useExam } from "../context/ExamContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown, Loader2 } from "lucide-react";
+import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Skeleton, SkeletonStatCard, SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 import "../css/MyExams.css";
 
@@ -225,10 +226,30 @@ function MyExams() {
         
         <div className="me-premium-layout">
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '400px', gap: '16px', color: 'var(--text-secondary)' }}>
-              <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--violet)' }} />
-              <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-              <p style={{ fontSize: '15px', fontWeight: '500' }}>Loading exams...</p>
+            <div>
+              {/* SKELETON STATISTICS ROW */}
+              <div className="me-stats-grid">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <SkeletonStatCard key={i} />
+                ))}
+              </div>
+
+              {/* SKELETON FILTERS ROW */}
+              <div className="me-filters-section" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", marginBottom: "24px", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} width={88} height={36} rounded={8} />
+                  ))}
+                </div>
+                <Skeleton width={260} height={38} rounded={10} />
+              </div>
+
+              {/* SKELETON EXAM CARDS GRID */}
+              <div className="me-exam-grid">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonExamCard key={i} />
+                ))}
+              </div>
             </div>
           ) : (
             <motion.div variants={containerVariants} initial="hidden" animate="visible">

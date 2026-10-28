@@ -6,6 +6,7 @@ import AdminNavbar from "./components/AdminNavbar";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import "../css/AdminTickets.css";
+import { Skeleton, SkeletonTable } from "@/components/ui/skeleton";
 import { X, User, ShieldCheck, Clock, Activity, Phone, Eye, EyeOff, BarChart2, Settings, AlertTriangle, Edit, History, Ticket, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar, Medal, Mail, ExternalLink, Shield, ChevronDown, FileText, Target, BookOpen, Sparkles } from 'lucide-react';
 
 const ALL_PERMISSIONS = [
@@ -1067,7 +1068,26 @@ function Users() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((u, index) => {
+                {loading ? (
+                  Array.from({ length: 6 }).map((_, r) => (
+                    <tr key={`sk-${r}`}>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <Skeleton circle width={38} height={38} style={{ flexShrink: 0 }} />
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <Skeleton width={130} height={14} rounded={4} />
+                            <Skeleton width={100} height={11} rounded={4} />
+                          </div>
+                        </div>
+                      </td>
+                      <td><Skeleton width={80} height={14} rounded={4} /></td>
+                      <td><Skeleton width={70} height={14} rounded={4} /></td>
+                      <td><Skeleton width={60} height={20} rounded={10} /></td>
+                      <td style={{ textAlign: 'center' }}><Skeleton width={32} height={32} rounded={8} style={{ margin: '0 auto' }} /></td>
+                    </tr>
+                  ))
+                ) : (
+                  filteredUsers.map((u, index) => {
                   const isUser = u.role === "user";
                   const isActive = (u.status || 'Active') === 'Active';
                   const dateStr = u.createdAt 
@@ -1296,7 +1316,8 @@ function Users() {
                       </td>
                     </tr>
                   );
-                })}
+                })
+              )}
 
                 {!loading && filteredUsers.length === 0 && (
                   <tr>

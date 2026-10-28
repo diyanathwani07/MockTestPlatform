@@ -4,6 +4,7 @@ import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { Edit2, Trash2, Plus, Eye, Copy, Layers, ChevronRight } from "lucide-react";
+import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminDashboard.css";
 
@@ -250,9 +251,10 @@ function AdminFlashcards() {
           )}
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
-              <div style={{ width: "40px", height: "40px", border: "3px solid rgba(255,255,255,0.1)", borderTopColor: "#8b5cf6", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
-              Loading Flashcard Sets...
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonExamCard key={i} />
+              ))}
             </div>
           ) : sets.length === 0 ? (
             <div style={{ background: "var(--bg-card)", borderRadius: "16px", padding: "60px 20px", textAlign: "center", border: "1px solid var(--border-color)" }}>

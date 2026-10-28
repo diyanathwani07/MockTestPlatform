@@ -6,6 +6,7 @@ import AdminSidebar from './components/AdminSidebar';
 import AdminNavbar from './components/AdminNavbar';
 import '../css/AdminTickets.css';
 import GrammarFixButton from '../components/GrammarFixButton';
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 function AdminTickets() {
   const [tickets, setTickets] = useState([]);
@@ -384,10 +385,7 @@ function AdminTickets() {
 
             {/* TABLE */}
             {loading ? (
-              <div className="tk-loading">
-                <Loader2 size={32} className="spinner" />
-                <p>Loading tickets...</p>
-              </div>
+              <SkeletonTable rows={6} columns={6} style={{ border: "none" }} />
             ) : (
               <div className="tk-table-wrapper" style={{ overflowX: "auto", width: "100%", WebkitOverflowScrolling: "touch" }}>
                 <table className="tk-table">
