@@ -6,6 +6,7 @@ import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { Plus, Edit2, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { SkeletonTable } from "@/components/ui/skeleton";
+import { optimizeCloudinaryImage } from "../utils/imageOptimizer";
 
 import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminBanners.css";
@@ -160,22 +161,30 @@ export default function AdminBanners() {
               {banners.map((b) => (
                 <tr key={b._id}>
                   <td>
-                    <img src={b.image} alt={b.title} style={{ width: '80px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <img 
+                      src={optimizeCloudinaryImage(b.image, { width: 160, height: 80, crop: 'fill' })} 
+                      alt={b.title || "Banner thumbnail"} 
+                      width={80}
+                      height={40}
+                      loading="lazy"
+                      decoding="async"
+                      style={{ width: '80px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} 
+                    />
                   </td>
                   <td>
                       {b.ctaLabel ? (
                         <>
-                          <strong style={{ fontSize: '13px' }}>{b.ctaLabel}</strong><br/>
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{b.ctaRoute || 'No Link'}</span>
+                          <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{b.ctaLabel}</strong><br/>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{b.ctaRoute || 'No Link'}</span>
                         </>
                       ) : (
                         <span style={{ 
                           fontSize: '11px', 
                           padding: '4px 10px', 
                           borderRadius: '20px', 
-                          background: 'var(--bg-input)', 
+                          background: 'rgba(0, 0, 0, 0.05)', 
                           border: '1px solid var(--border-color)',
-                          color: 'var(--text-secondary)',
+                          color: 'var(--text-primary)',
                           fontWeight: '600',
                           display: 'inline-block'
                         }}>

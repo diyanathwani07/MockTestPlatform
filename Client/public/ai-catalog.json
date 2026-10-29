@@ -1,0 +1,31 @@
+{
+  "$schema": "https://agenticresourcediscovery.org/spec/v1/schema.json",
+  "name": "PrepMark",
+  "description": "Comprehensive mock examination, live test series, and adaptive learning platform for competitive and teaching exams.",
+  "version": "1.0.0",
+  "documentation": "https://prepmark.vercel.app/llms.txt",
+  "provider": {
+    "name": "PrepMark",
+    "url": "https://prepmark.vercel.app"
+  },
+  "resources": [
+    {
+      "name": "Examination Portal",
+      "type": "webapp",
+      "url": "https://prepmark.vercel.app/dashboard/exams",
+      "description": "Comprehensive mock tests, live examinations, and detailed analytics."
+    },
+    {
+      "name": "Practice Modules",
+      "type": "webapp",
+      "url": "https://prepmark.vercel.app/dashboard/practice",
+      "description": "Adaptive subject and topic-level question banks."
+    },
+    {
+      "name": "AI Study Assistant",
+      "type": "agent",
+      "url": "https://prepmark.vercel.app/dashboard",
+      "description": "AI-powered voice reminders and personalized study schedule management."
+    }
+  ]
+}
