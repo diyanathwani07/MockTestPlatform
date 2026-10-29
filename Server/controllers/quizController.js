@@ -31,7 +31,7 @@ const createQuiz = async (req, res) => {
           slug,
           description: `Quizzes related to ${bodyData.examName}`,
           category: "General",
-          isPublished: true,
+          isPublished: Boolean(bodyData.published || bodyData.status === "Published"),
         });
       } else if (!series.isPublished && (bodyData.published || bodyData.status === "Published")) {
         await ExamSeries.findByIdAndUpdate(series._id, { isPublished: true });
@@ -227,7 +227,7 @@ const updateQuiz = async (req, res) => {
           slug,
           description: `Quizzes related to ${updateData.examName}`,
           category: "General",
-          isPublished: true,
+          isPublished: Boolean(updateData.published || updateData.status === "Published"),
         });
       }
       updateData.examSeriesId = series._id;

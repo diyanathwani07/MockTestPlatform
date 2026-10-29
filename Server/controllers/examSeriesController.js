@@ -26,16 +26,7 @@ exports.createSeries = async (req, res) => {
       thumbnail,
       icon,
       createdBy: req.user?._id,
-      isPublished: true, // Default to true for ease of use
-    });
-
-    // TODO: broadcast to all students since User has no subject/category preference field yet - revisit if per-student targeting is added later.
-    notifyAllStudents({
-      type: "NEW_EXAM_SERIES",
-      title: "New exam series available",
-      message: `"${series.title}" is now live.`,
-      link: `/student/exams/${series._id}`,
-      relatedId: series._id
+      isPublished: req.body.isPublished === true ? true : false,
     });
 
     res.status(201).json(series);
@@ -207,16 +198,24 @@ exports.updateSeries = async (req, res) => {
 
     await series.save();
 
-    // Trigger notification only if transitioning from unpublished to published
+    // Trigger notification only if transitioning from unpublished to published and series has active published quizzes
     if (!wasPublished && series.isPublished) {
-      // TODO: broadcast to all students since User has no subject/category preference field yet - revisit if per-student targeting is added later.
-      notifyAllStudents({
-        type: "NEW_EXAM_SERIES",
-        title: "New exam series available",
-        message: `"${series.title}" is now live.`,
-        link: `/student/exams/${series._id}`,
-        relatedId: series._id
+      const Quiz = require("../models/Quiz");
+      const publishedQuizCount = await Quiz.countDocuments({
+        examSeriesId: series._id,
+        isDeleted: { $ne: true },
+        $or: [{ status: "Published" }, { published: true }],
       });
+
+      if (publishedQuizCount > 0) {
+        notifyAllStudents({
+          type: "NEW_EXAM_SERIES",
+          title: "New exam series available",
+          message: `"${series.title}" is now live.`,
+          link: `/student/exams/${series._id}`,
+          relatedId: series._id,
+        });
+      }
     }
 
     res.json(series);
