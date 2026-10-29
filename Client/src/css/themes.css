@@ -38,7 +38,7 @@ html[class*="theme-"].dark :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]) {
+:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -51,6 +51,19 @@ html[class*="theme-"] .theme-toggle-btn,
 html[class*="theme-"] .sidebar-link,
 html[class*="theme-"] .logout-btn {
   color: inherit !important;
+}
+
+
+/* Preserve high contrast on dashboard view all and plan management buttons across all themes */
+:is(.dashboard-view-all-btn, .btn-add-plan, [class*="view-all"]) {
+  background: rgba(110, 63, 243, 0.12) !important;
+  color: var(--violet, var(--primary)) !important;
+  border: 1px solid rgba(110, 63, 243, 0.25) !important;
+  font-weight: 600;
+}
+:is(.dashboard-view-all-btn, .btn-add-plan, [class*="view-all"]):hover {
+  background: var(--violet, var(--primary)) !important;
+  color: var(--primary-foreground, #ffffff) !important;
 }
 
 /* Explicit contrast preservation for Live Examination buttons across all themes */

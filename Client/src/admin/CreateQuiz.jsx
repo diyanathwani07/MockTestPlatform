@@ -1442,8 +1442,8 @@ function CreateQuiz() {
                                   <span>Subscription Duration Plans</span>
                                   <button 
                                     type="button"
-                                    className="dashboard-view-all-btn"
-                                    style={{ padding: "4px 8px", fontSize: "11px" }}
+                                    className="dashboard-view-all-btn btn-add-plan"
+                                    style={{ padding: "4px 10px", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}
                                     onClick={() => {
                                       setEditingPlanIndex(-1);
                                       setIsPlanDrawerOpen(true);

@@ -1302,7 +1302,7 @@ function CreateQuizMulti() {
                                   <label style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Subscription Duration Plans</label>
                                   <button 
                                     type="button"
-                                    className="dashboard-view-all-btn"
+                                    className="dashboard-view-all-btn btn-add-plan"
                                     style={{ padding: "4px 8px", fontSize: "11px", background: "rgba(139, 92, 246, 0.1)", color: "#8B5CF6", border: "1px solid rgba(139, 92, 246, 0.2)" }}
                                     onClick={() => {
                                       setEditingPlanIndex(-1);
