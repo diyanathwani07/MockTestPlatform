@@ -1204,7 +1204,7 @@ export default function VoiceSettings() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                    gap: "16px",
+                    gap: "14px",
                     marginTop: "4px"
                   }}
                 >
@@ -1215,39 +1215,40 @@ export default function VoiceSettings() {
                       setPreviewProvider("gemini");
                     }}
                     style={{
-                      padding: "18px 20px",
-                      borderRadius: "14px",
+                      padding: "14px 18px",
+                      borderRadius: "12px",
                       cursor: "pointer",
                       background: (settings.ttsProvider || "gemini") === "gemini"
-                        ? "linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1))"
+                        ? "linear-gradient(135deg, rgba(139, 92, 246, 0.14), rgba(99, 102, 241, 0.08))"
                         : "var(--bg-card, rgba(255, 255, 255, 0.03))",
                       border: (settings.ttsProvider || "gemini") === "gemini"
                         ? "2px solid var(--primary)"
-                        : "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                        : "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
                       transition: "all 0.2s ease",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "10px"
+                      gap: "6px"
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div
                           style={{
-                            width: "36px",
-                            height: "36px",
-                            borderRadius: "10px",
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "8px",
                             background: "rgba(139, 92, 246, 0.2)",
                             color: "var(--primary)",
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center"
+                            justifyContent: "center",
+                            flexShrink: 0
                           }}
                         >
-                          <Sparkles size={18} />
+                          <Sparkles size={16} />
                         </div>
                         <div>
-                          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
                             Google Gemini TTS
                           </h4>
                           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
@@ -1273,8 +1274,8 @@ export default function VoiceSettings() {
                         </span>
                       )}
                     </div>
-                    <p style={{ margin: 0, fontSize: "12.5px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
-                      Default provider. High-throughput 24,000 Hz 16-bit PCM voice generation with Aoede, Charon, Fenrir, Kore, and Puck personas.
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                      High-throughput 24,000 Hz 16-bit PCM voice generation with Aoede, Charon, Fenrir, Kore, and Puck personas.
                     </p>
                   </div>
 
@@ -1285,39 +1286,40 @@ export default function VoiceSettings() {
                       setPreviewProvider("elevenlabs");
                     }}
                     style={{
-                      padding: "18px 20px",
-                      borderRadius: "14px",
+                      padding: "14px 18px",
+                      borderRadius: "12px",
                       cursor: "pointer",
                       background: settings.ttsProvider === "elevenlabs"
-                        ? "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.1))"
+                        ? "linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(147, 51, 234, 0.08))"
                         : "var(--bg-card, rgba(255, 255, 255, 0.03))",
                       border: settings.ttsProvider === "elevenlabs"
                         ? "2px solid #3B82F6"
-                        : "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                        : "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
                       transition: "all 0.2s ease",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "10px"
+                      gap: "6px"
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div
                           style={{
-                            width: "36px",
-                            height: "36px",
-                            borderRadius: "10px",
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "8px",
                             background: "rgba(59, 130, 246, 0.2)",
                             color: "#60A5FA",
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center"
+                            justifyContent: "center",
+                            flexShrink: 0
                           }}
                         >
-                          <Volume2 size={18} />
+                          <Volume2 size={16} />
                         </div>
                         <div>
-                          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
                             ElevenLabs TTS
                           </h4>
                           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
@@ -1325,40 +1327,25 @@ export default function VoiceSettings() {
                           </span>
                         </div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {settings.ttsProvider === "elevenlabs" && (
                         <span
                           style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
                             fontSize: "11px",
-                            fontWeight: 600,
+                            fontWeight: 700,
                             padding: "3px 8px",
-                            borderRadius: "6px",
-                            background: hasElevenLabsKey ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
-                            color: hasElevenLabsKey ? "#10B981" : "#F59E0B",
-                            border: `1px solid ${hasElevenLabsKey ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)"}`
+                            borderRadius: "20px",
+                            background: "#3B82F6",
+                            color: "#ffffff"
                           }}
                         >
-                          {hasElevenLabsKey ? "Key Configured" : "Key Needed"}
+                          <Check size={12} /> Selected
                         </span>
-                        {settings.ttsProvider === "elevenlabs" && (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              padding: "3px 8px",
-                              borderRadius: "20px",
-                              background: "#3B82F6",
-                              color: "#ffffff"
-                            }}
-                          >
-                            <Check size={12} /> Selected
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
-                    <p style={{ margin: 0, fontSize: "12.5px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
                       Ultra-realistic human voices with multilingual models (Hindi & English), customizable voice stability, clarity, and pacing.
                     </p>
                   </div>
@@ -1368,45 +1355,6 @@ export default function VoiceSettings() {
               {/* PROVIDER 1: GEMINI TTS SETTINGS */}
               {(settings.ttsProvider || "gemini") === "gemini" && (
                 <>
-                  {/* TTS Engine info banner */}
-                  <div
-                    style={{
-                      padding: "16px 20px",
-                      borderRadius: "12px",
-                      background: "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08))",
-                      border: "1px solid rgba(139, 92, 246, 0.25)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "16px",
-                      flexWrap: "wrap"
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <Sparkles size={22} style={{ color: "var(--primary)" }} />
-                      <div>
-                        <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
-                          AI Model: {settings.model}
-                        </h4>
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
-                          Gemini Multimodal Live Audio Preview produces natural 24,000 Hz, 16-bit PCM voice synthesis with high intelligibility.
-                        </p>
-                      </div>
-                    </div>
-                    <span
-                      style={{
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        background: "rgba(139, 92, 246, 0.2)",
-                        color: "var(--primary)"
-                      }}
-                    >
-                      Official Gemini TTS
-                    </span>
-                  </div>
-
                   {/* Language & Voice Selector Grid */}
                   <div
                     style={{
@@ -1694,67 +1642,6 @@ export default function VoiceSettings() {
               {/* PROVIDER 2: ELEVENLABS TTS SETTINGS */}
               {settings.ttsProvider === "elevenlabs" && (
                 <>
-                  {/* ElevenLabs Info Banner */}
-                  <div
-                    style={{
-                      padding: "16px 20px",
-                      borderRadius: "12px",
-                      background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(147, 51, 234, 0.08))",
-                      border: "1px solid rgba(59, 130, 246, 0.25)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "16px",
-                      flexWrap: "wrap"
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <Volume2 size={22} style={{ color: "#60A5FA" }} />
-                      <div>
-                        <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
-                          ElevenLabs Voice Engine: {settings.elevenlabs?.modelId || "eleven_multilingual_v2"}
-                        </h4>
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
-                          Human-like conversational pacing with custom stability and similarity controls. Supports Hindi, English, and 29 languages natively.
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span
-                        style={{
-                          padding: "4px 10px",
-                          borderRadius: "6px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          background: hasElevenLabsKey ? "rgba(16, 185, 129, 0.2)" : "rgba(245, 158, 11, 0.2)",
-                          color: hasElevenLabsKey ? "#10B981" : "#F59E0B"
-                        }}
-                      >
-                        {hasElevenLabsKey ? "API Key Connected" : "API Key Not Found"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={fetchElevenLabsVoices}
-                        disabled={loadingVoices}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "4px 10px",
-                          borderRadius: "6px",
-                          background: "rgba(255, 255, 255, 0.08)",
-                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                          color: "var(--text-secondary)",
-                          fontSize: "12px",
-                          cursor: "pointer"
-                        }}
-                      >
-                        <RefreshCw size={12} className={loadingVoices ? "animate-spin" : ""} />
-                        <span>{loadingVoices ? "Loading..." : "Sync Voices"}</span>
-                      </button>
-                    </div>
-                  </div>
-
                   {/* ElevenLabs API Key Notice if missing */}
                   {!hasElevenLabsKey && (
                     <div
@@ -1853,9 +1740,31 @@ export default function VoiceSettings() {
                         <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
                           Primary Voice Persona
                         </label>
-                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                          {elevenLabsVoices.length} voices available
-                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                            {elevenLabsVoices.length} voices
+                          </span>
+                          <button
+                            type="button"
+                            onClick={fetchElevenLabsVoices}
+                            disabled={loadingVoices}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              padding: "3px 8px",
+                              borderRadius: "6px",
+                              background: "rgba(255, 255, 255, 0.08)",
+                              border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                              color: "var(--text-secondary)",
+                              fontSize: "11px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            <RefreshCw size={11} className={loadingVoices ? "animate-spin" : ""} />
+                            <span>{loadingVoices ? "Syncing..." : "Sync Voices"}</span>
+                          </button>
+                        </div>
                       </div>
                       <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
                         Choose the voice persona used for automated voice reminder synthesis.

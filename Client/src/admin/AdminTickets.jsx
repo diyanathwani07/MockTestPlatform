@@ -445,8 +445,13 @@ function AdminTickets() {
                         </td>
                         <td>
                           <div className="tk-actions-cell">
-                             <button className="tk-icon-btn" onClick={() => navigate("/admin/tickets/" + ticket._id)}>
-                              <Eye size={16} />
+                            <button
+                              className="tk-action-view-btn"
+                              onClick={() => navigate("/admin/tickets/" + ticket._id)}
+                              title="View Ticket Details"
+                            >
+                              <Eye size={15} />
+                              <span>View</span>
                             </button>
                           </div>
                         </td>

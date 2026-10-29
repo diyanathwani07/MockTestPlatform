@@ -328,18 +328,73 @@
 .tk-actions-cell {
   display: flex;
   gap: 8px;
+  align-items: center;
+}
+
+.tk-action-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(110, 63, 243, 0.08);
+  color: var(--primary, #6E3FF3);
+  border: 1.5px solid rgba(110, 63, 243, 0.28);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tk-action-view-btn svg {
+  color: var(--primary, #6E3FF3);
+  transition: transform 0.2s ease;
+}
+
+.tk-action-view-btn:hover {
+  background: var(--primary, #6E3FF3);
+  color: #ffffff;
+  border-color: var(--primary, #6E3FF3);
+  box-shadow: 0 2px 8px rgba(110, 63, 243, 0.28);
+  transform: translateY(-1px);
+}
+
+.tk-action-view-btn:hover svg {
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+.dark-mode .tk-action-view-btn {
+  background: rgba(139, 92, 246, 0.16);
+  color: #c4b5fd;
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.dark-mode .tk-action-view-btn svg {
+  color: #c4b5fd;
+}
+
+.dark-mode .tk-action-view-btn:hover {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+}
+
+.dark-mode .tk-action-view-btn:hover svg {
+  color: #ffffff;
 }
 
 .tk-icon-btn {
-  background: transparent;
-  border: 1px solid #E5E7EB;
+  background: rgba(110, 63, 243, 0.08);
+  border: 1px solid rgba(110, 63, 243, 0.25);
   border-radius: 6px;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: var(--primary, #6E3FF3);
   cursor: pointer;
   transition: all 0.2s;
 }
