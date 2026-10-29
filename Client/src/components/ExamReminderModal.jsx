@@ -697,23 +697,31 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
               <button
                 type="submit"
                 disabled={submitting}
+                className="exam-reminder-submit-btn"
                 style={{
                   padding: "10px 22px",
                   borderRadius: "8px",
                   border: "none",
                   background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                  backgroundColor: "#7c3aed",
                   color: "#ffffff",
-                  fontSize: "13px",
+                  fontSize: "13.5px",
                   fontWeight: "600",
                   cursor: submitting ? "not-allowed" : "pointer",
                   display: "inline-flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "8px",
-                  boxShadow: "0 4px 14px rgba(124, 58, 237, 0.4)"
+                  boxShadow: "0 4px 14px rgba(124, 58, 237, 0.4)",
+                  width: "auto",
+                  minHeight: "42px",
+                  whiteSpace: "nowrap"
                 }}
               >
-                <Bell size={15} />
-                {submitting ? "Scheduling..." : "Schedule Voice Reminder"}
+                <Bell size={15} style={{ color: "#ffffff", flexShrink: 0 }} />
+                <span style={{ color: "#ffffff" }}>
+                  {submitting ? "Scheduling..." : "Schedule Voice Reminder"}
+                </span>
               </button>
             </div>
           </form>
