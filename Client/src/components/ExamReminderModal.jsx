@@ -15,6 +15,7 @@ import {
   Info
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import "../css/ExamReminderModal.css";
 
 export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
   const { user, role } = useAuth();
@@ -214,104 +215,43 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.65)",
-        backdropFilter: "blur(4px)",
-        zIndex: 10000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px"
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          backgroundColor: "var(--bg-card, #1e1b2e)",
-          border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
-          borderRadius: "16px",
-          width: "100%",
-          maxWidth: "560px",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          boxShadow: "0 24px 48px rgba(0, 0, 0, 0.4)",
-          color: "var(--text-primary, #ffffff)",
-          display: "flex",
-          flexDirection: "column"
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="erm-overlay" onClick={onClose}>
+      <div className="erm-modal-card" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div
-          style={{
-            padding: "18px 22px",
-            borderBottom: "1px solid var(--border-color, rgba(255,255,255,0.1))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "10px",
-                background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#ffffff"
-              }}
-            >
+        <div className="erm-header">
+          <div className="erm-header-left">
+            <div className="erm-header-icon">
               <Volume2 size={20} />
             </div>
-            <div>
-              <h3 style={{ margin: 0, fontSize: "17px", fontWeight: "700" }}>
+            <div className="erm-header-titles">
+              <h3 className="erm-header-title">
                 Exam Voice Reminder
               </h3>
-              <span style={{ fontSize: "12px", color: "var(--text-muted, #94a3b8)" }}>
+              <span className="erm-header-subtitle">
                 Automated audio phone-call reminder before exam starts
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            style={{
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--text-muted, #94a3b8)",
-              padding: "6px",
-              borderRadius: "8px",
-              display: "flex"
-            }}
+            className="erm-close-x-btn"
+            aria-label="Close modal"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="erm-body">
           {/* Target Exam Details Card */}
-          <div
-            style={{
-              backgroundColor: "var(--bg-input, rgba(255,255,255,0.04))",
-              border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
-              borderRadius: "12px",
-              padding: "14px 16px"
-            }}
-          >
-            <div style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--primary, #8a55fc)", letterSpacing: "0.5px", marginBottom: "4px" }}>
+          <div className="erm-target-exam-card">
+            <div className="erm-target-badge">
               Target Exam
             </div>
-            <div style={{ fontSize: "15px", fontWeight: "700", marginBottom: "6px" }}>
+            <div className="erm-target-title">
               {quiz?.title || "Exam Paper"}
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "14px", fontSize: "12.5px", color: "var(--text-secondary, #cbd5e1)" }}>
+            <div className="erm-target-meta">
               <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
                 <Calendar size={13} style={{ color: "var(--primary, #8a55fc)" }} />
                 {examDateObj.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -421,7 +361,7 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
               <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "8px" }}>
                 Reminder Timing
               </label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "8px" }}>
+              <div className="erm-timing-grid">
                 {[
                   { id: "15_MIN_BEFORE", label: "15m Before" },
                   { id: "30_MIN_BEFORE", label: "30m Before" },
@@ -433,16 +373,12 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                     key={opt.id}
                     type="button"
                     onClick={() => setTimingType(opt.id)}
+                    className="erm-timing-btn"
                     style={{
-                      padding: "8px 10px",
-                      borderRadius: "8px",
                       border: timingType === opt.id ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
                       backgroundColor: timingType === opt.id ? "rgba(138, 85, 252, 0.15)" : "transparent",
                       color: timingType === opt.id ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
-                      fontSize: "12.5px",
                       fontWeight: timingType === opt.id ? "700" : "500",
-                      cursor: "pointer",
-                      transition: "all 0.15s ease"
                     }}
                   >
                     {opt.label}
@@ -456,24 +392,16 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                     type="datetime-local"
                     value={customTime}
                     onChange={(e) => setCustomTime(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                      backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
-                      color: "var(--text-primary, #ffffff)",
-                      fontSize: "13.5px"
-                    }}
+                    className="erm-field-input"
                   />
                 </div>
               )}
 
               {/* Calculated Dispatch Notification */}
               {calculatedTime && !isNaN(calculatedTime.getTime()) && (
-                <div style={{ marginTop: "8px", fontSize: "12px", color: "var(--text-muted, #94a3b8)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Clock size={12} style={{ color: "var(--primary, #8a55fc)" }} />
-                  <span>Call dispatches: <strong style={{ color: "var(--text-primary, #fff)" }}>{calculatedTime.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</strong> (Asia/Kolkata)</span>
+                <div className="erm-dispatch-notice">
+                  <Clock size={13} style={{ color: "var(--primary, #8a55fc)", flexShrink: 0, marginTop: "2px" }} />
+                  <span>Call dispatches: <strong>{calculatedTime.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</strong> (Asia/Kolkata)</span>
                 </div>
               )}
             </div>
@@ -532,9 +460,9 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
             )}
 
             {/* Planned Exam Date & Time (Gives user choice for exam date/time) */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
+            <div className="erm-date-time-grid">
+              <div className="erm-field-group">
+                <label className="erm-field-label">
                   Planned Exam Date
                 </label>
                 <input
@@ -542,59 +470,33 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                   value={examDate}
                   min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setExamDate(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                    backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
-                    color: "var(--text-primary, #ffffff)",
-                    fontSize: "13px",
-                    boxSizing: "border-box"
-                  }}
+                  className="erm-field-input"
                 />
               </div>
 
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
+              <div className="erm-field-group">
+                <label className="erm-field-label">
                   Planned Exam Time
                 </label>
                 <input
                   type="time"
                   value={examTime}
                   onChange={(e) => setExamTime(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                    backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
-                    color: "var(--text-primary, #ffffff)",
-                    fontSize: "13px",
-                    boxSizing: "border-box"
-                  }}
+                  className="erm-field-input"
                 />
               </div>
             </div>
 
             {/* Language & Voice Row (Gemini Voice is hidden for students, only visible to Admins/Teachers) */}
             <div style={{ display: "grid", gridTemplateColumns: isAdminOrTeacher ? "1fr 1fr" : "1fr", gap: "12px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
+              <div className="erm-field-group">
+                <label className="erm-field-label">
                   Call Language
                 </label>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                    backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
-                    color: "var(--text-primary, #ffffff)",
-                    fontSize: "13px"
-                  }}
+                  className="erm-field-input"
                 >
                   <option value="en" style={{ background: "#1e1b2e" }}>English</option>
                   <option value="hi" style={{ background: "#1e1b2e" }}>Hindi (हिंदी)</option>
@@ -603,22 +505,14 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
               </div>
 
               {isAdminOrTeacher && (
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px" }}>
+                <div className="erm-field-group">
+                  <label className="erm-field-label">
                     Gemini Voice (Admin only)
                   </label>
                   <select
                     value={voice}
                     onChange={(e) => setVoice(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "9px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                      backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
-                      color: "var(--text-primary, #ffffff)",
-                      fontSize: "13px"
-                    }}
+                    className="erm-field-input"
                   >
                     <option value="Aoede" style={{ background: "#1e1b2e" }}>Aoede (Female, Balanced)</option>
                     <option value="Charon" style={{ background: "#1e1b2e" }}>Charon (Male, Deep)</option>
@@ -632,11 +526,11 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
 
             {/* Custom Message / Placeholders */}
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                <label style={{ fontSize: "13px", fontWeight: "600" }}>
+              <div className="erm-script-header">
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary, #ffffff)" }}>
                   Reminder Script (Optional Customization)
                 </label>
-                <span style={{ fontSize: "11px", color: "var(--text-muted, #94a3b8)" }}>
+                <span className="erm-script-helper">
                   Supports &#123;studentName&#125;, &#123;taskTitle&#125;, &#123;examDate&#125;
                 </span>
               </div>
@@ -654,20 +548,14 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                   backgroundColor: "var(--bg-input, rgba(255,255,255,0.05))",
                   color: "var(--text-primary, #ffffff)",
                   fontSize: "13px",
-                  resize: "vertical"
+                  resize: "vertical",
+                  boxSizing: "border-box"
                 }}
               />
             </div>
 
             {/* Live Audio Script Preview */}
-            <div
-              style={{
-                backgroundColor: "rgba(138, 85, 252, 0.08)",
-                border: "1px dashed rgba(138, 85, 252, 0.3)",
-                borderRadius: "10px",
-                padding: "12px 14px"
-              }}
-            >
+            <div className="erm-preview-card">
               <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: "700", color: "var(--primary, #8a55fc)", textTransform: "uppercase", marginBottom: "4px" }}>
                 <Sparkles size={12} /> Live Speech Script Preview
               </div>
@@ -677,49 +565,21 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
             </div>
 
             {/* Bottom Actions */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+            <div className="erm-footer-actions">
               <button
                 type="button"
                 onClick={onClose}
-                style={{
-                  padding: "10px 18px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
-                  backgroundColor: "transparent",
-                  color: "var(--text-secondary, #cbd5e1)",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
+                className="erm-cancel-btn"
               >
                 Close
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="exam-reminder-submit-btn"
-                style={{
-                  padding: "10px 22px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                  backgroundColor: "#7c3aed",
-                  color: "#ffffff",
-                  fontSize: "13.5px",
-                  fontWeight: "600",
-                  cursor: submitting ? "not-allowed" : "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                  boxShadow: "0 4px 14px rgba(124, 58, 237, 0.4)",
-                  width: "auto",
-                  minHeight: "42px",
-                  whiteSpace: "nowrap"
-                }}
+                className="erm-submit-btn"
               >
                 <Bell size={15} style={{ color: "#ffffff", flexShrink: 0 }} />
-                <span style={{ color: "#ffffff" }}>
+                <span>
                   {submitting ? "Scheduling..." : "Schedule Voice Reminder"}
                 </span>
               </button>
