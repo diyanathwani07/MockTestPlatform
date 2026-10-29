@@ -5,8 +5,7 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
 import { useExam } from "../context/ExamContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown, Loader2, AlertCircle, RefreshCw, Bell } from "lucide-react";
-import ExamReminderModal from "../components/ExamReminderModal";
+import { Calendar, Clock, Play, CheckCircle2, Search, Filter, ChevronRight, FileText, ChevronDown, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Skeleton, SkeletonStatCard, SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 import "../css/MyExams.css";
@@ -19,7 +18,6 @@ function MyExams() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("All Exams");
   const [searchQuery, setSearchQuery] = useState("");
-  const [reminderModalQuiz, setReminderModalQuiz] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -662,51 +660,12 @@ function MyExams() {
                             </div>
 
                             {/* Button */}
-                            <div style={{ display: "flex", gap: "8px", marginTop: "auto", width: "100%" }}>
-                              {series.quizzes && series.quizzes.length > 0 && (
-                                <button
-                                  type="button"
-                                  title="Schedule Voice Reminder"
-                                  aria-label={`Schedule Voice Reminder for ${series.title}`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setReminderModalQuiz(series.quizzes[0]);
-                                  }}
-                                  className="schedule-voice-reminder-btn"
-                                  style={{
-                                    padding: "8px 12px",
-                                    borderRadius: "8px",
-                                    border: "1.5px solid var(--border-color)",
-                                    background: "transparent",
-                                    color: "var(--text-secondary)",
-                                    cursor: "pointer",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0,
-                                    transition: "all 0.15s ease"
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.color = "var(--primary)";
-                                    e.currentTarget.style.borderColor = "var(--primary)";
-                                    e.currentTarget.style.transform = "scale(1.05)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = "var(--text-secondary)";
-                                    e.currentTarget.style.borderColor = "var(--border-color)";
-                                    e.currentTarget.style.transform = "scale(1)";
-                                  }}
-                                >
-                                  <Bell size={14} />
-                                </button>
-                              )}
-                              <button
-                                className="me-btn-primary"
-                                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
-                              >
-                                View Contents <ChevronRight size={14} />
-                              </button>
-                            </div>
+                            <button
+                              className="me-btn-primary"
+                              style={{ marginTop: "auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                            >
+                              View Contents <ChevronRight size={14} />
+                            </button>
                           </motion.div>
                         );
                       })}
@@ -721,17 +680,6 @@ function MyExams() {
           )}
         </div>
       </div>
-
-      {/* Schedule Voice Reminder Modal */}
-      {reminderModalQuiz && (
-        <ExamReminderModal 
-          quiz={reminderModalQuiz} 
-          onClose={() => setReminderModalQuiz(null)}
-          onScheduled={() => {
-            setReminderModalQuiz(null);
-          }}
-        />
-      )}
     </div>
   );
 }
