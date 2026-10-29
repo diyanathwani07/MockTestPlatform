@@ -202,9 +202,9 @@ const createSchedule = async (req, res) => {
       const template =
         resolvedLanguage === "hi"
           ? voiceSettings?.reminderDefaults?.defaultTemplateHindi ||
-            "नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
+            "नमस्ते! यह PrepMark की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
           : voiceSettings?.reminderDefaults?.defaultTemplateEnglish ||
-            "Hello! This is your study reminder from Teaching Pariksha AI regarding: {taskTitle}.";
+            "Hello! This is your study reminder from PrepMark regarding: {taskTitle}.";
 
       const studentName = req.user?.name || req.user?.fullName || "Student";
       cleanAudioText = template

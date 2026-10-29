@@ -15,7 +15,7 @@ const { getVoiceSettingsSafe, isWithinCallingSchedule } = require("./voiceSchedu
 const LEASE_DURATION_MS = 3 * 60 * 1000; // 3 minutes claim lease
 const DEFAULT_MAX_DISPATCH_ATTEMPTS = 3;
 const BATCH_LIMIT = 50;
-const CALLER_NAME = "Teaching Pariksha AI";
+const CALLER_NAME = "PrepMark";
 
 let activeCronJob = null;
 let isProcessingSweep = false;

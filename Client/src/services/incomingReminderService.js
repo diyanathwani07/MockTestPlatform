@@ -73,7 +73,7 @@ class IncomingReminderService {
       scheduleId,
       dispatchId,
       taskTitle: taskTitle || 'Scheduled Study Task',
-      callerName: callerName || 'Teaching Pariksha AI',
+      callerName: callerName || 'PrepMark',
       taskDescription: taskDescription || '',
       reminderAudioText: reminderAudioText || '',
       receivedAt: new Date().toISOString()
@@ -104,7 +104,7 @@ class IncomingReminderService {
         await IncomingReminder.playRingtone();
         await IncomingReminder.showIncomingNotification({
           taskTitle: taskTitle || 'Study Reminder',
-          callerName: callerName || 'Teaching Pariksha AI',
+          callerName: callerName || 'PrepMark',
           scheduleId: scheduleId || ''
         });
         return;

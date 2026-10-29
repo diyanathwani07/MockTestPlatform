@@ -211,178 +211,489 @@ export default function IncomingReminderModal() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Clean caller name: always display PrepMark as requested by user
+  const callerDisplayName = 'PrepMark';
+
+  // Clean description if redundant
+  const displayDescription = reminder.taskDescription
+    ? reminder.taskDescription
+        .replace(/Teaching Pariksha(\s*AI)?/gi, 'PrepMark')
+        .replace(/\bAI\b/g, '')
+        .trim()
+    : `Scheduled study reminder for ${reminder.taskTitle || 'upcoming exam'}.`;
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Incoming Study Reminder"
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        animation: 'fadeIn 0.2s ease-out'
+      }}
     >
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950 p-6 text-white shadow-2xl border border-indigo-500/30 flex flex-col items-center text-center">
-        {/* Animated background glow */}
-        <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '380px',
+          borderRadius: '26px',
+          overflow: 'hidden',
+          background: 'linear-gradient(180deg, #181528 0%, #0f0d1b 100%)',
+          border: '1px solid rgba(139, 92, 246, 0.28)',
+          boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(124, 58, 237, 0.18)',
+          padding: '24px 22px 28px 22px',
+          color: '#ffffff',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center'
+        }}
+      >
+        {/* Subtle decorative background ambient glow */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '-60px',
+            left: '-60px',
+            width: '180px',
+            height: '180px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%)',
+            pointerEvents: 'none'
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-60px',
+            right: '-60px',
+            width: '180px',
+            height: '180px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)',
+            pointerEvents: 'none'
+          }}
+        />
 
-        {/* Top Header Tag */}
-        <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-semibold tracking-wider uppercase mb-5 animate-pulse">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+        {/* Top Status Badge */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '5px 14px',
+            borderRadius: '9999px',
+            background: 'rgba(139, 92, 246, 0.12)',
+            border: '1px solid rgba(139, 92, 246, 0.3)',
+            color: '#c4b5fd',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.6px',
+            textTransform: 'uppercase',
+            marginBottom: '18px'
+          }}
+        >
+          <Sparkles size={12} style={{ color: '#a78bfa' }} />
           <span>
-            {sessionState === 'RINGING' && 'Incoming AI Reminder'}
-            {sessionState === 'CONNECTING' && 'Connecting Voice Call...'}
-            {sessionState === 'COUNTDOWN' && 'Voice Session Connected'}
-            {sessionState === 'PLAYING' && 'Teaching Pariksha AI Speaking'}
-            {sessionState === 'COMPLETED' && 'Reminder Completed'}
-            {sessionState === 'ERROR' && 'Call Warning'}
+            {sessionState === 'RINGING' && 'Incoming Reminder'}
+            {sessionState === 'CONNECTING' && 'Connecting Call...'}
+            {sessionState === 'COUNTDOWN' && 'Session Connected'}
+            {sessionState === 'PLAYING' && 'PrepMark Speaking'}
+            {sessionState === 'COMPLETED' && 'Reminder Finished'}
+            {sessionState === 'ERROR' && 'Call Alert'}
           </span>
         </div>
 
         {/* Center Visualizer & Avatar */}
-        <div className="relative my-3 flex items-center justify-center">
+        <div
+          style={{
+            position: 'relative',
+            marginTop: '4px',
+            marginBottom: '14px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '84px'
+          }}
+        >
           {sessionState === 'RINGING' && (
-            <>
-              <div className="absolute h-32 w-32 rounded-full bg-indigo-500/20 animate-ping opacity-75" />
-              <div className="absolute h-24 w-24 rounded-full bg-indigo-500/30 animate-pulse" />
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 shadow-lg shadow-indigo-500/50 border-2 border-indigo-300/40">
-                <Bell className="w-9 h-9 text-white animate-bounce" />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '94px',
+                  height: '94px',
+                  borderRadius: '50%',
+                  background: 'rgba(139, 92, 246, 0.15)',
+                  animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite'
+                }}
+              />
+              <div
+                style={{
+                  position: 'relative',
+                  width: '74px',
+                  height: '74px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+                  boxShadow: '0 8px 24px rgba(124, 58, 237, 0.45)',
+                  border: '2px solid rgba(196, 181, 253, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Bell size={32} style={{ color: '#ffffff' }} />
               </div>
-            </>
+            </div>
           )}
 
           {sessionState === 'CONNECTING' && (
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-indigo-800/80 border-2 border-indigo-400 shadow-lg">
-              <Loader2 className="w-9 h-9 text-indigo-300 animate-spin" />
+            <div
+              style={{
+                width: '74px',
+                height: '74px',
+                borderRadius: '50%',
+                background: 'rgba(79, 70, 229, 0.3)',
+                border: '2px solid rgba(167, 139, 250, 0.6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Loader2 size={34} style={{ color: '#c4b5fd', animation: 'spin 1s linear infinite' }} />
             </div>
           )}
 
           {sessionState === 'COUNTDOWN' && (
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 border-2 border-indigo-300 shadow-lg shadow-indigo-500/40">
-              <span className="text-3xl font-bold text-white animate-pulse">{countdownLeft}s</span>
+            <div
+              style={{
+                width: '74px',
+                height: '74px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)',
+                border: '2px solid rgba(196, 181, 253, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <span style={{ fontSize: '26px', fontWeight: 800, color: '#ffffff' }}>{countdownLeft}s</span>
             </div>
           )}
 
           {sessionState === 'PLAYING' && (
-            <div className="relative flex flex-col items-center justify-center">
-              <div className="absolute h-28 w-28 rounded-full bg-emerald-500/20 animate-ping opacity-60" />
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-lg shadow-emerald-500/50 border-2 border-emerald-300/40">
-                <Volume2 className="w-9 h-9 text-white animate-pulse" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div
+                style={{
+                  width: '74px',
+                  height: '74px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  boxShadow: '0 8px 24px rgba(16, 185, 129, 0.45)',
+                  border: '2px solid rgba(167, 243, 208, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Volume2 size={32} style={{ color: '#ffffff' }} />
               </div>
-              {/* Dynamic waveform simulation */}
-              <div className="flex items-center gap-1 mt-4">
-                <span className="w-1.5 h-6 bg-emerald-400 rounded-full animate-pulse" />
-                <span className="w-1.5 h-10 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <span className="w-1.5 h-8 bg-emerald-300 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                <span className="w-1.5 h-11 bg-teal-300 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
-                <span className="w-1.5 h-5 bg-emerald-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+              {/* Audio spectrum wave bars */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '18px', marginTop: '10px' }}>
+                <span style={{ width: '4px', height: '12px', background: '#34d399', borderRadius: '4px', animation: 'pulse 1s infinite' }} />
+                <span style={{ width: '4px', height: '18px', background: '#10b981', borderRadius: '4px', animation: 'pulse 0.7s infinite' }} />
+                <span style={{ width: '4px', height: '14px', background: '#6ee7b7', borderRadius: '4px', animation: 'pulse 1.2s infinite' }} />
+                <span style={{ width: '4px', height: '18px', background: '#10b981', borderRadius: '4px', animation: 'pulse 0.8s infinite' }} />
+                <span style={{ width: '4px', height: '10px', background: '#34d399', borderRadius: '4px', animation: 'pulse 1.1s infinite' }} />
               </div>
             </div>
           )}
 
           {sessionState === 'COMPLETED' && (
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/30 border-2 border-emerald-400 shadow-lg">
-              <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+            <div
+              style={{
+                width: '74px',
+                height: '74px',
+                borderRadius: '50%',
+                background: 'rgba(16, 185, 129, 0.15)',
+                border: '2px solid rgba(52, 211, 153, 0.6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <CheckCircle2 size={38} style={{ color: '#34d399' }} />
             </div>
           )}
 
           {sessionState === 'ERROR' && (
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-rose-500/30 border-2 border-rose-400 shadow-lg">
-              <PhoneOff className="w-9 h-9 text-rose-400" />
+            <div
+              style={{
+                width: '74px',
+                height: '74px',
+                borderRadius: '50%',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '2px solid rgba(248, 113, 113, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <PhoneOff size={32} style={{ color: '#f87171' }} />
             </div>
           )}
         </div>
 
-        {/* Caller Name */}
-        <h2 className="text-xl font-bold tracking-tight text-white mt-1">
-          {reminder.callerName || 'Teaching Pariksha AI'}
+        {/* Caller Title */}
+        <h2 style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.2px', color: '#ffffff', margin: '4px 0 2px 0' }}>
+          {callerDisplayName}
         </h2>
-        <p className="text-sm text-indigo-200/80 mt-0.5">
+        <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0, fontWeight: 500 }}>
           {sessionState === 'RINGING' && 'Calling for scheduled study session'}
-          {sessionState === 'CONNECTING' && 'Initializing audio channel...'}
-          {sessionState === 'COUNTDOWN' && `AI starting speech in ${countdownLeft}s...`}
+          {sessionState === 'CONNECTING' && 'Initializing audio stream...'}
+          {sessionState === 'COUNTDOWN' && `Starting reminder in ${countdownLeft}s...`}
           {sessionState === 'PLAYING' && `Active Call • ${formatDuration(callDuration)}`}
-          {sessionState === 'COMPLETED' && `Call Ended • Total Duration ${formatDuration(callDuration)}`}
-          {sessionState === 'ERROR' && errorMessage}
+          {sessionState === 'COMPLETED' && `Call Ended • ${formatDuration(callDuration)}`}
+          {sessionState === 'ERROR' && (errorMessage || 'Audio session interrupted')}
         </p>
 
-        {/* Task Details Card */}
-        <div className="w-full my-4 p-4 rounded-2xl bg-white/5 border border-white/10 text-left backdrop-blur-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-300 block mb-1">
+        {/* Task Details Glass Card */}
+        <div
+          style={{
+            width: '100%',
+            margin: '16px 0 12px 0',
+            padding: '14px 16px',
+            borderRadius: '16px',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            textAlign: 'left'
+          }}
+        >
+          <span
+            style={{
+              fontSize: '10.5px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.8px',
+              color: '#a78bfa',
+              display: 'block',
+              marginBottom: '4px'
+            }}
+          >
             Task Due Now
           </span>
-          <h3 className="text-base font-semibold text-white leading-snug break-words">
+          <h3
+            style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: '#ffffff',
+              margin: '0 0 4px 0',
+              lineHeight: 1.35,
+              wordBreak: 'break-word'
+            }}
+          >
             {reminder.taskTitle}
           </h3>
-          {reminder.taskDescription && (
-            <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
-              {reminder.taskDescription}
-            </p>
-          )}
+          <p
+            style={{
+              fontSize: '12px',
+              color: '#94a3b8',
+              margin: 0,
+              lineHeight: 1.45,
+              wordBreak: 'break-word'
+            }}
+          >
+            {displayDescription}
+          </p>
         </div>
 
-        {/* State Indicator */}
+        {/* Ringing Timeout Indicator */}
         {sessionState === 'RINGING' && (
-          <div className="flex items-center gap-1 text-xs text-slate-400 mb-5">
-            <Clock className="w-3.5 h-3.5" />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontSize: '11.5px',
+              color: '#94a3b8',
+              marginBottom: '16px'
+            }}
+          >
+            <Clock size={12} style={{ color: '#a78bfa' }} />
             <span>Ringing expires in {secondsLeft}s</span>
           </div>
         )}
 
-        {/* Action Controls */}
+        {/* Modern Call Dialer Action Controls */}
         {sessionState === 'RINGING' ? (
-          <div className="w-full grid grid-cols-2 gap-4 mt-1">
-            {/* Reject Button */}
-            <button
-              type="button"
-              onClick={handleReject}
-              className="flex flex-col items-center justify-center gap-1.5 py-3.5 px-4 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 border border-rose-500/40 text-rose-300 font-medium transition-all group cursor-pointer"
-              aria-label="Decline Reminder"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-600 group-hover:bg-rose-500 text-white shadow-md shadow-rose-600/40 transition-colors">
-                <PhoneOff className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-semibold">Decline</span>
-            </button>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '40px',
+              width: '100%',
+              marginTop: '4px'
+            }}
+          >
+            {/* Decline Button */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={handleReject}
+                aria-label="Decline Reminder"
+                style={{
+                  width: '58px',
+                  height: '58px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)',
+                  boxShadow: '0 8px 22px rgba(225, 29, 72, 0.45)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <PhoneOff size={24} style={{ color: '#ffffff' }} />
+              </button>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#f87171', marginTop: '8px' }}>
+                Decline
+              </span>
+            </div>
 
             {/* Accept Button */}
-            <button
-              type="button"
-              onClick={handleAccept}
-              className="flex flex-col items-center justify-center gap-1.5 py-3.5 px-4 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 border border-emerald-500/40 text-emerald-300 font-medium transition-all group cursor-pointer"
-              aria-label="Accept and Listen"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 group-hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/40 transition-colors">
-                <Phone className="w-6 h-6 animate-pulse" />
-              </div>
-              <span className="text-xs font-semibold">Accept</span>
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={handleAccept}
+                aria-label="Accept and Listen"
+                style={{
+                  width: '58px',
+                  height: '58px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  boxShadow: '0 8px 22px rgba(16, 185, 129, 0.45)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <Phone size={24} style={{ color: '#ffffff' }} />
+              </button>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#34d399', marginTop: '8px' }}>
+                Accept
+              </span>
+            </div>
           </div>
         ) : (
-          <div className="w-full flex items-center justify-center gap-4 mt-2">
-            {/* Replay Button (available when completed or playing) */}
-            <button
-              type="button"
-              onClick={handleReplay}
-              disabled={sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN'}
-              className="flex flex-col items-center justify-center gap-1 py-3 px-5 rounded-2xl bg-indigo-500/20 hover:bg-indigo-500/30 active:scale-95 border border-indigo-400/40 text-indigo-200 font-medium transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              aria-label="Replay Audio"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30">
-                <RotateCcw className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold">Replay</span>
-            </button>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '36px',
+              width: '100%',
+              marginTop: '8px'
+            }}
+          >
+            {/* Replay Button */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={handleReplay}
+                disabled={sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN'}
+                aria-label="Replay Audio"
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  border: '1.5px solid rgba(139, 92, 246, 0.45)',
+                  background: 'rgba(139, 92, 246, 0.18)',
+                  boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN' ? 'not-allowed' : 'pointer',
+                  opacity: sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN' ? 0.4 : 1,
+                  transition: 'transform 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (sessionState !== 'CONNECTING' && sessionState !== 'COUNTDOWN') {
+                    e.currentTarget.style.transform = 'scale(1.08)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <RotateCcw size={20} style={{ color: '#c4b5fd' }} />
+              </button>
+              <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#c4b5fd', marginTop: '6px' }}>
+                Replay
+              </span>
+            </div>
 
             {/* End Call Button */}
-            <button
-              type="button"
-              onClick={handleEndCall}
-              className="flex flex-col items-center justify-center gap-1 py-3 px-6 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 border border-rose-500/40 text-rose-300 font-medium transition-all cursor-pointer"
-              aria-label="End Call"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/40">
-                <PhoneOff className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold">End Call</span>
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={handleEndCall}
+                aria-label="End Call"
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)',
+                  boxShadow: '0 8px 22px rgba(225, 29, 72, 0.45)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <PhoneOff size={20} style={{ color: '#ffffff' }} />
+              </button>
+              <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#f87171', marginTop: '6px' }}>
+                End Call
+              </span>
+            </div>
           </div>
         )}
       </div>

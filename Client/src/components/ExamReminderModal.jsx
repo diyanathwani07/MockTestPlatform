@@ -140,7 +140,7 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
     }
 
     if (language === "hi") {
-      return `नमस्ते ${studentName}! टीचिंग परीक्षा AI की ओर से आपकी परीक्षा '${title}' ${formattedDate} को निर्धारित है। कृपया समय पर तैयार रहें!`;
+      return `नमस्ते ${studentName}! PrepMark की ओर से आपकी परीक्षा '${title}' ${formattedDate} को निर्धारित है। कृपया समय पर तैयार रहें!`;
     }
     return `Hello ${studentName}! This is your PrepMark voice reminder: your exam '${title}' is scheduled for ${formattedDate} at ${formattedTime}. Please prepare well!`;
   };

@@ -66,9 +66,9 @@ const getVoiceSettings = async (req, res) => {
         reminderDefaults: {
           defaultTimingMinutes: 15,
           defaultTemplateEnglish:
-            "Hello! This is your study reminder from Teaching Pariksha AI regarding: {taskTitle}.",
+            "Hello! This is your study reminder from PrepMark regarding: {taskTitle}.",
           defaultTemplateHindi:
-            "नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
+            "नमस्ते! यह PrepMark की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
         },
         enabled: true,
         ttsProvider: "gemini",

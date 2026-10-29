@@ -136,9 +136,9 @@ const DEFAULT_SETTINGS = {
   reminderDefaults: {
     defaultTimingMinutes: 15,
     defaultTemplateEnglish:
-      "Hello! This is your study reminder from Teaching Pariksha AI regarding: {taskTitle}.",
+      "Hello! This is your study reminder from PrepMark regarding: {taskTitle}.",
     defaultTemplateHindi:
-      "नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
+      "नमस्ते! यह PrepMark की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
   },
   enabled: true
 };
@@ -158,7 +158,7 @@ export default function VoiceSettings() {
 
   // Audio preview states
   const [previewProvider, setPreviewProvider] = useState("gemini");
-  const [previewText, setPreviewText] = useState("Hello! This is a test reminder from Teaching Pariksha AI.");
+  const [previewText, setPreviewText] = useState("Hello! This is a test reminder from PrepMark.");
   const [previewLang, setPreviewLang] = useState("en");
   const [previewVoice, setPreviewVoice] = useState("Aoede");
   const [previewElevenLabsVoice, setPreviewElevenLabsVoice] = useState("21m00Tcm4TlvDq8ikWAM");
@@ -2193,10 +2193,10 @@ export default function VoiceSettings() {
                           const l = e.target.value;
                           setPreviewLang(l);
                           if (l === "hi") {
-                            setPreviewText("नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपका अध्ययन अनुस्मारक है।");
+                            setPreviewText("नमस्ते! यह PrepMark की ओर से आपका अध्ययन अनुस्मारक है।");
                             setPreviewVoice(settings.hindiVoice || "Aoede");
                           } else {
-                            setPreviewText("Hello! This is a test reminder from Teaching Pariksha AI.");
+                            setPreviewText("Hello! This is a test reminder from PrepMark.");
                             setPreviewVoice(settings.englishVoice || "Aoede");
                           }
                         }}
