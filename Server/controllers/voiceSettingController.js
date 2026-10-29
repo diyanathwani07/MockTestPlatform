@@ -1,6 +1,12 @@
 const VoiceSetting = require("../models/VoiceSetting");
 const mammoth = require("mammoth");
 const { testVoiceSample } = require("../services/geminiTtsService");
+const {
+  testElevenLabsVoiceSample,
+  getAvailableElevenLabsVoices,
+  DEFAULT_ELEVENLABS_VOICES,
+  SUPPORTED_ELEVENLABS_MODELS
+} = require("../services/elevenlabsTtsService");
 const { isValidTimeZone, VALID_DAYS, timeToMinutes } = require("../services/voiceScheduleHelper");
 
 const VALID_VOICES = ["Aoede", "Charon", "Fenrir", "Kore", "Puck"];
@@ -64,13 +70,35 @@ const getVoiceSettings = async (req, res) => {
           defaultTemplateHindi:
             "नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
         },
-        enabled: true
+        enabled: true,
+        ttsProvider: "gemini",
+        elevenlabs: {
+          modelId: "eleven_multilingual_v2",
+          voiceId: "21m00Tcm4TlvDq8ikWAM",
+          stability: 0.5,
+          similarityBoost: 0.75,
+          speed: 1.0
+        }
       });
     }
 
+    if (settings && !settings.ttsProvider) {
+      settings.ttsProvider = "gemini";
+    }
+
+    const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
+    const hasElevenLabsKey = Boolean(
+      elevenLabsApiKey &&
+      elevenLabsApiKey.trim() !== "" &&
+      elevenLabsApiKey !== "your_elevenlabs_api_key_here"
+    );
+
     res.json({
       success: true,
-      settings
+      settings,
+      hasElevenLabsKey,
+      supportedElevenLabsModels: SUPPORTED_ELEVENLABS_MODELS,
+      defaultElevenLabsVoices: DEFAULT_ELEVENLABS_VOICES
     });
   } catch (error) {
     console.error("Error fetching voice settings:", error.message || error);
@@ -82,6 +110,8 @@ const getVoiceSettings = async (req, res) => {
 const updateVoiceSettings = async (req, res) => {
   try {
     const {
+      ttsProvider,
+      elevenlabs,
       englishVoice,
       hindiVoice,
       defaultLanguage,
@@ -98,8 +128,83 @@ const updateVoiceSettings = async (req, res) => {
       settings = new VoiceSetting();
     }
 
-    // Strictly retain single model gemini-2.5-flash-preview-tts
+    // Strictly retain single model gemini-2.5-flash-preview-tts for Gemini
     settings.model = "gemini-2.5-flash-preview-tts";
+
+    // 0. Provider validation
+    if (ttsProvider !== undefined) {
+      if (!["gemini", "elevenlabs"].includes(ttsProvider)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid ttsProvider. Supported providers: 'gemini', 'elevenlabs'."
+        });
+      }
+      settings.ttsProvider = ttsProvider;
+    }
+
+    // 0b. ElevenLabs settings validation
+    if (elevenlabs !== undefined) {
+      if (typeof elevenlabs !== "object" || elevenlabs === null) {
+        return res.status(400).json({
+          success: false,
+          error: "elevenlabs configuration must be an object."
+        });
+      }
+      if (!settings.elevenlabs) settings.elevenlabs = {};
+
+      if (elevenlabs.modelId !== undefined) {
+        if (typeof elevenlabs.modelId !== "string" || !elevenlabs.modelId.trim()) {
+          return res.status(400).json({
+            success: false,
+            error: "elevenlabs.modelId must be a non-empty string."
+          });
+        }
+        settings.elevenlabs.modelId = elevenlabs.modelId.trim();
+      }
+
+      if (elevenlabs.voiceId !== undefined) {
+        if (typeof elevenlabs.voiceId !== "string" || !elevenlabs.voiceId.trim()) {
+          return res.status(400).json({
+            success: false,
+            error: "elevenlabs.voiceId must be a non-empty string."
+          });
+        }
+        settings.elevenlabs.voiceId = elevenlabs.voiceId.trim();
+      }
+
+      if (elevenlabs.stability !== undefined) {
+        const val = Number(elevenlabs.stability);
+        if (isNaN(val) || val < 0 || val > 1) {
+          return res.status(400).json({
+            success: false,
+            error: "elevenlabs.stability must be a number between 0.0 and 1.0."
+          });
+        }
+        settings.elevenlabs.stability = val;
+      }
+
+      if (elevenlabs.similarityBoost !== undefined) {
+        const val = Number(elevenlabs.similarityBoost);
+        if (isNaN(val) || val < 0 || val > 1) {
+          return res.status(400).json({
+            success: false,
+            error: "elevenlabs.similarityBoost must be a number between 0.0 and 1.0."
+          });
+        }
+        settings.elevenlabs.similarityBoost = val;
+      }
+
+      if (elevenlabs.speed !== undefined) {
+        const val = Number(elevenlabs.speed);
+        if (isNaN(val) || val < 0.5 || val > 2.0) {
+          return res.status(400).json({
+            success: false,
+            error: "elevenlabs.speed must be a number between 0.5 and 2.0."
+          });
+        }
+        settings.elevenlabs.speed = val;
+      }
+    }
 
     // 1. Voice validation
     if (englishVoice !== undefined) {
@@ -334,7 +439,14 @@ const testVoicePreview = async (req, res) => {
       });
     }
 
-    const { sampleText, lang, voice, customPrompt } = req.body;
+    const {
+      sampleText,
+      lang,
+      voice,
+      customPrompt,
+      provider = "gemini",
+      elevenlabsSettings
+    } = req.body;
 
     // Strict input validation
     if (!sampleText || typeof sampleText !== "string" || sampleText.trim() === "") {
@@ -351,6 +463,63 @@ const testVoicePreview = async (req, res) => {
       });
     }
 
+    // Branch based on provider
+    if (provider === "elevenlabs") {
+      let savedSettings = null;
+      try {
+        savedSettings = await VoiceSetting.findOne();
+      } catch (_) {}
+
+      const effectiveVoiceId =
+        req.body.voiceId ||
+        voice ||
+        elevenlabsSettings?.voiceId ||
+        savedSettings?.elevenlabs?.voiceId ||
+        "21m00Tcm4TlvDq8ikWAM";
+      const effectiveModelId =
+        req.body.modelId ||
+        elevenlabsSettings?.modelId ||
+        savedSettings?.elevenlabs?.modelId ||
+        "eleven_multilingual_v2";
+      const effectiveStability =
+        req.body.stability !== undefined
+          ? Number(req.body.stability)
+          : elevenlabsSettings?.stability !== undefined
+          ? Number(elevenlabsSettings.stability)
+          : (savedSettings?.elevenlabs?.stability ?? 0.5);
+      const effectiveSimilarity =
+        req.body.similarityBoost !== undefined
+          ? Number(req.body.similarityBoost)
+          : elevenlabsSettings?.similarityBoost !== undefined
+          ? Number(elevenlabsSettings.similarityBoost)
+          : (savedSettings?.elevenlabs?.similarityBoost ?? 0.75);
+      const effectiveSpeed =
+        req.body.speed !== undefined
+          ? Number(req.body.speed)
+          : elevenlabsSettings?.speed !== undefined
+          ? Number(elevenlabsSettings.speed)
+          : (savedSettings?.elevenlabs?.speed ?? 1.0);
+
+      const result = await testElevenLabsVoiceSample({
+        sampleText: cleanSampleText,
+        voiceId: effectiveVoiceId,
+        modelId: effectiveModelId,
+        stability: effectiveStability,
+        similarityBoost: effectiveSimilarity,
+        speed: effectiveSpeed
+      });
+
+      return res.json({
+        success: true,
+        audioUrl: result.audioUrl,
+        voice: result.voice,
+        model: result.model,
+        durationSeconds: result.durationSeconds,
+        provider: "elevenlabs"
+      });
+    }
+
+    // Default: Gemini TTS
     if (voice && !VALID_VOICES.includes(voice)) {
       return res.status(400).json({
         success: false,
@@ -383,7 +552,8 @@ const testVoicePreview = async (req, res) => {
       success: true,
       audioUrl: result.audioUrl,
       voice: result.voice,
-      durationSeconds: result.durationSeconds
+      durationSeconds: result.durationSeconds,
+      provider: "gemini"
     });
   } catch (error) {
     console.error("Error testing voice sample:", error.message || error);
@@ -402,7 +572,15 @@ const testVoicePreview = async (req, res) => {
     }
 
     let safeMessage = "Failed to generate voice preview";
-    if (rawMsg.includes("API_KEY") || rawMsg.includes("key=") || rawMsg.includes("CREDENTIALS")) {
+    let statusCode = 500;
+    if (rawMsg.includes("ELEVENLABS_API_KEY") || rawMsg.includes("ElevenLabs authentication")) {
+      safeMessage = "ElevenLabs configuration error: ELEVENLABS_API_KEY is not configured or invalid in Server/.env.";
+      statusCode = 503;
+    } else if (rawMsg.includes("ElevenLabs quota exceeded")) {
+      safeMessage = "ElevenLabs quota exceeded. Please check your ElevenLabs subscription or credit balance.";
+    } else if (rawMsg.includes("ElevenLabs")) {
+      safeMessage = rawMsg.replace(/[a-zA-Z0-9_\-]{20,}/g, "[REDACTED_KEY]");
+    } else if (rawMsg.includes("API_KEY") || rawMsg.includes("key=") || rawMsg.includes("CREDENTIALS")) {
       safeMessage = "TTS service configuration error: GEMINI_API_KEY is not configured or invalid.";
     } else if (rawMsg.includes("429") || rawMsg.toLowerCase().includes("quota") || rawMsg.toLowerCase().includes("rate limit") || rawMsg.includes("RESOURCE_EXHAUSTED")) {
       safeMessage = "Gemini TTS quota exceeded. Please check your Google AI account quota.";
@@ -419,7 +597,25 @@ const testVoicePreview = async (req, res) => {
     } else if (rawMsg) {
       safeMessage = rawMsg.replace(/key=[a-zA-Z0-9_\-]+/gi, "key=REDACTED");
     }
-    res.status(500).json({ success: false, error: safeMessage });
+    res.status(statusCode).json({ success: false, error: safeMessage });
+  }
+};
+
+// 3b. Fetch ElevenLabs Voices List (Admin / Superadmin only)
+const getElevenLabsVoices = async (req, res) => {
+  try {
+    const result = await getAvailableElevenLabsVoices();
+    res.json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error("Error fetching ElevenLabs voices:", error.message || error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch ElevenLabs voices",
+      voices: DEFAULT_ELEVENLABS_VOICES
+    });
   }
 };
 
@@ -493,6 +689,7 @@ module.exports = {
   getVoiceSettings,
   updateVoiceSettings,
   testVoicePreview,
-  extractDocxText
+  extractDocxText,
+  getElevenLabsVoices
 };
 

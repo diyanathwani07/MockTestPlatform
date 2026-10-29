@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const voiceSettingSchema = new mongoose.Schema(
   {
+    ttsProvider: {
+      type: String,
+      enum: ["gemini", "elevenlabs"],
+      default: "gemini",
+      trim: true
+    },
     model: {
       type: String,
       default: "gemini-2.5-flash-preview-tts",
@@ -38,6 +44,36 @@ const voiceSettingSchema = new mongoose.Schema(
       default:
         "आप एक पेशेवर और स्पष्ट समाचार वाचक (News Broadcaster) हैं। इस समाचार को सहज, प्रामाणिक और प्रभावशाली हिंदी उच्चारण में स्पष्ट रूप से पढ़कर सुनाएं। कठिन शब्दों और तकनीकी नामों का उच्चारण अत्यंत स्पष्ट रखें।",
       trim: true
+    },
+    elevenlabs: {
+      modelId: {
+        type: String,
+        default: "eleven_multilingual_v2",
+        trim: true
+      },
+      voiceId: {
+        type: String,
+        default: "21m00Tcm4TlvDq8ikWAM",
+        trim: true
+      },
+      stability: {
+        type: Number,
+        default: 0.5,
+        min: 0,
+        max: 1
+      },
+      similarityBoost: {
+        type: Number,
+        default: 0.75,
+        min: 0,
+        max: 1
+      },
+      speed: {
+        type: Number,
+        default: 1.0,
+        min: 0.5,
+        max: 2.0
+      }
     },
     callingSchedule: {
       enabled: {

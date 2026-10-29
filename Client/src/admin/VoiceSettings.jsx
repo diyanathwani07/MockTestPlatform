@@ -68,6 +68,26 @@ const GEMINI_VOICES = [
   { id: "Puck", name: "Puck", gender: "Male", description: "Energetic, dynamic, enthusiastic reminder voice" }
 ];
 
+const DEFAULT_ELEVENLABS_VOICES = [
+  { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel", gender: "Female", description: "Calm, professional, articulate (Recommended Default)" },
+  { id: "pNInz6obpgDQGcFmaJgB", name: "Adam", gender: "Male", description: "Deep, conversational, natural educator" },
+  { id: "ErXwobaYiN019PkySvjV", name: "Antoni", gender: "Male", description: "Clear, crisp narration and academic voice" },
+  { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella", gender: "Female", description: "Warm, supportive, engaging tone" },
+  { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi", gender: "Female", description: "Energetic, dynamic, enthusiastic announcement" },
+  { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli", gender: "Female", description: "Young, clear, vibrant student advisor" },
+  { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh", gender: "Male", description: "Deep, confident, steady reminder delivery" },
+  { id: "VR6AewLTigWG4nxSOuka", name: "Arnold", gender: "Male", description: "Authoritative, crisp, formal broadcaster" },
+  { id: "yoZ06aMxZJJ28mfd3POQ", name: "Sam", gender: "Male", description: "Dynamic, versatile, relatable tone" },
+  { id: "JBFqnCBsd6RMkjVDRZzb", name: "George", gender: "Male", description: "Warm British accent, engaging narrator" }
+];
+
+const SUPPORTED_ELEVENLABS_MODELS = [
+  { id: "eleven_multilingual_v2", name: "Eleven Multilingual v2", description: "Top Quality across 29 languages (English, Hindi, etc.)" },
+  { id: "eleven_flash_v2_5", name: "Eleven Flash v2.5", description: "Fastest response with ultra-low latency" },
+  { id: "eleven_turbo_v2_5", name: "Eleven Turbo v2.5", description: "High speed with rich vocal quality" },
+  { id: "eleven_monolingual_v1", name: "Eleven English v1", description: "Standard English synthesis" }
+];
+
 const WEEK_DAYS = [
   "Monday",
   "Tuesday",
@@ -86,6 +106,7 @@ const TIMEZONES = [
 ];
 
 const DEFAULT_SETTINGS = {
+  ttsProvider: "gemini",
   model: "gemini-2.5-flash-preview-tts",
   englishVoice: "Aoede",
   hindiVoice: "Aoede",
@@ -94,6 +115,13 @@ const DEFAULT_SETTINGS = {
     "You are an articulate, professional news anchor and educator. Read this news report aloud clearly in an engaging, natural, steady broadcasting tone with precise pronunciation.",
   hindiPrompt:
     "आप एक पेशेवर और स्पष्ट समाचार वाचक (News Broadcaster) हैं। इस समाचार को सहज, प्रामाणिक और प्रभावशाली हिंदी उच्चारण में स्पष्ट रूप से पढ़कर सुनाएं। कठिन शब्दों और तकनीकी नामों का उच्चारण अत्यंत स्पष्ट रखें।",
+  elevenlabs: {
+    modelId: "eleven_multilingual_v2",
+    voiceId: "21m00Tcm4TlvDq8ikWAM",
+    stability: 0.5,
+    similarityBoost: 0.75,
+    speed: 1.0
+  },
   callingSchedule: {
     enabled: true,
     allowedDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
@@ -124,11 +152,20 @@ export default function VoiceSettings() {
   const [updatedByMeta, setUpdatedByMeta] = useState(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hasElevenLabsKey, setHasElevenLabsKey] = useState(false);
+  const [elevenLabsVoices, setElevenLabsVoices] = useState(DEFAULT_ELEVENLABS_VOICES);
+  const [loadingVoices, setLoadingVoices] = useState(false);
 
   // Audio preview states
+  const [previewProvider, setPreviewProvider] = useState("gemini");
   const [previewText, setPreviewText] = useState("Hello! This is a test reminder from Teaching Pariksha AI.");
   const [previewLang, setPreviewLang] = useState("en");
   const [previewVoice, setPreviewVoice] = useState("Aoede");
+  const [previewElevenLabsVoice, setPreviewElevenLabsVoice] = useState("21m00Tcm4TlvDq8ikWAM");
+  const [previewElevenLabsModel, setPreviewElevenLabsModel] = useState("eleven_multilingual_v2");
+  const [previewStability, setPreviewStability] = useState(0.5);
+  const [previewSimilarity, setPreviewSimilarity] = useState(0.75);
+  const [previewSpeed, setPreviewSpeed] = useState(1.0);
   const [generatingPreview, setGeneratingPreview] = useState(false);
   const [previewAudioUrl, setPreviewAudioUrl] = useState(null);
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
@@ -201,6 +238,11 @@ export default function VoiceSettings() {
         const fetched = {
           ...DEFAULT_SETTINGS,
           ...res.data.settings,
+          ttsProvider: res.data.settings.ttsProvider || "gemini",
+          elevenlabs: {
+            ...DEFAULT_SETTINGS.elevenlabs,
+            ...(res.data.settings.elevenlabs || {})
+          },
           callingSchedule: {
             ...DEFAULT_SETTINGS.callingSchedule,
             ...(res.data.settings.callingSchedule || {})
@@ -220,6 +262,28 @@ export default function VoiceSettings() {
         setUpdatedByMeta(res.data.settings.updatedBy || null);
         setLastUpdatedAt(res.data.settings.updatedAt || null);
         setPreviewVoice(fetched.englishVoice || "Aoede");
+        setPreviewProvider(fetched.ttsProvider || "gemini");
+        if (fetched.elevenlabs?.voiceId) {
+          setPreviewElevenLabsVoice(fetched.elevenlabs.voiceId);
+        }
+        if (fetched.elevenlabs?.modelId) {
+          setPreviewElevenLabsModel(fetched.elevenlabs.modelId);
+        }
+        if (fetched.elevenlabs?.stability !== undefined) {
+          setPreviewStability(fetched.elevenlabs.stability);
+        }
+        if (fetched.elevenlabs?.similarityBoost !== undefined) {
+          setPreviewSimilarity(fetched.elevenlabs.similarityBoost);
+        }
+        if (fetched.elevenlabs?.speed !== undefined) {
+          setPreviewSpeed(fetched.elevenlabs.speed);
+        }
+        if (res.data.hasElevenLabsKey !== undefined) {
+          setHasElevenLabsKey(Boolean(res.data.hasElevenLabsKey));
+        }
+        if (Array.isArray(res.data.defaultElevenLabsVoices) && res.data.defaultElevenLabsVoices.length > 0) {
+          setElevenLabsVoices(res.data.defaultElevenLabsVoices);
+        }
       }
     } catch (err) {
       console.error("[VoiceSettings] Fetch error:", err);
@@ -285,6 +349,27 @@ export default function VoiceSettings() {
     }
   };
 
+  const fetchElevenLabsVoices = async () => {
+    try {
+      setLoadingVoices(true);
+      const res = await axios.get(`${API}/api/voice-settings/elevenlabs/voices`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.data?.success && Array.isArray(res.data.voices) && res.data.voices.length > 0) {
+        setElevenLabsVoices(res.data.voices);
+        if (res.data.configured !== undefined) {
+          setHasElevenLabsKey(Boolean(res.data.configured));
+        }
+        showToast(`Loaded ${res.data.voices.length} ElevenLabs voices.`, "success");
+      }
+    } catch (err) {
+      console.warn("Could not fetch ElevenLabs voices:", err.message);
+      showToast(extractErrorMessage(err, "Failed to load ElevenLabs voices"), "error");
+    } finally {
+      setLoadingVoices(false);
+    }
+  };
+
   // Save Settings
   const handleSave = async (e) => {
     if (e) e.preventDefault();
@@ -306,6 +391,11 @@ export default function VoiceSettings() {
         const updated = {
           ...DEFAULT_SETTINGS,
           ...res.data.settings,
+          ttsProvider: res.data.settings.ttsProvider || "gemini",
+          elevenlabs: {
+            ...DEFAULT_SETTINGS.elevenlabs,
+            ...(res.data.settings.elevenlabs || {})
+          },
           callingSchedule: {
             ...DEFAULT_SETTINGS.callingSchedule,
             ...(res.data.settings.callingSchedule || {})
@@ -354,17 +444,31 @@ export default function VoiceSettings() {
         setIsPlayingPreview(false);
       }
 
-      const selectedPrompt =
-        previewLang === "hi" ? settings.hindiPrompt : settings.englishPrompt;
+      const payload = {
+        sampleText: previewText.trim(),
+        provider: previewProvider
+      };
+
+      if (previewProvider === "elevenlabs") {
+        payload.voice = previewElevenLabsVoice;
+        payload.elevenlabsSettings = {
+          modelId: previewElevenLabsModel,
+          voiceId: previewElevenLabsVoice,
+          stability: previewStability,
+          similarityBoost: previewSimilarity,
+          speed: previewSpeed
+        };
+      } else {
+        const selectedPrompt =
+          previewLang === "hi" ? settings.hindiPrompt : settings.englishPrompt;
+        payload.lang = previewLang;
+        payload.voice = previewVoice;
+        payload.customPrompt = selectedPrompt;
+      }
 
       const res = await axios.post(
         `${API}/api/voice-settings/test`,
-        {
-          sampleText: previewText.trim(),
-          lang: previewLang,
-          voice: previewVoice,
-          customPrompt: selectedPrompt
-        },
+        payload,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         }
@@ -373,7 +477,10 @@ export default function VoiceSettings() {
       if (res.data?.success && res.data.audioUrl) {
         setPreviewAudioUrl(res.data.audioUrl);
         setPreviewDuration(res.data.durationSeconds || null);
-        showToast("Audio sample generated successfully! Playing preview...", "success");
+        showToast(
+          `Audio sample generated via ${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"}! Playing preview...`,
+          "success"
+        );
 
         // Auto play generated audio
         setTimeout(() => {
@@ -1067,326 +1174,929 @@ export default function VoiceSettings() {
           {/* TAB 1: Voice & Language */}
           {activeTab === "voice" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-              {/* TTS Engine info banner */}
-              <div
-                style={{
-                  padding: "16px 20px",
-                  borderRadius: "12px",
-                  background: "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08))",
-                  border: "1px solid rgba(139, 92, 246, 0.25)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "16px",
-                  flexWrap: "wrap"
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <Sparkles size={22} style={{ color: "var(--primary)" }} />
+              {/* TTS Provider Selection Cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
                   <div>
-                    <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
-                      AI Model: {settings.model}
-                    </h4>
-                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
-                      Gemini Multimodal Live Audio Preview produces natural 24,000 Hz, 16-bit PCM voice synthesis with high intelligibility.
+                    <label style={{ display: "block", fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "2px" }}>
+                      Text-to-Speech (TTS) Provider
+                    </label>
+                    <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
+                      Choose your primary speech synthesis engine for voice reminders and word-to-speech audio.
+                    </p>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      padding: "4px 10px",
+                      borderRadius: "8px",
+                      background: (settings.ttsProvider || "gemini") === "elevenlabs" ? "rgba(59, 130, 246, 0.15)" : "rgba(139, 92, 246, 0.15)",
+                      color: (settings.ttsProvider || "gemini") === "elevenlabs" ? "#60A5FA" : "var(--primary)",
+                      border: `1px solid ${(settings.ttsProvider || "gemini") === "elevenlabs" ? "rgba(59, 130, 246, 0.3)" : "rgba(139, 92, 246, 0.3)"}`
+                    }}
+                  >
+                    Active Provider: {(settings.ttsProvider || "gemini") === "elevenlabs" ? "ElevenLabs" : "Gemini"}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                    gap: "16px",
+                    marginTop: "4px"
+                  }}
+                >
+                  {/* Option 1: Google Gemini */}
+                  <div
+                    onClick={() => {
+                      setSettings(prev => ({ ...prev, ttsProvider: "gemini" }));
+                      setPreviewProvider("gemini");
+                    }}
+                    style={{
+                      padding: "18px 20px",
+                      borderRadius: "14px",
+                      cursor: "pointer",
+                      background: (settings.ttsProvider || "gemini") === "gemini"
+                        ? "linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1))"
+                        : "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                      border: (settings.ttsProvider || "gemini") === "gemini"
+                        ? "2px solid var(--primary)"
+                        : "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                      transition: "all 0.2s ease",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px"
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                          style={{
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "10px",
+                            background: "rgba(139, 92, 246, 0.2)",
+                            color: "var(--primary)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}
+                        >
+                          <Sparkles size={18} />
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                            Google Gemini TTS
+                          </h4>
+                          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                            Google GenAI Multimodal
+                          </span>
+                        </div>
+                      </div>
+                      {(settings.ttsProvider || "gemini") === "gemini" && (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            padding: "3px 8px",
+                            borderRadius: "20px",
+                            background: "var(--primary)",
+                            color: "var(--primary-foreground, #000)"
+                          }}
+                        >
+                          <Check size={12} /> Selected
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ margin: 0, fontSize: "12.5px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                      Default provider. High-throughput 24,000 Hz 16-bit PCM voice generation with Aoede, Charon, Fenrir, Kore, and Puck personas.
+                    </p>
+                  </div>
+
+                  {/* Option 2: ElevenLabs */}
+                  <div
+                    onClick={() => {
+                      setSettings(prev => ({ ...prev, ttsProvider: "elevenlabs" }));
+                      setPreviewProvider("elevenlabs");
+                    }}
+                    style={{
+                      padding: "18px 20px",
+                      borderRadius: "14px",
+                      cursor: "pointer",
+                      background: settings.ttsProvider === "elevenlabs"
+                        ? "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.1))"
+                        : "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                      border: settings.ttsProvider === "elevenlabs"
+                        ? "2px solid #3B82F6"
+                        : "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                      transition: "all 0.2s ease",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px"
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                          style={{
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "10px",
+                            background: "rgba(59, 130, 246, 0.2)",
+                            color: "#60A5FA",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}
+                        >
+                          <Volume2 size={18} />
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                            ElevenLabs TTS
+                          </h4>
+                          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                            Premium Text-to-Speech
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 600,
+                            padding: "3px 8px",
+                            borderRadius: "6px",
+                            background: hasElevenLabsKey ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
+                            color: hasElevenLabsKey ? "#10B981" : "#F59E0B",
+                            border: `1px solid ${hasElevenLabsKey ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)"}`
+                          }}
+                        >
+                          {hasElevenLabsKey ? "Key Configured" : "Key Needed"}
+                        </span>
+                        {settings.ttsProvider === "elevenlabs" && (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              padding: "3px 8px",
+                              borderRadius: "20px",
+                              background: "#3B82F6",
+                              color: "#ffffff"
+                            }}
+                          >
+                            <Check size={12} /> Selected
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: "12.5px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                      Ultra-realistic human voices with multilingual models (Hindi & English), customizable voice stability, clarity, and pacing.
                     </p>
                   </div>
                 </div>
-                <span
-                  style={{
-                    padding: "4px 10px",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    background: "rgba(139, 92, 246, 0.2)",
-                    color: "var(--primary)"
-                  }}
-                >
-                  Official Gemini TTS
-                </span>
               </div>
 
-              {/* Language & Voice Selector Grid */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                  gap: "20px"
-                }}
-              >
-                {/* Default Language Selection */}
-                <div
-                  style={{
-                    padding: "20px",
-                    borderRadius: "14px",
-                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
-                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
-                  }}
-                >
-                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
-                    Default Language Strategy
-                  </label>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
-                    Select how the system chooses between English and Hindi voice synthesis for task titles.
-                  </p>
-                  <select
-                    value={settings.defaultLanguage || "auto"}
-                    onChange={(e) => setSettings(prev => ({ ...prev, defaultLanguage: e.target.value }))}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      background: "rgba(0, 0, 0, 0.25)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)",
-                      fontSize: "14px"
-                    }}
-                  >
-                    <option value="auto">Auto-Detect (Hindi / English)</option>
-                    <option value="en">Always English</option>
-                    <option value="hi">Always Hindi</option>
-                  </select>
+              {/* PROVIDER 1: GEMINI TTS SETTINGS */}
+              {(settings.ttsProvider || "gemini") === "gemini" && (
+                <>
+                  {/* TTS Engine info banner */}
                   <div
                     style={{
-                      marginTop: "10px",
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      background: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
-                      fontSize: "12px",
-                      color: "var(--text-secondary)",
-                      lineHeight: "1.4"
+                      padding: "16px 20px",
+                      borderRadius: "12px",
+                      background: "linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08))",
+                      border: "1px solid rgba(139, 92, 246, 0.25)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "16px",
+                      flexWrap: "wrap"
                     }}
                   >
-                    {settings.defaultLanguage === "hi"
-                      ? "All reminders are generated using the Hindi voice model."
-                      : settings.defaultLanguage === "en"
-                      ? "All reminders are generated using the English voice model."
-                      : "Devanagari text triggers Hindi synthesis, Latin text triggers English."}
-                  </div>
-                </div>
-
-                {/* English Voice Selector */}
-                <div
-                  style={{
-                    padding: "20px",
-                    borderRadius: "14px",
-                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
-                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
-                  }}
-                >
-                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
-                    English Voice Persona
-                  </label>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
-                    Voice model used for English reminder playback.
-                  </p>
-                  <select
-                    value={settings.englishVoice || "Aoede"}
-                    onChange={(e) => setSettings(prev => ({ ...prev, englishVoice: e.target.value }))}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      background: "rgba(0, 0, 0, 0.25)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)",
-                      fontSize: "14px"
-                    }}
-                  >
-                    {GEMINI_VOICES.map(v => (
-                      <option key={v.id} value={v.id}>
-                        {v.name} ({v.gender})
-                      </option>
-                    ))}
-                  </select>
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      background: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
-                      fontSize: "12px",
-                      color: "var(--text-secondary)",
-                      lineHeight: "1.4"
-                    }}
-                  >
-                    <strong style={{ color: "var(--text-primary)" }}>
-                      {GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.name} ({GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.gender}):
-                    </strong>{" "}
-                    {GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.description}
-                  </div>
-                </div>
-
-                {/* Hindi Voice Selector */}
-                <div
-                  style={{
-                    padding: "20px",
-                    borderRadius: "14px",
-                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
-                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
-                  }}
-                >
-                  <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
-                    Hindi Voice Persona
-                  </label>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
-                    Voice model used for Hindi reminder playback.
-                  </p>
-                  <select
-                    value={settings.hindiVoice || "Aoede"}
-                    onChange={(e) => setSettings(prev => ({ ...prev, hindiVoice: e.target.value }))}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      background: "rgba(0, 0, 0, 0.25)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)",
-                      fontSize: "14px"
-                    }}
-                  >
-                    {GEMINI_VOICES.map(v => (
-                      <option key={v.id} value={v.id}>
-                        {v.name} ({v.gender})
-                      </option>
-                    ))}
-                  </select>
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      background: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
-                      fontSize: "12px",
-                      color: "var(--text-secondary)",
-                      lineHeight: "1.4"
-                    }}
-                  >
-                    <strong style={{ color: "var(--text-primary)" }}>
-                      {GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.name} ({GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.gender}):
-                    </strong>{" "}
-                    {GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.description}
-                  </div>
-                </div>
-              </div>
-
-              {/* Custom System Prompts */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
-                  gap: "20px"
-                }}
-              >
-                {/* English Prompt */}
-                <div
-                  style={{
-                    padding: "20px",
-                    borderRadius: "14px",
-                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
-                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
-                      English System Instruction Prompt
-                    </label>
-                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                      {(settings.englishPrompt || "").length} chars
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <Sparkles size={22} style={{ color: "var(--primary)" }} />
+                      <div>
+                        <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                          AI Model: {settings.model}
+                        </h4>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                          Gemini Multimodal Live Audio Preview produces natural 24,000 Hz, 16-bit PCM voice synthesis with high intelligibility.
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: "rgba(139, 92, 246, 0.2)",
+                        color: "var(--primary)"
+                      }}
+                    >
+                      Official Gemini TTS
                     </span>
                   </div>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
-                    Directs the Gemini TTS vocal delivery, cadence, and broadcast tone for English reminders.
-                  </p>
-                  <textarea
-                    rows={4}
-                    value={settings.englishPrompt || ""}
-                    onChange={(e) => setSettings(prev => ({ ...prev, englishPrompt: e.target.value }))}
+
+                  {/* Language & Voice Selector Grid */}
+                  <div
                     style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      background: "rgba(0, 0, 0, 0.25)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)",
-                      fontSize: "13px",
-                      lineHeight: "1.5",
-                      resize: "vertical"
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setSettings(prev => ({ ...prev, englishPrompt: DEFAULT_SETTINGS.englishPrompt }))}
-                    style={{
-                      marginTop: "8px",
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--primary)",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                      padding: 0
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                      gap: "20px"
                     }}
                   >
-                    Reset to default English instruction
-                  </button>
-                </div>
+                    {/* Default Language Selection */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                        Default Language Strategy
+                      </label>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                        Select how the system chooses between English and Hindi voice synthesis for task titles.
+                      </p>
+                      <select
+                        value={settings.defaultLanguage || "auto"}
+                        onChange={(e) => setSettings(prev => ({ ...prev, defaultLanguage: e.target.value }))}
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "14px"
+                        }}
+                      >
+                        <option value="auto">Auto-Detect (Hindi / English)</option>
+                        <option value="en">Always English</option>
+                        <option value="hi">Always Hindi</option>
+                      </select>
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(255, 255, 255, 0.03)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                          lineHeight: "1.4"
+                        }}
+                      >
+                        {settings.defaultLanguage === "hi"
+                          ? "All reminders are generated using the Hindi voice model."
+                          : settings.defaultLanguage === "en"
+                          ? "All reminders are generated using the English voice model."
+                          : "Devanagari text triggers Hindi synthesis, Latin text triggers English."}
+                      </div>
+                    </div>
 
-                {/* Hindi Prompt */}
-                <div
-                  style={{
-                    padding: "20px",
-                    borderRadius: "14px",
-                    background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
-                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                    <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
-                      Hindi System Instruction Prompt
-                    </label>
-                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                      {(settings.hindiPrompt || "").length} chars
+                    {/* English Voice Selector */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                        English Voice Persona
+                      </label>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                        Voice model used for English reminder playback.
+                      </p>
+                      <select
+                        value={settings.englishVoice || "Aoede"}
+                        onChange={(e) => setSettings(prev => ({ ...prev, englishVoice: e.target.value }))}
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "14px"
+                        }}
+                      >
+                        {GEMINI_VOICES.map(v => (
+                          <option key={v.id} value={v.id}>
+                            {v.name} ({v.gender})
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(255, 255, 255, 0.03)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                          lineHeight: "1.4"
+                        }}
+                      >
+                        <strong style={{ color: "var(--text-primary)" }}>
+                          {GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.name} ({GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.gender}):
+                        </strong>{" "}
+                        {GEMINI_VOICES.find(v => v.id === (settings.englishVoice || "Aoede"))?.description}
+                      </div>
+                    </div>
+
+                    {/* Hindi Voice Selector */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                        Hindi Voice Persona
+                      </label>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                        Voice model used for Hindi reminder playback.
+                      </p>
+                      <select
+                        value={settings.hindiVoice || "Aoede"}
+                        onChange={(e) => setSettings(prev => ({ ...prev, hindiVoice: e.target.value }))}
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "14px"
+                        }}
+                      >
+                        {GEMINI_VOICES.map(v => (
+                          <option key={v.id} value={v.id}>
+                            {v.name} ({v.gender})
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(255, 255, 255, 0.03)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                          lineHeight: "1.4"
+                        }}
+                      >
+                        <strong style={{ color: "var(--text-primary)" }}>
+                          {GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.name} ({GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.gender}):
+                        </strong>{" "}
+                        {GEMINI_VOICES.find(v => v.id === (settings.hindiVoice || "Aoede"))?.description}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Custom System Prompts */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+                      gap: "20px"
+                    }}
+                  >
+                    {/* English Prompt */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                        <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                          English System Instruction Prompt
+                        </label>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                          {(settings.englishPrompt || "").length} chars
+                        </span>
+                      </div>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
+                        Directs the Gemini TTS vocal delivery, cadence, and broadcast tone for English reminders.
+                      </p>
+                      <textarea
+                        rows={4}
+                        value={settings.englishPrompt || ""}
+                        onChange={(e) => setSettings(prev => ({ ...prev, englishPrompt: e.target.value }))}
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "13px",
+                          lineHeight: "1.5",
+                          resize: "vertical"
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSettings(prev => ({ ...prev, englishPrompt: DEFAULT_SETTINGS.englishPrompt }))}
+                        style={{
+                          marginTop: "8px",
+                          background: "transparent",
+                          border: "none",
+                          color: "var(--primary)",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          padding: 0
+                        }}
+                      >
+                        Reset to default English instruction
+                      </button>
+                    </div>
+
+                    {/* Hindi Prompt */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                        <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                          Hindi System Instruction Prompt
+                        </label>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                          {(settings.hindiPrompt || "").length} chars
+                        </span>
+                      </div>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
+                        Directs Hindi pronunciation, news-anchor tone, and clarity for Sanskrit/Hindi academic vocabulary.
+                      </p>
+                      <textarea
+                        rows={4}
+                        value={settings.hindiPrompt || ""}
+                        onChange={(e) => setSettings(prev => ({ ...prev, hindiPrompt: e.target.value }))}
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "13px",
+                          lineHeight: "1.5",
+                          resize: "vertical"
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSettings(prev => ({ ...prev, hindiPrompt: DEFAULT_SETTINGS.hindiPrompt }))}
+                        style={{
+                          marginTop: "8px",
+                          background: "transparent",
+                          border: "none",
+                          color: "var(--primary)",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          padding: 0
+                        }}
+                      >
+                        Reset to default Hindi instruction
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* PROVIDER 2: ELEVENLABS TTS SETTINGS */}
+              {settings.ttsProvider === "elevenlabs" && (
+                <>
+                  {/* ElevenLabs Info Banner */}
+                  <div
+                    style={{
+                      padding: "16px 20px",
+                      borderRadius: "12px",
+                      background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(147, 51, 234, 0.08))",
+                      border: "1px solid rgba(59, 130, 246, 0.25)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "16px",
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <Volume2 size={22} style={{ color: "#60A5FA" }} />
+                      <div>
+                        <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                          ElevenLabs Voice Engine: {settings.elevenlabs?.modelId || "eleven_multilingual_v2"}
+                        </h4>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                          Human-like conversational pacing with custom stability and similarity controls. Supports Hindi, English, and 29 languages natively.
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          background: hasElevenLabsKey ? "rgba(16, 185, 129, 0.2)" : "rgba(245, 158, 11, 0.2)",
+                          color: hasElevenLabsKey ? "#10B981" : "#F59E0B"
+                        }}
+                      >
+                        {hasElevenLabsKey ? "API Key Connected" : "API Key Not Found"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={fetchElevenLabsVoices}
+                        disabled={loadingVoices}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          background: "rgba(255, 255, 255, 0.08)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          color: "var(--text-secondary)",
+                          fontSize: "12px",
+                          cursor: "pointer"
+                        }}
+                      >
+                        <RefreshCw size={12} className={loadingVoices ? "animate-spin" : ""} />
+                        <span>{loadingVoices ? "Loading..." : "Sync Voices"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ElevenLabs API Key Notice if missing */}
+                  {!hasElevenLabsKey && (
+                    <div
+                      style={{
+                        padding: "14px 18px",
+                        borderRadius: "12px",
+                        background: "rgba(245, 158, 11, 0.08)",
+                        border: "1px solid rgba(245, 158, 11, 0.25)",
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "12px"
+                      }}
+                    >
+                      <AlertTriangle size={18} style={{ color: "#F59E0B", marginTop: "2px", flexShrink: 0 }} />
+                      <div style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
+                        <strong style={{ color: "#F59E0B" }}>ELEVENLABS_API_KEY is not configured:</strong> To activate live ElevenLabs speech generation, add your API key to <code>Server/.env</code> as <code>ELEVENLABS_API_KEY=your_key</code> and restart the backend. Built-in previews and test mocks remain available.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ElevenLabs Model & Voice Selection Grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                      gap: "20px"
+                    }}
+                  >
+                    {/* Model Selection */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                        ElevenLabs Model
+                      </label>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                        Select the ElevenLabs neural synthesis model architecture.
+                      </p>
+                      <select
+                        value={settings.elevenlabs?.modelId || "eleven_multilingual_v2"}
+                        onChange={(e) => {
+                          const mid = e.target.value;
+                          setSettings(prev => ({
+                            ...prev,
+                            elevenlabs: { ...(prev.elevenlabs || {}), modelId: mid }
+                          }));
+                          setPreviewElevenLabsModel(mid);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "14px"
+                        }}
+                      >
+                        {SUPPORTED_ELEVENLABS_MODELS.map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(255, 255, 255, 0.03)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                          lineHeight: "1.4"
+                        }}
+                      >
+                        {SUPPORTED_ELEVENLABS_MODELS.find(m => m.id === (settings.elevenlabs?.modelId || "eleven_multilingual_v2"))?.description}
+                      </div>
+                    </div>
+
+                    {/* Voice Selection */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                        <label style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                          Primary Voice Persona
+                        </label>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                          {elevenLabsVoices.length} voices available
+                        </span>
+                      </div>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                        Choose the voice persona used for automated voice reminder synthesis.
+                      </p>
+                      <select
+                        value={settings.elevenlabs?.voiceId || "21m00Tcm4TlvDq8ikWAM"}
+                        onChange={(e) => {
+                          const vid = e.target.value;
+                          setSettings(prev => ({
+                            ...prev,
+                            elevenlabs: { ...(prev.elevenlabs || {}), voiceId: vid }
+                          }));
+                          setPreviewElevenLabsVoice(vid);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "14px"
+                        }}
+                      >
+                        {elevenLabsVoices.map(v => (
+                          <option key={v.id} value={v.id}>
+                            {v.name} {v.gender ? `(${v.gender})` : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(255, 255, 255, 0.03)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                          lineHeight: "1.4"
+                        }}
+                      >
+                        <strong style={{ color: "var(--text-primary)" }}>
+                          {elevenLabsVoices.find(v => v.id === (settings.elevenlabs?.voiceId || "21m00Tcm4TlvDq8ikWAM"))?.name}:
+                        </strong>{" "}
+                        {elevenLabsVoices.find(v => v.id === (settings.elevenlabs?.voiceId || "21m00Tcm4TlvDq8ikWAM"))?.description || "High quality ElevenLabs voice persona."}
+                      </div>
+                    </div>
+
+                    {/* Custom / Cloned Voice ID */}
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "14px",
+                        background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))"
+                      }}
+                    >
+                      <label style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+                        Custom / Cloned Voice ID
+                      </label>
+                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
+                        Optionally specify a custom or cloned voice ID from your ElevenLabs VoiceLab library.
+                      </p>
+                      <input
+                        type="text"
+                        value={settings.elevenlabs?.voiceId || ""}
+                        onChange={(e) => {
+                          const vid = e.target.value.trim();
+                          setSettings(prev => ({
+                            ...prev,
+                            elevenlabs: { ...(prev.elevenlabs || {}), voiceId: vid }
+                          }));
+                          setPreviewElevenLabsVoice(vid);
+                        }}
+                        placeholder="e.g. 21m00Tcm4TlvDq8ikWAM"
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                          color: "var(--text-primary)",
+                          fontSize: "13px",
+                          fontFamily: "monospace"
+                        }}
+                      />
+                      <div style={{ marginTop: "10px", fontSize: "11px", color: "var(--text-muted)" }}>
+                        Current active Voice ID: <code>{settings.elevenlabs?.voiceId || "21m00Tcm4TlvDq8ikWAM"}</code>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ElevenLabs Voice Controls Card (Sliders) */}
+                  <div
+                    style={{
+                      padding: "24px",
+                      borderRadius: "14px",
+                      background: "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "20px"
+                    }}
+                  >
+                    <div>
+                      <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: "600", color: "var(--text-primary)" }}>
+                        Voice Tuning Parameters
+                      </h4>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                        Fine-tune natural voice stability, vocal similarity / clarity boost, and speaking speed.
+                      </p>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                        gap: "24px"
+                      }}
+                    >
+                      {/* Stability Slider */}
+                      <div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                          <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+                            Stability
+                          </label>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#60A5FA", fontFamily: "monospace" }}>
+                            {Number(settings.elevenlabs?.stability ?? 0.5).toFixed(2)}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.0"
+                          max="1.0"
+                          step="0.05"
+                          value={settings.elevenlabs?.stability ?? 0.5}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setSettings(prev => ({
+                              ...prev,
+                              elevenlabs: { ...(prev.elevenlabs || {}), stability: val }
+                            }));
+                            setPreviewStability(val);
+                          }}
+                          style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer" }}
+                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "11px", color: "var(--text-muted)" }}>
+                          <span>Variable / Expressive (0.0)</span>
+                          <span>Stable / Consistent (1.0)</span>
+                        </div>
+                      </div>
+
+                      {/* Similarity Boost Slider */}
+                      <div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                          <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+                            Similarity / Clarity Boost
+                          </label>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#60A5FA", fontFamily: "monospace" }}>
+                            {Number(settings.elevenlabs?.similarityBoost ?? 0.75).toFixed(2)}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.0"
+                          max="1.0"
+                          step="0.05"
+                          value={settings.elevenlabs?.similarityBoost ?? 0.75}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setSettings(prev => ({
+                              ...prev,
+                              elevenlabs: { ...(prev.elevenlabs || {}), similarityBoost: val }
+                            }));
+                            setPreviewSimilarity(val);
+                          }}
+                          style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer" }}
+                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "11px", color: "var(--text-muted)" }}>
+                          <span>Low Clarity (0.0)</span>
+                          <span>High Clarity (1.0)</span>
+                        </div>
+                      </div>
+
+                      {/* Speed Slider */}
+                      <div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                          <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+                            Speaking Speed
+                          </label>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#60A5FA", fontFamily: "monospace" }}>
+                            {Number(settings.elevenlabs?.speed ?? 1.0).toFixed(2)}x
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="2.0"
+                          step="0.05"
+                          value={settings.elevenlabs?.speed ?? 1.0}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setSettings(prev => ({
+                              ...prev,
+                              elevenlabs: { ...(prev.elevenlabs || {}), speed: val }
+                            }));
+                            setPreviewSpeed(val);
+                          }}
+                          style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer" }}
+                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "11px", color: "var(--text-muted)" }}>
+                          <span>0.5x (Slower)</span>
+                          <span>1.0x (Normal)</span>
+                          <span>2.0x (Faster)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Telephony and Speech Delivery Clarification */}
+                  <div
+                    style={{
+                      padding: "14px 18px",
+                      borderRadius: "12px",
+                      background: "rgba(255, 255, 255, 0.02)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      fontSize: "12px",
+                      color: "var(--text-secondary)"
+                    }}
+                  >
+                    <Info size={16} style={{ color: "var(--primary)", flexShrink: 0 }} />
+                    <span>
+                      <strong>Note:</strong> ElevenLabs TTS synthesizes human-quality audio for task reminders. Delivery to students is governed by your automated Calling Schedule, retry rules, and configured telephony transport.
                     </span>
                   </div>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0 0 12px 0" }}>
-                    Directs Hindi pronunciation, news-anchor tone, and clarity for Sanskrit/Hindi academic vocabulary.
-                  </p>
-                  <textarea
-                    rows={4}
-                    value={settings.hindiPrompt || ""}
-                    onChange={(e) => setSettings(prev => ({ ...prev, hindiPrompt: e.target.value }))}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      background: "rgba(0, 0, 0, 0.25)",
-                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
-                      color: "var(--text-primary)",
-                      fontSize: "13px",
-                      lineHeight: "1.5",
-                      resize: "vertical"
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setSettings(prev => ({ ...prev, hindiPrompt: DEFAULT_SETTINGS.hindiPrompt }))}
-                    style={{
-                      marginTop: "8px",
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--primary)",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                      padding: 0
-                    }}
-                  >
-                    Reset to default Hindi instruction
-                  </button>
-                </div>
-              </div>
+                </>
+              )}
 
               {/* Real-time Voice Preview Tester Card */}
               <div
@@ -1397,93 +2107,229 @@ export default function VoiceSettings() {
                   border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "8px",
+                        background: previewProvider === "elevenlabs" ? "rgba(59, 130, 246, 0.2)" : "rgba(139, 92, 246, 0.2)",
+                        color: previewProvider === "elevenlabs" ? "#60A5FA" : "var(--primary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}
+                    >
+                      <Volume2 size={18} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
+                        Live Audio Sample Preview
+                      </h3>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+                        Generate and preview speech in real-time before saving settings.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Preview Engine Selector Toggle */}
                   <div
                     style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "8px",
-                      background: "rgba(139, 92, 246, 0.2)",
-                      color: "var(--primary)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center"
+                      display: "inline-flex",
+                      padding: "4px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 0, 0, 0.3)",
+                      border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))"
                     }}
                   >
-                    <Volume2 size={18} />
-                  </div>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
-                      Live Audio Sample Preview
-                    </h3>
-                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
-                      Test live Gemini TTS rendering with current persona settings before saving.
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewProvider("gemini")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        border: "none",
+                        background: previewProvider === "gemini" ? "var(--primary)" : "transparent",
+                        color: previewProvider === "gemini" ? "var(--primary-foreground, #000)" : "var(--text-secondary)",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.15s ease"
+                      }}
+                    >
+                      Gemini TTS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewProvider("elevenlabs")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        border: "none",
+                        background: previewProvider === "elevenlabs" ? "#3B82F6" : "transparent",
+                        color: previewProvider === "elevenlabs" ? "#ffffff" : "var(--text-secondary)",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.15s ease"
+                      }}
+                    >
+                      ElevenLabs TTS
+                    </button>
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "16px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
-                      Preview Language
-                    </label>
-                    <select
-                      value={previewLang}
-                      onChange={(e) => {
-                        const l = e.target.value;
-                        setPreviewLang(l);
-                        if (l === "hi") {
-                          setPreviewText("नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपका अध्ययन अनुस्मारक है।");
-                          setPreviewVoice(settings.hindiVoice || "Aoede");
-                        } else {
-                          setPreviewText("Hello! This is a test reminder from Teaching Pariksha AI.");
-                          setPreviewVoice(settings.englishVoice || "Aoede");
-                        }
-                      }}
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        borderRadius: "8px",
-                        background: "rgba(0, 0, 0, 0.25)",
-                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)",
-                        fontSize: "13px"
-                      }}
-                    >
-                      <option value="en">English</option>
-                      <option value="hi">Hindi (हिंदी)</option>
-                    </select>
-                  </div>
+                {/* Gemini Preview Controls */}
+                {previewProvider === "gemini" && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "16px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                        Preview Language
+                      </label>
+                      <select
+                        value={previewLang}
+                        onChange={(e) => {
+                          const l = e.target.value;
+                          setPreviewLang(l);
+                          if (l === "hi") {
+                            setPreviewText("नमस्ते! यह टीचिंग परीक्षा AI की ओर से आपका अध्ययन अनुस्मारक है।");
+                            setPreviewVoice(settings.hindiVoice || "Aoede");
+                          } else {
+                            setPreviewText("Hello! This is a test reminder from Teaching Pariksha AI.");
+                            setPreviewVoice(settings.englishVoice || "Aoede");
+                          }
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          color: "var(--text-primary)",
+                          fontSize: "13px"
+                        }}
+                      >
+                        <option value="en">English</option>
+                        <option value="hi">Hindi (हिंदी)</option>
+                      </select>
+                    </div>
 
-                  <div>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
-                      Preview Voice
-                    </label>
-                    <select
-                      value={previewVoice}
-                      onChange={(e) => setPreviewVoice(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        borderRadius: "8px",
-                        background: "rgba(0, 0, 0, 0.25)",
-                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
-                        color: "var(--text-primary)",
-                        fontSize: "13px"
-                      }}
-                    >
-                      {GEMINI_VOICES.map(v => (
-                        <option key={v.id} value={v.id}>
-                          {v.name} ({v.gender})
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                        Preview Voice Persona
+                      </label>
+                      <select
+                        value={previewVoice}
+                        onChange={(e) => setPreviewVoice(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          color: "var(--text-primary)",
+                          fontSize: "13px"
+                        }}
+                      >
+                        {GEMINI_VOICES.map(v => (
+                          <option key={v.id} value={v.id}>
+                            {v.name} ({v.gender})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* ElevenLabs Preview Controls */}
+                {previewProvider === "elevenlabs" && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "16px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                        ElevenLabs Model
+                      </label>
+                      <select
+                        value={previewElevenLabsModel}
+                        onChange={(e) => setPreviewElevenLabsModel(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          color: "var(--text-primary)",
+                          fontSize: "13px"
+                        }}
+                      >
+                        {SUPPORTED_ELEVENLABS_MODELS.map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                        ElevenLabs Voice
+                      </label>
+                      <select
+                        value={previewElevenLabsVoice}
+                        onChange={(e) => setPreviewElevenLabsVoice(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(0, 0, 0, 0.25)",
+                          border: "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          color: "var(--text-primary)",
+                          fontSize: "13px"
+                        }}
+                      >
+                        {elevenLabsVoices.map(v => (
+                          <option key={v.id} value={v.id}>
+                            {v.name} {v.gender ? `(${v.gender})` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                        Stability: {Number(previewStability).toFixed(2)}
+                      </label>
+                      <input
+                        type="range"
+                        min="0.0"
+                        max="1.0"
+                        step="0.05"
+                        value={previewStability}
+                        onChange={(e) => setPreviewStability(parseFloat(e.target.value))}
+                        style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer", height: "30px" }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
+                        Speed: {Number(previewSpeed).toFixed(2)}x
+                      </label>
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2.0"
+                        step="0.05"
+                        value={previewSpeed}
+                        onChange={(e) => setPreviewSpeed(parseFloat(e.target.value))}
+                        style={{ width: "100%", accentColor: "#3B82F6", cursor: "pointer", height: "30px" }}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ marginBottom: "16px" }}>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>
-                    Sample Reminder Text
+                    Sample Preview Text ({previewText.length}/3000 chars)
                   </label>
                   <input
                     type="text"
@@ -1513,8 +2359,8 @@ export default function VoiceSettings() {
                       gap: "8px",
                       padding: "9px 18px",
                       borderRadius: "10px",
-                      background: "var(--primary)",
-                      color: "var(--primary-foreground, #000)",
+                      background: previewProvider === "elevenlabs" ? "#3B82F6" : "var(--primary)",
+                      color: previewProvider === "elevenlabs" ? "#ffffff" : "var(--primary-foreground, #000)",
                       border: "none",
                       fontSize: "13px",
                       fontWeight: 600,
@@ -1522,7 +2368,7 @@ export default function VoiceSettings() {
                     }}
                   >
                     {generatingPreview ? <RefreshCw size={15} className="animate-spin" /> : <Play size={15} />}
-                    <span>{generatingPreview ? "Synthesizing Audio..." : "Generate & Test Audio"}</span>
+                    <span>{generatingPreview ? "Synthesizing Audio..." : `Generate Audio (${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"})`}</span>
                   </button>
 
                   {previewAudioUrl && (

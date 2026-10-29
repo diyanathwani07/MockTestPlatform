@@ -143,7 +143,13 @@ function extractPcmFromWav(buffer) {
  */
 async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemini-2.5-flash-preview-tts" }) {
   if (_mockProvider) {
-    return _mockProvider({ text, voice, prompt, model });
+    if (typeof _mockProvider === "function") {
+      return _mockProvider({ text, voice, prompt, model });
+    }
+    if (typeof _mockProvider.synthesize === "function") {
+      return _mockProvider.synthesize({ text, voiceName: voice, prompt, model });
+    }
+    return _mockProvider;
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -342,6 +348,20 @@ async function generateReminderPcm({
 
   if (settings.enabled === false) {
     throw new Error("Voice audio generation is currently disabled by administrator.");
+  }
+
+  // If ElevenLabs is configured as the active TTS provider, delegate to elevenlabsTtsService
+  if (settings.ttsProvider === "elevenlabs") {
+    const { generateElevenLabsReminderPcm } = require("./elevenlabsTtsService");
+    return generateElevenLabsReminderPcm({
+      scheduleId,
+      text: cleanText,
+      voiceId: voice || settings.elevenlabs?.voiceId || "21m00Tcm4TlvDq8ikWAM",
+      modelId: settings.elevenlabs?.modelId || "eleven_multilingual_v2",
+      stability: settings.elevenlabs?.stability ?? 0.5,
+      similarityBoost: settings.elevenlabs?.similarityBoost ?? 0.75,
+      speed: settings.elevenlabs?.speed ?? 1.0
+    });
   }
 
   // Determine language (respect defaultLanguage strategy when set to auto)
