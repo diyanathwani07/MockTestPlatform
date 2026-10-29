@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Lock, Unlock, ShoppingCart, Loader2, Search } from "lucide-react";
+import { Lock, Unlock, ShoppingCart, Loader2, Search, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
 import StudentNavbar from "../components/StudentNavbar";
+import ExamReminderModal from "../components/ExamReminderModal";
 import { SkeletonExamCard } from "@/components/ui/skeleton";
 import "../css/StudentDashboard.css";
 
@@ -12,6 +13,7 @@ function ExamsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [reminderModalQuiz, setReminderModalQuiz] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -155,28 +157,64 @@ function ExamsPage() {
                       </div>
 
                       {/* Action */}
-                      <button 
-                        onClick={() => navigate(`/start-test`, { state: { quizId: exam._id, fromExamsPage: true } })}
-                        className="me-btn-primary"
-                        style={{ 
-                          width: '100%', 
-                          padding: '12px', 
-                          fontSize: '14px', 
-                          fontWeight: '600',
-                          background: 'var(--violet)',
-                          color: "var(--primary-foreground)",
-                          border: 'none',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          gap: '8px',
-                          marginTop: 'auto'
-                        }}
-                      >
-                        Start Test
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', width: '100%' }}>
+                        <button 
+                          type="button"
+                          title="Schedule Voice Reminder" 
+                          aria-label={`Schedule Voice Reminder for ${exam.title}`}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setReminderModalQuiz(exam); 
+                          }}
+                          className="schedule-voice-reminder-btn"
+                          style={{ 
+                            padding: "10px 14px", 
+                            borderRadius: "8px", 
+                            border: "1.5px solid var(--border-color)", 
+                            background: "transparent", 
+                            color: "var(--text-secondary)", 
+                            cursor: "pointer", 
+                            display: "inline-flex", 
+                            alignItems: "center", 
+                            justifyContent: "center", 
+                            flexShrink: 0,
+                            transition: "all 0.15s ease"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = "var(--primary)";
+                            e.currentTarget.style.borderColor = "var(--primary)";
+                            e.currentTarget.style.transform = "scale(1.05)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = "var(--text-secondary)";
+                            e.currentTarget.style.borderColor = "var(--border-color)";
+                            e.currentTarget.style.transform = "scale(1)";
+                          }}
+                        >
+                          <Bell size={16} />
+                        </button>
+                        <button 
+                          onClick={() => navigate(`/start-test`, { state: { quizId: exam._id, fromExamsPage: true } })}
+                          className="me-btn-primary"
+                          style={{ 
+                            flex: 1, 
+                            padding: '12px', 
+                            fontSize: '14px', 
+                            fontWeight: '600',
+                            background: 'var(--violet)',
+                            color: "var(--primary-foreground)",
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          Start Test
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -185,6 +223,17 @@ function ExamsPage() {
           )}
         </div>
       </div>
+
+      {/* Schedule Voice Reminder Modal */}
+      {reminderModalQuiz && (
+        <ExamReminderModal 
+          quiz={reminderModalQuiz} 
+          onClose={() => setReminderModalQuiz(null)}
+          onScheduled={() => {
+            setReminderModalQuiz(null);
+          }}
+        />
+      )}
     </div>
   );
 }
