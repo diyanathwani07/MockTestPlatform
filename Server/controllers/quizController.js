@@ -33,6 +33,8 @@ const createQuiz = async (req, res) => {
           category: "General",
           isPublished: true,
         });
+      } else if (!series.isPublished && (bodyData.published || bodyData.status === "Published")) {
+        await ExamSeries.findByIdAndUpdate(series._id, { isPublished: true });
       }
       bodyData.examSeriesId = series._id;
     }
@@ -359,6 +361,11 @@ const updateQuiz = async (req, res) => {
 
     const wasPublished = originalQuiz.status === "Published" || originalQuiz.published === true;
     const isNowPublished = quiz.status === "Published" || quiz.published === true;
+
+    if (isNowPublished && quiz.examSeriesId) {
+      const ExamSeries = require("../models/ExamSeries");
+      await ExamSeries.findByIdAndUpdate(quiz.examSeriesId, { isPublished: true });
+    }
 
     if (!wasPublished && isNowPublished) {
       notifyAllStudents({

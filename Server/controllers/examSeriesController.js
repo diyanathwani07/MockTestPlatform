@@ -49,9 +49,14 @@ exports.createSeries = async (req, res) => {
 exports.getSeries = async (req, res) => {
   try {
     const query = {};
-    // If not admin/superadmin, return only published series
+    // If not admin/superadmin, return only published series or series with published quizzes
     if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
-      query.isPublished = true;
+      const publishedQuizSeriesIds = await Quiz.distinct("examSeriesId", {
+        examSeriesId: { $ne: null },
+        isDeleted: { $ne: true },
+        $or: [{ published: true }, { status: "Published" }],
+      });
+      query.$or = [{ isPublished: true }, { _id: { $in: publishedQuizSeriesIds } }];
     }
     const series = await ExamSeries.find(query).sort({ createdAt: -1 });
     res.json(series);
@@ -71,7 +76,16 @@ exports.getAllSeriesWithQuizzes = async (req, res) => {
       purchasedExamIds = (user?.purchasedExams || []).map(id => id.toString());
     }
 
-    const series = await ExamSeries.find({ isPublished: true }).sort({ createdAt: -1 });
+    // Include series marked published OR that have active published quizzes
+    const publishedQuizSeriesIds = await Quiz.distinct("examSeriesId", {
+      examSeriesId: { $ne: null },
+      isDeleted: { $ne: true },
+      $or: [{ published: true }, { status: "Published" }],
+    });
+
+    const series = await ExamSeries.find({
+      $or: [{ isPublished: true }, { _id: { $in: publishedQuizSeriesIds } }],
+    }).sort({ createdAt: -1 });
     const seriesIds = series.map(s => s._id);
 
     // Build quiz filter — always scoped to these series, optionally narrowed by structure/subject
