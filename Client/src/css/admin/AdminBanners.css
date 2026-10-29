@@ -64,20 +64,96 @@
   letter-spacing: 0.5px;
 }
 .al-icon-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1.5px solid #d1d5db;
+  color: #111827; /* Crisp black in light mode */
   cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  transition: all 0.2s;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
+
+.al-icon-btn svg {
+  color: #111827;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
 .al-icon-btn:hover {
-  background: var(--bg-input);
-  color: var(--text-primary);
+  background: var(--primary, #6E3FF3);
+  border-color: var(--primary, #6E3FF3);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(110, 63, 243, 0.25);
+  transform: translateY(-1px);
+}
+
+.al-icon-btn:hover svg {
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+.al-icon-btn.al-delete-btn {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1.5px solid rgba(239, 68, 68, 0.28);
+  color: #ef4444;
+}
+
+.al-icon-btn.al-delete-btn svg {
+  color: #ef4444;
+}
+
+.al-icon-btn.al-delete-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.al-icon-btn.al-delete-btn:hover svg {
+  color: #ffffff;
+}
+
+/* Dark Mode Overrides */
+body.dark-mode .al-icon-btn,
+.dark-mode .al-icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff !important; /* Crisp white in dark mode */
+}
+
+body.dark-mode .al-icon-btn svg,
+.dark-mode .al-icon-btn svg {
+  color: #ffffff !important;
+}
+
+body.dark-mode .al-icon-btn:hover,
+.dark-mode .al-icon-btn:hover {
+  background: var(--primary, #8b5cf6);
+  border-color: var(--primary, #8b5cf6);
+  color: #ffffff !important;
+}
+
+body.dark-mode .al-icon-btn.al-delete-btn,
+.dark-mode .al-icon-btn.al-delete-btn {
+  background: rgba(239, 68, 68, 0.16);
+  border: 1.5px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .al-icon-btn.al-delete-btn svg,
+.dark-mode .al-icon-btn.al-delete-btn svg {
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .al-icon-btn.al-delete-btn:hover,
+.dark-mode .al-icon-btn.al-delete-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff !important;
 }
 .al-modal-overlay {
   position: fixed;

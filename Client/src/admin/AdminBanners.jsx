@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import DashboardBannerCarousel from "../components/DashboardBannerCarousel";
 import AdminSidebar from "./components/AdminSidebar";
@@ -10,6 +11,7 @@ import "../css/admin/AdminLayout.css";
 import "../css/admin/AdminBanners.css";
 
 export default function AdminBanners() {
+  const navigate = useNavigate();
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -129,7 +131,7 @@ export default function AdminBanners() {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title="Manage Banners" />
+        <AdminNavbar title="Manage Banners" onNavigateBack={() => navigate("/admin/dashboard")} />
         <div className="admin-content">
           <div className="al-header">
         <h1 className="al-title">Manage Banners</h1>
@@ -186,8 +188,10 @@ export default function AdminBanners() {
                     {b.isActive ? <CheckCircle size={16} color="#10B981" /> : <XCircle size={16} color="#EF4444" />}
                   </td>
                   <td>
-                    <button className="al-icon-btn" onClick={() => handleOpenModal(b)} title="Edit"><Edit2 size={16}/></button>
-                    <button className="al-icon-btn" style={{color:'#EF4444'}} onClick={() => handleDelete(b._id)} title="Delete"><Trash2 size={16}/></button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button className="al-icon-btn al-edit-btn" onClick={() => handleOpenModal(b)} title="Edit"><Edit2 size={16}/></button>
+                      <button className="al-icon-btn al-delete-btn" onClick={() => handleDelete(b._id)} title="Delete"><Trash2 size={16}/></button>
+                    </div>
                   </td>
                 </tr>
               ))}

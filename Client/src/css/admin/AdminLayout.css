@@ -733,9 +733,45 @@ body.dark-mode .role-super { border-color: #10B981; color: #10B981; background: 
 .status-active-cell { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #10B981; }
 
-.action-dots-btn { background: transparent; border: none; color: var(--text-muted, #a8a5bd); font-size: 18px; font-weight: 700; cursor: pointer; padding: 4px 10px; border-radius: 6px; }
-.action-dots-btn:hover { background: rgba(110, 63, 243, 0.1); color: var(--violet, var(--primary)); }
-body.dark-mode .action-dots-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.action-dots-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1.5px solid #d1d5db;
+  color: #111827; /* Crisp black in light mode */
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.action-dots-btn:hover {
+  background: var(--violet, var(--primary, #6E3FF3));
+  border-color: var(--violet, var(--primary, #6E3FF3));
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(110, 63, 243, 0.25);
+  transform: translateY(-1px);
+}
+
+body.dark-mode .action-dots-btn,
+.dark-mode .action-dots-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff !important; /* Crisp white in dark mode */
+}
+
+body.dark-mode .action-dots-btn:hover,
+.dark-mode .action-dots-btn:hover {
+  background: var(--violet, var(--primary, #6E3FF3));
+  border-color: var(--violet, var(--primary, #6E3FF3));
+  color: #ffffff !important;
+}
 
 .table-pagination-footer { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid var(--border-color); background: var(--bg-input); }
 body.dark-mode .table-pagination-footer { background: var(--bg-card) !important; border-top-color: var(--border-color); }

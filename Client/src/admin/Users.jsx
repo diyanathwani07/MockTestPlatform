@@ -555,7 +555,16 @@ function Users() {
     <div className="admin-layout">
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title="Manage Users" />
+        <AdminNavbar 
+          title={userId ? "User Profile" : "Manage Users"} 
+          onNavigateBack={() => {
+            if (userId) {
+              navigate("/admin/users");
+            } else {
+              navigate("/admin/dashboard");
+            }
+          }} 
+        />
 
         <div className="admin-content manage-users-view-container">
           {profileLoading ? (
