@@ -1501,3 +1501,16 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
 .quiz-left-panel, .admin-quiz-right-panel {
   min-width: 0;
 }
+
+
+/* Section Item Contrast Fixes */
+.remove-btn-compact {
+  color: #dc2626 !important;
+}
+.remove-btn-compact span {
+  color: #dc2626 !important;
+}
+.remove-btn-compact svg {
+  stroke: #dc2626 !important;
+  color: #dc2626 !important;
+}

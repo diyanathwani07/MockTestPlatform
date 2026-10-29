@@ -363,43 +363,77 @@ function CreateQuizMulti() {
               const secId = typeof secRef === "object" ? (secRef._id || secRef.sectionId?._id || secRef.sectionId) : secRef;
               const linkMode = typeof secRef === "object" ? secRef.mode || "clone" : "clone";
               
+              let secData = null;
               if (typeof secRef === "object" && secRef.title) {
-                  const secDurationMins = Math.floor((secRef.duration || 0) / 60);
-                  const secDurationSecs = (secRef.duration || 0) % 60;
-                  parsedSections.push({
-                    ...secRef,
-                    sectionId: secRef._id,
-                    id: secRef._id || Date.now().toString() + Math.random(),
-                    durationMin: secDurationMins > 0 ? String(secDurationMins) : "",
-                    durationSec: secDurationSecs > 0 ? String(secDurationSecs) : "",
-                    isExternal: true,
-                    mode: linkMode,
-                  });
+                secData = secRef;
               } else if (secId) {
                 try {
                   const secRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
                   });
-                  const secData = secRes.data;
-                  const secDurationMins = Math.floor((secData.duration || 0) / 60);
-                  const secDurationSecs = (secData.duration || 0) % 60;
-                  parsedSections.push({
-                    ...secData,
-                    sectionId: secData._id,
-                    id: secData._id || Date.now().toString() + Math.random(),
-                    durationMin: secDurationMins > 0 ? String(secDurationMins) : "",
-                    durationSec: secDurationSecs > 0 ? String(secDurationSecs) : "",
-                    isExternal: true,
-                    mode: linkMode,
-                  });
+                  secData = secRes.data;
                 } catch (e) {
                   console.error("Failed to load referenced section info:", secId, e);
                 }
+              }
+
+              if (secData) {
+                let rawQuestions = secData.questions || [];
+                // If questions are only IDs or missing details, fetch populated section
+                if (rawQuestions.length > 0 && (typeof rawQuestions[0] === "string" || !rawQuestions[0].questionEnglish)) {
+                  try {
+                    const secRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, {
+                      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                    });
+                    if (secRes.data?.questions?.length > 0) {
+                      rawQuestions = secRes.data.questions;
+                    }
+                  } catch (e) {
+                    console.error("Failed to re-fetch populated section questions:", e);
+                  }
+                }
+
+                const mappedQs = rawQuestions.map((q) => {
+                  let options = q.options || [];
+                  if (options.length === 0) {
+                    options = ["", "", "", ""];
+                  }
+                  const correctIdx = options.findIndex(opt => opt && opt.trim() === q.correctAnswer?.trim());
+                  return {
+                    _id: q._id,
+                    questionEnglish: q.questionEnglish || "",
+                    questionHindi: q.questionHindi || "",
+                    options,
+                    correctOptionIndex: correctIdx !== -1 ? correctIdx : 0,
+                    correctAnswer: q.correctAnswer || (correctIdx !== -1 ? `Option ${correctIdx + 1}` : "Option 1"),
+                    explanation: q.explanation || q.explanations?.correct || "",
+                    explanations: q.explanations || {
+                      correct: q.explanation || "",
+                      incorrect: {},
+                      conceptSummary: "",
+                      didYouKnow: ""
+                    }
+                  };
+                });
+
+                const secDurationMins = Math.floor((secData.duration || 0) / 60);
+                const secDurationSecs = (secData.duration || 0) % 60;
+                parsedSections.push({
+                  ...secData,
+                  sectionId: secData._id,
+                  id: secData._id || Date.now().toString() + Math.random(),
+                  durationMin: secDurationMins > 0 ? String(secDurationMins) : "",
+                  durationSec: secDurationSecs > 0 ? String(secDurationSecs) : "",
+                  isExternal: true,
+                  mode: linkMode,
+                  questions: mappedQs.length > 0 ? mappedQs : [emptyQuestion()],
+                });
               }
             }
             if (parsedSections.length > 0) {
               setSections(parsedSections);
               setActiveSectionId(parsedSections[0].id);
+              setExpandedQuestions({ 0: true });
             }
           } else if (dbQuiz.questions && dbQuiz.questions.length > 0) {
             const legacySec = defaultSection(0);
@@ -448,6 +482,18 @@ function CreateQuizMulti() {
       newSections[index] = temp;
     }
     setSections(newSections);
+  };
+
+  const handleRemoveSection = (secId) => {
+    if (sections.length <= 1) {
+      alert("A multi-section assessment must have at least one section.");
+      return;
+    }
+    const filtered = sections.filter(s => s.id !== secId);
+    setSections(filtered);
+    if (activeSectionId === secId) {
+      setActiveSectionId(filtered[0]?.id);
+    }
   };
 
   const activeSectionIndex = sections.findIndex(s => s.id === activeSectionId);
@@ -1002,7 +1048,7 @@ function CreateQuizMulti() {
                 <div className="form-card" style={{ padding: "20px", marginBottom: 0 }}>
                   <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)", fontSize: "16px" }}>Sections</h3>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {sections.map((sec, i) => {
                       const isActive = activeSectionId === sec.id;
                       return (
@@ -1012,10 +1058,10 @@ function CreateQuizMulti() {
                           style={{
                             padding: "12px 14px",
                             borderRadius: "10px",
-                            background: isActive ? "var(--primary, #a87c51)" : "var(--bg-input, rgba(0,0,0,0.03))",
+                            background: isActive ? "var(--primary, #8B5CF6)" : "var(--bg-card, #ffffff)",
                             color: isActive ? "#ffffff" : "var(--text-primary, #111827)",
-                            border: isActive ? "1.5px solid var(--primary, #a87c51)" : "1px solid var(--border-color, #dad0bb)",
-                            boxShadow: isActive ? "0 4px 12px rgba(168, 124, 81, 0.25)" : "none",
+                            border: isActive ? "1.5px solid var(--primary, #8B5CF6)" : "1px solid var(--border-color, #dad0bb)",
+                            boxShadow: isActive ? "0 4px 12px rgba(139, 92, 246, 0.25)" : "0 1px 3px rgba(0,0,0,0.05)",
                             display: "flex",
                             flexDirection: "column",
                             gap: "8px",
@@ -1029,27 +1075,40 @@ function CreateQuizMulti() {
                             <span style={{ fontWeight: 700, fontSize: "14px", color: isActive ? "#ffffff" : "var(--text-primary, #111827)" }}>
                               {sec.title || `Section ${i + 1}`}
                             </span>
-                            <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "12px", background: isActive ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.06)", color: isActive ? "#ffffff" : "var(--text-secondary, #64748B)", textTransform: "uppercase" }}>
-                              {sec.type}
+                            <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", background: isActive ? "rgba(255, 255, 255, 0.25)" : "var(--bg-page, #f3f4f6)", color: isActive ? "#ffffff" : "var(--text-secondary, #64748B)", textTransform: "uppercase", border: isActive ? "1px solid rgba(255,255,255,0.4)" : "1px solid var(--border-color, #e5e7eb)" }}>
+                              {sec.type || "standard"}
                             </span>
                           </div>
-                          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }} onClick={(e) => e.stopPropagation()}>
-                            {i > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => moveSection(i, 'up')}
-                                style={{ background: isActive ? "rgba(255, 255, 255, 0.15)" : "transparent", border: "none", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "13px" }}
-                                title="Move section up"
-                              >↑</button>
-                            )}
-                            {i < sections.length - 1 && (
-                              <button
-                                type="button"
-                                onClick={() => moveSection(i, 'down')}
-                                style={{ background: isActive ? "rgba(255, 255, 255, 0.15)" : "transparent", border: "none", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "13px" }}
-                                title="Move section down"
-                              >↓</button>
-                            )}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
+                            <span style={{ fontSize: "12px", fontWeight: "600", color: isActive ? "rgba(255, 255, 255, 0.9)" : "var(--text-muted, #64748b)" }}>
+                              {(sec.questions || []).length} Question{(sec.questions || []).length !== 1 ? "s" : ""}
+                            </span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              {i > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveSection(i, 'up')}
+                                  style={{ background: isActive ? "rgba(255, 255, 255, 0.2)" : "var(--bg-page, #f3f4f6)", border: "1px solid " + (isActive ? "rgba(255, 255, 255, 0.3)" : "var(--border-color)"), borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "12px", fontWeight: "bold" }}
+                                  title="Move section up"
+                                >↑</button>
+                              )}
+                              {i < sections.length - 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveSection(i, 'down')}
+                                  style={{ background: isActive ? "rgba(255, 255, 255, 0.2)" : "var(--bg-page, #f3f4f6)", border: "1px solid " + (isActive ? "rgba(255, 255, 255, 0.3)" : "var(--border-color)"), borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "12px", fontWeight: "bold" }}
+                                  title="Move section down"
+                                >↓</button>
+                              )}
+                              {sections.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSection(sec.id)}
+                                  style={{ background: isActive ? "rgba(220, 38, 38, 0.3)" : "rgba(220, 38, 38, 0.1)", border: "1px solid rgba(220, 38, 38, 0.3)", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "#dc2626", padding: "2px 8px", fontSize: "11px", fontWeight: "700" }}
+                                  title="Delete Section"
+                                >Delete</button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );

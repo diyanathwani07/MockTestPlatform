@@ -613,21 +613,20 @@ function EditQuiz() {
             if (secId) {
               setSectionIdToUpdate(secId);
               
-              if (sectionRef.questions && sectionRef.questions.length > 0) {
-                finalQuestions = [...finalQuestions, ...sectionRef.questions];
-              } else {
+              let secQuestions = sectionRef.questions || [];
+              if (secQuestions.length === 0 || (typeof secQuestions[0] === "string" || !secQuestions[0].questionEnglish)) {
                 try {
                   const secResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/sections/${secId}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
                   });
-                  const sectionData = secResponse.data;
-                  if (sectionData.questions && sectionData.questions.length > 0) {
-                    finalQuestions = [...finalQuestions, ...sectionData.questions];
+                  if (secResponse.data?.questions?.length > 0) {
+                    secQuestions = secResponse.data.questions;
                   }
                 } catch (e) {
                   console.error("Error loading modular section:", secId, e);
                 }
               }
+              finalQuestions = [...finalQuestions, ...secQuestions];
             }
           }
         } else {

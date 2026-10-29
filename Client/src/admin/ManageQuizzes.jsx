@@ -349,7 +349,7 @@ function ManageQuizzes() {
     }
 
     let matchesType = true;
-    const isMulti = q.sections && q.sections.length > 1;
+    const isMulti = Boolean(q.isModular || (q.sections && q.sections.length > 0));
     if (filterType === "Single") matchesType = !isMulti;
     if (filterType === "Multi") matchesType = isMulti;
 
@@ -1020,7 +1020,7 @@ function ManageQuizzes() {
                                         if (!hasEditPermission) return null;
                                         return (
                                           <>
-                                            <div onClick={() => { setActiveDropdown(null); navigate(quiz.sections && quiz.sections.length > 1 ? `/admin/edit-quiz-multi/${quiz._id}` : `/admin/edit-quiz/${quiz._id}`); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}><Edit2 size={15} /> Edit</div>
+                                            <div onClick={() => { setActiveDropdown(null); navigate((quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? `/admin/edit-quiz-multi/${quiz._id}` : `/admin/edit-quiz/${quiz._id}`); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}><Edit2 size={15} /> Edit</div>
                                             <div onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", display: "flex", alignItems: "center", gap: "8px" }}><Trash2 size={15} /> Delete</div>
                                           </>
                                         );
@@ -1056,7 +1056,7 @@ function ManageQuizzes() {
                         {/* Bottom Row: Type & Status */}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                           <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", backgroundColor: "var(--bg-sidebar)", padding: "4px 10px", borderRadius: "6px" }}>
-                            {quiz.quizType === "practice" ? "Practice Set" : (quiz.sections && quiz.sections.length > 1 ? "Full Length" : "Sectional")}
+                            {quiz.quizType === "practice" ? "Practice Set" : ((quiz.sections && quiz.sections.length > 1) ? "Full Length" : (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? "Modular" : "Sectional")}
                           </span>
                           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
                             <span style={{
@@ -1182,8 +1182,10 @@ function ManageQuizzes() {
                                 </span>
                               );
                             })()}
-                            {(quiz.sections && quiz.sections.length > 1) ? (
-                              <span style={{ fontSize: "10px", backgroundColor: "rgba(59, 130, 246, 0.2)", color: "#3B82F6", border: "1px solid #3B82F6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>Multi</span>
+                            {(quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? (
+                              <span style={{ fontSize: "10px", backgroundColor: "rgba(59, 130, 246, 0.2)", color: "#3B82F6", border: "1px solid #3B82F6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>
+                                {(quiz.sections && quiz.sections.length > 1) ? "Multi" : "Modular"}
+                              </span>
                             ) : (
                               <span style={{ fontSize: "10px", backgroundColor: "rgba(139, 92, 246, 0.2)", color: "#8B5CF6", border: "1px solid #8B5CF6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>Single</span>
                             )}
@@ -1364,7 +1366,7 @@ function ManageQuizzes() {
                                             <div 
                                               onClick={() => { 
                                                 setActiveDropdown(null); 
-                                                if (quiz.sections && quiz.sections.length > 1) {
+                                                if (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) {
                                                   navigate(`/admin/edit-quiz-multi/${quiz._id}`);
                                                 } else {
                                                   navigate(`/admin/edit-quiz/${quiz._id}`); 
@@ -1376,7 +1378,7 @@ function ManageQuizzes() {
                                             >
                                               <Edit2 size={15} /> Edit
                                             </div>
-                                            {!(quiz.sections && quiz.sections.length > 1) && (
+                                            {!((quiz.isModular || (quiz.sections && quiz.sections.length > 0))) && (
                                             <div 
                                               onClick={() => { 
                                                 setActiveDropdown(null); 
@@ -1392,7 +1394,7 @@ function ManageQuizzes() {
                                             <div 
                                               onClick={() => { 
                                                 setActiveDropdown(null); 
-                                                if (quiz.sections && quiz.sections.length > 1) {
+                                                if (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) {
                                                   navigate(`/admin/edit-quiz-multi/${quiz._id}`);
                                                 } else {
                                                   navigate(`/admin/edit-quiz/${quiz._id}`); 
