@@ -100,6 +100,25 @@ function App() {
     const deferInit = () => {
       initPushNotifications();
     };
+
+    // Idle preload high-frequency admin panels if currently on /admin to eliminate switching lag
+    if (typeof window !== "undefined" && window.location.pathname.startsWith('/admin')) {
+      const preloadAdmin = () => {
+        import("./admin/AdminDashboard");
+        import("./admin/ManageQuizzes");
+        import("./admin/Users");
+        import("./admin/AdminBanners");
+        import("./admin/Questions");
+        import("./admin/PracticeQuizzes");
+        import("./admin/AdminTickets");
+        import("./admin/VoiceSettings");
+      };
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(preloadAdmin, { timeout: 2000 });
+      } else {
+        setTimeout(preloadAdmin, 1500);
+      }
+    }
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
       const handle = window.requestIdleCallback(deferInit, { timeout: 4000 });
       return () => window.cancelIdleCallback(handle);
