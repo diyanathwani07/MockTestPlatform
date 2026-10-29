@@ -436,24 +436,32 @@ body.dark-mode .remove-btn-compact:hover span,
 
 /* Add question manual button */
 .add-question-btn {
-  width: 100%;
-  padding: 12px;
-  border: 2px dashed var(--border-input);
-  border-radius: 10px;
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 600;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: center;
-  margin-top: 10px;
-  min-height: 44px;
+  width: 100% !important;
+  padding: 12px !important;
+  border: 2px dashed var(--primary, #a87c51) !important;
+  border-radius: 10px !important;
+  color: var(--primary, #a87c51) !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  background: rgba(168, 124, 81, 0.08) !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-align: center !important;
+  margin-top: 10px !important;
+  min-height: 44px !important;
 }
 
 .add-question-btn:hover {
-  border-color: var(--primary);
-  background-color: var(--option-hover);
+  border-color: var(--primary, #a87c51) !important;
+  background: rgba(168, 124, 81, 0.16) !important;
+  color: var(--primary, #a87c51) !important;
+}
+
+body.dark-mode .add-question-btn,
+.dark-mode .add-question-btn {
+  color: #ffffff !important;
+  border-color: var(--primary, #a87c51) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Bottom Actions Row */
@@ -500,21 +508,29 @@ body.dark-mode .remove-btn-compact:hover span,
 }
 
 .btn-save-draft {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border-input);
-  color: var(--text-primary);
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-  min-height: 44px;
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-color, #dad0bb) !important;
+  color: var(--text-primary, #4a4037) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  padding: 10px 20px !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  min-height: 44px !important;
 }
 
 .btn-save-draft:hover {
-  background: var(--bg-page);
-  border-color: var(--text-muted);
+  background: var(--bg-page, #f7f2e3) !important;
+  border-color: var(--primary, #a87c51) !important;
+  color: var(--primary, #a87c51) !important;
+}
+
+body.dark-mode .btn-save-draft,
+.dark-mode .btn-save-draft {
+  background: var(--bg-card, #111111) !important;
+  border-color: var(--border-color, #333333) !important;
+  color: #ffffff !important;
 }
 
 .btn-submit-publish {

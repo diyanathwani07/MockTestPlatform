@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
-import { Search, Plus, Trash2, Edit2, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Layers, BookOpen, ArrowUp, ArrowDown, FileText, CheckCircle } from "lucide-react";
+import { Search, Plus, Trash2, Edit2, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Layers, BookOpen, ArrowUp, ArrowDown, FileText, CheckCircle, X } from "lucide-react";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 import { SkeletonTable } from "@/components/ui/skeleton";
@@ -517,9 +517,60 @@ function ExamSeriesManager() {
 
             {/* Modal Dialog for Edit Series & Structure Management */}
             {isModalOpen && createPortal(
-              <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" }}>
-                <div style={{ background: "var(--bg-panel, #16112a)", border: "1px solid var(--border-color, rgba(255,255,255,0.1))", padding: "24px", borderRadius: "16px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}>
-                  <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)" }}>{editingId ? "Update Exam Series" : "Create Exam Series"}</h3>
+              <div 
+                style={{ 
+                  position: "fixed", 
+                  top: 0, 
+                  left: 0, 
+                  width: "100vw", 
+                  height: "100vh", 
+                  background: "rgba(0,0,0,0.65)", 
+                  backdropFilter: "blur(4px)", 
+                  display: "flex", 
+                  justifyContent: "center", 
+                  alignItems: "center", 
+                  zIndex: 99999, 
+                  padding: "20px" 
+                }}
+                onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}
+              >
+                <div 
+                  style={{ 
+                    background: "var(--bg-panel, #16112a)", 
+                    border: "1px solid var(--border-color, rgba(255,255,255,0.1))", 
+                    padding: "24px", 
+                    borderRadius: "16px", 
+                    width: "100%", 
+                    maxWidth: "920px", 
+                    maxHeight: "90vh", 
+                    overflowY: "auto", 
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
+                    position: "relative"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px", borderBottom: "1px solid var(--border-color)", paddingBottom: "12px" }}>
+                    <h3 style={{ margin: 0, color: "var(--text-primary)", fontSize: "18px", fontWeight: "700" }}>
+                      {editingId ? "Update Exam Series" : "Create Exam Series"}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--text-secondary)",
+                        cursor: "pointer",
+                        padding: "6px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "6px"
+                      }}
+                      title="Close"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
                   <form onSubmit={handleFormSubmit} style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
 <div style={{ flex: "2 1 400px", display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
