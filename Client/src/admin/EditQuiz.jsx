@@ -1766,7 +1766,7 @@ function EditQuiz() {
                                       onChange={handleMetaChange} 
                                       placeholder="Describe exam features, launch offers, and terms..." 
                                       rows={6}
-                                      style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-primary)", boxSizing: "border-box" }}
+                                      style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-input, #ffffff)", color: "var(--text-primary)", boxSizing: "border-box" }}
                                     />
                                   </div>
 

@@ -8,7 +8,7 @@ html[class*="theme-"] :is(body, #root, *) {
   --bg-page: var(--background) !important;
   --bg-card: var(--card) !important;
   --bg-panel: var(--card) !important;
-  --bg-input: var(--input) !important;
+  --bg-input: #ffffff !important;
   --bg-header: var(--card) !important;
   --bg-sidebar: var(--background) !important;
   --text-primary: var(--foreground) !important;
@@ -25,6 +25,16 @@ html[class*="theme-"] :is(body, #root, *) {
   --bottom-nav-start: var(--card) !important;
   --bottom-nav-end: var(--background) !important;
   --bottom-nav-text: var(--muted-foreground) !important;
+}
+
+
+/* Ensure high contrast clean inputs in dark mode */
+body.dark-mode,
+html[class*="theme-"] body.dark-mode,
+.dark,
+body.dark-mode :is(body, #root, *),
+html[class*="theme-"].dark :is(body, #root, *) {
+  --bg-input: var(--card, #171727) !important;
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */

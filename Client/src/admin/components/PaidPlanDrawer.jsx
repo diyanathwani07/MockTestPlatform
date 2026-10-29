@@ -150,7 +150,7 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, existingPlans = [], cur
   const currencySymbol = currency === "USD" ? "$" : "₹";
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 99999 }}>
       <div className="ticket-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "520px", width: "95%" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid var(--border-color)", flexShrink: 0 }}>
@@ -402,9 +402,9 @@ function PaidPlanDrawer({ isOpen, onClose, onSave, plan, existingPlans = [], cur
           <button
             type="button"
             onClick={handleSave}
-            style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet)", color: "var(--primary-foreground)", fontWeight: "600", cursor: "pointer" }}
+            style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "var(--violet)", color: "var(--primary-foreground)", fontWeight: "600", cursor: "pointer", whiteSpace: "nowrap" }}
           >
-            {isEditMode ? "Update Plan" : `Create ${plans.length} Plan${plans.length > 1 ? "s" : ""}`}
+            {isEditMode ? "Save Plan" : (plans.length > 1 ? "Save Plans" : "Save Plan")}
           </button>
         </div>
       </div>

@@ -477,7 +477,7 @@
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
-  z-index: 1000;
+  z-index: 99999;
   backdrop-filter: blur(4px);
   overflow: hidden;
   overscroll-behavior: contain;
