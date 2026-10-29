@@ -24,8 +24,8 @@
 
 .practice-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
   animation: fadeIn 0.4s ease;
 }
 
@@ -33,35 +33,56 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 24px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+.practice-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--violet, var(--primary));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.practice-card:hover::before {
+  opacity: 1;
 }
 
 .practice-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
-  border-color: #8B5CF6;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 .practice-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 2px;
+  gap: 8px;
 }
 
 .practice-subject-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  max-width: calc(100% - 85px);
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  max-width: calc(100% - 75px);
+  letter-spacing: 0.3px;
 }
 
 .practice-subject-badge .badge-text {
@@ -72,73 +93,85 @@
 }
 
 .practice-subject-badge .dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .practice-difficulty {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--text-secondary);
-  background: var(--bg-input);
-  padding: 4px 8px;
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color);
+  padding: 3px 8px;
   border-radius: 6px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .practice-quiz-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 8px 0;
-  line-height: 1.3;
+  margin: 0;
+  line-height: 1.4;
+  min-height: 42px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .practice-quiz-desc {
   font-size: 13px;
   color: var(--text-secondary);
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
   flex: 1;
 }
 
 .practice-meta-grid {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-top: auto;
+  margin-bottom: 4px;
 }
 
 .practice-meta-grid .meta-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-muted);
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .practice-start-btn {
   width: 100%;
-  height: 44px;
+  height: 38px;
   border-radius: 10px;
-  background: var(--violet, rgba(139, 92, 246, 0.15));
-  color: #ffffff;
-  border: 1px solid transparent;
-  font-size: 14px;
-  font-weight: 700;
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-size: 13px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-top: auto;
 }
 
 .practice-card:hover .practice-start-btn {
-  background: var(--violet, #8B5CF6);
+  background: var(--primary, #8B5CF6);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  border-color: var(--primary, #8B5CF6);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
 }
 
 /* --- Practice Test View --- */

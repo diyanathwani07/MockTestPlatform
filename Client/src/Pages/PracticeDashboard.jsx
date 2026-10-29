@@ -124,22 +124,22 @@ function PracticeDashboard() {
                       </div>
                     </div>
                     
-                    <h3 className="practice-quiz-title">{quiz.title || quiz.examGroup}</h3>
-                    
+                    <h3 className="practice-quiz-title" title={quiz.title || quiz.examGroup}>
+                      {quiz.title || quiz.examGroup}
+                    </h3>
 
                     <div className="practice-meta-grid">
                       <div className="meta-item">
-                        <HelpCircle size={14} />
+                        <HelpCircle size={13} />
                         <span>{questionCount} Questions</span>
                       </div>
-                      
                     </div>
 
                     <button 
                       className="practice-start-btn"
                       onClick={() => handleStartPractice(quiz._id)}
                     >
-                      <BookOpen size={16} />
+                      <BookOpen size={14} />
                       Start Practice
                     </button>
                   </div>
