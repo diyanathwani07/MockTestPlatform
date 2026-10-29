@@ -217,6 +217,7 @@ export const saveModularQuiz = async ({
     questions: [],
     isModular: true,
     examSeriesId: quizMeta.examSeriesId || null,
+    examStructureId: quizMeta.examStructureId || null,
     isPaid: Boolean(quizMeta.isPaid),
     price: Number(quizMeta.price || 0),
     isPracticePaid: Boolean(quizMeta.isPracticePaid),
@@ -329,6 +330,7 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     quizType: isPractice ? "practice" : "exam",
     publishAs: quizMeta.publishAs || (isPractice ? "practice" : "exam"),
     examSeriesId: quizMeta.examSeriesId || null,
+    examStructureId: quizMeta.examStructureId || null,
     isPaid: Boolean(quizMeta.isPaid),
     price: Number(quizMeta.price || 0),
     isPracticePaid: Boolean(quizMeta.isPracticePaid),
@@ -342,6 +344,8 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
   delete payload.createdAt;
   delete payload.updatedAt;
   delete payload.__v;
+  if (!payload.examStructureId) payload.examStructureId = null;
+  if (!payload.examSeriesId) payload.examSeriesId = null;
 
   if (isPractice) {
     payload.showResultAfterSubmission = quizMeta.practiceShowResultAfterSubmission !== undefined ? quizMeta.practiceShowResultAfterSubmission : true;

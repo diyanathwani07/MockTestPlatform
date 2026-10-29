@@ -20,6 +20,8 @@ const quizService = require("../services/quizService");
 const createQuiz = async (req, res) => {
   try {
     const bodyData = { ...req.body };
+    if (!bodyData.examStructureId) bodyData.examStructureId = null;
+    if (!bodyData.examSeriesId) bodyData.examSeriesId = null;
     if (bodyData.examName) {
       const ExamSeries = require("../models/ExamSeries");
       const slug = bodyData.examName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -214,6 +216,8 @@ const updateQuiz = async (req, res) => {
 
     console.log("=== UPDATE QUIZ REQUEST BODY ===", JSON.stringify(req.body, null, 2));
     const updateData = { ...req.body };
+    if (!updateData.examStructureId) updateData.examStructureId = null;
+    if (!updateData.examSeriesId) updateData.examSeriesId = null;
 
     // Resolve examSeriesId based on examName if provided or changed
     if (updateData.examName) {

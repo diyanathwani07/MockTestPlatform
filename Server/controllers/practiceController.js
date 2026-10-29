@@ -213,6 +213,9 @@ const createPracticeQuiz = async (req, res) => {
 
     const quiz = new PracticeQuiz({
       examName: examName || "",
+      examStructureId: req.body.examStructureId || null,
+      examSeriesId: req.body.examSeriesId || null,
+      linkedExamId: req.body.linkedExamId || null,
       title,
       subject,
       description,
@@ -278,6 +281,9 @@ const updatePracticeQuiz = async (req, res) => {
     const originalPlans = quiz.plans ? JSON.parse(JSON.stringify(quiz.plans)) : [];
 
     if (req.body.examName !== undefined) quiz.examName = req.body.examName;
+    if (req.body.examStructureId !== undefined) quiz.examStructureId = req.body.examStructureId || null;
+    if (req.body.examSeriesId !== undefined) quiz.examSeriesId = req.body.examSeriesId || null;
+    if (req.body.linkedExamId !== undefined) quiz.linkedExamId = req.body.linkedExamId || null;
     quiz.title = req.body.title || quiz.title;
     quiz.subject = req.body.subject || quiz.subject;
     quiz.description = req.body.description !== undefined ? req.body.description : quiz.description;
