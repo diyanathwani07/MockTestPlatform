@@ -701,11 +701,81 @@ body.dark-mode .admin-sidebar .sidebar-link.logout-btn svg {
 .question-badge { background: var(--bg-input, #F1EFFA); color: var(--text-primary, #2D1B69); font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 8px; letter-spacing: 0.5px; }
 
 .remove-btn-compact {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #FCEBEB; color: #D92D2D;
-  font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px; border: 1px solid #F5B8C4; cursor: pointer;
-  white-space: nowrap; width: fit-content; flex-shrink: 0; transition: all 0.15s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: rgba(220, 38, 38, 0.08) !important;
+  border: 1.5px solid rgba(220, 38, 38, 0.35) !important;
+  color: #dc2626 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 34px !important;
 }
-.remove-btn-compact:hover { background: #D92D2D; color: #ffffff; border-color: #D92D2D; box-shadow: 0 4px 12px rgba(217, 45, 45, 0.2); }
+
+.remove-btn-compact svg {
+  color: #dc2626 !important;
+  stroke: #dc2626 !important;
+  flex-shrink: 0 !important;
+}
+
+.remove-btn-compact span {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+}
+
+.remove-btn-compact:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25) !important;
+}
+
+.remove-btn-compact:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.remove-btn-compact:hover span {
+  color: #ffffff !important;
+}
+
+body.dark-mode .remove-btn-compact,
+.dark-mode .remove-btn-compact {
+  background: rgba(239, 68, 68, 0.16) !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .remove-btn-compact svg,
+.dark-mode .remove-btn-compact svg {
+  color: #fca5a5 !important;
+  stroke: #fca5a5 !important;
+}
+
+body.dark-mode .remove-btn-compact span,
+.dark-mode .remove-btn-compact span {
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .remove-btn-compact:hover,
+.dark-mode .remove-btn-compact:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+body.dark-mode .remove-btn-compact:hover svg,
+.dark-mode .remove-btn-compact:hover svg,
+body.dark-mode .remove-btn-compact:hover span,
+.dark-mode .remove-btn-compact:hover span {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
 
 
 /* ==========================================================================

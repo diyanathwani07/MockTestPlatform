@@ -22,6 +22,9 @@
   /* Legacy variable aliases mapped to shadcn vars */
   --primary-strong: var(--primary);
   --primary-light: var(--secondary);
+  --primary-color: var(--primary);
+  --text-main: var(--foreground);
+  --red: #dc2626;
   --bg-card: var(--card);
   --bg-body: var(--background);
   --text-primary: var(--foreground);

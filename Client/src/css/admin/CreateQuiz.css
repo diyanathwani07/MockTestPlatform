@@ -275,25 +275,80 @@ input.force-quiz-input:focus {
 }
 
 .remove-btn-compact {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: 1px solid var(--red);
-  color: var(--red);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-  min-height: 44px;
-  justify-content: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: rgba(220, 38, 38, 0.08) !important;
+  border: 1.5px solid rgba(220, 38, 38, 0.35) !important;
+  color: #dc2626 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-height: 34px !important;
+}
+
+.remove-btn-compact svg {
+  color: #dc2626 !important;
+  stroke: #dc2626 !important;
+  flex-shrink: 0 !important;
+}
+
+.remove-btn-compact span {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
 }
 
 .remove-btn-compact:hover {
-  background-color: var(--red);
-  color: #fff;
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25) !important;
+}
+
+.remove-btn-compact:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.remove-btn-compact:hover span {
+  color: #ffffff !important;
+}
+
+body.dark-mode .remove-btn-compact,
+.dark-mode .remove-btn-compact {
+  background: rgba(239, 68, 68, 0.16) !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .remove-btn-compact svg,
+.dark-mode .remove-btn-compact svg {
+  color: #fca5a5 !important;
+  stroke: #fca5a5 !important;
+}
+
+body.dark-mode .remove-btn-compact span,
+.dark-mode .remove-btn-compact span {
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .remove-btn-compact:hover,
+.dark-mode .remove-btn-compact:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+body.dark-mode .remove-btn-compact:hover svg,
+.dark-mode .remove-btn-compact:hover svg,
+body.dark-mode .remove-btn-compact:hover span,
+.dark-mode .remove-btn-compact:hover span {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 .question-inputs-fields {

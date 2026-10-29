@@ -1003,43 +1003,57 @@ function CreateQuizMulti() {
                   <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)", fontSize: "16px" }}>Sections</h3>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    {sections.map((sec, i) => (
-                      <div
-                        key={sec.id}
-                        style={{
-                          padding: "12px",
-                          borderRadius: "8px",
-                          background: activeSectionId === sec.id ? "var(--primary-color)" : "var(--bg-input)",
-                          color: activeSectionId === sec.id ? "#fff" : "var(--text-main)",
-                          border: "1px solid var(--border-input)",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "8px"
-                        }}
-                      >
+                    {sections.map((sec, i) => {
+                      const isActive = activeSectionId === sec.id;
+                      return (
                         <div
+                          key={sec.id}
                           onClick={() => setActiveSectionId(sec.id)}
-                          style={{ display: "flex", justifyContent: "space-between", cursor: "pointer" }}
+                          style={{
+                            padding: "12px 14px",
+                            borderRadius: "10px",
+                            background: isActive ? "var(--primary, #a87c51)" : "var(--bg-input, rgba(0,0,0,0.03))",
+                            color: isActive ? "#ffffff" : "var(--text-primary, #111827)",
+                            border: isActive ? "1.5px solid var(--primary, #a87c51)" : "1px solid var(--border-color, #dad0bb)",
+                            boxShadow: isActive ? "0 4px 12px rgba(168, 124, 81, 0.25)" : "none",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "8px",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease"
+                          }}
                         >
-                          <span style={{ fontWeight: 600 }}>{sec.title || `Section ${i + 1}`}</span>
-                          <span style={{ fontSize: "12px", opacity: 0.8 }}>{sec.type}</span>
+                          <div
+                            style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                          >
+                            <span style={{ fontWeight: 700, fontSize: "14px", color: isActive ? "#ffffff" : "var(--text-primary, #111827)" }}>
+                              {sec.title || `Section ${i + 1}`}
+                            </span>
+                            <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "12px", background: isActive ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.06)", color: isActive ? "#ffffff" : "var(--text-secondary, #64748B)", textTransform: "uppercase" }}>
+                              {sec.type}
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }} onClick={(e) => e.stopPropagation()}>
+                            {i > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => moveSection(i, 'up')}
+                                style={{ background: isActive ? "rgba(255, 255, 255, 0.15)" : "transparent", border: "none", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "13px" }}
+                                title="Move section up"
+                              >↑</button>
+                            )}
+                            {i < sections.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => moveSection(i, 'down')}
+                                style={{ background: isActive ? "rgba(255, 255, 255, 0.15)" : "transparent", border: "none", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "13px" }}
+                                title="Move section down"
+                              >↓</button>
+                            )}
+                          </div>
                         </div>
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                          {i > 0 && (
-                            <button
-                              onClick={() => moveSection(i, 'up')}
-                              style={{ background: "transparent", border: "none", cursor: "pointer", color: "inherit" }}
-                            >↑</button>
-                          )}
-                          {i < sections.length - 1 && (
-                            <button
-                              onClick={() => moveSection(i, 'down')}
-                              style={{ background: "transparent", border: "none", cursor: "pointer", color: "inherit" }}
-                            >↓</button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <button
@@ -1049,8 +1063,8 @@ function CreateQuizMulti() {
                       padding: "10px",
                       width: "100%",
                       background: "transparent",
-                      border: "1.5px dashed var(--primary-color)",
-                      color: "var(--primary-color)",
+                      border: "1.5px dashed var(--primary, #6E3FF3)",
+                      color: "var(--primary, #6E3FF3)",
                       borderRadius: "8px",
                       cursor: "pointer",
                       fontWeight: "bold"
@@ -1945,7 +1959,7 @@ function CreateQuizMulti() {
                       style={{
                         padding: "12px",
                         background: "var(--bg-input)",
-                        color: "var(--text-main)",
+                        color: "var(--text-primary, #111827)",
                         border: "1.5px solid var(--border-input)",
                         borderRadius: "10px",
                         cursor: "pointer",
@@ -2082,7 +2096,7 @@ function CreateQuizMulti() {
                           type="checkbox"
                           checked={quizMeta.enablePerQuestionTimer}
                           onChange={(e) => setQuizMeta(prev => ({ ...prev, enablePerQuestionTimer: e.target.checked }))}
-                          style={{ accentColor: "var(--primary-color)", width: "16px", height: "16px" }}
+                          style={{ accentColor: "var(--primary, #6E3FF3)", width: "16px", height: "16px" }}
                         />
                         <span>Enable Per Question Timer</span>
                       </label>
@@ -2092,7 +2106,7 @@ function CreateQuizMulti() {
                           type="checkbox"
                           checked={quizMeta.lockPreviousQuestions}
                           onChange={(e) => setQuizMeta(prev => ({ ...prev, lockPreviousQuestions: e.target.checked }))}
-                          style={{ accentColor: "var(--primary-color)", width: "16px", height: "16px" }}
+                          style={{ accentColor: "var(--primary, #6E3FF3)", width: "16px", height: "16px" }}
                         />
                         <span>Lock Previous Questions</span>
                       </label>
@@ -2158,7 +2172,7 @@ function CreateQuizMulti() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <h3 style={{ margin: 0, color: "var(--text-main)" }}>Questions</h3>
+                      <h3 style={{ margin: 0, color: "var(--text-primary, #111827)" }}>Questions</h3>
                       <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '500' }}>
                         {getActiveQuestions().length} {getActiveQuestions().length === 1 ? 'Question' : 'Questions'}
                       </span>
@@ -2167,7 +2181,7 @@ function CreateQuizMulti() {
                         style={{
                           background: "transparent",
                           border: "none",
-                          color: "var(--primary-color)",
+                          color: "var(--primary, #6E3FF3)",
                           fontSize: "12px",
                           fontWeight: "600",
                           cursor: "pointer",
@@ -2261,9 +2275,9 @@ function CreateQuizMulti() {
                                 padding: "8px 16px",
                                 borderRadius: "20px",
                                 border: "1px solid",
-                                borderColor: activeDifficulty === diff ? "var(--primary-color)" : "var(--border-input)",
+                                borderColor: activeDifficulty === diff ? "var(--primary, #6E3FF3)" : "var(--border-input)",
                                 background: activeDifficulty === diff ? "rgba(108, 93, 211, 0.1)" : "transparent",
-                                color: activeDifficulty === diff ? "var(--primary-color)" : "var(--text-muted)",
+                                color: activeDifficulty === diff ? "var(--primary, #6E3FF3)" : "var(--text-muted)",
                                 cursor: "pointer",
                                 textTransform: "capitalize"
                               }}
@@ -2488,8 +2502,8 @@ function CreateQuizMulti() {
                       style={{
                         padding: "12px",
                         background: "rgba(108, 93, 211, 0.1)",
-                        color: "var(--primary-color)",
-                        border: "1px dashed var(--primary-color)",
+                        color: "var(--primary, #6E3FF3)",
+                        border: "1px dashed var(--primary, #6E3FF3)",
                         borderRadius: "8px",
                         cursor: "pointer",
                         fontWeight: "bold",

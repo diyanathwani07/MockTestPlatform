@@ -37,6 +37,8 @@
   /* Borders */
   --border-color:   #ECE9F7;
   --border-input:   #e4e1f0;
+  --primary-color: var(--primary);
+  --text-main:     var(--text-primary);
 
   /* Brand */
   --primary-foreground: #ffffff;
