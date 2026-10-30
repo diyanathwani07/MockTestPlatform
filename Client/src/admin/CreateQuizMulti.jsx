@@ -1068,10 +1068,16 @@ function CreateQuizMulti() {
                           style={{
                             padding: "12px 14px",
                             borderRadius: "10px",
-                            background: isActive ? "var(--primary, #8B5CF6)" : "var(--bg-card, #ffffff)",
-                            color: isActive ? "#ffffff" : "var(--text-primary, #111827)",
-                            border: isActive ? "1.5px solid var(--primary, #8B5CF6)" : "1px solid var(--border-color, #dad0bb)",
-                            boxShadow: isActive ? "0 4px 12px rgba(139, 92, 246, 0.25)" : "0 1px 3px rgba(0,0,0,0.05)",
+                            background: isActive
+                              ? "color-mix(in srgb, var(--primary, #8B5CF6) 12%, var(--bg-card, #1e1e1e))"
+                              : "var(--bg-card, #ffffff)",
+                            color: "var(--text-primary, #111827)",
+                            border: isActive
+                              ? "1.5px solid var(--primary, #8B5CF6)"
+                              : "1px solid var(--border-color, #dad0bb)",
+                            boxShadow: isActive
+                              ? "0 4px 12px color-mix(in srgb, var(--primary, #8B5CF6) 20%, transparent)"
+                              : "0 1px 3px rgba(0,0,0,0.05)",
                             display: "flex",
                             flexDirection: "column",
                             gap: "8px",
@@ -1082,15 +1088,28 @@ function CreateQuizMulti() {
                           <div
                             style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                           >
-                            <span style={{ fontWeight: 700, fontSize: "14px", color: isActive ? "#ffffff" : "var(--text-primary, #111827)" }}>
+                            <span style={{ fontWeight: 700, fontSize: "14px", color: "var(--text-primary, #111827)" }}>
                               {sec.title || `Section ${i + 1}`}
                             </span>
-                            <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", background: isActive ? "rgba(255, 255, 255, 0.25)" : "var(--bg-page, #f3f4f6)", color: isActive ? "#ffffff" : "var(--text-secondary, #64748B)", textTransform: "uppercase", border: isActive ? "1px solid rgba(255,255,255,0.4)" : "1px solid var(--border-color, #e5e7eb)" }}>
+                            <span style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              background: isActive
+                                ? "color-mix(in srgb, var(--primary, #8B5CF6) 20%, transparent)"
+                                : "var(--bg-page, #f3f4f6)",
+                              color: "var(--text-primary, #111827)",
+                              textTransform: "uppercase",
+                              border: isActive
+                                ? "1px solid color-mix(in srgb, var(--primary, #8B5CF6) 40%, transparent)"
+                                : "1px solid var(--border-color, #e5e7eb)"
+                            }}>
                               {sec.type || "standard"}
                             </span>
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
-                            <span style={{ fontSize: "12px", fontWeight: "600", color: isActive ? "rgba(255, 255, 255, 0.9)" : "var(--text-muted, #64748b)" }}>
+                            <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary, #64748b)" }}>
                               {(sec.questions || []).length} Question{(sec.questions || []).length !== 1 ? "s" : ""}
                             </span>
                             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1098,7 +1117,16 @@ function CreateQuizMulti() {
                                 <button
                                   type="button"
                                   onClick={() => moveSection(i, 'up')}
-                                  style={{ background: isActive ? "rgba(255, 255, 255, 0.2)" : "var(--bg-page, #f3f4f6)", border: "1px solid " + (isActive ? "rgba(255, 255, 255, 0.3)" : "var(--border-color)"), borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "12px", fontWeight: "bold" }}
+                                  style={{
+                                    background: "var(--bg-page, #f3f4f6)",
+                                    border: "1px solid var(--border-color, #e5e7eb)",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    color: "var(--text-primary, #111827)",
+                                    padding: "2px 6px",
+                                    fontSize: "12px",
+                                    fontWeight: "bold"
+                                  }}
                                   title="Move section up"
                                 >↑</button>
                               )}
@@ -1106,7 +1134,16 @@ function CreateQuizMulti() {
                                 <button
                                   type="button"
                                   onClick={() => moveSection(i, 'down')}
-                                  style={{ background: isActive ? "rgba(255, 255, 255, 0.2)" : "var(--bg-page, #f3f4f6)", border: "1px solid " + (isActive ? "rgba(255, 255, 255, 0.3)" : "var(--border-color)"), borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "12px", fontWeight: "bold" }}
+                                  style={{
+                                    background: "var(--bg-page, #f3f4f6)",
+                                    border: "1px solid var(--border-color, #e5e7eb)",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    color: "var(--text-primary, #111827)",
+                                    padding: "2px 6px",
+                                    fontSize: "12px",
+                                    fontWeight: "bold"
+                                  }}
                                   title="Move section down"
                                 >↓</button>
                               )}
@@ -1114,7 +1151,16 @@ function CreateQuizMulti() {
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveSection(sec.id)}
-                                  style={{ background: isActive ? "rgba(220, 38, 38, 0.3)" : "rgba(220, 38, 38, 0.1)", border: "1px solid rgba(220, 38, 38, 0.3)", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "#dc2626", padding: "2px 8px", fontSize: "11px", fontWeight: "700" }}
+                                  style={{
+                                    background: "rgba(220, 38, 38, 0.1)",
+                                    border: "1px solid rgba(220, 38, 38, 0.3)",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    color: "#dc2626",
+                                    padding: "2px 8px",
+                                    fontSize: "11px",
+                                    fontWeight: "700"
+                                  }}
                                   title="Delete Section"
                                 >Delete</button>
                               )}

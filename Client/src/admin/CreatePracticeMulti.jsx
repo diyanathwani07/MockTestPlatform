@@ -612,10 +612,16 @@ function CreatePracticeMulti() {
                           style={{
                             padding: "12px 14px",
                             borderRadius: "10px",
-                            background: isActive ? "var(--primary, #a87c51)" : "var(--bg-input, rgba(0,0,0,0.03))",
-                            color: isActive ? "#ffffff" : "var(--text-primary, #111827)",
-                            border: isActive ? "1.5px solid var(--primary, #a87c51)" : "1px solid var(--border-color, #dad0bb)",
-                            boxShadow: isActive ? "0 4px 12px rgba(168, 124, 81, 0.25)" : "none",
+                            background: isActive
+                              ? "color-mix(in srgb, var(--primary, #a87c51) 12%, var(--bg-card, #1e1e1e))"
+                              : "var(--bg-card, #ffffff)",
+                            color: "var(--text-primary, #111827)",
+                            border: isActive
+                              ? "1.5px solid var(--primary, #a87c51)"
+                              : "1px solid var(--border-color, #dad0bb)",
+                            boxShadow: isActive
+                              ? "0 4px 12px color-mix(in srgb, var(--primary, #a87c51) 20%, transparent)"
+                              : "none",
                             display: "flex",
                             flexDirection: "column",
                             gap: "8px",
@@ -626,10 +632,23 @@ function CreatePracticeMulti() {
                           <div
                             style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                           >
-                            <span style={{ fontWeight: 700, fontSize: "14px", color: isActive ? "#ffffff" : "var(--text-primary, #111827)" }}>
+                            <span style={{ fontWeight: 700, fontSize: "14px", color: "var(--text-primary, #111827)" }}>
                               {sec.title || `Section ${i + 1}`}
                             </span>
-                            <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "12px", background: isActive ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.06)", color: isActive ? "#ffffff" : "var(--text-secondary, #64748B)", textTransform: "uppercase" }}>
+                            <span style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              background: isActive
+                                ? "color-mix(in srgb, var(--primary, #a87c51) 20%, transparent)"
+                                : "var(--bg-page, rgba(0, 0, 0, 0.06))",
+                              color: "var(--text-primary, #111827)",
+                              textTransform: "uppercase",
+                              border: isActive
+                                ? "1px solid color-mix(in srgb, var(--primary, #a87c51) 40%, transparent)"
+                                : "1px solid var(--border-color, #e5e7eb)"
+                            }}>
                               {sec.type}
                             </span>
                           </div>
@@ -638,7 +657,15 @@ function CreatePracticeMulti() {
                               <button
                                 type="button"
                                 onClick={() => moveSection(i, 'up')}
-                                style={{ background: isActive ? "rgba(255, 255, 255, 0.15)" : "transparent", border: "none", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "13px" }}
+                                style={{
+                                  background: "var(--bg-page, #f3f4f6)",
+                                  border: "1px solid var(--border-color, #e5e7eb)",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  color: "var(--text-primary, #111827)",
+                                  padding: "2px 6px",
+                                  fontSize: "13px"
+                                }}
                                 title="Move section up"
                               >↑</button>
                             )}
@@ -646,7 +673,15 @@ function CreatePracticeMulti() {
                               <button
                                 type="button"
                                 onClick={() => moveSection(i, 'down')}
-                                style={{ background: isActive ? "rgba(255, 255, 255, 0.15)" : "transparent", border: "none", borderRadius: "4px", cursor: "pointer", color: isActive ? "#ffffff" : "var(--text-primary, #111827)", padding: "2px 6px", fontSize: "13px" }}
+                                style={{
+                                  background: "var(--bg-page, #f3f4f6)",
+                                  border: "1px solid var(--border-color, #e5e7eb)",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  color: "var(--text-primary, #111827)",
+                                  padding: "2px 6px",
+                                  fontSize: "13px"
+                                }}
                                 title="Move section down"
                               >↓</button>
                             )}

@@ -67,6 +67,7 @@ const RevenueDashboard = lazy(() => import("./admin/RevenueDashboard"));
 const AiSubscribers = lazy(() => import("./admin/AiSubscribers"));
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
+import GlobalBackButtonHandler from "./components/GlobalBackButtonHandler";
 import { SocketProvider, useSocket } from "./context/SocketContext";
 import incomingReminderService from "./services/incomingReminderService";
 import IncomingReminderModal from "./components/IncomingReminderModal";
@@ -130,6 +131,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <GlobalBackButtonHandler />
       <SocketProvider>
         <Suspense fallback={<div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main, #0B0A10)' }}><div className="loader" style={{ width: '48px', height: '48px', border: '5px solid #4A358A', borderBottomColor: 'transparent', borderRadius: '50%', display: 'inline-block', boxSizing: 'border-box', animation: 'rotation 1s linear infinite' }}></div><style>{`@keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style></div>}>
       <Routes>
