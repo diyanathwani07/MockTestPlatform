@@ -99,8 +99,9 @@ function CreateQuizMulti() {
     aiSourceUrl: "",
   });
 
-  const [sections, setSections] = useState([defaultSection(0)]);
-  const [activeSectionId, setActiveSectionId] = useState(sections[0].id);
+  const initSection = defaultSection(0);
+  const [sections, setSections] = useState(id ? null : [initSection]);
+  const [activeSectionId, setActiveSectionId] = useState(id ? null : initSection.id);
   const [activeDifficulty, setActiveDifficulty] = useState("easy");
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
 
@@ -465,12 +466,14 @@ function CreateQuizMulti() {
   const handleMetaChange = (e) => setQuizMeta({ ...quizMeta, [e.target.name]: e.target.value });
 
   const handleAddSection = () => {
-    const newSec = defaultSection(sections.length);
-    setSections([...sections, newSec]);
+    const cur = sections || [];
+    const newSec = defaultSection(cur.length);
+    setSections([...cur, newSec]);
     setActiveSectionId(newSec.id);
   };
 
   const moveSection = (index, direction) => {
+    if (!sections) return;
     const newSections = [...sections];
     if (direction === 'up' && index > 0) {
       const temp = newSections[index - 1];
@@ -485,7 +488,7 @@ function CreateQuizMulti() {
   };
 
   const handleRemoveSection = (secId) => {
-    if (sections.length <= 1) {
+    if (!sections || sections.length <= 1) {
       alert("A multi-section assessment must have at least one section.");
       return;
     }
@@ -496,10 +499,11 @@ function CreateQuizMulti() {
     }
   };
 
-  const activeSectionIndex = sections.findIndex(s => s.id === activeSectionId);
-  const activeSection = sections[activeSectionIndex] || sections[0];
+  const activeSectionIndex = (sections || []).findIndex(s => s.id === activeSectionId);
+  const activeSection = sections ? (sections[activeSectionIndex] || sections[0]) : null;
 
   const updateActiveSection = (updates) => {
+    if (!sections) return;
     const newSections = [...sections];
     newSections[activeSectionIndex] = { ...activeSection, ...updates };
     setSections(newSections);
@@ -510,6 +514,7 @@ function CreateQuizMulti() {
   };
 
   const getActiveQuestions = () => {
+    if (!activeSection) return [];
     if (activeSection.type === "coding") {
       return activeSection.subsections[activeDifficulty] || [];
     }
@@ -517,6 +522,7 @@ function CreateQuizMulti() {
   };
 
   const setActiveQuestions = (newQuestions) => {
+    if (!activeSection) return;
     if (activeSection.type === "coding") {
       updateActiveSection({
         subsections: {
@@ -689,8 +695,9 @@ function CreateQuizMulti() {
       return;
     }
 
-    const newSections = [...sections];
+    const newSections = [...(sections || [defaultSection(0)])];
     let totalImported = 0;
+
 
     const isFreshSection =
       newSections.length === 1 &&
@@ -1049,7 +1056,10 @@ function CreateQuizMulti() {
                   <h3 style={{ margin: "0 0 16px 0", color: "var(--text-primary)", fontSize: "16px" }}>Sections</h3>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    {sections.map((sec, i) => {
+                    {(!sections || (loading && !sections?.length)) ? (
+                      <div style={{ padding: "12px", borderRadius: "10px", background: "var(--bg-input)", color: "var(--text-muted)", fontSize: "13px", textAlign: "center" }}>Loading sections…</div>
+                    ) : null}
+                    {(sections || []).map((sec, i) => {
                       const isActive = activeSectionId === sec.id;
                       return (
                         <div
@@ -2056,6 +2066,11 @@ function CreateQuizMulti() {
 
               {/* MAIN AREA */}
               <div className="create-multi-main">
+                {!activeSection ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "200px", color: "var(--text-muted)", fontSize: "14px" }}>
+                    Loading section data…
+                  </div>
+                ) : (<>
 
                 {/* Section Config */}
                 <div
@@ -2576,6 +2591,7 @@ function CreateQuizMulti() {
                   )}
                 </div>
 
+              </>)}
               </div>
             </div>
           </div>
@@ -2586,7 +2602,7 @@ function CreateQuizMulti() {
         isOpen={isSectionPickerOpen}
         onClose={() => setIsSectionPickerOpen(false)}
         onAdd={handleAddExistingSection}
-        excludeSectionIds={sections.filter(s => s.sectionId).map(s => s.sectionId)}
+        excludeSectionIds={(sections || []).filter(s => s.sectionId).map(s => s.sectionId)}
       />
 
       {/* Paid Plan Slide-in Drawer */}

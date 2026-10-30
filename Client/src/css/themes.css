@@ -38,7 +38,7 @@ html[class*="theme-"].dark :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]) {
+:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]):not(.practice-start-btn) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -67,11 +67,22 @@ html[class*="theme-"] .logout-btn {
 }
 
 /* Explicit contrast preservation for Live Examination buttons across all themes */
-:is(.live-btn-secondary, .live-btn-camera) {
+:is(.live-btn-secondary, .live-btn-camera, .practice-start-btn) {
   color: var(--text-primary) !important;
 }
 :is(.live-btn-camera svg) {
   color: var(--primary) !important;
+}
+:is(.practice-start-btn svg) {
+  color: var(--text-primary) !important;
+  stroke: currentColor !important;
+}
+:is(.practice-start-btn:hover, .practice-card:hover .practice-start-btn) {
+  color: #ffffff !important;
+}
+:is(.practice-start-btn:hover svg, .practice-card:hover .practice-start-btn svg) {
+  color: #ffffff !important;
+  stroke: currentColor !important;
 }
 
 /* Explicit contrast preservation for refresh buttons across all platforms and themes */

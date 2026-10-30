@@ -154,7 +154,7 @@
   height: 38px;
   border-radius: 10px;
   background: var(--bg-card, #ffffff);
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
   border: 1px solid var(--border-color);
   font-size: 13px;
   font-weight: 600;
@@ -167,11 +167,47 @@
   margin-top: auto;
 }
 
-.practice-card:hover .practice-start-btn {
-  background: var(--primary, #8B5CF6);
-  color: #ffffff;
-  border-color: var(--primary, #8B5CF6);
+.practice-start-btn svg {
+  color: var(--text-primary) !important;
+  stroke: currentColor !important;
+}
+
+.practice-card:hover .practice-start-btn,
+.practice-start-btn:hover {
+  background: var(--primary, #8B5CF6) !important;
+  color: #ffffff !important;
+  border-color: var(--primary, #8B5CF6) !important;
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.practice-card:hover .practice-start-btn svg,
+.practice-start-btn:hover svg {
+  color: #ffffff !important;
+  stroke: currentColor !important;
+}
+
+/* --- Compact Student Result Card --- */
+.student-result-card {
+  padding: 14px 16px !important;
+  gap: 8px !important;
+}
+
+.student-result-card .practice-quiz-title {
+  min-height: unset !important;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 !important;
+}
+
+.student-result-card .practice-meta-grid {
+  margin-top: 0 !important;
+  margin-bottom: 2px !important;
+  gap: 14px;
+}
+
+.student-result-card .practice-start-btn {
+  margin-top: 4px !important;
 }
 
 /* --- Practice Test View --- */

@@ -40,13 +40,11 @@ function ManageQuizzes() {
   const [importMode, setImportMode] = useState("skip"); // "skip" | "update"
   const [showConfigureExams, setShowConfigureExams] = useState(false);
   const [importedExamsList, setImportedExamsList] = useState([]);
-  const [showPreviewSubmenu, setShowPreviewSubmenu] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: null, bottom: null, right: 0, openUpwards: false });
 
   const toggleActionDropdown = (e, quizId) => {
     if (activeDropdown === quizId) {
       setActiveDropdown(null);
-      setShowPreviewSubmenu(null);
       return;
     }
     const rect = e.currentTarget.getBoundingClientRect();
@@ -68,7 +66,6 @@ function ManageQuizzes() {
     if (!activeDropdown) return;
     const handleScrollOrResize = () => {
       setActiveDropdown(null);
-      setShowPreviewSubmenu(null);
     };
     window.addEventListener("scroll", handleScrollOrResize, true);
     window.addEventListener("resize", handleScrollOrResize);
@@ -993,7 +990,7 @@ function ManageQuizzes() {
                             </button>
                             {activeDropdown === quiz._id && (
                               <>
-                                <div onClick={() => { setActiveDropdown(null); setShowPreviewSubmenu(null); }} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }} />
+                                <div onClick={() => setActiveDropdown(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }} />
                                 <div style={{ 
                                   position: "fixed", 
                                   top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
@@ -1200,8 +1197,8 @@ function ManageQuizzes() {
                           {quiz.quizType === "practice" ? "Practice Set" : (quiz.sections && quiz.sections.length > 1 ? "Full Length" : "Sectional")}
                         </td>
                         
-                        <td style={{ padding: "18px 24px", whiteSpace: "nowrap" }}>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
                             <span style={{
                               backgroundColor: 
                                 quiz.status === "Published" ? "#E4F8F0" : 
@@ -1211,31 +1208,27 @@ function ManageQuizzes() {
                                 quiz.status === "Published" ? "#10B981" : 
                                 quiz.status === "Scheduled" ? "#3B82F6" : 
                                 quiz.status === "Expired" ? "#D97706" : "#475569",
-                              padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: "700", display: "inline-block", width: "max-content"
+                              padding: "3px 8px", borderRadius: "5px", fontSize: "11px", fontWeight: "700", display: "inline-block", width: "max-content"
                             }}>
                               {quiz.status || "Draft"}
                             </span>
-                            {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
-                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Calendar size={12} style={{ color: "#3B82F6", flexShrink: 0 }} />
-                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                              </span>
-                            ) : quiz.scheduledDate ? (
-                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Calendar size={12} style={{ color: "#3B82F6", flexShrink: 0 }} />
-                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}, {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                            {quiz.status === "Scheduled" && quiz.scheduledDate ? (
+                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                <Calendar size={10} style={{ color: "#3B82F6", flexShrink: 0 }} />
+                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                {quiz.unpublishDate ? ` – ${new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ""}
                               </span>
                             ) : null}
                             {quiz.status === "Published" && quiz.unpublishDate && (
-                              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Clock size={12} style={{ color: "#F59E0B", flexShrink: 0 }} />
-                                Closes: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                <Clock size={10} style={{ color: "#F59E0B", flexShrink: 0 }} />
+                                {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                               </span>
                             )}
                             {quiz.status === "Expired" && quiz.unpublishDate && (
-                              <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Clock size={12} style={{ color: "var(--red)", flexShrink: 0 }} />
-                                Ended: {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              <span style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                <Clock size={10} style={{ color: "var(--red)", flexShrink: 0 }} />
+                                {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                               </span>
                             )}
                           </div>
@@ -1264,7 +1257,7 @@ function ManageQuizzes() {
                               <>
                                 {/* Global backdrop to dismiss dropdown on outer click */}
                                 <div 
-                                  onClick={() => { setActiveDropdown(null); setShowPreviewSubmenu(null); }}
+                                  onClick={() => setActiveDropdown(null)}
                                   style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
                                 />
                                 
@@ -1288,62 +1281,15 @@ function ManageQuizzes() {
                                   {viewMode === "active" ? (
                                     <>
                                       <div 
-                                        style={{ position: "relative" }}
-                                        onMouseEnter={() => setShowPreviewSubmenu(quiz._id)}
-                                        onMouseLeave={() => setShowPreviewSubmenu(null)}
+                                        onClick={() => { 
+                                          setActiveDropdown(null); 
+                                          navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); 
+                                        }}
+                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                       >
-                                        <div 
-                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}
-                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                        >
-                                          <div style={{ display: "flex", alignItems: "center", gap: "8px", pointerEvents: "none" }}>
-                                            <Eye size={15} /> Preview
-                                          </div>
-                                          <span style={{ fontSize: "9px", color: "var(--text-secondary)", pointerEvents: "none" }}>▶</span>
-                                        </div>
-
-                                        {showPreviewSubmenu === quiz._id && (
-                                          <div style={{ 
-                                            position: "absolute", 
-                                            left: "-135px", 
-                                            top: dropdownPos.openUpwards ? "auto" : "0px",
-                                            bottom: dropdownPos.openUpwards ? "0px" : "auto",
-                                            backgroundColor: "var(--bg-card)", 
-                                            border: "1.5px solid var(--border-color)", 
-                                            borderRadius: "10px", 
-                                            padding: "6px 0", 
-                                            minWidth: "135px", 
-                                            boxShadow: "0 8px 24px rgba(0,0,0,0.2)", 
-                                            zIndex: 99999,
-                                            textAlign: "left"
-                                          }}>
-                                            <div 
-                                              onClick={() => { 
-                                                setActiveDropdown(null); 
-                                                setShowPreviewSubmenu(null);
-                                                navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); 
-                                              }}
-                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                            >
-                                              Preview Exam
-                                            </div>
-                                            <div 
-                                              onClick={() => { 
-                                                setActiveDropdown(null); 
-                                                setShowPreviewSubmenu(null);
-                                                navigate(`/dashboard/practice/test/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); 
-                                              }}
-                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s" }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                            >
-                                              Preview Practice
-                                            </div>
-                                          </div>
-                                        )}
+                                        <Eye size={15} /> Preview
                                       </div>
 
                                       {/* Duplicate Quiz */}

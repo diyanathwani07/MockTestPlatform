@@ -135,17 +135,6 @@ function SubjectResults() {
                 const count = subGroup.length;
                 const avgScore = subGroup.reduce((sum, r) => sum + (r.percentage || ((r.score / (r.total || 1)) * 100)), 0) / count;
 
-                const subjectColors = [
-                  { bg: "#EDE9FE", text: "#5B21B6", dot: "#7C3AED" },
-                  { bg: "#DCFCE7", text: "#166534", dot: "#16A34A" },
-                  { bg: "#FEF9C3", text: "#854D0E", dot: "#D97706" },
-                  { bg: "#FFE4E6", text: "#9F1239", dot: "#E11D48" },
-                  { bg: "#DBEAFE", text: "#1E40AF", dot: "#2563EB" },
-                  { bg: "#FCE7F3", text: "#9D174D", dot: "#DB2777" },
-                  { bg: "#F0FDF4", text: "#14532D", dot: "#15803D" },
-                ];
-                const color = { bg: 'color-mix(in srgb, var(--primary) 15%, transparent)', text: 'var(--primary)', dot: 'var(--primary)' };
-
                 return (
                   <div 
                     key={sub} 
