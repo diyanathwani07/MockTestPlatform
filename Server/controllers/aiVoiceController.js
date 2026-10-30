@@ -370,7 +370,11 @@ const getAudioStatus = async (req, res) => {
  */
 const getSchedules = async (req, res) => {
   try {
-    const query = { user: req.user._id };
+    const isAdmin = ["admin", "superadmin", "manager"].includes(req.user.role);
+    const query = isAdmin ? {} : { user: req.user._id };
+    if (isAdmin && req.query.userId) {
+      query.user = req.query.userId;
+    }
 
     if (req.query.status) {
       const allowedStatuses = ["PENDING", "PROCESSING", "DISPATCHED", "COMPLETED", "CANCELLED", "FAILED", "REJECTED"];
@@ -380,7 +384,7 @@ const getSchedules = async (req, res) => {
       }
     }
 
-    const schedules = await Schedule.find(query).sort({ scheduledTime: 1, createdAt: -1 });
+    const schedules = await Schedule.find(query).populate("user", "fullName name email phone role").sort({ createdAt: -1, scheduledTime: -1 });
 
     res.json({
       success: true,
@@ -1257,7 +1261,221 @@ const getEligibleExamsForReminders = async (req, res) => {
   }
 };
 
+
+/**
+ * POST /api/ai-voice/admin/schedule-call
+ * Admin schedules or instantly dispatches an AI Voice Call to any selected user.
+ */
+const adminScheduleCall = async (req, res) => {
+  try {
+    if (!isVoiceSubsystemReady()) {
+      return res.status(503).json({
+        success: false,
+        message: "Voice reminder subsystem is temporarily unavailable due to database maintenance."
+      });
+    }
+
+    const voiceSettings = await getVoiceSettingsSafe();
+    if (voiceSettings && voiceSettings.enabled === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Voice reminder service is currently disabled by administrator in Voice Settings."
+      });
+    }
+
+    const {
+      targetUserId,
+      userId,
+      taskTitle,
+      taskDescription = "",
+      reminderAudioText,
+      scheduledTime,
+      callNow = false,
+      callType = "TASK_REMINDER",
+      language = "auto",
+      voice = null
+    } = req.body;
+
+    const resolvedUserId = targetUserId || userId;
+    if (!resolvedUserId || !mongoose.Types.ObjectId.isValid(resolvedUserId)) {
+      return res.status(400).json({ success: false, message: "Valid target user ID is required." });
+    }
+
+    const targetUser = await User.findById(resolvedUserId).select("fullName name email phone");
+    if (!targetUser) {
+      return res.status(404).json({ success: false, message: "Selected user not found." });
+    }
+
+    if (!taskTitle || typeof taskTitle !== "string" || taskTitle.trim() === "") {
+      return res.status(400).json({ success: false, message: "Call title is required." });
+    }
+    const cleanTitle = taskTitle.trim().slice(0, 200);
+
+    const now = new Date();
+    let finalScheduledTime = now;
+    if (!callNow && scheduledTime) {
+      const parsedDate = new Date(scheduledTime);
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({ success: false, message: "Invalid scheduled time format." });
+      }
+      finalScheduledTime = parsedDate;
+    }
+
+    const validLanguages = ["en", "hi", "auto"];
+    const resolvedLanguage = validLanguages.includes(language) ? language : "auto";
+
+    let cleanAudioText = reminderAudioText;
+    const recipientName = targetUser.fullName || targetUser.name || "Student";
+    if (!cleanAudioText || typeof cleanAudioText !== "string" || cleanAudioText.trim() === "") {
+      const template =
+        resolvedLanguage === "hi"
+          ? voiceSettings?.reminderDefaults?.defaultTemplateHindi ||
+            "नमस्ते {studentName}! यह PrepMark की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक AI वॉइस कॉल है।"
+          : voiceSettings?.reminderDefaults?.defaultTemplateEnglish ||
+            "Hello {studentName}! This is an AI voice call from PrepMark regarding: {taskTitle}.";
+
+      cleanAudioText = template
+        .replace(/{taskTitle}/g, cleanTitle)
+        .replace(/{studentName}/g, recipientName);
+    } else {
+      cleanAudioText = cleanAudioText
+        .replace(/{studentName}/g, recipientName)
+        .replace(/{taskTitle}/g, cleanTitle)
+        .trim();
+    }
+
+    if (cleanAudioText.length > 1000) {
+      cleanAudioText = cleanAudioText.slice(0, 1000);
+    }
+
+    const schedule = await Schedule.create({
+      user: targetUser._id,
+      scheduledBy: req.user._id,
+      taskTitle: cleanTitle,
+      taskDescription: typeof taskDescription === "string" ? taskDescription.trim().slice(0, 1000) : "",
+      reminderAudioText: cleanAudioText,
+      scheduledTime: finalScheduledTime,
+      callType: ["TASK_REMINDER", "CUSTOM"].includes(callType) ? callType : "CUSTOM",
+      status: "PENDING",
+      language: resolvedLanguage,
+      voice: typeof voice === "string" && voice.trim() !== "" ? voice.trim() : (voiceSettings?.defaultVoice || "Aoede"),
+      preGeneratedAudioStatus: "PENDING"
+    });
+
+    const { dispatchImmediateSchedule } = require("../services/aiVoiceSchedulerService");
+    let audioGenResult = null;
+    try {
+      audioGenResult = await generateScheduleAudioInternal(schedule._id, targetUser._id, true);
+    } catch (genErr) {
+      console.warn(`[AiVoiceController] Admin call audio generation warning for schedule ${schedule._id}:`, genErr.message || genErr);
+    }
+
+    let immediateDispatchResult = null;
+    if (callNow || Math.abs(finalScheduledTime.getTime() - now.getTime()) <= 30000) {
+      try {
+        immediateDispatchResult = await dispatchImmediateSchedule(schedule._id, {
+          callerName: "PrepMark AI"
+        });
+        console.log(`[AiVoiceController] Instant call dispatched to user ${targetUser._id} (${targetUser.email}):`, immediateDispatchResult);
+      } catch (dispErr) {
+        console.error(`[AiVoiceController] Immediate dispatch failed:`, dispErr.message);
+      }
+    }
+
+    await AuditLog.create({
+      action: "ADMIN_SCHEDULED_AI_VOICE_CALL",
+      performedBy: req.user._id,
+      targetUser: targetUser._id,
+      details: {
+        scheduleId: schedule._id,
+        callNow: !!callNow,
+        taskTitle: cleanTitle,
+        dispatched: !!immediateDispatchResult?.success
+      }
+    }).catch(() => {});
+
+    const freshSchedule = await Schedule.findById(schedule._id);
+
+    res.status(201).json({
+      success: true,
+      message: callNow
+        ? "AI Voice Call dispatched immediately to student!"
+        : "AI Voice Call scheduled successfully.",
+      data: {
+        schedule: freshSchedule,
+        dispatchedImmediately: !!immediateDispatchResult?.success,
+        dispatchDetails: immediateDispatchResult
+      }
+    });
+  } catch (error) {
+    console.error("[AiVoiceController] Admin Schedule Call Error:", error);
+    res.status(500).json({ success: false, message: error.message || "Failed to schedule AI voice call." });
+  }
+};
+
+/**
+ * GET /api/ai-voice/admin/users
+ * Lists candidate users for AI voice calls with device tokens & platform info.
+ */
+const getCallCandidates = async (req, res) => {
+  try {
+    const NotificationDevice = require("../models/NotificationDevice");
+    const { search = "", limit = 50 } = req.query;
+
+    const query = { isDeleted: { $ne: true } };
+    if (search && search.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+      query.$or = [{ fullName: regex }, { email: regex }, { phone: regex }];
+    }
+
+    const users = await User.find(query)
+      .select("fullName name email phone role avatar createdAt")
+      .sort({ createdAt: -1 })
+      .limit(Number(limit) || 50)
+      .lean();
+
+    const userIds = users.map(u => u._id);
+    const devices = await NotificationDevice.find({ userId: { $in: userIds } })
+      .select("userId platform token lastActive createdAt")
+      .lean();
+
+    const deviceMap = {};
+    devices.forEach(d => {
+      const uid = d.userId.toString();
+      if (!deviceMap[uid]) deviceMap[uid] = [];
+      deviceMap[uid].push(d);
+    });
+
+    const candidates = users.map(u => {
+      const userDevs = deviceMap[u._id.toString()] || [];
+      const hasAndroid = userDevs.some(d => d.platform === "android");
+      const hasIos = userDevs.some(d => d.platform === "ios");
+      const hasWeb = userDevs.some(d => d.platform === "web");
+      return {
+        ...u,
+        devicesCount: userDevs.length,
+        hasAndroid,
+        hasIos,
+        hasWeb,
+        deviceSummary: hasAndroid ? "Android (FCM Ready)" : hasWeb ? "Web App" : userDevs.length > 0 ? "Registered" : "No device registered"
+      };
+    });
+
+    res.json({
+      success: true,
+      count: candidates.length,
+      data: candidates
+    });
+  } catch (error) {
+    console.error("[AiVoiceController] Get Call Candidates Error:", error);
+    res.status(500).json({ success: false, message: "Failed to retrieve call candidates." });
+  }
+};
+
+
 module.exports = {
+  adminScheduleCall,
+  getCallCandidates,
   createSchedule,
   generateScheduleAudio,
   retryScheduleAudio,

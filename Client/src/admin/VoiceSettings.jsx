@@ -31,6 +31,7 @@ import {
   Users
 } from "lucide-react";
 import ExamReminderModal from "../components/ExamReminderModal";
+import AdminScheduleCallSection from "./components/AdminScheduleCallSection";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { Skeleton, SkeletonCard, SkeletonTable } from "@/components/ui/skeleton";
@@ -1136,6 +1137,7 @@ export default function VoiceSettings() {
             }}
           >
             {[
+              { id: "direct_call", label: "Schedule AI Voice Call", icon: PhoneCall },
               { id: "voice", label: "Voice & Language", icon: Mic },
               { id: "schedule", label: "Calling Schedule", icon: Calendar },
               { id: "retry", label: "Retry Rules", icon: Sliders },
@@ -1170,6 +1172,11 @@ export default function VoiceSettings() {
               );
             })}
           </div>
+
+          {/* TAB: Schedule AI Voice Call */}
+          {activeTab === "direct_call" && (
+            <AdminScheduleCallSection voiceSettings={settings} />
+          )}
 
           {/* TAB 1: Voice & Language */}
           {activeTab === "voice" && (

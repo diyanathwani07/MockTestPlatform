@@ -27,8 +27,35 @@ public class IncomingReminderPlugin extends Plugin {
     private static final String CHANNEL_NAME = "Incoming Study Reminders";
     private static final int NOTIFICATION_ID = 202601;
 
+    private static IncomingReminderPlugin activeInstance = null;
     private Ringtone currentRingtone = null;
     private Vibrator vibrator = null;
+
+    @Override
+    public void load() {
+        super.load();
+        activeInstance = this;
+    }
+
+    public static void stopAudioAndVibrationStatic(Context context) {
+        if (activeInstance != null) {
+            activeInstance.stopCurrentAudioAndVibration();
+        }
+    }
+
+    @PluginMethod
+    public void getPendingCall(PluginCall call) {
+        JSObject ret = new JSObject();
+        if (MainActivity.pendingCallPayload != null) {
+            ret.put("hasPending", true);
+            ret.put("call", MainActivity.pendingCallPayload);
+            // Clear once retrieved to avoid repeat triggering
+            MainActivity.pendingCallPayload = null;
+        } else {
+            ret.put("hasPending", false);
+        }
+        call.resolve(ret);
+    }
 
     @PluginMethod
     public void playRingtone(PluginCall call) {
@@ -53,7 +80,6 @@ public class IncomingReminderPlugin extends Plugin {
                 currentRingtone.play();
             }
 
-            // Start vibration pattern: delay 0ms, vibrate 600ms, pause 400ms (repeating)
             long[] pattern = { 0, 600, 400, 600, 400, 600, 400 };
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 VibratorManager vm = (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
@@ -66,7 +92,7 @@ public class IncomingReminderPlugin extends Plugin {
 
             if (vibrator != null && vibrator.hasVibrator()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1)); // -1 means do not loop indefinitely
+                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1));
                 } else {
                     vibrator.vibrate(pattern, -1);
                 }
@@ -84,6 +110,7 @@ public class IncomingReminderPlugin extends Plugin {
     public void stopRingtone(PluginCall call) {
         try {
             stopCurrentAudioAndVibration();
+            IncomingCallNotificationHelper.dismissCallNotification(getContext());
             JSObject ret = new JSObject();
             ret.put("stopped", true);
             call.resolve(ret);
@@ -97,7 +124,7 @@ public class IncomingReminderPlugin extends Plugin {
         try {
             Context context = getContext();
             String taskTitle = call.getString("taskTitle", "Study Reminder");
-            String callerName = call.getString("callerName", "Teaching Pariksha AI");
+            String callerName = call.getString("callerName", "PrepMark AI");
             String scheduleId = call.getString("scheduleId", "");
 
             NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -106,7 +133,6 @@ public class IncomingReminderPlugin extends Plugin {
                 return;
             }
 
-            // Create high-importance channel if on Android O or higher
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
@@ -119,7 +145,6 @@ public class IncomingReminderPlugin extends Plugin {
                 nm.createNotificationChannel(channel);
             }
 
-            // Intent to open app directly
             Intent openIntent = new Intent(context, MainActivity.class);
             openIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             openIntent.putExtra("scheduleId", scheduleId);
@@ -133,7 +158,7 @@ public class IncomingReminderPlugin extends Plugin {
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("Incoming Study Reminder: " + callerName)
+                .setContentTitle(callerName)
                 .setContentText(taskTitle)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
@@ -156,6 +181,7 @@ public class IncomingReminderPlugin extends Plugin {
         try {
             stopCurrentAudioAndVibration();
             Context context = getContext();
+            IncomingCallNotificationHelper.dismissCallNotification(context);
             NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm != null) {
                 nm.cancel(NOTIFICATION_ID);
@@ -168,7 +194,7 @@ public class IncomingReminderPlugin extends Plugin {
         }
     }
 
-    private synchronized void stopCurrentAudioAndVibration() {
+    public synchronized void stopCurrentAudioAndVibration() {
         if (currentRingtone != null) {
             try {
                 if (currentRingtone.isPlaying()) {
@@ -189,6 +215,9 @@ public class IncomingReminderPlugin extends Plugin {
     @Override
     protected void handleOnDestroy() {
         stopCurrentAudioAndVibration();
+        if (activeInstance == this) {
+            activeInstance = null;
+        }
         super.handleOnDestroy();
     }
 }

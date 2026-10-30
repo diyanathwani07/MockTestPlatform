@@ -453,7 +453,68 @@ function isSchedulerRunning() {
   return activeCronJob !== null;
 }
 
+/**
+ * Dispatches a single schedule immediately (e.g. for Admin "Call Now" or instant testing).
+ * Dual-channel delivery: Socket.io + FCM high-priority push.
+ */
+async function dispatchImmediateSchedule(scheduleId, options = {}) {
+  const schedule = await Schedule.findById(scheduleId);
+  if (!schedule) {
+    throw new Error("Schedule not found.");
+  }
+
+  const audioPath = schedule.preGeneratedAudioPath;
+  const audioExists = audioPath ? fs.existsSync(path.resolve(audioPath)) : false;
+
+  if (!audioExists) {
+    throw new Error("Reminder audio is not ready or audio file does not exist on disk.");
+  }
+
+  const dispatchId = crypto.randomUUID();
+  const callerName = options.callerName || CALLER_NAME;
+  const dispatchPayload = {
+    type: "INCOMING_CALL",
+    dispatchId,
+    scheduleId: schedule._id.toString(),
+    callerName,
+    callType: schedule.callType || "TASK_REMINDER",
+    taskTitle: schedule.taskTitle,
+    taskDescription: schedule.taskDescription || "",
+    reminderAudioText: schedule.reminderAudioText,
+    timestamp: new Date().toISOString()
+  };
+
+  // Channel A: Socket.IO
+  try {
+    emitToUser(schedule.user.toString(), "incoming-call", dispatchPayload);
+  } catch (socketErr) {
+    console.warn(`[AiVoiceScheduler] Socket emission error for user ${schedule.user}:`, socketErr.message);
+  }
+
+  // Channel B: FCM High-Priority Data Push
+  let fcmResult = null;
+  try {
+    fcmResult = await sendIncomingCallFcmPush(schedule.user, dispatchPayload);
+  } catch (fcmErr) {
+    console.warn(`[AiVoiceScheduler] FCM push error for user ${schedule.user}:`, fcmErr.message);
+    fcmResult = { sent: false, error: fcmErr.message };
+  }
+
+  schedule.status = "DISPATCHED";
+  schedule.dispatchedAt = new Date();
+  schedule.dispatchClaimExpiresAt = null;
+  schedule.lastDispatchError = null;
+  await schedule.save();
+
+  return {
+    success: true,
+    dispatchPayload,
+    fcmResult
+  };
+}
+
 module.exports = {
+  dispatchImmediateSchedule,
   dispatchDueSchedules,
   cleanStaleSessions,
   getSchedulerMetrics,

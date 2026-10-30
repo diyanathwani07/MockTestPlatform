@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
 const { aiLimiter } = require("../middleware/rateLimiter");
+
 const {
   createSchedule,
   generateScheduleAudio,
@@ -21,8 +22,14 @@ const {
   scheduleExamReminder,
   getExamReminders,
   cancelExamReminder,
-  getEligibleExamsForReminders
+  getEligibleExamsForReminders,
+  adminScheduleCall,
+  getCallCandidates,
 } = require("../controllers/aiVoiceController");
+
+// Admin Call Scheduling & User Selection
+router.post("/admin/schedule-call", protect, adminOnly, adminScheduleCall);
+router.get("/admin/users", protect, adminOnly, getCallCandidates);
 
 // Exam & Quiz Voice Reminder endpoints
 router.post("/exam-reminder", protect, aiLimiter, scheduleExamReminder);
@@ -38,8 +45,18 @@ router.patch("/schedule/:id/cancel", protect, cancelSchedule);
 router.delete("/schedule/:id", protect, deleteSchedule);
 
 // Audio generation & status endpoints (authenticated)
-router.post("/schedule/:id/generate-audio", protect, aiLimiter, generateScheduleAudio);
-router.post("/schedule/:id/retry-audio", protect, aiLimiter, retryScheduleAudio);
+router.post(
+  "/schedule/:id/generate-audio",
+  protect,
+  aiLimiter,
+  generateScheduleAudio,
+);
+router.post(
+  "/schedule/:id/retry-audio",
+  protect,
+  aiLimiter,
+  retryScheduleAudio,
+);
 router.get("/schedule/:id/audio-status", protect, getAudioStatus);
 
 // User Accept & Reject actions (Phase 4)

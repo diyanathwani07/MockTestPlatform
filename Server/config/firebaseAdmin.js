@@ -11,12 +11,37 @@ function initFirebaseAdmin() {
     return;
   }
   try {
-    const serviceAccountPath = path.join(__dirname, "firebase-admin-key.json");
-    
-    // 1. Try to load from environment variables (Render/Prod)
+    // 1. Check specified service account path or auto-find in config/
+    let serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+      ? path.resolve(__dirname, "..", process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
+      : path.join(__dirname, "tp-ai-apk-firebase-adminsdk-fbsvc-462b133f81.json");
+
+    if (!fs.existsSync(serviceAccountPath)) {
+      const altKey = path.join(__dirname, "firebase-admin-key.json");
+      if (fs.existsSync(altKey)) {
+        serviceAccountPath = altKey;
+      } else {
+        const configFiles = fs.readdirSync(__dirname);
+        const autoKey = configFiles.find(f => f.includes("firebase-adminsdk") && f.endsWith(".json"));
+        if (autoKey) {
+          serviceAccountPath = path.join(__dirname, autoKey);
+        }
+      }
+    }
+
+    if (fs.existsSync(serviceAccountPath)) {
+      const serviceAccount = require(serviceAccountPath);
+      initializeApp({
+        credential: cert(serviceAccount)
+      });
+      console.log(`[Firebase Admin] Initialized successfully using ${path.basename(serviceAccountPath)}`);
+      isInitialized = true;
+      return;
+    }
+
+    // 2. Try to load from environment variables (Render/Prod)
     if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
       let key = process.env.FIREBASE_PRIVATE_KEY.trim();
-      // Strip accidental wrapping quotes (single or double) from .env or Render dashboard
       if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
         key = key.slice(1, -1).trim();
       }
@@ -31,18 +56,10 @@ function initFirebaseAdmin() {
       });
       console.log("[Firebase Admin] Initialized via Environment Variables");
       isInitialized = true;
-    } 
-    // 2. Fallback to local JSON file (Local Dev)
-    else if (fs.existsSync(serviceAccountPath)) {
-      initializeApp({
-        credential: cert(require(serviceAccountPath)),
-      });
-      console.log("[Firebase Admin] Initialized via local JSON file");
-      isInitialized = true;
-    } 
-    else {
-      throw new Error("Missing Firebase credentials (no env vars and no JSON file).");
+      return;
     }
+
+    throw new Error("Missing Firebase credentials (no valid JSON file and no env vars).");
   } catch (error) {
     console.warn("[Firebase Admin] Could not initialize:", error.message);
   }
