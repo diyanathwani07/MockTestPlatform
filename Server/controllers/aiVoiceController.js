@@ -1425,7 +1425,7 @@ const getCallCandidates = async (req, res) => {
     const query = { isDeleted: { $ne: true } };
     if (search && search.trim()) {
       const regex = new RegExp(search.trim(), "i");
-      query.$or = [{ fullName: regex }, { email: regex }, { phone: regex }];
+      query.$or = [{ fullName: regex }, { name: regex }, { email: regex }, { phone: regex }];
     }
 
     const users = await User.find(query)

@@ -94,21 +94,27 @@ export default function AdminScheduleCallSection({ voiceSettings }) {
   // Scheduled Calls History
   const [recentCalls, setRecentCalls] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [userFetchError, setUserFetchError] = useState("");
 
-  const token = localStorage.getItem("token");
+  const getAuthHeaders = () => {
+    const t = localStorage.getItem("token") || localStorage.getItem("adminToken");
+    return t ? { Authorization: `Bearer ${t}` } : {};
+  };
 
   // Fetch candidate users
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
+      setUserFetchError("");
       const res = await axios.get(`${API}/api/ai-voice/admin/users?search=${encodeURIComponent(userSearch)}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: getAuthHeaders()
       });
       if (res.data?.success) {
         setUsers(res.data.data || []);
       }
     } catch (err) {
       console.warn("[AdminScheduleCall] Failed to fetch users:", err.message);
+      setUserFetchError(err.response?.data?.message || err.message || "Failed to load users");
     } finally {
       setLoadingUsers(false);
     }
@@ -119,7 +125,7 @@ export default function AdminScheduleCallSection({ voiceSettings }) {
     try {
       setLoadingHistory(true);
       const res = await axios.get(`${API}/api/ai-voice/schedule`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: getAuthHeaders()
       });
       if (res.data?.success) {
         setRecentCalls(res.data.data || []);
@@ -175,7 +181,7 @@ export default function AdminScheduleCallSection({ voiceSettings }) {
           lang: language === "auto" ? "en" : language,
           voice: voice || "Aoede"
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: getAuthHeaders() }
       );
 
       if (res.data?.success && res.data.audioUrl) {
@@ -245,7 +251,7 @@ export default function AdminScheduleCallSection({ voiceSettings }) {
       };
 
       const res = await axios.post(`${API}/api/ai-voice/admin/schedule-call`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: getAuthHeaders()
       });
 
       if (res.data?.success) {
@@ -268,7 +274,7 @@ export default function AdminScheduleCallSection({ voiceSettings }) {
     if (!window.confirm("Are you sure you want to cancel this scheduled AI voice call?")) return;
     try {
       await axios.patch(`${API}/api/ai-voice/schedule/${scheduleId}/cancel`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: getAuthHeaders()
       });
       fetchRecentCalls();
     } catch (err) {
@@ -542,6 +548,10 @@ export default function AdminScheduleCallSection({ voiceSettings }) {
               <div style={{ padding: "24px", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
                 <RefreshCw size={18} className="animate-spin" style={{ display: "inline-block", marginRight: "8px" }} />
                 Loading users...
+              </div>
+            ) : userFetchError ? (
+              <div style={{ padding: "16px", textAlign: "center", color: "#ef4444", fontSize: "12.5px" }}>
+                ⚠️ {userFetchError}
               </div>
             ) : users.length === 0 ? (
               <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", fontSize: "12.5px" }}>
