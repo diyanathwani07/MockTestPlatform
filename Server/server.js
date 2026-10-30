@@ -7,7 +7,10 @@ validateStartupEnv();
 
 console.log("=== STARTUP DEBUG LOGS ===");
 console.log("GEMINI_API_KEY Exists:", !!process.env.GEMINI_API_KEY);
-console.log("API Key Length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
+console.log(
+  "API Key Length:",
+  process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0,
+);
 console.log("Vertex Mode:", process.env.GOOGLE_GENAI_USE_VERTEXAI);
 console.log("Google Credentials:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
 console.log("Cloud Project:", process.env.GOOGLE_CLOUD_PROJECT);
@@ -36,7 +39,9 @@ const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const revenueRoutes = require("./routes/revenueRoutes");
 const Quiz = require("./models/Quiz");
 const seedDepartments = require("./scripts/seedDepartments");
-const { startSubscriptionExpiryCron } = require("./services/subscriptionExpiryCron");
+const {
+  startSubscriptionExpiryCron,
+} = require("./services/subscriptionExpiryCron");
 const http = require("http");
 const { initSocket } = require("./services/socketService");
 
@@ -45,8 +50,14 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const connectDB = require("./config/db");
 const { initFirebaseAdmin } = require("./config/firebaseAdmin");
-const { isSchedulerRunning, stopAiVoiceScheduler } = require("./services/aiVoiceSchedulerService");
-const { verifyCallIndexSafety, isVoiceSubsystemReady } = require("./config/dbIntegrity");
+const {
+  isSchedulerRunning,
+  stopAiVoiceScheduler,
+} = require("./services/aiVoiceSchedulerService");
+const {
+  verifyCallIndexSafety,
+  isVoiceSubsystemReady,
+} = require("./config/dbIntegrity");
 const resultRoutes = require("./routes/resultRoutes");
 const examSeriesRoutes = require("./routes/examSeriesRoutes");
 const examStructureRoutes = require("./routes/examStructureRoutes");
@@ -79,35 +90,52 @@ async function startServer() {
 
     // 3. One-time database migration backfill: Group existing unlinked quizzes under a default 'Ungrouped Mocks' parent series
     try {
-      const unlinkedQuizzes = await Quiz.find({ examSeriesId: null, quizType: "exam" });
+      const unlinkedQuizzes = await Quiz.find({
+        examSeriesId: null,
+        quizType: "exam",
+      });
       if (unlinkedQuizzes.length > 0) {
-        console.log(`[Migration] Found ${unlinkedQuizzes.length} unlinked quizzes. Creating default 'Ungrouped Mocks' series...`);
-        let ungroupedSeries = await ExamSeries.findOne({ slug: "ungrouped-mocks" });
+        console.log(
+          `[Migration] Found ${unlinkedQuizzes.length} unlinked quizzes. Creating default 'Ungrouped Mocks' series...`,
+        );
+        let ungroupedSeries = await ExamSeries.findOne({
+          slug: "ungrouped-mocks",
+        });
         if (!ungroupedSeries) {
           ungroupedSeries = await ExamSeries.create({
             title: "Ungrouped Mocks",
             slug: "ungrouped-mocks",
-            description: "Quizzes that do not belong to any specific exam series.",
+            description:
+              "Quizzes that do not belong to any specific exam series.",
             category: "General",
             isPublished: true,
           });
         }
         const result = await Quiz.updateMany(
           { examSeriesId: null, quizType: "exam" },
-          { $set: { examSeriesId: ungroupedSeries._id } }
+          { $set: { examSeriesId: ungroupedSeries._id } },
         );
-        console.log(`[Migration] Backfilled ${result.modifiedCount} quizzes to 'Ungrouped Mocks'.`);
+        console.log(
+          `[Migration] Backfilled ${result.modifiedCount} quizzes to 'Ungrouped Mocks'.`,
+        );
       }
     } catch (err) {
-      console.error("[Migration Error] Failed to backfill unlinked quizzes:", err);
+      console.error(
+        "[Migration Error] Failed to backfill unlinked quizzes:",
+        err,
+      );
     }
 
     // 4. Non-destructive safety scan & Call unique compound index verification
     const integrityCheck = await verifyCallIndexSafety();
     if (!integrityCheck.safe) {
-      console.warn("[Startup Notice] AI Voice Reminder subsystem disabled due to integrity check findings.");
+      console.warn(
+        "[Startup Notice] AI Voice Reminder subsystem disabled due to integrity check findings.",
+      );
     } else {
-      console.log("[Startup] Call unique compound index verified successfully ✅");
+      console.log(
+        "[Startup] Call unique compound index verified successfully ✅",
+      );
     }
 
     // 5. Initialize Schedulers
@@ -115,19 +143,28 @@ async function startServer() {
     startReportScheduler();
 
     // Initialize AI Voice Reminder 1-minute background scheduler only if voice subsystem is verified safe
-    const { initAiVoiceScheduler } = require("./services/aiVoiceSchedulerService");
+    const {
+      initAiVoiceScheduler,
+    } = require("./services/aiVoiceSchedulerService");
     if (isVoiceSubsystemReady()) {
       initAiVoiceScheduler();
     } else {
-      console.warn("[AiVoiceScheduler] Background scheduler skipped because voice subsystem is disabled.");
+      console.warn(
+        "[AiVoiceScheduler] Background scheduler skipped because voice subsystem is disabled.",
+      );
     }
 
     // 6. Start Server - only accept incoming HTTP and Socket.IO requests after initialization succeeds
     httpServer.listen(PORT, () => {
-      console.log(`Server running on port ${PORT} with Socket.IO initialized 🚀`);
+      console.log(
+        `Server running on port ${PORT} with Socket.IO initialized 🚀`,
+      );
     });
   } catch (fatalError) {
-    console.error("[FATAL STARTUP ERROR] Server startup aborted:", fatalError.message || fatalError);
+    console.error(
+      "[FATAL STARTUP ERROR] Server startup aborted:",
+      fatalError.message || fatalError,
+    );
     process.exit(1);
   }
 }
@@ -144,26 +181,37 @@ const allowedOrigins = [
   "https://prepmark.vercel.app",
   "https://prepmark.com",
   "https://www.prepmark.com",
+  "https://svr10x7l-5173.inc1.devtunnels.ms",
+  "https://svr10x7l-5173.inc1.devtunnels.ms/",
   process.env.CLIENT_URL,
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes(origin.replace(/\/$/, "")) ||
+        origin.endsWith(".devtunnels.ms")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200,
+  }),
+);
 
 const helmet = require("helmet");
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
 
 const { apiLimiter } = require("./middleware/rateLimiter");
 app.set("trust proxy", 1);
@@ -179,9 +227,12 @@ app.get("/", (req, res) => {
 
 // Operational Visibility & Health Check Endpoints
 app.get(["/health", "/api/health"], (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+  const dbStatus =
+    mongoose.connection.readyState === 1 ? "connected" : "disconnected";
   const schedulerStatus = isVoiceSubsystemReady()
-    ? (isSchedulerRunning() ? "running" : "stopped")
+    ? isSchedulerRunning()
+      ? "running"
+      : "stopped"
     : "disabled_integrity_failure";
   const isHealthy = dbStatus === "connected" && isVoiceSubsystemReady();
 
@@ -191,11 +242,10 @@ app.get(["/health", "/api/health"], (req, res) => {
     timestamp: new Date().toISOString(),
     services: {
       database: dbStatus,
-      aiVoiceScheduler: schedulerStatus
-    }
+      aiVoiceScheduler: schedulerStatus,
+    },
   });
 });
-
 
 app.use("/api/devices", deviceRoutes);
 app.use("/api/auth", authRoutes);
@@ -243,16 +293,20 @@ const quizPublishInterval = setInterval(async () => {
     const scheduledQuizzes = await Quiz.find({
       status: "Scheduled",
       published: false,
-      scheduledDate: { $lte: now }
+      scheduledDate: { $lte: now },
     });
 
     if (scheduledQuizzes.length > 0) {
-      console.log(`[Scheduler] Found ${scheduledQuizzes.length} scheduled quiz(zes) to publish.`);
+      console.log(
+        `[Scheduler] Found ${scheduledQuizzes.length} scheduled quiz(zes) to publish.`,
+      );
       for (const quiz of scheduledQuizzes) {
         quiz.status = "Published";
         quiz.published = true;
         await quiz.save();
-        console.log(`[Scheduler] Successfully published quiz: "${quiz.title}" (ID: ${quiz._id})`);
+        console.log(
+          `[Scheduler] Successfully published quiz: "${quiz.title}" (ID: ${quiz._id})`,
+        );
       }
     }
 
@@ -260,20 +314,27 @@ const quizPublishInterval = setInterval(async () => {
     const expiredQuizzes = await Quiz.find({
       status: "Published",
       published: true,
-      unpublishDate: { $ne: null, $lte: now }
+      unpublishDate: { $ne: null, $lte: now },
     });
 
     if (expiredQuizzes.length > 0) {
-      console.log(`[Scheduler] Found ${expiredQuizzes.length} quiz(zes) to unpublish/expire.`);
+      console.log(
+        `[Scheduler] Found ${expiredQuizzes.length} quiz(zes) to unpublish/expire.`,
+      );
       for (const quiz of expiredQuizzes) {
         quiz.status = "Expired";
         quiz.published = false;
         await quiz.save();
-        console.log(`[Scheduler] Successfully unpublished/expired quiz: "${quiz.title}" (ID: ${quiz._id})`);
+        console.log(
+          `[Scheduler] Successfully unpublished/expired quiz: "${quiz.title}" (ID: ${quiz._id})`,
+        );
       }
     }
   } catch (error) {
-    console.error("[Scheduler Error] Failed to process scheduled/expired quizzes:", error);
+    console.error(
+      "[Scheduler Error] Failed to process scheduled/expired quizzes:",
+      error,
+    );
   }
 }, 30000);
 quizPublishInterval.unref();
