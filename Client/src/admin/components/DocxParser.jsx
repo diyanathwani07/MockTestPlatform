@@ -43,9 +43,24 @@ function DocxParser({ onQuestionsLoaded }) {
       console.log("[DocxParser] RAW TEXT (first 1000 chars):", rawText.substring(0, 1000));
       console.log("[DocxParser] RAW TEXT total length:", rawText.length);
 
-      const questions = parseQuestionsFromText(rawText);
+      let sections = [];
+      if (isTeachingParikshaFormat(rawText)) {
+        console.log("[DocxParser] Detected Teaching Pariksha LMS Format!");
+        let htmlText = "";
+        try {
+          const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
+          htmlText = htmlResult.value || "";
+        } catch (e) {
+          console.warn("[DocxParser] Failed to extract HTML for images/tables:", e);
+        }
+        sections = parseTeachingParikshaLms(rawText, htmlText);
+      } else {
+        sections = parseQuestionsFromText(rawText);
+      }
 
-      if (questions.length === 0) {
+      const totalCount = sections.reduce((acc, s) => acc + (s.questions ? s.questions.length : 0), 0);
+
+      if (sections.length === 0 || totalCount === 0) {
         setStatus(
           "❌ No questions found. Please check the document format (see template guide)."
         );
@@ -53,9 +68,9 @@ function DocxParser({ onQuestionsLoaded }) {
         return;
       }
 
-      setParsedCount(questions.length);
+      setParsedCount(totalCount);
       setStatus(""); // Removed success message per user request
-      onQuestionsLoaded(questions);
+      onQuestionsLoaded(sections);
     } catch (error) {
       console.error("DocxParser Error:", error);
       setStatus("❌ Failed to parse document. Make sure it's a valid .docx file.");
@@ -1013,5 +1028,319 @@ function postProcessQuestions(sections) {
   }
   return sections;
 }
+
+
+/**
+ * ============================================================================
+ * TEACHING PARIKSHA LMS FORMAT PARSER
+ * ============================================================================
+ * Supports official JHTET & UPTET formats:
+ * - 4 to 5 sections (CDP, Hindi, English, Sanskrit, Maths & Science, EVS)
+ * - Standalone question numbering (1., 2., 3.)
+ * - Hindi-first and English-first bilingual questions & options
+ * - Answer markers: "Answer X"
+ * - Solution markers: "Solution."
+ * - Converts HTML tables into clean Markdown tables
+ * - Detects visual diagrams & tags questions
+ */
+
+const TP_SECTION_TITLES = [
+  "Child Development and Pedagogy",
+  "Child Development & Pedagogy",
+  "Mathematics and Science",
+  "Mathematics & Science",
+  "Mathematics",
+  "Environmental Studies",
+  "Language I Hindi",
+  "Language II English",
+  "Language I English",
+  "Language II Hindi",
+  "Language I Sanskrit",
+  "Language II Sanskrit",
+  "Language I Urdu",
+  "Language II Urdu",
+  "Science",
+  "Social Science",
+  "Social Studies",
+  "General Studies"
+];
+
+function isTeachingParikshaFormat(text) {
+  if (!text || typeof text !== "string") return false;
+  // Exclude existing PrepMark formats 1 and 2
+  if (/English\s+Question\s*:/i.test(text) || /Option\s+[A-F]\s*:/i.test(text) || /Explanation\s*\([A-Za-z\s]+\)\s*:/i.test(text)) {
+    return false;
+  }
+  if (/Correct\s+Explanation\s*:/i.test(text) || /Wrong\s+Answer\s+Explanations\s*:/i.test(text)) {
+    return false;
+  }
+  const answerCount = (text.match(/\n\s*Answer\s+[A-F]\b/gi) || []).length;
+  const solutionCount = (text.match(/\n\s*Solution\.?/gi) || []).length;
+  return answerCount >= 2 && solutionCount >= 1;
+}
+
+function htmlTableToMarkdown(tableHtml) {
+  if (!tableHtml) return "";
+  const rows = [...tableHtml.matchAll(/<tr[^>]*>(.*?)<\/tr>/gis)].map(m => m[1]);
+  if (rows.length === 0) return "";
+
+  const parsedRows = rows.map(r => {
+    return [...r.matchAll(/<t[dh][^>]*>(.*?)<\/t[dh]>/gis)].map(c => {
+      return c[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+    });
+  });
+
+  if (parsedRows.length === 0) return "";
+  const colCount = Math.max(...parsedRows.map(r => r.length));
+  if (colCount === 0) return "";
+
+  const lines = [];
+  parsedRows.forEach((r, idx) => {
+    const padded = [...r];
+    while (padded.length < colCount) padded.push("");
+    lines.push("| " + padded.join(" | ") + " |");
+    if (idx === 0) {
+      lines.push("| " + new Array(colCount).fill("---").join(" | ") + " |");
+    }
+  });
+
+  return "\n\n" + lines.join("\n") + "\n\n";
+}
+
+function parseTeachingParikshaLms(text, htmlText = "") {
+  let normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  normalized = normalized.replace(/^JHTET[^\n]+\n[^\n]+\n[^\n]+\n/i, "");
+
+  const multiWordPattern = TP_SECTION_TITLES.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const singleWordPattern = '(?:Hindi|English|Sanskrit|Urdu|Mathematics|Science|Maths|EVS)';
+
+  const numberedSectionRegex = new RegExp(
+    '^\\s*(?:(?:\\d{1,2}[\\)\\.]|\\([0-9IVXLCDMa-z]\\))\\s*)' +
+    '(?:(?:Section|Part|भाग|खंड|खण्ड|अनुभाग)\\s*[-–—:\\d\\w]*\\s*[-–—:]?\\s*)?' +
+    '(' + multiWordPattern + '|' + singleWordPattern + ')\\s*$',
+    'i'
+  );
+
+  const bareSectionRegex = new RegExp('^\\s*(' + multiWordPattern + ')\\s*$', 'i');
+
+  const htmlQMap = {};
+  if (htmlText) {
+    const qMatches = [...htmlText.matchAll(/<p>\s*(\d{1,3})\.\s*<\/p>/gi)];
+    for (let k = 0; k < qMatches.length; k++) {
+      const qNum = parseInt(qMatches[k][1], 10);
+      const start = qMatches[k].index;
+      const end = (k + 1 < qMatches.length) ? qMatches[k + 1].index : htmlText.length;
+      htmlQMap[qNum] = htmlText.substring(start, end);
+    }
+  }
+
+  const lines = normalized.split('\n');
+  const sectionsMap = [];
+  let currentSection = { sectionTitle: "Default", questions: [] };
+
+  let currentQ = null;
+  let qState = "IDLE"; // "IDLE" | "QUESTION_TEXT" | "OPTIONS" | "ANSWER" | "SOLUTION"
+
+  function pushCurrentQ() {
+    if (!currentQ) return;
+    if (currentQ.optionsArray.length >= 2) {
+      let questionEnglish = "";
+      let questionHindi = "";
+
+      const qLines = currentQ.questionLines.map(l => l.replace(/&nbsp;/g, ' ').trim()).filter(Boolean);
+      if (qLines.length === 1) {
+        const singleText = qLines[0];
+        if (/[\u0900-\u097F]/.test(singleText)) {
+          questionHindi = singleText;
+          questionEnglish = singleText;
+        } else {
+          questionEnglish = singleText;
+          questionHindi = "";
+        }
+      } else if (qLines.length >= 2) {
+        const hindiParts = [];
+        const englishParts = [];
+
+        for (const l of qLines) {
+          if (/[\u0900-\u097F]/.test(l)) {
+            hindiParts.push(l);
+          } else {
+            englishParts.push(l);
+          }
+        }
+
+        if (hindiParts.length > 0 && englishParts.length > 0) {
+          questionHindi = hindiParts.join(" ");
+          questionEnglish = englishParts.join(" ");
+        } else if (hindiParts.length > 0) {
+          questionHindi = hindiParts.join(" ");
+          questionEnglish = questionHindi;
+        } else {
+          questionEnglish = englishParts.join(" ");
+          questionHindi = "";
+        }
+      }
+
+      const qNum = currentQ.number;
+      const qHtml = htmlQMap[qNum] || "";
+      const tags = [];
+
+      // Check for tables in HTML
+      const tableMatch = qHtml.match(/<table[^>]*>.*?<\/table>/is);
+      if (tableMatch) {
+        const mdTable = htmlTableToMarkdown(tableMatch[0]);
+        if (mdTable) {
+          if (questionEnglish) questionEnglish += mdTable;
+          if (questionHindi && questionHindi !== questionEnglish) questionHindi += mdTable;
+          tags.push("Contains Table");
+        }
+      }
+
+      // Check for diagrams in HTML
+      const imgMatch = qHtml.match(/<img[^>]+src=["'](data:image\/[^;]+;base64,[^"']+)["']/i);
+      if (imgMatch) {
+        tags.push("Contains Diagram");
+        const diagramNotice = "\n\n[Diagram / Image: Question contains an embedded visual diagram]";
+        if (!questionEnglish.includes(diagramNotice)) {
+          questionEnglish += diagramNotice;
+        }
+        if (questionHindi && questionHindi !== questionEnglish && !questionHindi.includes(diagramNotice)) {
+          questionHindi += diagramNotice;
+        }
+      }
+
+      const optionsPlain = currentQ.optionsArray.map(o => o.text.replace(/&nbsp;/g, ' ').trim());
+      const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
+      const resolvedAnswer = optionsPlain[letterToIndex[currentQ.answerLetter]] || optionsPlain[0];
+      const fullExplanation = currentQ.explanationLines.join("\n").replace(/&nbsp;/g, ' ').trim();
+
+      currentSection.questions.push({
+        questionEnglish,
+        questionHindi,
+        options: optionsPlain,
+        correctAnswer: resolvedAnswer,
+        explanation: fullExplanation,
+        tags,
+        explanations: {
+          correct: fullExplanation,
+          incorrect: {},
+          conceptSummary: "",
+          didYouKnow: ""
+        }
+      });
+    }
+    currentQ = null;
+    qState = "IDLE";
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    // 1. Explicit Numbered Section
+    const numSecMatch = line.match(numberedSectionRegex);
+    if (numSecMatch) {
+      pushCurrentQ();
+      const title = numSecMatch[1].trim();
+      if (currentSection.questions.length > 0) {
+        sectionsMap.push(currentSection);
+        currentSection = { sectionTitle: title, questions: [] };
+      } else {
+        currentSection.sectionTitle = title;
+      }
+      continue;
+    }
+
+    // 2. Bare Section Header
+    const bareSecMatch = line.match(bareSectionRegex);
+    if (bareSecMatch) {
+      let hasUpcomingQNum = false;
+      for (let look = i + 1; look < Math.min(lines.length, i + 25); look++) {
+        if (/^\s*\d{1,3}\.\s*/.test(lines[look])) {
+          hasUpcomingQNum = true;
+          break;
+        }
+      }
+
+      if (hasUpcomingQNum) {
+        pushCurrentQ();
+        const title = bareSecMatch[1].trim();
+        if (currentSection.questions.length > 0) {
+          sectionsMap.push(currentSection);
+          currentSection = { sectionTitle: title, questions: [] };
+        } else {
+          currentSection.sectionTitle = title;
+        }
+        continue;
+      }
+    }
+
+    // 3. Question Number
+    const qNumMatch = line.match(/^(\d{1,3})\.\s*(.*)/);
+    if (qNumMatch && (qState === "IDLE" || qState === "SOLUTION")) {
+      pushCurrentQ();
+      currentQ = {
+        number: parseInt(qNumMatch[1], 10),
+        questionLines: qNumMatch[2] ? [qNumMatch[2]] : [],
+        optionsArray: [],
+        answerLetter: "A",
+        explanationLines: []
+      };
+      qState = "QUESTION_TEXT";
+      continue;
+    }
+
+    // Question content parsing
+    if (currentQ) {
+      if (qState === "QUESTION_TEXT") {
+        if (/^[A-F][\.\)]\s+/i.test(line)) {
+          qState = "OPTIONS";
+          const optMatch = line.match(/^([A-F])[\.\)]\s+(.*)/i);
+          if (optMatch) {
+            currentQ.optionsArray.push({
+              letter: optMatch[1].toUpperCase(),
+              text: optMatch[2]
+            });
+          }
+        } else {
+          currentQ.questionLines.push(line);
+        }
+      } else if (qState === "OPTIONS") {
+        if (/^[A-F][\.\)]\s+/i.test(line)) {
+          const optMatch = line.match(/^([A-F])[\.\)]\s+(.*)/i);
+          if (optMatch) {
+            currentQ.optionsArray.push({
+              letter: optMatch[1].toUpperCase(),
+              text: optMatch[2]
+            });
+          }
+        } else if (/^(?:Answer|Correct\s+Answer|Ans)[\s\:\.]*([A-F])/i.test(line)) {
+          qState = "ANSWER";
+          const ansMatch = line.match(/^(?:Answer|Correct\s+Answer|Ans)[\s\:\.]*([A-F])/i);
+          if (ansMatch) currentQ.answerLetter = ansMatch[1].toUpperCase();
+        } else {
+          if (currentQ.optionsArray.length > 0) {
+            currentQ.optionsArray[currentQ.optionsArray.length - 1].text += " " + line;
+          }
+        }
+      } else if (qState === "ANSWER") {
+        if (/^Solution\.?/i.test(line)) {
+          qState = "SOLUTION";
+        }
+      } else if (qState === "SOLUTION") {
+        currentQ.explanationLines.push(line);
+      }
+    }
+  }
+
+  pushCurrentQ();
+  if (currentSection.questions.length > 0) {
+    sectionsMap.push(currentSection);
+  }
+
+  return sectionsMap;
+}
+
 
 export default DocxParser;
