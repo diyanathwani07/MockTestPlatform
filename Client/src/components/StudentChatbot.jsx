@@ -14,7 +14,7 @@ const StudentChatbot = () => {
     const saved = sessionStorage.getItem("studentChatMessages");
     if (saved) return JSON.parse(saved);
     return [
-      { sender: "bot", text: "Hello! I'm your Student Support Assistant. How can I help you today? (e.g., 'How do I check my results?' or 'I need help with a mock test')" }
+      { sender: "bot", text: "Hello! I'm your PrepMark Student Assistant. Ask me anything about your mock tests, practice sets, results, live exams, or how to navigate the platform!" }
     ];
   });
 
@@ -83,11 +83,20 @@ const StudentChatbot = () => {
       }
     } catch (error) {
       console.error("Student Chat API Error:", error);
-      const errMsg = error.response?.data?.error || error.message || "Unknown error";
-      setMessages(prev => [
-        ...prev, 
-        { sender: "bot", text: `I'm having trouble connecting to my brain right now. Error: ${errMsg}` }
-      ]);
+      const localAnswer = getStudentLocalFallback(userMessage);
+      if (localAnswer) {
+        setMessages(prev => [...prev, { sender: "bot", text: localAnswer.text }]);
+        if (localAnswer.navigateTo) {
+          setTimeout(() => {
+            navigate(localAnswer.navigateTo);
+          }, 2500);
+        }
+      } else {
+        setMessages(prev => [
+          ...prev, 
+          { sender: "bot", text: "I'm having trouble connecting to the network right now. You can use the navigation bar to access exams, practice, and results." }
+        ]);
+      }
     } finally {
       setIsTyping(false);
     }
@@ -198,5 +207,60 @@ const StudentChatbot = () => {
     </div>
   );
 };
+
+
+// Client-side fallback navigation resolver for immediate student assistance
+function getStudentLocalFallback(query) {
+  const q = (query || "").toLowerCase();
+  if (q.includes("prepmark") || q.includes("about platform") || q.includes("what is prepmark")) {
+    return {
+      text: "PrepMark is your all-in-one exam preparation platform with mock tests, practice sets, live examinations, flashcards, and score analysis.",
+      navigateTo: null
+    };
+  }
+  if (q.includes("voice") || q.includes("audio") || q.includes("read") || q.includes("listen")) {
+    return {
+      text: "PrepMark has built-in Word-to-Speech audio reading inside tests so you can listen to questions read aloud.",
+      navigateTo: null
+    };
+  }
+  if (q.includes("custom") || q.includes("create quiz")) {
+    return { text: "Navigating to Create Custom Quiz.", navigateTo: "/dashboard/create-custom-quiz" };
+  }
+  if (q.includes("live")) {
+    return { text: "Navigating to Live Exams Lobby.", navigateTo: "/dashboard/live-exams" };
+  }
+  if (q.includes("exam") || q.includes("mock") || q.includes("test series")) {
+    return { text: "Navigating to Available Exams & Mock Tests.", navigateTo: "/dashboard/exams" };
+  }
+  if (q.includes("practice")) {
+    return { text: "Navigating to Practice Modules.", navigateTo: "/dashboard/practice" };
+  }
+  if (q.includes("result") || q.includes("score") || q.includes("attempt") || q.includes("analysis")) {
+    return { text: "Navigating to your Results & Performance.", navigateTo: "/dashboard/results" };
+  }
+  if (q.includes("flashcard") || q.includes("card")) {
+    return { text: "Navigating to Flashcards.", navigateTo: "/dashboard/flashcards" };
+  }
+  if (q.includes("leaderboard") || q.includes("rank") || q.includes("topper")) {
+    return { text: "Navigating to Leaderboard.", navigateTo: "/dashboard/leaderboard" };
+  }
+  if (q.includes("streak") || q.includes("daily")) {
+    return { text: "Navigating to Daily Study Streak.", navigateTo: "/dashboard/streak" };
+  }
+  if (q.includes("price") || q.includes("plan") || q.includes("subscription")) {
+    return { text: "Navigating to AI Plans & Pricing.", navigateTo: "/dashboard/pricing" };
+  }
+  if (q.includes("profile") || q.includes("account")) {
+    return { text: "Navigating to your Profile.", navigateTo: "/dashboard/profile" };
+  }
+  if (q.includes("help") || q.includes("support") || q.includes("ticket")) {
+    return { text: "Navigating to Help & Support.", navigateTo: "/dashboard/help" };
+  }
+  if (q.includes("dashboard") || q.includes("home")) {
+    return { text: "Navigating to Dashboard.", navigateTo: "/dashboard" };
+  }
+  return null;
+}
 
 export default StudentChatbot;

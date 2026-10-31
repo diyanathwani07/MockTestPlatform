@@ -14,7 +14,7 @@ const AdminChatbot = () => {
     const saved = sessionStorage.getItem("adminChatMessages");
     if (saved) return JSON.parse(saved);
     return [
-      { sender: "bot", text: "Hello Admin! I'm your assistant. Tell me where you'd like to go (e.g., 'Take me to users' or 'Show reports')." }
+      { sender: "bot", text: "Hello Admin! I'm your PrepMark Assistant. Ask me about PrepMark or tell me where you'd like to go (e.g., 'Where is Voice Settings?', 'Take me to quizzes', or 'What is PrepMark?')." }
     ];
   });
 
@@ -72,11 +72,20 @@ const AdminChatbot = () => {
       }
     } catch (error) {
       console.error("Admin Chat API Error:", error);
-      const errMsg = error.response?.data?.error || error.message || "Unknown error";
-      setMessages(prev => [
-        ...prev, 
-        { sender: "bot", text: `I'm having trouble connecting to my brain right now. Error: ${errMsg}` }
-      ]);
+      const localAnswer = getAdminLocalFallback(userMessage);
+      if (localAnswer) {
+        setMessages(prev => [...prev, { sender: "bot", text: localAnswer.text }]);
+        if (localAnswer.navigateTo) {
+          setTimeout(() => {
+            navigate(localAnswer.navigateTo);
+          }, 2500);
+        }
+      } else {
+        setMessages(prev => [
+          ...prev, 
+          { sender: "bot", text: "I'm having trouble connecting to the network right now. You can navigate directly using the left sidebar menu." }
+        ]);
+      }
     } finally {
       setIsTyping(false);
     }
@@ -170,7 +179,7 @@ const AdminChatbot = () => {
           <form onSubmit={handleSend} className="acb-input-area">
             <input 
               type="text" 
-              placeholder="e.g. 'Take me to users...'" 
+              placeholder="e.g. 'Where is Voice Settings?', 'Take me to users...'" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isTyping}
@@ -184,5 +193,78 @@ const AdminChatbot = () => {
     </div>
   );
 };
+
+
+// Client-side fallback navigation resolver for immediate offline & direct routing
+function getAdminLocalFallback(query) {
+  const q = (query || "").toLowerCase();
+  if (q.includes("voice") || q.includes("speech") || q.includes("audio") || q.includes("tts")) {
+    return {
+      text: "Navigating you to Voice Settings. Here you can configure Word-to-Speech audio reader, voice reminders, speech synthesis, and language accents.",
+      navigateTo: "/admin/voice-settings"
+    };
+  }
+  if (q.includes("prepmark") || q.includes("about platform") || q.includes("what is prepmark")) {
+    return {
+      text: "PrepMark is an advanced AI-powered online examination and learning platform featuring multi-section modular assessments, live examinations, question banks, flashcards, AI subscription plans, voice reading, and student analytics.",
+      navigateTo: null
+    };
+  }
+  if (q.includes("multi") || q.includes("modular")) {
+    return { text: "Navigating to Create Multi-Section Assessment.", navigateTo: "/admin/create-quiz-multi" };
+  }
+  if (q.includes("create quiz") || q.includes("new quiz") || q.includes("new test")) {
+    return { text: "Navigating to Create Quiz.", navigateTo: "/admin/create-quiz" };
+  }
+  if (q.includes("manage quiz") || q.includes("quizzes") || q.includes("all quiz")) {
+    return { text: "Navigating to Manage Quizzes.", navigateTo: "/admin/manage-quizzes" };
+  }
+  if (q.includes("live exam") || q.includes("live test")) {
+    return { text: "Navigating to Live Examinations.", navigateTo: "/admin/live-exams" };
+  }
+  if (q.includes("exam") || q.includes("series")) {
+    return { text: "Navigating to Manage Exams.", navigateTo: "/admin/exams" };
+  }
+  if (q.includes("practice")) {
+    return { text: "Navigating to Practice Modules.", navigateTo: "/admin/practice" };
+  }
+  if (q.includes("flashcard")) {
+    return { text: "Navigating to Flashcards.", navigateTo: "/admin/flashcards" };
+  }
+  if (q.includes("question")) {
+    return { text: "Navigating to Questions Bank.", navigateTo: "/admin/questions" };
+  }
+  if (q.includes("user") || q.includes("student") || q.includes("teacher")) {
+    return { text: "Navigating to User Management.", navigateTo: "/admin/users" };
+  }
+  if (q.includes("banner")) {
+    return { text: "Navigating to Banners.", navigateTo: "/admin/banners" };
+  }
+  if (q.includes("ai plan") || q.includes("subscription")) {
+    return { text: "Navigating to AI Plans.", navigateTo: "/admin/ai-plans" };
+  }
+  if (q.includes("revenue") || q.includes("financial")) {
+    return { text: "Navigating to Revenue Dashboard.", navigateTo: "/admin/revenue" };
+  }
+  if (q.includes("result") || q.includes("attempt") || q.includes("score")) {
+    return { text: "Navigating to Results.", navigateTo: "/admin/results" };
+  }
+  if (q.includes("report") || q.includes("analytic")) {
+    return { text: "Navigating to Reports.", navigateTo: "/admin/reports" };
+  }
+  if (q.includes("audit") || q.includes("log")) {
+    return { text: "Navigating to Audit Log.", navigateTo: "/admin/audit-log" };
+  }
+  if (q.includes("ticket") || q.includes("support")) {
+    return { text: "Navigating to Support Tickets.", navigateTo: "/admin/tickets" };
+  }
+  if (q.includes("role") || q.includes("permission")) {
+    return { text: "Navigating to Roles & Permissions.", navigateTo: "/admin/roles" };
+  }
+  if (q.includes("dashboard") || q.includes("home")) {
+    return { text: "Navigating to Dashboard.", navigateTo: "/admin/dashboard" };
+  }
+  return null;
+}
 
 export default AdminChatbot;

@@ -42,7 +42,7 @@ import "../css/admin/AiSubscribers.css";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const BAR_COLORS = ["var(--primary)", "#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#8B5CF6"];
+const BAR_COLORS = ["#8B5CF6", "#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#06B6D4"];
 
 export default function AiSubscribers() {
   const navigate = useNavigate();
@@ -390,16 +390,16 @@ export default function AiSubscribers() {
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={planPopularity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.08)" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color, rgba(128,128,128,0.15))" />
                     <XAxis
                       dataKey="planName"
-                      stroke="rgba(255,255,255,0.4)"
+                      stroke="var(--text-secondary, #94a3b8)"
                       fontSize={11}
                       tickLine={false}
                       axisLine={false}
                     />
                     <YAxis
-                      stroke="rgba(255,255,255,0.4)"
+                      stroke="var(--text-secondary, #94a3b8)"
                       fontSize={11}
                       tickLine={false}
                       axisLine={false}
@@ -407,13 +407,13 @@ export default function AiSubscribers() {
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#1c1b2e",
-                        borderColor: "#2e2c45",
+                        backgroundColor: "var(--bg-card, #1c1b2e)",
+                        borderColor: "var(--border-color, #2e2c45)",
                         borderRadius: "8px",
-                        color: "#ffffff",
+                        color: "var(--text-primary, #ffffff)",
                         fontSize: "12px"
                       }}
-                      formatter={(val) => [`${val} subscribers`, "Subscribers"]}
+                      formatter={(val) => [`${val} ${val === 1 ? 'subscriber' : 'subscribers'}`, "Subscribers"]}
                     />
                     <Bar dataKey="subscriberCount" radius={[6, 6, 0, 0]}>
                       {planPopularity.map((entry, idx) => (
@@ -616,8 +616,7 @@ export default function AiSubscribers() {
                                 e.stopPropagation();
                                 openStudentDrawer(student.studentId);
                               }}
-                              className="rev-dropdown-pill"
-                              style={{ padding: "4px 8px", fontSize: 11 }}
+                              className="sub-history-btn"
                             >
                               <span>History</span>
                               <ExternalLink className="w-3 h-3" />
@@ -631,26 +630,30 @@ export default function AiSubscribers() {
 
                 {/* Pagination Controls */}
                 <div className="sub-pagination-row">
-                  <div>
+                  <div style={{ color: "var(--text-secondary, #94a3b8)", fontSize: 12, fontWeight: 500 }}>
                     Showing {Math.min((currentPage - 1) * pagination.limit + 1, pagination.total)} to{" "}
                     {Math.min(currentPage * pagination.limit, pagination.total)} of{" "}
-                    {pagination.total} subscribers
+                    <span style={{ color: "var(--text-primary, #ffffff)", fontWeight: 700 }}>
+                      {pagination.total} {pagination.total === 1 ? "subscriber" : "subscribers"}
+                    </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <button
-                      className="rev-page-btn"
+                      className="sub-page-btn"
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      title="Previous page"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
-                    <span style={{ padding: "0 6px", fontWeight: 600, color: "#ffffff" }}>
+                    <span style={{ padding: "0 6px", fontWeight: 600, color: "var(--text-primary, #ffffff)" }}>
                       Page {currentPage} of {pagination.totalPages}
                     </span>
                     <button
-                      className="rev-page-btn"
+                      className="sub-page-btn"
                       disabled={currentPage >= pagination.totalPages}
                       onClick={() => setCurrentPage((p) => Math.min(pagination.totalPages, p + 1))}
+                      title="Next page"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
                     </button>
@@ -680,7 +683,7 @@ export default function AiSubscribers() {
               </div>
               <button
                 onClick={closeStudentDrawer}
-                className="rev-page-btn"
+                className="sub-page-btn"
                 style={{ width: 32, height: 32, borderRadius: "50%" }}
               >
                 <X className="w-4 h-4" />

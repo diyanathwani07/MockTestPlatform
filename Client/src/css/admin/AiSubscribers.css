@@ -313,6 +313,53 @@
   color: var(--text-secondary, #94a3b8);
 }
 
+/* History Action Button in Table */
+.sub-history-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.25));
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sub-history-btn:hover {
+  background: color-mix(in srgb, var(--primary, #8B5CF6) 18%, var(--bg-card, #1c1b2e));
+  border-color: var(--primary, #8B5CF6);
+  color: var(--text-primary, #ffffff);
+}
+
+/* Pagination navigation buttons */
+.sub-page-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.25));
+  border-radius: 6px;
+  color: var(--text-primary, #ffffff);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sub-page-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary, #8B5CF6) 18%, var(--bg-card, #1c1b2e));
+  border-color: var(--primary, #8B5CF6);
+}
+
+.sub-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 /* ==========================================================================
    DRILL-DOWN DRAWER / MODAL
    ========================================================================== */
