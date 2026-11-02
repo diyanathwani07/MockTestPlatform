@@ -38,7 +38,7 @@ html[class*="theme-"].dark :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]):not(.practice-start-btn) {
+:root :is(button, .btn, [class*="-btn"]):not(.action-dots-btn):not(.tk-action-view-btn):not(.close-btn):not(.status-btn):not(.page-nav-btn):not(.role-dept-action-btn):not([class*="action-dots"]):not([class*="page-nav"]):not([class*="status-"]):not([class*="close-"]):not([class*="table-btn"]):not(.navbar-back-btn):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]):not(.practice-start-btn):not(.btn-reset):not([class*="btn-reset"]):not(.tk-reply-submit-btn) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -571,4 +571,286 @@ body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [
   --border: #333333;
   --input: #333333;
   --ring: #ffffff;
+}
+
+
+/* ==========================================================================
+   BUTTON VISIBILITY & ACCESSIBLE CONTRAST OVERRIDES
+   ========================================================================== */
+:root .action-dots-btn,
+html[class*="theme-"] .action-dots-btn {
+  color: var(--text-primary, #111827) !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: var(--border-color, #d1d5db) !important;
+}
+body.dark-mode .action-dots-btn,
+html[class*="theme-"].dark .action-dots-btn {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+:root .tk-action-view-btn,
+html[class*="theme-"] .tk-action-view-btn {
+  color: var(--violet, var(--primary, #6E3FF3)) !important;
+  border-color: rgba(110, 63, 243, 0.28) !important;
+}
+:root .tk-action-view-btn svg,
+html[class*="theme-"] .tk-action-view-btn svg {
+  color: var(--violet, var(--primary, #6E3FF3)) !important;
+  stroke: currentColor !important;
+}
+
+/* ==========================================================================
+   CROSS BUTTON (.close-btn) - HIGH CONTRAST IN LIGHT & DARK MODE
+   ========================================================================== */
+:root .close-btn,
+html:not(.dark):not(.dark-mode) .close-btn,
+body:not(.dark-mode) .close-btn {
+  color: #111827 !important;
+  background: #f3f4f6 !important;
+  border: 1.5px solid #d1d5db !important;
+}
+:root .close-btn svg,
+html:not(.dark):not(.dark-mode) .close-btn svg,
+body:not(.dark-mode) .close-btn svg {
+  color: #111827 !important;
+  stroke: #111827 !important;
+  stroke-width: 2.2 !important;
+}
+:root .close-btn:hover,
+html:not(.dark):not(.dark-mode) .close-btn:hover,
+body:not(.dark-mode) .close-btn:hover {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+  border-color: #fca5a5 !important;
+}
+:root .close-btn:hover svg,
+html:not(.dark):not(.dark-mode) .close-btn:hover svg,
+body:not(.dark-mode) .close-btn:hover svg {
+  color: #ef4444 !important;
+  stroke: #ef4444 !important;
+}
+
+body.dark-mode .close-btn,
+.dark .close-btn,
+html.dark .close-btn,
+html[class*="theme-"].dark .close-btn {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+}
+body.dark-mode .close-btn svg,
+.dark .close-btn svg,
+html.dark .close-btn svg,
+html[class*="theme-"].dark .close-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.2 !important;
+}
+body.dark-mode .close-btn:hover,
+.dark .close-btn:hover,
+html.dark .close-btn:hover,
+html[class*="theme-"].dark .close-btn:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  color: #f87171 !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+}
+body.dark-mode .close-btn:hover svg,
+.dark .close-btn:hover svg,
+html.dark .close-btn:hover svg,
+html[class*="theme-"].dark .close-btn:hover svg {
+  color: #f87171 !important;
+  stroke: #f87171 !important;
+}
+
+/* ==========================================================================
+   STATUS UPDATE BUTTONS (.status-btn) - BLACK IN LIGHT MODE, WHITE IN DARK MODE
+   ========================================================================== */
+:root .status-btn,
+html:not(.dark):not(.dark-mode) .status-btn,
+body:not(.dark-mode) .status-btn {
+  color: #111827 !important; /* Black font in light mode */
+  background: #ffffff !important;
+  border: 1.5px solid #d1d5db !important;
+  font-weight: 600 !important;
+}
+:root .status-btn:hover,
+html:not(.dark):not(.dark-mode) .status-btn:hover,
+body:not(.dark-mode) .status-btn:hover {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
+}
+:root .status-btn.active.open,
+html:not(.dark):not(.dark-mode) .status-btn.active.open,
+body:not(.dark-mode) .status-btn.active.open {
+  color: #92400e !important;
+  background: #fef3c7 !important;
+  border-color: #fcd34d !important;
+}
+:root .status-btn.active.in-progress,
+html:not(.dark):not(.dark-mode) .status-btn.active.in-progress,
+body:not(.dark-mode) .status-btn.active.in-progress {
+  color: #1e40af !important;
+  background: #dbeafe !important;
+  border-color: #93c5fd !important;
+}
+:root .status-btn.active.reopened,
+html:not(.dark):not(.dark-mode) .status-btn.active.reopened,
+body:not(.dark-mode) .status-btn.active.reopened {
+  color: #6b21a8 !important;
+  background: #f3e8ff !important;
+  border-color: #d8b4fe !important;
+}
+:root .status-btn.active.resolved,
+html:not(.dark):not(.dark-mode) .status-btn.active.resolved,
+body:not(.dark-mode) .status-btn.active.resolved {
+  color: #065f46 !important;
+  background: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+}
+
+body.dark-mode .status-btn,
+.dark .status-btn,
+html.dark .status-btn,
+html[class*="theme-"].dark .status-btn {
+  color: #ffffff !important; /* White text in dark mode */
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  font-weight: 600 !important;
+}
+body.dark-mode .status-btn:hover,
+.dark .status-btn:hover,
+html.dark .status-btn:hover,
+html[class*="theme-"].dark .status-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.38) !important;
+}
+body.dark-mode .status-btn.active.open,
+.dark .status-btn.active.open,
+html.dark .status-btn.active.open,
+html[class*="theme-"].dark .status-btn.active.open {
+  color: #fde68a !important;
+  background: rgba(180, 83, 9, 0.35) !important;
+  border-color: #f59e0b !important;
+}
+body.dark-mode .status-btn.active.in-progress,
+.dark .status-btn.active.in-progress,
+html.dark .status-btn.active.in-progress,
+html[class*="theme-"].dark .status-btn.active.in-progress {
+  color: #93c5fd !important;
+  background: rgba(29, 78, 216, 0.35) !important;
+  border-color: #3b82f6 !important;
+}
+body.dark-mode .status-btn.active.reopened,
+.dark .status-btn.active.reopened,
+html.dark .status-btn.active.reopened,
+html[class*="theme-"].dark .status-btn.active.reopened {
+  color: #e9d5ff !important;
+  background: rgba(124, 58, 237, 0.35) !important;
+  border-color: #a855f7 !important;
+}
+body.dark-mode .status-btn.active.resolved,
+.dark .status-btn.active.resolved,
+html.dark .status-btn.active.resolved,
+html[class*="theme-"].dark .status-btn.active.resolved {
+  color: #a7f3d0 !important;
+  background: rgba(4, 120, 87, 0.35) !important;
+  border-color: #10b981 !important;
+}
+
+/* ==========================================================================
+   RESULTS REFRESH BUTTON (.btn-reset)
+   ========================================================================== */
+:root .btn-reset,
+html:not(.dark):not(.dark-mode) .btn-reset,
+body:not(.dark-mode) .btn-reset {
+  color: #111827 !important;
+  background: #ffffff !important;
+  border: 1.5px solid #d1d5db !important;
+}
+:root .btn-reset svg,
+html:not(.dark):not(.dark-mode) .btn-reset svg,
+body:not(.dark-mode) .btn-reset svg {
+  color: #111827 !important;
+  stroke: #111827 !important;
+}
+:root .btn-reset:hover,
+html:not(.dark):not(.dark-mode) .btn-reset:hover,
+body:not(.dark-mode) .btn-reset:hover {
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+}
+
+body.dark-mode .btn-reset,
+.dark .btn-reset,
+html.dark .btn-reset,
+html[class*="theme-"].dark .btn-reset {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+}
+body.dark-mode .btn-reset svg,
+.dark .btn-reset svg,
+html.dark .btn-reset svg,
+html[class*="theme-"].dark .btn-reset svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+body.dark-mode .btn-reset:hover,
+.dark .btn-reset:hover,
+html.dark .btn-reset:hover,
+html[class*="theme-"].dark .btn-reset:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ==========================================================================
+   SUPPORT TICKET SUBMIT REPLY BUTTON (.tk-reply-submit-btn)
+   ========================================================================== */
+.tk-reply-submit-btn {
+  background: var(--primary, #8a55fc) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+.tk-reply-submit-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+.tk-reply-submit-btn span {
+  color: #ffffff !important;
+}
+.tk-reply-submit-btn:disabled {
+  background: rgba(138, 85, 252, 0.45) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  opacity: 0.75 !important;
+}
+.tk-reply-submit-btn:disabled svg {
+  color: rgba(255, 255, 255, 0.85) !important;
+  stroke: rgba(255, 255, 255, 0.85) !important;
+}
+.tk-reply-submit-btn:disabled span {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:root .page-nav-btn:not(.active-page),
+html[class*="theme-"] .page-nav-btn:not(.active-page) {
+  color: var(--text-primary, #1a1a2e) !important;
+  background: var(--bg-card, transparent) !important;
+  border-color: var(--border-color, #dad0bb) !important;
+}
+:root .page-nav-btn.active-page,
+html[class*="theme-"] .page-nav-btn.active-page {
+  color: var(--primary-foreground, #ffffff) !important;
+  background: var(--primary, #a87c51) !important;
+  border-color: var(--primary, #a87c51) !important;
+}
+
+:root .role-dept-action-btn,
+html[class*="theme-"] .role-dept-action-btn {
+  color: var(--text-secondary, #4B5563) !important;
+}
+:root .role-dept-action-btn:hover,
+html[class*="theme-"] .role-dept-action-btn:hover {
+  color: var(--text-primary, #111827) !important;
 }

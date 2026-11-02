@@ -40,6 +40,15 @@ import "../css/admin/AdminLayout.css";
 
 const API = import.meta.env.VITE_API_URL || "";
 
+const formatQuizDuration = (dur) => {
+  if (!dur && dur !== 0) return "Standard Duration";
+  const num = Number(dur);
+  if (isNaN(num)) return `${dur}`;
+  // Modular quizzes store duration in seconds (e.g., 600s = 10m, 1800s = 30m, 3600s = 60m, 9000s = 150m)
+  const mins = num >= 300 ? Math.round(num / 60) : Math.round(num);
+  return `${mins} mins`;
+};
+
 const extractErrorMessage = (err, fallback = "An error occurred") => {
   if (!err) return fallback;
   const raw =
@@ -3804,7 +3813,7 @@ export default function VoiceSettings() {
                         <div>
                           <div style={{ fontWeight: "600", fontSize: "13.5px" }}>{quiz.title}</div>
                           <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "2px" }}>
-                            {quiz.subject || "General"} • {quiz.duration} mins
+                            {quiz.subject || "General"} • {formatQuizDuration(quiz.duration)}
                           </div>
                         </div>
                         <span style={{ fontSize: "12px", color: "var(--primary)", fontWeight: "600" }}>Select →</span>

@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import JSZip from "jszip";
 import axios from "axios";
 import { HelpCircle, Clock, Search, Pencil, SlidersHorizontal, ArrowLeft, ChevronRight, BookOpen, GraduationCap, Trash2, CheckSquare, FileText, Calendar, FolderOpen } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
@@ -66,34 +67,219 @@ const splitBilingualText = (text) => {
   return [text];
 };
 
-// ── Export helpers ──
-const exportToCSV = (subject) => {
-  const headers = ["Q.No", "Question (English)", "Question (Hindi)", "Option A", "Option B", "Option C", "Option D", "Correct Answer"];
-  const rows = subject.questions.map((q) => [
-    q.qNo,
-    `"${(q.questionEnglish || "").replace(/"/g, '""')}"`,
-    `"${(q.questionHindi || "").replace(/"/g, '""')}"`,
-    ...(q.options || []).map((o) => `"${String(o.text || o || "").replace(/"/g, '""')}"`),
-    q.correctAnswer,
-  ]);
-  const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${subject.subjectName}_questions.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+// ── Word Document (.docx) Export Helper ──
+const escapeXml = (unsafe) => {
+  if (!unsafe) return "";
+  return String(unsafe)
+    .replace(/[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]/g, "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 };
 
-const exportToJSON = (subject) => {
-  const blob = new Blob([JSON.stringify(subject.questions, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${subject.subjectName}_questions.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+const exportToWord = async (subject) => {
+  if (!subject || !subject.questions || subject.questions.length === 0) {
+    alert("No questions available to export in this subject.");
+    return;
+  }
+
+  try {
+    const zip = new JSZip();
+
+    // 1. [Content_Types].xml
+    zip.file(
+      "[Content_Types].xml",
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`
+    );
+
+    // 2. _rels/.rels
+    zip.file(
+      "_rels/.rels",
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`
+    );
+
+    // Helper to resolve clean answer letter (A, B, C, D)
+    const resolveAnswerLetter = (q, options) => {
+      const raw = String(q.correctAnswer || "").trim();
+      if (/^[A-D]$/i.test(raw)) return raw.toUpperCase();
+      const m = raw.match(/^Option\s*([A-D])/i);
+      if (m) return m[1].toUpperCase();
+      // Match against option texts
+      const matchIdx = options.findIndex((opt) => {
+        const t = String(opt?.text || opt || "").trim();
+        return t && (t === raw || t.toLowerCase() === raw.toLowerCase());
+      });
+      if (matchIdx >= 0 && matchIdx < 26) {
+        return String.fromCharCode(65 + matchIdx);
+      }
+      return raw || "A";
+    };
+
+    // Build document body paragraphs
+    const paragraphsXml = [];
+
+    // Header Title: Subject Name
+    const subjectTitle = escapeXml(subject.subjectName || "Subject Questions");
+    paragraphsXml.push(`
+      <w:p>
+        <w:pPr>
+          <w:jc w:val="center"/>
+          <w:spacing w:before="120" w:after="240"/>
+        </w:pPr>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:sz w:val="36"/>
+            <w:color w:val="1F2937"/>
+          </w:rPr>
+          <w:t>${subjectTitle}</w:t>
+        </w:r>
+      </w:p>
+    `);
+
+    subject.questions.forEach((q, idx) => {
+      const qNum = q.qNo || idx + 1;
+      const engText = (q.questionEnglish || "").trim();
+      const hinText = (q.questionHindi || "").trim();
+      const options = q.options || [];
+      const ansLetter = resolveAnswerLetter(q, options);
+      const explanation = (q.explanation || "").trim();
+
+      // Question Number & English Text
+      paragraphsXml.push(`
+        <w:p>
+          <w:pPr>
+            <w:spacing w:before="180" w:after="60"/>
+          </w:pPr>
+          <w:r>
+            <w:rPr><w:b/><w:sz w:val="24"/></w:rPr>
+            <w:t>${qNum}. ${escapeXml(engText || hinText || "Question")}</w:t>
+          </w:r>
+        </w:p>
+      `);
+
+      // Hindi Question Text (if bilingual)
+      if (hinText && engText && hinText !== engText) {
+        paragraphsXml.push(`
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="40" w:after="80"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr><w:sz w:val="23"/></w:rPr>
+              <w:t>${escapeXml(hinText)}</w:t>
+            </w:r>
+          </w:p>
+        `);
+      }
+
+      // Options (A, B, C, D)
+      options.forEach((opt, oIdx) => {
+        const letter = String.fromCharCode(65 + oIdx);
+        const optText = String(opt?.text || opt || "").trim();
+        paragraphsXml.push(`
+          <w:p>
+            <w:pPr>
+              <w:ind w:left="360"/>
+              <w:spacing w:before="30" w:after="30"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr><w:b/></w:rPr>
+              <w:t>(${letter}) </w:t>
+            </w:r>
+            <w:r>
+              <w:t>${escapeXml(optText)}</w:t>
+            </w:r>
+          </w:p>
+        `);
+      });
+
+      // Correct Answer (Teaching Pariksha LMS standard: Answer: X)
+      paragraphsXml.push(`
+        <w:p>
+          <w:pPr>
+            <w:spacing w:before="80" w:after="40"/>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:b/>
+              <w:color w:val="15803D"/>
+            </w:rPr>
+            <w:t>Answer: ${escapeXml(ansLetter)}</w:t>
+          </w:r>
+        </w:p>
+      `);
+
+      // Solution / Explanation (if present)
+      if (explanation) {
+        paragraphsXml.push(`
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="40" w:after="160"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:color w:val="1D4ED8"/>
+              </w:rPr>
+              <w:t>Solution: </w:t>
+            </w:r>
+            <w:r>
+              <w:t>${escapeXml(explanation)}</w:t>
+            </w:r>
+          </w:p>
+        `);
+      } else {
+        paragraphsXml.push(`
+          <w:p>
+            <w:pPr><w:spacing w:after="140"/></w:pPr>
+          </w:p>
+        `);
+      }
+    });
+
+    // 3. word/document.xml
+    const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    ${paragraphsXml.join("\n")}
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+    zip.file("word/document.xml", docXml);
+
+    const blob = await zip.generateAsync({
+      type: "blob",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const cleanFileName = (subject.subjectName || "Questions").replace(/[^a-zA-Z0-9_\u0900-\u097F-]/g, "_");
+    a.download = `${cleanFileName}_Questions.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Export to Word error:", err);
+    alert("Failed to export Word document. Please try again.");
+  }
 };
 
 function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
@@ -388,6 +574,19 @@ function Questions() {
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [allCollapsed, setAllCollapsed] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target)) {
+        setShowExportMenu(false);
+      }
+    };
+    if (showExportMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showExportMenu]);
   const questionsPerPage = 15; // More per page since we now show options
   const [currentPage, setCurrentPage] = useState(1);
   const [openingBookId, setOpeningBookId] = useState(null);
@@ -1180,7 +1379,7 @@ function Questions() {
                           <p>{selectedSubject.questionsCount} Questions in {selectedBook.title}</p>
                         </div>
                       </div>
-                      <div className="qb-right-actions">
+                      <div className="qb-right-actions" style={{ position: "relative" }} ref={exportMenuRef}>
                         <button className="qb-btn-export" onClick={() => setShowExportMenu(!showExportMenu)}>
                           ↓ Export
                         </button>
@@ -1199,28 +1398,23 @@ function Questions() {
                           <div style={{
                             position: "absolute", top: "100%", right: "40px",
                             background: "var(--bg-card)", border: "1px solid var(--border-color)",
-                            borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                            zIndex: 10, marginTop: "8px", minWidth: "140px"
+                            borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                            zIndex: 100, marginTop: "8px", minWidth: "210px",
+                            overflow: "hidden"
                           }}>
                             <button
-                              onClick={() => { exportToCSV(selectedSubject); setShowExportMenu(false); }}
+                              onClick={() => { exportToWord(selectedSubject); setShowExportMenu(false); }}
                               style={{
-                                display: "block", width: "100%", padding: "10px 16px",
-                                textAlign: "left", background: "none", border: "none", borderBottom: "1px solid var(--border-color)",
-                                color: "var(--text-primary)", fontSize: "13px", cursor: "pointer",
-                              }}
-                            >
-                              Export CSV
-                            </button>
-                            <button
-                              onClick={() => { exportToJSON(selectedSubject); setShowExportMenu(false); }}
-                              style={{
-                                display: "block", width: "100%", padding: "10px 16px",
+                                display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "12px 16px",
                                 textAlign: "left", background: "none", border: "none",
-                                color: "var(--text-primary)", fontSize: "13px", cursor: "pointer",
+                                color: "var(--text-primary)", fontSize: "13px", fontWeight: "600", cursor: "pointer",
+                                transition: "background 0.15s ease"
                               }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover, rgba(255,255,255,0.06))"}
+                              onMouseLeave={(e) => e.currentTarget.style.background = "none"}
                             >
-                              Export JSON
+                              <FileText size={16} style={{ color: "#2563EB" }} />
+                              <span>Export Word Doc (.docx)</span>
                             </button>
                           </div>
                         )}

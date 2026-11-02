@@ -806,7 +806,8 @@ body.dark-mode .role-super { border-color: #10B981; color: #10B981; background: 
 .action-dots-btn {
   background: rgba(0, 0, 0, 0.04);
   border: 1.5px solid #d1d5db;
-  color: #111827; /* Crisp black in light mode */
+  color: var(--text-primary, #111827) !important; /* Crisp black in light mode */
+  border-color: var(--border-color, #d1d5db) !important;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -848,9 +849,12 @@ body.dark-mode .table-pagination-footer { background: var(--bg-card) !important;
 
 .pagination-info { font-size: 12.5px; color: var(--text-muted); }
 .pagination-controls { display: flex; gap: 8px; }
-.page-nav-btn { flex-shrink: 0; background: transparent; border: 1px solid var(--border-color); border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: all 0.2s ease; }
+.page-nav-btn { flex-shrink: 0; background: var(--bg-card, transparent); border: 1.5px solid var(--border-color, #dad0bb); border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--text-primary, #1a1a2e) !important; cursor: pointer; transition: all 0.2s ease; }
+body:not(.dark-mode) .page-nav-btn:not(.active-page) { color: var(--text-primary, #1a1a2e) !important; background: var(--bg-card, #FFFFFF) !important; border-color: var(--border-color, #dad0bb) !important; }
+.page-nav-btn:hover:not(:disabled):not(.active-page) { background: var(--option-hover, rgba(0,0,0,0.05)) !important; color: var(--text-primary, #1a1a2e) !important; }
+.page-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 body.dark-mode .page-nav-btn { border-color: var(--border-color); color: var(--text-primary); }
-.page-nav-btn.active-page { flex-shrink: 0; background: var(--primary); color: var(--primary-foreground); border-color: var(--violet); box-shadow: 0 2px 8px var(--border-color); }
+.page-nav-btn.active-page { flex-shrink: 0; background: var(--primary) !important; color: var(--primary-foreground, #ffffff) !important; border-color: var(--primary) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 
 
 /* ==========================================================================

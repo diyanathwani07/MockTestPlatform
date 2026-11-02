@@ -126,4 +126,6 @@ const resultSchema = new mongoose.Schema(
   }
 );
 
+resultSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model("Result", resultSchema);

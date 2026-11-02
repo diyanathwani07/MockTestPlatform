@@ -338,7 +338,7 @@
   padding: 6px 14px;
   border-radius: 8px;
   background: rgba(110, 63, 243, 0.08);
-  color: var(--primary, #6E3FF3);
+  color: var(--violet, var(--primary, #6E3FF3)) !important;
   border: 1.5px solid rgba(110, 63, 243, 0.28);
   font-size: 13px;
   font-weight: 600;
@@ -348,7 +348,8 @@
 }
 
 .tk-action-view-btn svg {
-  color: var(--primary, #6E3FF3);
+  color: var(--violet, var(--primary, #6E3FF3)) !important;
+  stroke: currentColor !important;
   transition: transform 0.2s ease;
 }
 
@@ -542,7 +543,7 @@
 .close-btn {
   background: transparent;
   border: 1px solid #E5E7EB;
-  color: var(--text-muted);
+  color: var(--text-primary, #374151) !important;
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
@@ -671,8 +672,8 @@
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #E5E7EB;
-  background: #FFFFFF;
-  color: var(--text-muted);
+  background: var(--bg-card, #FFFFFF);
+  color: var(--text-primary, #374151) !important;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -687,19 +688,22 @@
 
 .status-btn.active.open {
   background: #FEF3C7;
-  color: #B45309;
+  color: #92400E !important;
+  border-color: #FCD34D !important;
   border-color: #FEF3C7;
 }
 
 .status-btn.active.in-progress {
   background: #DBEAFE;
-  color: #1D4ED8;
+  color: #1E40AF !important;
+  border-color: #93C5FD !important;
   border-color: #DBEAFE;
 }
 
 .status-btn.active.reopened {
   background: #F5F3FF;
-  color: #7C3AED;
+  color: #6B21A8 !important;
+  border-color: #D8B4FE !important;
   border-color: #F5F3FF;
 }
 
@@ -755,18 +759,55 @@
 
 .dark-mode .tk-icon-btn,
 .dark-mode .tk-page-btn,
-.dark-mode .close-btn { border-color: var(--border-input); color: var(--text-secondary); }
+body.dark-mode .close-btn,
+.dark .close-btn {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+body.dark-mode .close-btn svg,
+.dark .close-btn svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
 
 .dark-mode .tk-table tr:hover { background: var(--bg-input); }
 
-.dark-mode .status-btn { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-color); }
-.dark-mode .status-btn:hover { background: var(--bg-input); }
+body.dark-mode .status-btn,
+.dark .status-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+body.dark-mode .status-btn:hover,
+.dark .status-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
 
-/* Keep the colored backgrounds for active status buttons in dark mode too */
-.dark-mode .status-btn.active.open { background: rgba(180, 83, 9, 0.2); color: #FBBF24; border-color: transparent; }
-.dark-mode .status-btn.active.reopened { background: rgba(124, 58, 237, 0.2); color: #A78BFA; border-color: transparent; }
-.dark-mode .status-btn.active.in-progress { background: rgba(29, 78, 216, 0.2); color: #60A5FA; border-color: transparent; }
-.dark-mode .status-btn.active.resolved { background: rgba(4, 120, 87, 0.2); color: #34D399; border-color: transparent; }
+body.dark-mode .status-btn.active.open,
+.dark .status-btn.active.open {
+  background: rgba(180, 83, 9, 0.35) !important;
+  color: #FDE68A !important;
+  border-color: #F59E0B !important;
+}
+body.dark-mode .status-btn.active.reopened,
+.dark .status-btn.active.reopened {
+  background: rgba(124, 58, 237, 0.35) !important;
+  color: #E9D5FF !important;
+  border-color: #A855F7 !important;
+}
+body.dark-mode .status-btn.active.in-progress,
+.dark .status-btn.active.in-progress {
+  background: rgba(29, 78, 216, 0.35) !important;
+  color: #93C5FD !important;
+  border-color: #3B82F6 !important;
+}
+body.dark-mode .status-btn.active.resolved,
+.dark .status-btn.active.resolved {
+  background: rgba(4, 120, 87, 0.35) !important;
+  color: #A7F3D0 !important;
+  border-color: #10B981 !important;
+}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {

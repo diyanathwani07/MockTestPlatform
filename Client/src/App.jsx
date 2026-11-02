@@ -1,5 +1,4 @@
 import React, { Suspense, lazy, useEffect } from "react";
-import { initPushNotifications } from './utils/pushNotifications';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
@@ -97,11 +96,6 @@ const RefundPolicy = lazy(() => import("./Pages/RefundPolicy"));
 
 function App() {
   useEffect(() => {
-    // Defer push notification setup to keep initial page load and TBT completely unblocked
-    const deferInit = () => {
-      initPushNotifications();
-    };
-
     // Idle preload high-frequency admin panels if currently on /admin to eliminate switching lag
     if (typeof window !== "undefined" && window.location.pathname.startsWith('/admin')) {
       const preloadAdmin = () => {
@@ -119,13 +113,6 @@ function App() {
       } else {
         setTimeout(preloadAdmin, 1500);
       }
-    }
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const handle = window.requestIdleCallback(deferInit, { timeout: 4000 });
-      return () => window.cancelIdleCallback(handle);
-    } else {
-      const timer = setTimeout(deferInit, 3000);
-      return () => clearTimeout(timer);
     }
   }, []);
 

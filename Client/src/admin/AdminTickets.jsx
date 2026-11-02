@@ -720,16 +720,13 @@ function AdminTickets() {
                     </div>
                     <button 
                       type="submit" 
+                      className="tk-reply-submit-btn"
                       disabled={replying || (!replyMessage.trim() && !replyFile)}
                       style={{
                         padding: "10px 24px",
-                        background: "var(--primary-color)",
-                        color: "white",
-                        border: "none",
                         borderRadius: "8px",
                         fontWeight: "600",
                         cursor: replying || (!replyMessage.trim() && !replyFile) ? "not-allowed" : "pointer",
-                        opacity: replying || (!replyMessage.trim() && !replyFile) ? 0.6 : 1,
                         display: "flex",
                         alignItems: "center",
                         gap: "8px",
@@ -738,7 +735,7 @@ function AdminTickets() {
                       }}
                     >
                       {replying ? <Loader2 size={16} className="spinner" /> : <MessageSquare size={16} />}
-                      {replying ? "Sending..." : "Send Reply"}
+                      <span>{replying ? "Sending..." : "Send Reply"}</span>
                     </button>
                   </div>
                 </form>

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
-import { Users, CheckCircle, Star, GraduationCap } from "lucide-react";
+import { Users, CheckCircle, Star, GraduationCap, RotateCcw } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ResultsDashboard.css";
@@ -169,6 +169,7 @@ function SearchableDropdown({ label, options, selected, onSelect, placeholder = 
 
 function Results() {
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [selectedQuiz, setSelectedQuiz] = useState("All Quizzes");
@@ -184,12 +185,15 @@ function Results() {
       try {
         const token = localStorage.getItem("token");
         const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+        setLoading(true);
         const res = await axios.get(`${baseUrl}/api/admin/results`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setResults(res.data);
       } catch (error) {
         console.error("Fetch Results Error:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchResults();
@@ -355,6 +359,8 @@ function Results() {
             <div className="header-actions" style={{ display: "flex", gap: "12px", alignItems: "stretch" }}>
               <button 
                 className="btn-reset" 
+                title="Reset Filters"
+                aria-label="Reset Filters"
                 onClick={() => { 
                   setSearchTerm(""); 
                   setFilterDate(""); 
@@ -365,7 +371,7 @@ function Results() {
                 }}
                 style={{ minWidth: "48px", display: "flex", justifyContent: "center", alignItems: "center" }}
               >
-                ↻
+                <RotateCcw size={16} />
               </button>
               <button className="btn-export" style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -383,7 +389,7 @@ function Results() {
                   <h4>Total Attempts</h4>
                 </div>
                 <div className="stat-card-body">
-                  <h2>{totalAttempts.toLocaleString()}</h2>
+                  <h2>{loading ? "..." : totalAttempts.toLocaleString()}</h2>
                   <span className="trend">Active</span>
                 </div>
               </div>
@@ -392,7 +398,7 @@ function Results() {
                   <h4>Average Score</h4>
                 </div>
                 <div className="stat-card-body">
-                  <h2>{averageScore}%</h2>
+                  <h2>{loading ? "..." : `${averageScore}%`}</h2>
                   <span className="trend">Overall</span>
                 </div>
               </div>
@@ -401,7 +407,7 @@ function Results() {
                   <h4>Highest Score</h4>
                 </div>
                 <div className="stat-card-body">
-                  <h2>{highestPercentage.toFixed(2)}%</h2>
+                  <h2>{loading ? "..." : `${highestPercentage.toFixed(2)}%`}</h2>
                   <span className="trend">Top</span>
                 </div>
               </div>
@@ -410,7 +416,7 @@ function Results() {
                   <h4>Students Appeared</h4>
                 </div>
                 <div className="stat-card-body">
-                  <h2>{studentsAppeared.toLocaleString()}</h2>
+                  <h2>{loading ? "..." : studentsAppeared.toLocaleString()}</h2>
                   <span className="trend">Users</span>
                 </div>
               </div>
@@ -492,9 +498,11 @@ function Results() {
                     </div>
                   );
                 })}
-                {topPerformers.length === 0 && (
+                {loading ? (
+                  <div style={{ textAlign: "center", padding: "30px", color: "var(--text-secondary)", fontSize: "13px" }}>Loading top performers...</div>
+                ) : topPerformers.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontStyle: 'italic', fontSize: '13px' }}>No performers found.</div>
-                )}
+                ) : null}
               </div>
               <div className="table-pagination-footer transparent-footer" style={{ padding: '16px 0 0 0', borderTop: '1px solid var(--border-color)' }}>
                 <div className="pagination-info">
@@ -551,9 +559,11 @@ function Results() {
                     <div>{q.passPercent}%</div>
                   </div>
                 ))}
-                {quizStats.length === 0 && (
+                {loading ? (
+                  <div style={{ textAlign: "center", padding: "30px", color: "var(--text-secondary)", fontSize: "13px" }}>Loading quiz statistics...</div>
+                ) : quizStats.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontStyle: 'italic', fontSize: '13px' }}>No quiz stats found.</div>
-                )}
+                ) : null}
                 <div className="table-pagination-footer transparent-footer" style={{ padding: '16px 0 0 0', borderTop: '1px solid var(--border-color)' }}>
                 <div className="pagination-info">
                   Showing {(quizPage - 1) * itemsPerPage + 1}–{Math.min(quizPage * itemsPerPage, allQuizStats.length)} of {allQuizStats.length} results
@@ -639,7 +649,7 @@ function Results() {
                     </div>
                   </div>
                 ))}
-                {filteredResults.filter(r => r.reaction || r.feedbackMessage).length === 0 && (
+                {!loading && filteredResults.filter(r => r.reaction || r.feedbackMessage).length === 0 && (
                   <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontStyle: 'italic', fontSize: '13px' }}>No student feedback found.</div>
                 )}
               </div>

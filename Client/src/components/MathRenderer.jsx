@@ -11,6 +11,75 @@ const escapeHtml = (unsafe) => {
          .replace(/'/g, "&#039;");
 };
 
+function renderMarkdownTable(tableBlock) {
+  const lines = tableBlock.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) return escapeHtml(tableBlock).replace(/\n/g, '<br />');
+
+  const parseRow = (line) => {
+    return line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+  };
+
+  const headerCells = parseRow(lines[0]);
+  const bodyRows = lines.slice(1).filter(l => !/^[\|\s\-:]+$/.test(l)).map(parseRow);
+
+  let html = '<div class="table-responsive" style="overflow-x:auto;margin:10px 0;"><table style="width:100%;border-collapse:collapse;border:1px solid var(--border-color,#e2e8f0);font-size:13px;"><thead><tr style="background:rgba(110,63,243,0.08);">';
+  headerCells.forEach(cell => {
+    html += `<th style="padding:6px 10px;border:1px solid var(--border-color,#e2e8f0);font-weight:600;text-align:left;">${escapeHtml(cell)}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  bodyRows.forEach((row, idx) => {
+    const bg = idx % 2 === 1 ? 'background:rgba(0,0,0,0.02);' : '';
+    html += `<tr style="${bg}">`;
+    headerCells.forEach((_, cIdx) => {
+      const cellVal = row[cIdx] || '';
+      html += `<td style="padding:6px 10px;border:1px solid var(--border-color,#e2e8f0);">${escapeHtml(cellVal)}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderTextWithImages(text) {
+  const imgRegex = /!\[([^\]]*)\]\((data:image\/[^;]+;base64,[^)]+|https?:\/\/[^)]+)\)/g;
+  let lastIdx = 0;
+  let out = "";
+  let match;
+
+  while ((match = imgRegex.exec(text)) !== null) {
+    const pre = text.substring(lastIdx, match.index);
+    out += escapeHtml(pre).replace(/\n/g, '<br />');
+    const alt = escapeHtml(match[1] || "Diagram");
+    const src = match[2];
+    out += `<div style="margin:12px 0;text-align:center;"><img src="${src}" alt="${alt}" style="max-width:100%;max-height:400px;border-radius:8px;border:1px solid var(--border-color,#e2e8f0);display:inline-block;object-fit:contain;" /></div>`;
+    lastIdx = imgRegex.lastIndex;
+  }
+
+  out += escapeHtml(text.substring(lastIdx)).replace(/\n/g, '<br />');
+  return out;
+}
+
+function renderTextWithTablesAndImages(text) {
+  if (!text) return "";
+
+  const tableRegex = /(?:^|\n\n)(\|[^\n]+\|\n\|[\s\-:|]+\|\n(?:\|[^\n]+\|(?:\n|$))+)/g;
+  let lastIdx = 0;
+  let out = "";
+  let match;
+
+  while ((match = tableRegex.exec(text)) !== null) {
+    const preText = text.substring(lastIdx, match.index);
+    out += renderTextWithImages(preText);
+    out += renderMarkdownTable(match[1]);
+    lastIdx = tableRegex.lastIndex;
+  }
+
+  out += renderTextWithImages(text.substring(lastIdx));
+  return out;
+}
+
 const MathRenderer = ({ text }) => {
   const html = useMemo(() => {
     if (!text) return "";
@@ -41,8 +110,8 @@ const MathRenderer = ({ text }) => {
                 processedHtml += `$${escapeHtml(inlineBlocks[j])}$`;
              }
           } else {
-             // Normal plain text
-             processedHtml += escapeHtml(inlineBlocks[j]).replace(/\n/g, '<br />');
+             // Normal text with table and image support
+             processedHtml += renderTextWithTablesAndImages(inlineBlocks[j]);
           }
         }
       }

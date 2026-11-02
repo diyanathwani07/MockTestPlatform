@@ -36,12 +36,12 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
 
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  // Format quiz duration cleanly (converting stored seconds >= 60 to minutes)
+  // Format quiz duration cleanly (converting stored seconds >= 300 to minutes)
   const formatDuration = (val) => {
     if (!val && val !== 0) return "Standard Duration";
     const num = Number(val);
     if (isNaN(num)) return `${val} mins`;
-    const mins = num >= 60 ? Math.round(num / 60) : num;
+    const mins = num >= 300 ? Math.round(num / 60) : Math.round(num);
     return `${mins} mins`;
   };
 

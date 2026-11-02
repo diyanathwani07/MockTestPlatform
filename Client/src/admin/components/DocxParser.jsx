@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import mammoth from "mammoth";
+import JSZip from "jszip";
 import { FileText, Upload } from "lucide-react";
 
 /**
@@ -36,7 +37,13 @@ function DocxParser({ onQuestionsLoaded }) {
     setStatus("Parsing document...");
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      let arrayBuffer = await file.arrayBuffer();
+      try {
+        arrayBuffer = await preprocessDocxWithMath(arrayBuffer);
+      } catch (mathErr) {
+        console.warn("[DocxParser] Math pre-processing notice:", mathErr);
+      }
+
       const result = await mammoth.extractRawText({ arrayBuffer });
       const rawText = result.value;
 
@@ -1032,25 +1039,91 @@ function postProcessQuestions(sections) {
 
 /**
  * ============================================================================
- * TEACHING PARIKSHA LMS FORMAT PARSER
+ * TEACHING PARIKSHA LMS FORMAT PARSER & OMML MATH EXTRACTOR
  * ============================================================================
- * Supports official JHTET & UPTET formats:
- * - 4 to 5 sections (CDP, Hindi, English, Sanskrit, Maths & Science, EVS)
- * - Standalone question numbering (1., 2., 3.)
- * - Hindi-first and English-first bilingual questions & options
- * - Answer markers: "Answer X"
- * - Solution markers: "Solution."
+ * Supports official Teaching Pariksha exam formats:
+ * - BPSC (Bihar PRT & Secondary: 5 options A-E, General Studies, Subject Knowledge, Language)
+ * - CTET (Paper 1 & Paper 2: CDP, Maths, Science, EVS, Social Studies, English/Hindi I & II)
+ * - JHTET (Paper 1 & Paper 2: CDP, Maths, EVS, Language I & II, Social Studies & Pedagogy)
+ * - UPTET (Paper 1 & Paper 2: CDP, Hindi, English, Sanskrit, Maths & Science, Social Studies)
+ *
+ * Capabilities:
+ * - Native Word Office Math (<m:oMath>) conversion into readable text/LaTeX
  * - Converts HTML tables into clean Markdown tables
  * - Detects visual diagrams & tags questions
+ * - Handles Hindi-first, English-first, and monolingual question structures
+ * - Maps 4-option (A-D) and 5-option (A-E) layouts with exact answer resolution
  */
+
+function convertOmml(xml) {
+  if (!xml) return "";
+  let prev;
+  let curr = xml;
+  let iter = 0;
+  while (iter < 10) {
+    prev = curr;
+    iter++;
+
+    curr = curr.replace(/<[mw]:t\b[^>]*>([^<]*)<\/[mw]:t>/g, '$1');
+    curr = curr.replace(/<m:f\b[^>]*>(?:(?!<m:f\b)[\s\S])*?<m:num\b[^>]*>([\s\S]*?)<\/m:num>(?:(?!<m:f\b)[\s\S])*?<m:den\b[^>]*>([\s\S]*?)<\/m:den>(?:(?!<m:f\b)[\s\S])*?<\/m:f>/g, '($1/$2)');
+    curr = curr.replace(/<m:sSubSup\b[^>]*>(?:(?!<m:sSubSup\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:sSubSup\b)[\s\S])*?<m:sub\b[^>]*>([\s\S]*?)<\/m:sub>(?:(?!<m:sSubSup\b)[\s\S])*?<m:sup\b[^>]*>([\s\S]*?)<\/m:sup>(?:(?!<m:sSubSup\b)[\s\S])*?<\/m:sSubSup>/g, '$1_($2)^($3)');
+    curr = curr.replace(/<m:sSup\b[^>]*>(?:(?!<m:sSup\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:sSup\b)[\s\S])*?<m:sup\b[^>]*>([\s\S]*?)<\/m:sup>(?:(?!<m:sSup\b)[\s\S])*?<\/m:sSup>/g, '$1^($2)');
+    curr = curr.replace(/<m:sSub\b[^>]*>(?:(?!<m:sSub\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:sSub\b)[\s\S])*?<m:sub\b[^>]*>([\s\S]*?)<\/m:sub>(?:(?!<m:sSub\b)[\s\S])*?<\/m:sSub>/g, '$1_($2)');
+    curr = curr.replace(/<m:rad\b[^>]*>(?:(?!<m:rad\b)[\s\S])*?<m:deg\b[^>]*>([\s\S]*?)<\/m:deg>(?:(?!<m:rad\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:rad\b)[\s\S])*?<\/m:rad>/g, 'root[$1]($2)');
+    curr = curr.replace(/<m:rad\b[^>]*>(?:(?!<m:rad\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:rad\b)[\s\S])*?<\/m:rad>/g, '√($1)');
+    curr = curr.replace(/<m:d\b[^>]*>(?:(?!<m:d\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:d\b)[\s\S])*?<\/m:d>/g, '($1)');
+    curr = curr.replace(/<\/?(?:m:[a-zA-Z]+Pr|w:[a-zA-Z]+|m:r)[^>]*>/g, '');
+
+    if (curr === prev) break;
+  }
+
+  return curr.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+async function preprocessDocxWithMath(arrayBuffer) {
+  try {
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const docFile = zip.file('word/document.xml');
+    if (!docFile) return arrayBuffer;
+
+    let docXml = await docFile.async('string');
+    if (!docXml.includes('<m:oMath')) return arrayBuffer;
+
+    docXml = docXml.replace(/<m:oMathPara\b[^>]*>([\s\S]*?)<\/m:oMathPara>/g, (match, inner) => {
+      const text = convertOmml(inner);
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<w:r><w:t xml:space="preserve"> ${escaped} </w:t></w:r>`;
+    });
+
+    docXml = docXml.replace(/<m:oMath\b[^>]*>([\s\S]*?)<\/m:oMath>/g, (match, inner) => {
+      const text = convertOmml(inner);
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<w:r><w:t xml:space="preserve"> ${escaped} </w:t></w:r>`;
+    });
+
+    zip.file('word/document.xml', docXml);
+    return await zip.generateAsync({ type: 'arraybuffer' });
+  } catch (err) {
+    console.warn("[DocxParser] preprocessDocxWithMath fallback:", err);
+    return arrayBuffer;
+  }
+}
 
 const TP_SECTION_TITLES = [
   "Child Development and Pedagogy",
   "Child Development & Pedagogy",
+  "Child Development",
+  "Mathematics and Science and Pedagogy",
   "Mathematics and Science",
   "Mathematics & Science",
   "Mathematics",
   "Environmental Studies",
+  "Social Studies and Social Studies Pedagogy",
+  "Social Science and Social Science Pedagogy",
+  "Social Studies",
+  "Social Science",
+  "General Studies",
+  "General Science",
   "Language I Hindi",
   "Language II English",
   "Language I English",
@@ -1059,15 +1132,13 @@ const TP_SECTION_TITLES = [
   "Language II Sanskrit",
   "Language I Urdu",
   "Language II Urdu",
-  "Science",
-  "Social Science",
-  "Social Studies",
-  "General Studies"
+  "Language I",
+  "Language II",
+  "Science"
 ];
 
 function isTeachingParikshaFormat(text) {
   if (!text || typeof text !== "string") return false;
-  // Exclude existing PrepMark formats 1 and 2
   if (/English\s+Question\s*:/i.test(text) || /Option\s+[A-F]\s*:/i.test(text) || /Explanation\s*\([A-Za-z\s]+\)\s*:/i.test(text)) {
     return false;
   }
@@ -1112,7 +1183,7 @@ function parseTeachingParikshaLms(text, htmlText = "") {
   normalized = normalized.replace(/^JHTET[^\n]+\n[^\n]+\n[^\n]+\n/i, "");
 
   const multiWordPattern = TP_SECTION_TITLES.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const singleWordPattern = '(?:Hindi|English|Sanskrit|Urdu|Mathematics|Science|Maths|EVS)';
+  const singleWordPattern = '(?:Hindi|English|Sanskrit|Urdu)(?:\\s*[-–—:]?\\s*(?:I{1,3}|[12]))?|(?:Mathematics|Science|Maths|EVS|सामान्य अध्ययन|भाषा(?:\\s*[12I]+)?|विषय)';
 
   const numberedSectionRegex = new RegExp(
     '^\\s*(?:(?:\\d{1,2}[\\)\\.]|\\([0-9IVXLCDMa-z]\\))\\s*)' +
@@ -1122,6 +1193,7 @@ function parseTeachingParikshaLms(text, htmlText = "") {
   );
 
   const bareSectionRegex = new RegExp('^\\s*(' + multiWordPattern + ')\\s*$', 'i');
+  const paperTitleRegex = /^\s*1\)\s*([^(\n]+(?:Official Paper|Teacher|TRE)[^\n]*)/i;
 
   const htmlQMap = {};
   if (htmlText) {
@@ -1136,7 +1208,15 @@ function parseTeachingParikshaLms(text, htmlText = "") {
 
   const lines = normalized.split('\n');
   const sectionsMap = [];
-  let currentSection = { sectionTitle: "Default", questions: [] };
+  let currentSection = { sectionTitle: "General Studies", questions: [] };
+
+  for (let k = 0; k < Math.min(5, lines.length); k++) {
+    const pMatch = lines[k].match(paperTitleRegex);
+    if (pMatch) {
+      currentSection.sectionTitle = pMatch[1].replace(/Official Paper.*/i, '').trim() || "General Studies";
+      break;
+    }
+  }
 
   let currentQ = null;
   let qState = "IDLE"; // "IDLE" | "QUESTION_TEXT" | "OPTIONS" | "ANSWER" | "SOLUTION"
@@ -1200,12 +1280,12 @@ function parseTeachingParikshaLms(text, htmlText = "") {
       const imgMatch = qHtml.match(/<img[^>]+src=["'](data:image\/[^;]+;base64,[^"']+)["']/i);
       if (imgMatch) {
         tags.push("Contains Diagram");
-        const diagramNotice = "\n\n[Diagram / Image: Question contains an embedded visual diagram]";
-        if (!questionEnglish.includes(diagramNotice)) {
-          questionEnglish += diagramNotice;
+        const diagramMarkdown = "\n\n![Question Diagram](" + imgMatch[1] + ")\n\n";
+        if (!questionEnglish.includes("![Question Diagram]")) {
+          questionEnglish += diagramMarkdown;
         }
-        if (questionHindi && questionHindi !== questionEnglish && !questionHindi.includes(diagramNotice)) {
-          questionHindi += diagramNotice;
+        if (questionHindi && questionHindi !== questionEnglish && !questionHindi.includes("![Question Diagram]")) {
+          questionHindi += diagramMarkdown;
         }
       }
 
@@ -1241,22 +1321,36 @@ function parseTeachingParikshaLms(text, htmlText = "") {
     // 1. Explicit Numbered Section
     const numSecMatch = line.match(numberedSectionRegex);
     if (numSecMatch) {
-      pushCurrentQ();
-      const title = numSecMatch[1].trim();
-      if (currentSection.questions.length > 0) {
-        sectionsMap.push(currentSection);
-        currentSection = { sectionTitle: title, questions: [] };
-      } else {
-        currentSection.sectionTitle = title;
+      let hasUpcomingQNum = false;
+      for (let look = i + 1; look < Math.min(lines.length, i + 35); look++) {
+        if (/^\s*\d{1,3}\.\s*/.test(lines[look])) {
+          hasUpcomingQNum = true;
+          break;
+        }
       }
-      continue;
+
+      if (hasUpcomingQNum) {
+        pushCurrentQ();
+        let title = numSecMatch[1].trim();
+        if (title === "सामान्य अध्ययन") title = "General Studies";
+        else if (title.startsWith("भाषा")) title = "Language " + title.replace("भाषा", "").trim();
+        else if (title === "विषय") title = "Subject Knowledge";
+
+        if (currentSection.questions.length > 0) {
+          sectionsMap.push(currentSection);
+          currentSection = { sectionTitle: title, questions: [] };
+        } else {
+          currentSection.sectionTitle = title;
+        }
+        continue;
+      }
     }
 
     // 2. Bare Section Header
     const bareSecMatch = line.match(bareSectionRegex);
     if (bareSecMatch) {
       let hasUpcomingQNum = false;
-      for (let look = i + 1; look < Math.min(lines.length, i + 25); look++) {
+      for (let look = i + 1; look < Math.min(lines.length, i + 35); look++) {
         if (/^\s*\d{1,3}\.\s*/.test(lines[look])) {
           hasUpcomingQNum = true;
           break;
@@ -1341,6 +1435,5 @@ function parseTeachingParikshaLms(text, htmlText = "") {
 
   return sectionsMap;
 }
-
 
 export default DocxParser;

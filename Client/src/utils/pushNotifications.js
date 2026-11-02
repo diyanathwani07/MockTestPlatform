@@ -6,20 +6,39 @@ import { incomingReminderService } from '../services/incomingReminderService';
 // Get base API URL
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+let isRegistering = false;
+let lastRegisteredToken = null;
+let initPushPromise = null;
+
 /**
- * Register device token with backend
+ * Register device token with backend (with in-flight deduplication and session cache)
  */
 const registerTokenWithBackend = async (token, platform) => {
   try {
     const jwt = localStorage.getItem('token');
     if (!jwt) return; // User not logged in
     
+    const cacheKey = `${platform}:${token}`;
+    if (lastRegisteredToken === cacheKey) {
+      console.log(`[PushNotifications] Token already registered in this session (${platform}), skipping duplicate.`);
+      return;
+    }
+
+    if (isRegistering) {
+      console.log(`[PushNotifications] Device registration already in progress, skipping duplicate call.`);
+      return;
+    }
+
+    isRegistering = true;
     await axios.post(`${apiUrl}/api/devices/register`, { token, platform }, {
       headers: { Authorization: `Bearer ${jwt}` }
     });
+    lastRegisteredToken = cacheKey;
     console.log(`[PushNotifications] Registered ${platform} device with backend`);
   } catch (error) {
     console.error(`[PushNotifications] Failed to register device:`, error);
+  } finally {
+    isRegistering = false;
   }
 };
 
@@ -35,6 +54,8 @@ export const unregisterDeviceToken = async (token) => {
       data: { token },
       headers: { Authorization: `Bearer ${jwt}` }
     });
+    lastRegisteredToken = null;
+    initPushPromise = null;
     console.log(`[PushNotifications] Unregistered device from backend`);
   } catch (error) {
     console.error(`[PushNotifications] Failed to unregister device:`, error);
@@ -176,10 +197,23 @@ export const setupWebPushNotifications = async () => {
  * Universal init function
  */
 export const initPushNotifications = async () => {
-  if (Capacitor.isNativePlatform()) {
-    await setupNativePushNotifications();
-  } else {
-    // Automatically setup web push so the browser will prompt for permission
-    await setupWebPushNotifications();
+  if (initPushPromise) {
+    return initPushPromise;
   }
+
+  initPushPromise = (async () => {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await setupNativePushNotifications();
+      } else {
+        // Automatically setup web push so the browser will prompt for permission
+        await setupWebPushNotifications();
+      }
+    } catch (err) {
+      initPushPromise = null;
+      throw err;
+    }
+  })();
+
+  return initPushPromise;
 };

@@ -3,6 +3,7 @@ import axios from "axios";
 import { Shield, Plus, Edit2, Trash2, Copy, Users, X, Check } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
+import "../css/admin/AdminLayout.css";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -135,11 +136,11 @@ function RolesPermissions() {
 
 
   return (
-    <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
+    <div className="admin-layout">
       <AdminSidebar />
-      <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page, #0A0A14)" }}>
-        <AdminNavbar title={<><span className="sm:hidden">Roles</span><span className="hidden sm:inline">Roles & Permissions</span></>} />
-        <div style={{ flex: 1, padding: "24px 32px", overflowY: "auto" }}>
+      <div className="admin-main">
+        <AdminNavbar title="Roles & Permissions" parentText="Dashboard" parentLink="/admin/dashboard" />
+        <div className="admin-content" style={{ width: "100%", paddingBottom: "60px" }}>
 
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: "28px", flexWrap: "wrap", gap: "16px" }}>
@@ -223,7 +224,7 @@ function RolesPermissions() {
 
       {/* Drawer Overlay */}
       {drawerOpen && (
-        <div onClick={() => setDrawerOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+        <div onClick={() => setDrawerOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "520px", maxWidth: "100vw", height: "100vh", background: "var(--bg-card, #131326)", borderLeft: "1.5px solid var(--border-color)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
             {/* Drawer Header */}
             <div style={{ padding: "24px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "var(--bg-card)", zIndex: 10 }}>
@@ -231,7 +232,7 @@ function RolesPermissions() {
                 <Shield size={20} style={{ color: "var(--primary)" }} />
                 <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>{editingDept ? "Edit Department" : "Create New Department"}</h3>
               </div>
-              <button onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)" }}><X size={20} /></button>
+              <button onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-primary)" }}><X size={20} /></button>
             </div>
 
             <div style={{ padding: "24px 28px", flex: 1 }}>
