@@ -14,6 +14,8 @@ const CreateFlashcardSet = lazy(() => import("./admin/CreateFlashcardSet"));
 const ManageFlashcards = lazy(() => import("./admin/ManageFlashcards"));
 const AdminQuestions = lazy(() => import("./admin/Questions"));
 const AdminUsers = lazy(() => import("./admin/Users"));
+const AdminStudents = lazy(() => import("./admin/Students"));
+const AdminStaff = lazy(() => import("./admin/Staff"));
 const AdminResults = lazy(() => import("./admin/Results"));
 const Reports = lazy(() => import("./admin/Reports"));
 const Settings = lazy(() => import("./admin/Settings"));
@@ -101,6 +103,8 @@ function App() {
       const preloadAdmin = () => {
         import("./admin/AdminDashboard");
         import("./admin/ManageQuizzes");
+        import("./admin/Students");
+        import("./admin/Staff");
         import("./admin/Users");
         import("./admin/AdminBanners");
         import("./admin/Questions");
@@ -587,21 +591,49 @@ function App() {
         />
 
         <Route
-          path="/admin/users"
+          path="/admin/students"
           element={
             <AdminRoute>
-              <AdminUsers />
+              <AdminStudents />
             </AdminRoute>
           }
         />
 
         <Route
-          path="/admin/users/:userId"
+          path="/admin/students/:userId"
           element={
             <AdminRoute>
-              <AdminUsers />
+              <AdminStudents />
             </AdminRoute>
           }
+        />
+
+        <Route
+          path="/admin/staff"
+          element={
+            <AdminRoute>
+              <AdminStaff />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/staff/:userId"
+          element={
+            <AdminRoute>
+              <AdminStaff />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={<Navigate to="/admin/students" replace />}
+        />
+
+        <Route
+          path="/admin/users/:userId"
+          element={<Navigate to="/admin/students" replace />}
         />
 
         <Route

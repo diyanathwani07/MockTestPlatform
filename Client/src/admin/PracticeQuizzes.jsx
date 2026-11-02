@@ -4,16 +4,20 @@ import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
 import DocxParser from "./components/DocxParser";
-import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, Clock, ArrowRightLeft, Search } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, Clock, ArrowRightLeft, Search, User, Grid } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
+import { useAuth } from "../context/AuthContext";
 import { useConfirm } from "../context/ConfirmContext";
 import { SkeletonTable } from "@/components/ui/skeleton";
 
 function PracticeQuizzes() {
   const confirm = useConfirm();
+  const { user: currentUser } = useAuth();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [ownershipTab, setOwnershipTab] = useState("all");
   const [generatingAiFor, setGeneratingAiFor] = useState(null); // id of quiz being generated
   const [viewMode, setViewMode] = useState("active"); // "active" or "recycle"
   const navigate = useNavigate();
@@ -273,11 +277,29 @@ function PracticeQuizzes() {
     fetchQuizzes(viewMode);
   }, [viewMode]);
 
+  const checkIsMine = (quiz) => {
+    const creatorId = quiz.createdBy?._id || quiz.createdBy?.id || quiz.createdBy;
+    const currentUserId = currentUser?._id || currentUser?.id;
+    if (!creatorId || !currentUserId) return false;
+    return String(creatorId) === String(currentUserId);
+  };
+
   const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
   const filteredQuizzes = quizzes.filter(q => {
+    const isMine = checkIsMine(q);
+    if (ownershipTab === "mine" && !isMine) return false;
+
     const titleText = (q.title || "").toLowerCase();
     const subjectText = (q.subject || "").toLowerCase();
-    return searchTerms.every(term => titleText.includes(term) || subjectText.includes(term));
+    const matchesSearch = searchTerms.every(term => titleText.includes(term) || subjectText.includes(term));
+
+    let matchesDate = true;
+    if (filterDate && q.createdAt) {
+      const qDate = new Date(q.createdAt).toISOString().split('T')[0];
+      matchesDate = qDate === filterDate;
+    }
+
+    return matchesSearch && matchesDate;
   });
 
   const handleDelete = async (id, title) => {
@@ -395,26 +417,19 @@ function PracticeQuizzes() {
         
         <div className="admin-content" style={{ flex: 1, textAlign: "left" }}>
           
-          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'nowrap', width: '100%', overflowX: 'auto', paddingBottom: '4px' }}>
-            <div className="practice-search-pill" style={{ 
-              flex: "0 1 320px",
-              minWidth: '120px',
-              display: "flex", alignItems: "center", gap: "6px", 
-              backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)", 
-              borderRadius: "100px", padding: "6px 12px",
-              boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)", position: "relative"
-            }}>
-              <Search size={14} style={{ color: "var(--violet)", flexShrink: 0 }} />
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "12px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "18px" }}
-              />
+          {/* Header Title with Counts & Active/Recycle toggle */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <h2 style={{ fontSize: "24px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 4px 0", letterSpacing: "-0.5px" }}>
+                {viewMode === "active" ? "Practice Quizzes" : "Recycle Bin"}
+              </h2>
+              <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600" }}>
+                {quizzes.length} Total Quizzes | {quizzes.filter(checkIsMine).length} Created by You
+              </span>
             </div>
-
-            <div style={{ display: "flex", gap: "4px", backgroundColor: "var(--bg-page)", padding: "3px", borderRadius: "8px", border: "1px solid var(--border-color)", flexShrink: 0, alignItems: "center" }}>
+            
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: "4px", backgroundColor: "var(--bg-page)", padding: "3px", borderRadius: "8px", border: "1px solid var(--border-color)", alignItems: "center" }}>
                 <button
                   onClick={() => setViewMode("active")}
                   style={{
@@ -446,6 +461,104 @@ function PracticeQuizzes() {
                   Recycle
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Ownership Tabs */}
+          <div style={{ 
+            display: "flex", 
+            borderBottom: "1.5px solid var(--border-color)", 
+            width: "100%", 
+            marginBottom: "16px",
+            overflowX: "auto",
+            scrollbarWidth: "none"
+          }}>
+            <button
+              onClick={() => setOwnershipTab("mine")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 16px",
+                border: "none",
+                borderBottom: ownershipTab === "mine" ? "2.5px solid var(--violet)" : "2.5px solid transparent",
+                backgroundColor: "transparent",
+                color: ownershipTab === "mine" ? "var(--violet)" : "var(--text-secondary)",
+                fontWeight: "600",
+                fontSize: "14px",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                whiteSpace: "nowrap"
+              }}
+            >
+              <User size={15} />
+              My Quizzes
+            </button>
+            <button
+              onClick={() => setOwnershipTab("all")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 16px",
+                border: "none",
+                borderBottom: ownershipTab === "all" ? "2.5px solid var(--violet)" : "2.5px solid transparent",
+                backgroundColor: "transparent",
+                color: ownershipTab === "all" ? "var(--violet)" : "var(--text-secondary)",
+                fontWeight: "600",
+                fontSize: "14px",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                whiteSpace: "nowrap"
+              }}
+            >
+              <Grid size={15} />
+              All Quizzes
+            </button>
+          </div>
+
+          {/* Filters Row: Search & Date */}
+          <div className="manage-command-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', width: '100%' }}>
+            <div className="practice-search-pill" style={{ 
+              flex: "0 1 280px",
+              minWidth: '150px',
+              display: "flex", alignItems: "center", gap: "6px", 
+              backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", 
+              borderRadius: "8px", padding: "6px 12px",
+              position: "relative"
+            }}>
+              <Search size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "12px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "18px" }}
+              />
+              {searchTerm && (
+                <span 
+                  onClick={() => setSearchTerm("")}
+                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}
+                  title="Clear search"
+                >
+                  ✕
+                </span>
+              )}
+            </div>
+
+            {/* Date Filter */}
+            <div style={{ flex: "0 1 180px", minWidth: "150px", position: "relative" }}>
+              <MuiDatePicker value={filterDate} onChange={setFilterDate} label="mm-dd-yyyy" />
+              {filterDate && (
+                <span 
+                  onClick={() => setFilterDate("")}
+                  style={{ position: "absolute", right: "32px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}
+                  title="Clear date"
+                >
+                  ✕
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="quiz-table-wrapper" style={{ 
@@ -457,7 +570,7 @@ function PracticeQuizzes() {
             WebkitOverflowScrolling: "touch"
           }}>
             {loading ? (
-              <SkeletonTable rows={5} columns={5} style={{ border: "none" }} />
+              <SkeletonTable rows={5} columns={ownershipTab !== "mine" ? 8 : 7} style={{ border: "none" }} />
             ) : filteredQuizzes.length === 0 ? (
               <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
                 No practice quizzes found. Create one to get started!
@@ -470,6 +583,9 @@ function PracticeQuizzes() {
                     backgroundColor: "var(--bg-input)",
                     whiteSpace: "nowrap"
                   }}>
+                    {ownershipTab !== "mine" && (
+                      <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Created By</th>
+                    )}
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500", maxWidth: "180px" }}>Title</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Pricing</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "500" }}>Subject</th>
@@ -483,6 +599,40 @@ function PracticeQuizzes() {
                   {filteredQuizzes.map((quiz) => {
                     return (
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
+                        {ownershipTab !== "mine" && (
+                          <td style={{ padding: "16px", whiteSpace: "nowrap" }}>
+                            {(() => {
+                              const isMine = checkIsMine(quiz);
+                              const creatorName = quiz.createdBy?.fullName || "System Admin";
+                              const firstLetter = creatorName.charAt(0).toUpperCase();
+                              const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+                              const charCode = creatorName.charCodeAt(0) || 0;
+                              const bgColor = colors[charCode % colors.length];
+                              return (
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <div style={{
+                                    width: "26px",
+                                    height: "26px",
+                                    borderRadius: "50%",
+                                    backgroundColor: bgColor,
+                                    color: "#fff",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "12px",
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase"
+                                  }}>
+                                    {firstLetter}
+                                  </div>
+                                  <span style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "13.5px" }}>
+                                    {isMine ? "You" : creatorName}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                          </td>
+                        )}
                         <td style={{ padding: "16px", color: "var(--text-primary)", maxWidth: "180px" }}>
                           <div style={{ fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={quiz.title}>{quiz.title}</div>
                         </td>

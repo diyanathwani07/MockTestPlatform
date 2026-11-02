@@ -108,6 +108,7 @@ function AdminDashboard() {
 
   const generateSupportChartData = (days) => {
     const today = new Date();
+    today.setHours(12, 0, 0, 0); // Normalize to noon to prevent midnight/DST crossovers
     const result = [];
     const dailyStats = {};
     
@@ -120,7 +121,7 @@ function AdminDashboard() {
 
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(today);
-      d.setDate(d.getDate() - i);
+      d.setDate(today.getDate() - i);
       const dateString = formatDateKey(d);
       dailyStats[dateString] = { ticketsCreated: 0, ticketsResolved: 0 };
       result.push(dateString);
@@ -152,6 +153,11 @@ function AdminDashboard() {
   };
 
   const supportChartData = generateSupportChartData(rangeDays);
+  const supportPeriodCreated = supportChartData.reduce((acc, d) => acc + (d.ticketsCreated || 0), 0);
+  const supportPeriodResolved = supportChartData.reduce((acc, d) => acc + (d.ticketsResolved || 0), 0);
+  const supportResolutionRate = supportPeriodCreated > 0 
+    ? Math.round((supportPeriodResolved / supportPeriodCreated) * 100) 
+    : (resolvedTicketsCount > 0 ? 100 : 0);
 
 
 
@@ -365,67 +371,73 @@ function AdminDashboard() {
               {/* Middle Two-Column Grid: Chart & Unassigned Tickets */}
               <div className="dashboard-middle-grid">
                 {/* Tickets Chart */}
-                <div className="form-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column" }}>
-                  <div className="dashboard-card-title-row">
-                    <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      Support Performance
-                      {supportChartData.length > 0 && (
-                        <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "500" }}>
-                          ({supportChartData[0].label} – {supportChartData[supportChartData.length - 1].label})
-                        </span>
-                      )}
-                    </h3>
-                    <div>
-                      <select 
-                        value={rangeDays} 
-                        onChange={(e) => setRangeDays(parseInt(e.target.value, 10))}
-                        aria-label="Select date range for support performance"
-                        style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
-                      >
-                        <option value={7}>Last 7 Days</option>
-                        <option value={30}>Last 30 Days</option>
-                      </select>
+                <div className="form-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div>
+                    <div className="dashboard-card-title-row" style={{ marginBottom: "16px" }}>
+                      <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        Support Performance
+                        {supportChartData.length > 0 && (
+                          <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "500" }}>
+                            ({supportChartData[0].label} – {supportChartData[supportChartData.length - 1].label})
+                          </span>
+                        )}
+                      </h3>
+                      <div>
+                        <select 
+                          value={rangeDays} 
+                          onChange={(e) => setRangeDays(parseInt(e.target.value, 10))}
+                          aria-label="Select date range for support performance"
+                          style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
+                        >
+                          <option value={7}>Last 7 Days</option>
+                          <option value={30}>Last 30 Days</option>
+                        </select>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Legends */}
-                  <div style={{ display: "flex", gap: "20px", marginBottom: "20px", fontSize: "12.5px", fontWeight: "600" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(139, 92, 246, 0.15)", padding: "4px 12px", borderRadius: "100px" }}>
-                      <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#8B5CF6" }}></span>
-                      <span style={{ color: "#8B5CF6" }}>Created</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
-                      <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }}></span>
-                      <span style={{ color: "#10B981" }}>Resolved</span>
+                    {/* Legends */}
+                    <div style={{ display: "flex", gap: "20px", marginBottom: "16px", fontSize: "12.5px", fontWeight: "600" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(139, 92, 246, 0.15)", padding: "4px 12px", borderRadius: "100px" }}>
+                        <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#8B5CF6" }}></span>
+                        <span style={{ color: "#8B5CF6" }}>Created</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
+                        <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }}></span>
+                        <span style={{ color: "#10B981" }}>Resolved</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* High-Fidelity SVG Chart */}
-                  <div style={{ flex: 1, position: "relative" }}>
+                  <div style={{ flex: 1, minHeight: "220px", position: "relative", display: "flex", alignItems: "center" }}>
                     {(() => {
                       const width = 1000;
-                      const height = 250;
+                      const height = 280;
+                      const startX = 60;
+                      const endX = width - 40;
+                      const topY = 25;
+                      const bottomY = 225;
+                      const plotHeight = bottomY - topY;
 
-                      const maxVal = Math.max(5, ...supportChartData.map(d => Math.max(d.ticketsCreated, d.ticketsResolved)));
+                      const maxVal = Math.max(0, ...supportChartData.map(d => Math.max(d.ticketsCreated, d.ticketsResolved)));
                       
-                      let dynamicMax = 5;
-                      if (maxVal <= 5) dynamicMax = 5;
-                      else if (maxVal <= 10) dynamicMax = 10;
+                      let dynamicMax = 4;
+                      if (maxVal <= 4) dynamicMax = 4;
+                      else if (maxVal <= 8) dynamicMax = 8;
+                      else if (maxVal <= 12) dynamicMax = 12;
+                      else if (maxVal <= 16) dynamicMax = 16;
                       else if (maxVal <= 20) dynamicMax = 20;
-                      else if (maxVal <= 50) dynamicMax = 50;
-                      else dynamicMax = Math.ceil(maxVal / 10) * 10;
+                      else dynamicMax = Math.ceil(maxVal / 20) * 20;
 
                       const getScaledY = (val) => {
-                        const scaled = 200 - (val / dynamicMax) * 170;
-                        return Math.max(30, Math.min(200, scaled));
+                        const scaled = bottomY - (val / dynamicMax) * plotHeight;
+                        return Math.max(topY, Math.min(bottomY, scaled));
                       };
 
                       const formatYLabel = (val) => {
                         return Math.round(val).toString();
                       };
 
-                      const startX = 60;
-                      const endX = width - 40;
                       const stepX = (endX - startX) / (supportChartData.length - 1);
 
                       const pointsCreated = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsCreated), val: d.ticketsCreated, label: d.label, dataset: "Tickets Created", color: "#8B5CF6" }));
@@ -448,7 +460,7 @@ function AdminDashboard() {
                         const strokeD = getSmoothPath(pts);
                         const lastPt = pts[pts.length - 1];
                         const firstPt = pts[0];
-                        return `${strokeD} L ${lastPt.x},200 L ${firstPt.x},200 Z`;
+                        return `${strokeD} L ${lastPt.x},${bottomY} L ${firstPt.x},${bottomY} Z`;
                       };
 
                       const pathCreatedStroke = getSmoothPath(pointsCreated);
@@ -458,7 +470,7 @@ function AdminDashboard() {
 
                       return (
                         <div style={{ width: "100%", height: "100%", position: "relative" }}>
-                          <svg viewBox="0 0 1000 250" style={{ width: "100%", height: "auto", overflow: "visible" }}>
+                          <svg viewBox="0 0 1000 280" style={{ width: "100%", height: "auto", overflow: "visible", display: "block" }}>
                             <defs>
                               <linearGradient id="gradient-created-chart" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
@@ -470,17 +482,17 @@ function AdminDashboard() {
                               </linearGradient>
                             </defs>
 
-                            <line x1={startX} y1="30" x2={endX} y2="30" stroke="var(--border-color)" strokeWidth="1" />
-                            <line x1={startX} y1="72.5" x2={endX} y2="72.5" stroke="var(--border-color)" strokeWidth="1" />
-                            <line x1={startX} y1="115" x2={endX} y2="115" stroke="var(--border-color)" strokeWidth="1" />
-                            <line x1={startX} y1="157.5" x2={endX} y2="157.5" stroke="var(--border-color)" strokeWidth="1" />
-                            <line x1={startX} y1="200" x2={endX} y2="200" stroke="var(--border-color)" strokeWidth="1" />
+                            <line x1={startX} y1={topY} x2={endX} y2={topY} stroke="var(--border-color)" strokeWidth="1" />
+                            <line x1={startX} y1={topY + plotHeight * 0.25} x2={endX} y2={topY + plotHeight * 0.25} stroke="var(--border-color)" strokeWidth="1" />
+                            <line x1={startX} y1={topY + plotHeight * 0.5} x2={endX} y2={topY + plotHeight * 0.5} stroke="var(--border-color)" strokeWidth="1" />
+                            <line x1={startX} y1={topY + plotHeight * 0.75} x2={endX} y2={topY + plotHeight * 0.75} stroke="var(--border-color)" strokeWidth="1" />
+                            <line x1={startX} y1={bottomY} x2={endX} y2={bottomY} stroke="var(--border-color)" strokeWidth="1" />
                             
-                            <text x="45" y="34" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax)}</text>
-                            <text x="45" y="76.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.75)}</text>
-                            <text x="45" y="119" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.5)}</text>
-                            <text x="45" y="161.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.25)}</text>
-                            <text x="45" y="204" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">0</text>
+                            <text x="45" y={topY + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax)}</text>
+                            <text x="45" y={topY + plotHeight * 0.25 + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.75)}</text>
+                            <text x="45" y={topY + plotHeight * 0.5 + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.5)}</text>
+                            <text x="45" y={topY + plotHeight * 0.75 + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.25)}</text>
+                            <text x="45" y={bottomY + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">0</text>
 
                             <path d={pathResolvedArea} fill="url(#gradient-resolved-chart)" />
                             <path d={pathCreatedArea} fill="url(#gradient-created-chart)" />
@@ -519,7 +531,7 @@ function AdminDashboard() {
 
                               if (!showLabel) return null;
                               return (
-                                <text key={`x-${i}`} x={startX + i * stepX} y="225" fill="var(--text-muted)" fontSize="11" textAnchor="middle" fontWeight="500">{d.label}</text>
+                                <text key={`x-${i}`} x={startX + i * stepX} y="255" fill="var(--text-muted)" fontSize="11" textAnchor="middle" fontWeight="500">{d.label}</text>
                               );
                             })}
                           </svg>
@@ -528,7 +540,7 @@ function AdminDashboard() {
                             <div style={{
                               position: "absolute",
                               left: `${(hoveredPoint.x / 1000) * 100}%`,
-                              top: `${(hoveredPoint.y / 250) * 100}%`,
+                              top: `${(hoveredPoint.y / 280) * 100}%`,
                               transform: "translate(-50%, -120%)",
                               background: "rgba(0, 0, 0, 0.8)",
                               color: "#fff",
@@ -562,13 +574,41 @@ function AdminDashboard() {
                       );
                     })()}
                   </div>
+
+                  {/* Support Metrics Quick Bar */}
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "12px",
+                    marginTop: "16px",
+                    paddingTop: "16px",
+                    borderTop: "1px solid var(--border-color)"
+                  }}>
+                    <div style={{ background: "var(--bg-input)", padding: "10px 14px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Created ({rangeDays}d)</span>
+                      <span style={{ fontSize: "17px", fontWeight: "700", color: "#8B5CF6" }}>{supportPeriodCreated}</span>
+                    </div>
+                    <div style={{ background: "var(--bg-input)", padding: "10px 14px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Resolved ({rangeDays}d)</span>
+                      <span style={{ fontSize: "17px", fontWeight: "700", color: "#10B981" }}>{supportPeriodResolved}</span>
+                    </div>
+                    <div style={{ background: "var(--bg-input)", padding: "10px 14px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Resolution Rate</span>
+                      <span style={{ fontSize: "17px", fontWeight: "700", color: "var(--text-primary)" }}>{supportResolutionRate}%</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Unassigned Tickets List */}
                 <div className="form-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column" }}>
                   <div className="dashboard-card-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                     <h3 className="dashboard-card-title">Unassigned Support Tickets</h3>
-                    <a href="/admin/tickets" style={{ fontSize: "13px", fontWeight: "600", color: "var(--primary)", textDecoration: "none" }}>View All →</a>
+                    <button 
+                      onClick={() => navigate("/admin/tickets")} 
+                      style={{ background: "none", border: "none", padding: 0, fontSize: "13px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}
+                    >
+                      View All →
+                    </button>
                   </div>
                   <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -586,18 +626,18 @@ function AdminDashboard() {
                           const tkId = `#TP-${(idx + 149).toString().padStart(4, '0')}`;
                           return (
                             <tr key={t._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                              <td style={{ padding: "14px 8px", fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{tkId}</td>
+                              <td style={{ padding: "14px 8px", fontSize: "13px", fontWeight: "700", color: "var(--text-primary)", whiteSpace: "nowrap" }}>{tkId}</td>
                               <td style={{ padding: "14px 8px", fontSize: "13.5px", color: "var(--text-primary)" }}>
                                 <div style={{ fontWeight: "600" }}>{t.subject}</div>
-                                <div style={{ fontSize: "12px", color: "var(--text-muted)", maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.message}</div>
+                                <div style={{ fontSize: "12px", color: "var(--text-muted)", maxWidth: "260px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.message}</div>
                               </td>
                               <td style={{ padding: "14px 8px" }}>
                                 <span style={{ padding: "4px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: "600", background: "rgba(110, 63, 243, 0.1)", color: "var(--primary)" }}>
                                   {t.category.replace(' Issue', '')}
                                 </span>
                               </td>
-                              <td style={{ padding: "14px 8px", fontSize: "13px", color: "var(--text-secondary)" }}>{t.userId?.fullName || "Student"}</td>
-                              <td style={{ padding: "14px 8px", fontSize: "12px", color: "var(--text-muted)" }}>
+                              <td style={{ padding: "14px 8px", fontSize: "13px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{t.userId?.fullName || "Student"}</td>
+                              <td style={{ padding: "14px 8px", fontSize: "12px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                                 {new Date(t.createdAt).toLocaleDateString()}
                               </td>
                             </tr>

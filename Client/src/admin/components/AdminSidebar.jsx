@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, Settings, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
-  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2
+  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
@@ -21,8 +21,9 @@ const NAV_ITEMS = [
   { to: "/admin/practice",       icon: BookOpen,        label: "Practice Modules",    permission: "manage_practice_tests" },
   { to: "/admin/flashcards",     icon: Layers,          label: "Flashcards",          permission: "edit_quiz" },
   { to: "/admin/questions",      icon: HelpCircle,      label: "Questions",           permission: "manage_questions" },
-  { to: "/admin/users",          icon: Users,           label: "Users",               permission: "manage_users" },
-    { to: "/admin/banners",        icon: Image,           label: "Banners",             permission: "dashboard" },
+  { to: "/admin/students",       icon: GraduationCap,   label: "Students",            permission: "manage_students" },
+  { to: "/admin/staff",          icon: UserCheck,       label: "Staff",               permission: "manage_staff" },
+  { to: "/admin/banners",        icon: Image,           label: "Banners",             permission: "dashboard" },
   { to: "/admin/ai-plans",       icon: Sparkles, Palette,        label: "AI Plans",            permission: "manage_ai_plans" },
   { to: "/admin/results",        icon: Trophy,          label: "Results",             permission: "manage_results" },
   { to: "/admin/reports",        icon: LineChart,       label: "Reports",             permission: "view_reports" },

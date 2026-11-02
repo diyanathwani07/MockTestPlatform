@@ -1,20 +1,48 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
 
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly, superAdminOnly } = require("../middleware/adminMiddleware");
 const User = require("../models/User");
+const Subscription = require("../models/Subscription");
+const AiPlan = require("../models/AiPlan");
 const logAction = require("../utils/logger");
 const sendEmail = require("../utils/sendEmail");
 
-// GET all users (admin only)
+const STAFF_ROLES = ["admin", "superadmin", "manager", "employee"];
+
+// Deprecation header middleware
+router.use((req, res, next) => {
+  res.setHeader("X-Deprecated-Endpoint", "/api/admin/students, /api/admin/staff");
+  next();
+});
+
+// Helper: Check if caller is authorized to view or manage staff
+function callerCanManageStaff(user) {
+  if (!user) return false;
+  if (user.role === "superadmin") return true;
+  const perms = Array.isArray(user.permissions) ? user.permissions : [];
+  return perms.includes("manage_staff") || perms.includes("full_access");
+}
+
+// GET all users (admin only) - Legacy compatibility endpoint
 router.get("/", protect, adminOnly, async (req, res) => {
   try {
-    const users = await User.find({ isDeleted: { $ne: true } })
+    const hasStaffAccess = callerCanManageStaff(req.user);
+    const filter = { isDeleted: { $ne: true } };
+
+    // Strict security isolation: If caller does not have explicit staff permissions, return ONLY student accounts
+    if (!hasStaffAccess) {
+      filter.role = "user";
+    }
+
+    const users = await User.find(filter)
       .select("-password")
       .populate("purchasedExams", "title subject price")
       .populate("purchasedPractice", "title subject price")
       .sort({ createdAt: -1 });
+
     res.json(users);
   } catch (error) {
     console.error("Get Users Error:", error);
@@ -32,10 +60,8 @@ router.post("/", protect, superAdminOnly, async (req, res) => {
       return res.status(400).json({ message: "User already exists with this email." });
     }
 
-    const bcrypt = require("bcryptjs");
     const hashedPassword = await bcrypt.hash(password || "TempPass123!", 10);
-
-    const isStaff = ["admin", "superadmin", "manager", "employee"].includes(role);
+    const isStaff = STAFF_ROLES.includes(role);
 
     const user = await User.create({
       fullName,
@@ -64,6 +90,15 @@ router.delete("/:id", protect, superAdminOnly, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+
+    // Protect last active superadmin
+    if (user.role === "superadmin") {
+      const activeCount = await User.countDocuments({ role: "superadmin", isDeleted: { $ne: true }, status: "Active" });
+      if (activeCount <= 1) {
+        return res.status(400).json({ message: "Cannot delete the last remaining active Super Admin." });
+      }
+    }
+
     user.isDeleted = true;
     await user.save();
     await logAction("DELETE_USER", req.user?.fullName || "Admin", `Soft-deleted user: ${user.fullName} (${user.email})`, "UserManagement", req.ip);
@@ -83,8 +118,16 @@ router.put("/:id", protect, superAdminOnly, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+
+    // Protect last active superadmin
+    if (user.role === "superadmin" && (role !== undefined && role !== "superadmin" || status !== undefined && status !== "Active")) {
+      const activeCount = await User.countDocuments({ role: "superadmin", isDeleted: { $ne: true }, status: "Active" });
+      if (activeCount <= 1) {
+        return res.status(400).json({ message: "Cannot demote or deactivate the last remaining active Super Admin." });
+      }
+    }
     
-    const isStaff = ["admin", "superadmin", "manager", "employee"].includes(role !== undefined ? role : user.role);
+    const isStaff = STAFF_ROLES.includes(role !== undefined ? role : user.role);
 
     user.fullName = fullName !== undefined ? fullName : user.fullName;
     user.email = email !== undefined ? email : user.email;
@@ -112,6 +155,13 @@ router.put("/:id/status", protect, superAdminOnly, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+
+    if (user.role === "superadmin" && status !== "Active") {
+      const activeCount = await User.countDocuments({ role: "superadmin", isDeleted: { $ne: true }, status: "Active" });
+      if (activeCount <= 1) {
+        return res.status(400).json({ message: "Cannot deactivate the last remaining active Super Admin." });
+      }
+    }
     
     user.status = status;
     await user.save();
@@ -131,6 +181,13 @@ router.put("/:id/role", protect, superAdminOnly, async (req, res) => {
     
     if (!user) {
       return res.status(404).json({ message: "User not found." });
+    }
+
+    if (user.role === "superadmin" && role !== "superadmin") {
+      const activeCount = await User.countDocuments({ role: "superadmin", isDeleted: { $ne: true }, status: "Active" });
+      if (activeCount <= 1) {
+        return res.status(400).json({ message: "Cannot demote the last remaining active Super Admin." });
+      }
     }
     
     user.role = role;
@@ -152,14 +209,9 @@ router.post("/:id/reset-password", protect, superAdminOnly, async (req, res) => 
       return res.status(404).json({ message: "User not found." });
     }
     
-    // Send a standard notification email since OTP is usually user-initiated.
-    // In a real app we'd send a reset link with a token, but for this mock we'll
-    // inform the user that the admin triggered a password reset.
-    // We can just generate a random password, hash it, update it, and send it.
-    // Wait, the prompt says "Send a password reset email." We'll just generate a temporary one.
     const tempPassword = Math.random().toString(36).slice(-8);
-    const bcrypt = require("bcryptjs");
     user.password = await bcrypt.hash(tempPassword, 10);
+    user.mustChangePassword = true;
     await user.save();
     
     await sendEmail({
@@ -197,10 +249,7 @@ router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const Subscription = require("../models/Subscription");
-
     if (action === "cancel") {
-      // Cancel any active subscriptions
       await Subscription.updateMany(
         { studentId: user._id, status: "active" },
         { $set: { status: "cancelled" } }
@@ -215,13 +264,11 @@ router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
     }
 
     if (action === "upgrade") {
-      const AiPlan = require("../models/AiPlan");
       const plan = await AiPlan.findById(planId);
       if (!plan) {
         return res.status(404).json({ message: "AI Plan not found." });
       }
 
-      // Calculate expiry
       const expiryDate = new Date();
       if (plan.durationUnit === "months") {
         expiryDate.setMonth(expiryDate.getMonth() + plan.durationValue);
@@ -229,13 +276,11 @@ router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
         expiryDate.setDate(expiryDate.getDate() + plan.durationValue);
       }
 
-      // Cancel any existing active subscriptions
       await Subscription.updateMany(
         { studentId: user._id, status: "active" },
         { $set: { status: "cancelled" } }
       );
 
-      // Create new admin_grant subscription
       const crypto = require("crypto");
       const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
       await Subscription.create({
@@ -269,9 +314,16 @@ router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
   }
 });
 
+// GET deleted users
 router.get("/deleted", protect, superAdminOnly, async (req, res) => {
   try {
-    const users = await User.find({ isDeleted: true }).select("-password").sort({ updatedAt: -1 });
+    const hasStaffAccess = callerCanManageStaff(req.user);
+    const filter = { isDeleted: true };
+    if (!hasStaffAccess) {
+      filter.role = "user";
+    }
+
+    const users = await User.find(filter).select("-password").sort({ updatedAt: -1 });
     res.json(users);
   } catch (error) {
     console.error("Get Deleted Users Error:", error);
@@ -296,7 +348,7 @@ router.put("/:id/restore", protect, superAdminOnly, async (req, res) => {
   }
 });
 
-// PERMANENTLY DELETE a user (superadmin only) - removes from database
+// PERMANENTLY DELETE a user (superadmin only)
 router.delete("/:id/permanent", protect, superAdminOnly, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -306,6 +358,14 @@ router.delete("/:id/permanent", protect, superAdminOnly, async (req, res) => {
     if (!user.isDeleted) {
       return res.status(400).json({ message: "User must be archived before permanent deletion." });
     }
+
+    if (user.role === "superadmin") {
+      const activeCount = await User.countDocuments({ role: "superadmin", isDeleted: { $ne: true }, status: "Active" });
+      if (activeCount <= 1) {
+        return res.status(400).json({ message: "Cannot permanently delete the last active Super Admin." });
+      }
+    }
+
     const userName = user.fullName;
     const userEmail = user.email;
     await User.findByIdAndDelete(req.params.id);
@@ -329,6 +389,10 @@ router.get("/:id", protect, adminOnly, async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
+    if (user.role !== "user" && !callerCanManageStaff(req.user)) {
+      return res.status(403).json({ message: "Access denied. Manage Staff permission required to view staff records." });
+    }
+
     res.json(user);
   } catch (error) {
     console.error("Get User Details Error:", error);
@@ -347,7 +411,6 @@ router.post("/import-csv", protect, superAdminOnly, async (req, res) => {
       return res.status(400).json({ message: "No users provided." });
     }
 
-    const bcrypt = require("bcryptjs");
     const results = { created: [], skipped: [], errors: [] };
 
     for (const u of users) {
@@ -361,7 +424,6 @@ router.post("/import-csv", protect, superAdminOnly, async (req, res) => {
           continue;
         }
 
-        // Check if user already exists (including soft-deleted, due to unique index)
         const existing = await User.findOne({ email });
         if (existing) {
           results.skipped.push({ email, reason: "Already exists" });
@@ -380,10 +442,11 @@ router.post("/import-csv", protect, superAdminOnly, async (req, res) => {
         results.created.push({ email, name: newUser.fullName });
 
         await logAction(
-          req.user._id,
           "CREATE_USER_CSV",
+          req.user?.fullName || "Admin",
           `Bulk imported user: ${newUser.fullName} (${email})`,
-          req
+          "UserManagement",
+          req.ip
         );
       } catch (err) {
         results.errors.push({ email: u.email || "(unknown)", reason: err.message });
