@@ -326,12 +326,17 @@ function Staff() {
   });
 
   return (
-    <div className="admin-container">
+    <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
       <div className="admin-main">
-        <AdminNavbar title="Manage Staff" parentText="Dashboard" parentLink="/admin/dashboard" />
+        <AdminNavbar 
+          title="Manage Staff" 
+          parentText="Dashboard" 
+          parentLink="/admin/dashboard" 
+          onNavigateBack={() => navigate("/admin/dashboard")} 
+        />
 
-        <div className="admin-content" style={{ width: "100%", paddingBottom: "80px" }}>
+        <div className="admin-content manage-users-view-container" style={{ width: "100%", paddingBottom: "80px" }}>
           {toast && (
             <div className={`toast toast-${toast.type}`} style={{
               position: 'fixed', top: '24px', right: '24px', zIndex: 9999,
@@ -342,65 +347,30 @@ function Staff() {
             </div>
           )}
 
-          {/* Top Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <h1 style={{ fontSize: '24px', fontWeight: '800', margin: 0, color: 'var(--text-primary)' }}>Manage Staff</h1>
-                <span style={{ fontSize: '11px', background: 'rgba(110,63,243,0.15)', color: 'var(--primary)', padding: '3px 8px', borderRadius: '12px', fontWeight: '700' }}>
-                  Restricted Access
-                </span>
+          {/* Command Bar: Search, Dept Filter, Segmented Tabs, Add Staff */}
+          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', width: '100%' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: "0 1 480px", flexWrap: 'nowrap' }}>
+              <div className="pill-search-container" style={{ marginBottom: 0, flex: 1, minWidth: '140px', maxWidth: '320px' }}>
+                <svg width="14" height="14" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input 
+                  type="text" 
+                  placeholder="Search staff..." 
+                  className="pill-search-input"
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchTerm}
+                  style={{ fontSize: "12px" }}
+                />
               </div>
-              <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                Configure internal administrator and department team member access, roles, and permissions.
-              </p>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="create-quiz-pill-btn"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '9px 18px' }}
-              >
-                + Add Staff Member
-              </button>
-            </div>
-          </div>
-
-          {/* Subheader: Active / Archived Tabs, Dept Filter & Search */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button 
-                onClick={() => setViewTab('active')}
-                style={{
-                  padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
-                  border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-                  background: viewTab === 'active' ? 'var(--primary)' : 'var(--bg-card)',
-                  color: viewTab === 'active' ? '#fff' : 'var(--text-secondary)'
-                }}
-              >
-                Active Staff
-              </button>
-              <button 
-                onClick={() => setViewTab('archived')}
-                style={{
-                  padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
-                  border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-                  background: viewTab === 'archived' ? 'var(--primary)' : 'var(--bg-card)',
-                  color: viewTab === 'archived' ? '#fff' : 'var(--text-secondary)'
-                }}
-              >
-                Archived Staff
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <select
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 style={{
-                  padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)',
-                  background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '13px', outline: 'none'
+                  padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)',
+                  background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '12px', outline: 'none', height: '34px', cursor: 'pointer'
                 }}
               >
                 <option value="all">All Departments</option>
@@ -408,21 +378,61 @@ function Staff() {
                   <option key={d._id} value={d.name}>{d.name}</option>
                 ))}
               </select>
+            </div>
 
-              <div style={{ position: 'relative', minWidth: '240px' }}>
-                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input 
-                  type="text"
-                  placeholder="Search staff..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.05)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <button 
+                  onClick={() => { setViewTab('active'); setLoading(true); }}
                   style={{
-                    width: '100%', padding: '8px 12px 8px 36px', borderRadius: '8px',
-                    border: '1px solid var(--border-color)', background: 'var(--bg-input, #1B1B32)',
-                    color: 'var(--text-primary)', fontSize: '13px', outline: 'none'
+                    padding: '5px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: viewTab === 'active' ? 'var(--primary)' : 'transparent',
+                    color: viewTab === 'active' ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    whiteSpace: 'nowrap'
                   }}
-                />
+                >
+                  Active Staff
+                </button>
+                <button 
+                  onClick={() => { setViewTab('archived'); setLoading(true); }}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: viewTab === 'archived' ? 'var(--primary)' : 'transparent',
+                    color: viewTab === 'archived' ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Archived Staff
+                </button>
               </div>
+
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="create-quiz-pill-btn"
+                style={{
+                  whiteSpace: 'nowrap',
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  minHeight: '34px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                + Add Staff Member
+              </button>
             </div>
           </div>
 
