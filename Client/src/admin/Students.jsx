@@ -427,18 +427,12 @@ function Students() {
   return (
     <div className="admin-layout" style={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <AdminSidebar />
-      <div className="admin-main">
+      <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar 
           title={userId ? "Student Profile" : "Manage Students"} 
           parentText="Dashboard" 
           parentLink="/admin/dashboard" 
-          onNavigateBack={() => {
-            if (userId) {
-              navigate("/admin/students");
-            } else {
-              navigate("/admin/dashboard");
-            }
-          }}
+          onNavigateBack={userId ? () => navigate("/admin/students") : undefined}
         />
         
         <div className="admin-content manage-users-view-container" style={{ width: "100%", paddingBottom: "80px" }}>
@@ -620,8 +614,8 @@ function Students() {
                       padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'active' ? 'var(--primary)' : 'transparent',
-                      color: viewTab === 'active' ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                      background: viewTab === 'active' ? 'var(--violet)' : 'transparent',
+                      color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
@@ -637,8 +631,8 @@ function Students() {
                       padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'archived' ? 'var(--primary)' : 'transparent',
-                      color: viewTab === 'archived' ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                      background: viewTab === 'archived' ? 'var(--violet)' : 'transparent',
+                      color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
