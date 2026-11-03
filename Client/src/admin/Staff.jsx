@@ -361,7 +361,7 @@ function Staff() {
       <AdminSidebar />
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar 
-          title="Manage Staff" 
+          title="Manage Admin" 
           parentText="Dashboard" 
           parentLink="/admin/dashboard" 
         />
@@ -396,14 +396,14 @@ function Staff() {
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-                    Manage Staff
+                    Manage Admin
                   </h2>
                   <span style={{ fontSize: "11px", background: "rgba(110,63,243,0.15)", color: "#a78bfa", padding: "3px 8px", borderRadius: "12px", fontWeight: "700" }}>
                     Restricted Access
                   </span>
                 </div>
                 <span style={{ fontSize: "13px", color: "var(--primary, #7c3aed)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
-                  {filteredStaff.length} {viewTab === "active" ? "Active" : "Archived"} Staff Members
+                  {filteredStaff.length} {viewTab === "active" ? "Active" : "Archived"} Admin Members
                 </span>
               </div>
 
@@ -425,7 +425,7 @@ function Staff() {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    Active Staff
+                    Active Admin
                   </button>
                   <button 
                     onClick={() => { setViewTab('archived'); setLoading(true); }}
@@ -443,7 +443,7 @@ function Staff() {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    Archived Staff
+                    Archived Admin
                   </button>
                 </div>
 
@@ -460,7 +460,7 @@ function Staff() {
                     gap: '6px'
                   }}
                 >
-                  + Add Staff Member
+                  + Add Admin Member
                 </button>
               </div>
             </div>
@@ -471,7 +471,7 @@ function Staff() {
                 <Search size={15} className="pill-search-icon" />
                 <input 
                   type="text" 
-                  placeholder="Search staff..." 
+                  placeholder="Search admin members..." 
                   className="pill-search-input"
                   onChange={(e) => setSearchTerm(e.target.value)}
                   value={searchTerm}
@@ -520,7 +520,7 @@ function Staff() {
             <table className="quiz-table" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
                 <tr>
-                  <th>Staff Member</th>
+                  <th>Admin Member</th>
                   <th>Email Address</th>
                   <th>Role</th>
                   <th>Department</th>
@@ -671,7 +671,7 @@ function Staff() {
                                         onClick={() => { setActiveDropdown(null); handleOpenEdit(s); }}
                                         style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
                                       >
-                                        <Edit size={14} /> Edit Staff & Roles
+                                        <Edit size={14} /> Edit Admin & Roles
                                       </div>
                                       <div 
                                         onClick={() => { setActiveDropdown(null); handleResetPassword(s); }}
@@ -686,13 +686,13 @@ function Staff() {
                                             onClick={() => { setActiveDropdown(null); handleToggleStatus(s); }}
                                             style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
                                           >
-                                            {isActive ? <><UserMinus size={14} /> Suspend Staff</> : <><UserCheck size={14} /> Activate Staff</>}
+                                            {isActive ? <><UserMinus size={14} /> Suspend Admin</> : <><UserCheck size={14} /> Activate Admin</>}
                                           </div>
                                           <div 
                                             onClick={() => { setActiveDropdown(null); handleSoftDelete(s); }}
                                             style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#ef4444', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
                                           >
-                                            <Trash2 size={14} /> Archive Staff
+                                            <Trash2 size={14} /> Archive Admin
                                           </div>
                                         </>
                                       )}

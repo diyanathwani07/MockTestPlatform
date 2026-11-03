@@ -460,7 +460,7 @@ function Students() {
       <AdminSidebar />
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar 
-          title={userId ? "Student Profile" : "Manage Students"} 
+          title={userId ? "User Profile" : "Manage Users"} 
           parentText="Dashboard" 
           parentLink="/admin/dashboard" 
           onNavigateBack={userId ? () => navigate("/admin/students") : undefined}
@@ -639,10 +639,10 @@ function Students() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
                 <div>
                   <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-                    Manage Students
+                    Manage Users
                   </h2>
                   <span style={{ fontSize: "13px", color: "var(--primary, #7c3aed)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
-                    {filteredStudents.length} {viewTab === "active" ? "Active" : "Archived"} Students
+                    {filteredStudents.length} {viewTab === "active" ? "Active" : "Archived"} Users
                   </span>
                 </div>
 
@@ -664,7 +664,7 @@ function Students() {
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      Active Students
+                      Active Users
                     </button>
                     <button 
                       onClick={() => { setViewTab('archived'); setLoading(true); }}
@@ -682,7 +682,7 @@ function Students() {
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      Archived Students
+                      Archived Users
                     </button>
                   </div>
 
@@ -699,7 +699,7 @@ function Students() {
                       gap: '6px'
                     }}
                   >
-                    + Add Student
+                    + Add User
                   </button>
                 </div>
               </div>
@@ -710,7 +710,7 @@ function Students() {
                   <Search size={15} className="pill-search-icon" />
                   <input 
                     type="text" 
-                    placeholder="Search students..." 
+                    placeholder="Search users..." 
                     className="pill-search-input"
                     onChange={(e) => setSearchTerm(e.target.value)}
                     value={searchTerm}
@@ -747,7 +747,7 @@ function Students() {
             <table className="quiz-table" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
                 <tr>
-                  <th>Student</th>
+                  <th>User</th>
                   <th>Email Address</th>
                   <th>Phone</th>
                   <th>Joining Date</th>
@@ -770,7 +770,7 @@ function Students() {
                   ) : filteredStudents.length === 0 ? (
                     <tr>
                       <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                        No students found.
+                        No users found.
                       </td>
                     </tr>
                   ) : (
