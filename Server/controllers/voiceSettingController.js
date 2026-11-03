@@ -396,6 +396,22 @@ const updateVoiceSettings = async (req, res) => {
         }
         settings.reminderDefaults.defaultTemplateHindi = trimmed;
       }
+
+      if (reminderDefaults.customTemplates !== undefined) {
+        if (!Array.isArray(reminderDefaults.customTemplates)) {
+          return res.status(400).json({ success: false, error: "customTemplates must be an array." });
+        }
+        settings.reminderDefaults.customTemplates = reminderDefaults.customTemplates
+          .filter(t => t && typeof t === "object")
+          .map(t => ({
+            id: t.id || `tmpl_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            label: typeof t.label === "string" ? t.label.trim().slice(0, 100) : "Custom Script",
+            lang: ["en", "hi", "auto"].includes(t.lang) ? t.lang : "auto",
+            title: typeof t.title === "string" ? t.title.trim().slice(0, 200) : "AI Voice Call",
+            text: typeof t.text === "string" ? t.text.trim().slice(0, 1000) : ""
+          }))
+          .filter(t => t.text.length > 0);
+      }
     }
 
     // 7. Master switch
@@ -685,11 +701,143 @@ const extractDocxText = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/voice-settings/template
+ * Save or update a custom script template
+ */
+const saveVoiceTemplate = async (req, res) => {
+  try {
+    const { id, label, lang = "auto", title = "", text } = req.body;
+    if (!text || typeof text !== "string" || !text.trim()) {
+      return res.status(400).json({ success: false, message: "Template script text is required." });
+    }
+    const cleanText = text.trim().slice(0, 1000);
+    const cleanLabel = (label && typeof label === "string" && label.trim()) ? label.trim().slice(0, 80) : "Custom Script";
+    const cleanTitle = (title && typeof title === "string" && title.trim()) ? title.trim().slice(0, 200) : "PrepMark AI Call";
+    const templateId = id || `tmpl_${Date.now()}`;
+
+    let settings = await VoiceSetting.findOne();
+    if (!settings) {
+      settings = new VoiceSetting();
+    }
+    if (!settings.reminderDefaults) {
+      settings.reminderDefaults = {};
+    }
+    if (!Array.isArray(settings.reminderDefaults.customTemplates)) {
+      settings.reminderDefaults.customTemplates = [];
+    }
+
+    const newTmpl = {
+      id: templateId,
+      label: cleanLabel,
+      lang: ["en", "hi", "auto"].includes(lang) ? lang : "auto",
+      title: cleanTitle,
+      text: cleanText
+    };
+
+    const existingIndex = settings.reminderDefaults.customTemplates.findIndex(t => t.id === templateId);
+    if (existingIndex >= 0) {
+      settings.reminderDefaults.customTemplates[existingIndex] = newTmpl;
+    } else {
+      settings.reminderDefaults.customTemplates.push(newTmpl);
+    }
+
+    if (req.user?._id) settings.updatedBy = req.user._id;
+    settings.updatedAt = new Date();
+    await settings.save();
+
+    res.json({
+      success: true,
+      message: `Template "${cleanLabel}" saved successfully!`,
+      template: newTmpl,
+      customTemplates: settings.reminderDefaults.customTemplates
+    });
+  } catch (err) {
+    console.error("[VoiceSettings] Save template error:", err);
+    res.status(500).json({ success: false, message: err.message || "Failed to save template." });
+  }
+};
+
+/**
+ * DELETE /api/voice-settings/template/:templateId
+ * Delete a custom script template
+ */
+const deleteVoiceTemplate = async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    let settings = await VoiceSetting.findOne();
+    if (!settings || !settings.reminderDefaults?.customTemplates) {
+      return res.json({ success: true, message: "Template deleted.", customTemplates: [] });
+    }
+
+    settings.reminderDefaults.customTemplates = settings.reminderDefaults.customTemplates.filter(
+      t => t.id !== templateId
+    );
+
+    if (req.user?._id) settings.updatedBy = req.user._id;
+    settings.updatedAt = new Date();
+    await settings.save();
+
+    res.json({
+      success: true,
+      message: "Template deleted successfully.",
+      customTemplates: settings.reminderDefaults.customTemplates
+    });
+  } catch (err) {
+    console.error("[VoiceSettings] Delete template error:", err);
+    res.status(500).json({ success: false, message: err.message || "Failed to delete template." });
+  }
+};
+
+/**
+ * POST /api/voice-settings/save-default-template
+ * Quick save current script as default Hindi or English template in Voice Settings
+ */
+const saveDefaultTemplate = async (req, res) => {
+  try {
+    const { lang = "hi", text } = req.body;
+    if (!text || typeof text !== "string" || !text.trim()) {
+      return res.status(400).json({ success: false, message: "Template script text is required." });
+    }
+    const cleanText = text.trim().slice(0, 1000);
+
+    let settings = await VoiceSetting.findOne();
+    if (!settings) {
+      settings = new VoiceSetting();
+    }
+    if (!settings.reminderDefaults) {
+      settings.reminderDefaults = {};
+    }
+
+    if (lang === "hi") {
+      settings.reminderDefaults.defaultTemplateHindi = cleanText;
+    } else {
+      settings.reminderDefaults.defaultTemplateEnglish = cleanText;
+    }
+
+    if (req.user?._id) settings.updatedBy = req.user._id;
+    settings.updatedAt = new Date();
+    await settings.save();
+
+    res.json({
+      success: true,
+      message: `Saved as default ${lang === "hi" ? "Hindi" : "English"} template in Voice Settings!`,
+      reminderDefaults: settings.reminderDefaults
+    });
+  } catch (err) {
+    console.error("[VoiceSettings] Save default template error:", err);
+    res.status(500).json({ success: false, message: err.message || "Failed to save default template." });
+  }
+};
+
 module.exports = {
   getVoiceSettings,
   updateVoiceSettings,
   testVoicePreview,
   extractDocxText,
-  getElevenLabsVoices
+  getElevenLabsVoices,
+  saveVoiceTemplate,
+  deleteVoiceTemplate,
+  saveDefaultTemplate
 };
 

@@ -9,7 +9,10 @@ const {
   updateVoiceSettings,
   testVoicePreview,
   extractDocxText,
-  getElevenLabsVoices
+  getElevenLabsVoices,
+  saveVoiceTemplate,
+  deleteVoiceTemplate,
+  saveDefaultTemplate
 } = require("../controllers/voiceSettingController");
 
 // Memory-based multer for DOCX extraction (max 10MB)
@@ -31,6 +34,9 @@ router.get("/", getVoiceSettings);
 // Admin-only endpoints for updating settings, live testing voice sample, and word-to-speech docx extraction
 router.get("/elevenlabs/voices", protect, adminOnly, getElevenLabsVoices);
 router.put("/", protect, adminOnly, updateVoiceSettings);
+router.post("/template", protect, adminOnly, saveVoiceTemplate);
+router.delete("/template/:templateId", protect, adminOnly, deleteVoiceTemplate);
+router.post("/save-default-template", protect, adminOnly, saveDefaultTemplate);
 router.post("/preview", protect, adminOnly, voicePreviewLimiter, testVoicePreview);
 router.post("/test", protect, adminOnly, voicePreviewLimiter, testVoicePreview);
 router.post(

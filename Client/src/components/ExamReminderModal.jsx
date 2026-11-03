@@ -12,7 +12,11 @@ import {
   Sparkles,
   Users,
   User,
-  Info
+  Info,
+  Search,
+  CheckSquare,
+  Smartphone,
+  Globe
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import "../css/ExamReminderModal.css";
@@ -26,7 +30,13 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
   const [language, setLanguage] = useState("en");
   const [voice, setVoice] = useState("Aoede");
   const [customMessage, setCustomMessage] = useState("");
-  const [recipientMode, setRecipientMode] = useState("self"); // "self" or "enrolled"
+  const [recipientMode, setRecipientMode] = useState("self"); // "self" | "selected" | "enrolled"
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [studentsList, setStudentsList] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [totalEnrolled, setTotalEnrolled] = useState(0);
+
   const [existingReminder, setExistingReminder] = useState(null);
   const [loadingExisting, setLoadingExisting] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -124,6 +134,58 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
     fetchExisting();
   }, [quiz?._id]);
 
+  // Load students for Admin/Teacher multi-selection
+  useEffect(() => {
+    if (isAdminOrTeacher) {
+      const fetchStudents = async () => {
+        try {
+          setLoadingStudents(true);
+          const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
+          const res = await axios.get(`${apiUrl}/api/ai-voice/admin/users?limit=100`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          if (res.data?.success) {
+            setStudentsList(res.data.data || []);
+            if (typeof res.data.totalEnrolledStudents === "number") {
+              setTotalEnrolled(res.data.totalEnrolledStudents);
+            }
+          }
+        } catch (err) {
+          console.warn("[ExamReminderModal] Could not fetch students:", err.message);
+        } finally {
+          setLoadingStudents(false);
+        }
+      };
+      fetchStudents();
+    }
+  }, [isAdminOrTeacher]);
+
+  const toggleStudent = (userId) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const filteredStudents = studentsList.filter((s) => {
+    if (!studentSearch.trim()) return true;
+    const term = studentSearch.toLowerCase();
+    return (
+      (s.fullName && s.fullName.toLowerCase().includes(term)) ||
+      (s.name && s.name.toLowerCase().includes(term)) ||
+      (s.email && s.email.toLowerCase().includes(term)) ||
+      (s.phone && String(s.phone).includes(term))
+    );
+  });
+
+  const selectAllFiltered = () => {
+    const ids = filteredStudents.map((s) => s._id);
+    setSelectedUserIds((prev) => Array.from(new Set([...prev, ...ids])));
+  };
+
+  const deselectAll = () => {
+    setSelectedUserIds([]);
+  };
+
   // Live preview text generator
   const getPreviewText = () => {
     const studentName = user?.fullName || user?.name || "Student";
@@ -161,9 +223,14 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
       return;
     }
 
+    if (isAdminOrTeacher && recipientMode === "selected" && selectedUserIds.length === 0) {
+      setError("Please select at least one student to receive this reminder.");
+      return;
+    }
+
     try {
       setSubmitting(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
 
       const payload = {
         quizId: quiz._id,
@@ -173,7 +240,20 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
         language,
         voice: isAdminOrTeacher ? voice : (voice || "Aoede"),
         reminderAudioText: customMessage.trim() || null,
-        recipients: (isAdminOrTeacher && recipientMode === "enrolled") ? "ALL_ENROLLED" : null
+        recipients:
+          isAdminOrTeacher && recipientMode === "enrolled"
+            ? "ALL_ENROLLED"
+            : isAdminOrTeacher && recipientMode === "selected"
+            ? selectedUserIds
+            : null,
+        targetAudience:
+          isAdminOrTeacher && recipientMode === "enrolled"
+            ? "all"
+            : isAdminOrTeacher && recipientMode === "selected"
+            ? "selected"
+            : "single",
+        targetUserIds:
+          isAdminOrTeacher && recipientMode === "selected" ? selectedUserIds : undefined
       };
 
       const res = await axios.post(`${apiUrl}/api/ai-voice/exam-reminder`, payload, {
@@ -412,50 +492,269 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                 <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "8px" }}>
                   Recipient Target
                 </label>
-                <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
                   <button
                     type="button"
                     onClick={() => setRecipientMode("self")}
                     style={{
-                      flex: 1,
-                      padding: "9px 12px",
+                      padding: "9px 8px",
                       borderRadius: "8px",
                       border: recipientMode === "self" ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
                       backgroundColor: recipientMode === "self" ? "rgba(138, 85, 252, 0.15)" : "transparent",
                       color: recipientMode === "self" ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
-                      fontSize: "12.5px",
+                      fontSize: "12px",
                       fontWeight: "600",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: "6px"
+                      gap: "5px"
                     }}
                   >
-                    <User size={14} /> Only Me (Test)
+                    <User size={13} /> Only Me (Test)
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setRecipientMode("selected")}
+                    style={{
+                      padding: "9px 8px",
+                      borderRadius: "8px",
+                      border: recipientMode === "selected" ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                      backgroundColor: recipientMode === "selected" ? "rgba(138, 85, 252, 0.15)" : "transparent",
+                      color: recipientMode === "selected" ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "5px"
+                    }}
+                  >
+                    <CheckSquare size={13} /> Selected {selectedUserIds.length > 0 && `(${selectedUserIds.length})`}
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => setRecipientMode("enrolled")}
                     style={{
-                      flex: 1,
-                      padding: "9px 12px",
+                      padding: "9px 8px",
                       borderRadius: "8px",
                       border: recipientMode === "enrolled" ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
                       backgroundColor: recipientMode === "enrolled" ? "rgba(138, 85, 252, 0.15)" : "transparent",
                       color: recipientMode === "enrolled" ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
-                      fontSize: "12.5px",
+                      fontSize: "12px",
                       fontWeight: "600",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: "6px"
+                      gap: "5px"
                     }}
                   >
-                    <Users size={14} /> All Enrolled Students
+                    <Users size={13} /> All Enrolled {totalEnrolled > 0 && `(${totalEnrolled})`}
                   </button>
                 </div>
+
+                {/* Sub-view when "enrolled" */}
+                {recipientMode === "enrolled" && (
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      background: "rgba(138, 85, 252, 0.1)",
+                      border: "1px solid rgba(138, 85, 252, 0.25)",
+                      fontSize: "12px",
+                      color: "var(--text-secondary, #cbd5e1)",
+                      lineHeight: "1.4"
+                    }}
+                  >
+                    ✨ Broadcast reminder: will automatically schedule phone-call reminder for all <strong>{totalEnrolled || "enrolled"}</strong> registered students.
+                  </div>
+                )}
+
+                {/* Sub-view when "selected" */}
+                {recipientMode === "selected" && (
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "12px",
+                      borderRadius: "10px",
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px"
+                    }}
+                  >
+                    {/* Search bar */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "7px 10px",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        borderRadius: "7px",
+                        border: "1px solid var(--border-color, rgba(255,255,255,0.1))"
+                      }}
+                    >
+                      <Search size={14} style={{ color: "var(--text-muted, #94a3b8)" }} />
+                      <input
+                        type="text"
+                        placeholder="Search student by name, email, phone..."
+                        value={studentSearch}
+                        onChange={(e) => setStudentSearch(e.target.value)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "var(--text-primary, #ffffff)",
+                          fontSize: "12px",
+                          width: "100%"
+                        }}
+                      />
+                    </div>
+
+                    {/* Toolbar */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: "11.5px", fontWeight: "600", color: "var(--primary, #8a55fc)" }}>
+                        {selectedUserIds.length} of {studentsList.length} students selected
+                      </span>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button
+                          type="button"
+                          onClick={selectAllFiltered}
+                          style={{
+                            padding: "3px 7px",
+                            borderRadius: "5px",
+                            border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                            background: "rgba(138, 85, 252, 0.12)",
+                            color: "var(--primary, #8a55fc)",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Select All ({filteredStudents.length})
+                        </button>
+                        {selectedUserIds.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={deselectAll}
+                            style={{
+                              padding: "3px 7px",
+                              borderRadius: "5px",
+                              border: "1px solid var(--border-color, rgba(255,255,255,0.15))",
+                              background: "transparent",
+                              color: "var(--text-muted, #94a3b8)",
+                              fontSize: "11px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Student List */}
+                    <div
+                      style={{
+                        maxHeight: "180px",
+                        overflowY: "auto",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "6px",
+                        paddingRight: "2px"
+                      }}
+                    >
+                      {loadingStudents ? (
+                        <div style={{ padding: "14px", textAlign: "center", color: "var(--text-muted, #94a3b8)", fontSize: "12px" }}>
+                          Loading student list...
+                        </div>
+                      ) : filteredStudents.length === 0 ? (
+                        <div style={{ padding: "14px", textAlign: "center", color: "var(--text-muted, #94a3b8)", fontSize: "12px" }}>
+                          No students found matching "{studentSearch}".
+                        </div>
+                      ) : (
+                        filteredStudents.map((s) => {
+                          const isChecked = selectedUserIds.includes(s._id);
+                          return (
+                            <div
+                              key={s._id}
+                              onClick={() => toggleStudent(s._id)}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                padding: "7px 10px",
+                                borderRadius: "7px",
+                                background: isChecked ? "rgba(138, 85, 252, 0.15)" : "rgba(255, 255, 255, 0.02)",
+                                border: isChecked ? "1px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.08))",
+                                cursor: "pointer",
+                                transition: "all 0.12s ease"
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => toggleStudent(s._id)}
+                                  style={{ accentColor: "var(--primary, #8a55fc)", cursor: "pointer", width: "15px", height: "15px" }}
+                                />
+                                <div
+                                  style={{
+                                    width: "26px",
+                                    height: "26px",
+                                    borderRadius: "50%",
+                                    background: isChecked ? "var(--primary, #8a55fc)" : "rgba(255, 255, 255, 0.08)",
+                                    color: "#fff",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "11px",
+                                    fontWeight: "700"
+                                  }}
+                                >
+                                  {(s.fullName || s.name || "S").charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-primary, #ffffff)" }}>
+                                    {s.fullName || s.name}
+                                  </div>
+                                  <div style={{ fontSize: "10.5px", color: "var(--text-muted, #94a3b8)" }}>
+                                    {s.email}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                {s.hasAndroid && (
+                                  <span
+                                    title="Android FCM Ready"
+                                    style={{
+                                      fontSize: "10px",
+                                      padding: "1px 5px",
+                                      borderRadius: "4px",
+                                      background: "rgba(16, 185, 129, 0.15)",
+                                      color: "#10b981",
+                                      fontWeight: "600"
+                                    }}
+                                  >
+                                    Android
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -575,12 +874,18 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
               </button>
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || (isAdminOrTeacher && recipientMode === "selected" && selectedUserIds.length === 0)}
                 className="erm-submit-btn"
               >
                 <Bell size={15} style={{ color: "#ffffff", flexShrink: 0 }} />
                 <span>
-                  {submitting ? "Scheduling..." : "Schedule Voice Reminder"}
+                  {submitting
+                    ? "Scheduling..."
+                    : recipientMode === "enrolled"
+                    ? `Schedule for All Enrolled (${totalEnrolled || "All"})`
+                    : recipientMode === "selected"
+                    ? `Schedule for ${selectedUserIds.length} Selected Students`
+                    : "Schedule Voice Reminder"}
                 </span>
               </button>
             </div>

@@ -1185,7 +1185,7 @@ export default function VoiceSettings() {
 
           {/* TAB: Schedule AI Voice Call */}
           {activeTab === "direct_call" && (
-            <AdminScheduleCallSection voiceSettings={settings} />
+            <AdminScheduleCallSection voiceSettings={settings} onSettingsUpdated={fetchSettings} />
           )}
 
           {/* TAB 1: Voice & Language */}

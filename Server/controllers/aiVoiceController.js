@@ -993,11 +993,20 @@ const scheduleExamReminder = async (req, res) => {
     if (!isAdminOrTeacher) {
       targetStudents = [req.user];
     } else {
-      if (Array.isArray(recipients) && recipients.length > 0) {
-        const validIds = recipients.filter(id => mongoose.Types.ObjectId.isValid(id));
-        targetStudents = await User.find({ _id: { $in: validIds }, status: "Active", isDeleted: { $ne: true } })
+      if (recipients === "ALL_ENROLLED" || req.body.targetAudience === "all" || req.body.targetAudience === "all_enrolled") {
+        targetStudents = await User.find({ role: "user", isDeleted: { $ne: true } })
           .select("_id name fullName email role")
-          .limit(100);
+          .lean();
+      } else if (Array.isArray(recipients) && recipients.length > 0) {
+        const validIds = recipients.filter(id => mongoose.Types.ObjectId.isValid(id));
+        targetStudents = await User.find({ _id: { $in: validIds }, role: "user", isDeleted: { $ne: true } })
+          .select("_id name fullName email role")
+          .lean();
+      } else if (Array.isArray(req.body.targetUserIds) && req.body.targetUserIds.length > 0) {
+        const validIds = req.body.targetUserIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+        targetStudents = await User.find({ _id: { $in: validIds }, role: "user", isDeleted: { $ne: true } })
+          .select("_id name fullName email role")
+          .lean();
       } else {
         targetStudents = [req.user];
       }
@@ -1264,7 +1273,10 @@ const getEligibleExamsForReminders = async (req, res) => {
 
 /**
  * POST /api/ai-voice/admin/schedule-call
- * Admin schedules or instantly dispatches an AI Voice Call to any selected user.
+ * Admin schedules or instantly dispatches an AI Voice Call to:
+ * - A single picked student
+ * - Multiple selected students
+ * - All enrolled students
  */
 const adminScheduleCall = async (req, res) => {
   try {
@@ -1284,7 +1296,9 @@ const adminScheduleCall = async (req, res) => {
     }
 
     const {
+      targetAudience = "single", // "single" | "selected" | "all" | "all_enrolled"
       targetUserId,
+      targetUserIds,
       userId,
       taskTitle,
       taskDescription = "",
@@ -1295,16 +1309,6 @@ const adminScheduleCall = async (req, res) => {
       language = "auto",
       voice = null
     } = req.body;
-
-    const resolvedUserId = targetUserId || userId;
-    if (!resolvedUserId || !mongoose.Types.ObjectId.isValid(resolvedUserId)) {
-      return res.status(400).json({ success: false, message: "Valid target user ID is required." });
-    }
-
-    const targetUser = await User.findById(resolvedUserId).select("fullName name email phone");
-    if (!targetUser) {
-      return res.status(404).json({ success: false, message: "Selected user not found." });
-    }
 
     if (!taskTitle || typeof taskTitle !== "string" || taskTitle.trim() === "") {
       return res.status(400).json({ success: false, message: "Call title is required." });
@@ -1323,88 +1327,154 @@ const adminScheduleCall = async (req, res) => {
 
     const validLanguages = ["en", "hi", "auto"];
     const resolvedLanguage = validLanguages.includes(language) ? language : "auto";
+    const selectedVoice = typeof voice === "string" && voice.trim() !== "" ? voice.trim() : (voiceSettings?.defaultVoice || "Aoede");
 
-    let cleanAudioText = reminderAudioText;
-    const recipientName = targetUser.fullName || targetUser.name || "Student";
-    if (!cleanAudioText || typeof cleanAudioText !== "string" || cleanAudioText.trim() === "") {
-      const template =
-        resolvedLanguage === "hi"
-          ? voiceSettings?.reminderDefaults?.defaultTemplateHindi ||
-            "नमस्ते {studentName}! यह PrepMark की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक AI वॉइस कॉल है।"
-          : voiceSettings?.reminderDefaults?.defaultTemplateEnglish ||
-            "Hello {studentName}! This is an AI voice call from PrepMark regarding: {taskTitle}.";
+    // 1. Resolve Target Users
+    let targetUsers = [];
+    const isAllAudience = targetAudience === "all" || targetAudience === "all_enrolled";
+    const isSelectedAudience = targetAudience === "selected" || Array.isArray(targetUserIds);
 
-      cleanAudioText = template
-        .replace(/{taskTitle}/g, cleanTitle)
-        .replace(/{studentName}/g, recipientName);
+    if (isAllAudience) {
+      targetUsers = await User.find({ role: "user", isDeleted: { $ne: true } })
+        .select("fullName name email phone")
+        .lean();
+
+      if (!targetUsers || targetUsers.length === 0) {
+        return res.status(404).json({ success: false, message: "No enrolled students found to receive calls." });
+      }
+    } else if (isSelectedAudience) {
+      const rawIds = Array.isArray(targetUserIds) ? targetUserIds : (targetUserId ? [targetUserId] : []);
+      const validIds = rawIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+      if (validIds.length === 0) {
+        return res.status(400).json({ success: false, message: "Please select at least one valid student." });
+      }
+
+      targetUsers = await User.find({ _id: { $in: validIds }, role: "user", isDeleted: { $ne: true } })
+        .select("fullName name email phone")
+        .lean();
+
+      if (!targetUsers || targetUsers.length === 0) {
+        return res.status(404).json({ success: false, message: "None of the selected students were found or they are no longer active." });
+      }
     } else {
-      cleanAudioText = cleanAudioText
-        .replace(/{studentName}/g, recipientName)
-        .replace(/{taskTitle}/g, cleanTitle)
-        .trim();
-    }
+      // Single student
+      const resolvedUserId = targetUserId || userId;
+      if (!resolvedUserId || !mongoose.Types.ObjectId.isValid(resolvedUserId)) {
+        return res.status(400).json({ success: false, message: "Valid target user ID is required." });
+      }
 
-    if (cleanAudioText.length > 1000) {
-      cleanAudioText = cleanAudioText.slice(0, 1000);
-    }
+      const singleUser = await User.findOne({ _id: resolvedUserId, role: "user", isDeleted: { $ne: true } })
+        .select("fullName name email phone");
 
-    const schedule = await Schedule.create({
-      user: targetUser._id,
-      scheduledBy: req.user._id,
-      taskTitle: cleanTitle,
-      taskDescription: typeof taskDescription === "string" ? taskDescription.trim().slice(0, 1000) : "",
-      reminderAudioText: cleanAudioText,
-      scheduledTime: finalScheduledTime,
-      callType: ["TASK_REMINDER", "CUSTOM"].includes(callType) ? callType : "CUSTOM",
-      status: "PENDING",
-      language: resolvedLanguage,
-      voice: typeof voice === "string" && voice.trim() !== "" ? voice.trim() : (voiceSettings?.defaultVoice || "Aoede"),
-      preGeneratedAudioStatus: "PENDING"
-    });
+      if (!singleUser) {
+        return res.status(404).json({ success: false, message: "Selected student not found." });
+      }
+      targetUsers = [singleUser];
+    }
 
     const { dispatchImmediateSchedule } = require("../services/aiVoiceSchedulerService");
-    let audioGenResult = null;
-    try {
-      audioGenResult = await generateScheduleAudioInternal(schedule._id, targetUser._id, true);
-    } catch (genErr) {
-      console.warn(`[AiVoiceController] Admin call audio generation warning for schedule ${schedule._id}:`, genErr.message || genErr);
-    }
 
-    let immediateDispatchResult = null;
-    if (callNow || Math.abs(finalScheduledTime.getTime() - now.getTime()) <= 30000) {
-      try {
-        immediateDispatchResult = await dispatchImmediateSchedule(schedule._id, {
-          callerName: "PrepMark AI"
-        });
-        console.log(`[AiVoiceController] Instant call dispatched to user ${targetUser._id} (${targetUser.email}):`, immediateDispatchResult);
-      } catch (dispErr) {
-        console.error(`[AiVoiceController] Immediate dispatch failed:`, dispErr.message);
+    // 2. Create Schedules & Process Calls
+    const createdSchedules = [];
+    let dispatchedSuccessCount = 0;
+    const isImmediate = callNow || Math.abs(finalScheduledTime.getTime() - now.getTime()) <= 30000;
+
+    for (const student of targetUsers) {
+      const recipientName = student.fullName || student.name || "Student";
+
+      let cleanAudioText = reminderAudioText;
+      if (!cleanAudioText || typeof cleanAudioText !== "string" || cleanAudioText.trim() === "") {
+        const template =
+          resolvedLanguage === "hi"
+            ? voiceSettings?.reminderDefaults?.defaultTemplateHindi ||
+              "नमस्ते {studentName}! यह PrepMark की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक AI वॉइस कॉल है।"
+            : voiceSettings?.reminderDefaults?.defaultTemplateEnglish ||
+              "Hello {studentName}! This is an AI voice call from PrepMark regarding: {taskTitle}.";
+
+        cleanAudioText = template
+          .replace(/{taskTitle}/g, cleanTitle)
+          .replace(/{studentName}/g, recipientName);
+      } else {
+        cleanAudioText = cleanAudioText
+          .replace(/{studentName}/g, recipientName)
+          .replace(/{taskTitle}/g, cleanTitle)
+          .trim();
+      }
+
+      if (cleanAudioText.length > 1000) {
+        cleanAudioText = cleanAudioText.slice(0, 1000);
+      }
+
+      const schedule = await Schedule.create({
+        user: student._id,
+        scheduledBy: req.user._id,
+        taskTitle: cleanTitle,
+        taskDescription: typeof taskDescription === "string" ? taskDescription.trim().slice(0, 1000) : "",
+        reminderAudioText: cleanAudioText,
+        scheduledTime: finalScheduledTime,
+        callType: ["TASK_REMINDER", "CUSTOM"].includes(callType) ? callType : "CUSTOM",
+        status: "PENDING",
+        language: resolvedLanguage,
+        voice: selectedVoice,
+        preGeneratedAudioStatus: "PENDING"
+      });
+
+      createdSchedules.push(schedule);
+
+      // Audio pre-generation & instant dispatch
+      if (isImmediate) {
+        try {
+          await generateScheduleAudioInternal(schedule._id, student._id, true);
+        } catch (genErr) {
+          console.warn(`[AiVoiceController] Admin call audio gen warning for schedule ${schedule._id}:`, genErr.message || genErr);
+        }
+
+        try {
+          const dispatchRes = await dispatchImmediateSchedule(schedule._id, {
+            callerName: "PrepMark AI"
+          });
+          if (dispatchRes?.success) {
+            dispatchedSuccessCount++;
+          }
+        } catch (dispErr) {
+          console.error(`[AiVoiceController] Immediate dispatch failed for student ${student._id}:`, dispErr.message);
+        }
       }
     }
 
+    // 3. Audit Log
     await AuditLog.create({
       action: "ADMIN_SCHEDULED_AI_VOICE_CALL",
       performedBy: req.user._id,
-      targetUser: targetUser._id,
+      targetUser: targetUsers.length === 1 ? targetUsers[0]._id : null,
       details: {
-        scheduleId: schedule._id,
+        audience: isAllAudience ? "all_enrolled" : (targetUsers.length > 1 ? "selected_batch" : "single"),
+        recipientsCount: targetUsers.length,
         callNow: !!callNow,
         taskTitle: cleanTitle,
-        dispatched: !!immediateDispatchResult?.success
+        dispatchedImmediately: isImmediate,
+        dispatchedCount: dispatchedSuccessCount
       }
     }).catch(() => {});
 
-    const freshSchedule = await Schedule.findById(schedule._id);
+    const firstSchedule = createdSchedules[0] ? await Schedule.findById(createdSchedules[0]._id) : null;
 
     res.status(201).json({
       success: true,
-      message: callNow
-        ? "AI Voice Call dispatched immediately to student!"
-        : "AI Voice Call scheduled successfully.",
+      message: isImmediate
+        ? (targetUsers.length === 1
+            ? "AI Voice Call dispatched immediately to student!"
+            : `AI Voice Call dispatched immediately to ${targetUsers.length} students!`)
+        : (targetUsers.length === 1
+            ? "AI Voice Call scheduled successfully."
+            : `AI Voice Call scheduled successfully for ${targetUsers.length} students.`),
       data: {
-        schedule: freshSchedule,
-        dispatchedImmediately: !!immediateDispatchResult?.success,
-        dispatchDetails: immediateDispatchResult
+        count: targetUsers.length,
+        audience: isAllAudience ? "all" : (targetUsers.length > 1 ? "selected" : "single"),
+        schedule: firstSchedule,
+        schedulesCount: createdSchedules.length,
+        dispatchedImmediately: isImmediate,
+        dispatchedSuccessCount
       }
     });
   } catch (error) {
@@ -1415,23 +1485,27 @@ const adminScheduleCall = async (req, res) => {
 
 /**
  * GET /api/ai-voice/admin/users
- * Lists candidate users for AI voice calls with device tokens & platform info.
+ * Lists candidate student users for AI voice calls with device tokens & platform info.
  */
 const getCallCandidates = async (req, res) => {
   try {
     const NotificationDevice = require("../models/NotificationDevice");
-    const { search = "", limit = 50 } = req.query;
+    const { search = "", limit = 100 } = req.query;
 
-    const query = { isDeleted: { $ne: true } };
+    const query = { role: "user", isDeleted: { $ne: true } };
     if (search && search.trim()) {
       const regex = new RegExp(search.trim(), "i");
       query.$or = [{ fullName: regex }, { name: regex }, { email: regex }, { phone: regex }];
     }
 
+    const totalEnrolledStudents = await User.countDocuments({ role: "user", isDeleted: { $ne: true } });
+
+    const maxLimit = limit === "all" ? 1000 : (Number(limit) || 100);
+
     const users = await User.find(query)
       .select("fullName name email phone role avatar createdAt")
       .sort({ createdAt: -1 })
-      .limit(Number(limit) || 50)
+      .limit(maxLimit)
       .lean();
 
     const userIds = users.map(u => u._id);
@@ -1464,6 +1538,7 @@ const getCallCandidates = async (req, res) => {
     res.json({
       success: true,
       count: candidates.length,
+      totalEnrolledStudents,
       data: candidates
     });
   } catch (error) {

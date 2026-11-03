@@ -135,7 +135,16 @@ const voiceSettingSchema = new mongoose.Schema(
         type: String,
         default:
           "नमस्ते! यह PrepMark की ओर से आपके अध्ययन कार्य '{taskTitle}' के लिए एक अनुस्मारक है।"
-      }
+      },
+      customTemplates: [
+        {
+          id: { type: String },
+          label: { type: String },
+          lang: { type: String, default: "auto" },
+          title: { type: String },
+          text: { type: String }
+        }
+      ]
     },
     enabled: {
       type: Boolean,
