@@ -289,8 +289,9 @@ function AdminDashboard() {
                     fontSize: "13px", 
                     cursor: "pointer", 
                     border: "none",
-                    background: activeDashboardView === "main" ? "var(--primary)" : "transparent",
-                    color: activeDashboardView === "main" ? "var(--primary-foreground)" : "var(--text-secondary, #6B7280)",
+                    background: activeDashboardView === "main" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
+                    color: activeDashboardView === "main" ? "#ffffff" : "var(--text-secondary, #6B7280)",
+                    boxShadow: activeDashboardView === "main" ? "0 2px 10px rgba(124, 58, 237, 0.35)" : "none",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
                   }}
@@ -306,8 +307,9 @@ function AdminDashboard() {
                     fontSize: "13px", 
                     cursor: "pointer", 
                     border: "none",
-                    background: activeDashboardView === "support" ? "var(--primary)" : "transparent",
-                    color: activeDashboardView === "support" ? "var(--primary-foreground)" : "var(--text-secondary, #6B7280)",
+                    background: activeDashboardView === "support" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
+                    color: activeDashboardView === "support" ? "#ffffff" : "var(--text-secondary, #6B7280)",
+                    boxShadow: activeDashboardView === "support" ? "0 2px 10px rgba(124, 58, 237, 0.35)" : "none",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
                   }}
@@ -578,7 +580,7 @@ function AdminDashboard() {
                   {/* Support Metrics Quick Bar */}
                   <div style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gridTemplateColumns: "repeat(2, 1fr)",
                     gap: "12px",
                     marginTop: "16px",
                     paddingTop: "16px",
@@ -591,10 +593,6 @@ function AdminDashboard() {
                     <div style={{ background: "var(--bg-input)", padding: "10px 14px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
                       <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Resolved ({rangeDays}d)</span>
                       <span style={{ fontSize: "17px", fontWeight: "700", color: "#10B981" }}>{supportPeriodResolved}</span>
-                    </div>
-                    <div style={{ background: "var(--bg-input)", padding: "10px 14px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Resolution Rate</span>
-                      <span style={{ fontSize: "17px", fontWeight: "700", color: "var(--text-primary)" }}>{supportResolutionRate}%</span>
                     </div>
                   </div>
                 </div>

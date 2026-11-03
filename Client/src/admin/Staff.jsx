@@ -367,11 +367,11 @@ function Staff() {
                   <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
                     Manage Staff
                   </h2>
-                  <span style={{ fontSize: "11px", background: "rgba(110,63,243,0.15)", color: "var(--violet)", padding: "3px 8px", borderRadius: "12px", fontWeight: "700" }}>
+                  <span style={{ fontSize: "11px", background: "rgba(110,63,243,0.15)", color: "#a78bfa", padding: "3px 8px", borderRadius: "12px", fontWeight: "700" }}>
                     Restricted Access
                   </span>
                 </div>
-                <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
+                <span style={{ fontSize: "13px", color: "var(--primary, #7c3aed)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
                   {filteredStaff.length} {viewTab === "active" ? "Active" : "Archived"} Staff Members
                 </span>
               </div>
@@ -384,8 +384,9 @@ function Staff() {
                       padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'active' ? 'var(--violet)' : 'transparent',
+                      background: viewTab === 'active' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
                       color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
+                      boxShadow: viewTab === 'active' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
@@ -401,8 +402,9 @@ function Staff() {
                       padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'archived' ? 'var(--violet)' : 'transparent',
+                      background: viewTab === 'archived' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
                       color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
+                      boxShadow: viewTab === 'archived' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',

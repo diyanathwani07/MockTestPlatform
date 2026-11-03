@@ -455,10 +455,11 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                     onClick={() => setTimingType(opt.id)}
                     className="erm-timing-btn"
                     style={{
-                      border: timingType === opt.id ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
-                      backgroundColor: timingType === opt.id ? "rgba(138, 85, 252, 0.15)" : "transparent",
-                      color: timingType === opt.id ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
+                      border: timingType === opt.id ? "1.5px solid #7c3aed" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                      background: timingType === opt.id ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
+                      color: timingType === opt.id ? "#ffffff" : "var(--text-secondary, #cbd5e1)",
                       fontWeight: timingType === opt.id ? "700" : "500",
+                      boxShadow: timingType === opt.id ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none"
                     }}
                   >
                     {opt.label}
@@ -499,9 +500,10 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                     style={{
                       padding: "9px 8px",
                       borderRadius: "8px",
-                      border: recipientMode === "self" ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
-                      backgroundColor: recipientMode === "self" ? "rgba(138, 85, 252, 0.15)" : "transparent",
-                      color: recipientMode === "self" ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
+                      border: recipientMode === "self" ? "1.5px solid #7c3aed" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                      background: recipientMode === "self" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
+                      color: recipientMode === "self" ? "#ffffff" : "var(--text-secondary, #cbd5e1)",
+                      boxShadow: recipientMode === "self" ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
                       fontSize: "12px",
                       fontWeight: "600",
                       cursor: "pointer",
@@ -520,9 +522,10 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                     style={{
                       padding: "9px 8px",
                       borderRadius: "8px",
-                      border: recipientMode === "selected" ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
-                      backgroundColor: recipientMode === "selected" ? "rgba(138, 85, 252, 0.15)" : "transparent",
-                      color: recipientMode === "selected" ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
+                      border: recipientMode === "selected" ? "1.5px solid #7c3aed" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                      background: recipientMode === "selected" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
+                      color: recipientMode === "selected" ? "#ffffff" : "var(--text-secondary, #cbd5e1)",
+                      boxShadow: recipientMode === "selected" ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
                       fontSize: "12px",
                       fontWeight: "600",
                       cursor: "pointer",
@@ -541,8 +544,10 @@ export default function ExamReminderModal({ quiz, onClose, onScheduled }) {
                     style={{
                       padding: "9px 8px",
                       borderRadius: "8px",
-                      border: recipientMode === "enrolled" ? "1.5px solid var(--primary, #8a55fc)" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
-                      backgroundColor: recipientMode === "enrolled" ? "rgba(138, 85, 252, 0.15)" : "transparent",
+                      border: recipientMode === "enrolled" ? "1.5px solid #7c3aed" : "1px solid var(--border-color, rgba(255,255,255,0.12))",
+                      background: recipientMode === "enrolled" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
+                      color: recipientMode === "enrolled" ? "#ffffff" : "var(--text-secondary, #cbd5e1)",
+                      boxShadow: recipientMode === "enrolled" ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
                       color: recipientMode === "enrolled" ? "var(--primary, #8a55fc)" : "var(--text-secondary, #cbd5e1)",
                       fontSize: "12px",
                       fontWeight: "600",

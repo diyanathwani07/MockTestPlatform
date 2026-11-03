@@ -591,7 +591,7 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
               display: "grid",
               gridTemplateColumns: "1fr 1fr 1fr",
               gap: "6px",
-              background: "rgba(255, 255, 255, 0.03)",
+              background: "var(--bg-input, rgba(255, 255, 255, 0.03))",
               padding: "4px",
               borderRadius: "10px",
               border: "1px solid var(--border-color)"
@@ -608,8 +608,9 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                 padding: "8px 6px",
                 borderRadius: "8px",
                 border: "none",
-                background: audienceMode === "single" ? "var(--primary)" : "transparent",
+                background: audienceMode === "single" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
                 color: audienceMode === "single" ? "#ffffff" : "var(--text-secondary)",
+                boxShadow: audienceMode === "single" ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
                 fontSize: "12px",
                 fontWeight: "600",
                 cursor: "pointer",
@@ -629,8 +630,9 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                 padding: "8px 6px",
                 borderRadius: "8px",
                 border: "none",
-                background: audienceMode === "selected" ? "var(--primary)" : "transparent",
+                background: audienceMode === "selected" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
                 color: audienceMode === "selected" ? "#ffffff" : "var(--text-secondary)",
+                boxShadow: audienceMode === "selected" ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
                 fontSize: "12px",
                 fontWeight: "600",
                 cursor: "pointer",
@@ -650,8 +652,9 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                 padding: "8px 6px",
                 borderRadius: "8px",
                 border: "none",
-                background: audienceMode === "all" ? "var(--primary)" : "transparent",
+                background: audienceMode === "all" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
                 color: audienceMode === "all" ? "#ffffff" : "var(--text-secondary)",
+                boxShadow: audienceMode === "all" ? "0 2px 8px rgba(124, 58, 237, 0.35)" : "none",
                 fontSize: "12px",
                 fontWeight: "600",
                 cursor: "pointer",
@@ -1452,12 +1455,12 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
               gap: "8px",
               padding: "10px 18px",
               borderRadius: "10px",
-              background: timingMode === "NOW" ? "rgba(124, 58, 237, 0.15)" : "rgba(255, 255, 255, 0.03)",
-              border: timingMode === "NOW" ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
+              background: timingMode === "NOW" ? "rgba(124, 58, 237, 0.18)" : "var(--bg-input, rgba(255, 255, 255, 0.03))",
+              border: timingMode === "NOW" ? "1.5px solid #8b5cf6" : "1px solid var(--border-color)",
               cursor: "pointer",
               fontSize: "13px",
               fontWeight: "600",
-              color: timingMode === "NOW" ? "var(--primary)" : "var(--text-secondary)"
+              color: timingMode === "NOW" ? "var(--text-primary)" : "var(--text-secondary)"
             }}
           >
             <input
@@ -1465,7 +1468,7 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
               name="timingMode"
               checked={timingMode === "NOW"}
               onChange={() => setTimingMode("NOW")}
-              style={{ accentColor: "var(--primary)" }}
+              style={{ accentColor: "#7c3aed" }}
             />
             ⚡ Call Now (Real-Time Dispatch)
           </label>
@@ -1477,12 +1480,12 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
               gap: "8px",
               padding: "10px 18px",
               borderRadius: "10px",
-              background: timingMode === "SCHEDULED" ? "rgba(124, 58, 237, 0.15)" : "rgba(255, 255, 255, 0.03)",
-              border: timingMode === "SCHEDULED" ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
+              background: timingMode === "SCHEDULED" ? "rgba(124, 58, 237, 0.18)" : "var(--bg-input, rgba(255, 255, 255, 0.03))",
+              border: timingMode === "SCHEDULED" ? "1.5px solid #8b5cf6" : "1px solid var(--border-color)",
               cursor: "pointer",
               fontSize: "13px",
               fontWeight: "600",
-              color: timingMode === "SCHEDULED" ? "var(--primary)" : "var(--text-secondary)"
+              color: timingMode === "SCHEDULED" ? "var(--text-primary)" : "var(--text-secondary)"
             }}
           >
             <input
@@ -1490,7 +1493,7 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
               name="timingMode"
               checked={timingMode === "SCHEDULED"}
               onChange={() => setTimingMode("SCHEDULED")}
-              style={{ accentColor: "var(--primary)" }}
+              style={{ accentColor: "#7c3aed" }}
             />
             📅 Schedule for Later
           </label>
