@@ -22,6 +22,37 @@ function Students() {
   
   // Drawer & Modal State
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: null, bottom: null, right: 0 });
+
+  const toggleActionDropdown = (e, studentId) => {
+    if (activeDropdown === studentId) {
+      setActiveDropdown(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dropdownHeight = 240;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const openUpwards = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+
+    setDropdownPos({
+      top: openUpwards ? null : Math.max(10, rect.bottom + 6),
+      bottom: openUpwards ? Math.max(10, window.innerHeight - rect.top + 6) : null,
+      right: Math.max(16, window.innerWidth - rect.right)
+    });
+    setActiveDropdown(studentId);
+  };
+
+  useEffect(() => {
+    if (!activeDropdown) return;
+    const handleClose = () => setActiveDropdown(null);
+    window.addEventListener("scroll", handleClose, true);
+    window.addEventListener("resize", handleClose);
+    return () => {
+      window.removeEventListener("scroll", handleClose, true);
+      window.removeEventListener("resize", handleClose);
+    };
+  }, [activeDropdown]);
   const [activeModal, setActiveModal] = useState(null); // 'edit', 'suspend', 'reset', 'delete', 'ai_plan'
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [viewedProfileStudent, setViewedProfileStudent] = useState(null);
@@ -808,7 +839,7 @@ function Students() {
                             ) : (
                               <div style={{ position: 'relative', display: 'inline-block' }}>
                                 <button 
-                                  onClick={() => setActiveDropdown(activeDropdown === s._id ? null : s._id)}
+                                  onClick={(e) => toggleActionDropdown(e, s._id)}
                                   className="action-dots-btn"
                                   style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '6px', color: 'var(--text-secondary)' }}
                                 >
@@ -819,12 +850,21 @@ function Students() {
                                   <>
                                     <div 
                                       onClick={() => setActiveDropdown(null)}
-                                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: 'transparent' }}
+                                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998, background: 'transparent' }}
                                     />
                                     <div style={{
-                                      position: 'absolute', right: 0, top: '28px', backgroundColor: 'var(--bg-card)',
-                                      border: '1.5px solid var(--border-color)', borderRadius: '10px', padding: '6px 0',
-                                      minWidth: '170px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', zIndex: 100, textAlign: 'left'
+                                      position: 'fixed',
+                                      top: dropdownPos.top != null ? `${dropdownPos.top}px` : 'auto',
+                                      bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : 'auto',
+                                      right: `${dropdownPos.right}px`,
+                                      backgroundColor: 'var(--bg-card)',
+                                      border: '1.5px solid var(--border-color)',
+                                      borderRadius: '10px',
+                                      padding: '6px 0',
+                                      minWidth: '170px',
+                                      boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+                                      zIndex: 9999,
+                                      textAlign: 'left'
                                     }}>
                                       <div 
                                         onClick={() => { setActiveDropdown(null); navigate("/admin/students/" + s._id); }}
