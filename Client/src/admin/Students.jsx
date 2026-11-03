@@ -590,93 +590,138 @@ function Students() {
           )}
 
           {!userId && (
-            <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', width: '100%' }}>
-              <div className="pill-search-container" style={{ marginBottom: 0, flex: "0 1 320px", minWidth: '160px', maxWidth: '320px' }}>
-                <svg width="14" height="14" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input 
-                  type="text" 
-                  placeholder="Search students..." 
-                  className="pill-search-input"
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  value={searchTerm}
-                  style={{ fontSize: "12px" }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.05)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                  <button 
-                    onClick={() => { setViewTab('active'); setLoading(true); }}
-                    style={{
-                      padding: '5px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: viewTab === 'active' ? 'var(--violet)' : 'transparent',
-                      color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Active Students
-                  </button>
-                  <button 
-                    onClick={() => { setViewTab('archived'); setLoading(true); }}
-                    style={{
-                      padding: '5px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: viewTab === 'archived' ? 'var(--violet)' : 'transparent',
-                      color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Archived Students
-                  </button>
+            /* ─── APEX COMMAND BAR ─── */
+            <div className="armored-admin-card manage-command-bar-card" style={{ 
+              backgroundColor: "var(--bg-card)", 
+              border: "1.5px solid var(--border-color)", 
+              borderRadius: "16px", 
+              marginBottom: "24px", 
+              padding: "20px 24px",
+              boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              textAlign: "left",
+              width: "100%"
+            }}>
+              {/* Header Row: Title & Count on Left, Tabs & Add Student on Right */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                  <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
+                    Manage Students
+                  </h2>
+                  <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
+                    {filteredStudents.length} {viewTab === "active" ? "Active" : "Archived"} Students
+                  </span>
                 </div>
 
-                <button 
-                  onClick={() => { setIsAddModalOpen(true); setAddMode('manual'); }}
-                  className="create-quiz-pill-btn"
-                  style={{
-                    whiteSpace: 'nowrap',
-                    padding: '6px 14px',
-                    fontSize: '12px',
-                    minHeight: '34px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  + Add Student
-                </button>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: "4px", backgroundColor: "var(--bg-page)", padding: "3px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                    <button 
+                      onClick={() => { setViewTab('active'); setLoading(true); }}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: viewTab === 'active' ? 'var(--violet)' : 'transparent',
+                        color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Active Students
+                    </button>
+                    <button 
+                      onClick={() => { setViewTab('archived'); setLoading(true); }}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: viewTab === 'archived' ? 'var(--violet)' : 'transparent',
+                        color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Archived Students
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={() => { setIsAddModalOpen(true); setAddMode('manual'); }}
+                    className="create-quiz-pill-btn"
+                    style={{
+                      whiteSpace: 'nowrap',
+                      padding: '8px 16px',
+                      fontSize: '12.5px',
+                      minHeight: '36px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    + Add Student
+                  </button>
+                </div>
+              </div>
+
+              {/* Filter Row: Search Input */}
+              <div style={{ display: "flex", gap: "12px", width: "100%", flexWrap: "wrap", alignItems: "center" }}>
+                <div className="pill-search-container" style={{ margin: 0, flex: "1 1 280px", maxWidth: "360px", display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", height: "38px" }}>
+                  <Search size={15} className="pill-search-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Search students..." 
+                    className="pill-search-input"
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchTerm}
+                  />
+                  {searchTerm && (
+                    <button onClick={() => setSearchTerm("")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 0 }}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    style={{ background: "transparent", border: "none", color: "var(--violet)", fontSize: "12px", fontWeight: "600", cursor: "pointer", padding: "6px 10px" }}
+                  >
+                    Clear Search
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {/* Student Table */}
-          <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column', overflow: 'visible' }}>
-            <div style={{ width: '100%', overflowX: isMobile ? 'auto' : 'visible', paddingBottom: '160px', position: 'relative', zIndex: 5 }}>
-              <table className="quiz-table">
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Email Address</th>
-                    <th>Phone</th>
-                    <th>Joining Date</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'center' }}>Actions</th>
-                  </tr>
-                </thead>
+          <div className="quiz-table-wrapper" style={{ 
+            backgroundColor: "var(--bg-card)", 
+            borderRadius: "16px", 
+            border: "1px solid var(--border-color)", 
+            boxShadow: "var(--card-shadow)",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            width: "100%"
+          }}>
+            <table className="quiz-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                <tr>
+                  <th>Student</th>
+                  <th>Email Address</th>
+                  <th>Phone</th>
+                  <th>Joining Date</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
                 <tbody>
                   {loading ? (
                     Array.from({ length: 6 }).map((_, r) => (
@@ -821,7 +866,6 @@ function Students() {
                   )}
                 </tbody>
               </table>
-            </div>
           </div>
 
           {/* Add Student Modal (Manual & CSV) */}

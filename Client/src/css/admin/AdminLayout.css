@@ -206,7 +206,7 @@ body.dark-mode .navbar-role, body.dark-mode .rep-email, body.dark-mode .drop-rol
 body.dark-mode .quiz-table thead, body.dark-mode .reports-analytics-table thead, body.dark-mode .quiz-table thead tr {
   background-color: var(--bg-input) !important; border-bottom: 2px solid var(--border-color) !important;
 }
-body.dark-mode .quiz-table th, body.dark-mode .reports-analytics-table th { color: var(--text-muted) !important; background-color: transparent !important; }
+body.dark-mode .quiz-table th, body.dark-mode .reports-analytics-table th { color: var(--text-muted) !important; background-color: var(--bg-input, #13121F) !important; }
 
 body.dark-mode .quiz-table tbody tr:nth-child(n), body.dark-mode .reports-analytics-table tbody tr:nth-child(n) {
   background-color: var(--bg-card) !important; color: var(--text-primary) !important;
@@ -233,7 +233,7 @@ body:not(.dark-mode) .stat-card-value, body:not(.dark-mode) .navbar-title, body:
 body:not(.dark-mode) .quiz-table thead, body:not(.dark-mode) .reports-analytics-table thead {
   background-color: var(--bg-input, #FCFBFF) !important; border-bottom: 1.5px solid var(--border-color, #ECE9F7) !important;
 }
-body:not(.dark-mode) .quiz-table th { color: var(--text-muted, #a8a5bd) !important; }
+body:not(.dark-mode) .quiz-table th { color: var(--text-muted, #a8a5bd) !important; background-color: var(--bg-input, #FCFBFF) !important; }
 
 body:not(.dark-mode) .quiz-table tbody tr:nth-child(n), body:not(.dark-mode) .reports-analytics-table tbody tr:nth-child(n) {
   background-color: var(--bg-card, #FFFFFF) !important; color: var(--text-primary, #1a1a2e) !important;

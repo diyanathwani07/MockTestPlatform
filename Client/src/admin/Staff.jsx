@@ -346,110 +346,156 @@ function Staff() {
             </div>
           )}
 
-          {/* Command Bar: Search, Dept Filter, Segmented Tabs, Add Staff */}
-          <div className="manage-command-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', width: '100%' }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: "0 1 480px", flexWrap: 'nowrap' }}>
-              <div className="pill-search-container" style={{ marginBottom: 0, flex: 1, minWidth: '140px', maxWidth: '320px' }}>
-                <svg width="14" height="14" className="pill-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
+          {/* ─── APEX COMMAND BAR ─── */}
+          <div className="armored-admin-card manage-command-bar-card" style={{ 
+            backgroundColor: "var(--bg-card)", 
+            border: "1.5px solid var(--border-color)", 
+            borderRadius: "16px", 
+            marginBottom: "24px", 
+            padding: "20px 24px",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            textAlign: "left",
+            width: "100%"
+          }}>
+            {/* Header Row: Title & Counts on Left, Add Staff & Tabs on Right */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
+                    Manage Staff
+                  </h2>
+                  <span style={{ fontSize: "11px", background: "rgba(110,63,243,0.15)", color: "var(--violet)", padding: "3px 8px", borderRadius: "12px", fontWeight: "700" }}>
+                    Restricted Access
+                  </span>
+                </div>
+                <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
+                  {filteredStaff.length} {viewTab === "active" ? "Active" : "Archived"} Staff Members
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "4px", backgroundColor: "var(--bg-page)", padding: "3px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                  <button 
+                    onClick={() => { setViewTab('active'); setLoading(true); }}
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: viewTab === 'active' ? 'var(--violet)' : 'transparent',
+                      color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Active Staff
+                  </button>
+                  <button 
+                    onClick={() => { setViewTab('archived'); setLoading(true); }}
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: viewTab === 'archived' ? 'var(--violet)' : 'transparent',
+                      color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Archived Staff
+                  </button>
+                </div>
+
+                <button 
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="create-quiz-pill-btn"
+                  style={{
+                    whiteSpace: 'nowrap',
+                    padding: '8px 16px',
+                    fontSize: '12.5px',
+                    minHeight: '36px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  + Add Staff Member
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Row: Search & Department Dropdown */}
+            <div style={{ display: "flex", gap: "12px", width: "100%", flexWrap: "wrap", alignItems: "center" }}>
+              <div className="pill-search-container" style={{ margin: 0, flex: "1 1 260px", maxWidth: "340px", display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", height: "38px" }}>
+                <Search size={15} className="pill-search-icon" />
                 <input 
                   type="text" 
                   placeholder="Search staff..." 
                   className="pill-search-input"
                   onChange={(e) => setSearchTerm(e.target.value)}
                   value={searchTerm}
-                  style={{ fontSize: "12px" }}
                 />
+                {searchTerm && (
+                  <button onClick={() => setSearchTerm("")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 0 }}>
+                    <X size={14} />
+                  </button>
+                )}
               </div>
 
-              <select
-                value={departmentFilter}
-                onChange={(e) => setDepartmentFilter(e.target.value)}
-                style={{
-                  padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)',
-                  background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '12px', outline: 'none', height: '34px', cursor: 'pointer'
-                }}
-              >
-                <option value="all">All Departments</option>
-                {departments.map(d => (
-                  <option key={d._id} value={d.name}>{d.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-              <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.05)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <button 
-                  onClick={() => { setViewTab('active'); setLoading(true); }}
-                  style={{
-                    padding: '5px 12px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: viewTab === 'active' ? 'var(--violet)' : 'transparent',
-                    color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    whiteSpace: 'nowrap'
-                  }}
+              <div style={{ flex: "0 1 200px", minWidth: "160px", height: "38px", display: "flex", alignItems: "center", backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)", borderRadius: "8px", padding: "0 12px" }}>
+                <select
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                  style={{ border: "none", background: "transparent", outline: "none", fontSize: "12px", color: "var(--text-primary)", fontWeight: "500", width: "100%", cursor: "pointer" }}
                 >
-                  Active Staff
-                </button>
-                <button 
-                  onClick={() => { setViewTab('archived'); setLoading(true); }}
-                  style={{
-                    padding: '5px 12px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: viewTab === 'archived' ? 'var(--violet)' : 'transparent',
-                    color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  Archived Staff
-                </button>
+                  <option value="all">All Departments</option>
+                  {departments.map(d => (
+                    <option key={d._id} value={d.name}>{d.name}</option>
+                  ))}
+                </select>
               </div>
 
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="create-quiz-pill-btn"
-                style={{
-                  whiteSpace: 'nowrap',
-                  padding: '6px 14px',
-                  fontSize: '12px',
-                  minHeight: '34px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                + Add Staff Member
-              </button>
+              {(searchTerm || departmentFilter !== "all") && (
+                <button
+                  onClick={() => { setSearchTerm(""); setDepartmentFilter("all"); }}
+                  style={{ background: "transparent", border: "none", color: "var(--violet)", fontSize: "12px", fontWeight: "600", cursor: "pointer", padding: "6px 10px" }}
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 
           {/* Staff Table */}
-          <div className="quiz-table-wrapper" style={{ display: 'flex', flexDirection: 'column', overflow: 'visible' }}>
-            <div style={{ width: '100%', overflowX: isMobile ? 'auto' : 'visible', paddingBottom: '160px', position: 'relative', zIndex: 5 }}>
-              <table className="quiz-table">
-                <thead>
-                  <tr>
-                    <th>Staff Member</th>
-                    <th>Email Address</th>
-                    <th>Role</th>
-                    <th>Department</th>
-                    <th>Permissions</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'center' }}>Actions</th>
-                  </tr>
-                </thead>
+          <div className="quiz-table-wrapper" style={{ 
+            backgroundColor: "var(--bg-card)", 
+            borderRadius: "16px", 
+            border: "1px solid var(--border-color)", 
+            boxShadow: "var(--card-shadow)",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            width: "100%"
+          }}>
+            <table className="quiz-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                <tr>
+                  <th>Staff Member</th>
+                  <th>Email Address</th>
+                  <th>Role</th>
+                  <th>Department</th>
+                  <th>Permissions</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
                 <tbody>
                   {loading ? (
                     Array.from({ length: 5 }).map((_, r) => (
@@ -620,7 +666,6 @@ function Staff() {
                   )}
                 </tbody>
               </table>
-            </div>
           </div>
 
           {/* Add Staff Modal */}
