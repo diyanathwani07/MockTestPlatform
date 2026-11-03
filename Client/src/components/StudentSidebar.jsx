@@ -323,14 +323,14 @@ function StudentSidebar() {
               <h3 style={{
                 fontSize: "20px",
                 fontWeight: "700",
-                color: "#ffffff",
+                color: "var(--text-primary)",
                 marginBottom: "8px"
               }}>
                 Ready to leave?
               </h3>
               <p style={{
                 fontSize: "14px",
-                color: "rgba(255, 255, 255, 0.6)",
+                color: "var(--text-muted)",
                 lineHeight: "1.5"
               }}>
                 Are you sure you want to log out of your account? You will need to sign back in to access your tests.
@@ -349,16 +349,16 @@ function StudentSidebar() {
                   flex: 1,
                   padding: "12px",
                   borderRadius: "12px",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  background: "rgba(255, 255, 255, 0.05)",
-                  color: "#ffffff",
+                  border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                  background: "transparent",
+                  color: "var(--text-primary)",
                   fontSize: "14px",
                   fontWeight: "600",
                   cursor: "pointer",
                   transition: "all 0.2s"
                 }}
-                onMouseOver={(e) => e.target.style.background = "rgba(255, 255, 255, 0.1)"}
-                onMouseOut={(e) => e.target.style.background = "rgba(255, 255, 255, 0.05)"}
+                onMouseOver={(e) => e.target.style.background = "var(--bg-input, rgba(255, 255, 255, 0.05))"}
+                onMouseOut={(e) => e.target.style.background = "transparent"}
               >
                 Cancel
               </button>
