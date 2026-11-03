@@ -1030,8 +1030,9 @@ export default function VoiceSettings() {
                   gap: "6px",
                   padding: "9px 18px",
                   borderRadius: "10px",
-                  background: isDirty ? "var(--primary)" : "rgba(255, 255, 255, 0.08)",
-                  color: isDirty ? "var(--primary-foreground, #000)" : "var(--text-muted)",
+                  background: isDirty ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "rgba(255, 255, 255, 0.08)",
+                  color: isDirty ? "#ffffff" : "var(--text-muted)",
+                  boxShadow: isDirty ? "0 2px 10px rgba(124, 58, 237, 0.35)" : "none",
                   border: "none",
                   cursor: isDirty ? "pointer" : "not-allowed",
                   fontSize: "13px",
@@ -1284,8 +1285,8 @@ export default function VoiceSettings() {
                             fontWeight: 700,
                             padding: "3px 8px",
                             borderRadius: "20px",
-                            background: "var(--primary)",
-                            color: "var(--primary-foreground, #000)"
+                            background: "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)",
+                            color: "#ffffff"
                           }}
                         >
                           <Check size={12} /> Selected

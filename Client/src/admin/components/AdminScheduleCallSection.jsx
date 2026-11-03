@@ -672,7 +672,7 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                 padding: "16px",
                 borderRadius: "12px",
                 background: "linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(79, 70, 229, 0.08))",
-                border: "1.5px solid var(--primary)",
+                border: "1.5px solid #7c3aed",
                 display: "flex",
                 flexDirection: "column",
                 gap: "12px"
@@ -684,8 +684,8 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                     width: "42px",
                     height: "42px",
                     borderRadius: "10px",
-                    background: "var(--primary)",
-                    color: "#fff",
+                    background: "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)",
+                    color: "#ffffff",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -762,7 +762,7 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                       padding: "12px 14px",
                       background: "rgba(124, 58, 237, 0.12)",
                       borderRadius: "10px",
-                      border: "1.5px solid var(--primary)"
+                      border: "1.5px solid #7c3aed"
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -771,8 +771,8 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                           width: "36px",
                           height: "36px",
                           borderRadius: "50%",
-                          background: "var(--primary)",
-                          color: "#fff",
+                          background: "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)",
+                          color: "#ffffff",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -847,9 +847,9 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                       style={{
                         padding: "4px 8px",
                         borderRadius: "6px",
-                        border: "1px solid var(--border-color)",
-                        background: "rgba(124, 58, 237, 0.1)",
-                        color: "var(--primary)",
+                        border: "1px solid #7c3aed",
+                        background: "rgba(124, 58, 237, 0.18)",
+                        color: "#a78bfa",
                         fontSize: "11px",
                         fontWeight: "600",
                         cursor: "pointer"
@@ -924,8 +924,8 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                           justifyContent: "space-between",
                           padding: "10px 12px",
                           borderRadius: "10px",
-                          background: isRowSelected ? "rgba(124, 58, 237, 0.15)" : "rgba(255, 255, 255, 0.02)",
-                          border: isRowSelected ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
+                          background: isRowSelected ? "rgba(124, 58, 237, 0.15)" : "var(--bg-input, rgba(255, 255, 255, 0.02))",
+                          border: isRowSelected ? "1.5px solid #7c3aed" : "1px solid var(--border-color)",
                           cursor: "pointer",
                           transition: "all 0.15s ease"
                         }}
@@ -936,7 +936,7 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                               type="checkbox"
                               checked={isMultiSelected}
                               onChange={() => toggleSelectUser(u._id)}
-                              style={{ accentColor: "var(--primary)", width: "16px", height: "16px", cursor: "pointer" }}
+                              style={{ accentColor: "#7c3aed", width: "16px", height: "16px", cursor: "pointer" }}
                             />
                           )}
                           <div
@@ -944,8 +944,8 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                               width: "32px",
                               height: "32px",
                               borderRadius: "50%",
-                              background: isRowSelected ? "var(--primary)" : "rgba(255, 255, 255, 0.08)",
-                              color: isRowSelected ? "#fff" : "var(--text-secondary)",
+                              background: isRowSelected ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "var(--bg-input, rgba(255, 255, 255, 0.08))",
+                              color: isRowSelected ? "#ffffff" : "var(--text-secondary)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -1045,9 +1045,9 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                   gap: "5px",
                   padding: "3px 8px",
                   borderRadius: "6px",
-                  border: showSaveDropdown ? "1px solid var(--primary)" : "1px solid var(--border-color)",
-                  background: showSaveDropdown ? "rgba(124, 58, 237, 0.15)" : "transparent",
-                  color: showSaveDropdown ? "var(--primary)" : "var(--text-secondary)",
+                  border: showSaveDropdown ? "1px solid #7c3aed" : "1px solid var(--border-color)",
+                  background: showSaveDropdown ? "rgba(124, 58, 237, 0.2)" : "transparent",
+                  color: showSaveDropdown ? "#a78bfa" : "var(--text-secondary)",
                   fontSize: "11px",
                   fontWeight: "600",
                   cursor: "pointer",
@@ -1190,8 +1190,9 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
                       padding: "8px 14px",
                       borderRadius: "6px",
                       border: "none",
-                      background: "var(--primary)",
-                      color: "#fff",
+                      background: "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)",
+                      color: "#ffffff",
+                      boxShadow: "0 2px 8px rgba(124, 58, 237, 0.35)",
                       fontWeight: "700",
                       fontSize: "12px",
                       cursor: savingTemplate || !reminderAudioText.trim() ? "not-allowed" : "pointer"
