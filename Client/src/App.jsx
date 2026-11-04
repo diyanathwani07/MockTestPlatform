@@ -633,7 +633,11 @@ function App() {
 
         <Route
           path="/admin/users/:userId"
-          element={<Navigate to="/admin/students" replace />}
+          element={
+            <AdminRoute>
+              <AdminStudents />
+            </AdminRoute>
+          }
         />
 
         <Route

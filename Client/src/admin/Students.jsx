@@ -11,7 +11,7 @@ import {
   X, User, Clock, Activity, Phone, BarChart2, AlertTriangle, Edit,
   History, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar,
   Medal, Mail, ExternalLink, ChevronDown, FileText, Sparkles,
-  GraduationCap, Upload, Download, CheckCircle, Search
+  GraduationCap, Upload, Download, CheckCircle, Search, Target, BookOpen
 } from 'lucide-react';
 
 function Students() {
@@ -461,8 +461,8 @@ function Students() {
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
         <AdminNavbar 
           title={userId ? "User Profile" : "Manage Users"} 
-          parentText="Dashboard" 
-          parentLink="/admin/dashboard" 
+          parentText={userId ? "Manage Users" : "Dashboard"} 
+          parentLink={userId ? "/admin/students" : "/admin/dashboard"} 
           onNavigateBack={userId ? () => navigate("/admin/students") : undefined}
         />
         
@@ -478,23 +478,40 @@ function Students() {
           )}
 
           {/* Full Screen Student Profile View if userId URL param is present */}
-          {userId && (
-            <div style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          {userId ? (
+            profileLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '350px', width: '100%' }}>
+                <div className="practice-loading-spinner" />
+              </div>
+            ) : studentNotFound ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '350px', gap: '16px', color: 'var(--text-secondary)', width: '100%', textAlign: 'center' }}>
+                <AlertTriangle size={48} style={{ color: '#ef4444' }} />
+                <h3 style={{ fontSize: '18px', fontWeight: '700', margin: 0 }}>Student Not Found</h3>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>The student you are looking for does not exist or has been deleted.</p>
                 <button 
-                  onClick={() => navigate('/admin/students')} 
-                  className="create-quiz-pill-btn" 
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                  onClick={() => navigate("/admin/students")}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--violet)', color: "#ffffff", border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', marginTop: '8px' }}
                 >
                   <ArrowLeft size={16} /> Back to Students
                 </button>
+              </div>
+            ) : viewedProfileStudent ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', color: 'var(--text-primary)' }}>
+                {/* Top Navigation Bar with Back & Actions */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <button 
+                    onClick={() => navigate('/admin/students')} 
+                    className="create-quiz-pill-btn" 
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', cursor: 'pointer' }}
+                  >
+                    <ArrowLeft size={16} /> Back to Students
+                  </button>
 
-                {viewedProfileStudent && (
                   <div style={{ position: 'relative' }}>
                     <button 
                       onClick={() => setProfileActionsOpen(!profileActionsOpen)}
                       className="create-quiz-pill-btn"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 16px' }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 16px', cursor: 'pointer' }}
                     >
                       Student Actions <ChevronDown size={14} />
                     </button>
@@ -508,29 +525,37 @@ function Students() {
                         <div style={{
                           position: 'absolute', right: 0, top: '40px', backgroundColor: 'var(--bg-card)',
                           border: '1.5px solid var(--border-color)', borderRadius: '10px', padding: '6px 0',
-                          minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', zIndex: 100
+                          minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', zIndex: 100, textAlign: 'left'
                         }}>
                           <div 
                             onClick={() => { setProfileActionsOpen(false); setSelectedStudent(viewedProfileStudent); setActiveModal('ai_plan'); }}
                             style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           >
                             <Sparkles size={15} color="var(--primary)" /> Manage AI Plan
                           </div>
                           <div 
-                            onClick={() => { setProfileActionsOpen(false); setSelectedStudent(viewedProfileStudent); setActiveModal('suspend'); }}
+                            onClick={() => { setProfileActionsOpen(false); handleToggleStatus(viewedProfileStudent); }}
                             style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           >
                             {(viewedProfileStudent.status || 'Active') === 'Active' ? <><UserMinus size={15} /> Suspend Student</> : <><UserCheck size={15} /> Activate Student</>}
                           </div>
                           <div 
-                            onClick={() => { setProfileActionsOpen(false); setSelectedStudent(viewedProfileStudent); setActiveModal('reset'); }}
+                            onClick={() => { setProfileActionsOpen(false); handleResetPassword(viewedProfileStudent); }}
                             style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           >
                             <Key size={15} /> Reset Password
                           </div>
                           <div 
-                            onClick={() => { setProfileActionsOpen(false); setSelectedStudent(viewedProfileStudent); setActiveModal('delete'); }}
+                            onClick={() => { setProfileActionsOpen(false); handleSoftDelete(viewedProfileStudent); }}
                             style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: '#ef4444', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           >
                             <Trash2 size={15} /> Archive Student
                           </div>
@@ -538,90 +563,264 @@ function Students() {
                       </>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
 
-              {profileLoading ? (
-                <div style={{ padding: '40px', textAlign: 'center' }}>Loading student profile...</div>
-              ) : studentNotFound ? (
-                <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>Student not found.</div>
-              ) : viewedProfileStudent && (
-                <>
-                  {/* Profile Header */}
-                  <div style={{ display: 'flex', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '24px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                      <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '32px', fontWeight: '700' }}>
+                {/* Profile Header Card */}
+                <div style={{ display: 'flex', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '24px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    {viewedProfileStudent.avatar || viewedProfileStudent.profilePhoto ? (
+                      <img 
+                        src={viewedProfileStudent.avatar || viewedProfileStudent.profilePhoto} 
+                        alt="Profile" 
+                        style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(124, 58, 237, 0.2)' }} 
+                      />
+                    ) : (
+                      <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '32px', fontWeight: '700', textTransform: 'uppercase' }}>
                         {viewedProfileStudent.fullName?.[0] || 'S'}
                       </div>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)' }}>{viewedProfileStudent.fullName}</h2>
-                          <span style={{
-                            background: viewedProfileStudent.status === 'Suspended' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                            color: viewedProfileStudent.status === 'Suspended' ? '#ef4444' : '#10b981',
-                            borderRadius: '100px', padding: '2px 10px', fontSize: '11px', fontWeight: '700'
-                          }}>
-                            {viewedProfileStudent.status || 'Active'}
-                          </span>
-                        </div>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Student Account</p>
-                        <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
-                          Joined on {viewedProfileStudent.createdAt ? new Date(viewedProfileStudent.createdAt).toLocaleDateString('en-GB') : 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+                    )}
+                    <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Mail size={16} color="var(--primary)" />
-                        <div>
-                          <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Email</span>
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileStudent.email}</span>
-                        </div>
+                        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)' }}>{viewedProfileStudent.fullName || 'Unknown'}</h2>
+                        <span style={{
+                          background: viewedProfileStudent.status === 'Suspended' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                          color: viewedProfileStudent.status === 'Suspended' ? '#ef4444' : '#10b981',
+                          borderRadius: '100px', padding: '2px 10px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px'
+                        }}>
+                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewedProfileStudent.status === 'Suspended' ? '#ef4444' : '#10b981' }} />
+                          {viewedProfileStudent.status || 'Active'}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Phone size={16} color="var(--primary)" />
-                        <div>
-                          <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Phone</span>
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileStudent.phone || 'N/A'}</span>
-                        </div>
-                      </div>
+                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Student Account</p>
+                      <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                        Joined on {viewedProfileStudent.createdAt ? new Date(viewedProfileStudent.createdAt).toLocaleDateString('en-GB') : 'N/A'}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Metrics */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                    <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <Activity size={24} color="#10b981" />
+                  <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                        <Mail size={16} />
+                      </div>
                       <div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Tests Attempted</span>
-                        <h3 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{quizzesAttempted || '0'}</h3>
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Email Address</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileStudent.email || 'N/A'}</span>
                       </div>
                     </div>
-                    <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <GraduationCap size={24} color="var(--primary)" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                        <Phone size={16} />
+                      </div>
                       <div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Enrolled Exams</span>
-                        <h3 style={{ margin: '4px 0 0 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{viewedProfileStudent.purchasedExams?.length || 0}</h3>
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Phone No.</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileStudent.phone || 'N/A'}</span>
                       </div>
                     </div>
-                    <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <Sparkles size={24} color="#f59e0b" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                        <Clock size={16} />
+                      </div>
                       <div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>AI Plan Status</span>
-                        <h3 style={{ margin: '4px 0 0 0', fontSize: '15px', fontWeight: '700', color: viewedProfileStudent.isPremium ? '#10b981' : 'var(--text-muted)' }}>
-                          {viewedProfileStudent.isPremium ? 'Premium Active' : 'Free Tier'}
-                        </h3>
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Joined On</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{viewedProfileStudent.createdAt ? new Date(viewedProfileStudent.createdAt).toLocaleDateString('en-GB') : 'N/A'}</span>
                       </div>
                     </div>
                   </div>
-                </>
-              )}
-            </div>
-          )}
+                </div>
 
-          {!userId && (
-            /* ─── APEX COMMAND BAR ─── */
+                {/* 4 Metric Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                      <Activity size={22} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Tests Attempted</span>
+                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{quizzesAttempted !== 'Loading' && quizzesAttempted !== 'Error' && quizzesAttempted !== null ? quizzesAttempted : '0'}</h3>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Total Attempts</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                      <GraduationCap size={22} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Enrolled Exams</span>
+                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{((viewedProfileStudent.purchasedExams?.length || 0) + (viewedProfileStudent.purchasedPractice?.length || 0))}</h3>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Total Modules</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
+                      <BarChart2 size={22} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Average Score</span>
+                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                        {attemptsData && attemptsData.length > 0 ? (attemptsData.reduce((acc, curr) => acc + (curr.total > 0 ? (curr.score / curr.total) * 100 : 0), 0) / attemptsData.length).toFixed(1) : '0.0'}%
+                      </h3>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Overall Average</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: viewedProfileStudent.isPremium ? 'rgba(16, 185, 129, 0.08)' : 'rgba(100, 116, 139, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: viewedProfileStudent.isPremium ? '#10b981' : 'var(--text-muted)' }}>
+                      <Sparkles size={22} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>AI Plan Status</span>
+                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '16px', fontWeight: '700', color: viewedProfileStudent.isPremium ? '#10b981' : 'var(--text-muted)' }}>
+                        {viewedProfileStudent.isPremium ? 'Premium Active' : 'Free Tier'}
+                      </h3>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Subscription</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Attempted Subjects & Purchased Exams side-by-side */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                  {/* Attempted Subjects */}
+                  <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                    <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>Attempted Subjects</h3>
+                    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+                      {attemptsData && attemptsData.length > 0 ? (
+                        (() => {
+                          const subjectStats = {};
+                          attemptsData.forEach(att => {
+                            const sub = att.subject || "General Studies";
+                            if (!subjectStats[sub]) {
+                              subjectStats[sub] = { count: 0, scoreSum: 0 };
+                            }
+                            subjectStats[sub].count++;
+                            subjectStats[sub].scoreSum += att.total > 0 ? (att.score / att.total) * 100 : 0;
+                          });
+                          const subjectStatsList = Object.keys(subjectStats).map(name => ({
+                            name,
+                            count: subjectStats[name].count,
+                            avgScore: (subjectStats[name].scoreSum / subjectStats[name].count).toFixed(1)
+                          }));
+                          
+                          return subjectStatsList.map((stat, idx) => (
+                            <div key={idx} style={{ flex: '0 0 180px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                                  <FileText size={14} />
+                                </div>
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stat.name}</span>
+                              </div>
+                              <div>
+                                <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--violet)' }}>{stat.avgScore}%</h4>
+                                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stat.count} Tests | Avg. Score</span>
+                              </div>
+                            </div>
+                          ));
+                        })()
+                      ) : (
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No attempts yet</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Purchased Exams */}
+                  <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
+                    <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>Purchased Exams</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
+                      {((viewedProfileStudent.purchasedExams?.length || 0) > 0 || (viewedProfileStudent.purchasedPractice?.length || 0) > 0) ? (
+                        <>
+                          {viewedProfileStudent.purchasedExams?.map((ex, idx) => (
+                            <div key={`ex-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.04)', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                                  <Medal size={14} />
+                                </div>
+                                <div>
+                                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>{ex.title || ex.name || 'Exam Series'}</span>
+                                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Exam Series</span>
+                                </div>
+                              </div>
+                              <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px', padding: '2px 8px', fontSize: '10px', fontWeight: '700' }}>Active</span>
+                            </div>
+                          ))}
+                          {viewedProfileStudent.purchasedPractice?.map((pr, idx) => (
+                            <div key={`pr-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.04)', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                                  <Medal size={14} />
+                                </div>
+                                <div>
+                                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>{pr.title || pr.name || 'Practice Set'}</span>
+                                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Practice Set</span>
+                                </div>
+                              </div>
+                              <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px', padding: '2px 8px', fontSize: '10px', fontWeight: '700' }}>Active</span>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No purchased modules yet</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Test Activity */}
+                <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>Recent Test Activity</h3>
+                    {attemptsData && attemptsData.length > 5 && (
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Showing last 10 attempts</span>
+                    )}
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', overflowX: 'auto' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 3fr) minmax(120px, 2fr) minmax(80px, 1fr) minmax(110px, 2fr) minmax(90px, 1fr)', padding: '0 16px 8px 16px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <div>Test / Quiz Name</div>
+                      <div>Subject</div>
+                      <div>Score</div>
+                      <div>Date</div>
+                      <div style={{ textAlign: 'center' }}>Status</div>
+                    </div>
+
+                    {historyLoading ? (
+                      <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading attempts...</div>
+                    ) : attemptsData && attemptsData.length > 0 ? (
+                      attemptsData.slice(0, 10).map((att, idx) => {
+                        const pct = att.total > 0 ? (att.score / att.total) * 100 : 0;
+                        return (
+                          <div key={idx} style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 3fr) minmax(120px, 2fr) minmax(80px, 1fr) minmax(110px, 2fr) minmax(90px, 1fr)', alignItems: 'center', padding: '12px 16px', borderBottom: idx === Math.min(attemptsData.length, 10) - 1 ? 'none' : '1px solid var(--border-color)', fontSize: '13px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{
+                                width: '30px', height: '30px', borderRadius: '8px',
+                                background: idx % 3 === 0 ? 'rgba(239, 68, 68, 0.1)' : (idx % 3 === 1 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(124, 58, 237, 0.1)'),
+                                color: idx % 3 === 0 ? '#ef4444' : (idx % 3 === 1 ? '#10b981' : 'var(--violet)'),
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                              }}>
+                                {idx % 3 === 0 ? <Clock size={14} /> : (idx % 3 === 1 ? <Target size={14} /> : <BookOpen size={14} />)}
+                              </div>
+                              <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{att.quizTitle || 'Untitled Test'}</span>
+                            </div>
+                            <div style={{ color: 'var(--text-secondary)' }}>{att.subject || 'General'}</div>
+                            <div style={{ fontWeight: '700', color: 'var(--violet)' }}>{pct.toFixed(0)}%</div>
+                            <div style={{ color: 'var(--text-secondary)' }}>{att.createdAt ? new Date(att.createdAt).toLocaleDateString('en-GB') : 'N/A'}</div>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px', padding: '3px 10px', fontSize: '11px', fontWeight: '700' }}>Completed</span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '13px' }}>
+                        No recent activity.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            ) : null
+          ) : (
+            <>
+              {/* ─── APEX COMMAND BAR ─── */}
             <div className="armored-admin-card manage-command-bar-card" style={{ 
               backgroundColor: "var(--bg-card)", 
               border: "1.5px solid var(--border-color)", 
@@ -732,7 +931,6 @@ function Students() {
                 )}
               </div>
             </div>
-          )}
 
           {/* Student Table */}
           <div className="quiz-table-wrapper" style={{ 
@@ -909,6 +1107,8 @@ function Students() {
                 </tbody>
               </table>
           </div>
+            </>
+          )}
 
           {/* Add Student Modal (Manual & CSV) */}
           {isAddModalOpen && (
