@@ -4,7 +4,7 @@ import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
 import DocxParser from "./components/DocxParser";
-import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, Clock, ArrowRightLeft, Search, User, Grid, Tag } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, Bot, Loader, X, Calendar, Clock, ArrowRightLeft, Search, User, Grid, Tag, EyeOff, UploadCloud } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
 import { useAuth } from "../context/AuthContext";
 import { useConfirm } from "../context/ConfirmContext";
@@ -315,6 +315,8 @@ function PracticeQuizzes() {
     let matchesType = true;
     if (filterType === "free") matchesType = !q.isPaid;
     if (filterType === "paid") matchesType = Boolean(q.isPaid);
+    if (filterType === "published") matchesType = q.status === "Published";
+    if (filterType === "draft") matchesType = q.status === "Draft" || !q.status;
 
     return matchesSearch && matchesDate && matchesType;
   });
@@ -640,9 +642,11 @@ function PracticeQuizzes() {
                     cursor: "pointer"
                   }}
                 >
-                  <option value="all">Types</option>
+                  <option value="all">Types / Status</option>
                   <option value="free">Free</option>
                   <option value="paid">Paid</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
                 </select>
               </div>
 
@@ -872,6 +876,96 @@ function PracticeQuizzes() {
                                         <Edit2 size={15} /> Edit
                                       </div>
   
+                                      {/* Publish / Unpublish (Save to Draft) */}
+                                      {quiz.status === "Published" ? (
+                                        <div
+                                          onClick={async () => {
+                                            setActiveDropdown(null);
+                                            const isConfirmed = await confirm({
+                                              title: "Unpublish Practice Quiz?",
+                                              message: `Are you sure you want to unpublish "${quiz.title}"? It will be saved as Draft and hidden from students.`,
+                                              type: "warning",
+                                              confirmText: "Unpublish",
+                                            });
+                                            if (isConfirmed) {
+                                              try {
+                                                const token = localStorage.getItem("token");
+                                                await axios.put(
+                                                  `${import.meta.env.VITE_API_URL}/api/practice/${quiz._id}`,
+                                                  { status: "Draft" },
+                                                  { headers: { Authorization: `Bearer ${token}` } }
+                                                );
+                                                fetchQuizzes();
+                                              } catch (error) {
+                                                console.error("Failed to unpublish practice quiz:", error);
+                                                alert(error.response?.data?.message || "Failed to unpublish practice quiz.");
+                                              }
+                                            }
+                                          }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                        >
+                                          <EyeOff size={15} /> Unpublish (Save to Draft)
+                                        </div>
+                                      ) : (
+                                        <div
+                                          onClick={async () => {
+                                            setActiveDropdown(null);
+                                            try {
+                                              const token = localStorage.getItem("token");
+                                              await axios.put(
+                                                `${import.meta.env.VITE_API_URL}/api/practice/${quiz._id}`,
+                                                { status: "Published", scheduledAt: null },
+                                                { headers: { Authorization: `Bearer ${token}` } }
+                                              );
+                                              fetchQuizzes();
+                                            } catch (error) {
+                                              console.error("Failed to publish practice quiz:", error);
+                                              alert(error.response?.data?.message || "Failed to publish practice quiz.");
+                                            }
+                                          }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                        >
+                                          <UploadCloud size={15} /> Publish
+                                        </div>
+                                      )}
+
+                                      {quiz.status === "Scheduled" && (
+                                        <div
+                                          onClick={async () => {
+                                            setActiveDropdown(null);
+                                            const isConfirmed = await confirm({
+                                              title: "Cancel Schedule & Save to Draft?",
+                                              message: `Cancel the scheduled release for "${quiz.title}" and save it as Draft?`,
+                                              type: "warning",
+                                              confirmText: "Save to Draft",
+                                            });
+                                            if (isConfirmed) {
+                                              try {
+                                                const token = localStorage.getItem("token");
+                                                await axios.put(
+                                                  `${import.meta.env.VITE_API_URL}/api/practice/${quiz._id}`,
+                                                  { status: "Draft", scheduledAt: null },
+                                                  { headers: { Authorization: `Bearer ${token}` } }
+                                                );
+                                                fetchQuizzes();
+                                              } catch (error) {
+                                                console.error("Failed to save to draft:", error);
+                                                alert(error.response?.data?.message || "Failed to save to draft.");
+                                              }
+                                            }
+                                          }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                        >
+                                          <EyeOff size={15} /> Save to Draft
+                                        </div>
+                                      )}
+
                                       {/* Schedule */}
                                       <div
                                         onClick={() => { 
