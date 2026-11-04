@@ -1284,6 +1284,8 @@ function QuizMulti() {
         <button 
           className="mobile-fab-palette"
           onClick={() => setShowPaletteMobile(!showPaletteMobile)}
+          title="Question Palette"
+          aria-label="Toggle Question Palette"
         >
           <div className="fab-icon-container">
             <LayoutGrid size={24} />

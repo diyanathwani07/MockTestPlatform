@@ -854,3 +854,49 @@ html[class*="theme-"] .role-dept-action-btn {
 html[class*="theme-"] .role-dept-action-btn:hover {
   color: var(--text-primary, #111827) !important;
 }
+
+
+/* ==========================================================================
+   QUESTION PALETTE FLOATING ACTION BUTTON (.mobile-fab-palette)
+   GUARANTEED VISIBILITY ACROSS ALL LIGHT & DARK MODES & THEMES
+   ========================================================================== */
+.mobile-fab-palette {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 100 !important;
+}
+
+.fab-icon-container {
+  background-color: var(--primary, #7c3aed) !important;
+  color: var(--primary-foreground, #ffffff) !important;
+  border: 2.5px solid var(--border-color, rgba(255, 255, 255, 0.2)) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.fab-icon-container svg {
+  color: var(--primary-foreground, #ffffff) !important;
+  stroke: var(--primary-foreground, #ffffff) !important;
+  display: block !important;
+}
+
+/* Light mode guarantee: ensure strong border definition & shadow against white/light backgrounds */
+:root:not(.dark):not(.dark-mode) .fab-icon-container,
+body:not(.dark-mode):not(.dark) .fab-icon-container,
+html:not(.dark):not(.dark-mode) .fab-icon-container {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+}
+
+/* Dark mode guarantee: ensure visible outline and crisp icon */
+body.dark-mode .fab-icon-container,
+body.dark .fab-icon-container,
+html.dark .fab-icon-container,
+html[class*="theme-"].dark .fab-icon-container {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55) !important;
+}

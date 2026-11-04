@@ -930,19 +930,35 @@ body {
     background: transparent;
     border: none;
     cursor: pointer;
+    z-index: 100;
   }
   
   .fab-icon-container {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background-color: var(--violet);
-    color: #fff;
+    background-color: var(--primary, var(--violet, #7C3AED));
+    color: var(--primary-foreground, #FFFFFF);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    border: 2px solid var(--bg-page);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    border: 2.5px solid var(--border-color, rgba(255, 255, 255, 0.2));
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .fab-icon-container svg {
+    color: var(--primary-foreground, #FFFFFF) !important;
+    stroke: var(--primary-foreground, #FFFFFF) !important;
+  }
+
+  .mobile-fab-palette:hover .fab-icon-container {
+    transform: scale(1.06);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  }
+
+  .mobile-fab-palette:active .fab-icon-container {
+    transform: scale(0.95);
   }
   
   .fab-label {
