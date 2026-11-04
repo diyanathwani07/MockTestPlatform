@@ -464,24 +464,24 @@ body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [
   --ring: #f43f5e;
 }
 .theme-candyland.dark, .theme-candyland :is(.dark *) {
-  --background: #2e1065;
-  --foreground: #fff1f2;
-  --card: #4c1d95;
-  --card-foreground: #fff1f2;
-  --popover: #4c1d95;
-  --popover-foreground: #fff1f2;
+  --background: #140f1a;
+  --foreground: #fdf2f4;
+  --card: #1e172a;
+  --card-foreground: #fdf2f4;
+  --popover: #1e172a;
+  --popover-foreground: #fdf2f4;
   --primary: #f43f5e;
   --primary-foreground: #ffffff;
-  --secondary: #5b21b6;
-  --secondary-foreground: #fff1f2;
-  --muted: #5b21b6;
-  --muted-foreground: #c4b5fd;
-  --accent: #e11d48;
+  --secondary: #281e36;
+  --secondary-foreground: #fdf2f4;
+  --muted: #281e36;
+  --muted-foreground: #ad9ebd;
+  --accent: #332242;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #5b21b6;
-  --input: #5b21b6;
+  --border: #2e2240;
+  --input: #241c30;
   --ring: #f43f5e;
 }
 
