@@ -1,52 +1,90 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, Settings, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
-  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck
+  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck, ChevronRight
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
+import "../../css/admin/AdminLayout.css";
 
-
-const NAV_ITEMS = [
-  { to: "/admin/dashboard",      icon: LayoutDashboard, label: "Dashboard",           permission: "dashboard" },
-  { to: "/admin/create-quiz",    icon: Edit3,           label: "Create Quiz",         permission: "create_quiz" },
-  { to: "/admin/manage-quizzes", icon: ClipboardList,   label: "Manage Quizzes",      permission: "edit_quiz" },
-  { to: "/admin/live-exams",     icon: Radio,           label: "Live Examinations",   permission: "edit_quiz" },
-  { to: "/admin/exams",          icon: Layers,          label: "Manage Exams",        permission: "edit_quiz" },
-  { to: "/admin/practice",       icon: BookOpen,        label: "Practice Modules",    permission: "manage_practice_tests" },
-  { to: "/admin/flashcards",     icon: Layers,          label: "Flashcards",          permission: "edit_quiz" },
-  { to: "/admin/questions",      icon: HelpCircle,      label: "Questions",           permission: "manage_questions" },
-  { to: "/admin/students",       icon: Users,           label: "Users",               permission: "manage_students" },
-  { to: "/admin/staff",          icon: Shield,          label: "Admin",               permission: "manage_staff" },
-  { to: "/admin/banners",        icon: Image,           label: "Banners",             permission: "dashboard" },
-  { to: "/admin/ai-plans",       icon: Sparkles, Palette,        label: "AI Plans",            permission: "manage_ai_plans" },
-  { to: "/admin/results",        icon: Trophy,          label: "Results",             permission: "manage_results" },
-  { to: "/admin/reports",        icon: LineChart,       label: "Reports",             permission: "view_reports" },
-  { to: "/admin/audit-log",      icon: FileText,        label: "Audit Log",           permission: "audit_logs" },
-  { to: "/admin/tickets",        icon: LifeBuoy,        label: "Support Tickets",     permission: "support_tickets" },
-  { to: "/admin/voice-settings", icon: Volume2,         label: "Voice Settings",      permission: "manage_roles" },
-  { to: "/admin/roles",          icon: Shield,          label: "Roles & Permissions", permission: "manage_roles" },
+// Top navigation items before the expandable group
+const TOP_NAV_ITEMS = [
+  { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard", permission: "dashboard" },
 ];
+
+// Exactly the six required children under "Create Quiz"
+const CREATE_QUIZ_CHILDREN = [
+  { to: "/admin/manage-quizzes", icon: ClipboardList, label: "Manage Quizzes",    permission: "edit_quiz" },
+  { to: "/admin/live-exams",     icon: Radio,         label: "Live Examinations", permission: "edit_quiz" },
+  { to: "/admin/exams",          icon: Layers,        label: "Manage Exams",      permission: "edit_quiz" },
+  { to: "/admin/practice",       icon: BookOpen,      label: "Practice Modules",  permission: "manage_practice_tests" },
+  { to: "/admin/flashcards",     icon: Layers,        label: "Flashcards",        permission: "edit_quiz" },
+  { to: "/admin/questions",      icon: HelpCircle,    label: "Questions",         permission: "manage_questions" },
+];
+
+// Navigation items following the expandable group (unchanged)
+const BOTTOM_NAV_ITEMS = [
+  { to: "/admin/students",       icon: Users,         label: "Users",               permission: "manage_students" },
+  { to: "/admin/staff",          icon: Shield,        label: "Admin",               permission: "manage_staff" },
+  { to: "/admin/banners",        icon: Image,         label: "Banners",             permission: "dashboard" },
+  { to: "/admin/ai-plans",       icon: Sparkles,      label: "AI Plans",            permission: "manage_ai_plans" },
+  { to: "/admin/results",        icon: Trophy,        label: "Results",             permission: "manage_results" },
+  { to: "/admin/reports",        icon: LineChart,     label: "Reports",             permission: "view_reports" },
+  { to: "/admin/audit-log",      icon: FileText,      label: "Audit Log",           permission: "audit_logs" },
+  { to: "/admin/tickets",        icon: LifeBuoy,      label: "Support Tickets",     permission: "support_tickets" },
+  { to: "/admin/voice-settings", icon: Volume2,       label: "Voice Settings",      permission: "manage_roles" },
+  { to: "/admin/roles",          icon: Shield,        label: "Roles & Permissions", permission: "manage_roles" },
+];
+
+// Helper to determine if current path belongs to Create Quiz or any of its children
+const isChildRouteActive = (pathname) => {
+  return CREATE_QUIZ_CHILDREN.some(child => 
+    pathname === child.to || pathname.startsWith(child.to + "/")
+  ) || pathname.startsWith("/admin/create-quiz") 
+    || pathname.startsWith("/admin/edit-quiz") 
+    || pathname.startsWith("/admin/quizzes")
+    || pathname.startsWith("/admin/create-practice") 
+    || pathname.startsWith("/admin/edit-practice");
+};
 
 function AdminSidebar() {
   const { collapsed, toggleSidebarCollapse, mobileOpen: isOpen, setMobileOpen: setIsOpen } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { hasPermission, logout, role } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toggleThemePicker } = useTheme();
+
+  const isCurrentChildActive = isChildRouteActive(location.pathname);
+  const [isCreateQuizOpen, setIsCreateQuizOpen] = useState(() => isCurrentChildActive);
+
+  // Automatically expand Create Quiz when on a child route and keep open between child route transitions
+  useEffect(() => {
+    if (isCurrentChildActive) {
+      setIsCreateQuizOpen(true);
+    }
+  }, [location.pathname, isCurrentChildActive]);
+
+  const handleCreateQuizToggle = () => {
+    if (collapsed) {
+      toggleSidebarCollapse();
+      setIsCreateQuizOpen(true);
+    } else {
+      setIsCreateQuizOpen(prev => !prev);
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -56,6 +94,8 @@ function AdminSidebar() {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  const canViewCreateQuiz = role === "admin" || role === "superadmin" || hasPermission("create_quiz") || CREATE_QUIZ_CHILDREN.some(child => hasPermission(child.permission));
 
   return (
     <>
@@ -72,8 +112,6 @@ function AdminSidebar() {
       {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
 
       <aside className={`admin-sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`} style={{ position: "relative", overflow: "hidden" }}>
-
-
         <div 
           className="sidebar-logo" 
           style={{ 
@@ -160,8 +198,10 @@ function AdminSidebar() {
             </>
           )}
         </div>
+
         <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>
-          {NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
+          {/* Top navigation items (Dashboard) */}
+          {TOP_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
             (hasPermission(permission) || role === "admin" || role === "superadmin") ? (
               <NavLink
                 key={to}
@@ -170,16 +210,94 @@ function AdminSidebar() {
                 onClick={() => setIsOpen(false)}
                 end={to === "/admin/dashboard"}
               >
-                <Icon size={20} />
+                <Icon size={20} className="sidebar-icon" />
+                <span>{label}</span>
+              </NavLink>
+            ) : null
+          )}
+
+          {/* Expandable "Create Quiz" Section */}
+          {canViewCreateQuiz && (
+            <div className="sidebar-group">
+              <button
+                type="button"
+                className={`sidebar-link sidebar-parent-btn ${isCurrentChildActive ? 'child-active' : ''}`}
+                onClick={handleCreateQuizToggle}
+                aria-expanded={isCreateQuizOpen}
+                title={collapsed ? "Create Quiz" : undefined}
+              >
+                <Edit3 size={20} className="sidebar-icon" />
+                <span>Create Quiz</span>
+                <span className="sidebar-chevron-wrap">
+                  <ChevronRight size={16} className={`sidebar-chevron ${isCreateQuizOpen ? 'expanded' : ''}`} />
+                </span>
+              </button>
+
+              <div className={`sidebar-submenu-wrapper ${isCreateQuizOpen && !collapsed ? 'expanded' : ''}`}>
+                <div className="sidebar-submenu-inner">
+                  <div className="sidebar-submenu">
+                    {CREATE_QUIZ_CHILDREN.map(({ to, icon: Icon, label, permission }) => {
+                      if (!(hasPermission(permission) || role === "admin" || role === "superadmin")) {
+                        return null;
+                      }
+
+                      const isItemActive = location.pathname === to || (
+                        to === "/admin/exams" && location.pathname.startsWith("/admin/exams")
+                      ) || (
+                        to === "/admin/practice" && (location.pathname.startsWith("/admin/create-practice") || location.pathname.startsWith("/admin/edit-practice"))
+                      ) || (
+                        to === "/admin/manage-quizzes" && (location.pathname.startsWith("/admin/edit-quiz") || location.pathname.startsWith("/admin/quizzes") || location.pathname.startsWith("/admin/create-quiz"))
+                      ) || (
+                        to === "/admin/flashcards" && location.pathname.startsWith("/admin/flashcards")
+                      ) || (
+                        to === "/admin/questions" && location.pathname.startsWith("/admin/questions")
+                      ) || (
+                        to === "/admin/live-exams" && location.pathname.startsWith("/admin/live-exams")
+                      );
+
+                      return (
+                        <NavLink
+                          key={to}
+                          to={to}
+                          className={`sidebar-link sidebar-sublink ${isItemActive ? 'active' : ''}`}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <Icon size={18} className="sidebar-icon" />
+                          <span>{label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom navigation items (Users, Admin, Banners, AI Plans, etc.) */}
+          {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
+            (hasPermission(permission) || role === "admin" || role === "superadmin") ? (
+              <NavLink
+                key={to}
+                to={to}
+                className="sidebar-link"
+                onClick={() => setIsOpen(false)}
+              >
+                <Icon size={20} className="sidebar-icon" />
                 <span>{label}</span>
               </NavLink>
             ) : null
           )}
           
-          <button aria-label="Customize theme" onClick={() => { toggleThemePicker(); setIsOpen(false); }} className="sidebar-link" style={{ marginTop: "auto", borderRadius: "12px", border: "none", background: "transparent", cursor: "pointer", width: "100%", textAlign: "left" }}>
-            <Palette size={20} />
+          <button 
+            aria-label="Customize theme" 
+            onClick={() => { toggleThemePicker(); setIsOpen(false); }} 
+            className="sidebar-link" 
+            style={{ marginTop: "auto", borderRadius: "12px", border: "none", background: "transparent", cursor: "pointer", width: "100%", textAlign: "left" }}
+          >
+            <Palette size={20} className="sidebar-icon" />
             <span>Theme</span>
           </button>
+          
           <button 
             onClick={() => setShowLogoutConfirm(true)} 
             className="sidebar-link logout-btn" 
@@ -192,7 +310,7 @@ function AdminSidebar() {
               textAlign: "left"
             }}
           >
-            <LogOut size={20} />
+            <LogOut size={20} className="sidebar-icon" />
             <span>Log Out</span>
           </button>
         </nav>
