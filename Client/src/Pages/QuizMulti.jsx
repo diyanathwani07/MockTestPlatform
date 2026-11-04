@@ -962,13 +962,33 @@ function QuizMulti() {
                   )}
                 </div>
               ) : (
-                <div 
+                <button
+                  type="button"
                   className="quiz-mobile-bookmark-btn" 
                   onClick={toggleReview}
-                  style={{ cursor: "pointer", color: (reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "var(--text-muted)" }}
+                  title={(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "Marked for Review" : "Mark for Review"}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: (reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "rgba(244, 200, 66, 0.15)" : "var(--bg-page)",
+                    border: (reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "1.5px solid #F4C842" : "1px solid var(--border-color)",
+                    borderRadius: "20px",
+                    padding: "6px 12px",
+                    color: (reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "var(--text-secondary)",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    transition: "all 0.15s ease"
+                  }}
                 >
-                  <Bookmark size={24} fill={(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "none"} />
-                </div>
+                  <Bookmark 
+                    size={15} 
+                    fill={(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "none"} 
+                    color={(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "currentColor"} 
+                  />
+                  <span>{(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "Marked for Review" : "Mark for Review"}</span>
+                </button>
               )}
             </div>
 
@@ -1021,8 +1041,8 @@ function QuizMulti() {
           {/* Bottom Action Controls */}
           <div className="quiz-action-bar">
             <div className="quiz-action-left">
-              <button className="quiz-btn-review" onClick={toggleReview} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "#F4C842", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
-                <Bookmark size={18} /> Mark Review
+              <button className="quiz-btn-review" onClick={toggleReview} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: (reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#F4C842" : "transparent", color: (reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "#FFFFFF" : "#F4C842", border: "1.5px solid #F4C842", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
+                <Bookmark size={18} fill={(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "currentColor" : "none"} /> {(reviewQuestions[currentSection?._id] || []).includes(currentQuestionIndex) ? "Marked for Review" : "Mark for Review"}
               </button>
               <button className="quiz-btn-clear" onClick={clearResponse} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "#C51414", color: "#FFFFFF", border: "none", borderRadius: "10px", padding: "12px 24px", fontWeight: "700", fontSize: "13px", cursor: "pointer", transition: "all 0.15s ease" }}>
                 <Trash2 size={18} /> Clear Response
@@ -1148,7 +1168,7 @@ function QuizMulti() {
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981" }} /> Answered</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#C51414" }} /> Not Answered</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--border-color)" }} /> Not Visited</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F4C842" }} /> Review</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><Bookmark size={13} fill="#F4C842" color="#F4C842" style={{ flexShrink: 0 }} /> Review</div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", paddingRight: "12px" }}>

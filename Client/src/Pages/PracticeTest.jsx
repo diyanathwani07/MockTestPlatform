@@ -606,7 +606,7 @@ function PracticeTest() {
                 Question {currentIndex + 1} / {questions.length}
               </span>
               <button onClick={handleMarkReview} style={{ background: "transparent", border: "none", color: reviewQuestions.includes(currentIndex) ? "#F59E0B" : "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", fontWeight: "600", minHeight: "44px" }}>
-                <Bookmark size={16} fill={reviewQuestions.includes(currentIndex) ? "#F59E0B" : "none"} /> Mark
+                <Bookmark size={16} fill={reviewQuestions.includes(currentIndex) ? "#F59E0B" : "none"} /> Mark for Review
               </button>
             </div>
 
@@ -898,7 +898,7 @@ function PracticeTest() {
               </div>
               <div>
                 <div style={{ fontSize: "16px", fontWeight: "800", color: "#F59E0B" }}>{reviewCount}</div>
-                <div style={{ fontSize: "10px", color: "var(--text-secondary)" }}>Review</div>
+                <div style={{ fontSize: "10px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "3px" }}><Bookmark size={10} fill="#F59E0B" color="#F59E0B" /> Review</div>
               </div>
               <div>
                 <div style={{ fontSize: "16px", fontWeight: "800", color: "var(--text-primary)" }}>{remainingCount}</div>

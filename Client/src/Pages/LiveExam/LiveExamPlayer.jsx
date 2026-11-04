@@ -727,10 +727,24 @@ function LiveExamPlayer() {
                   <button
                     type="button"
                     onClick={toggleReview}
-                    style={{ background: "transparent", border: "none", cursor: "pointer", color: reviewQuestions.includes(currentQuestionIndex) ? "#8b5cf6" : "var(--text-secondary)" }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      background: reviewQuestions.includes(currentQuestionIndex) ? "rgba(139, 92, 246, 0.15)" : "transparent",
+                      border: reviewQuestions.includes(currentQuestionIndex) ? "1.5px solid #8b5cf6" : "1px solid var(--border-color)",
+                      borderRadius: "20px",
+                      padding: "5px 12px",
+                      color: reviewQuestions.includes(currentQuestionIndex) ? "#8b5cf6" : "var(--text-secondary)",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      transition: "all 0.15s ease"
+                    }}
                     title={reviewQuestions.includes(currentQuestionIndex) ? "Marked for review" : "Mark for review"}
                   >
-                    <Bookmark size={22} fill={reviewQuestions.includes(currentQuestionIndex) ? "#8b5cf6" : "none"} />
+                    <Bookmark size={15} fill={reviewQuestions.includes(currentQuestionIndex) ? "#8b5cf6" : "none"} color={reviewQuestions.includes(currentQuestionIndex) ? "#8b5cf6" : "currentColor"} />
+                    <span>{reviewQuestions.includes(currentQuestionIndex) ? "Marked for Review" : "Mark for Review"}</span>
                   </button>
                 </div>
               </div>
@@ -851,7 +865,7 @@ function LiveExamPlayer() {
               Unanswered ({questions.length - totalAnswered})
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#8b5cf6", display: "inline-block" }}></span>
+              <Bookmark size={13} fill="#8b5cf6" color="#8b5cf6" style={{ flexShrink: 0 }} />
               Review ({totalReview})
             </div>
           </div>
