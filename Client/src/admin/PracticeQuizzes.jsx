@@ -678,7 +678,7 @@ function PracticeQuizzes() {
             WebkitOverflowScrolling: "touch"
           }}>
             {loading ? (
-              <SkeletonTable rows={5} columns={8} style={{ border: "none" }} />
+              <SkeletonTable rows={5} columns={ownershipTab !== "mine" ? 8 : 7} style={{ border: "none" }} />
             ) : filteredQuizzes.length === 0 ? (
               <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
                 No practice quizzes found. Create one to get started!
@@ -691,7 +691,9 @@ function PracticeQuizzes() {
                     backgroundColor: "var(--bg-input)",
                     whiteSpace: "nowrap"
                   }}>
-                    <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "600", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Created By</th>
+                    {ownershipTab !== "mine" && (
+                      <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "600", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Created By</th>
+                    )}
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "600", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px", maxWidth: "220px" }}>Title</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "600", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Pricing</th>
                     <th style={{ padding: "16px", textAlign: "left", color: "var(--text-muted)", fontWeight: "600", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Subject</th>
@@ -705,38 +707,40 @@ function PracticeQuizzes() {
                   {filteredQuizzes.map((quiz) => {
                     return (
                       <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                        <td style={{ padding: "16px", whiteSpace: "nowrap" }}>
-                          {(() => {
-                            const isMine = checkIsMine(quiz);
-                            const creatorName = quiz.createdBy?.fullName || "System Admin";
-                            const firstLetter = creatorName.charAt(0).toUpperCase();
-                            const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
-                            const charCode = creatorName.charCodeAt(0) || 0;
-                            const bgColor = colors[charCode % colors.length];
-                            return (
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <div style={{
-                                  width: "26px",
-                                  height: "26px",
-                                  borderRadius: "50%",
-                                  backgroundColor: bgColor,
-                                  color: "#fff",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  fontSize: "12px",
-                                  fontWeight: "bold",
-                                  textTransform: "uppercase"
-                                }}>
-                                  {firstLetter}
+                        {ownershipTab !== "mine" && (
+                          <td style={{ padding: "16px", whiteSpace: "nowrap" }}>
+                            {(() => {
+                              const isMine = checkIsMine(quiz);
+                              const creatorName = quiz.createdBy?.fullName || "System Admin";
+                              const firstLetter = creatorName.charAt(0).toUpperCase();
+                              const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+                              const charCode = creatorName.charCodeAt(0) || 0;
+                              const bgColor = colors[charCode % colors.length];
+                              return (
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <div style={{
+                                    width: "26px",
+                                    height: "26px",
+                                    borderRadius: "50%",
+                                    backgroundColor: bgColor,
+                                    color: "#fff",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "12px",
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase"
+                                  }}>
+                                    {firstLetter}
+                                  </div>
+                                  <span style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "13px" }}>
+                                    {isMine ? "You" : creatorName}
+                                  </span>
                                 </div>
-                                <span style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "13px" }}>
-                                  {isMine ? "You" : creatorName}
-                                </span>
-                              </div>
-                            );
-                          })()}
-                        </td>
+                              );
+                            })()}
+                          </td>
+                        )}
                         <td style={{ padding: "16px", color: "var(--text-primary)", maxWidth: "180px" }}>
                           <div style={{ fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={quiz.title}>{quiz.title}</div>
                         </td>
