@@ -3188,37 +3188,101 @@ function EditQuiz() {
                                         </div>
                                       </div>
                                       
-                                      <div className="question-preview-right" style={{ background: 'var(--bg-panel)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px', lineHeight: '1.6' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>Live Preview</div>
-                                        <div style={{ marginBottom: '16px' }}>
-                                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Question:</div>
-                                          <div><MathRenderer text={q.questionEnglish || "..."} /></div>
-                                          {q.questionHindi && <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}><MathRenderer text={q.questionHindi} /></div>}
-                                        </div>
-                                        <div style={{ marginBottom: '16px' }}>
-                                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Options:</div>
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                            {q.options.map((optionValue, optIndex) => {
-                                              const label = String.fromCharCode(65 + optIndex);
-                                              const isCorrect = q.correctOptionIndex === optIndex;
-                                              if (!optionValue) return null;
-                                              return (
-                                                <div key={optIndex} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                  <span style={{ fontWeight: 'bold', color: isCorrect ? '#10B981' : 'var(--text-secondary)' }}>{label}.</span>
-                                                  <MathRenderer text={optionValue} />
-                                                  {isCorrect && <span style={{ color: '#10B981', fontSize: '12px', marginLeft: '4px' }}>✓</span>}
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-                                        </div>
-                                        {q.explanation && (
-                                          <div>
-                                            <div style={{ fontWeight: '600', marginBottom: '4px' }}>Explanation:</div>
-                                            <div><MathRenderer text={q.explanation} /></div>
-                                          </div>
-                                        )}
+                                      <div className="question-preview-right" style={{ background: 'var(--bg-panel)', padding: '18px 18px 36px 18px', borderRadius: '12px', border: '1.5px solid var(--border-color)', fontSize: '14px', lineHeight: '1.6', position: 'sticky', top: '24px', maxHeight: 'calc(100vh - 120px)', overflowY: 'auto' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                                    <span style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      fontSize: '11px',
+                                      fontWeight: '700',
+                                      color: 'var(--violet, #7C3AED)',
+                                      background: 'rgba(124, 58, 237, 0.1)',
+                                      border: '1px solid rgba(124, 58, 237, 0.25)',
+                                      padding: '4px 10px',
+                                      borderRadius: '100px',
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.5px'
+                                    }}>
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                      Live Student Preview
+                                    </span>
+                                    <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: '600' }}>
+                                      {q.options?.filter(Boolean).length || 0} Options
+                                    </span>
+                                  </div>
+
+                                  <div style={{ marginBottom: '14px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Question:</div>
+                                    <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '14.5px', lineHeight: 1.5 }}>
+                                      <MathRenderer text={q.questionEnglish || "Enter question text..."} />
+                                    </div>
+                                    {q.questionHindi && (
+                                      <div style={{ marginTop: '6px', color: 'var(--text-secondary)', fontSize: '13.5px', lineHeight: 1.5 }}>
+                                        <MathRenderer text={q.questionHindi} />
                                       </div>
+                                    )}
+                                  </div>
+
+                                  <div style={{ marginBottom: '14px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Options:</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                      {q.options.map((optionValue, optIndex) => {
+                                        const label = String.fromCharCode(65 + optIndex);
+                                        const isCorrect = q.correctOptionIndex === optIndex;
+                                        if (!optionValue) return null;
+                                        return (
+                                          <div key={optIndex} style={{
+                                            display: 'flex',
+                                            gap: '10px',
+                                            alignItems: 'center',
+                                            padding: '8px 12px',
+                                            borderRadius: '8px',
+                                            background: isCorrect ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                                            border: `1.5px solid ${isCorrect ? '#10B981' : 'var(--border-color)'}`,
+                                            transition: 'all 0.15s ease'
+                                          }}>
+                                            <div style={{
+                                              width: '22px',
+                                              height: '22px',
+                                              borderRadius: '50%',
+                                              background: isCorrect ? '#10B981' : 'transparent',
+                                              color: isCorrect ? '#ffffff' : 'var(--text-secondary)',
+                                              border: `1.5px solid ${isCorrect ? '#10B981' : 'var(--border-color)'}`,
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              fontSize: '11px',
+                                              fontWeight: '700',
+                                              flexShrink: 0
+                                            }}>
+                                              {label}
+                                            </div>
+                                            <div style={{ flex: 1, fontSize: '13px', color: 'var(--text-primary)' }}>
+                                              <MathRenderer text={optionValue} />
+                                            </div>
+                                            {isCorrect && (
+                                              <span style={{ color: '#10B981', fontSize: '11px', fontWeight: '700', marginLeft: 'auto' }}>
+                                                ✓ Correct
+                                              </span>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  {q.explanation && (
+                                    <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.06)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                                      <div style={{ fontWeight: '700', fontSize: '11.5px', color: '#3b82f6', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                                        Explanation:
+                                      </div>
+                                      <div style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                                        <MathRenderer text={q.explanation} />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                                     </div>
                                   )}
                                 </div>

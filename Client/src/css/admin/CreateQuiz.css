@@ -1514,3 +1514,38 @@ body.dark-mode .create-quiz-page input[type="date"]::-webkit-calendar-picker-ind
   stroke: #dc2626 !important;
   color: #dc2626 !important;
 }
+
+
+/* ==========================================================================
+   LIVE PREVIEW CONTAINER (.question-preview-right) — VIBRANT & HIGH CONTRAST
+   ========================================================================== */
+.question-preview-right {
+  border-radius: 12px !important;
+  padding: 18px 18px 36px 18px !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  position: sticky !important;
+  top: 24px !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow-y: auto !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Light mode appearance: clean defined card contrasting against white background */
+:root:not(.dark):not(.dark-mode) .question-preview-right,
+body:not(.dark-mode):not(.dark) .question-preview-right,
+html:not(.dark):not(.dark-mode) .question-preview-right {
+  background: #F8FAFC !important;
+  border: 1.5px solid #CBD5E1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Dark mode appearance: deep elevated card with clear luminous border */
+body.dark-mode .question-preview-right,
+body.dark .question-preview-right,
+html.dark .question-preview-right,
+html[class*="theme-"].dark .question-preview-right {
+  background: rgba(0, 0, 0, 0.32) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+}
