@@ -55,7 +55,28 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Student not found." });
     }
 
-    res.json(student);
+    const Ticket = require("../models/Ticket");
+    const Quiz = require("../models/Quiz");
+
+    const [tickets, aiTests] = await Promise.all([
+      Ticket.find({ userId: student._id }).sort({ createdAt: -1 }),
+      Quiz.find({
+        createdBy: student._id,
+        $or: [
+          { isAiGenerated: true },
+          { quizType: "custom" },
+          { title: { $regex: /^AI Test:/i } }
+        ]
+      })
+      .select("title subject duration totalMarks questions createdAt isAiGenerated quizType")
+      .sort({ createdAt: -1 })
+    ]);
+
+    res.json({
+      ...student.toObject(),
+      tickets: tickets || [],
+      aiTests: aiTests || []
+    });
   } catch (error) {
     console.error("Get Student Details Error:", error);
     if (error.kind === "ObjectId") {

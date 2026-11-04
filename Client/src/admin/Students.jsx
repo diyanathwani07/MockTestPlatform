@@ -11,7 +11,7 @@ import {
   X, User, Clock, Activity, Phone, BarChart2, AlertTriangle, Edit,
   History, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar,
   Medal, Mail, ExternalLink, ChevronDown, FileText, Sparkles,
-  GraduationCap, Upload, Download, CheckCircle, Search, Target, BookOpen
+  GraduationCap, Upload, Download, CheckCircle, Search, Target, BookOpen, Ticket
 } from 'lucide-react';
 
 function Students() {
@@ -83,6 +83,12 @@ function Students() {
   const [quizzesAttempted, setQuizzesAttempted] = useState(null);
   const [attemptsData, setAttemptsData] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Tickets & AI Tests States
+  const [userTickets, setUserTickets] = useState([]);
+  const [userAiTests, setUserAiTests] = useState([]);
+  const [ticketsModalOpen, setTicketsModalOpen] = useState(false);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
 
   // Common UI States
   const [toast, setToast] = useState(null);
@@ -194,6 +200,31 @@ function Students() {
       setAttemptsData([]);
     }
   }, [selectedStudent, viewedProfileStudent, activeModal]);
+
+  // Synchronize userTickets and userAiTests when viewedProfileStudent changes
+  useEffect(() => {
+    if (!viewedProfileStudent) {
+      setUserTickets([]);
+      setUserAiTests([]);
+      return;
+    }
+    setUserAiTests(viewedProfileStudent.aiTests || []);
+    if (viewedProfileStudent.tickets) {
+      setUserTickets(viewedProfileStudent.tickets);
+    } else {
+      setTicketsLoading(true);
+      const token = localStorage.getItem("token");
+      axios.get(`${import.meta.env.VITE_API_URL}/api/tickets`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => {
+        const filtered = (res.data || []).filter(t => (t.userId?._id || t.userId) === viewedProfileStudent._id);
+        setUserTickets(filtered);
+      })
+      .catch(err => console.error("Error fetching tickets:", err))
+      .finally(() => setTicketsLoading(false));
+    }
+  }, [viewedProfileStudent]);
 
   const handleRestoreStudent = async (studentId) => {
     setActionLoading(true);
@@ -552,6 +583,14 @@ function Students() {
                             <Key size={15} /> Reset Password
                           </div>
                           <div 
+                            onClick={() => { setProfileActionsOpen(false); setTicketsModalOpen(true); }}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <Ticket size={15} color="#3b82f6" /> Support Tickets ({userTickets.length})
+                          </div>
+                          <div 
                             onClick={() => { setProfileActionsOpen(false); handleSoftDelete(viewedProfileStudent); }}
                             style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: '#ef4444', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'}
@@ -629,10 +668,10 @@ function Students() {
                   </div>
                 </div>
 
-                {/* 4 Metric Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                {/* Metric Cards Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
                       <Activity size={22} />
                     </div>
                     <div>
@@ -641,8 +680,8 @@ function Students() {
                       <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Total Attempts</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
                       <GraduationCap size={22} />
                     </div>
                     <div>
@@ -651,8 +690,34 @@ function Students() {
                       <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Total Modules</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(236, 72, 153, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ec4899' }}>
+                      <Sparkles size={22} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>AI Tests Made</span>
+                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{userAiTests.length}</h3>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Custom Generated</span>
+                    </div>
+                  </div>
+                  <div 
+                    onClick={() => setTicketsModalOpen(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '18px', cursor: 'pointer', transition: 'border-color 0.15s ease' }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                    title="Click to view raised tickets"
+                  >
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                      <Ticket size={22} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Support Tickets</span>
+                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{userTickets.length}</h3>
+                      <span style={{ fontSize: '11px', color: '#3b82f6', fontWeight: '600' }}>{userTickets.filter(t => t.status === 'Open').length} Open Tickets</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
                       <BarChart2 size={22} />
                     </div>
                     <div>
@@ -663,13 +728,13 @@ function Students() {
                       <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Overall Average</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: viewedProfileStudent.isPremium ? 'rgba(16, 185, 129, 0.08)' : 'rgba(100, 116, 139, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: viewedProfileStudent.isPremium ? '#10b981' : 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: viewedProfileStudent.isPremium ? 'rgba(16, 185, 129, 0.08)' : 'rgba(100, 116, 139, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: viewedProfileStudent.isPremium ? '#10b981' : 'var(--text-muted)' }}>
                       <Sparkles size={22} />
                     </div>
                     <div>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>AI Plan Status</span>
-                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '16px', fontWeight: '700', color: viewedProfileStudent.isPremium ? '#10b981' : 'var(--text-muted)' }}>
+                      <h3 style={{ margin: '4px 0 2px 0', fontSize: '15px', fontWeight: '700', color: viewedProfileStudent.isPremium ? '#10b981' : 'var(--text-muted)' }}>
                         {viewedProfileStudent.isPremium ? 'Premium Active' : 'Free Tier'}
                       </h3>
                       <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Subscription</span>
@@ -1268,6 +1333,80 @@ function Students() {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Support Tickets Modal */}
+          {ticketsModalOpen && (
+            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+              <div style={{ backgroundColor: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '620px', padding: '24px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                      <Ticket size={16} />
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                      Support Tickets: {viewedProfileStudent?.fullName}
+                    </h3>
+                  </div>
+                  <button onClick={() => setTicketsModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
+                  {ticketsLoading ? (
+                    <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>Loading tickets...</div>
+                  ) : userTickets.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
+                      <Ticket size={40} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                      <p style={{ margin: 0, fontSize: '13px' }}>No support tickets raised by this student.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {userTickets.map((t) => (
+                        <div key={t._id} style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)', background: 'var(--bg-page)', padding: '2px 8px', borderRadius: '4px' }}>
+                              {t.category || "General"}
+                            </span>
+                            <span style={{
+                              fontSize: '11px',
+                              padding: '3px 8px',
+                              borderRadius: '12px',
+                              fontWeight: '700',
+                              background: t.status === 'Resolved' ? 'rgba(34, 197, 94, 0.15)' : t.status === 'Open' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                              color: t.status === 'Resolved' ? '#22c55e' : t.status === 'Open' ? '#3b82f6' : '#6b7280'
+                            }}>
+                              {t.status}
+                            </span>
+                          </div>
+                          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>{t.subject}</h4>
+                          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{t.message}</p>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                            Raised on: {t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--border-color)', marginTop: '16px' }}>
+                  <button 
+                    onClick={() => { setTicketsModalOpen(false); navigate('/admin/tickets'); }}
+                    style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.25)', color: '#3b82f6', padding: '8px 16px', borderRadius: '8px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    Open in Helpdesk <ExternalLink size={13} />
+                  </button>
+                  <button 
+                    onClick={() => setTicketsModalOpen(false)}
+                    style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', padding: '8px 18px', borderRadius: '8px', fontSize: '12.5px', cursor: 'pointer' }}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           )}
