@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
   try {
     const students = await User.find({ role: "user", isDeleted: { $ne: true } })
       .select("-password")
+      .populate("activePlan", "name durationValue durationUnit sellingPrice")
       .populate("purchasedExams", "title subject price")
       .populate("purchasedPractice", "title subject price")
       .sort({ createdAt: -1 });
@@ -48,6 +49,7 @@ router.get("/:id", async (req, res) => {
   try {
     const student = await User.findOne({ _id: req.params.id, role: "user", isDeleted: { $ne: true } })
       .select("-password")
+      .populate("activePlan", "name durationValue durationUnit sellingPrice")
       .populate("purchasedExams", "title subject price")
       .populate("purchasedPractice", "title subject price");
 

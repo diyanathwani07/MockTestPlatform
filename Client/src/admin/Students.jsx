@@ -76,6 +76,7 @@ function Students() {
 
   // AI Plans & Subscription States
   const [aiPlans, setAiPlans] = useState([]);
+  const [aiPlansLoading, setAiPlansLoading] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [aiActionLoading, setAiActionLoading] = useState(false);
 
@@ -131,14 +132,17 @@ function Students() {
   };
 
   const fetchAiPlans = async () => {
+    setAiPlansLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/ai-plans`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/ai-plans`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAiPlans(res.data || []);
     } catch (e) {
       console.error("Fetch AI plans error:", e);
+    } finally {
+      setAiPlansLoading(false);
     }
   };
 
@@ -336,6 +340,12 @@ function Students() {
       );
       showToast(action === "cancel" ? "AI plan cancelled" : "AI plan subscription updated");
       fetchStudents();
+      if (viewedProfileStudent && viewedProfileStudent._id === selectedStudent._id) {
+        const profRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/students/${selectedStudent._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setViewedProfileStudent(profRes.data);
+      }
       setActiveModal(null);
     } catch (e) {
       console.error("Manage AI error:", e);
@@ -559,7 +569,7 @@ function Students() {
                           minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', zIndex: 100, textAlign: 'left'
                         }}>
                           <div 
-                            onClick={() => { setProfileActionsOpen(false); setSelectedStudent(viewedProfileStudent); setActiveModal('ai_plan'); }}
+                            onClick={() => { setProfileActionsOpen(false); setSelectedStudent(viewedProfileStudent); setSelectedPlanId(""); fetchAiPlans(); setActiveModal('ai_plan'); }}
                             style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -1136,7 +1146,7 @@ function Students() {
                                         <User size={14} /> View Profile
                                       </div>
                                       <div 
-                                        onClick={() => { setActiveDropdown(null); setSelectedStudent(s); setActiveModal('ai_plan'); }}
+                                        onClick={() => { setActiveDropdown(null); setSelectedStudent(s); setSelectedPlanId(""); fetchAiPlans(); setActiveModal('ai_plan'); }}
                                         style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
                                       >
                                         <Sparkles size={14} color="var(--primary)" /> Manage AI Plan
@@ -1413,49 +1423,111 @@ function Students() {
 
           {/* AI Plan Modal */}
           {activeModal === 'ai_plan' && selectedStudent && (
-            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-              <div style={{ backgroundColor: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '440px', padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                    AI Plan: {selectedStudent.fullName}
-                  </h3>
-                  <button onClick={() => setActiveModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+              <div style={{ backgroundColor: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '460px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.35)', position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                      <Sparkles size={16} />
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                      AI Plan: {selectedStudent.fullName}
+                    </h3>
+                  </div>
+                  <button onClick={() => setActiveModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}>
                     <X size={18} />
                   </button>
                 </div>
-
-                <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Current Status: <strong style={{ color: selectedStudent.isPremium ? '#10b981' : 'var(--text-primary)' }}>{selectedStudent.isPremium ? 'Premium Active' : 'Free Tier'}</strong>
+                
+                <div style={{ marginBottom: '16px', padding: '12px 14px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-color)', borderRadius: '10px', fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Current Status:</span>
+                    <strong style={{ 
+                      padding: '2px 10px',
+                      borderRadius: '100px',
+                      fontSize: '12px',
+                      background: selectedStudent.isPremium ? 'rgba(16, 185, 129, 0.12)' : 'rgba(107, 114, 128, 0.12)',
+                      color: selectedStudent.isPremium ? '#10b981' : 'var(--text-muted)'
+                    }}>
+                      {selectedStudent.isPremium ? 'Premium Active' : 'Free Tier'}
+                    </strong>
+                  </div>
+                  {selectedStudent.activePlan && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Active Plan:</span>
+                      <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                        {typeof selectedStudent.activePlan === 'object' ? selectedStudent.activePlan.name : 'Subscribed'}
+                      </span>
+                    </div>
+                  )}
+                  {selectedStudent.premiumExpiresAt && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Expires:</span>
+                      <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                        {new Date(selectedStudent.premiumExpiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  )}
                 </div>
-
+                
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Select Plan to Grant</label>
-                  <select 
-                    value={selectedPlanId}
-                    onChange={(e) => setSelectedPlanId(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
-                  >
-                    <option value="">Select an AI Plan...</option>
-                    {aiPlans.map(p => (
-                      <option key={p._id} value={p._id}>{p.name} ({p.durationValue} {p.durationUnit})</option>
-                    ))}
-                  </select>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>
+                    Select Plan to Grant
+                  </label>
+                  {aiPlansLoading ? (
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', padding: '10px 0' }}>Loading available AI plans...</div>
+                  ) : aiPlans.length === 0 ? (
+                    <div style={{ padding: '12px', borderRadius: '8px', border: '1px dashed var(--border-color)', fontSize: '12.5px', color: 'var(--text-muted)', textAlign: 'center' }}>
+                      No AI plans found in the system. Please create a plan under <strong style={{ color: 'var(--primary)' }}>AI Plans</strong> first.
+                    </div>
+                  ) : (
+                    <select 
+                      value={selectedPlanId}
+                      onChange={(e) => setSelectedPlanId(e.target.value)}
+                      style={{ 
+                        width: '100%', 
+                        padding: '10px 12px', 
+                        borderRadius: '8px', 
+                        border: '1px solid var(--border-color)', 
+                        background: 'var(--bg-input, #1B1B32)', 
+                        color: 'var(--text-primary)', 
+                        fontSize: '13px', 
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="">Select an AI Plan to assign...</option>
+                      {aiPlans.map(p => (
+                        <option key={p._id} value={p._id}>
+                          {p.name} — {p.sellingPrice ? `₹${p.sellingPrice}` : 'Free'} ({p.durationValue} {p.durationUnit})
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
-                  {selectedStudent.isPremium && (
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
+                  {selectedStudent.isPremium ? (
                     <button 
-                      onClick={() => handleManageAiSubscription('cancel')} disabled={aiActionLoading}
+                      onClick={() => handleManageAiSubscription('cancel')} 
+                      disabled={aiActionLoading}
                       style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #ef4444', background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
                     >
-                      Cancel Plan
+                      {aiActionLoading ? "Cancelling..." : "Cancel Plan"}
                     </button>
-                  )}
-                  <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
-                    <button onClick={() => setActiveModal(null)} style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer' }}>Close</button>
+                  ) : <div />}
+                  <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
-                      onClick={() => handleManageAiSubscription('upgrade')} disabled={!selectedPlanId || aiActionLoading}
-                      className="create-quiz-pill-btn" style={{ padding: '8px 18px', fontSize: '13px' }}
+                      onClick={() => setActiveModal(null)} 
+                      style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12.5px' }}
+                    >
+                      Close
+                    </button>
+                    <button 
+                      onClick={() => handleManageAiSubscription('upgrade')} 
+                      disabled={!selectedPlanId || aiActionLoading}
+                      className="create-quiz-pill-btn" 
+                      style={{ padding: '8px 18px', fontSize: '12.5px', opacity: (!selectedPlanId || aiActionLoading) ? 0.6 : 1 }}
                     >
                       {aiActionLoading ? "Updating..." : "Grant Plan"}
                     </button>
