@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   X, User, Clock, Activity, Phone, BarChart2, AlertTriangle, Edit,
   History, UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar,
-  Medal, Mail, ExternalLink, ChevronDown, FileText, Sparkles,
+  Medal, Mail, ExternalLink, ChevronDown, ChevronRight, MoreVertical, FileText, Sparkles,
   GraduationCap, Upload, Download, CheckCircle, Search, Target, BookOpen, Ticket
 } from 'lucide-react';
 
@@ -19,6 +19,41 @@ function Students() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewTab, setViewTab] = useState("active"); // "active" or "archived"
+  
+  // Left Sidebar Manage Actions Drawer State
+  const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
+  const [drawerStudent, setDrawerStudent] = useState(null);
+  const [drawerSubView, setDrawerSubView] = useState('menu'); // 'menu' | 'ai_plan' | 'tickets' | 'suspend' | 'reset' | 'archive'
+  const [drawerTickets, setDrawerTickets] = useState([]);
+  const [drawerTicketsLoading, setDrawerTicketsLoading] = useState(false);
+
+  const openActionsDrawer = (student, initialSubView = 'menu') => {
+    if (!student) return;
+    setDrawerStudent(student);
+    setDrawerSubView(initialSubView);
+    setActionsDrawerOpen(true);
+    if (student.tickets && student.tickets.length > 0) {
+      setDrawerTickets(student.tickets);
+    } else {
+      setDrawerTicketsLoading(true);
+      const token = localStorage.getItem("token");
+      axios.get(`${import.meta.env.VITE_API_URL}/api/tickets`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => {
+        const filtered = (res.data || []).filter(t => (t.userId?._id || t.userId) === student._id);
+        setDrawerTickets(filtered);
+      })
+      .catch(err => console.error("Error fetching tickets for drawer:", err))
+      .finally(() => setDrawerTicketsLoading(false));
+    }
+
+    if (initialSubView === 'ai_plan') {
+      setSelectedStudent(student);
+      setSelectedPlanId("");
+      fetchAiPlans();
+    }
+  };
   
   // Drawer & Modal State
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -277,9 +312,11 @@ function Students() {
       );
       showToast(`Student status updated to ${newStatus}`);
       fetchStudents();
+      setDrawerStudent(prev => prev && prev._id === student._id ? { ...prev, status: newStatus } : prev);
       if (viewedProfileStudent && viewedProfileStudent._id === student._id) {
         setViewedProfileStudent(prev => ({ ...prev, status: newStatus }));
       }
+      setDrawerSubView('menu');
       setActiveModal(null);
     } catch (err) {
       console.error("Update Status Error:", err);
@@ -299,6 +336,7 @@ function Students() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       showToast("Password reset email sent to student");
+      setDrawerSubView('menu');
       setActiveModal(null);
     } catch (err) {
       console.error("Reset Password Error:", err);
@@ -317,6 +355,7 @@ function Students() {
       });
       showToast("Student account archived successfully");
       fetchStudents();
+      setActionsDrawerOpen(false);
       setActiveModal(null);
       if (userId) {
         navigate("/admin/students");
@@ -330,22 +369,26 @@ function Students() {
   };
 
   const handleManageAiSubscription = async (action) => {
+    const targetStudent = drawerStudent || selectedStudent;
+    if (!targetStudent) return;
     setAiActionLoading(true);
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/admin/students/${selectedStudent._id}/ai-subscription`,
+        `${import.meta.env.VITE_API_URL}/api/admin/students/${targetStudent._id}/ai-subscription`,
         { action, planId: selectedPlanId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       showToast(action === "cancel" ? "AI plan cancelled" : "AI plan subscription updated");
       fetchStudents();
-      if (viewedProfileStudent && viewedProfileStudent._id === selectedStudent._id) {
-        const profRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/students/${selectedStudent._id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+      const profRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/students/${targetStudent._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDrawerStudent(profRes.data);
+      if (viewedProfileStudent && viewedProfileStudent._id === targetStudent._id) {
         setViewedProfileStudent(profRes.data);
       }
+      setDrawerSubView('menu');
       setActiveModal(null);
     } catch (e) {
       console.error("Manage AI error:", e);
@@ -548,69 +591,14 @@ function Students() {
                     <ArrowLeft size={16} /> Back to Students
                   </button>
 
-                  <div style={{ position: 'relative' }}>
+                  <div>
                     <button 
-                      onClick={() => setProfileActionsOpen(!profileActionsOpen)}
+                      onClick={() => openActionsDrawer(viewedProfileStudent, 'menu')}
                       className="create-quiz-pill-btn"
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 16px', cursor: 'pointer' }}
                     >
-                      Student Actions <ChevronDown size={14} />
+                      Student Actions <ChevronRight size={14} />
                     </button>
-
-                    {profileActionsOpen && (
-                      <>
-                        <div 
-                          onClick={() => setProfileActionsOpen(false)}
-                          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: 'transparent' }}
-                        />
-                        <div style={{
-                          position: 'absolute', right: 0, top: '40px', backgroundColor: 'var(--bg-card)',
-                          border: '1.5px solid var(--border-color)', borderRadius: '10px', padding: '6px 0',
-                          minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', zIndex: 100, textAlign: 'left'
-                        }}>
-                          <div 
-                            onClick={() => { setProfileActionsOpen(false); setSelectedStudent(viewedProfileStudent); setSelectedPlanId(""); fetchAiPlans(); setActiveModal('ai_plan'); }}
-                            style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            <Sparkles size={15} color="var(--primary)" /> Manage AI Plan
-                          </div>
-                          <div 
-                            onClick={() => { setProfileActionsOpen(false); handleToggleStatus(viewedProfileStudent); }}
-                            style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            {(viewedProfileStudent.status || 'Active') === 'Active' ? <><UserMinus size={15} /> Suspend Student</> : <><UserCheck size={15} /> Activate Student</>}
-                          </div>
-                          <div 
-                            onClick={() => { setProfileActionsOpen(false); handleResetPassword(viewedProfileStudent); }}
-                            style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            <Key size={15} /> Reset Password
-                          </div>
-                          <div 
-                            onClick={() => { setProfileActionsOpen(false); setTicketsModalOpen(true); }}
-                            style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--option-hover)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            <Ticket size={15} color="#3b82f6" /> Support Tickets ({userTickets.length})
-                          </div>
-                          <div 
-                            onClick={() => { setProfileActionsOpen(false); handleSoftDelete(viewedProfileStudent); }}
-                            style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '12.5px', fontWeight: '600', color: '#ef4444', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            <Trash2 size={15} /> Archive Student
-                          </div>
-                        </div>
-                      </>
-                    )}
                   </div>
                 </div>
 
@@ -1110,69 +1098,14 @@ function Students() {
                                 </button>
                               </div>
                             ) : (
-                              <div style={{ position: 'relative', display: 'inline-block' }}>
-                                <button 
-                                  onClick={(e) => toggleActionDropdown(e, s._id)}
-                                  className="action-dots-btn"
-                                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '6px', color: 'var(--text-secondary)' }}
-                                >
-                                  •••
-                                </button>
-
-                                {activeDropdown === s._id && (
-                                  <>
-                                    <div 
-                                      onClick={() => setActiveDropdown(null)}
-                                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998, background: 'transparent' }}
-                                    />
-                                    <div style={{
-                                      position: 'fixed',
-                                      top: dropdownPos.top != null ? `${dropdownPos.top}px` : 'auto',
-                                      bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : 'auto',
-                                      right: `${dropdownPos.right}px`,
-                                      backgroundColor: 'var(--bg-card)',
-                                      border: '1.5px solid var(--border-color)',
-                                      borderRadius: '10px',
-                                      padding: '6px 0',
-                                      minWidth: '170px',
-                                      boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-                                      zIndex: 9999,
-                                      textAlign: 'left'
-                                    }}>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); navigate("/admin/students/" + s._id); }}
-                                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                      >
-                                        <User size={14} /> View Profile
-                                      </div>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); setSelectedStudent(s); setSelectedPlanId(""); fetchAiPlans(); setActiveModal('ai_plan'); }}
-                                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                      >
-                                        <Sparkles size={14} color="var(--primary)" /> Manage AI Plan
-                                      </div>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handleToggleStatus(s); }}
-                                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                      >
-                                        {isActive ? <><UserMinus size={14} /> Suspend</> : <><UserCheck size={14} /> Activate</>}
-                                      </div>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handleResetPassword(s); }}
-                                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                      >
-                                        <Key size={14} /> Reset Password
-                                      </div>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handleSoftDelete(s); }}
-                                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#ef4444', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                      >
-                                        <Trash2 size={14} /> Archive Student
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                              <button 
+                                onClick={() => openActionsDrawer(s, 'menu')}
+                                className="action-dots-btn"
+                                title="Manage Actions"
+                                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '6px', color: 'var(--text-secondary)' }}
+                              >
+                                •••
+                              </button>
                             )}
                           </td>
                         </tr>
@@ -1421,7 +1354,438 @@ function Students() {
             </div>
           )}
 
-          {/* AI Plan Modal */}
+          {/* ================= MANAGE ACTIONS LEFT SIDEBAR / DRAWER ================= */}
+          {actionsDrawerOpen && drawerStudent && (
+            <div 
+              className="actions-drawer-overlay"
+              onClick={() => setActionsDrawerOpen(false)}
+            >
+              <div 
+                className="actions-drawer-panel"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Drawer Header */}
+                <div className="actions-drawer-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {drawerSubView !== 'menu' && (
+                      <button 
+                        onClick={() => setDrawerSubView('menu')}
+                        className="actions-back-btn"
+                      >
+                        <ArrowLeft size={14} /> Back
+                      </button>
+                    )}
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                      {drawerSubView === 'menu' && "Student Actions"}
+                      {drawerSubView === 'ai_plan' && "Manage AI Plan"}
+                      {drawerSubView === 'tickets' && `Support Tickets (${drawerTickets.length})`}
+                      {drawerSubView === 'suspend' && ((drawerStudent.status || 'Active') === 'Active' ? "Suspend Student" : "Activate Student")}
+                      {drawerSubView === 'reset' && "Reset Password"}
+                      {drawerSubView === 'archive' && "Archive Student"}
+                    </h3>
+                  </div>
+                  <button 
+                    onClick={() => setActionsDrawerOpen(false)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Target Student Mini-Profile Card */}
+                <div style={{ padding: '16px 20px 0 20px' }}>
+                  <div className="actions-drawer-user-card">
+                    {drawerStudent.avatar || drawerStudent.profilePhoto ? (
+                      <img 
+                        src={drawerStudent.avatar || drawerStudent.profilePhoto} 
+                        alt={drawerStudent.fullName} 
+                        style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }}
+                      />
+                    ) : (
+                      <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontWeight: '700', fontSize: '18px', flexShrink: 0 }}>
+                        {drawerStudent.fullName?.charAt(0)?.toUpperCase() || 'S'}
+                      </div>
+                    )}
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {drawerStudent.fullName}
+                        </span>
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: '700', 
+                          padding: '2px 8px', 
+                          borderRadius: '100px', 
+                          background: (drawerStudent.status || 'Active') === 'Active' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                          color: (drawerStudent.status || 'Active') === 'Active' ? '#10b981' : '#ef4444' 
+                        }}>
+                          {drawerStudent.status || 'Active'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {drawerStudent.email || 'No email provided'}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                        <span style={{ 
+                          fontSize: '10.5px', 
+                          fontWeight: '700', 
+                          padding: '2px 8px', 
+                          borderRadius: '6px', 
+                          background: drawerStudent.isPremium ? 'rgba(124, 58, 237, 0.12)' : 'rgba(107, 114, 128, 0.12)',
+                          color: drawerStudent.isPremium ? 'var(--primary)' : 'var(--text-muted)'
+                        }}>
+                          <Sparkles size={11} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
+                          {drawerStudent.isPremium ? (typeof drawerStudent.activePlan === 'object' ? drawerStudent.activePlan.name : 'Premium Active') : 'Free Tier'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Drawer Body */}
+                <div className="actions-drawer-body">
+                  {drawerSubView === 'menu' && (
+                    <div className="actions-menu-list">
+                      {/* View Profile */}
+                      <div 
+                        className="actions-menu-item"
+                        onClick={() => { setActionsDrawerOpen(false); navigate("/admin/students/" + drawerStudent._id); }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                            <User size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>View Full Profile</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Attempt history, score analytics & purchased tests</div>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-muted)" />
+                      </div>
+
+                      {/* Manage AI Plan */}
+                      <div 
+                        className="actions-menu-item"
+                        onClick={() => { setSelectedStudent(drawerStudent); setSelectedPlanId(""); fetchAiPlans(); setDrawerSubView('ai_plan'); }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(124, 58, 237, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                            <Sparkles size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>Manage AI Plan</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Grant tier, upgrade plan, or cancel access</div>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-muted)" />
+                      </div>
+
+                      {/* Support Tickets */}
+                      <div 
+                        className="actions-menu-item"
+                        onClick={() => setDrawerSubView('tickets')}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                            <Ticket size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>Support Tickets</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>{drawerTickets.length} total tickets raised</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '100px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}>
+                            {drawerTickets.length}
+                          </span>
+                          <ChevronRight size={16} color="var(--text-muted)" />
+                        </div>
+                      </div>
+
+                      {/* Suspend / Activate Student */}
+                      <div 
+                        className="actions-menu-item"
+                        onClick={() => setDrawerSubView('suspend')}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: (drawerStudent.status || 'Active') === 'Active' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: (drawerStudent.status || 'Active') === 'Active' ? '#ef4444' : '#10b981' }}>
+                            {(drawerStudent.status || 'Active') === 'Active' ? <UserMinus size={18} /> : <UserCheck size={18} />}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                              {(drawerStudent.status || 'Active') === 'Active' ? 'Suspend Student' : 'Activate Student'}
+                            </div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                              {(drawerStudent.status || 'Active') === 'Active' ? 'Temporarily lock account login' : 'Restore full account access'}
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-muted)" />
+                      </div>
+
+                      {/* Reset Password */}
+                      <div 
+                        className="actions-menu-item"
+                        onClick={() => setDrawerSubView('reset')}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(234, 179, 8, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#eab308' }}>
+                            <Key size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>Reset Password</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Send secure reset email link</div>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-muted)" />
+                      </div>
+
+                      {/* Archive Student */}
+                      <div 
+                        className="actions-menu-item danger"
+                        onClick={() => setDrawerSubView('archive')}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
+                            <Trash2 size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: '#ef4444' }}>Archive Student</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Move account to recycle bin</div>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-muted)" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: AI PLAN */}
+                  {drawerSubView === 'ai_plan' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ padding: '14px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Current Status:</span>
+                          <strong style={{ 
+                            padding: '2px 10px',
+                            borderRadius: '100px',
+                            fontSize: '12px',
+                            background: drawerStudent.isPremium ? 'rgba(16, 185, 129, 0.12)' : 'rgba(107, 114, 128, 0.12)',
+                            color: drawerStudent.isPremium ? '#10b981' : 'var(--text-muted)'
+                          }}>
+                            {drawerStudent.isPremium ? 'Premium Active' : 'Free Tier'}
+                          </strong>
+                        </div>
+                        {drawerStudent.activePlan && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Active Plan:</span>
+                            <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                              {typeof drawerStudent.activePlan === 'object' ? drawerStudent.activePlan.name : 'Subscribed'}
+                            </span>
+                          </div>
+                        )}
+                        {drawerStudent.premiumExpiresAt && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Expires:</span>
+                            <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                              {new Date(drawerStudent.premiumExpiresAt).toLocaleDateString('en-GB')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>
+                          Assign or Upgrade Plan
+                        </label>
+                        {aiPlansLoading ? (
+                          <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', padding: '10px' }}>Loading plans...</div>
+                        ) : (
+                          <select 
+                            value={selectedPlanId}
+                            onChange={(e) => setSelectedPlanId(e.target.value)}
+                            style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
+                          >
+                            <option value="">-- Choose AI Plan --</option>
+                            {aiPlans.map(p => (
+                              <option key={p._id} value={p._id}>
+                                {p.name} — {p.sellingPrice ? `₹${p.sellingPrice}` : 'Free'} ({p.durationValue} {p.durationUnit})
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                        <button 
+                          onClick={() => handleManageAiSubscription('upgrade')} 
+                          disabled={!selectedPlanId || aiActionLoading}
+                          className="create-quiz-pill-btn" 
+                          style={{ padding: '11px', width: '100%', fontSize: '13px', opacity: (!selectedPlanId || aiActionLoading) ? 0.6 : 1 }}
+                        >
+                          {aiActionLoading ? "Updating..." : "Grant / Upgrade Plan"}
+                        </button>
+                        {drawerStudent.isPremium && (
+                          <button 
+                            onClick={() => handleManageAiSubscription('cancel')} 
+                            disabled={aiActionLoading}
+                            style={{ padding: '11px', borderRadius: '10px', border: '1px solid #ef4444', background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '13px', fontWeight: '600', cursor: 'pointer', width: '100%' }}
+                          >
+                            {aiActionLoading ? "Processing..." : "Cancel Current Subscription"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: TICKETS */}
+                  {drawerSubView === 'tickets' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {drawerTicketsLoading ? (
+                        <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>Loading tickets...</div>
+                      ) : drawerTickets.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
+                          <Ticket size={36} style={{ marginBottom: '10px', opacity: 0.5 }} />
+                          <p style={{ margin: 0, fontSize: '13px' }}>No support tickets raised by this student.</p>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {drawerTickets.map((t) => (
+                            <div key={t._id} style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <span style={{ fontWeight: '700', fontSize: '13px', color: 'var(--text-primary)' }}>{t.subject || 'No Subject'}</span>
+                                <span style={{ 
+                                  fontSize: '11px', 
+                                  fontWeight: '700', 
+                                  padding: '2px 8px', 
+                                  borderRadius: '100px',
+                                  background: t.status === 'Resolved' ? 'rgba(16, 185, 129, 0.12)' : t.status === 'In Progress' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(59, 130, 246, 0.12)',
+                                  color: t.status === 'Resolved' ? '#10b981' : t.status === 'In Progress' ? '#f59e0b' : '#3b82f6'
+                                }}>
+                                  {t.status || 'Open'}
+                                </span>
+                              </div>
+                              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                {t.message || t.description || 'No description provided.'}
+                              </p>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--text-muted)', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span>Priority: <strong style={{ color: t.priority === 'High' ? '#ef4444' : 'var(--text-primary)' }}>{t.priority || 'Medium'}</strong></span>
+                                <span>{t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-GB') : ''}</span>
+                              </div>
+                            </div>
+                          ))}
+                          <button 
+                            onClick={() => { setActionsDrawerOpen(false); navigate('/admin/tickets'); }}
+                            style={{ marginTop: '8px', padding: '10px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.25)', color: '#3b82f6', borderRadius: '8px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                          >
+                            <ExternalLink size={14} /> View in Support Tickets Hub
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: SUSPEND CONFIRMATION */}
+                  {drawerSubView === 'suspend' && (
+                    <div style={{ padding: '20px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'center' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: (drawerStudent.status || 'Active') === 'Active' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)', color: (drawerStudent.status || 'Active') === 'Active' ? '#ef4444' : '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                        {(drawerStudent.status || 'Active') === 'Active' ? <UserMinus size={24} /> : <UserCheck size={24} />}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                          {(drawerStudent.status || 'Active') === 'Active' ? 'Suspend Student Account?' : 'Activate Student Account?'}
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                          {(drawerStudent.status || 'Active') === 'Active' 
+                            ? `Suspending ${drawerStudent.fullName} will temporarily block them from logging in and taking assessments.`
+                            : `Activating ${drawerStudent.fullName} will immediately restore their account access and test privileges.`}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                        <button 
+                          onClick={() => setDrawerSubView('menu')}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => handleToggleStatus(drawerStudent)}
+                          disabled={actionLoading}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: (drawerStudent.status || 'Active') === 'Active' ? '#ef4444' : '#10b981', color: '#ffffff', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          {actionLoading ? "Processing..." : ((drawerStudent.status || 'Active') === 'Active' ? "Confirm Suspend" : "Confirm Activate")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: RESET PASSWORD CONFIRMATION */}
+                  {drawerSubView === 'reset' && (
+                    <div style={{ padding: '20px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'center' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(234, 179, 8, 0.12)', color: '#eab308', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                        <Key size={24} />
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                          Send Password Reset Link?
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                          A secure password reset email will be dispatched to <strong>{drawerStudent.email}</strong> allowing the student to set a new password.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                        <button 
+                          onClick={() => setDrawerSubView('menu')}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => handleResetPassword(drawerStudent)}
+                          disabled={actionLoading}
+                          className="create-quiz-pill-btn"
+                          style={{ flex: 1, padding: '10px', fontSize: '13px' }}
+                        >
+                          {actionLoading ? "Sending..." : "Send Reset Link"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: ARCHIVE CONFIRMATION */}
+                  {drawerSubView === 'archive' && (
+                    <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.03)', border: '1.5px solid rgba(239, 68, 68, 0.25)', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'center' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                        <Trash2 size={24} />
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700', color: '#ef4444' }}>
+                          Archive Student Account?
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                          This will archive <strong>{drawerStudent.fullName}</strong> and move them to the recycle bin. Their test records will be preserved and can be restored anytime.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                        <button 
+                          onClick={() => setDrawerSubView('menu')}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => handleSoftDelete(drawerStudent)}
+                          disabled={actionLoading}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#ef4444', color: '#ffffff', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          {actionLoading ? "Archiving..." : "Archive Account"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           {activeModal === 'ai_plan' && selectedStudent && (
             <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
               <div style={{ backgroundColor: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '460px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.35)', position: 'relative' }}>

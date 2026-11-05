@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   X, User, ShieldCheck, Clock, Phone, AlertTriangle, Edit,
   UserMinus, UserCheck, Key, Trash2, ArrowLeft, Calendar,
-  Mail, Shield, ChevronDown, Search, CheckCircle, Lock
+  Mail, Shield, ChevronDown, ChevronRight, MoreVertical, Search, CheckCircle, Lock
 } from 'lucide-react';
 
 const STAFF_PANEL_PERMISSIONS = [
@@ -36,6 +36,21 @@ function Staff() {
   const [viewTab, setViewTab] = useState("active"); // "active" or "archived"
   const [departments, setDepartments] = useState([]);
   
+  // Left Sidebar Manage Actions Drawer State
+  const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
+  const [drawerStaff, setDrawerStaff] = useState(null);
+  const [drawerSubView, setDrawerSubView] = useState('menu'); // 'menu' | 'edit' | 'suspend' | 'reset' | 'archive'
+
+  const openActionsDrawer = (staff, initialSubView = 'menu') => {
+    if (!staff) return;
+    setDrawerStaff(staff);
+    setDrawerSubView(initialSubView);
+    setActionsDrawerOpen(true);
+    if (initialSubView === 'edit') {
+      handleOpenEdit(staff);
+    }
+  };
+
   // Modals & Drawers
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: null, bottom: null, right: 0 });
@@ -221,6 +236,8 @@ function Staff() {
       setIsEditModalOpen(false);
       setSelectedStaff(null);
       fetchStaff();
+      setDrawerStaff(prev => prev ? { ...prev, ...editForm } : prev);
+      setDrawerSubView('menu');
     } catch (err) {
       console.error("Update Staff Error:", err);
       showToast(err.response?.data?.message || "Failed to update staff account", "error");
@@ -245,6 +262,8 @@ function Staff() {
       );
       showToast(`Staff status updated to ${newStatus}`);
       fetchStaff();
+      setDrawerStaff(prev => prev && prev._id === staff._id ? { ...prev, status: newStatus } : prev);
+      setDrawerSubView('menu');
     } catch (err) {
       console.error("Toggle Status Error:", err);
       showToast(err.response?.data?.message || "Failed to update status", "error");
@@ -263,6 +282,7 @@ function Staff() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       showToast("Staff password reset email sent successfully");
+      setDrawerSubView('menu');
     } catch (err) {
       console.error("Reset Password Error:", err);
       showToast(err.response?.data?.message || "Failed to reset password", "error");
@@ -284,6 +304,7 @@ function Staff() {
       });
       showToast("Staff account archived successfully");
       fetchStaff();
+      setActionsDrawerOpen(false);
     } catch (err) {
       console.error("Archive Staff Error:", err);
       showToast(err.response?.data?.message || "Failed to archive staff", "error");
@@ -638,68 +659,14 @@ function Staff() {
                                 )}
                               </div>
                             ) : (
-                              <div style={{ position: 'relative', display: 'inline-block' }}>
-                                <button 
-                                  onClick={(e) => toggleActionDropdown(e, s._id)}
-                                  className="action-dots-btn"
-                                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '6px', color: 'var(--text-secondary)' }}
-                                >
-                                  •••
-                                </button>
-
-                                {activeDropdown === s._id && (
-                                  <>
-                                    <div 
-                                      onClick={() => setActiveDropdown(null)}
-                                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998, background: 'transparent' }}
-                                    />
-                                    <div style={{
-                                      position: 'fixed',
-                                      top: dropdownPos.top != null ? `${dropdownPos.top}px` : 'auto',
-                                      bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : 'auto',
-                                      right: `${dropdownPos.right}px`,
-                                      backgroundColor: 'var(--bg-card)',
-                                      border: '1.5px solid var(--border-color)',
-                                      borderRadius: '10px',
-                                      padding: '6px 0',
-                                      minWidth: '175px',
-                                      boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-                                      zIndex: 9999,
-                                      textAlign: 'left'
-                                    }}>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handleOpenEdit(s); }}
-                                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                      >
-                                        <Edit size={14} /> Edit Admin & Roles
-                                      </div>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handleResetPassword(s); }}
-                                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                      >
-                                        <Key size={14} /> Reset Password
-                                      </div>
-
-                                      {!isSelf && (
-                                        <>
-                                          <div 
-                                            onClick={() => { setActiveDropdown(null); handleToggleStatus(s); }}
-                                            style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                          >
-                                            {isActive ? <><UserMinus size={14} /> Suspend Admin</> : <><UserCheck size={14} /> Activate Admin</>}
-                                          </div>
-                                          <div 
-                                            onClick={() => { setActiveDropdown(null); handleSoftDelete(s); }}
-                                            style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#ef4444', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                          >
-                                            <Trash2 size={14} /> Archive Admin
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                              <button 
+                                onClick={() => openActionsDrawer(s, 'menu')}
+                                className="action-dots-btn"
+                                title="Manage Actions"
+                                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '6px', color: 'var(--text-secondary)' }}
+                              >
+                                •••
+                              </button>
                             )}
                           </td>
                         </tr>
@@ -938,6 +905,375 @@ function Staff() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* ================= MANAGE ACTIONS LEFT SIDEBAR / DRAWER (ADMINS) ================= */}
+          {actionsDrawerOpen && drawerStaff && (
+            <div 
+              className="actions-drawer-overlay"
+              onClick={() => setActionsDrawerOpen(false)}
+            >
+              <div 
+                className="actions-drawer-panel"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Drawer Header */}
+                <div className="actions-drawer-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {drawerSubView !== 'menu' && (
+                      <button 
+                        onClick={() => setDrawerSubView('menu')}
+                        className="actions-back-btn"
+                      >
+                        <ArrowLeft size={14} /> Back
+                      </button>
+                    )}
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                      {drawerSubView === 'menu' && "Admin Actions"}
+                      {drawerSubView === 'edit' && "Edit Admin & Roles"}
+                      {drawerSubView === 'suspend' && ((drawerStaff.status || 'Active') === 'Active' ? "Suspend Admin" : "Activate Admin")}
+                      {drawerSubView === 'reset' && "Reset Password"}
+                      {drawerSubView === 'archive' && "Archive Admin"}
+                    </h3>
+                  </div>
+                  <button 
+                    onClick={() => setActionsDrawerOpen(false)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Target Admin Mini-Profile Card */}
+                <div style={{ padding: '16px 20px 0 20px' }}>
+                  <div className="actions-drawer-user-card">
+                    <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontWeight: '700', fontSize: '18px', flexShrink: 0 }}>
+                      {drawerStaff.fullName?.charAt(0)?.toUpperCase() || 'A'}
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {drawerStaff.fullName}
+                        </span>
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: '700', 
+                          padding: '2px 8px', 
+                          borderRadius: '100px', 
+                          background: (drawerStaff.status || 'Active') === 'Active' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                          color: (drawerStaff.status || 'Active') === 'Active' ? '#10b981' : '#ef4444' 
+                        }}>
+                          {drawerStaff.status || 'Active'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {drawerStaff.email || 'No email provided'}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                        <span style={{ 
+                          fontSize: '10.5px', 
+                          fontWeight: '700', 
+                          padding: '2px 8px', 
+                          borderRadius: '6px', 
+                          background: 'rgba(124, 58, 237, 0.12)',
+                          color: 'var(--primary)'
+                        }}>
+                          <Shield size={11} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
+                          {drawerStaff.role === 'superadmin' ? 'Super Admin' : (drawerStaff.role?.toUpperCase() || 'ADMIN')}
+                        </span>
+                        {drawerStaff.department && (
+                          <span style={{ 
+                            fontSize: '10.5px', 
+                            fontWeight: '600', 
+                            padding: '2px 8px', 
+                            borderRadius: '6px', 
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            color: 'var(--text-secondary)'
+                          }}>
+                            {drawerStaff.department}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Drawer Body */}
+                <div className="actions-drawer-body">
+                  {drawerSubView === 'menu' && (
+                    <div className="actions-menu-list">
+                      {/* Edit Admin & Roles */}
+                      <div 
+                        className="actions-menu-item"
+                        onClick={() => { handleOpenEdit(drawerStaff); setDrawerSubView('edit'); }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(124, 58, 237, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                            <Edit size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>Edit Admin & Roles</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Department, panel permissions & authority</div>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-muted)" />
+                      </div>
+
+                      {/* Reset Password */}
+                      <div 
+                        className="actions-menu-item"
+                        onClick={() => setDrawerSubView('reset')}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(234, 179, 8, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#eab308' }}>
+                            <Key size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>Reset Password</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Send secure reset email link</div>
+                          </div>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-muted)" />
+                      </div>
+
+                      {/* Suspend / Activate Admin (if not self) */}
+                      {currentUserId !== drawerStaff._id && (
+                        <div 
+                          className="actions-menu-item"
+                          onClick={() => setDrawerSubView('suspend')}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: (drawerStaff.status || 'Active') === 'Active' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: (drawerStaff.status || 'Active') === 'Active' ? '#ef4444' : '#10b981' }}>
+                              {(drawerStaff.status || 'Active') === 'Active' ? <UserMinus size={18} /> : <UserCheck size={18} />}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                                {(drawerStaff.status || 'Active') === 'Active' ? 'Suspend Admin' : 'Activate Admin'}
+                              </div>
+                              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                                {(drawerStaff.status || 'Active') === 'Active' ? 'Block dashboard login access' : 'Restore dashboard login access'}
+                              </div>
+                            </div>
+                          </div>
+                          <ChevronRight size={16} color="var(--text-muted)" />
+                        </div>
+                      )}
+
+                      {/* Archive Admin (if not self) */}
+                      {currentUserId !== drawerStaff._id && (
+                        <div 
+                          className="actions-menu-item danger"
+                          onClick={() => setDrawerSubView('archive')}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
+                              <Trash2 size={18} />
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color: '#ef4444' }}>Archive Admin</div>
+                              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Move admin account to archive</div>
+                            </div>
+                          </div>
+                          <ChevronRight size={16} color="var(--text-muted)" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: EDIT ADMIN */}
+                  {drawerSubView === 'edit' && (
+                    <form onSubmit={handleUpdateStaff} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Full Name</label>
+                        <input 
+                          type="text" required
+                          value={editForm.fullName}
+                          onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Email Address</label>
+                        <input 
+                          type="email" required
+                          value={editForm.email}
+                          onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                          style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
+                        />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div>
+                          <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Role</label>
+                          <select 
+                            value={editForm.role}
+                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
+                          >
+                            <option value="employee">Employee</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                            {currentUserRole === 'superadmin' && (
+                              <option value="superadmin">Super Admin</option>
+                            )}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Department</label>
+                          <select 
+                            value={editForm.department}
+                            onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-input, #1B1B32)', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
+                          >
+                            <option value="">No Department Assigned</option>
+                            {departments.map(d => (
+                              <option key={d._id} value={d.name}>{d.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {editForm.role !== 'superadmin' && (
+                        <div>
+                          <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>
+                            Dashboard Panel Privileges
+                          </label>
+                          <div style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-input, #1B1B32)' }}>
+                            {STAFF_PANEL_PERMISSIONS.map(p => (
+                              <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                                <input 
+                                  type="checkbox"
+                                  checked={editForm.permissions.includes(p.key)}
+                                  onChange={() => togglePermission('edit', p.key)}
+                                />
+                                {p.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => setDrawerSubView('menu')}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          type="submit" disabled={actionLoading}
+                          className="create-quiz-pill-btn"
+                          style={{ flex: 1, padding: '10px', fontSize: '13px' }}
+                        >
+                          {actionLoading ? "Updating..." : "Save Changes"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* SUBVIEW: SUSPEND CONFIRMATION */}
+                  {drawerSubView === 'suspend' && (
+                    <div style={{ padding: '20px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'center' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: (drawerStaff.status || 'Active') === 'Active' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)', color: (drawerStaff.status || 'Active') === 'Active' ? '#ef4444' : '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                        {(drawerStaff.status || 'Active') === 'Active' ? <UserMinus size={24} /> : <UserCheck size={24} />}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                          {(drawerStaff.status || 'Active') === 'Active' ? 'Suspend Admin Account?' : 'Activate Admin Account?'}
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                          {(drawerStaff.status || 'Active') === 'Active' 
+                            ? `Suspending ${drawerStaff.fullName} will immediately block them from logging in to the admin dashboard.`
+                            : `Activating ${drawerStaff.fullName} will restore their login and administrative permissions.`}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                        <button 
+                          onClick={() => setDrawerSubView('menu')}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => handleToggleStatus(drawerStaff)}
+                          disabled={actionLoading}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: (drawerStaff.status || 'Active') === 'Active' ? '#ef4444' : '#10b981', color: '#ffffff', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          {actionLoading ? "Processing..." : ((drawerStaff.status || 'Active') === 'Active' ? "Confirm Suspend" : "Confirm Activate")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: RESET PASSWORD CONFIRMATION */}
+                  {drawerSubView === 'reset' && (
+                    <div style={{ padding: '20px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-color)', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'center' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(234, 179, 8, 0.12)', color: '#eab308', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                        <Key size={24} />
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                          Send Password Reset Email?
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                          A secure password reset email will be sent to <strong>{drawerStaff.email}</strong>.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                        <button 
+                          onClick={() => setDrawerSubView('menu')}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => handleResetPassword(drawerStaff)}
+                          disabled={actionLoading}
+                          className="create-quiz-pill-btn"
+                          style={{ flex: 1, padding: '10px', fontSize: '13px' }}
+                        >
+                          {actionLoading ? "Sending..." : "Send Reset Link"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBVIEW: ARCHIVE CONFIRMATION */}
+                  {drawerSubView === 'archive' && (
+                    <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.03)', border: '1.5px solid rgba(239, 68, 68, 0.25)', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'center' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                        <Trash2 size={24} />
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700', color: '#ef4444' }}>
+                          Archive Admin Account?
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                          This will archive <strong>{drawerStaff.fullName}</strong>. They will no longer have access to the dashboard unless restored by a Super Admin.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                        <button 
+                          onClick={() => setDrawerSubView('menu')}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => handleSoftDelete(drawerStaff)}
+                          disabled={actionLoading}
+                          style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#ef4444', color: '#ffffff', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          {actionLoading ? "Archiving..." : "Archive Account"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
