@@ -24,9 +24,9 @@ const PANEL_PERMISSIONS = [
   { key: "manage_roles",          label: "Roles & Permissions" }
 ];
 
-const COLORS = ["var(--primary)", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
+const COLORS = ["#7C3AED", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];
 
-const EMPTY_FORM = { name: "", description: "", permissions: [], color: "var(--primary)", slackChannelId: "", slackNotificationsPaused: false };
+const EMPTY_FORM = { name: "", description: "", permissions: [], color: "#7C3AED", slackChannelId: "", slackNotificationsPaused: false };
 
 function RolesPermissions() {
   const [departments, setDepartments] = useState([]);
@@ -67,7 +67,7 @@ function RolesPermissions() {
       name: dept.name,
       description: dept.description || "",
       permissions: [...(dept.permissions || [])],
-      color: dept.color || "var(--primary)",
+      color: dept.color || "#7C3AED",
       slackChannelId: dept.slackChannelId || "",
       slackNotificationsPaused: dept.slackNotificationsPaused || false
     });
@@ -260,12 +260,33 @@ function RolesPermissions() {
                 />
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: "500" }}>Pause Notifications</span>
+                  <span style={{ fontSize: "13px", color: form.slackNotificationsPaused ? "#EF4444" : "var(--text-secondary)", fontWeight: form.slackNotificationsPaused ? "600" : "500" }}>Pause Notifications</span>
                   <div 
                     onClick={() => setForm({ ...form, slackNotificationsPaused: !form.slackNotificationsPaused })} 
-                    style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.slackNotificationsPaused ? "#EF4444" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+                    style={{ 
+                      width: "42px", 
+                      height: "24px", 
+                      borderRadius: "12px", 
+                      background: form.slackNotificationsPaused ? "#EF4444" : "var(--bg-input, rgba(255, 255, 255, 0.1))", 
+                      border: form.slackNotificationsPaused ? "1px solid #EF4444" : "1.5px solid var(--border-color)",
+                      cursor: "pointer", 
+                      position: "relative", 
+                      transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)", 
+                      flexShrink: 0,
+                      boxShadow: form.slackNotificationsPaused ? "0 2px 8px rgba(239, 68, 68, 0.4)" : "inset 0 1px 2px rgba(0,0,0,0.2)"
+                    }}
                   >
-                    <div style={{ position: "absolute", top: "2px", left: form.slackNotificationsPaused ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+                    <div style={{ 
+                      position: "absolute", 
+                      top: "2px", 
+                      left: form.slackNotificationsPaused ? "20px" : "2px", 
+                      width: "18px", 
+                      height: "18px", 
+                      borderRadius: "50%", 
+                      background: "#ffffff", 
+                      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.35)", 
+                      transition: "left 0.22s cubic-bezier(0.4, 0, 0.2, 1)" 
+                    }} />
                   </div>
                 </div>
               </div>
@@ -273,24 +294,104 @@ function RolesPermissions() {
               {/* Accent Color */}
               <label style={labelStyle}>Accent Color</label>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "24px" }}>
-                {COLORS.map(c => (
-                  <button key={c} onClick={() => setForm(f => ({ ...f, color: c }))} style={{ width: "32px", height: "32px", borderRadius: "50%", background: c, border: form.color === c ? "3px solid #fff" : "3px solid transparent", cursor: "pointer", outline: form.color === c ? `2px solid ${c}` : "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {form.color === c && <Check size={14} color="#fff" />}
-                  </button>
-                ))}
+                {COLORS.map(c => {
+                  const isSelected = form.color === c || (c === "#7C3AED" && (!form.color || form.color === "var(--primary)"));
+                  return (
+                    <button 
+                      key={c} 
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, color: c }))} 
+                      style={{ 
+                        width: "32px", 
+                        height: "32px", 
+                        borderRadius: "50%", 
+                        background: c, 
+                        border: isSelected ? "3px solid var(--bg-card, #131326)" : "3px solid transparent", 
+                        cursor: "pointer", 
+                        outline: isSelected ? `2px solid ${c}` : "none", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        boxShadow: isSelected ? `0 0 12px ${c}66` : "none",
+                        transition: "all 0.15s ease"
+                      }}
+                    >
+                      {isSelected && <Check size={14} color="#ffffff" strokeWidth={3} />}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Dashboard Panels */}
               <label style={labelStyle}>Dashboard Panels</label>
-              <div style={{ border: "1px solid var(--border-color)", borderRadius: "10px", overflow: "hidden" }}>
-                {PANEL_PERMISSIONS.map((panel, idx) => (
-                  <div key={panel.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: idx < PANEL_PERMISSIONS.length - 1 ? "1px solid var(--border-color)" : "none", background: "var(--bg-card)" }}>
-                    <span style={{ fontSize: "13px", color: "var(--text-secondary, #94a3b8)", fontWeight: "500" }}>{panel.label}</span>
-                    <div onClick={() => togglePermission(panel.key)} style={{ width: "36px", height: "20px", borderRadius: "10px", background: form.permissions.includes(panel.key) ? "var(--primary)" : "var(--border-color)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                      <div style={{ position: "absolute", top: "2px", left: form.permissions.includes(panel.key) ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+              <div style={{ border: "1.5px solid var(--border-color)", borderRadius: "12px", overflow: "hidden", background: "var(--bg-card)" }}>
+                {PANEL_PERMISSIONS.map((panel, idx) => {
+                  const isChecked = form.permissions.includes(panel.key);
+                  const activeColor = form.color && form.color !== "var(--primary)" && form.color !== "#fff" && form.color !== "#ffffff" 
+                    ? form.color 
+                    : "#7C3AED";
+                  return (
+                    <div 
+                      key={panel.key} 
+                      onClick={() => togglePermission(panel.key)}
+                      style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "space-between", 
+                        padding: "13px 16px", 
+                        borderBottom: idx < PANEL_PERMISSIONS.length - 1 ? "1px solid var(--border-color)" : "none", 
+                        background: isChecked ? "rgba(124, 58, 237, 0.04)" : "transparent",
+                        cursor: "pointer",
+                        transition: "background 0.15s ease"
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isChecked) e.currentTarget.style.backgroundColor = "var(--option-hover, rgba(255,255,255,0.02))";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = isChecked ? "rgba(124, 58, 237, 0.04)" : "transparent";
+                      }}
+                    >
+                      <span style={{ 
+                        fontSize: "13.5px", 
+                        color: isChecked ? "var(--text-primary)" : "var(--text-secondary)", 
+                        fontWeight: isChecked ? "600" : "500",
+                        transition: "color 0.15s ease"
+                      }}>
+                        {panel.label}
+                      </span>
+                      
+                      {/* Modern Toggle Switch */}
+                      <div 
+                        style={{ 
+                          width: "42px", 
+                          height: "24px", 
+                          borderRadius: "12px", 
+                          background: isChecked ? activeColor : "var(--bg-input, rgba(255, 255, 255, 0.1))",
+                          border: isChecked ? `1px solid ${activeColor}` : "1.5px solid var(--border-color)",
+                          cursor: "pointer", 
+                          position: "relative", 
+                          transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)", 
+                          flexShrink: 0,
+                          boxShadow: isChecked ? `0 2px 8px ${activeColor}55` : "inset 0 1px 2px rgba(0,0,0,0.2)"
+                        }}
+                      >
+                        <div 
+                          style={{ 
+                            position: "absolute", 
+                            top: "2px", 
+                            left: isChecked ? "20px" : "2px", 
+                            width: "18px", 
+                            height: "18px", 
+                            borderRadius: "50%", 
+                            background: "#ffffff", 
+                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.35)", 
+                            transition: "left 0.22s cubic-bezier(0.4, 0, 0.2, 1)" 
+                          }} 
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
