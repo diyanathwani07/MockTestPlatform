@@ -900,3 +900,35 @@ html[class*="theme-"].dark .fab-icon-container {
   border-color: rgba(255, 255, 255, 0.22) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55) !important;
 }
+
+/* ==========================================================================
+   PRACTICE & QUIZZES ACTIVE TOGGLE & CREATE ACTION BUTTONS
+   GUARANTEED VISIBILITY & HIGH CONTRAST ACROSS ALL LIGHT & DARK MODES & THEMES
+   ========================================================================== */
+.practice-create-btn {
+  background-color: var(--violet, var(--primary, #6E3FF3)) !important;
+  color: var(--primary-foreground, #ffffff) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+}
+
+.practice-create-btn svg {
+  stroke: var(--primary-foreground, #ffffff) !important;
+  color: var(--primary-foreground, #ffffff) !important;
+}
+
+.practice-toggle-active {
+  background-color: var(--violet, var(--primary, #6E3FF3)) !important;
+  color: var(--primary-foreground, #ffffff) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+}
+
+/* Light mode guarantee: ensure clear border and readable contrast against page backgrounds */
+:root:not(.dark):not(.dark-mode) .practice-create-btn,
+body:not(.dark-mode):not(.dark) .practice-create-btn,
+html:not(.dark):not(.dark-mode) .practice-create-btn,
+:root:not(.dark):not(.dark-mode) .practice-toggle-active,
+body:not(.dark-mode):not(.dark) .practice-toggle-active,
+html:not(.dark):not(.dark-mode) .practice-toggle-active {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+

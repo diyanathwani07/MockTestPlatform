@@ -468,15 +468,16 @@ function ManageQuizzes() {
                 <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                   <button
                     onClick={() => setViewMode("active")}
+                    className={viewMode === "active" ? "practice-toggle-active" : ""}
                     style={{
                       padding: "6px 12px",
                       borderRadius: "6px",
-                      border: "none",
+                      border: "1px solid var(--border-color, transparent)",
                       fontSize: "13px",
                       fontWeight: "600",
                       cursor: "pointer",
                       backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
-                      color: viewMode === "active" ? "var(--primary-foreground)" : "var(--text-secondary)",
+                      color: viewMode === "active" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
                     }}
                   >
                     Active

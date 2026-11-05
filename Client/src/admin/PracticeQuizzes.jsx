@@ -464,15 +464,16 @@ function PracticeQuizzes() {
                 <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                   <button
                     onClick={() => setViewMode("active")}
+                    className={viewMode === "active" ? "practice-toggle-active" : ""}
                     style={{
                       padding: "6px 12px",
                       borderRadius: "6px",
-                      border: "none",
+                      border: "1px solid var(--border-color, transparent)",
                       fontSize: "13px",
                       fontWeight: "600",
                       cursor: "pointer",
                       backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
-                      color: viewMode === "active" ? "#ffffff" : "var(--text-secondary)",
+                      color: viewMode === "active" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
                     }}
                   >
                     Active
@@ -482,7 +483,7 @@ function PracticeQuizzes() {
                     style={{
                       padding: "6px 12px",
                       borderRadius: "6px",
-                      border: "none",
+                      border: "1px solid var(--border-color, transparent)",
                       fontSize: "13px",
                       fontWeight: "600",
                       cursor: "pointer",
@@ -496,22 +497,23 @@ function PracticeQuizzes() {
 
                 <button
                   onClick={() => navigate('/admin/create-practice')}
+                  className="practice-create-btn"
                   style={{
                     padding: "8px 16px",
                     borderRadius: "8px",
                     fontSize: "12.5px",
                     fontWeight: "700",
                     backgroundColor: "var(--violet)",
-                    color: "#ffffff",
-                    border: "none",
+                    color: "var(--primary-foreground, #ffffff)",
+                    border: "1px solid var(--border-color, transparent)",
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "6px",
-                    boxShadow: "0 2px 8px rgba(110, 63, 243, 0.25)"
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)"
                   }}
                 >
-                  <Plus size={15} /> Create Practice Quiz
+                  <Plus size={15} style={{ stroke: "currentColor", strokeWidth: 2.2 }} /> Create Practice Quiz
                 </button>
               </div>
             </div>
