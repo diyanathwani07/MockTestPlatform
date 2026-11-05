@@ -456,7 +456,6 @@ const testVoicePreview = async (req, res) => {
     }
 
     const {
-      sampleText,
       lang,
       voice,
       customPrompt,
@@ -464,14 +463,17 @@ const testVoicePreview = async (req, res) => {
       elevenlabsSettings
     } = req.body;
 
+    const rawSampleText = req.body.sampleText || req.body.text;
+    const forceRefresh = Boolean(req.body.forceRefresh || req.body.refresh || req.body.bypassCache);
+
     // Strict input validation
-    if (!sampleText || typeof sampleText !== "string" || sampleText.trim() === "") {
+    if (!rawSampleText || typeof rawSampleText !== "string" || rawSampleText.trim() === "") {
       return res.status(400).json({
         success: false,
         error: "sampleText is required and cannot be empty."
       });
     }
-    const cleanSampleText = sampleText.trim();
+    const cleanSampleText = rawSampleText.trim();
     if (cleanSampleText.length > 3000) {
       return res.status(400).json({
         success: false,
@@ -522,7 +524,8 @@ const testVoicePreview = async (req, res) => {
         modelId: effectiveModelId,
         stability: effectiveStability,
         similarityBoost: effectiveSimilarity,
-        speed: effectiveSpeed
+        speed: effectiveSpeed,
+        forceRefresh
       });
 
       return res.json({
@@ -531,7 +534,8 @@ const testVoicePreview = async (req, res) => {
         voice: result.voice,
         model: result.model,
         durationSeconds: result.durationSeconds,
-        provider: "elevenlabs"
+        provider: "elevenlabs",
+        cached: Boolean(result.cached)
       });
     }
 
@@ -561,7 +565,8 @@ const testVoicePreview = async (req, res) => {
       sampleText: cleanSampleText,
       lang: lang || "en",
       voice: voice || "Aoede",
-      customPrompt: customPrompt || ""
+      customPrompt: customPrompt || "",
+      forceRefresh
     });
 
     res.json({
@@ -569,7 +574,8 @@ const testVoicePreview = async (req, res) => {
       audioUrl: result.audioUrl,
       voice: result.voice,
       durationSeconds: result.durationSeconds,
-      provider: "gemini"
+      provider: "gemini",
+      cached: Boolean(result.cached)
     });
   } catch (error) {
     console.error("Error testing voice sample:", error.message || error);

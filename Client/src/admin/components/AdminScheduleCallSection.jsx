@@ -115,6 +115,8 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
   const [previewingAudio, setPreviewingAudio] = useState(false);
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [previewAudioUrl, setPreviewAudioUrl] = useState(null);
+  const [cachedAudioKey, setCachedAudioKey] = useState("");
+  const [isAudioCached, setIsAudioCached] = useState(false);
   const audioPlayerRef = useRef(null);
 
   // Scheduled Calls History
@@ -286,8 +288,8 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
     }
   };
 
-  // Preview TTS voice audio
-  const handlePreviewAudio = async () => {
+  // Preview TTS voice audio with persistent caching & instant replay
+  const handlePreviewAudio = async (forceRefresh = false) => {
     if (!reminderAudioText.trim()) return;
 
     if (isPlayingPreview && audioPlayerRef.current) {
@@ -296,32 +298,64 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
       return;
     }
 
+    const sampleText = reminderAudioText
+      .replace(/{studentName}/g, selectedUser ? (selectedUser.fullName || selectedUser.name) : "Student")
+      .replace(/{taskTitle}/g, taskTitle);
+
+    const provider = voiceSettings?.ttsProvider || "gemini";
+    const currentKey = `${provider}|${voice || "Aoede"}|${language}|${sampleText}`;
+
+    // If audio is already loaded in browser for this exact script & voice, replay instantly (0 API calls)
+    if (!forceRefresh && audioPlayerRef.current && cachedAudioKey === currentKey && previewAudioUrl) {
+      try {
+        audioPlayerRef.current.currentTime = 0;
+        audioPlayerRef.current.play();
+        setIsPlayingPreview(true);
+        return;
+      } catch (e) {
+        console.warn("Local replay error, falling back to fetch:", e);
+      }
+    }
+
     try {
       setPreviewingAudio(true);
-      const sampleText = reminderAudioText
-        .replace(/{studentName}/g, selectedUser ? (selectedUser.fullName || selectedUser.name) : "Student")
-        .replace(/{taskTitle}/g, taskTitle);
+      setErrorMsg("");
+
+      const payload = {
+        provider,
+        sampleText,
+        text: sampleText,
+        lang: language === "auto" ? "en" : language,
+        voice: voice || "Aoede",
+        forceRefresh
+      };
+
+      if (provider === "elevenlabs" && voiceSettings?.elevenlabs) {
+        payload.elevenlabsSettings = voiceSettings.elevenlabs;
+        payload.voiceId = voice || voiceSettings.elevenlabs.voiceId;
+      }
 
       const res = await axios.post(
         `${API}/api/voice-settings/preview`,
-        {
-          provider: "gemini",
-          text: sampleText,
-          lang: language === "auto" ? "en" : language,
-          voice: voice || "Aoede"
-        },
+        payload,
         { headers: getAuthHeaders() }
       );
 
       if (res.data?.success && res.data.audioUrl) {
         setPreviewAudioUrl(res.data.audioUrl);
+        setCachedAudioKey(currentKey);
+        setIsAudioCached(Boolean(res.data.cached));
+
         if (audioPlayerRef.current) {
           audioPlayerRef.current.pause();
         }
         const audio = new Audio(res.data.audioUrl);
         audioPlayerRef.current = audio;
         audio.onended = () => setIsPlayingPreview(false);
-        audio.play();
+        audio.onerror = () => setIsPlayingPreview(false);
+        audio.play().catch(e => {
+          console.warn("Auto-play prevented by browser policy:", e);
+        });
         setIsPlayingPreview(true);
       }
     } catch (err) {
@@ -1395,35 +1429,95 @@ export default function AdminScheduleCallSection({ voiceSettings, onSettingsUpda
             </div>
           </div>
 
-          {/* Voice Preview Button */}
+          {/* Voice Preview & Saved Audio Controls */}
           <div>
-            <button
-              type="button"
-              onClick={handlePreviewAudio}
-              disabled={previewingAudio}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 14px",
-                borderRadius: "8px",
-                border: "1px solid var(--border-color)",
-                background: isPlayingPreview ? "rgba(124, 58, 237, 0.15)" : "transparent",
-                color: isPlayingPreview ? "var(--primary)" : "var(--text-secondary)",
-                fontSize: "12.5px",
-                cursor: "pointer",
-                fontWeight: "600"
-              }}
-            >
-              {previewingAudio ? (
-                <RefreshCw size={14} className="animate-spin" />
-              ) : isPlayingPreview ? (
-                <Square size={14} />
-              ) : (
-                <Play size={14} />
-              )}
-              {isPlayingPreview ? "Stop Preview Audio" : "Listen Voice Sample"}
-            </button>
+            {(() => {
+              const currentSampleText = reminderAudioText
+                .replace(/{studentName}/g, selectedUser ? (selectedUser.fullName || selectedUser.name) : "Student")
+                .replace(/{taskTitle}/g, taskTitle);
+              const provider = voiceSettings?.ttsProvider || "gemini";
+              const currentKey = `${provider}|${voice || "Aoede"}|${language}|${currentSampleText}`;
+              const isAudioReady = Boolean(previewAudioUrl && cachedAudioKey === currentKey);
+
+              return (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => handlePreviewAudio(false)}
+                    disabled={previewingAudio}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      border: isPlayingPreview ? "1px solid var(--primary)" : "1px solid var(--border-color)",
+                      background: isPlayingPreview ? "rgba(124, 58, 237, 0.15)" : "transparent",
+                      color: isPlayingPreview ? "var(--primary)" : "var(--text-secondary)",
+                      fontSize: "12.5px",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                      transition: "all 0.15s ease"
+                    }}
+                  >
+                    {previewingAudio ? (
+                      <RefreshCw size={14} className="animate-spin" />
+                    ) : isPlayingPreview ? (
+                      <Square size={14} />
+                    ) : (
+                      <Play size={14} />
+                    )}
+                    {isPlayingPreview ? "Stop Preview Audio" : isAudioReady ? "Play Saved Voice Sample" : "Listen Voice Sample"}
+                  </button>
+
+                  {/* Regenerate fresh audio from AI button */}
+                  {isAudioReady && (
+                    <button
+                      type="button"
+                      onClick={() => handlePreviewAudio(true)}
+                      disabled={previewingAudio}
+                      title="Regenerate fresh audio from AI provider"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid var(--border-color)",
+                        background: "rgba(255, 255, 255, 0.04)",
+                        color: "var(--text-secondary)",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        fontWeight: "500"
+                      }}
+                    >
+                      <RefreshCw size={12} className={previewingAudio ? "animate-spin" : ""} />
+                      <span>Regenerate</span>
+                    </button>
+                  )}
+
+                  {/* Cache & Cost Indicator Badge */}
+                  {isAudioReady && (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        fontSize: "11px",
+                        padding: "3px 8px",
+                        borderRadius: "6px",
+                        background: isAudioCached ? "rgba(16, 185, 129, 0.12)" : "rgba(124, 58, 237, 0.12)",
+                        color: isAudioCached ? "#10B981" : "var(--primary)",
+                        border: `1px solid ${isAudioCached ? "rgba(16, 185, 129, 0.25)" : "rgba(124, 58, 237, 0.25)"}`,
+                        fontWeight: 500
+                      }}
+                    >
+                      {isAudioCached ? "✓ Saved Audio (0 API Cost)" : "⚡ Newly Synthesized"}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

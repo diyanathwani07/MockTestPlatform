@@ -4,8 +4,15 @@ const fs = require("fs");
 const path = require("path");
 
 const AUDIO_DIR = path.resolve(__dirname, "../.reminder-audio");
+const PREVIEW_AUDIO_DIR = path.resolve(__dirname, "../.preview-audio");
+
 if (!fs.existsSync(AUDIO_DIR)) {
   fs.mkdirSync(AUDIO_DIR, { recursive: true });
+}
+if (!fs.existsSync(PREVIEW_AUDIO_DIR)) {
+  try {
+    fs.mkdirSync(PREVIEW_AUDIO_DIR, { recursive: true });
+  } catch (_) {}
 }
 
 // Module-level mock hook for isolated unit tests without external network calls
@@ -269,7 +276,8 @@ async function testElevenLabsVoiceSample({
   modelId = "eleven_multilingual_v2",
   stability = 0.5,
   similarityBoost = 0.75,
-  speed = 1.0
+  speed = 1.0,
+  forceRefresh = false
 }) {
   if (!sampleText || typeof sampleText !== "string" || sampleText.trim() === "") {
     throw new Error("Sample text is required for voice preview.");
@@ -295,10 +303,38 @@ async function testElevenLabsVoiceSample({
     numSpeed
   );
 
-  if (_elevenlabsSampleCache.has(cacheKey)) {
-    return _elevenlabsSampleCache.get(cacheKey);
+  const diskMp3Path = path.join(PREVIEW_AUDIO_DIR, `elevenlabs_${cacheKey}.mp3`);
+  const diskMetaPath = path.join(PREVIEW_AUDIO_DIR, `elevenlabs_${cacheKey}.json`);
+
+  // 1. Check in-memory cache
+  if (!forceRefresh && _elevenlabsSampleCache.has(cacheKey)) {
+    const cached = _elevenlabsSampleCache.get(cacheKey);
+    return { ...cached, cached: true };
   }
 
+  // 2. Check persistent disk cache (instant 0-cost playback)
+  if (!forceRefresh && fs.existsSync(diskMp3Path) && fs.existsSync(diskMetaPath)) {
+    try {
+      const meta = JSON.parse(fs.readFileSync(diskMetaPath, "utf8"));
+      const audioBuffer = fs.readFileSync(diskMp3Path);
+      const audioUrl = `data:audio/mpeg;base64,${audioBuffer.toString("base64")}`;
+      const durationSeconds = meta.durationSeconds || Math.max(0.5, Math.round(((audioBuffer.length * 8) / 128000) * 10) / 10);
+      const result = {
+        audioUrl,
+        voice: meta.voice || cleanVoice,
+        model: meta.model || cleanModel,
+        durationSeconds,
+        cached: true,
+        provider: "elevenlabs"
+      };
+      _elevenlabsSampleCache.set(cacheKey, result);
+      return result;
+    } catch (diskReadErr) {
+      console.warn("[elevenlabsTtsService] Could not read disk cache, falling back to synthesis:", diskReadErr.message);
+    }
+  }
+
+  // 3. Synthesize audio via ElevenLabs TTS API
   const audioBuffer = await callElevenLabsTts({
     text: cleanText,
     voiceId: cleanVoice,
@@ -318,10 +354,31 @@ async function testElevenLabsVoiceSample({
     voice: cleanVoice,
     model: cleanModel,
     durationSeconds,
+    cached: false,
     provider: "elevenlabs"
   };
 
-  if (_elevenlabsSampleCache.size >= 50) {
+  // 4. Save to persistent disk cache
+  try {
+    fs.writeFileSync(diskMp3Path, audioBuffer);
+    fs.writeFileSync(
+      diskMetaPath,
+      JSON.stringify({
+        voice: cleanVoice,
+        model: cleanModel,
+        stability: numStability,
+        similarityBoost: numSimilarity,
+        speed: numSpeed,
+        durationSeconds,
+        savedAt: new Date().toISOString()
+      })
+    );
+  } catch (diskWriteErr) {
+    console.warn("[elevenlabsTtsService] Failed to persist preview cache to disk:", diskWriteErr.message);
+  }
+
+  // 5. Update in-memory cache
+  if (_elevenlabsSampleCache.size >= 100) {
     const oldestKey = _elevenlabsSampleCache.keys().next().value;
     _elevenlabsSampleCache.delete(oldestKey);
   }

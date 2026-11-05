@@ -5,10 +5,16 @@ const { GoogleGenAI } = require("@google/genai");
 const VoiceSetting = require("../models/VoiceSetting");
 
 const AUDIO_DIR = path.resolve(__dirname, "../.reminder-audio");
+const PREVIEW_AUDIO_DIR = path.resolve(__dirname, "../.preview-audio");
 
-// Ensure private audio directory exists
+// Ensure audio directories exist
 if (!fs.existsSync(AUDIO_DIR)) {
   fs.mkdirSync(AUDIO_DIR, { recursive: true });
+}
+if (!fs.existsSync(PREVIEW_AUDIO_DIR)) {
+  try {
+    fs.mkdirSync(PREVIEW_AUDIO_DIR, { recursive: true });
+  } catch (_) {}
 }
 
 // Module-level mock hook for isolated unit tests without network calls
@@ -238,7 +244,7 @@ async function callGeminiTts({ text, voice = "Aoede", prompt = "", model = "gemi
 /**
  * 1. Test Voice Audio Preview in Real-time (reused by admin controller)
  */
-async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", customPrompt = "" }) {
+async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", customPrompt = "", forceRefresh = false }) {
   if (!sampleText || typeof sampleText !== "string" || sampleText.trim() === "") {
     throw new Error("Sample text is required for voice preview.");
   }
@@ -263,7 +269,7 @@ async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", custo
       englishPrompt:
         "You are an articulate, professional news anchor and educator. Read this news report aloud clearly in an engaging, natural, steady broadcasting tone with precise pronunciation.",
       hindiPrompt:
-        "आप एक पेशेवर और स्पष्ट समाचार वाचक (News Broadcaster) हैं। इस समाचार को सहज, प्रामाणिक और प्रभावशाली हिंदी उच्चारण में स्पष्ट रूप से पढ़कर सुनाएं। कठिन शब्दों और तकनीकी नामों का उच्चारण अत्यंत स्पष्ट रखें。",
+        "आप एक पेशेवर और स्पष्ट समाचार वाचक (News Broadcaster) हैं। इस समाचार को सहज, प्रामाणिक और प्रभावशाली हिंदी उच्चारण में स्पष्ट रूप से पढ़कर सुनाएं। कठिन शब्दों और तकनीकी नामों का उच्चारण अत्यंत स्पष्ट रखें।",
       enabled: true
     };
   }
@@ -274,10 +280,38 @@ async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", custo
   const model = settings.model || "gemini-2.5-flash-preview-tts";
 
   const cacheKey = getSampleCacheKey(cleanText, selectedVoice, lang, selectedPrompt);
-  if (_sampleCache.has(cacheKey)) {
-    return _sampleCache.get(cacheKey);
+  const diskWavPath = path.join(PREVIEW_AUDIO_DIR, `gemini_${cacheKey}.wav`);
+  const diskMetaPath = path.join(PREVIEW_AUDIO_DIR, `gemini_${cacheKey}.json`);
+
+  // 1. Check in-memory cache
+  if (!forceRefresh && _sampleCache.has(cacheKey)) {
+    const cached = _sampleCache.get(cacheKey);
+    return { ...cached, cached: true };
   }
 
+  // 2. Check persistent disk cache (instant 0-cost playback)
+  if (!forceRefresh && fs.existsSync(diskWavPath) && fs.existsSync(diskMetaPath)) {
+    try {
+      const meta = JSON.parse(fs.readFileSync(diskMetaPath, "utf8"));
+      const rawAudio = fs.readFileSync(diskWavPath);
+      const pcmBuffer = extractPcmFromWav(rawAudio);
+      const audioUrl = pcmToWavDataUrl(pcmBuffer, 24000, 1, 16);
+      const durationSeconds = meta.durationSeconds || Math.round((pcmBuffer.length / (24000 * 2)) * 10) / 10;
+      const result = {
+        audioUrl,
+        voice: meta.voice || selectedVoice,
+        durationSeconds,
+        cached: true,
+        provider: "gemini"
+      };
+      _sampleCache.set(cacheKey, result);
+      return result;
+    } catch (diskReadErr) {
+      console.warn("[geminiTtsService] Could not read disk cache, falling back to synthesis:", diskReadErr.message);
+    }
+  }
+
+  // 3. Synthesize new audio via Gemini TTS
   const rawAudio = await callGeminiTts({
     text: cleanText,
     voice: selectedVoice,
@@ -292,10 +326,31 @@ async function testVoiceSample({ sampleText, lang = "en", voice = "Aoede", custo
   const result = {
     audioUrl,
     voice: selectedVoice,
-    durationSeconds
+    durationSeconds,
+    cached: false,
+    provider: "gemini"
   };
 
-  if (_sampleCache.size >= 50) {
+  // 4. Save to persistent disk cache
+  try {
+    fs.writeFileSync(diskWavPath, rawAudio);
+    fs.writeFileSync(
+      diskMetaPath,
+      JSON.stringify({
+        voice: selectedVoice,
+        lang,
+        prompt: selectedPrompt,
+        model,
+        durationSeconds,
+        savedAt: new Date().toISOString()
+      })
+    );
+  } catch (diskWriteErr) {
+    console.warn("[geminiTtsService] Failed to persist preview cache to disk:", diskWriteErr.message);
+  }
+
+  // 5. Update in-memory cache
+  if (_sampleCache.size >= 100) {
     const oldestKey = _sampleCache.keys().next().value;
     _sampleCache.delete(oldestKey);
   }

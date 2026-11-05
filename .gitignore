@@ -28,6 +28,12 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Audio caches
+.reminder-audio
+.preview-audio
+Server/.reminder-audio
+Server/.preview-audio
+
 # Temporary & Scratch Files
 *.py
 *.docx

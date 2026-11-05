@@ -181,6 +181,8 @@ export default function VoiceSettings() {
   const [previewAudioUrl, setPreviewAudioUrl] = useState(null);
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [previewDuration, setPreviewDuration] = useState(null);
+  const [previewCachedKey, setPreviewCachedKey] = useState("");
+  const [isPreviewCached, setIsPreviewCached] = useState(false);
   const audioRef = useRef(null);
 
   // Word-to-Speech (DOCX Import) states
@@ -441,10 +443,18 @@ export default function VoiceSettings() {
     showToast("Unsaved changes discarded", "info");
   };
 
-  // Live Audio Sample Preview Generator
-  const handleGeneratePreview = async () => {
+  // Live Audio Sample Preview Generator with persistent caching & instant replay
+  const handleGeneratePreview = async (forceRefresh = false) => {
     if (!previewText || previewText.trim() === "") {
       showToast("Please enter a sample text to preview.", "error");
+      return;
+    }
+
+    const currentKey = `${previewProvider}|${previewProvider === "elevenlabs" ? previewElevenLabsVoice : previewVoice}|${previewLang}|${previewText.trim()}`;
+
+    // If audio is already loaded and key matches and not forcing refresh, toggle playback directly (0 API calls)
+    if (!forceRefresh && previewAudioUrl && previewCachedKey === currentKey) {
+      handleTogglePlayback();
       return;
     }
 
@@ -457,7 +467,9 @@ export default function VoiceSettings() {
 
       const payload = {
         sampleText: previewText.trim(),
-        provider: previewProvider
+        text: previewText.trim(),
+        provider: previewProvider,
+        forceRefresh
       };
 
       if (previewProvider === "elevenlabs") {
@@ -488,10 +500,20 @@ export default function VoiceSettings() {
       if (res.data?.success && res.data.audioUrl) {
         setPreviewAudioUrl(res.data.audioUrl);
         setPreviewDuration(res.data.durationSeconds || null);
-        showToast(
-          `Audio sample generated via ${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"}! Playing preview...`,
-          "success"
-        );
+        setPreviewCachedKey(currentKey);
+        setIsPreviewCached(Boolean(res.data.cached));
+
+        if (res.data.cached) {
+          showToast(
+            `Loaded from saved audio (Instant & 0 API Cost)! Playing...`,
+            "success"
+          );
+        } else {
+          showToast(
+            `Audio sample synthesized via ${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"}! Playing preview...`,
+            "success"
+          );
+        }
 
         // Auto play generated audio
         setTimeout(() => {
@@ -2277,74 +2299,104 @@ export default function VoiceSettings() {
                 </div>
 
                 {/* Actions & Player */}
-                <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    onClick={handleGeneratePreview}
-                    disabled={generatingPreview}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      padding: "9px 18px",
-                      borderRadius: "10px",
-                      background: previewProvider === "elevenlabs" ? "#3B82F6" : "var(--primary)",
-                      color: previewProvider === "elevenlabs" ? "#ffffff" : "var(--primary-foreground, #000)",
-                      border: "none",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      cursor: generatingPreview ? "not-allowed" : "pointer"
-                    }}
-                  >
-                    {generatingPreview ? <RefreshCw size={15} className="animate-spin" /> : <Play size={15} />}
-                    <span>{generatingPreview ? "Synthesizing Audio..." : `Generate Audio (${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"})`}</span>
-                  </button>
+                {(() => {
+                  const currentKey = `${previewProvider}|${previewProvider === "elevenlabs" ? previewElevenLabsVoice : previewVoice}|${previewLang}|${previewText.trim()}`;
+                  const isPreviewReady = Boolean(previewAudioUrl && previewCachedKey === currentKey);
 
-                  {previewAudioUrl && (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        padding: "6px 14px",
-                        borderRadius: "10px",
-                        background: "rgba(255, 255, 255, 0.06)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)"
-                      }}
-                    >
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
                       <button
                         type="button"
-                        onClick={handleTogglePlayback}
+                        onClick={() => handleGeneratePreview(false)}
+                        disabled={generatingPreview}
                         style={{
-                          background: "var(--primary)",
-                          color: "var(--primary-foreground, #000)",
-                          border: "none",
-                          width: "28px",
-                          height: "28px",
-                          borderRadius: "50%",
-                          display: "flex",
+                          display: "inline-flex",
                           alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer"
+                          gap: "8px",
+                          padding: "9px 18px",
+                          borderRadius: "10px",
+                          background: previewProvider === "elevenlabs" ? "#3B82F6" : "var(--primary)",
+                          color: previewProvider === "elevenlabs" ? "#ffffff" : "var(--primary-foreground, #000)",
+                          border: "none",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: generatingPreview ? "not-allowed" : "pointer",
+                          transition: "all 0.15s ease"
                         }}
                       >
-                        {isPlayingPreview ? <Square size={12} /> : <Play size={12} />}
+                        {generatingPreview ? (
+                          <RefreshCw size={15} className="animate-spin" />
+                        ) : isPlayingPreview ? (
+                          <Square size={15} />
+                        ) : (
+                          <Play size={15} />
+                        )}
+                        <span>
+                          {generatingPreview
+                            ? "Synthesizing Audio..."
+                            : isPreviewReady
+                            ? isPlayingPreview ? "Stop Playing" : "Play Saved Audio"
+                            : `Generate Audio (${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"})`}
+                        </span>
                       </button>
-                      <span style={{ fontSize: "12px", color: "var(--text-primary)", fontWeight: 500 }}>
-                        {isPlayingPreview ? "Playing audio..." : "Preview ready"}
-                        {previewDuration ? ` (${previewDuration}s)` : ""}
-                      </span>
-                    </div>
-                  )}
 
-                  {/* Hidden audio element */}
-                  <audio
-                    ref={audioRef}
-                    src={previewAudioUrl || ""}
-                    onEnded={() => setIsPlayingPreview(false)}
-                    onError={() => setIsPlayingPreview(false)}
-                  />
-                </div>
+                      {/* Regenerate fresh audio button */}
+                      {isPreviewReady && (
+                        <button
+                          type="button"
+                          onClick={() => handleGeneratePreview(true)}
+                          disabled={generatingPreview}
+                          title="Force re-generation of fresh audio from AI provider"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "9px 14px",
+                            borderRadius: "10px",
+                            background: "rgba(255, 255, 255, 0.05)",
+                            color: "var(--text-secondary)",
+                            border: "1px solid var(--border-color)",
+                            fontSize: "12.5px",
+                            fontWeight: 500,
+                            cursor: generatingPreview ? "not-allowed" : "pointer"
+                          }}
+                        >
+                          <RefreshCw size={13} className={generatingPreview ? "animate-spin" : ""} />
+                          <span>Regenerate</span>
+                        </button>
+                      )}
+
+                      {/* Saved cache badge */}
+                      {isPreviewReady && (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            fontSize: "11.5px",
+                            padding: "4px 10px",
+                            borderRadius: "8px",
+                            background: isPreviewCached ? "rgba(16, 185, 129, 0.12)" : "rgba(124, 58, 237, 0.12)",
+                            color: isPreviewCached ? "#10B981" : "var(--primary)",
+                            border: `1px solid ${isPreviewCached ? "rgba(16, 185, 129, 0.25)" : "rgba(124, 58, 237, 0.25)"}`,
+                            fontWeight: 500
+                          }}
+                        >
+                          {isPreviewCached ? "✓ Saved Audio (0 API Cost)" : "⚡ Freshly Synthesized"}
+                          {previewDuration ? ` • ${previewDuration}s` : ""}
+                        </span>
+                      )}
+
+                      {/* Hidden audio element */}
+                      <audio
+                        ref={audioRef}
+                        src={previewAudioUrl || ""}
+                        onEnded={() => setIsPlayingPreview(false)}
+                        onError={() => setIsPlayingPreview(false)}
+                      />
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Word-to-Speech Converter (DOCX Import) */}
