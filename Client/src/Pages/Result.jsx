@@ -333,11 +333,11 @@ function Result() {
   }, [isMultiQuiz, data, correct, incorrect]);
 
   const maxPossibleMarksDisplay = React.useMemo(() => {
-    if (data?.maxPossibleMarks !== undefined && data?.maxPossibleMarks !== null) {
+    if (data?.maxPossibleMarks !== undefined && data?.maxPossibleMarks !== null && Number(data.maxPossibleMarks) > 0) {
       return data.maxPossibleMarks;
     }
     if (isMultiQuiz && Array.isArray(data?.sectionResults)) {
-      const sum = data.sectionResults.reduce((acc, s) => acc + (s.maxMarks || 0), 0);
+      const sum = data.sectionResults.reduce((acc, s) => acc + (Number(s.maxMarks) || 0), 0);
       if (sum > 0) return sum;
     }
     return total || "Not available";
@@ -1138,15 +1138,18 @@ function Result() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "24px 70px 16px",
-                backgroundColor: isDark ? "#1D1B28" : "#EAEBF3",
-                marginBottom: "20px",
-                margin: "-20px -16px 20px -16px",
+                padding: "18px 60px",
+                backgroundColor: isDark ? "rgba(29, 27, 40, 0.95)" : "rgba(255, 255, 255, 0.95)",
+                backdropFilter: "blur(12px)",
+                borderRadius: "16px",
+                border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
+                boxShadow: isDark ? "0 4px 20px rgba(0, 0, 0, 0.35)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
+                marginBottom: "20px"
               }}>
-                <h2 style={{ fontSize: "clamp(18px, 4vw, 24px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#000000", textAlign: "center" }}>
+                <h2 style={{ fontSize: "clamp(18px, 4vw, 24px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#1E293B", textAlign: "center", fontWeight: "700" }}>
                   Solutions & Detailed Analysis - {examTitle}
                 </h2>
-                <span style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                <span style={{ fontSize: "12px", color: isDark ? "#94A3B8" : "#64748B", marginTop: "4px" }}>
                   Section-wise answers, bilingual explanations and timing analytics
                 </span>
               </div>
@@ -1165,9 +1168,9 @@ function Result() {
                   style={{
                     padding: "8px 16px",
                     borderRadius: "10px",
-                    border: activeSectionTab === "all" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color)",
-                    background: activeSectionTab === "all" ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#f3e8ff") : (isDark ? "#1E1B2E" : "#ffffff"),
-                    color: activeSectionTab === "all" ? "var(--violet)" : "var(--text-secondary)",
+                    border: activeSectionTab === "all" ? "1.5px solid #8B5CF6" : (isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #E2E8F0"),
+                    background: activeSectionTab === "all" ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#EDE9FE") : (isDark ? "#1E1B2E" : "#ffffff"),
+                    color: activeSectionTab === "all" ? (isDark ? "#C4B5FD" : "#6D28D9") : (isDark ? "#94A3B8" : "#64748B"),
                     fontWeight: "700",
                     fontSize: "13.5px",
                     cursor: "pointer",
@@ -1184,8 +1187,8 @@ function Result() {
                     fontSize: "11px",
                     padding: "2px 6px",
                     borderRadius: "6px",
-                    background: activeSectionTab === "all" ? "var(--violet)" : (isDark ? "rgba(255,255,255,0.1)" : "#E2E8F0"),
-                    color: activeSectionTab === "all" ? "#ffffff" : "var(--text-primary)"
+                    background: activeSectionTab === "all" ? "#8B5CF6" : (isDark ? "rgba(255,255,255,0.1)" : "#E2E8F0"),
+                    color: activeSectionTab === "all" ? "#ffffff" : (isDark ? "#CBD5E1" : "#475569")
                   }}>
                     {questions.length}
                   </span>
@@ -1194,6 +1197,9 @@ function Result() {
                 {data?.sectionResults?.map((sec, sIdx) => {
                   const secId = sec.sectionId || `sec-${sIdx}`;
                   const isSelected = activeSectionTab?.toString() === secId.toString();
+                  const secTotal = (sec.totalQuestions && sec.totalQuestions > 0)
+                    ? sec.totalQuestions
+                    : ((sec.correct || 0) + (sec.incorrect || 0) + (sec.unanswered || 0)) || questions.filter(q => q.sectionId?.toString() === secId?.toString()).length || 0;
                   return (
                     <button
                       key={secId}
@@ -1201,9 +1207,9 @@ function Result() {
                       style={{
                         padding: "8px 16px",
                         borderRadius: "10px",
-                        border: isSelected ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color)",
-                        background: isSelected ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#f3e8ff") : (isDark ? "#1E1B2E" : "#ffffff"),
-                        color: isSelected ? "var(--violet)" : "var(--text-secondary)",
+                        border: isSelected ? "1.5px solid #8B5CF6" : (isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #E2E8F0"),
+                        background: isSelected ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#EDE9FE") : (isDark ? "#1E1B2E" : "#ffffff"),
+                        color: isSelected ? (isDark ? "#C4B5FD" : "#6D28D9") : (isDark ? "#94A3B8" : "#64748B"),
                         fontWeight: "700",
                         fontSize: "13.5px",
                         cursor: "pointer",
@@ -1219,10 +1225,10 @@ function Result() {
                         fontSize: "11px",
                         padding: "2px 6px",
                         borderRadius: "6px",
-                        background: isSelected ? "var(--violet)" : (isDark ? "rgba(255,255,255,0.1)" : "#E2E8F0"),
-                        color: isSelected ? "#ffffff" : "var(--text-primary)"
+                        background: isSelected ? "#8B5CF6" : (isDark ? "rgba(255,255,255,0.1)" : "#E2E8F0"),
+                        color: isSelected ? "#ffffff" : (isDark ? "#CBD5E1" : "#475569")
                       }}>
-                        {sec.totalQuestions ?? 0}
+                        {secTotal}
                       </span>
                     </button>
                   );
@@ -1239,21 +1245,22 @@ function Result() {
                 marginBottom: "20px",
                 padding: "10px 14px",
                 borderRadius: "12px",
-                backgroundColor: isDark ? "rgba(255,255,255,0.02)" : "#FAFAFC",
-                border: "1px solid var(--border-color)"
+                backgroundColor: isDark ? "rgba(255,255,255,0.03)" : "#FAFAFC",
+                border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0"
               }}>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                   <button
                     onClick={() => setReviewFilter("all")}
                     style={{
-                      padding: "5px 12px",
+                      padding: "6px 14px",
                       borderRadius: "8px",
                       border: "none",
                       fontSize: "12.5px",
                       fontWeight: "700",
                       cursor: "pointer",
-                      backgroundColor: reviewFilter === "all" ? "var(--violet)" : "transparent",
-                      color: reviewFilter === "all" ? "#fff" : "var(--text-secondary)"
+                      backgroundColor: reviewFilter === "all" ? "#8B5CF6" : "transparent",
+                      color: reviewFilter === "all" ? "#FFFFFF" : (isDark ? "#94A3B8" : "#64748B"),
+                      transition: "all 0.15s ease"
                     }}
                   >
                     All ({sectionCounts.all})
@@ -1261,14 +1268,15 @@ function Result() {
                   <button
                     onClick={() => setReviewFilter("correct")}
                     style={{
-                      padding: "5px 12px",
+                      padding: "6px 14px",
                       borderRadius: "8px",
                       border: "none",
                       fontSize: "12.5px",
                       fontWeight: "700",
                       cursor: "pointer",
-                      backgroundColor: reviewFilter === "correct" ? "#22c55e" : "transparent",
-                      color: reviewFilter === "correct" ? "#fff" : "#22c55e"
+                      backgroundColor: reviewFilter === "correct" ? "#16A34A" : "transparent",
+                      color: reviewFilter === "correct" ? "#FFFFFF" : "#16A34A",
+                      transition: "all 0.15s ease"
                     }}
                   >
                     ✓ Correct ({sectionCounts.correct})
@@ -1276,14 +1284,15 @@ function Result() {
                   <button
                     onClick={() => setReviewFilter("incorrect")}
                     style={{
-                      padding: "5px 12px",
+                      padding: "6px 14px",
                       borderRadius: "8px",
                       border: "none",
                       fontSize: "12.5px",
                       fontWeight: "700",
                       cursor: "pointer",
-                      backgroundColor: reviewFilter === "incorrect" ? "#ef4444" : "transparent",
-                      color: reviewFilter === "incorrect" ? "#fff" : "#ef4444"
+                      backgroundColor: reviewFilter === "incorrect" ? "#DC2626" : "transparent",
+                      color: reviewFilter === "incorrect" ? "#FFFFFF" : "#DC2626",
+                      transition: "all 0.15s ease"
                     }}
                   >
                     ✕ Incorrect ({sectionCounts.incorrect})
@@ -1291,14 +1300,15 @@ function Result() {
                   <button
                     onClick={() => setReviewFilter("unattempted")}
                     style={{
-                      padding: "5px 12px",
+                      padding: "6px 14px",
                       borderRadius: "8px",
                       border: "none",
                       fontSize: "12.5px",
                       fontWeight: "700",
                       cursor: "pointer",
-                      backgroundColor: reviewFilter === "unattempted" ? "#64748b" : "transparent",
-                      color: reviewFilter === "unattempted" ? "#fff" : "var(--text-secondary)"
+                      backgroundColor: reviewFilter === "unattempted" ? "#475569" : "transparent",
+                      color: reviewFilter === "unattempted" ? "#FFFFFF" : (isDark ? "#94A3B8" : "#64748B"),
+                      transition: "all 0.15s ease"
                     }}
                   >
                     — Unanswered ({sectionCounts.unattempted})
@@ -1419,8 +1429,8 @@ function Result() {
                                   fontWeight: "700",
                                   textTransform: "uppercase",
                                   letterSpacing: "0.5px",
-                                  color: "var(--violet)",
-                                  background: isDark ? "rgba(139, 92, 246, 0.15)" : "#f3e8ff",
+                                  color: isDark ? "#C4B5FD" : "#6D28D9",
+                                  background: isDark ? "rgba(139, 92, 246, 0.2)" : "#f3e8ff",
                                   padding: "2px 8px",
                                   borderRadius: "6px"
                                 }}>
@@ -1446,8 +1456,8 @@ function Result() {
                                 fontWeight: "700",
                                 padding: "2px 8px",
                                 borderRadius: "6px",
-                                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9",
-                                color: isCorrect ? "#22c55e" : (isIncorrect ? "#ef4444" : "var(--text-secondary)")
+                                backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                                color: isCorrect ? "#22c55e" : (isIncorrect ? "#ef4444" : (isDark ? "#CBD5E1" : "#64748B"))
                               }}>
                                 {marksText}
                               </span>
@@ -1458,8 +1468,8 @@ function Result() {
                                 fontWeight: "600",
                                 padding: "2px 8px",
                                 borderRadius: "6px",
-                                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9",
-                                color: "var(--text-primary)",
+                                backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                                color: isDark ? "#FFFFFF" : "#1E293B",
                                 display: "inline-flex",
                                 alignItems: "center",
                                 gap: "4px"
@@ -1474,8 +1484,8 @@ function Result() {
                                 fontWeight: "600",
                                 padding: "2px 8px",
                                 borderRadius: "6px",
-                                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9",
-                                color: "var(--text-secondary)",
+                                backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                                color: isDark ? "#CBD5E1" : "#64748B",
                                 display: "inline-flex",
                                 alignItems: "center",
                                 gap: "4px"
@@ -1766,7 +1776,7 @@ function Result() {
             <div style={{
               display: "flex",
               gap: "30px",
-              maxWidth: isExam ? "1100px" : "800px",
+              maxWidth: isExam ? "1100px" : "700px",
               width: "100%",
               justifyContent: "center",
               alignItems: "flex-start",
@@ -1774,333 +1784,230 @@ function Result() {
               flexWrap: "wrap",
               margin: "0 auto"
             }}>
-              {/* Left Column: Overall Performance & Section Cards */}
-              <div style={{ flex: 1.3, minWidth: "320px", maxWidth: "720px", width: "100%" }}>
-                {/* 1. Overall Performance Card */}
-                <div style={{
-                  background: "var(--bg-card)",
-                  border: "1.5px solid var(--border-color)",
-                  borderRadius: "24px",
-                  padding: "32px 24px",
-                  textAlign: "center",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-                  boxSizing: "border-box",
-                  marginBottom: "24px"
-                }}>
-                  {/* Mascot / Trophy */}
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+              {/* SINGLE UNIFIED RESULT CARD */}
+              <div className="result-modal-card" style={{ margin: 0, flex: 1.2, minWidth: "320px", maxWidth: "680px" }}>
+                
+                {/* Header with Mascot */}
+                <div className="rm-header">
+                  <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
                     <DotLottieReact 
                       src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} 
                       loop 
                       autoplay 
-                      style={{ width: "90px", height: "90px", transform: "scale(2.0)" }} 
+                      style={{ width: "85px", height: "85px", transform: "scale(2.0)" }} 
                     />
                   </div>
-
-                  <h2 style={{ fontSize: "24px", fontWeight: "800", margin: "0 0 6px", color: "var(--text-primary)" }}>
+                  <h2>
                     {Number(computedPercentage) >= 80 ? "Outstanding Performance!" : Number(computedPercentage) >= passThreshold ? "Exam Completed Successfully!" : "Exam Completed — Keep Practicing!"}
                   </h2>
-                  <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: "0 0 20px" }}>
-                    Great job, <strong>{user.name || user.fullName}</strong>! Here is your overall Multi Quiz performance summary for <strong>{examTitle}</strong>.
+                  <p>
+                    Great job, <strong>{user.name || user.fullName}</strong>! You've completed <strong>{examTitle}</strong>.
                   </p>
+                </div>
 
-                  {/* Top Chips Row */}
-                  <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap", marginBottom: "24px" }}>
-                    <span style={{ fontSize: "12.5px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <CalendarDays size={14} color="#8b5cf6" /> {formattedDate}
-                    </span>
-                    <span style={{ fontSize: "12.5px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Clock size={14} color="#8b5cf6" /> {formatDurationDisplay(data?.duration)}
-                    </span>
-                    <span style={{ fontSize: "12.5px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <HelpCircle size={14} color="#8b5cf6" /> {total} Questions
-                    </span>
+                {/* Quiz Info */}
+                <div className="rm-info-card">
+                  <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#8B5CF6", backgroundColor: "rgba(139, 92, 246, 0.12)", borderRadius: "14px", width: "52px", height: "52px", flexShrink: 0 }}>
+                    <FileText size={24} />
                   </div>
-
-                  {/* Hero Score Box */}
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-around",
-                    flexWrap: "wrap",
-                    gap: "20px",
-                    padding: "24px",
-                    borderRadius: "20px",
-                    background: isDark ? "rgba(255, 255, 255, 0.02)" : "#fafafc",
-                    border: "1.5px solid var(--border-color)",
-                    marginBottom: "24px"
-                  }}>
-                    <div>
-                      <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Marks Obtained</span>
-                      <h1 style={{ fontSize: "36px", fontWeight: "900", margin: "4px 0", color: "var(--text-primary)", lineHeight: 1 }}>
-                        {score} <span style={{ fontSize: "19px", fontWeight: "600", color: "var(--text-secondary)" }}>/ {maxPossibleMarksDisplay}</span>
-                      </h1>
-                      {data?.showPassFailStatus !== false && (
-                        <span style={{
-                          display: "inline-block",
-                          marginTop: "6px",
-                          padding: "3px 12px",
-                          borderRadius: "20px",
-                          fontSize: "12px",
-                          fontWeight: "700",
-                          backgroundColor: (data?.passed !== undefined ? data.passed : (Number(computedPercentage) >= passThreshold)) ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
-                          color: (data?.passed !== undefined ? data.passed : (Number(computedPercentage) >= passThreshold)) ? "#22c55e" : "#ef4444"
-                        }}>
-                          {(data?.passed !== undefined ? data.passed : (Number(computedPercentage) >= passThreshold)) ? "Passed 🎉" : "Failed 😢"}
+                  <div className="rm-info-content">
+                    <p className="rm-info-label">Multi-Section Assessment</p>
+                    <h3 className="rm-info-title">{examTitle}</h3>
+                    <div className="rm-info-meta">
+                      <span className="rm-info-chip"><CalendarDays size={13} /> {formattedDate}</span>
+                      <span className="rm-info-chip"><Clock size={13} /> {formatDurationDisplay(data?.duration)}</span>
+                      <span className="rm-info-chip"><HelpCircle size={13} /> {total} Questions</span>
+                      {data?.sectionResults?.length > 1 && (
+                        <span className="rm-info-chip" style={{ background: isDark ? "rgba(139, 92, 246, 0.2)" : "#EDE9FE", color: isDark ? "#C4B5FD" : "#6D28D9" }}>
+                          <Layers size={13} /> {data.sectionResults.length} Sections
                         </span>
                       )}
                     </div>
-
-                    <div style={{ height: "60px", width: "1px", background: "var(--border-color)" }} />
-
-                    <div>
-                      <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Overall Accuracy</span>
-                      <h1 style={{ fontSize: "36px", fontWeight: "900", margin: "4px 0", color: "var(--violet)", lineHeight: 1 }}>
-                        {accuracyDisplay}%
-                      </h1>
-                      <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                        {attemptedCount} of {total} attempted
-                      </span>
-                    </div>
-
-                    <div style={{ height: "60px", width: "1px", background: "var(--border-color)" }} />
-
-                    <div>
-                      <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Total Time Taken</span>
-                      <h2 style={{ fontSize: "22px", fontWeight: "800", margin: "8px 0 4px", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-                        <Timer size={20} color="#8b5cf6" />
-                        {formatTimingSafe(data?.timeTaken)}
-                      </h2>
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Authoritative exam clock</span>
-                    </div>
-                  </div>
-
-                  {/* 6-Metric Mini Cards */}
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-                    gap: "12px",
-                    marginBottom: "24px"
-                  }}>
-                    <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "14px 10px" }}>
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Total Questions</span>
-                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>{total}</span>
-                    </div>
-                    <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "14px 10px" }}>
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Attempted</span>
-                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>{attemptedCount}</span>
-                    </div>
-                    <div style={{ background: "rgba(34, 197, 94, 0.08)", border: "1px solid rgba(34, 197, 94, 0.2)", borderRadius: "14px", padding: "14px 10px" }}>
-                      <span style={{ fontSize: "11px", color: "#22c55e", display: "block", marginBottom: "4px" }}>Correct</span>
-                      <span style={{ fontSize: "18px", fontWeight: "800", color: "#22c55e" }}>{correct}</span>
-                    </div>
-                    <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "14px", padding: "14px 10px" }}>
-                      <span style={{ fontSize: "11px", color: "#ef4444", display: "block", marginBottom: "4px" }}>Incorrect</span>
-                      <span style={{ fontSize: "18px", fontWeight: "800", color: "#ef4444" }}>{incorrect}</span>
-                    </div>
-                    <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f1f5f9", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "14px 10px" }}>
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Unanswered</span>
-                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-secondary)" }}>{unanswered}</span>
-                    </div>
-                    <div style={{ background: "rgba(139, 92, 246, 0.08)", border: "1px solid rgba(139, 92, 246, 0.2)", borderRadius: "14px", padding: "14px 10px" }}>
-                      <span style={{ fontSize: "11px", color: "var(--violet)", display: "block", marginBottom: "4px" }}>Sections</span>
-                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet)" }}>{data?.sectionResults?.length || 0}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-                    <button
-                      onClick={() => {
-                        setActiveSectionTab("all");
-                        setShowAnswers(true);
-                      }}
-                      style={{
-                        padding: "14px 28px",
-                        borderRadius: "14px",
-                        background: "var(--violet)",
-                        color: "#fff",
-                        border: "none",
-                        fontSize: "14.5px",
-                        fontWeight: "700",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        boxShadow: "0 4px 14px rgba(124, 58, 237, 0.3)"
-                      }}
-                    >
-                      <BookOpen size={17} />
-                      Review Detailed Solutions
-                    </button>
-                    <button
-                      onClick={() => navigate("/dashboard")}
-                      style={{
-                        padding: "14px 24px",
-                        borderRadius: "14px",
-                        background: "transparent",
-                        color: "var(--text-primary)",
-                        border: "1.5px solid var(--border-color)",
-                        fontSize: "14.5px",
-                        fontWeight: "700",
-                        cursor: "pointer"
-                      }}
-                    >
-                      Dashboard
-                    </button>
                   </div>
                 </div>
 
-                {/* 2. Subject-wise Performance Cards */}
-                <div style={{ textAlign: "left", marginBottom: "28px" }}>
-                  <div style={{ marginBottom: "16px" }}>
-                    <h3 style={{ margin: "0 0 4px", fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>
-                      Subject / Section Analysis
-                    </h3>
-                    <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
-                      Section-wise marks obtained, accuracy and time spent
+                {/* Hero Score Box */}
+                <div className="rm-score-section">
+                  <div className="rm-score-circle-wrapper">
+                    <div className="rm-score-circle" style={{ background: `conic-gradient(#8B5CF6 ${computedPercentage}%, ${isDark ? "#141220" : "#F3F4F6"} ${computedPercentage}%)` }}>
+                      <div className="rm-score-inner">
+                        <span className="rm-pct">{computedPercentage}%</span>
+                        <span className="rm-pct-label">Score</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="rm-score-middle">
+                    <p className="rm-score-label">Your Score</p>
+                    <h2 className="rm-score-fraction">
+                      <span className="rm-score-num">{score}</span>
+                      <span className="rm-score-denom">/{maxPossibleMarksDisplay}</span>
+                    </h2>
+                    <div className={`rm-badge ${Number(computedPercentage) >= passThreshold ? "badge-pass" : "badge-fail"}`}>
+                      {Number(computedPercentage) >= passThreshold ? "Passed 🎉" : "Failed 😢"}
+                    </div>
+                  </div>
+
+                  <div className="rm-score-right">
+                    <div style={{ marginBottom: "6px", color: "#8B5CF6", display: "flex", justifyContent: "center" }}>
+                      <Timer size={28} />
+                    </div>
+                    <h4 className="rm-feedback-title" style={{ fontSize: "17px", fontWeight: "800", margin: "0 0 2px" }}>
+                      {formatTimingSafe(data?.timeTaken)}
+                    </h4>
+                    <p className="rm-feedback-text" style={{ fontSize: "11px", margin: 0 }}>
+                      Accuracy: <strong style={{ color: "#8B5CF6" }}>{accuracyDisplay}%</strong> ({attemptedCount}/{total})
                     </p>
                   </div>
+                </div>
 
+                {/* 4 Metrics Grid */}
+                <div className="rm-metrics-grid">
+                  <div className="rm-metric">
+                    <div className="rm-metric-icon icon-green" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><Target size={24} /></div>
+                    <div className="rm-metric-data">
+                      <h4>{correct}</h4>
+                      <p>Correct Answers</p>
+                    </div>
+                  </div>
+                  <div className="rm-metric">
+                    <div className="rm-metric-icon icon-red" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><XCircle size={24} /></div>
+                    <div className="rm-metric-data">
+                      <h4>{incorrect}</h4>
+                      <p>Incorrect Answers</p>
+                    </div>
+                  </div>
+                  <div className="rm-metric">
+                    <div className="rm-metric-icon icon-blue" style={{ display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(100, 116, 139, 0.15)", color: "#64748B" }}><HelpCircle size={24} /></div>
+                    <div className="rm-metric-data">
+                      <h4>{unanswered}</h4>
+                      <p>Unanswered</p>
+                    </div>
+                  </div>
+                  <div className="rm-metric">
+                    <div className="rm-metric-icon icon-orange" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><TrendingUp size={24} /></div>
+                    <div className="rm-metric-data">
+                      <h4>{attemptedCount}</h4>
+                      <p>Attempted ({accuracyDisplay}%)</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Integrated Section Breakdown (Only when quiz actually has multiple sections > 1) */}
+                {data?.sectionResults?.length > 1 && (
                   <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                    gap: "16px"
+                    padding: "16px",
+                    borderRadius: "16px",
+                    background: isDark ? "rgba(255, 255, 255, 0.02)" : "#F8FAFC",
+                    border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
+                    textAlign: "left"
                   }}>
-                    {data?.sectionResults?.map((sec, idx) => {
-                      const secMaxMarks = sec.maxMarks !== undefined && sec.maxMarks !== null ? sec.maxMarks : "Not available";
-                      const secAcc = sec.accuracy !== undefined && sec.accuracy !== null ? `${Number(sec.accuracy).toFixed(1)}%` : (sec.attempted > 0 ? `${((sec.correct / sec.attempted) * 100).toFixed(1)}%` : "0%");
-                      const secUnans = sec.unanswered !== undefined ? sec.unanswered : Math.max(0, (sec.totalQuestions || 0) - ((sec.correct || 0) + (sec.incorrect || 0)));
-                      const secId = sec.sectionId || `sec-${idx}`;
+                    <h4 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Layers size={16} color="#8B5CF6" /> Section-wise Breakdown
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {data.sectionResults.map((sec, idx) => {
+                        const secId = sec.sectionId || `sec-${idx}`;
+                        const secTotal = (sec.totalQuestions && sec.totalQuestions > 0)
+                          ? sec.totalQuestions
+                          : ((sec.correct || 0) + (sec.incorrect || 0) + (sec.unanswered || 0)) || questions.filter(q => q.sectionId?.toString() === secId?.toString()).length || 0;
+                        const secMax = (sec.maxMarks !== undefined && sec.maxMarks !== null && sec.maxMarks > 0)
+                          ? sec.maxMarks
+                          : (secTotal > 0 ? secTotal * (sec.marksPerQuestion || 1) : secTotal);
+                        const secAcc = sec.accuracy !== undefined && sec.accuracy !== null
+                          ? `${Number(sec.accuracy).toFixed(1)}%`
+                          : (sec.attempted > 0 ? `${((sec.correct / sec.attempted) * 100).toFixed(1)}%` : "0%");
 
-                      return (
-                        <div
-                          key={secId}
-                          style={{
-                            background: "var(--bg-card)",
-                            border: "1.5px solid var(--border-color)",
-                            borderRadius: "18px",
-                            padding: "20px",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "14px",
-                            boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
-                            transition: "all 0.2s ease"
-                          }}
-                        >
-                          {/* Header */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
-                            <div>
-                              <span style={{
-                                fontSize: "10.5px",
-                                fontWeight: "700",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.5px",
-                                color: "var(--violet)",
-                                background: isDark ? "rgba(139, 92, 246, 0.15)" : "#f3e8ff",
-                                padding: "2px 8px",
-                                borderRadius: "6px",
-                                display: "inline-block",
-                                marginBottom: "6px"
-                              }}>
-                                {sec.type || "Standard"}
-                              </span>
-                              <h4 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
-                                {sec.sectionTitle || sec.title || `Section ${idx + 1}`}
-                              </h4>
-                            </div>
-                            <div style={{
-                              background: isDark ? "rgba(255, 255, 255, 0.05)" : "#f8fafc",
-                              border: "1px solid var(--border-color)",
-                              padding: "4px 10px",
-                              borderRadius: "8px",
-                              textAlign: "right"
-                            }}>
-                              <span style={{ fontSize: "10.5px", color: "var(--text-muted)", display: "block" }}>Accuracy</span>
-                              <span style={{ fontSize: "13.5px", fontWeight: "700", color: "var(--violet)" }}>{secAcc}</span>
-                            </div>
-                          </div>
-
-                          {/* Marks & Time Taken Box */}
-                          <div style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            padding: "12px 14px",
-                            borderRadius: "12px",
-                            background: isDark ? "rgba(255, 255, 255, 0.02)" : "#f8fafc",
-                            border: "1px solid var(--border-color)"
-                          }}>
-                            <div>
-                              <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block" }}>Marks</span>
-                              <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>
-                                {sec.score ?? 0} <span style={{ fontSize: "13px", fontWeight: "500", color: "var(--text-secondary)" }}>/ {secMaxMarks}</span>
-                              </span>
-                            </div>
-                            <div style={{ textAlign: "right" }}>
-                              <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block" }}>Time Taken</span>
-                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end" }}>
-                                <Clock size={13} color="#8b5cf6" />
-                                {formatTimingSafe(sec.timeTaken)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* 4-Stat Grid */}
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", textAlign: "center" }}>
-                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: isDark ? "rgba(255,255,255,0.02)" : "#f1f5f9" }}>
-                              <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "block" }}>Total</span>
-                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{sec.totalQuestions ?? 0}</span>
-                            </div>
-                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: "rgba(34, 197, 94, 0.1)" }}>
-                              <span style={{ fontSize: "10px", color: "#22c55e", display: "block" }}>Correct</span>
-                              <span style={{ fontSize: "13px", fontWeight: "700", color: "#22c55e" }}>{sec.correct ?? 0}</span>
-                            </div>
-                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.1)" }}>
-                              <span style={{ fontSize: "10px", color: "#ef4444", display: "block" }}>Wrong</span>
-                              <span style={{ fontSize: "13px", fontWeight: "700", color: "#ef4444" }}>{sec.incorrect ?? 0}</span>
-                            </div>
-                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: isDark ? "rgba(255,255,255,0.05)" : "#e2e8f0" }}>
-                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", display: "block" }}>Skipped</span>
-                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{secUnans}</span>
-                            </div>
-                          </div>
-
-                          {/* View Section Solutions button */}
-                          <button
-                            onClick={() => {
-                              setActiveSectionTab(secId);
-                              setShowAnswers(true);
-                            }}
+                        return (
+                          <div
+                            key={secId}
                             style={{
-                              marginTop: "4px",
-                              padding: "9px 12px",
-                              borderRadius: "10px",
-                              border: "1px solid var(--violet)",
-                              background: "transparent",
-                              color: "var(--violet)",
-                              fontSize: "12.5px",
-                              fontWeight: "700",
-                              cursor: "pointer",
-                              transition: "all 0.2s",
                               display: "flex",
                               alignItems: "center",
-                              justifyContent: "center",
-                              gap: "6px"
+                              justifyContent: "space-between",
+                              padding: "10px 14px",
+                              borderRadius: "12px",
+                              background: isDark ? "#1E1B2E" : "#FFFFFF",
+                              border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid #E2E8F0",
+                              flexWrap: "wrap",
+                              gap: "8px"
                             }}
                           >
-                            <span>View Section Solutions</span>
-                            <span>→</span>
-                          </button>
-                        </div>
-                      );
-                    })}
+                            <div style={{ minWidth: "140px" }}>
+                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>
+                                {sec.sectionTitle || sec.title || `Section ${idx + 1}`}
+                              </span>
+                              <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", gap: "8px", marginTop: "2px" }}>
+                                <span style={{ color: "#22C55E" }}>✓ {sec.correct ?? 0}</span>
+                                <span style={{ color: "#EF4444" }}>✕ {sec.incorrect ?? 0}</span>
+                                <span>{secTotal} Qs</span>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <span style={{ fontSize: "13.5px", fontWeight: "800", color: "#8B5CF6" }}>
+                                {sec.score ?? 0} <span style={{ fontSize: "11px", fontWeight: "500", color: "var(--text-secondary)" }}>/ {secMax}</span>
+                              </span>
+                              <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                                Acc: {secAcc} • {formatTimingSafe(sec.timeTaken)}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
+                )}
+
+                {/* ONE Action Buttons Row */}
+                <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                  <button
+                    onClick={() => {
+                      setActiveSectionTab("all");
+                      setShowAnswers(true);
+                    }}
+                    style={{
+                      flex: 1.2,
+                      padding: "14px 20px",
+                      borderRadius: "16px",
+                      background: "#8B5CF6",
+                      color: "#FFFFFF",
+                      fontSize: "14.5px",
+                      fontWeight: "700",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      boxShadow: "0 4px 14px rgba(139, 92, 246, 0.35)",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    <BookOpen size={17} />
+                    Review Detailed Solutions
+                  </button>
+                  <button
+                    onClick={() => navigate("/dashboard")}
+                    style={{
+                      flex: 0.8,
+                      padding: "14px 20px",
+                      borderRadius: "16px",
+                      background: isDark ? "rgba(255,255,255,0.06)" : "#F1F5F9",
+                      color: isDark ? "#FFFFFF" : "#1E293B",
+                      border: isDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid #CBD5E1",
+                      fontSize: "14.5px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Dashboard
+                  </button>
                 </div>
 
                 {/* Social Share Box */}
-                <div className="rm-social-share" style={{ textAlign: "center", marginTop: "16px" }}>
-                  <p>Share Your Multi Quiz Result</p>
+                <div className="rm-social-share" style={{ textAlign: "center", marginTop: "12px" }}>
+                  <p>Share Your Result</p>
                   {shareId ? (
                     <div className="rm-social-icons">
                       <button title="Share on WhatsApp" onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`I scored ${score}/${total} on ${examTitle}! Check it out here: ${window.location.origin}/share-result/${shareId}`)}`, '_blank')}>
