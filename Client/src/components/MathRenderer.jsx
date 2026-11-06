@@ -80,13 +80,29 @@ function renderTextWithTablesAndImages(text) {
   return out;
 }
 
+// Utility to clean raw HTML entity artifacts such as &nbsp; or non-breaking spaces
+const cleanText = (str) => {
+  if (!str || typeof str !== 'string') return str || "";
+  return str
+    .replace(/&nbsp;?/gi, ' ')
+    .replace(/&#160;?/g, ' ')
+    .replace(/&thinsp;?/gi, ' ')
+    .replace(/&ensp;?/gi, ' ')
+    .replace(/&emsp;?/gi, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/&amp;/gi, '&');
+};
+
 const MathRenderer = ({ text }) => {
   const html = useMemo(() => {
     if (!text) return "";
     if (typeof text !== 'string') return text;
     
+    // Clean raw HTML entities like &nbsp; before KaTeX and Markdown parsing
+    const cleaned = cleanText(text);
+
     // Split by $$ first for Display Math
-    const displayBlocks = text.split("$$");
+    const displayBlocks = cleaned.split("$$");
     
     let processedHtml = "";
     

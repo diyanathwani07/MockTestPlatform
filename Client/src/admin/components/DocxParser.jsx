@@ -45,7 +45,10 @@ function DocxParser({ onQuestionsLoaded }) {
       }
 
       const result = await mammoth.extractRawText({ arrayBuffer });
-      const rawText = result.value;
+      const rawText = (result.value || "")
+        .replace(/&nbsp;?/gi, " ")
+        .replace(/&#160;?/g, " ")
+        .replace(/\u00A0/g, " ");
 
       console.log("[DocxParser] RAW TEXT (first 1000 chars):", rawText.substring(0, 1000));
       console.log("[DocxParser] RAW TEXT total length:", rawText.length);
@@ -56,7 +59,10 @@ function DocxParser({ onQuestionsLoaded }) {
         let htmlText = "";
         try {
           const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
-          htmlText = htmlResult.value || "";
+          htmlText = (htmlResult.value || "")
+            .replace(/&nbsp;?/gi, " ")
+            .replace(/&#160;?/g, " ")
+            .replace(/\u00A0/g, " ");
         } catch (e) {
           console.warn("[DocxParser] Failed to extract HTML for images/tables:", e);
         }
@@ -488,8 +494,10 @@ function parseQuestionsFromText(text) {
         
         const sortedOptions = optionsArray;
         const optionsPlain = sortedOptions.map(o => {
-          if (o.english && o.hindi) return `${o.english} / ${o.hindi}`;
-          return o.english || o.hindi || "";
+          const en = (o.english || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          const hi = (o.hindi || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          if (en && hi) return `${en} / ${hi}`;
+          return en || hi || "";
         });
 
         const incorrectMap = {};
@@ -627,8 +635,10 @@ function parseQuestionsFromText(text) {
         }
 
         const optionsPlain = sortedOptions.map(o => {
-          if (o.english && o.hindi) return `${o.english} / ${o.hindi}`;
-          return o.english || o.hindi || "";
+          const en = (o.english || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          const hi = (o.hindi || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          if (en && hi) return `${en} / ${hi}`;
+          return en || hi || "";
         });
 
         const incorrectMap = {};
@@ -825,8 +835,10 @@ function parseQuestionsFromText(text) {
 
         const incorrectMap = {};
         const optionsPlain = optionsArray.map(o => {
-          if (o.english && o.hindi) return `${o.english} / ${o.hindi}`;
-          return o.english || o.hindi || "";
+          const en = (o.english || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          const hi = (o.hindi || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          if (en && hi) return `${en} / ${hi}`;
+          return en || hi || "";
         });
 
         // Set correct option and map incorrect option explanations dynamically
@@ -906,8 +918,10 @@ function parseQuestionsFromText(text) {
         }
 
         const optionsPlain = optionsArray.map(o => {
-          if (o.english && o.hindi) return `${o.english} / ${o.hindi}`;
-          return o.english || o.hindi || "";
+          const en = (o.english || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          const hi = (o.hindi || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
+          if (en && hi) return `${en} / ${hi}`;
+          return en || hi || "";
         });
 
         const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
@@ -1289,10 +1303,10 @@ function parseTeachingParikshaLms(text, htmlText = "") {
         }
       }
 
-      const optionsPlain = currentQ.optionsArray.map(o => o.text.replace(/&nbsp;/g, ' ').trim());
+      const optionsPlain = currentQ.optionsArray.map(o => (o.text || "").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim());
       const letterToIndex = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
       const resolvedAnswer = optionsPlain[letterToIndex[currentQ.answerLetter]] || optionsPlain[0];
-      const fullExplanation = currentQ.explanationLines.join("\n").replace(/&nbsp;/g, ' ').trim();
+      const fullExplanation = currentQ.explanationLines.join("\n").replace(/&nbsp;?/gi, ' ').replace(/\u00A0/g, ' ').trim();
 
       currentSection.questions.push({
         questionEnglish,

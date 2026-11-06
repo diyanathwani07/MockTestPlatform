@@ -7,7 +7,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
-import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid, Eye, Check, X, Minus, BookOpen, Layers } from "lucide-react";
 import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
@@ -295,6 +295,115 @@ function Result() {
   const [showAnswers, setShowAnswers] = useState(false);
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [reviewFilter, setReviewFilter] = useState("all"); // "all", "correct", "incorrect", "unattempted"
+  const [activeSectionTab, setActiveSectionTab] = useState("all");
+
+  const isMultiQuiz = Boolean(data?.sectionResults && Array.isArray(data.sectionResults) && data.sectionResults.length > 0);
+
+  const formatTimingSafe = (seconds) => {
+    if (seconds === undefined || seconds === null || seconds === "") return "Not available";
+    const num = Number(seconds);
+    if (isNaN(num)) return "Not available";
+    if (num === 0) return "0s";
+    const m = Math.floor(num / 60);
+    const s = Math.round(num % 60);
+    if (m === 0) return `${s}s`;
+    return `${m}m ${s}s`;
+  };
+
+  const formatDurationDisplay = (val) => {
+    if (!val && val !== 0) return "30 Min";
+    let num = Number(val);
+    if (isNaN(num) || num <= 0) return "30 Min";
+    // If > 300, it's stored in seconds -> convert to minutes
+    let mins = num > 300 ? Math.round(num / 60) : Math.round(num);
+    if (mins >= 60) {
+      const hours = Math.floor(mins / 60);
+      const remainingMins = mins % 60;
+      return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
+    }
+    return `${mins} Min`;
+  };
+
+  const attemptedCount = React.useMemo(() => {
+    if (isMultiQuiz && Array.isArray(data?.sectionResults)) {
+      const sum = data.sectionResults.reduce((acc, s) => acc + (s.attempted || 0), 0);
+      if (sum > 0) return sum;
+    }
+    return (correct || 0) + (incorrect || 0);
+  }, [isMultiQuiz, data, correct, incorrect]);
+
+  const maxPossibleMarksDisplay = React.useMemo(() => {
+    if (data?.maxPossibleMarks !== undefined && data?.maxPossibleMarks !== null) {
+      return data.maxPossibleMarks;
+    }
+    if (isMultiQuiz && Array.isArray(data?.sectionResults)) {
+      const sum = data.sectionResults.reduce((acc, s) => acc + (s.maxMarks || 0), 0);
+      if (sum > 0) return sum;
+    }
+    return total || "Not available";
+  }, [data, isMultiQuiz, total]);
+
+  const accuracyDisplay = React.useMemo(() => {
+    if (data?.percentage !== undefined && data?.percentage !== null) {
+      return Number(data.percentage).toFixed(1);
+    }
+    if (attemptedCount > 0) {
+      return ((correct / attemptedCount) * 100).toFixed(1);
+    }
+    return total > 0 ? ((correct / total) * 100).toFixed(1) : "0.0";
+  }, [data, attemptedCount, correct, total]);
+
+  const sectionQuestions = React.useMemo(() => {
+    if (!isMultiQuiz) return [];
+    if (activeSectionTab === "all") return questions;
+    return questions.filter(q => q.sectionId?.toString() === activeSectionTab.toString());
+  }, [isMultiQuiz, questions, activeSectionTab]);
+
+  const sectionCounts = React.useMemo(() => {
+    let corr = 0;
+    let incorr = 0;
+    let unans = 0;
+    sectionQuestions.forEach((q, idx) => {
+      const userAns = q.userAnswer !== undefined ? q.userAnswer : userAnswers[idx];
+      const isUnanswered = userAns === undefined || userAns === null || userAns === "";
+      const isCorrect = q.status === "correct" || (q.correctAnswer ? String(userAns).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase() : false);
+      if (isCorrect) corr++;
+      else if (isUnanswered) unans++;
+      else incorr++;
+    });
+    return {
+      all: sectionQuestions.length,
+      correct: corr,
+      incorrect: incorr,
+      unattempted: unans
+    };
+  }, [sectionQuestions, userAnswers]);
+
+  const multiQuizFilteredQuestions = React.useMemo(() => {
+    if (!isMultiQuiz) return [];
+    return questions
+      .map((q, idx) => ({ ...q, globalIndex: idx }))
+      .filter((q) => {
+        // Section filter
+        if (activeSectionTab !== "all") {
+          const qSecId = q.sectionId?.toString();
+          if (qSecId !== activeSectionTab.toString()) {
+            return false;
+          }
+        }
+
+        // Status filter
+        const userAns = q.userAnswer !== undefined ? q.userAnswer : userAnswers[q.globalIndex];
+        const isUnanswered = userAns === undefined || userAns === null || userAns === "";
+        const isCorrect = q.status === "correct" || (q.correctAnswer ? String(userAns).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase() : false);
+        const isIncorrect = q.status === "incorrect" || (!isCorrect && !isUnanswered);
+
+        if (reviewFilter === "correct") return isCorrect;
+        if (reviewFilter === "incorrect") return isIncorrect;
+        if (reviewFilter === "unattempted") return isUnanswered;
+        return true;
+      });
+  }, [isMultiQuiz, questions, activeSectionTab, reviewFilter, userAnswers]);
   const [isScrolledDown, setIsScrolledDown] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -360,8 +469,17 @@ function Result() {
 
   useEffect(() => {
     if (data) {
+      const analyticsMap = new Map();
+      if (Array.isArray(data.questionAnalytics)) {
+        data.questionAnalytics.forEach(qa => {
+          if (qa.questionId) {
+            analyticsMap.set(qa.questionId.toString(), qa);
+          }
+        });
+      }
+
       if (data.questions && data.questions.length > 0) {
-        const mappedQs = data.questions.map(q => {
+        const mappedQs = data.questions.map((q, idx) => {
           let correctText = q.correctAnswer || "";
           if (q.correctAnswerObfuscated) {
             try {
@@ -379,8 +497,44 @@ function Result() {
               correctText = q.options[optNum - 1] || correctText;
             }
           }
-          return { ...q, correctAnswer: correctText };
+
+          const qIdStr = (q.id || q._id || q.questionId)?.toString();
+          const qa = qIdStr ? analyticsMap.get(qIdStr) : null;
+          const timeSpent = q.timeSpent !== undefined ? q.timeSpent : qa?.timeSpent;
+          const visitCount = q.visitCount !== undefined ? q.visitCount : qa?.visitCount;
+          const marksObtained = q.marksObtained !== undefined ? q.marksObtained : qa?.marksObtained;
+          const status = q.status || qa?.status;
+          const userAns = q.userAnswer !== undefined ? q.userAnswer : (qa?.userAnswer !== undefined ? qa.userAnswer : (data.userAnswers ? data.userAnswers[idx] : undefined));
+
+          return {
+            ...q,
+            originalIndex: idx,
+            correctAnswer: correctText,
+            timeSpent,
+            visitCount,
+            marksObtained,
+            status,
+            userAnswer: userAns
+          };
         });
+
+        // Historical Multi Quiz backward compatibility: partition by sectionResults totalQuestions if sectionId is missing
+        if (Array.isArray(data.sectionResults) && data.sectionResults.length > 0) {
+          let qOffset = 0;
+          data.sectionResults.forEach((sec, sIdx) => {
+            const count = sec.totalQuestions || 0;
+            for (let i = 0; i < count && (qOffset + i) < mappedQs.length; i++) {
+              const q = mappedQs[qOffset + i];
+              if (!q.sectionId) {
+                q.sectionId = sec.sectionId || `sec-${sIdx}`;
+                q.sectionTitle = sec.sectionTitle || sec.title || `Section ${sIdx + 1}`;
+                q.sectionType = sec.type || "standard";
+              }
+            }
+            qOffset += count;
+          });
+        }
+
         setQuestions(mappedQs);
         setUserAnswers(data.userAnswers || []);
       } else if (data.quizId) {
@@ -397,7 +551,7 @@ function Result() {
                   questions: quizData.questions
                }];
             }
-            const normalizedSections = loadedSections.map(sec => {
+            const normalizedSections = loadedSections.map((sec, sIdx) => {
                let qs = sec.questions || [];
                if (sec.type === 'coding' && sec.subsections) {
                   qs = [
@@ -406,10 +560,21 @@ function Result() {
                     ...(sec.subsections.hard || []),
                   ];
                }
-               return { ...sec, flatQuestions: qs };
+               const sId = sec.sectionId || sec._id || `sec-${sIdx}`;
+               const sTitle = sec.title || sec.name || `Section ${sIdx + 1}`;
+               const sType = sec.type || "standard";
+               return {
+                 ...sec,
+                 flatQuestions: qs.map(q => ({
+                   ...q,
+                   sectionId: q.sectionId || sId,
+                   sectionTitle: q.sectionTitle || sTitle,
+                   sectionType: q.sectionType || sType
+                 }))
+               };
             });
             const flatQs = normalizedSections.flatMap(sec => sec.flatQuestions);
-            const mappedQs = flatQs.map(q => {
+            const mappedQs = flatQs.map((q, idx) => {
               let correctText = q.correctAnswer || "";
               if (q.correctAnswerObfuscated) {
                 try {
@@ -427,7 +592,25 @@ function Result() {
                   correctText = q.options[optNum - 1] || correctText;
                 }
               }
-              return { ...q, correctAnswer: correctText };
+
+              const qIdStr = (q.id || q._id || q.questionId)?.toString();
+              const qa = qIdStr ? analyticsMap.get(qIdStr) : null;
+              const timeSpent = q.timeSpent !== undefined ? q.timeSpent : qa?.timeSpent;
+              const visitCount = q.visitCount !== undefined ? q.visitCount : qa?.visitCount;
+              const marksObtained = q.marksObtained !== undefined ? q.marksObtained : qa?.marksObtained;
+              const status = q.status || qa?.status;
+              const userAns = q.userAnswer !== undefined ? q.userAnswer : (qa?.userAnswer !== undefined ? qa.userAnswer : (data.userAnswers ? data.userAnswers[idx] : undefined));
+
+              return {
+                ...q,
+                originalIndex: idx,
+                correctAnswer: correctText,
+                timeSpent,
+                visitCount,
+                marksObtained,
+                status,
+                userAnswer: userAns
+              };
             });
             setQuestions(mappedQs);
             setUserAnswers(data.userAnswers || []);
@@ -912,9 +1095,1060 @@ function Result() {
       <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
         <ThemeToggle />
       </div>
-      
 
-            
+      {isMultiQuiz ? (
+        showAnswers ? (
+          /* Multi Quiz Section-wise Solutions Review */
+          <div className="result-review-container">
+            <div className="result-details" style={{ marginTop: "0" }}>
+              {/* Fixed Back Button in Absolute Top Left Corner */}
+              <button 
+                onClick={() => setShowAnswers(false)}
+                style={{
+                  position: "fixed",
+                  top: "20px",
+                  left: "20px",
+                  zIndex: 110,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "46px",
+                  height: "46px",
+                  borderRadius: "50%",
+                  backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
+                  border: "1px solid var(--border-color, #d1d5db)",
+                  color: isDark ? "#ffffff" : "#000000",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+                title="Back to Summary"
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              >
+                <ArrowLeft size={22} strokeWidth={2.5} />
+              </button>
+
+              {/* Sticky Title */}
+              <div style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 100,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "24px 70px 16px",
+                backgroundColor: isDark ? "#1D1B28" : "#EAEBF3",
+                marginBottom: "20px",
+                margin: "-20px -16px 20px -16px",
+              }}>
+                <h2 style={{ fontSize: "clamp(18px, 4vw, 24px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#000000", textAlign: "center" }}>
+                  Solutions & Detailed Analysis - {examTitle}
+                </h2>
+                <span style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                  Section-wise answers, bilingual explanations and timing analytics
+                </span>
+              </div>
+
+              {/* Section Navigation Tabs */}
+              <div style={{
+                display: "flex",
+                gap: "8px",
+                overflowX: "auto",
+                paddingBottom: "10px",
+                marginBottom: "16px",
+                scrollbarWidth: "none"
+              }}>
+                <button
+                  onClick={() => setActiveSectionTab("all")}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "10px",
+                    border: activeSectionTab === "all" ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color)",
+                    background: activeSectionTab === "all" ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#f3e8ff") : (isDark ? "#1E1B2E" : "#ffffff"),
+                    color: activeSectionTab === "all" ? "var(--violet)" : "var(--text-secondary)",
+                    fontWeight: "700",
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  <Layers size={15} />
+                  <span>All Sections</span>
+                  <span style={{
+                    fontSize: "11px",
+                    padding: "2px 6px",
+                    borderRadius: "6px",
+                    background: activeSectionTab === "all" ? "var(--violet)" : (isDark ? "rgba(255,255,255,0.1)" : "#E2E8F0"),
+                    color: activeSectionTab === "all" ? "#ffffff" : "var(--text-primary)"
+                  }}>
+                    {questions.length}
+                  </span>
+                </button>
+
+                {data?.sectionResults?.map((sec, sIdx) => {
+                  const secId = sec.sectionId || `sec-${sIdx}`;
+                  const isSelected = activeSectionTab?.toString() === secId.toString();
+                  return (
+                    <button
+                      key={secId}
+                      onClick={() => setActiveSectionTab(secId)}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "10px",
+                        border: isSelected ? "1.5px solid var(--violet)" : "1.5px solid var(--border-color)",
+                        background: isSelected ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#f3e8ff") : (isDark ? "#1E1B2E" : "#ffffff"),
+                        color: isSelected ? "var(--violet)" : "var(--text-secondary)",
+                        fontWeight: "700",
+                        fontSize: "13.5px",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      <span>{sec.sectionTitle || sec.title || `Section ${sIdx + 1}`}</span>
+                      <span style={{
+                        fontSize: "11px",
+                        padding: "2px 6px",
+                        borderRadius: "6px",
+                        background: isSelected ? "var(--violet)" : (isDark ? "rgba(255,255,255,0.1)" : "#E2E8F0"),
+                        color: isSelected ? "#ffffff" : "var(--text-primary)"
+                      }}>
+                        {sec.totalQuestions ?? 0}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Filter Sub-bar */}
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "12px",
+                marginBottom: "20px",
+                padding: "10px 14px",
+                borderRadius: "12px",
+                backgroundColor: isDark ? "rgba(255,255,255,0.02)" : "#FAFAFC",
+                border: "1px solid var(--border-color)"
+              }}>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => setReviewFilter("all")}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "8px",
+                      border: "none",
+                      fontSize: "12.5px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      backgroundColor: reviewFilter === "all" ? "var(--violet)" : "transparent",
+                      color: reviewFilter === "all" ? "#fff" : "var(--text-secondary)"
+                    }}
+                  >
+                    All ({sectionCounts.all})
+                  </button>
+                  <button
+                    onClick={() => setReviewFilter("correct")}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "8px",
+                      border: "none",
+                      fontSize: "12.5px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      backgroundColor: reviewFilter === "correct" ? "#22c55e" : "transparent",
+                      color: reviewFilter === "correct" ? "#fff" : "#22c55e"
+                    }}
+                  >
+                    ✓ Correct ({sectionCounts.correct})
+                  </button>
+                  <button
+                    onClick={() => setReviewFilter("incorrect")}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "8px",
+                      border: "none",
+                      fontSize: "12.5px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      backgroundColor: reviewFilter === "incorrect" ? "#ef4444" : "transparent",
+                      color: reviewFilter === "incorrect" ? "#fff" : "#ef4444"
+                    }}
+                  >
+                    ✕ Incorrect ({sectionCounts.incorrect})
+                  </button>
+                  <button
+                    onClick={() => setReviewFilter("unattempted")}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "8px",
+                      border: "none",
+                      fontSize: "12.5px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      backgroundColor: reviewFilter === "unattempted" ? "#64748b" : "transparent",
+                      color: reviewFilter === "unattempted" ? "#fff" : "var(--text-secondary)"
+                    }}
+                  >
+                    — Unanswered ({sectionCounts.unattempted})
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <button 
+                    onClick={() => {
+                      const allIndices = {};
+                      questions.forEach((_, idx) => { allIndices[idx] = true; });
+                      setExpandedQuestions(allIndices);
+                    }}
+                    style={{ background: "transparent", border: "none", color: "var(--primary)", fontWeight: "600", cursor: "pointer", fontSize: "12.5px" }}
+                  >
+                    Expand All
+                  </button>
+                  <span style={{ color: "var(--text-muted, #94A3B8)" }}>|</span>
+                  <button 
+                    onClick={() => setExpandedQuestions({})}
+                    style={{ background: "transparent", border: "none", color: "var(--text-muted, #94A3B8)", fontWeight: "600", cursor: "pointer", fontSize: "12.5px" }}
+                  >
+                    Collapse All
+                  </button>
+                </div>
+              </div>
+
+              {/* Questions List */}
+              <div className="review-list">
+                {multiQuizFilteredQuestions.length === 0 ? (
+                  <div style={{
+                    padding: "40px",
+                    textAlign: "center",
+                    background: "var(--bg-card)",
+                    borderRadius: "16px",
+                    border: "1px dashed var(--border-color)",
+                    color: "var(--text-secondary)"
+                  }}>
+                    <HelpCircle size={32} style={{ margin: "0 auto 12px", color: "var(--text-muted)" }} />
+                    <p style={{ margin: 0, fontSize: "15px", fontWeight: "600" }}>No questions match this filter in the selected section.</p>
+                  </div>
+                ) : (
+                  multiQuizFilteredQuestions.map((q, filteredIdx) => {
+                    const globalIdx = q.globalIndex ?? filteredIdx;
+                    const userAns = q.userAnswer !== undefined ? q.userAnswer : userAnswers[globalIdx];
+                    const isUnanswered = userAns === undefined || userAns === null || userAns === "";
+                    const isCorrect = q.status === "correct" || (q.correctAnswer ? String(userAns).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase() : false);
+                    const isIncorrect = q.status === "incorrect" || (!isCorrect && !isUnanswered);
+
+                    let statusBadgeBg = "rgba(100, 116, 139, 0.15)";
+                    let statusBadgeColor = "#64748B";
+                    let statusBadgeLabel = "Unanswered";
+                    let cardBorder = "1px solid var(--border-color)";
+
+                    if (isCorrect) {
+                      statusBadgeBg = "rgba(34, 197, 94, 0.15)";
+                      statusBadgeColor = "#22C55E";
+                      statusBadgeLabel = "Correct";
+                      cardBorder = "1.5px solid #22C55E";
+                    } else if (isIncorrect) {
+                      statusBadgeBg = "rgba(239, 68, 68, 0.15)";
+                      statusBadgeColor = "#EF4444";
+                      statusBadgeLabel = "Incorrect";
+                      cardBorder = "1.5px solid #EF4444";
+                    }
+
+                    // Marks display
+                    let marksText = "0 marks";
+                    if (q.marksObtained !== undefined && q.marksObtained !== null) {
+                      marksText = (q.marksObtained > 0 ? `+${q.marksObtained}` : `${q.marksObtained}`) + " marks";
+                    } else if (isCorrect) {
+                      marksText = `+${q.marksPerQuestion || 1} mark`;
+                    } else if (isIncorrect) {
+                      marksText = `-${q.negativeMarking || 0} mark`;
+                    }
+
+                    const isExpanded = !!expandedQuestions[globalIdx];
+
+                    return (
+                      <div 
+                        className="review-item" 
+                        key={q.id || q._id || globalIdx}
+                        style={{ 
+                          borderRadius: "14px", 
+                          marginBottom: "16px", 
+                          border: cardBorder, 
+                          boxShadow: "0 4px 14px rgba(0,0,0,0.03)",
+                          overflow: "hidden",
+                          transition: "all 0.25s ease",
+                          background: "var(--bg-card)"
+                        }}
+                      >
+                        {/* Collapsible Header */}
+                        <div 
+                          onClick={() => {
+                            setExpandedQuestions(prev => ({
+                              ...prev,
+                              [globalIdx]: !prev[globalIdx]
+                            }));
+                          }}
+                          style={{ 
+                            padding: "16px 20px", 
+                            cursor: "pointer", 
+                            backgroundColor: isDark ? "rgba(255, 255, 255, 0.02)" : "#FAFAFC", 
+                            display: "flex", 
+                            flexDirection: "column",
+                            gap: "12px",
+                            userSelect: "none"
+                          }}
+                        >
+                          {/* Top Badges Meta Row */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                              {/* Section Title Pill */}
+                              {q.sectionTitle && (
+                                <span style={{
+                                  fontSize: "11px",
+                                  fontWeight: "700",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.5px",
+                                  color: "var(--violet)",
+                                  background: isDark ? "rgba(139, 92, 246, 0.15)" : "#f3e8ff",
+                                  padding: "2px 8px",
+                                  borderRadius: "6px"
+                                }}>
+                                  {q.sectionTitle}
+                                </span>
+                              )}
+                              
+                              {/* Status Badge */}
+                              <span style={{
+                                fontSize: "11.5px",
+                                fontWeight: "700",
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                backgroundColor: statusBadgeBg,
+                                color: statusBadgeColor
+                              }}>
+                                {statusBadgeLabel}
+                              </span>
+
+                              {/* Marks Pill */}
+                              <span style={{
+                                fontSize: "11.5px",
+                                fontWeight: "700",
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9",
+                                color: isCorrect ? "#22c55e" : (isIncorrect ? "#ef4444" : "var(--text-secondary)")
+                              }}>
+                                {marksText}
+                              </span>
+
+                              {/* Time Spent Pill */}
+                              <span style={{
+                                fontSize: "11.5px",
+                                fontWeight: "600",
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9",
+                                color: "var(--text-primary)",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px"
+                              }}>
+                                <Clock size={11} color="#8b5cf6" />
+                                {formatTimingSafe(q.timeSpent)}
+                              </span>
+
+                              {/* Visit Count Pill */}
+                              <span style={{
+                                fontSize: "11.5px",
+                                fontWeight: "600",
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9",
+                                color: "var(--text-secondary)",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px"
+                              }}>
+                                <Eye size={11} />
+                                {q.visitCount !== undefined && q.visitCount !== null ? `${q.visitCount} visits` : "Not available"}
+                              </span>
+                            </div>
+
+                            {/* Accordion Indicator Chevron */}
+                            <span style={{ 
+                              color: "var(--text-secondary)", 
+                              fontSize: "18px", 
+                              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", 
+                              transition: "transform 0.2s ease",
+                              fontWeight: "bold"
+                            }}>
+                              ❯
+                            </span>
+                          </div>
+
+                          {/* Question Text */}
+                          <div className="review-question" style={{ display: "flex", gap: "12px", alignItems: "flex-start", textAlign: "left" }}>
+                            <span className="q-number" style={{ 
+                              minWidth: "30px", 
+                              height: "30px",
+                              borderRadius: "8px",
+                              backgroundColor: statusBadgeColor,
+                              color: "#FFFFFF",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: "800",
+                              fontSize: "13px",
+                              flexShrink: 0
+                            }}>
+                              {filteredIdx + 1}
+                            </span>
+                            
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: "600", color: isDark ? "#F1F5F9" : "#1E293B", fontSize: "15px", lineHeight: "1.5" }}>
+                                <MathRenderer text={q.english || q.questionEnglish} />
+                              </div>
+                              {(q.hindi || q.questionHindi) && (
+                                <div style={{ fontWeight: "500", color: isDark ? "#CBD5E1" : "#475569", marginTop: "6px", fontSize: "14px", lineHeight: "1.5" }}>
+                                  <MathRenderer text={q.hindi || q.questionHindi} />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Expandable Options and Explanation */}
+                        <div style={{ 
+                          height: isExpanded ? "auto" : "0px",
+                          overflow: "hidden",
+                          transition: "all 0.25s ease-in-out",
+                          borderTop: isExpanded ? "1px solid var(--border-color)" : "none",
+                          backgroundColor: isDark ? "#171622" : "#ffffff",
+                          padding: isExpanded ? "20px" : "0px 20px"
+                        }}>
+                          {/* Options Grid */}
+                          <div className="review-options" style={{ marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                            {q.options && q.options.length > 0 ? q.options.map((opt, optIdx) => {
+                              const isSelected = userAns === opt;
+                              const showCorrect = data?.showCorrectAnswers !== false;
+                              const isCorrectOpt = showCorrect && q.correctAnswer === opt;
+                              
+                              let optBg = isDark ? "#2A273A" : "#ffffff";
+                              let optBorder = isDark ? "1px solid #3F3C53" : "1px solid #E2E8F0";
+                              let optColor = isDark ? "#F8FAFC" : "#1E293B";
+                              let optWeight = "500";
+                              
+                              if (isCorrectOpt) {
+                                optBg = isDark ? "rgba(34, 197, 94, 0.15)" : "#dcfce7";
+                                optBorder = "1px solid #22c55e";
+                                optColor = isDark ? "#4ade80" : "#166534";
+                                optWeight = "600";
+                              } else if (isSelected) {
+                                if (showCorrect) {
+                                  optBg = isDark ? "rgba(239, 68, 68, 0.15)" : "#fee2e2";
+                                  optBorder = "1px solid #ef4444";
+                                  optColor = isDark ? "#f87171" : "#991b1b";
+                                } else {
+                                  optBg = isDark ? "rgba(139, 92, 246, 0.15)" : "#f3e8ff";
+                                  optBorder = "1px solid var(--primary)";
+                                  optColor = "var(--primary)";
+                                  optWeight = "600";
+                                }
+                              }
+                              
+                              return (
+                                <div key={optIdx} style={{ 
+                                  padding: "12px 16px", 
+                                  borderRadius: "10px", 
+                                  backgroundColor: optBg, 
+                                  border: optBorder,
+                                  color: optColor,
+                                  fontWeight: optWeight,
+                                  fontSize: "14.5px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  transition: "all 0.2s"
+                                }}>
+                                  <span style={{ 
+                                    width: "26px", 
+                                    height: "26px", 
+                                    borderRadius: "50%", 
+                                    backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "var(--primary)") : (isDark ? "#3F3C53" : "#F1F5F9")),
+                                    color: isCorrectOpt || isSelected ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
+                                    border: isCorrectOpt || isSelected ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "13px",
+                                    fontWeight: "700",
+                                    flexShrink: 0
+                                  }}>
+                                    {String.fromCharCode(65 + optIdx)}
+                                  </span>
+                                  <span style={{ lineHeight: "1.4" }}><MathRenderer text={opt} /></span>
+                                </div>
+                              );
+                            }) : (
+                              <div style={{ color: "#94A3B8", fontStyle: "italic", fontSize: "14px" }}>No options available.</div>
+                            )}
+                          </div>
+
+                          {/* Student Answer vs Correct Answer Summary */}
+                          <div className="review-answers" style={{ marginTop: "16px" }}>
+                            <div style={{ marginBottom: "16px", fontSize: "14.5px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                              <strong style={{ color: isDark ? "#E2E8F0" : "#1E293B" }}>Your Answer: </strong>
+                              <span
+                                style={{ 
+                                  padding: "4px 10px", 
+                                  borderRadius: "6px", 
+                                  backgroundColor: isUnanswered ? (isDark ? "rgba(255,255,255,0.05)" : "#F1F5F9") : (isCorrect ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)"), 
+                                  color: isUnanswered ? "var(--text-muted)" : (isCorrect ? "#22c55e" : "#ef4444"), 
+                                  border: "1px solid var(--border-color)", 
+                                  fontWeight: "700", 
+                                  whiteSpace: "nowrap" 
+                                }}
+                              >
+                                {(userAns !== undefined && userAns !== null && userAns !== "") ? <MathRenderer text={userAns} /> : "Not Answered"}
+                              </span>
+
+                              {data?.showCorrectAnswers !== false && q.correctAnswer && (
+                                <>
+                                  <strong style={{ color: isDark ? "#E2E8F0" : "#1E293B", marginLeft: "12px" }}>Correct Answer: </strong>
+                                  <span style={{
+                                    padding: "4px 10px",
+                                    borderRadius: "6px",
+                                    backgroundColor: "rgba(34,197,94,0.15)",
+                                    color: "#22c55e",
+                                    border: "1px solid rgba(34,197,94,0.3)",
+                                    fontWeight: "700",
+                                    whiteSpace: "nowrap"
+                                  }}>
+                                    <MathRenderer text={q.correctAnswer} />
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                            
+                            {/* Explanations & Solution Steps */}
+                            {data?.showExplanations !== false && (q.explanation || q.solution) && (
+                              <div style={{ 
+                                marginTop: "20px", 
+                                padding: "16px 20px", 
+                                backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", 
+                                borderLeft: "4px solid var(--primary)", 
+                                borderRadius: "8px", 
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.04)", 
+                                textAlign: "left" 
+                              }}>
+                                <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                                  <span>💡</span> Explanation & Solution Steps
+                                </p>
+                                <div style={{ margin: 0, fontSize: "14.5px", color: isDark ? "#E2E8F0" : "#475569", lineHeight: "1.6" }}>
+                                  <MathRenderer text={q.explanation || q.solution} />
+                                </div>
+                                {(q.explanationHindi || q.solutionHindi) && (
+                                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px dashed var(--border-color)", fontSize: "14px", color: isDark ? "#CBD5E1" : "#475569", lineHeight: "1.6" }}>
+                                    <MathRenderer text={q.explanationHindi || q.solutionHindi} />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="result-actions" style={{ marginTop: "40px", paddingBottom: "60px", display: "flex", justifyContent: "center", gap: "16px" }}>
+                <button 
+                  className="rm-btn-outline" 
+                  style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
+                  onClick={() => setShowAnswers(false)}
+                >
+                  ← Back to Summary
+                </button>
+                <button 
+                  className="rm-btn-solid" 
+                  style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Back to Dashboard
+                </button>
+              </div>
+
+              {/* Floating scroll action button */}
+              <div style={{ position: "fixed", bottom: "30px", right: "30px", zIndex: 1000 }}>
+                <button
+                  onClick={() => {
+                    if (isScrolledDown) {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    } else {
+                      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+                    }
+                  }}
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    backgroundColor: isDark ? "var(--primary)" : "#ffffff",
+                    color: isDark ? "#ffffff" : "var(--primary)",
+                    border: "2px solid var(--border-color, #d1d5db)",
+                    boxShadow: "0 4px 16px rgba(110, 63, 243, 0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                    fontSize: "16px",
+                    fontWeight: "bold"
+                  }}
+                  title={isScrolledDown ? "Scroll to Top" : "Scroll to Bottom"}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                >
+                  {isScrolledDown ? "▲" : "▼"}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Multi Quiz Overall Performance & Subject Cards Summary View */
+          <div className="result-modal-overlay" style={{ minHeight: "100vh", padding: "40px 16px" }}>
+            {/* Back button */}
+            <button 
+              onClick={() => {
+                if (location.state?.fromAttempts) {
+                  navigate(-1);
+                } else {
+                  navigate("/dashboard/results");
+                }
+              }}
+              style={{
+                position: "fixed",
+                top: "20px",
+                left: "20px",
+                zIndex: 110,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "46px",
+                height: "46px",
+                borderRadius: "50%",
+                backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
+                border: "1px solid var(--border-color, #d1d5db)",
+                color: isDark ? "#ffffff" : "#000000",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              title="Go Back"
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              <ArrowLeft size={22} strokeWidth={2.5} />
+            </button>
+
+            <div style={{
+              display: "flex",
+              gap: "30px",
+              maxWidth: isExam ? "1100px" : "800px",
+              width: "100%",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              boxSizing: "border-box",
+              flexWrap: "wrap",
+              margin: "0 auto"
+            }}>
+              {/* Left Column: Overall Performance & Section Cards */}
+              <div style={{ flex: 1.3, minWidth: "320px", maxWidth: "720px", width: "100%" }}>
+                {/* 1. Overall Performance Card */}
+                <div style={{
+                  background: "var(--bg-card)",
+                  border: "1.5px solid var(--border-color)",
+                  borderRadius: "24px",
+                  padding: "32px 24px",
+                  textAlign: "center",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                  boxSizing: "border-box",
+                  marginBottom: "24px"
+                }}>
+                  {/* Mascot / Trophy */}
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+                    <DotLottieReact 
+                      src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} 
+                      loop 
+                      autoplay 
+                      style={{ width: "90px", height: "90px", transform: "scale(2.0)" }} 
+                    />
+                  </div>
+
+                  <h2 style={{ fontSize: "24px", fontWeight: "800", margin: "0 0 6px", color: "var(--text-primary)" }}>
+                    {Number(computedPercentage) >= 80 ? "Outstanding Performance!" : Number(computedPercentage) >= passThreshold ? "Exam Completed Successfully!" : "Exam Completed — Keep Practicing!"}
+                  </h2>
+                  <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: "0 0 20px" }}>
+                    Great job, <strong>{user.name || user.fullName}</strong>! Here is your overall Multi Quiz performance summary for <strong>{examTitle}</strong>.
+                  </p>
+
+                  {/* Top Chips Row */}
+                  <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap", marginBottom: "24px" }}>
+                    <span style={{ fontSize: "12.5px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <CalendarDays size={14} color="#8b5cf6" /> {formattedDate}
+                    </span>
+                    <span style={{ fontSize: "12.5px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Clock size={14} color="#8b5cf6" /> {formatDurationDisplay(data?.duration)}
+                    </span>
+                    <span style={{ fontSize: "12.5px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <HelpCircle size={14} color="#8b5cf6" /> {total} Questions
+                    </span>
+                  </div>
+
+                  {/* Hero Score Box */}
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                    flexWrap: "wrap",
+                    gap: "20px",
+                    padding: "24px",
+                    borderRadius: "20px",
+                    background: isDark ? "rgba(255, 255, 255, 0.02)" : "#fafafc",
+                    border: "1.5px solid var(--border-color)",
+                    marginBottom: "24px"
+                  }}>
+                    <div>
+                      <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Marks Obtained</span>
+                      <h1 style={{ fontSize: "36px", fontWeight: "900", margin: "4px 0", color: "var(--text-primary)", lineHeight: 1 }}>
+                        {score} <span style={{ fontSize: "19px", fontWeight: "600", color: "var(--text-secondary)" }}>/ {maxPossibleMarksDisplay}</span>
+                      </h1>
+                      {data?.showPassFailStatus !== false && (
+                        <span style={{
+                          display: "inline-block",
+                          marginTop: "6px",
+                          padding: "3px 12px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          backgroundColor: (data?.passed !== undefined ? data.passed : (Number(computedPercentage) >= passThreshold)) ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                          color: (data?.passed !== undefined ? data.passed : (Number(computedPercentage) >= passThreshold)) ? "#22c55e" : "#ef4444"
+                        }}>
+                          {(data?.passed !== undefined ? data.passed : (Number(computedPercentage) >= passThreshold)) ? "Passed 🎉" : "Failed 😢"}
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ height: "60px", width: "1px", background: "var(--border-color)" }} />
+
+                    <div>
+                      <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Overall Accuracy</span>
+                      <h1 style={{ fontSize: "36px", fontWeight: "900", margin: "4px 0", color: "var(--violet)", lineHeight: 1 }}>
+                        {accuracyDisplay}%
+                      </h1>
+                      <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                        {attemptedCount} of {total} attempted
+                      </span>
+                    </div>
+
+                    <div style={{ height: "60px", width: "1px", background: "var(--border-color)" }} />
+
+                    <div>
+                      <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Total Time Taken</span>
+                      <h2 style={{ fontSize: "22px", fontWeight: "800", margin: "8px 0 4px", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                        <Timer size={20} color="#8b5cf6" />
+                        {formatTimingSafe(data?.timeTaken)}
+                      </h2>
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Authoritative exam clock</span>
+                    </div>
+                  </div>
+
+                  {/* 6-Metric Mini Cards */}
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+                    gap: "12px",
+                    marginBottom: "24px"
+                  }}>
+                    <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "14px 10px" }}>
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Total Questions</span>
+                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>{total}</span>
+                    </div>
+                    <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "14px 10px" }}>
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Attempted</span>
+                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>{attemptedCount}</span>
+                    </div>
+                    <div style={{ background: "rgba(34, 197, 94, 0.08)", border: "1px solid rgba(34, 197, 94, 0.2)", borderRadius: "14px", padding: "14px 10px" }}>
+                      <span style={{ fontSize: "11px", color: "#22c55e", display: "block", marginBottom: "4px" }}>Correct</span>
+                      <span style={{ fontSize: "18px", fontWeight: "800", color: "#22c55e" }}>{correct}</span>
+                    </div>
+                    <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "14px", padding: "14px 10px" }}>
+                      <span style={{ fontSize: "11px", color: "#ef4444", display: "block", marginBottom: "4px" }}>Incorrect</span>
+                      <span style={{ fontSize: "18px", fontWeight: "800", color: "#ef4444" }}>{incorrect}</span>
+                    </div>
+                    <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f1f5f9", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "14px 10px" }}>
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>Unanswered</span>
+                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-secondary)" }}>{unanswered}</span>
+                    </div>
+                    <div style={{ background: "rgba(139, 92, 246, 0.08)", border: "1px solid rgba(139, 92, 246, 0.2)", borderRadius: "14px", padding: "14px 10px" }}>
+                      <span style={{ fontSize: "11px", color: "var(--violet)", display: "block", marginBottom: "4px" }}>Sections</span>
+                      <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet)" }}>{data?.sectionResults?.length || 0}</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => {
+                        setActiveSectionTab("all");
+                        setShowAnswers(true);
+                      }}
+                      style={{
+                        padding: "14px 28px",
+                        borderRadius: "14px",
+                        background: "var(--violet)",
+                        color: "#fff",
+                        border: "none",
+                        fontSize: "14.5px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        boxShadow: "0 4px 14px rgba(124, 58, 237, 0.3)"
+                      }}
+                    >
+                      <BookOpen size={17} />
+                      Review Detailed Solutions
+                    </button>
+                    <button
+                      onClick={() => navigate("/dashboard")}
+                      style={{
+                        padding: "14px 24px",
+                        borderRadius: "14px",
+                        background: "transparent",
+                        color: "var(--text-primary)",
+                        border: "1.5px solid var(--border-color)",
+                        fontSize: "14.5px",
+                        fontWeight: "700",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Dashboard
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Subject-wise Performance Cards */}
+                <div style={{ textAlign: "left", marginBottom: "28px" }}>
+                  <div style={{ marginBottom: "16px" }}>
+                    <h3 style={{ margin: "0 0 4px", fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>
+                      Subject / Section Analysis
+                    </h3>
+                    <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
+                      Section-wise marks obtained, accuracy and time spent
+                    </p>
+                  </div>
+
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                    gap: "16px"
+                  }}>
+                    {data?.sectionResults?.map((sec, idx) => {
+                      const secMaxMarks = sec.maxMarks !== undefined && sec.maxMarks !== null ? sec.maxMarks : "Not available";
+                      const secAcc = sec.accuracy !== undefined && sec.accuracy !== null ? `${Number(sec.accuracy).toFixed(1)}%` : (sec.attempted > 0 ? `${((sec.correct / sec.attempted) * 100).toFixed(1)}%` : "0%");
+                      const secUnans = sec.unanswered !== undefined ? sec.unanswered : Math.max(0, (sec.totalQuestions || 0) - ((sec.correct || 0) + (sec.incorrect || 0)));
+                      const secId = sec.sectionId || `sec-${idx}`;
+
+                      return (
+                        <div
+                          key={secId}
+                          style={{
+                            background: "var(--bg-card)",
+                            border: "1.5px solid var(--border-color)",
+                            borderRadius: "18px",
+                            padding: "20px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "14px",
+                            boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
+                            transition: "all 0.2s ease"
+                          }}
+                        >
+                          {/* Header */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+                            <div>
+                              <span style={{
+                                fontSize: "10.5px",
+                                fontWeight: "700",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.5px",
+                                color: "var(--violet)",
+                                background: isDark ? "rgba(139, 92, 246, 0.15)" : "#f3e8ff",
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                display: "inline-block",
+                                marginBottom: "6px"
+                              }}>
+                                {sec.type || "Standard"}
+                              </span>
+                              <h4 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
+                                {sec.sectionTitle || sec.title || `Section ${idx + 1}`}
+                              </h4>
+                            </div>
+                            <div style={{
+                              background: isDark ? "rgba(255, 255, 255, 0.05)" : "#f8fafc",
+                              border: "1px solid var(--border-color)",
+                              padding: "4px 10px",
+                              borderRadius: "8px",
+                              textAlign: "right"
+                            }}>
+                              <span style={{ fontSize: "10.5px", color: "var(--text-muted)", display: "block" }}>Accuracy</span>
+                              <span style={{ fontSize: "13.5px", fontWeight: "700", color: "var(--violet)" }}>{secAcc}</span>
+                            </div>
+                          </div>
+
+                          {/* Marks & Time Taken Box */}
+                          <div style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "12px 14px",
+                            borderRadius: "12px",
+                            background: isDark ? "rgba(255, 255, 255, 0.02)" : "#f8fafc",
+                            border: "1px solid var(--border-color)"
+                          }}>
+                            <div>
+                              <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block" }}>Marks</span>
+                              <span style={{ fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>
+                                {sec.score ?? 0} <span style={{ fontSize: "13px", fontWeight: "500", color: "var(--text-secondary)" }}>/ {secMaxMarks}</span>
+                              </span>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block" }}>Time Taken</span>
+                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end" }}>
+                                <Clock size={13} color="#8b5cf6" />
+                                {formatTimingSafe(sec.timeTaken)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* 4-Stat Grid */}
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", textAlign: "center" }}>
+                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: isDark ? "rgba(255,255,255,0.02)" : "#f1f5f9" }}>
+                              <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "block" }}>Total</span>
+                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{sec.totalQuestions ?? 0}</span>
+                            </div>
+                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: "rgba(34, 197, 94, 0.1)" }}>
+                              <span style={{ fontSize: "10px", color: "#22c55e", display: "block" }}>Correct</span>
+                              <span style={{ fontSize: "13px", fontWeight: "700", color: "#22c55e" }}>{sec.correct ?? 0}</span>
+                            </div>
+                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.1)" }}>
+                              <span style={{ fontSize: "10px", color: "#ef4444", display: "block" }}>Wrong</span>
+                              <span style={{ fontSize: "13px", fontWeight: "700", color: "#ef4444" }}>{sec.incorrect ?? 0}</span>
+                            </div>
+                            <div style={{ padding: "8px 4px", borderRadius: "8px", background: isDark ? "rgba(255,255,255,0.05)" : "#e2e8f0" }}>
+                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", display: "block" }}>Skipped</span>
+                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>{secUnans}</span>
+                            </div>
+                          </div>
+
+                          {/* View Section Solutions button */}
+                          <button
+                            onClick={() => {
+                              setActiveSectionTab(secId);
+                              setShowAnswers(true);
+                            }}
+                            style={{
+                              marginTop: "4px",
+                              padding: "9px 12px",
+                              borderRadius: "10px",
+                              border: "1px solid var(--violet)",
+                              background: "transparent",
+                              color: "var(--violet)",
+                              fontSize: "12.5px",
+                              fontWeight: "700",
+                              cursor: "pointer",
+                              transition: "all 0.2s",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "6px"
+                            }}
+                          >
+                            <span>View Section Solutions</span>
+                            <span>→</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Social Share Box */}
+                <div className="rm-social-share" style={{ textAlign: "center", marginTop: "16px" }}>
+                  <p>Share Your Multi Quiz Result</p>
+                  {shareId ? (
+                    <div className="rm-social-icons">
+                      <button title="Share on WhatsApp" onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`I scored ${score}/${total} on ${examTitle}! Check it out here: ${window.location.origin}/share-result/${shareId}`)}`, '_blank')}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#25D366" }}>
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                      </button>
+                      <button title="Share on Facebook" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/share-result/${shareId}`)}`, '_blank')}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#1877F2" }}>
+                          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                      </button>
+                      <button title="Share on Instagram" onClick={() => { navigator.clipboard.writeText(`I scored ${score}/${total} on ${examTitle}! Link: ${window.location.origin}/share-result/${shareId}`); alert("Result text and link copied! Open Instagram to share it."); }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#E1306C" }}>
+                          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                      </button>
+                      <button title="Copy Link" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/share-result/${shareId}`); alert("Link copied to clipboard!"); }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#6B7280" }}>
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Generating share link...</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Feedback Card (if isExam) */}
+              {isExam && (effectiveResultId || data?._id || data?.result?._id || data?.resultId) && (
+                <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
+                  <FeedbackForm
+                    resultId={data?.result?._id || data?._id || data?.resultId || (resultId && resultId.length === 24 ? resultId : null)}
+                    initialReaction={data?.reaction}
+                    initialComment={data?.feedbackMessage}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      ) : (
+        /* Original Single Quiz Experience (100% UNCHANGED) */
+        <>
             {/* Header */}
       {!showAnswers && isMobile && (
         <div style={{
@@ -1108,16 +2342,16 @@ function Result() {
 
             {/* Quiz Info */}
             <div className="rm-info-card">
-              <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)", borderRadius: "12px", width: "48px", height: "48px" }}>
+              <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)", borderRadius: "14px", width: "52px", height: "52px", flexShrink: 0 }}>
                 <FileText size={24} />
               </div>
               <div className="rm-info-content">
                 <p className="rm-info-label">Quiz Title</p>
                 <h3 className="rm-info-title">{examTitle}</h3>
-                <div className="rm-info-meta" style={{ flexWrap: "wrap" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}><CalendarDays size={14} /> {formattedDate}</span>
-                  <span style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}><Clock size={14} /> {data?.duration || 30} Min</span>
-                  <span style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}><HelpCircle size={14} /> {total} Questions</span>
+                <div className="rm-info-meta">
+                  <span className="rm-info-chip"><CalendarDays size={13} /> {formattedDate}</span>
+                  <span className="rm-info-chip"><Clock size={13} /> {formatDurationDisplay(data?.duration)}</span>
+                  <span className="rm-info-chip"><HelpCircle size={13} /> {total} Questions</span>
                 </div>
               </div>
             </div>
@@ -1338,12 +2572,15 @@ function Result() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "24px 70px 20px",
-              backgroundColor: isDark ? "#1D1B28" : "#EAEBF3",
-              marginBottom: "24px",
-              margin: "-20px -16px 24px -16px",
+              padding: "18px 60px",
+              backgroundColor: isDark ? "rgba(29, 27, 40, 0.92)" : "rgba(255, 255, 255, 0.92)",
+              backdropFilter: "blur(12px)",
+              borderRadius: "16px",
+              border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
+              boxShadow: isDark ? "0 4px 20px rgba(0, 0, 0, 0.35)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
+              marginBottom: "24px"
             }}>
-              <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#000000", textAlign: "center" }}>Answer Review - {examTitle}</h2>
+              <h2 style={{ fontSize: "clamp(18px, 4vw, 24px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#1E293B", textAlign: "center", fontWeight: "700" }}>Answer Review - {examTitle}</h2>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
@@ -1671,6 +2908,8 @@ function Result() {
              </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

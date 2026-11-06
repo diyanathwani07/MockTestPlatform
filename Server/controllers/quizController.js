@@ -1013,20 +1013,30 @@ const deleteCustomQuiz = async (req, res) => {
 
 const submitQuiz = async (req, res) => {
   try {
-    const { userAnswers, timeTaken } = req.body;
+    const { userAnswers, timeTaken, sectionTimings, questionTimings } = req.body;
     if (!userAnswers) {
       return res.status(400).json({ message: "Missing userAnswers payload" });
     }
 
+    const Result = require("../models/Result");
     let quizId = req.params.id;
     let existingAttempt = null;
 
     if (req.params.attemptId) {
-      const Result = require("../models/Result");
       existingAttempt = await Result.findById(req.params.attemptId);
-      if (!existingAttempt) {
-        return res.status(404).json({ message: "Attempt not found." });
-      }
+    } else if (req.body.attemptId) {
+      existingAttempt = await Result.findById(req.body.attemptId);
+    }
+
+    if (!existingAttempt && quizId) {
+      existingAttempt = await Result.findOne({
+        userId: req.user._id,
+        quizId,
+        status: "active"
+      }).sort({ createdAt: -1 });
+    }
+
+    if (existingAttempt) {
       if (existingAttempt.status === "submitted") {
         return res.status(400).json({ message: "This attempt has already been submitted." });
       }
@@ -1081,6 +1091,7 @@ const submitQuiz = async (req, res) => {
             qObj.negativeMarking = sec.negativeMarking ?? quiz.negativeMarking ?? 0;
             qObj.sectionId = sec._id;
             qObj.sectionTitle = sec.title;
+            qObj.sectionType = sec.type || "standard";
             return qObj;
          });
       });
@@ -1092,6 +1103,78 @@ const submitQuiz = async (req, res) => {
         qObj.negativeMarking = quiz.negativeMarking ?? 0;
         return qObj;
       });
+    }
+
+    // Constraint 4: Validate client timing data against authoritative server attempt start and quiz duration
+    let serverElapsedSeconds = null;
+    if (existingAttempt && existingAttempt.createdAt) {
+      serverElapsedSeconds = Math.max(1, Math.round((Date.now() - new Date(existingAttempt.createdAt).getTime()) / 1000));
+    }
+
+    let quizMaxDurationSecs = null;
+    if (quiz.duration) {
+      const isMulti = quiz.sections && quiz.sections.length > 0;
+      quizMaxDurationSecs = isMulti ? quiz.duration : quiz.duration * 60;
+    }
+
+    let validatedTimeTaken = Math.max(0, Number(timeTaken) || 0);
+    if (serverElapsedSeconds !== null) {
+      if (validatedTimeTaken > serverElapsedSeconds + 30) {
+        validatedTimeTaken = serverElapsedSeconds;
+      }
+    }
+    if (quizMaxDurationSecs !== null) {
+      if (validatedTimeTaken > quizMaxDurationSecs + 60) {
+        validatedTimeTaken = quizMaxDurationSecs;
+      }
+    }
+
+    // Constraint 5: Validate submitted section IDs and question IDs belong to the quiz
+    const validSectionIdSet = new Set();
+    if (quiz.sections && Array.isArray(quiz.sections)) {
+      quiz.sections.forEach(s => {
+        if (s._id) validSectionIdSet.add(s._id.toString());
+        if (s.sectionId) validSectionIdSet.add(s.sectionId.toString());
+      });
+    }
+
+    const validatedSectionTimings = {};
+    let sumSectionTimings = 0;
+    if (sectionTimings && typeof sectionTimings === "object") {
+      for (const [secId, secTime] of Object.entries(sectionTimings)) {
+        const secIdStr = secId.toString();
+        if (validSectionIdSet.has(secIdStr)) {
+          const safeTime = Math.max(0, Math.min(Number(secTime) || 0, validatedTimeTaken || 86400));
+          validatedSectionTimings[secIdStr] = safeTime;
+          sumSectionTimings += safeTime;
+        }
+      }
+    }
+
+    // Constraint 2: Validate aggregate section timings against overall validated time taken
+    if (sumSectionTimings > validatedTimeTaken + 30 && sumSectionTimings > 0 && validatedTimeTaken > 0) {
+      const ratio = validatedTimeTaken / sumSectionTimings;
+      for (const secIdStr of Object.keys(validatedSectionTimings)) {
+        validatedSectionTimings[secIdStr] = Math.round(validatedSectionTimings[secIdStr] * ratio);
+      }
+    }
+
+    const validQuestionIdSet = new Set(
+      dbQuestions.map(q => (q._id ? q._id.toString() : null)).filter(Boolean)
+    );
+
+    const validatedQuestionTimings = {};
+    if (questionTimings && typeof questionTimings === "object") {
+      for (const [qId, qData] of Object.entries(questionTimings)) {
+        const qIdStr = qId.toString();
+        if (validQuestionIdSet.has(qIdStr) && qData && typeof qData === "object") {
+          validatedQuestionTimings[qIdStr] = {
+            timeSpent: Math.max(0, Math.min(Number(qData.timeSpent) || 0, validatedTimeTaken || 86400)),
+            visitCount: Math.max(0, Math.min(Number(qData.visitCount) || 0, 1000)),
+            sectionId: qData.sectionId ? qData.sectionId.toString() : undefined
+          };
+        }
+      }
     }
 
     let score = 0;
@@ -1112,6 +1195,16 @@ const submitQuiz = async (req, res) => {
     const isBpsc = quiz.markingPattern === "bpsc";
 
     dbQuestions.forEach((q, index) => {
+      // Attach validated per-question timing and visit metrics
+      const qIdStr = q._id ? q._id.toString() : null;
+      if (qIdStr && validatedQuestionTimings[qIdStr]) {
+        q.timeSpent = validatedQuestionTimings[qIdStr].timeSpent;
+        q.visitCount = validatedQuestionTimings[qIdStr].visitCount;
+      } else {
+        q.timeSpent = 0;
+        q.visitCount = 0;
+      }
+
       const userAns = userAnswers[index];
       const actualAnswer = q.correctAnswer;
       const isCorrect = userAns !== undefined && userAns !== null && String(userAns).trim().toLowerCase() === String(actualAnswer).trim().toLowerCase();
@@ -1157,6 +1250,30 @@ const submitQuiz = async (req, res) => {
         }
       }
 
+      // Determine question answer status: "correct", "incorrect", or "unanswered"
+      let status = "unanswered";
+      if (isCorrect) {
+        status = "correct";
+      } else if (isBpsc) {
+        if (isNotAttemptedOption) {
+          status = "unanswered";
+        } else {
+          status = "incorrect";
+        }
+      } else {
+        if (userAns !== undefined && userAns !== null && userAns !== "") {
+          status = "incorrect";
+        } else {
+          status = "unanswered";
+        }
+      }
+
+      // Attach complete Phase 3 question-level calculation fields
+      const normalizedUserAns = (userAns !== undefined && userAns !== null && String(userAns).trim() !== "") ? userAns : null;
+      q.userAnswer = normalizedUserAns;
+      q.status = status;
+      q.marksObtained = qScore;
+
       if (q.sectionId) {
         const secIdStr = q.sectionId.toString();
         if (!sectionStatsMap[secIdStr]) {
@@ -1164,12 +1281,19 @@ const submitQuiz = async (req, res) => {
             sectionId: q.sectionId,
             sectionTitle: q.sectionTitle,
             score: 0,
+            maxMarks: 0,
+            totalQuestions: 0,
+            attempted: 0,
             correct: 0,
             incorrect: 0,
-            total: 0
+            unanswered: 0,
+            timeTaken: validatedSectionTimings[secIdStr] || 0,
+            accuracy: 0,
+            type: q.sectionType || "standard"
           };
         }
-        sectionStatsMap[secIdStr].total++;
+        sectionStatsMap[secIdStr].totalQuestions++;
+        sectionStatsMap[secIdStr].maxMarks += (q.marksPerQuestion || 1);
         if (isCorrect) {
           sectionStatsMap[secIdStr].correct++;
           sectionStatsMap[secIdStr].score += q.marksPerQuestion || 1;
@@ -1179,49 +1303,47 @@ const submitQuiz = async (req, res) => {
           } else {
             // Blank or wrong gets penalized
             sectionStatsMap[secIdStr].incorrect++;
-            sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+            sectionStatsMap[secIdStr].score -= (q.negativeMarking || 0);
           }
         } else {
           if (userAns !== undefined && userAns !== null && userAns !== "") {
             sectionStatsMap[secIdStr].incorrect++;
-            sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+            sectionStatsMap[secIdStr].score -= (q.negativeMarking || 0);
           }
         }
       }
     });
 
     if (Object.keys(sectionStatsMap).length > 0) {
-      sectionResults = Object.values(sectionStatsMap);
+      sectionResults = Object.values(sectionStatsMap).map(secStat => {
+        const attempted = secStat.correct + secStat.incorrect;
+        const unanswered = Math.max(0, secStat.totalQuestions - attempted);
+        const accuracy = attempted > 0 ? Number(((secStat.correct / attempted) * 100).toFixed(2)) : 0;
+        return {
+          ...secStat,
+          attempted,
+          unanswered,
+          accuracy,
+          timeTaken: validatedSectionTimings[secStat.sectionId?.toString()] ?? secStat.timeTaken ?? 0
+        };
+      });
     }
 
+    const maxPossibleMarks = dbQuestions.reduce((sum, q) => sum + (q.marksPerQuestion || 1), 0);
     const percentage = total > 0 ? ((score / total) * 100).toFixed(2) : "0.00";
 
-    const Result = require("../models/Result");
     const crypto = require("crypto");
     const shareId = crypto.randomBytes(4).toString("hex");
-
-    if (!existingAttempt) {
-      const { attemptId } = req.body;
-      if (attemptId) {
-        existingAttempt = await Result.findById(attemptId);
-      }
-    }
-    if (!existingAttempt) {
-      existingAttempt = await Result.findOne({
-        userId: req.user._id,
-        quizId: quiz._id,
-        status: "active"
-      }).sort({ createdAt: -1 });
-    }
 
     let result;
     if (existingAttempt) {
       existingAttempt.score = score;
       existingAttempt.total = total;
+      existingAttempt.maxPossibleMarks = maxPossibleMarks;
       existingAttempt.correct = correct;
       existingAttempt.incorrect = incorrect;
       existingAttempt.percentage = Number(percentage);
-      existingAttempt.timeTaken = timeTaken || 0;
+      existingAttempt.timeTaken = validatedTimeTaken;
       existingAttempt.shareId = shareId;
       existingAttempt.isPublic = true;
       existingAttempt.sectionResults = sectionResults;
@@ -1229,6 +1351,13 @@ const submitQuiz = async (req, res) => {
       existingAttempt.questions = dbQuestions;
       existingAttempt.userAnswers = userAnswers;
       existingAttempt.status = "submitted";
+
+      if (typeof existingAttempt.markModified === "function") {
+        existingAttempt.markModified("questions");
+        existingAttempt.markModified("sectionResults");
+        existingAttempt.markModified("userAnswers");
+      }
+
       result = await existingAttempt.save();
     } else {
       result = await Result.create({
@@ -1240,10 +1369,11 @@ const submitQuiz = async (req, res) => {
         passPercentage: quiz.passPercentage ?? 50,
         score,
         total,
+        maxPossibleMarks,
         correct,
         incorrect,
         percentage: Number(percentage),
-        timeTaken: timeTaken || 0,
+        timeTaken: validatedTimeTaken,
         shareId,
         isPublic: true,
         sectionResults,
@@ -1309,6 +1439,8 @@ const submitQuiz = async (req, res) => {
       success: true,
       score,
       total,
+      maxPossibleMarks,
+      sectionResults,
       correct,
       incorrect,
       unanswered,
@@ -1320,7 +1452,9 @@ const submitQuiz = async (req, res) => {
       showExplanations: quiz.showExplanations ?? true,
       showAnswerReview: quiz.showAnswerReview ?? true,
       result: {
-        ...result.toObject(),
+        ...(result.toObject ? result.toObject() : result),
+        maxPossibleMarks,
+        sectionResults,
         questions: responseQuestions,
         userAnswers: responseUserAnswers,
       }

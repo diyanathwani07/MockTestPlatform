@@ -9,14 +9,14 @@ import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
 import "../css/Quiz.css";
 
-function QuizMulti() {
+function QuizMulti({ initialQuizData = null, initialAttemptId = null, isPreviewProp = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { quizId: paramQuizId } = useParams();
   const [searchParams] = useSearchParams();
 
-  const isPreview = searchParams.get("preview") === "true" && localStorage.getItem("role") === "admin";
-  const quizId = location.state?.quizId || paramQuizId;
+  const isPreview = isPreviewProp || (searchParams.get("preview") === "true" && localStorage.getItem("role") === "admin");
+  const quizId = location.state?.quizId || paramQuizId || initialQuizData?._id;
 
   const [examName, setExamName] = useState(location.state?.examName || location.state?.subject || "Live Examination");
   const [quizTitle, setQuizTitle] = useState(location.state?.quizTitle || "Mock Test");
@@ -46,6 +46,23 @@ function QuizMulti() {
   const [sectionTimeLeft, setSectionTimeLeft] = useState(null); // null if global only
   const [sectionTimeSpent, setSectionTimeSpent] = useState({}); // sectionId -> seconds
 
+  // --- Phase 2: Precision Timing Engine State & Refs ---
+  const [questionTimeSpent, setQuestionTimeSpent] = useState({}); // questionId -> seconds
+  const [questionVisitCount, setQuestionVisitCount] = useState({}); // questionId -> visit count
+
+  // Synchronous refs to avoid stale closure / race condition bugs
+  const questionTimeSpentRef = useRef({});
+  const questionVisitCountRef = useRef({});
+  const sectionTimeSpentRef = useRef({});
+  const activeQuestionIdRef = useRef(null);
+  const activeSectionIdRef = useRef(null);
+  const activeDwellStartTimeRef = useRef(null);
+  const examDeadlineRef = useRef(null);
+  const sectionDeadlineRef = useRef(null);
+  const storageKeyRef = useRef(null);
+  const isBreakTimeRef = useRef(false);
+  const isSubmittedRef = useRef(false);
+
   // Anti-cheat
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -69,14 +86,258 @@ function QuizMulti() {
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [breakTimeLeft, setBreakTimeLeft] = useState(0);
   const [showTimerTooltip, setShowTimerTooltip] = useState(false);
-  const [attemptId, setAttemptId] = useState(null);
+  const [attemptId, setAttemptId] = useState(initialAttemptId || null);
+
+  // Helper for stable question ID (Constraint 1)
+  const getStableQuestionId = (q, secId, qIdx) => {
+    return q?._id?.toString() || q?.id?.toString() || `${secId}_${qIdx}`;
+  };
+
+  // Helper to persist timing progress into localStorage for refresh recovery
+  const saveTimingsToStorage = () => {
+    const key = storageKeyRef.current;
+    if (!key) return;
+    try {
+      const payload = {
+        questionTimeSpent: questionTimeSpentRef.current,
+        questionVisitCount: questionVisitCountRef.current,
+        sectionTimeSpent: sectionTimeSpentRef.current,
+        userAnswers,
+        lastSavedAt: Date.now()
+      };
+      localStorage.setItem(key, JSON.stringify(payload));
+    } catch (e) {
+      console.warn("Failed to persist exam timings to localStorage:", e);
+    }
+  };
+
+  // Commit current dwell time up to this millisecond
+  const commitCurrentDwellTime = () => {
+    if (!activeDwellStartTimeRef.current || isBreakTimeRef.current || isSubmittedRef.current) return;
+    const now = Date.now();
+    const elapsedSec = Math.max(0, (now - activeDwellStartTimeRef.current) / 1000);
+    const qId = activeQuestionIdRef.current;
+    const secId = activeSectionIdRef.current;
+
+    if (qId && elapsedSec > 0) {
+      const prev = questionTimeSpentRef.current[qId] || 0;
+      const updated = Number((prev + elapsedSec).toFixed(1));
+      questionTimeSpentRef.current[qId] = updated;
+      setQuestionTimeSpent({ ...questionTimeSpentRef.current });
+    }
+
+    if (secId && elapsedSec > 0) {
+      const prevSec = sectionTimeSpentRef.current[secId] || 0;
+      const updatedSec = Number((prevSec + elapsedSec).toFixed(1));
+      sectionTimeSpentRef.current[secId] = updatedSec;
+      setSectionTimeSpent({ ...sectionTimeSpentRef.current });
+    }
+
+    // Advance dwell start time to now if still active and not backgrounded
+    if (!document.hidden && !isBreakTimeRef.current && !isSubmittedRef.current) {
+      activeDwellStartTimeRef.current = now;
+    } else {
+      activeDwellStartTimeRef.current = null;
+    }
+
+    saveTimingsToStorage();
+  };
+
+  // Set active question and update visit count
+  const activateQuestion = (secIdx, qIdx, sectionsList = sections) => {
+    commitCurrentDwellTime();
+    const sec = sectionsList[secIdx];
+    if (!sec) return;
+    const secId = sec._id?.toString();
+    const q = sec.flatQuestions?.[qIdx];
+    const qId = q ? getStableQuestionId(q, secId, qIdx) : null;
+
+    if (qId && qId !== activeQuestionIdRef.current) {
+      const visits = (questionVisitCountRef.current[qId] || 0) + 1;
+      questionVisitCountRef.current[qId] = visits;
+      setQuestionVisitCount({ ...questionVisitCountRef.current });
+      activeQuestionIdRef.current = qId;
+    }
+    activeSectionIdRef.current = secId;
+
+    if (!document.hidden && !isBreakTimeRef.current && !isSubmittedRef.current) {
+      activeDwellStartTimeRef.current = Date.now();
+    }
+    saveTimingsToStorage();
+  };
 
   useEffect(() => {
     if (location.state?.subject) {
       localStorage.setItem("lastExamTaken", location.state.subject);
     }
-    fetchQuizData();
+    if (initialQuizData) {
+      initQuizData(initialQuizData, initialAttemptId);
+    } else {
+      fetchQuizData();
+    }
   }, [quizId]);
+
+  const initQuizData = (data, resolvedAttemptId) => {
+    const finalAttemptId = resolvedAttemptId || data.attemptId || attemptId;
+    if (finalAttemptId) {
+      setAttemptId(finalAttemptId);
+    }
+    storageKeyRef.current = `prepmark_exam_timings_${finalAttemptId || quizId}`;
+
+    setExamName(data.examName || data.subject);
+    setQuizTitle(data.title);
+    setExamSubject(data.subject);
+    setLockPreviousQuestions(data.lockPreviousQuestions || false);
+    setShowResultAfterSubmission(data.showResultAfterSubmission !== undefined ? data.showResultAfterSubmission : true);
+    setEnablePerQuestionTimer(data.enablePerQuestionTimer || false);
+    setTimePerQuestion(data.timePerQuestion || 0);
+    setBreakBetweenSections(data.breakBetweenSections || 0);
+
+    let loadedSections = data.sections || [];
+    if (loadedSections.length === 0 && data.questions && data.questions.length > 0) {
+      loadedSections = [{
+        _id: "legacy",
+        title: "General Section",
+        type: "standard",
+        duration: 0,
+        marksPerQuestion: data.marksPerQuestion || 1,
+        negativeMarking: data.negativeMarking || 0,
+        questions: data.questions
+      }];
+    }
+
+    let normalizedSections = loadedSections.map((sec, sIdx) => {
+      let qs = sec.questions || [];
+      if (sec.type === 'coding' && sec.subsections) {
+        qs = [
+          ...(sec.subsections.easy || []).map(q => ({ ...q, difficulty: 'easy' })),
+          ...(sec.subsections.medium || []).map(q => ({ ...q, difficulty: 'medium' })),
+          ...(sec.subsections.hard || []).map(q => ({ ...q, difficulty: 'hard' })),
+        ];
+      }
+
+      const secId = sec._id?.toString() || sec.sectionId?.toString() || `sec_${sIdx}`;
+
+      qs = qs.map((q, qIdx) => {
+        let correctText = q.correctAnswer || "";
+        if (q.correctAnswerObfuscated) {
+          try {
+            correctText = atob(q.correctAnswerObfuscated);
+          } catch (e) {
+            console.error("Failed to decode obfuscated correct answer:", e);
+          }
+        }
+        if (["A", "B", "C", "D", "E", "F"].includes(correctText) && Array.isArray(q.options)) {
+          const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
+          correctText = q.options[idxMap[correctText]] || correctText;
+        } else if (typeof correctText === "string" && correctText.startsWith("Option ") && Array.isArray(q.options)) {
+          const optNum = parseInt(correctText.replace("Option ", ""), 10);
+          if (!isNaN(optNum) && optNum >= 1 && optNum <= q.options.length) {
+            correctText = q.options[optNum - 1] || correctText;
+          }
+        }
+
+        let finalOptions = [...(q.options || [])];
+        if (data.markingPattern === "bpsc") {
+          if (finalOptions.length < 5) {
+            while (finalOptions.length < 4) {
+              finalOptions.push(`Option ${finalOptions.length + 1}`);
+            }
+            finalOptions.push("E — Not Attempted");
+          }
+        }
+
+        const stableId = getStableQuestionId(q, secId, qIdx);
+        return { ...q, _id: stableId, options: finalOptions, correctAnswer: correctText };
+      });
+
+      return { ...sec, _id: secId, flatQuestions: qs };
+    });
+
+    const isMulti = data.sections && data.sections.length > 0;
+    const rawDur = Number(data.duration || 0);
+    // If rawDur > 300, it is stored in seconds; otherwise it is in minutes
+    const totalDurationSecs = rawDur > 300 ? rawDur : (rawDur * 60);
+    const sectionCount = normalizedSections.length;
+
+    if (sectionCount > 1 && totalDurationSecs > 0) {
+      const perSectionSecs = Math.floor(totalDurationSecs / sectionCount);
+      normalizedSections = normalizedSections.map(sec => ({
+        ...sec,
+        duration: sec.duration > 0 ? sec.duration : perSectionSecs
+      }));
+    }
+
+    // Initialize state objects
+    const initialAnswers = {};
+    const initialReviews = {};
+    const initialVisited = {};
+    const initialSecTimes = {};
+    const initialQTimes = {};
+    const initialQVisits = {};
+
+    normalizedSections.forEach(sec => {
+      initialAnswers[sec._id] = {};
+      initialReviews[sec._id] = [];
+      initialVisited[sec._id] = [0];
+      initialSecTimes[sec._id] = 0;
+      sec.flatQuestions.forEach((q, qIdx) => {
+        const qId = getStableQuestionId(q, sec._id, qIdx);
+        initialQTimes[qId] = 0;
+        initialQVisits[qId] = 0;
+      });
+    });
+
+    // Hydrate from localStorage for refresh recovery
+    try {
+      const saved = localStorage.getItem(storageKeyRef.current);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.questionTimeSpent) Object.assign(initialQTimes, parsed.questionTimeSpent);
+        if (parsed.questionVisitCount) Object.assign(initialQVisits, parsed.questionVisitCount);
+        if (parsed.sectionTimeSpent) Object.assign(initialSecTimes, parsed.sectionTimeSpent);
+        if (parsed.userAnswers) Object.assign(initialAnswers, parsed.userAnswers);
+      }
+    } catch (e) {
+      console.warn("Could not parse saved exam timings:", e);
+    }
+
+    questionTimeSpentRef.current = initialQTimes;
+    questionVisitCountRef.current = initialQVisits;
+    sectionTimeSpentRef.current = initialSecTimes;
+
+    setUserAnswers(initialAnswers);
+    setReviewQuestions(initialReviews);
+    setVisitedQuestions(initialVisited);
+    setSectionTimeSpent(initialSecTimes);
+    setQuestionTimeSpent(initialQTimes);
+    setQuestionVisitCount(initialQVisits);
+    setSections(normalizedSections);
+
+    if (normalizedSections.length > 0) {
+      setCurrentQuestions(normalizedSections[0].flatQuestions);
+      const firstDuration = normalizedSections[0].duration;
+      if (firstDuration > 0) {
+        setSectionTimeLeft(firstDuration);
+        sectionDeadlineRef.current = Date.now() + firstDuration * 1000;
+      } else if (totalDurationSecs > 0) {
+        setSectionTimeLeft(totalDurationSecs);
+        sectionDeadlineRef.current = Date.now() + totalDurationSecs * 1000;
+      } else {
+        setSectionTimeLeft(null);
+        sectionDeadlineRef.current = null;
+      }
+    }
+
+    if (totalDurationSecs > 0) {
+      setGlobalTimeLeft(totalDurationSecs);
+      examDeadlineRef.current = Date.now() + totalDurationSecs * 1000;
+    }
+
+    // Activate the first question in the first section
+    activateQuestion(0, 0, normalizedSections);
+    setPageLoading(false);
+  };
 
   const fetchQuizData = async () => {
     try {
@@ -84,129 +345,21 @@ function QuizMulti() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       
-      // Start or resume an active attempt safely without creating orphans on preview
+      let resolvedAttemptId = null;
       try {
         const attemptRes = await axios.post(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/start-attempt`, {}, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
         if (attemptRes.data?.attemptId) {
-          setAttemptId(attemptRes.data.attemptId);
+          resolvedAttemptId = attemptRes.data.attemptId;
         }
       } catch (attemptErr) {
         if (response.data.attemptId) {
-          setAttemptId(response.data.attemptId);
+          resolvedAttemptId = response.data.attemptId;
         }
       }
-      const data = response.data;
-      setExamName(data.examName || data.subject);
-      setQuizTitle(data.title);
-      setExamSubject(data.subject);
-      setLockPreviousQuestions(data.lockPreviousQuestions || false);
-      setShowResultAfterSubmission(data.showResultAfterSubmission !== undefined ? data.showResultAfterSubmission : true);
-      setEnablePerQuestionTimer(data.enablePerQuestionTimer || false);
-      setTimePerQuestion(data.timePerQuestion || 0);
-      setBreakBetweenSections(data.breakBetweenSections || 0);
-      
-      let loadedSections = data.sections || [];
-      // Backward compatibility for legacy flat quizzes
-      if (loadedSections.length === 0 && data.questions && data.questions.length > 0) {
-         loadedSections = [{
-            _id: "legacy",
-            title: "General Section",
-            type: "standard",
-            duration: 0,
-            marksPerQuestion: data.marksPerQuestion || 1,
-            negativeMarking: data.negativeMarking || 0,
-            questions: data.questions
-         }];
-      }
 
-      // Flatten coding subsections if necessary for UI render ease
-      let normalizedSections = loadedSections.map(sec => {
-         let qs = sec.questions || [];
-         if (sec.type === 'coding' && sec.subsections) {
-            qs = [
-              ...(sec.subsections.easy || []).map(q => ({...q, difficulty: 'easy'})),
-              ...(sec.subsections.medium || []).map(q => ({...q, difficulty: 'medium'})),
-              ...(sec.subsections.hard || []).map(q => ({...q, difficulty: 'hard'})),
-            ];
-         }
-
-          // Resolve letter correct answers to text first (e.g. "A" -> options[0])
-          qs = qs.map(q => {
-             let correctText = q.correctAnswer || "";
-             if (q.correctAnswerObfuscated) {
-               try {
-                 correctText = atob(q.correctAnswerObfuscated);
-               } catch (e) {
-                 console.error("Failed to decode obfuscated correct answer:", e);
-               }
-             }
-             if (["A", "B", "C", "D", "E", "F"].includes(correctText) && Array.isArray(q.options)) {
-               const idxMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5 };
-               correctText = q.options[idxMap[correctText]] || correctText;
-             } else if (typeof correctText === "string" && correctText.startsWith("Option ") && Array.isArray(q.options)) {
-               const optNum = parseInt(correctText.replace("Option ", ""), 10);
-               if (!isNaN(optNum) && optNum >= 1 && optNum <= q.options.length) {
-                 correctText = q.options[optNum - 1] || correctText;
-               }
-             }
-
-             let finalOptions = [...(q.options || [])];
-             if (data.markingPattern === "bpsc") {
-               if (finalOptions.length < 5) {
-                 while (finalOptions.length < 4) {
-                   finalOptions.push(`Option ${finalOptions.length + 1}`);
-                 }
-                 finalOptions.push("E — Not Attempted");
-               }
-             }
-
-             return { ...q, options: finalOptions, correctAnswer: correctText };
-          });
-         
-         // Setup defaults in tracking state
-         setUserAnswers(prev => ({ ...prev, [sec._id]: {} }));
-         setReviewQuestions(prev => ({ ...prev, [sec._id]: [] }));
-         setVisitedQuestions(prev => ({ ...prev, [sec._id]: [0] }));
-         setSectionTimeSpent(prev => ({ ...prev, [sec._id]: 0 }));
-         
-         return { ...sec, flatQuestions: qs };
-      });
-
-      // Auto-divide total duration equally among sections if sections don't have their own duration
-      // NOTE: data.duration is stored in SECONDS in the DB for multi-section, and MINUTES for legacy/flat
-      const isMulti = data.sections && data.sections.length > 0;
-      const totalDurationSecs = isMulti ? (data.duration || 0) : (data.duration || 0) * 60;
-      const sectionCount = normalizedSections.length;
-      
-      if (sectionCount > 1 && totalDurationSecs > 0) {
-         const perSectionSecs = Math.floor(totalDurationSecs / sectionCount);
-         normalizedSections = normalizedSections.map(sec => ({
-            ...sec,
-            duration: sec.duration > 0 ? sec.duration : perSectionSecs
-         }));
-      }
-
-      setSections(normalizedSections);
-      
-      if (normalizedSections.length > 0) {
-         setCurrentQuestions(normalizedSections[0].flatQuestions);
-         const firstDuration = normalizedSections[0].duration;
-         if (firstDuration > 0) {
-            setSectionTimeLeft(firstDuration);
-         } else if (totalDurationSecs > 0) {
-            setSectionTimeLeft(totalDurationSecs);
-         } else {
-            setSectionTimeLeft(null);
-         }
-      }
-      
-      if (data.duration) {
-         setGlobalTimeLeft(totalDurationSecs);
-      }
-      
-      setPageLoading(false);
+      initQuizData(response.data, resolvedAttemptId);
     } catch (error) {
       console.error("Error fetching quiz:", error);
       alert("Failed to load test paper. Returning to Dashboard.");
@@ -241,6 +394,12 @@ function QuizMulti() {
     
     const handleVisibility = () => {
       if (document.hidden) {
+        // Phase 2 Background-Tab Policy: Tab hidden/switched
+        // 1. Commit active dwell time up to this instant and pause dwell tracking
+        commitCurrentDwellTime();
+        activeDwellStartTimeRef.current = null;
+
+        // 2. Anti-cheat integrity violation logging
         setViolations((v) => {
           const newV = v + 1;
           if (newV >= MAX_VIOLATIONS) {
@@ -253,6 +412,22 @@ function QuizMulti() {
           }
           return newV;
         });
+      } else {
+        // Tab visible again: Resume dwell timing from now (exam clock continued against absolute deadline)
+        if (!isBreakTimeRef.current && !isSubmittedRef.current && activeQuestionIdRef.current) {
+          activeDwellStartTimeRef.current = Date.now();
+        }
+      }
+    };
+
+    const handleWindowBlur = () => {
+      commitCurrentDwellTime();
+      activeDwellStartTimeRef.current = null;
+    };
+
+    const handleWindowFocus = () => {
+      if (!document.hidden && !isBreakTimeRef.current && !isSubmittedRef.current && activeQuestionIdRef.current) {
+        activeDwellStartTimeRef.current = Date.now();
       }
     };
 
@@ -265,12 +440,16 @@ function QuizMulti() {
 
     document.addEventListener("fullscreenchange", handleFSChange);
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
     document.addEventListener("contextmenu", blockRight);
     document.addEventListener("keydown", blockKeys);
     
     return () => {
       document.removeEventListener("fullscreenchange", handleFSChange);
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
       document.removeEventListener("contextmenu", blockRight);
       document.removeEventListener("keydown", blockKeys);
       if (document.exitFullscreen && document.fullscreenElement) {
@@ -286,52 +465,69 @@ function QuizMulti() {
     setShowWarning(false);
   };
 
-  // Timers
+  // Timers: Authoritative absolute deadline & live active dwell accumulation
   useEffect(() => {
-    if (pageLoading || isBreakTime) return;
+    if (pageLoading || isBreakTime || isSubmittedSuccessfully) return;
     const timer = setInterval(() => {
-      // Global timer tick
-      setGlobalTimeLeft(prev => {
-         if (prev <= 1) {
+      // 1. Authoritative global exam countdown against absolute deadline
+      if (examDeadlineRef.current) {
+        const remaining = Math.max(0, Math.round((examDeadlineRef.current - Date.now()) / 1000));
+        setGlobalTimeLeft(remaining);
+        if (remaining <= 0) {
+          clearInterval(timer);
+          submitQuiz(true);
+          return;
+        }
+      } else {
+        setGlobalTimeLeft(prev => {
+          if (prev <= 1) {
             clearInterval(timer);
-            submitQuiz();
+            submitQuiz(true);
             return 0;
-         }
-         return prev - 1;
-      });
+          }
+          return prev - 1;
+        });
+      }
       
-      // Section timer tick
+      // 2. Section timer countdown against absolute section deadline
       if (sectionTimeLeft !== null) {
-         setSectionTimeLeft(prev => {
+        if (sectionDeadlineRef.current) {
+          const remainingSec = Math.max(0, Math.round((sectionDeadlineRef.current - Date.now()) / 1000));
+          setSectionTimeLeft(remainingSec);
+          if (remainingSec <= 0) {
+            handleNextSection();
+          }
+        } else {
+          setSectionTimeLeft(prev => {
             if (prev <= 1) {
-               // Auto advance section
-               handleNextSection();
-               return 0;
+              handleNextSection();
+              return 0;
             }
             return prev - 1;
-         });
+          });
+        }
       }
 
-      // Per Question Timer tick
+      // 3. Per Question Timer tick
       if (enablePerQuestionTimer) {
-         setQuestionTimeLeft(prev => prev > 0 ? prev - 1 : 0);
+        setQuestionTimeLeft(prev => prev > 0 ? prev - 1 : 0);
       }
 
-      // Track time spent per section
-      if (sections.length > 0) {
-         setSectionTimeSpent(prev => {
-            const secId = sections[currentSectionIndex]._id;
-            return { ...prev, [secId]: (prev[secId] || 0) + 1 };
-         });
+      // 4. Periodically commit active dwell time so live UI reflects progress
+      if (!document.hidden && activeDwellStartTimeRef.current) {
+        commitCurrentDwellTime();
       }
 
     }, 1000);
     return () => clearInterval(timer);
-  }, [pageLoading, currentSectionIndex, sectionTimeLeft, sections, isBreakTime, enablePerQuestionTimer]);
+  }, [pageLoading, currentSectionIndex, sectionTimeLeft, sections, isBreakTime, enablePerQuestionTimer, isSubmittedSuccessfully]);
 
   // Break Timer
   useEffect(() => {
     if (!isBreakTime) return;
+    isBreakTimeRef.current = true;
+    activeDwellStartTimeRef.current = null;
+
     const timer = setInterval(() => {
       setBreakTimeLeft(prev => {
         if (prev <= 1) {
@@ -356,14 +552,7 @@ function QuizMulti() {
     if (enablePerQuestionTimer && questionTimeLeft === 0 && !pageLoading && !isBreakTime) {
        if (currentQuestionIndex < currentQuestions.length - 1) {
           const nextIdx = currentQuestionIndex + 1;
-          setCurrentQuestionIndex(nextIdx);
-          const secId = sections[currentSectionIndex]._id;
-          if (!visitedQuestions[secId]?.includes(nextIdx)) {
-            setVisitedQuestions(prev => ({
-               ...prev,
-               [secId]: [...(prev[secId] || []), nextIdx]
-            }));
-          }
+          navigateToQuestion(nextIdx);
        } else {
           handleNextSection();
        }
@@ -372,8 +561,11 @@ function QuizMulti() {
   }, [questionTimeLeft, enablePerQuestionTimer, pageLoading, currentQuestions.length, isBreakTime]);
 
   const handleNextSection = () => {
+     commitCurrentDwellTime();
      if (currentSectionIndex < sections.length - 1) {
         if (breakBetweenSections > 0) {
+           isBreakTimeRef.current = true;
+           activeDwellStartTimeRef.current = null;
            setIsBreakTime(true);
            setBreakTimeLeft(breakBetweenSections);
         } else {
@@ -385,35 +577,92 @@ function QuizMulti() {
   };
 
   const endBreak = () => {
+      commitCurrentDwellTime();
+      isBreakTimeRef.current = false;
       setIsBreakTime(false);
       const nextIdx = currentSectionIndex + 1;
+      if (nextIdx >= sections.length) {
+        submitQuiz();
+        return;
+      }
       setCurrentSectionIndex(nextIdx);
-      setCurrentQuestions(sections[nextIdx].flatQuestions);
+      const nextSec = sections[nextIdx];
+      setCurrentQuestions(nextSec.flatQuestions);
       setCurrentQuestionIndex(0);
       
+      const nextSecId = nextSec._id;
       // Mark first question visited
       setVisitedQuestions(prev => ({
          ...prev,
-         [sections[nextIdx]._id]: [0]
+         [nextSecId]: [0]
       }));
       
       // Reset local timer if next section has one
-      if (sections[nextIdx].duration > 0) {
-         setSectionTimeLeft(sections[nextIdx].duration);
+      if (nextSec.duration > 0) {
+         setSectionTimeLeft(nextSec.duration);
+         sectionDeadlineRef.current = Date.now() + nextSec.duration * 1000;
       } else {
          setSectionTimeLeft(null); // fallback to global
+         sectionDeadlineRef.current = null;
       }
+
+      activateQuestion(nextIdx, 0);
+  };
+
+  // Section switcher for untimed/free-navigation exams
+  const switchSection = (targetIdx) => {
+    if (targetIdx === currentSectionIndex || targetIdx < 0 || targetIdx >= sections.length) return;
+    commitCurrentDwellTime();
+    setCurrentSectionIndex(targetIdx);
+    const targetSec = sections[targetIdx];
+    setCurrentQuestions(targetSec.flatQuestions);
+    setCurrentQuestionIndex(0);
+
+    const targetSecId = targetSec._id;
+    setVisitedQuestions(prev => ({
+      ...prev,
+      [targetSecId]: prev[targetSecId]?.length ? prev[targetSecId] : [0]
+    }));
+
+    if (targetSec.duration > 0) {
+      setSectionTimeLeft(targetSec.duration);
+      sectionDeadlineRef.current = Date.now() + targetSec.duration * 1000;
+    } else {
+      setSectionTimeLeft(null);
+      sectionDeadlineRef.current = null;
+    }
+
+    activateQuestion(targetIdx, 0);
   };
 
   const handleOptionSelect = (option) => {
     const secId = sections[currentSectionIndex]._id;
-    setUserAnswers(prev => ({
-      ...prev,
-      [secId]: {
-         ...prev[secId],
-         [currentQuestionIndex]: option
+    setUserAnswers(prev => {
+      const updated = {
+        ...prev,
+        [secId]: {
+           ...prev[secId],
+           [currentQuestionIndex]: option
+        }
+      };
+      // Auto-save userAnswers with timings
+      const key = storageKeyRef.current;
+      if (key) {
+        try {
+          const payload = {
+            questionTimeSpent: questionTimeSpentRef.current,
+            questionVisitCount: questionVisitCountRef.current,
+            sectionTimeSpent: sectionTimeSpentRef.current,
+            userAnswers: updated,
+            lastSavedAt: Date.now()
+          };
+          localStorage.setItem(key, JSON.stringify(payload));
+        } catch (e) {
+          console.warn("Storage save failed:", e);
+        }
       }
-    }));
+      return updated;
+    });
   };
 
   const clearResponse = () => {
@@ -446,6 +695,7 @@ function QuizMulti() {
           [secId]: [...(prev[secId] || []), idx]
        }));
     }
+    activateQuestion(currentSectionIndex, idx);
     if (window.innerWidth <= 900) {
       setShowPaletteMobile(false);
     }
@@ -459,73 +709,34 @@ function QuizMulti() {
     }
 
     try {
-      // Evaluation
-      let totalQuestions = 0;
-      let totalCorrect = 0;
-      let totalIncorrect = 0;
-      
-      const sectionResults = [];
-      const difficultyBreakdown = {
-         easy: { correct: 0, total: 0 },
-         medium: { correct: 0, total: 0 },
-         hard: { correct: 0, total: 0 }
-      };
+      // 1. Commit active dwell time immediately and stop dwell tracker
+      commitCurrentDwellTime();
+      isSubmittedRef.current = true;
+      activeDwellStartTimeRef.current = null;
+
+      // 2. Compile sectionTimings and questionTimings using stable IDs (Constraint 1 & 2)
+      const sectionTimings = {};
+      const questionTimings = {};
 
       sections.forEach(sec => {
-         let secTotal = sec.flatQuestions.length;
-         let secCorrect = 0;
-         let secIncorrect = 0;
-         
-         totalQuestions += secTotal;
-         
-         sec.flatQuestions.forEach((q, i) => {
-            const uAns = userAnswers[sec._id]?.[i];
-            
-            // Difficulty stat base
-            if (sec.type === 'coding' && q.difficulty) {
-               difficultyBreakdown[q.difficulty].total += 1;
-            }
+        const secId = sec._id?.toString() || sec.sectionId?.toString();
+        sectionTimings[secId] = Math.round(sectionTimeSpentRef.current[secId] || 0);
 
-            if (uAns) {
-               if (uAns === q.correctAnswer) {
-                  secCorrect++;
-                  totalCorrect++;
-                  if (sec.type === 'coding' && q.difficulty) {
-                     difficultyBreakdown[q.difficulty].correct += 1;
-                  }
-               } else {
-                  secIncorrect++;
-                  totalIncorrect++;
-               }
-            }
-         });
-         
-         const secScore = (secCorrect * (sec.marksPerQuestion || 1)) - (secIncorrect * (sec.negativeMarking || 0));
-         const secAttempted = secCorrect + secIncorrect;
-         const secAccuracy = secAttempted > 0 ? (secCorrect / secAttempted) * 100 : 0;
-         
-         sectionResults.push({
-            sectionId: sec._id,
-            sectionTitle: sec.title,
-            score: secScore,
-            totalQuestions: secTotal,
-            correct: secCorrect,
-            incorrect: secIncorrect,
-            timeTaken: sectionTimeSpent[sec._id] || 0,
-            accuracy: secAccuracy,
-            type: sec.type
-         });
+        sec.flatQuestions.forEach((q, idx) => {
+          const qId = getStableQuestionId(q, secId, idx);
+          questionTimings[qId] = {
+            timeSpent: Math.round(questionTimeSpentRef.current[qId] || 0),
+            visitCount: questionVisitCountRef.current[qId] || 0,
+            sectionId: secId
+          };
+        });
       });
 
-      // Overall calculations
-      const finalScore = sectionResults.reduce((sum, sr) => sum + sr.score, 0);
-      const finalPercentage = totalQuestions > 0 ? (finalScore / (totalQuestions * (sections[0]?.marksPerQuestion || 1))) * 100 : 0; 
-      
-      // Calculate total max marks
-      const maxPossibleMarks = sections.reduce((sum, sec) => sum + (sec.flatQuestions.length * (sec.marksPerQuestion || 1)), 0);
-      const accuratePercentage = maxPossibleMarks > 0 ? (finalScore / maxPossibleMarks) * 100 : 0;
-      const totalTimeSpent = Object.values(sectionTimeSpent).reduce((a, b) => a + b, 0);
+      const totalActiveTimeSpent = Math.max(1, Math.round(
+        Object.values(sectionTimings).reduce((sum, val) => sum + val, 0)
+      ));
 
+      // 3. Compile answers in section order
       const flatAnswers = sections.flatMap(sec =>
         sec.flatQuestions.map((q, i) => userAnswers[sec._id]?.[i] ?? null)
       );
@@ -533,17 +744,27 @@ function QuizMulti() {
       const submitUrl = attemptId 
         ? `${import.meta.env.VITE_API_URL}/api/quizzes/attempts/${attemptId}/submit`
         : `${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/submit`;
+
       const res = await axios.post(submitUrl, {
         userAnswers: flatAnswers,
-        timeTaken: totalTimeSpent
+        timeTaken: totalActiveTimeSpent,
+        sectionTimings,
+        questionTimings,
+        attemptId
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
+
+      // Clear session timings on successful submission
+      if (storageKeyRef.current) {
+        localStorage.removeItem(storageKeyRef.current);
+      }
+
       if (showResultAfterSubmission) {
         const targetId = res.data.result?._id || res.data.result?.shareId || res.data._id;
         navigate(`/result/${targetId}`, { replace: true, state: res.data.result });
       } else {
-        setFinalTimeTaken(totalTimeSpent);
+        setFinalTimeTaken(totalActiveTimeSpent);
         setIsSubmittedSuccessfully(true);
       }
     } catch (error) {

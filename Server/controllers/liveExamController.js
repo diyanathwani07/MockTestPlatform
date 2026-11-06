@@ -822,6 +822,7 @@ function gradeQuizAttempt(quiz, userAnswers) {
         qObj.negativeMarking = sec.negativeMarking ?? quiz.negativeMarking ?? 0;
         qObj.sectionId = sec._id;
         qObj.sectionTitle = sec.title;
+        qObj.sectionType = sec.type || "standard";
         return qObj;
       });
     });
@@ -899,53 +900,94 @@ function gradeQuizAttempt(quiz, userAnswers) {
       }
     }
 
-    if (q.sectionId) {
-      const secIdStr = q.sectionId.toString();
-      if (!sectionStatsMap[secIdStr]) {
-        sectionStatsMap[secIdStr] = {
-          sectionId: q.sectionId,
-          sectionTitle: q.sectionTitle,
-          score: 0,
-          correct: 0,
-          incorrect: 0,
-          total: 0,
-        };
-      }
-      sectionStatsMap[secIdStr].total++;
+      // Determine question answer status: "correct", "incorrect", or "unanswered"
+      let status = "unanswered";
       if (isCorrect) {
-        sectionStatsMap[secIdStr].correct++;
-        sectionStatsMap[secIdStr].score += q.marksPerQuestion || 1;
+        status = "correct";
       } else if (isBpsc) {
-        if (!isNotAttemptedOption) {
-          sectionStatsMap[secIdStr].incorrect++;
-          sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+        if (isNotAttemptedOption) {
+          status = "unanswered";
+        } else {
+          status = "incorrect";
         }
       } else {
         if (userAns !== undefined && userAns !== null && userAns !== "") {
-          sectionStatsMap[secIdStr].incorrect++;
-          sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+          status = "incorrect";
+        } else {
+          status = "unanswered";
         }
       }
+
+      const normalizedUserAns = (userAns !== undefined && userAns !== null && String(userAns).trim() !== "") ? userAns : null;
+      q.userAnswer = normalizedUserAns;
+      q.status = status;
+      q.marksObtained = qScore;
+
+      if (q.sectionId) {
+        const secIdStr = q.sectionId.toString();
+        if (!sectionStatsMap[secIdStr]) {
+          sectionStatsMap[secIdStr] = {
+            sectionId: q.sectionId,
+            sectionTitle: q.sectionTitle,
+            score: 0,
+            maxMarks: 0,
+            totalQuestions: 0,
+            attempted: 0,
+            correct: 0,
+            incorrect: 0,
+            unanswered: 0,
+            accuracy: 0,
+            type: q.sectionType || "standard",
+          };
+        }
+        sectionStatsMap[secIdStr].totalQuestions++;
+        sectionStatsMap[secIdStr].maxMarks += (q.marksPerQuestion || 1);
+        if (isCorrect) {
+          sectionStatsMap[secIdStr].correct++;
+          sectionStatsMap[secIdStr].score += q.marksPerQuestion || 1;
+        } else if (isBpsc) {
+          if (!isNotAttemptedOption) {
+            sectionStatsMap[secIdStr].incorrect++;
+            sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+          }
+        } else {
+          if (userAns !== undefined && userAns !== null && userAns !== "") {
+            sectionStatsMap[secIdStr].incorrect++;
+            sectionStatsMap[secIdStr].score -= q.negativeMarking || 0;
+          }
+        }
+      }
+    });
+
+    if (Object.keys(sectionStatsMap).length > 0) {
+      sectionResults = Object.values(sectionStatsMap).map(secStat => {
+        const attempted = secStat.correct + secStat.incorrect;
+        const unanswered = Math.max(0, secStat.totalQuestions - attempted);
+        const accuracy = attempted > 0 ? Number(((secStat.correct / attempted) * 100).toFixed(2)) : 0;
+        return {
+          ...secStat,
+          attempted,
+          unanswered,
+          accuracy,
+        };
+      });
     }
-  });
 
-  if (Object.keys(sectionStatsMap).length > 0) {
-    sectionResults = Object.values(sectionStatsMap);
-  }
+    const maxPossibleMarks = dbQuestions.reduce((sum, q) => sum + (q.marksPerQuestion || 1), 0);
+    const percentage = total > 0 ? Number(((score / total) * 100).toFixed(2)) : 0;
 
-  const percentage = total > 0 ? Number(((score / total) * 100).toFixed(2)) : 0;
-
-  return {
-    score,
-    total,
-    correct,
-    incorrect,
-    unanswered,
-    percentage,
-    sectionResults,
-    difficultyBreakdown,
-    dbQuestions,
-  };
+    return {
+      score,
+      total,
+      maxPossibleMarks,
+      correct,
+      incorrect,
+      unanswered,
+      percentage,
+      sectionResults,
+      difficultyBreakdown,
+      dbQuestions,
+    };
 }
 
 /**
@@ -1790,5 +1832,6 @@ module.exports = {
   submitLiveExamAttempt,
   submitLiveExamFeedback,
   autoSubmitAttempt,
+  gradeQuizAttempt,
 };
 

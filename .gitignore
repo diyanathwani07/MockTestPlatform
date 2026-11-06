@@ -35,6 +35,7 @@ Server/.reminder-audio
 Server/.preview-audio
 
 # Temporary & Scratch Files
+scratch/
 *.py
 *.docx
 *.txt

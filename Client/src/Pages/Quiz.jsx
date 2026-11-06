@@ -7,6 +7,7 @@ import { Sun, Moon, X, Clock, Bookmark, Trash2, ArrowLeft, ArrowRight, LayoutGri
 import MathRenderer from "../components/MathRenderer";
 import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
+import QuizMulti from "./QuizMulti";
 import "../css/Quiz.css";
 
 function Quiz() {
@@ -18,6 +19,10 @@ function Quiz() {
   const { quizId: paramQuizId } = useParams();
   const [searchParams] = useSearchParams();
 
+  // Multi-section delegation state
+  const [isMultiQuiz, setIsMultiQuiz] = useState(false);
+  const [multiQuizData, setMultiQuizData] = useState(null);
+
   // 🪝 1. GRABS THE EXACT EXAM CLICKED IN 'StartTest.jsx'
   const isPreview = searchParams.get("preview") === "true" && localStorage.getItem("role") === "admin";
   const quizId = location.state?.quizId || paramQuizId;
@@ -25,7 +30,12 @@ function Quiz() {
   const [examName, setExamName] = useState(location.state?.examName || location.state?.subject || "Live Examination");
   const [quizTitle, setQuizTitle] = useState(location.state?.quizTitle || "Mock Test");
   const [examSubject, setExamSubject] = useState(location.state?.subject || localStorage.getItem("lastExamTaken") || "General Studies");
-  const [initialDurationMinutes, setInitialDurationMinutes] = useState(location.state?.duration || 30);
+  const parseDurationToMinutes = (raw) => {
+    const num = Number(raw) || 30;
+    return num > 300 ? Math.round(num / 60) : num;
+  };
+
+  const [initialDurationMinutes, setInitialDurationMinutes] = useState(() => parseDurationToMinutes(location.state?.duration));
 
   // Immediately cache subject so Result page always knows what exam was taken
   // (survives backend redirects, page refreshes, etc.)
@@ -43,7 +53,7 @@ function Quiz() {
 
   const [userAnswers, setUserAnswers] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(initialDurationMinutes * 60);
+  const [timeLeft, setTimeLeft] = useState(() => parseDurationToMinutes(location.state?.duration) * 60);
 
   // New Feature States
   const [enablePerQuestionTimer, setEnablePerQuestionTimer] = useState(false);
@@ -193,19 +203,31 @@ function Quiz() {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
         
+        let resolvedAttemptId = null;
         // Start or resume an active attempt safely without creating orphans on preview
         try {
           const attemptRes = await axios.post(`${import.meta.env.VITE_API_URL}/api/quizzes/${quizId}/start-attempt`, {}, {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
           });
           if (attemptRes.data?.attemptId) {
+            resolvedAttemptId = attemptRes.data.attemptId;
             setAttemptId(attemptRes.data.attemptId);
           }
         } catch (attemptErr) {
           if (response.data.attemptId) {
+            resolvedAttemptId = response.data.attemptId;
             setAttemptId(response.data.attemptId);
           }
         }
+
+        // Constraint 2 & 8: If the quiz is section-based, delegate to QuizMulti
+        if (response.data.sections && response.data.sections.length > 0) {
+          setIsMultiQuiz(true);
+          setMultiQuizData({ ...response.data, attemptId: resolvedAttemptId });
+          setPageLoading(false);
+          return;
+        }
+
         let rawQuestions = response.data.questions || [];
         
         // If the quiz is section-based, flatten questions from all sections
@@ -268,8 +290,9 @@ function Quiz() {
             setExamName(response.data.examName || response.data.subject || "Live Examination");
             setQuizTitle(response.data.title || "Mock Test");
             setExamSubject(response.data.subject || "General Studies");
-            setInitialDurationMinutes(response.data.duration || 30);
-            setTimeLeft((response.data.duration || 30) * 60);
+            const parsedMinutes = parseDurationToMinutes(response.data.duration);
+            setInitialDurationMinutes(parsedMinutes);
+            setTimeLeft(parsedMinutes * 60);
         }
 
         // Always set these new feature states from the database
@@ -485,6 +508,17 @@ function Quiz() {
           <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "6px" }}>Establishing secure handshake with MongoDB</p>
         </div>
       </div>
+    );
+  }
+
+  // Multi-section delegation
+  if (isMultiQuiz && multiQuizData) {
+    return (
+      <QuizMulti
+        initialQuizData={multiQuizData}
+        initialAttemptId={attemptId}
+        isPreviewProp={isPreview}
+      />
     );
   }
 

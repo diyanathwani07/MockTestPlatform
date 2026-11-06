@@ -92,17 +92,25 @@ const resultSchema = new mongoose.Schema(
     },
 
     // --- NEW MULTI-SECTION ANALYTICS ---
+    maxPossibleMarks: {
+      type: Number,
+      default: 0,
+    },
+
     sectionResults: [
       {
         sectionId: { type: String },
-        sectionTitle: String,
-        score: Number,
-        totalQuestions: Number,
-        correct: Number,
-        incorrect: Number,
-        timeTaken: Number,
-        accuracy: Number,
-        type: { type: String } // standard or coding
+        sectionTitle: { type: String },
+        score: { type: Number, default: 0 },
+        maxMarks: { type: Number, default: 0 },
+        totalQuestions: { type: Number, default: 0 },
+        attempted: { type: Number, default: 0 },
+        correct: { type: Number, default: 0 },
+        incorrect: { type: Number, default: 0 },
+        unanswered: { type: Number, default: 0 },
+        timeTaken: { type: Number, default: 0 },
+        accuracy: { type: Number, default: 0 },
+        type: { type: String, default: "standard" } // standard or coding
       }
     ],
 
