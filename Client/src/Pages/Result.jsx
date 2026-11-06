@@ -69,7 +69,7 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
 
   if (submitted) {
     return (
-      <div style={{
+      <div className="rm-feedback-card" style={{
         background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
         borderRadius: "24px", padding: "30px", textAlign: "center",
         boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box"
@@ -82,7 +82,7 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   }
 
   return (
-    <div style={{
+    <div className="rm-feedback-card" style={{
       background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
       borderRadius: "24px", padding: "30px", textAlign: "left",
       boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box",
@@ -869,7 +869,7 @@ function Result() {
         backgroundColor: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "40px 20px", boxSizing: "border-box"
       }}>
         {/* Floating Theme Toggle on Top Right */}
-        <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+        <div className="rm-theme-toggle-pos" style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
           <ThemeToggle />
         </div>
 
@@ -1760,9 +1760,10 @@ function Result() {
           </div>
         ) : (
           /* Multi Quiz Overall Performance & Subject Cards Summary View */
-          <div className="result-modal-overlay" style={{ minHeight: "100vh", padding: "40px 16px" }}>
+          <div className="result-modal-overlay rm-mobile-overlay" style={{ minHeight: "100vh", padding: "40px 16px" }}>
             {/* Back button */}
             <button 
+              className="rm-back-btn"
               onClick={() => {
                 if (location.state?.fromAttempts) {
                   navigate(-1);
@@ -1816,6 +1817,7 @@ function Result() {
                       src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} 
                       loop 
                       autoplay 
+                      className="rm-mascot-lottie"
                       style={{ width: "85px", height: "85px", transform: "scale(2.0)" }} 
                     />
                   </div>
@@ -1920,8 +1922,9 @@ function Result() {
                 </div>
 
                 {/* Integrated Section Breakdown (Only when quiz actually has multiple sections > 1) */}
+                {/* Subject-Wise Micro Breakdown Card */}
                 {data?.sectionResults?.length > 1 && (
-                  <div style={{
+                  <div className="rm-section-breakdown-card" style={{
                     padding: "16px",
                     borderRadius: "16px",
                     background: isDark ? "rgba(255, 255, 255, 0.02)" : "#F8FAFC",
@@ -1985,47 +1988,20 @@ function Result() {
                 )}
 
                 {/* ONE Action Buttons Row */}
-                <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                <div className="rm-modal-actions">
                   <button
+                    className="btn-review"
                     onClick={() => {
                       setActiveSectionTab("all");
                       setShowAnswers(true);
-                    }}
-                    style={{
-                      flex: 1.2,
-                      padding: "14px 20px",
-                      borderRadius: "16px",
-                      background: "#8B5CF6",
-                      color: "#FFFFFF",
-                      fontSize: "14.5px",
-                      fontWeight: "700",
-                      border: "none",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "8px",
-                      boxShadow: "0 4px 14px rgba(139, 92, 246, 0.35)",
-                      transition: "all 0.2s"
                     }}
                   >
                     <BookOpen size={17} />
                     Review Detailed Solutions
                   </button>
                   <button
+                    className="btn-dashboard"
                     onClick={() => navigate("/dashboard")}
-                    style={{
-                      flex: 0.8,
-                      padding: "14px 20px",
-                      borderRadius: "16px",
-                      background: isDark ? "rgba(255,255,255,0.06)" : "#F1F5F9",
-                      color: isDark ? "#FFFFFF" : "#1E293B",
-                      border: isDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid #CBD5E1",
-                      fontSize: "14.5px",
-                      fontWeight: "700",
-                      cursor: "pointer",
-                      transition: "all 0.2s"
-                    }}
                   >
                     Dashboard
                   </button>
@@ -2403,20 +2379,16 @@ function Result() {
 
 
             {/* Action Buttons */}
-          <div style={{ display: "flex", flexDirection: "row", gap: "12px", marginTop: "8px" }}>
+          <div className="rm-modal-actions">
             <button 
+              className="btn-review"
               onClick={() => setShowAnswers(true)}
-              style={{
-                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "var(--primary)", color: "var(--primary-foreground)", fontSize: "14.5px", fontWeight: "600", border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", textAlign: "center", whiteSpace: "nowrap"
-              }}
             >
               Review Answers
             </button>
             <button 
+              className="btn-dashboard"
               onClick={() => navigate("/dashboard")}
-              style={{
-                flex: 1, padding: "14px 8px", borderRadius: "16px", backgroundColor: "transparent", color: "var(--text-primary)", fontSize: "14.5px", fontWeight: "600", border: "1px solid var(--border-color)", cursor: "pointer", textAlign: "center", whiteSpace: "nowrap"
-              }}
             >
               Dashboard
             </button>
@@ -2477,6 +2449,7 @@ function Result() {
           <div className="result-details" style={{ marginTop: "0" }}>
             {/* Fixed Back Button in Absolute Top Left Corner */}
             <button 
+              className="rm-back-btn"
               onClick={() => setShowAnswers(false)}
               style={{
                 position: "fixed",
@@ -2489,10 +2462,10 @@ function Result() {
                 width: "46px",
                 height: "46px",
                 borderRadius: "50%",
-                backgroundColor: "#ffffff",
+                backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
                 boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-                border: "1px solid #d1d5db",
-                color: "#000000",
+                border: "1px solid var(--border-color, #d1d5db)",
+                color: isDark ? "#ffffff" : "#000000",
                 cursor: "pointer",
                 transition: "all 0.2s",
               }}
