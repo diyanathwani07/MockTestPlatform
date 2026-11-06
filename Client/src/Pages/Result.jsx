@@ -287,7 +287,31 @@ function Result() {
   const percentage = data?.percentage;
   const [questions, setQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]);
-  const examTitle = data?.subject || data?.title || localStorage.getItem("lastExamTaken") || "Examination";
+
+  const isMultiQuiz = Boolean(data?.sectionResults && Array.isArray(data.sectionResults) && data.sectionResults.length > 0);
+
+  const examTitle = React.useMemo(() => {
+    const rawExamName = (data?.examName || data?.quizId?.examName || location.state?.examName || "")?.trim();
+    const rawTitle = (data?.quizTitle || data?.title || data?.quizId?.title || "")?.trim();
+    const rawSubject = (data?.subject || data?.quizId?.subject || "")?.trim();
+
+    if (isMultiQuiz) {
+      if (rawExamName && rawExamName !== "General Mock Tests") return rawExamName;
+      if (rawTitle && !rawTitle.includes(",")) return rawTitle;
+      if (rawSubject && !rawSubject.includes(",")) return rawSubject;
+      if (rawExamName) return rawExamName;
+      return "Multi-Section Assessment";
+    }
+
+    // For single quizzes:
+    if (rawTitle && !rawTitle.includes(",")) return rawTitle;
+    if (rawSubject && !rawSubject.includes(",")) return rawSubject;
+    if (rawExamName && rawExamName !== "General Mock Tests") return rawExamName;
+    if (rawTitle) return rawTitle;
+    if (rawSubject) return rawSubject.includes(",") ? rawSubject.split(",")[0].trim() : rawSubject;
+    return localStorage.getItem("lastExamTaken") || "Examination";
+  }, [data, location.state, isMultiQuiz]);
+
   const isExam = data?.quizType !== "practice";
 
   const [visibleCount, setVisibleCount] = useState(10);
@@ -296,8 +320,6 @@ function Result() {
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [reviewFilter, setReviewFilter] = useState("all"); // "all", "correct", "incorrect", "unattempted"
   const [activeSectionTab, setActiveSectionTab] = useState("all");
-
-  const isMultiQuiz = Boolean(data?.sectionResults && Array.isArray(data.sectionResults) && data.sectionResults.length > 0);
 
   const formatTimingSafe = (seconds) => {
     if (seconds === undefined || seconds === null || seconds === "") return "Not available";
@@ -1801,7 +1823,11 @@ function Result() {
                     {Number(computedPercentage) >= 80 ? "Outstanding Performance!" : Number(computedPercentage) >= passThreshold ? "Exam Completed Successfully!" : "Exam Completed — Keep Practicing!"}
                   </h2>
                   <p>
-                    Great job, <strong>{user.name || user.fullName}</strong>! You've completed <strong>{examTitle}</strong>.
+                    {Number(computedPercentage) >= passThreshold ? (
+                      <>Great job, <strong>{user.name || user.fullName}</strong>! You've completed <strong>{examTitle}</strong>.</>
+                    ) : (
+                      <>Keep practicing, <strong>{user.name || user.fullName}</strong>! You've completed <strong>{examTitle}</strong>. Review your solutions below to improve.</>
+                    )}
                   </p>
                 </div>
 
@@ -2244,7 +2270,13 @@ function Result() {
                 <DotLottieReact src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} loop autoplay style={{ width: "80px", height: "80px", transform: "scale(2.2)" }} />
               </div>
               <h2>{Number(computedPercentage) >= passThreshold ? "Quiz Completed!" : "Keep Practicing!"}</h2>
-              <p>Great job, <strong>{user.name || user.fullName}</strong>! You've completed the quiz.</p>
+              <p>
+                {Number(computedPercentage) >= passThreshold ? (
+                  <>Great job, <strong>{user.name || user.fullName}</strong>! You've completed the quiz.</>
+                ) : (
+                  <>Keep practicing, <strong>{user.name || user.fullName}</strong>! Review your answers below to improve your score.</>
+                )}
+              </p>
             </div>
 
             {/* Quiz Info */}
