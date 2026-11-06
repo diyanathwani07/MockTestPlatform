@@ -765,36 +765,48 @@ body.dark-mode .sr-score-box,
 
 /* SubjectResults Buttons Light/Dark Mode Support */
 .sr-result-btn {
-  background: transparent;
-  color: var(--brand-color, var(--primary));
-  border: 1px solid var(--brand-color, var(--primary));
+  background: transparent !important;
+  color: var(--brand-color, var(--primary)) !important;
+  border: 1.5px solid var(--brand-color, var(--primary)) !important;
 }
 .sr-result-btn:hover {
-  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  background: color-mix(in srgb, var(--primary) 8%, transparent) !important;
 }
 
 .sr-reattempt-btn {
-  background: var(--bg-hover, #f3f4f6);
-  color: var(--text-primary, #111827);
-  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--bg-hover, #f3f4f6) !important;
+  color: var(--text-primary, #111827) !important;
+  border: 1px solid var(--border-color, #e5e7eb) !important;
 }
 .sr-reattempt-btn:hover {
-  background: var(--border-color, #e5e7eb);
+  background: var(--border-color, #e5e7eb) !important;
 }
 
 body.dark-mode .sr-result-btn,
-.dark .sr-result-btn {
-  color: var(--primary);
-  border: 1px solid color-mix(in srgb, var(--primary) 60%, transparent);
+.dark .sr-result-btn,
+[data-theme="dark"] .sr-result-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+}
+body.dark-mode .sr-result-btn:hover,
+.dark .sr-result-btn:hover,
+[data-theme="dark"] .sr-result-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: #FFFFFF !important;
 }
 
 body.dark-mode .sr-reattempt-btn,
-.dark .sr-reattempt-btn {
-  background: var(--bg-card);
-  color: var(--primary-foreground);
-  border: none;
+.dark .sr-reattempt-btn,
+[data-theme="dark"] .sr-reattempt-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 body.dark-mode .sr-reattempt-btn:hover,
-.dark .sr-reattempt-btn:hover {
-  background: var(--option-hover, #2D2A3D);
+.dark .sr-reattempt-btn:hover,
+[data-theme="dark"] .sr-reattempt-btn:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
 }

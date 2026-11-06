@@ -11,8 +11,10 @@ import "../css/Practice.css";
 import "../css/MyExams.css";
 import MuiDatePicker from "../components/MuiDatePicker";
 import { SkeletonExamCard } from "@/components/ui/skeleton";
+import { useTheme } from "../context/ThemeContext";
 
 function SubjectResults() {
+  const { isDark } = useTheme();
   const { subject } = useParams();
   const navigate = useNavigate();
   const decodedExamName = decodeURIComponent(subject);
@@ -265,7 +267,22 @@ function SubjectResults() {
                               const targetId = result._id || result.shareId;
                               navigate(targetId ? `/result/${targetId}` : "/result", { state: { ...result, fromAttempts: true } });
                             }}
-                            className="sr-result-btn" style={{ flex: 1, padding: "12px", borderRadius: "12px", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", transition: "all 0.2s" }}
+                            className="sr-result-btn"
+                            style={{
+                              flex: 1,
+                              padding: "12px",
+                              borderRadius: "12px",
+                              fontSize: "14px",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              transition: "all 0.2s",
+                              color: isDark ? "#FFFFFF" : "var(--primary, #6E3FF3)",
+                              border: isDark ? "1.5px solid rgba(255, 255, 255, 0.4)" : "1.5px solid var(--primary, #6E3FF3)",
+                              background: isDark ? "rgba(255, 255, 255, 0.06)" : "transparent"
+                            }}
                           >
                             Result
                           </button>
@@ -283,7 +300,22 @@ function SubjectResults() {
                                   },
                                 });
                               }}
-                              className="sr-reattempt-btn" style={{ flex: 1, padding: "12px", borderRadius: "12px", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", transition: "all 0.2s" }}
+                              className="sr-reattempt-btn"
+                              style={{
+                                flex: 1,
+                                padding: "12px",
+                                borderRadius: "12px",
+                                fontSize: "14px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                transition: "all 0.2s",
+                                color: isDark ? "#FFFFFF" : "#1E293B",
+                                border: isDark ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #CBD5E1",
+                                background: isDark ? "rgba(255, 255, 255, 0.1)" : "#F1F5F9"
+                              }}
                             >
                               Reattempt
                             </button>
