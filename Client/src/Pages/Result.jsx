@@ -7,7 +7,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
-import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid, Eye, Check, X, Minus, BookOpen, Layers, Sparkles, BarChart2 } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid, Eye, Check, X, Minus, BookOpen, Layers, Sparkles, BarChart2, Send, Lock } from "lucide-react";
 import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
@@ -20,17 +20,19 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
     { value: 1, label: "Poor", emoji: "😡", color: "#EF4444" },
     { value: 2, label: "Average", emoji: "😐", color: "#F59E0B" },
     { value: 3, label: "Good", emoji: "🙂", color: "#10B981" },
-    { value: 4, label: "Very Good", emoji: "😄", color: "#3B82F6" },
+    { value: 4, label: "Great", emoji: "😄", color: "#3B82F6" },
     { value: 5, label: "Excellent", emoji: "😍", color: "#8B5CF6" }
   ];
 
-  const [rating, setRating] = useState(() => {
-    if (initialReaction) {
-      const match = ratings.find(r => r.label.toLowerCase() === initialReaction.toLowerCase());
-      return match ? match.value : 0;
-    }
-    return 0;
-  });
+  const matchInitialRating = (reactionStr) => {
+    if (!reactionStr) return 0;
+    const lower = reactionStr.toLowerCase();
+    if (lower === "very good" || lower === "great") return 4;
+    const match = ratings.find(r => r.label.toLowerCase() === lower);
+    return match ? match.value : 0;
+  };
+
+  const [rating, setRating] = useState(() => matchInitialRating(initialReaction));
   const [comment, setComment] = useState(initialComment || "");
   const [submitted, setSubmitted] = useState(Boolean(initialReaction || initialComment));
   const [loading, setLoading] = useState(false);
@@ -38,8 +40,8 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   useEffect(() => {
     if (initialReaction || initialComment) {
       if (initialReaction) {
-        const match = ratings.find(r => r.label.toLowerCase() === initialReaction.toLowerCase());
-        if (match) setRating(match.value);
+        const val = matchInitialRating(initialReaction);
+        if (val) setRating(val);
       }
       if (initialComment) setComment(initialComment);
       setSubmitted(true);
@@ -58,7 +60,7 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
         reaction: ratings[rating - 1].label,
         feedbackMessage: comment
       }, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setSubmitted(true);
     } catch (err) {
@@ -69,110 +71,108 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
     }
   };
 
+  const selectedRatingObj = ratings.find(r => r.value === rating);
+
   if (submitted) {
     return (
-      <div className="rm-feedback-card" style={{
-        background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
-        borderRadius: "18px", padding: "20px 22px", textAlign: "center",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box"
-      }}>
-        <div style={{ fontSize: "32px", marginBottom: "10px" }}>🎉</div>
-        <h4 style={{ color: "var(--text-primary)", fontSize: "16px", fontWeight: "700", marginBottom: "6px" }}>Thank you!</h4>
-        <p style={{ color: "var(--text-secondary)", fontSize: "12.5px", lineHeight: "1.4", margin: 0 }}>Your feedback has been submitted successfully and helps us improve our exams.</p>
+      <div className="rm-feedback-card rfb-submitted-card">
+        <div className="rfb-success-icon-wrap">
+          <Check size={22} strokeWidth={2.8} />
+        </div>
+        <h4 className="rfb-success-title">Thank You for Your Feedback!</h4>
+        {selectedRatingObj && (
+          <div className="rfb-submitted-badge" style={{ borderColor: selectedRatingObj.color, color: selectedRatingObj.color }}>
+            <span>{selectedRatingObj.emoji}</span>
+            <span>Rated: <strong>{selectedRatingObj.label}</strong></span>
+          </div>
+        )}
+        <p className="rfb-success-desc">
+          Your feedback helps us continuously improve exam questions, explanations, and your preparation experience.
+        </p>
+        <button
+          type="button"
+          className="rfb-edit-btn"
+          onClick={() => setSubmitted(false)}
+        >
+          Update Feedback
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="rm-feedback-card" style={{
-      background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
-      borderRadius: "18px", padding: "20px 22px", textAlign: "left",
-      boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box",
-      width: "100%"
-    }}>
+    <div className="rm-feedback-card">
       {/* Header */}
-      <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "14px" }}>
-        <div style={{
-          width: "36px", height: "36px", borderRadius: "50%",
-          backgroundColor: "rgba(139, 92, 246, 0.1)", display: "flex",
-          alignItems: "center", justifyContent: "center"
-        }}>
+      <div className="rfb-header">
+        <div className="rfb-header-icon">
           <HelpCircle size={18} color="#8B5CF6" />
         </div>
         <div>
-          <h4 style={{ margin: 0, fontSize: "14.5px", fontWeight: "700", color: "var(--text-primary)" }}>Help us improve</h4>
-          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Your feedback helps us make exams better.</p>
+          <h4 className="rfb-title">Help Us Improve</h4>
+          <p className="rfb-subtitle">Your anonymous feedback helps make exams better</p>
         </div>
       </div>
 
-      {/* Q1 */}
-      <div style={{ marginBottom: "16px" }}>
-        <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "8px" }}>
-          1. How would you rate this quiz?
-        </span>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: "6px" }}>
+      {/* Q1: Rating */}
+      <div className="rfb-field-group">
+        <label className="rfb-field-label">
+          1. How would you rate this exam?
+        </label>
+        <div className="rfb-ratings-grid">
           {ratings.map((r) => {
             const isSelected = rating === r.value;
             return (
-              <div 
+              <button
+                type="button"
                 key={r.value}
+                className={`rfb-rating-item ${isSelected ? "selected" : ""}`}
                 onClick={() => setRating(r.value)}
                 style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
-                  cursor: "pointer", flex: 1, padding: "6px 2px", borderRadius: "10px",
-                  border: isSelected ? `1.5px solid ${r.color}` : "1.5px solid transparent",
-                  backgroundColor: isSelected ? `${r.color}10` : "transparent",
-                  transition: "all 0.2s ease"
+                  "--rating-color": r.color
                 }}
               >
-                <span style={{ fontSize: "24px", filter: isSelected ? "none" : "grayscale(30%)", transform: isSelected ? "scale(1.12)" : "scale(1)", transition: "all 0.2s" }}>{r.emoji}</span>
-                <span style={{ fontSize: "9px", fontWeight: isSelected ? "700" : "500", color: isSelected ? r.color : "var(--text-secondary)" }}>{r.label}</span>
-              </div>
+                <span className="rfb-emoji">{r.emoji}</span>
+                <span className="rfb-rating-label">{r.label}</span>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Q2 */}
-      <div style={{ marginBottom: "16px" }}>
-        <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "6px" }}>
-          2. Any comments or suggestions? (Optional)
-        </span>
-        <textarea
-          value={comment}
-          onChange={(e) => { if (e.target.value.length <= 500) setComment(e.target.value); }}
-          placeholder="Write your feedback here..."
-          rows={3}
-          style={{
-            width: "100%", height: "76px", padding: "10px 12px", borderRadius: "10px",
-            border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-input)",
-            color: "var(--text-primary)", fontSize: "12px", outline: "none", resize: "none",
-            boxSizing: "border-box"
-          }}
-        />
-        <div style={{ textAlign: "right", fontSize: "10px", color: "var(--text-muted)", marginTop: "2px" }}>
-          {comment.length}/500
+      {/* Q2: Comments */}
+      <div className="rfb-field-group">
+        <label className="rfb-field-label">
+          2. Comments or suggestions? <span className="rfb-optional">(Optional)</span>
+        </label>
+        <div className="rfb-textarea-wrap">
+          <textarea
+            className="rfb-textarea"
+            value={comment}
+            onChange={(e) => { if (e.target.value.length <= 500) setComment(e.target.value); }}
+            placeholder="Share thoughts on question quality, answer explanations, or pacing..."
+            rows={3}
+          />
+          <div className="rfb-char-count">
+            {comment.length}/500
+          </div>
         </div>
       </div>
 
       {/* Submit Button */}
       <button
+        type="button"
+        className={`rfb-submit-btn ${rating > 0 ? "ready" : "disabled"}`}
         onClick={handleSubmit}
-        disabled={loading}
-        style={{
-          width: "100%", height: "40px", padding: "0 16px", borderRadius: "10px", border: "none",
-          backgroundColor: rating === 0 ? "var(--border-color)" : "var(--violet)",
-          color: rating === 0 ? "var(--text-muted)" : "#ffffff", fontWeight: "700",
-          fontSize: "13px", cursor: rating === 0 || loading ? "not-allowed" : "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-          transition: "all 0.2s",
-          boxShadow: rating === 0 ? "none" : "0 4px 15px rgba(124, 58, 237, 0.2)"
-        }}
+        disabled={rating === 0 || loading}
       >
-        <span>Submit Feedback</span>
+        <Send size={15} />
+        <span>{loading ? "Submitting..." : "Submit Feedback"}</span>
       </button>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "8px", color: "var(--text-muted)", fontSize: "9.5px" }}>
-        <span>🔒 Your feedback is anonymous</span>
+
+      {/* Privacy note */}
+      <div className="rfb-privacy-pill">
+        <Lock size={11} />
+        <span>Your feedback is 100% anonymous & secure</span>
       </div>
     </div>
   );

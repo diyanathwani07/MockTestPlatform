@@ -1332,3 +1332,392 @@ body.dark-mode .review-bottom-actions .btn-back-summary {
     padding: 0 10px;
   }
 }
+
+/* ==========================================================================
+   ENHANCED FEEDBACK CONTAINER (LIGHT & DARK MODES, MOBILE & DESKTOP)
+   ========================================================================== */
+
+.rm-feedback-card {
+  background: var(--bg-card, #ffffff);
+  border: 1.5px solid var(--border-color, #E2E8F0);
+  border-radius: 18px;
+  padding: 18px 20px;
+  text-align: left;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.25s ease;
+}
+
+body.dark-mode .rm-feedback-card {
+  background: #151320;
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+.rfb-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.rfb-header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(139, 92, 246, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rfb-title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary, #0F172A);
+  line-height: 1.25;
+}
+
+body.dark-mode .rfb-title {
+  color: #F8FAFC !important;
+}
+
+.rfb-subtitle {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--text-secondary, #64748B);
+  line-height: 1.3;
+}
+
+body.dark-mode .rfb-subtitle {
+  color: #94A3B8 !important;
+}
+
+.rfb-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rfb-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary, #0F172A);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+body.dark-mode .rfb-field-label {
+  color: #E2E8F0 !important;
+}
+
+.rfb-optional {
+  font-weight: 400;
+  color: var(--text-muted, #94A3B8);
+  font-size: 11px;
+}
+
+/* Ratings 5-column grid */
+.rfb-ratings-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.rfb-rating-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px 2px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  min-height: 58px;
+}
+
+body.dark-mode .rfb-rating-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rfb-rating-item:hover {
+  transform: translateY(-2px);
+  border-color: #CBD5E1;
+  background: #F1F5F9;
+}
+
+body.dark-mode .rfb-rating-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.rfb-rating-item.selected {
+  border: 1.5px solid var(--rating-color) !important;
+  background: color-mix(in srgb, var(--rating-color) 12%, #FFFFFF) !important;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--rating-color) 25%, transparent);
+  transform: translateY(-2px) scale(1.02);
+}
+
+body.dark-mode .rfb-rating-item.selected {
+  background: color-mix(in srgb, var(--rating-color) 18%, #151320) !important;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--rating-color) 35%, transparent);
+}
+
+.rfb-emoji {
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  filter: grayscale(20%);
+}
+
+.rfb-rating-item:hover .rfb-emoji,
+.rfb-rating-item.selected .rfb-emoji {
+  filter: none;
+  transform: scale(1.12);
+}
+
+.rfb-rating-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748B;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+body.dark-mode .rfb-rating-label {
+  color: #94A3B8;
+}
+
+.rfb-rating-item.selected .rfb-rating-label {
+  color: var(--rating-color) !important;
+  font-weight: 700;
+}
+
+/* Textarea */
+.rfb-textarea-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.rfb-textarea {
+  width: 100%;
+  height: 74px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #CBD5E1;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+.rfb-textarea::placeholder {
+  color: #94A3B8;
+}
+
+.rfb-textarea:focus {
+  border-color: #8B5CF6;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+body.dark-mode .rfb-textarea {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  color: #F8FAFC;
+}
+
+body.dark-mode .rfb-textarea::placeholder {
+  color: #64748B;
+}
+
+body.dark-mode .rfb-textarea:focus {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: #A78BFA;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+
+.rfb-char-count {
+  text-align: right;
+  font-size: 10px;
+  color: #94A3B8;
+  margin-top: 3px;
+  padding-right: 2px;
+}
+
+body.dark-mode .rfb-char-count {
+  color: #64748B;
+}
+
+/* Submit Button */
+.rfb-submit-btn {
+  width: 100%;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.rfb-submit-btn.disabled {
+  background: #E2E8F0;
+  color: #94A3B8;
+  border: 1px solid #CBD5E1;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+body.dark-mode .rfb-submit-btn.disabled {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94A3B8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: not-allowed;
+}
+
+.rfb-submit-btn.ready {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: #FFFFFF !important;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+}
+
+.rfb-submit-btn.ready:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.55);
+}
+
+.rfb-submit-btn.ready:active {
+  transform: translateY(0);
+}
+
+/* Privacy pill */
+.rfb-privacy-pill {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 10.5px;
+  font-weight: 500;
+  border: 1px solid #E2E8F0;
+  align-self: center;
+}
+
+body.dark-mode .rfb-privacy-pill {
+  background: rgba(255, 255, 255, 0.04);
+  color: #94A3B8;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Submitted Success State */
+.rfb-submitted-card {
+  align-items: center;
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.rfb-success-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+}
+
+.rfb-success-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary, #0F172A);
+}
+
+body.dark-mode .rfb-success-title {
+  color: #F8FAFC !important;
+}
+
+.rfb-submitted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rfb-success-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary, #64748B);
+  line-height: 1.45;
+  max-width: 320px;
+}
+
+body.dark-mode .rfb-success-desc {
+  color: #94A3B8 !important;
+}
+
+.rfb-edit-btn {
+  margin-top: 4px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: #8B5CF6;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rfb-edit-btn:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8B5CF6;
+}
+
+/* Also ensure high contrast on Dashboard button in parent card in dark mode */
+body.dark-mode .rm-modal-actions .btn-dashboard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+body.dark-mode .rm-modal-actions .btn-dashboard:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
+}
