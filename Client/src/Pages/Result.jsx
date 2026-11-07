@@ -1132,10 +1132,12 @@ function Result() {
 
   return (
     <div className={`result-page-new ${showAnswers ? "show-answers" : ""}`}>
-      {/* Floating Theme Toggle on Top Right */}
-      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
-        <ThemeToggle />
-      </div>
+      {/* Floating Theme Toggle on Top Right (Only when not in unified top bar) */}
+      {(!isMultiQuiz || showAnswers) && (
+        <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+          <ThemeToggle />
+        </div>
+      )}
 
       {isMultiQuiz ? (
         showAnswers ? (
@@ -1780,55 +1782,40 @@ function Result() {
         ) : (
           /* Multi Quiz Overall Performance & Subject Cards Summary View */
           <div className="result-modal-overlay rm-mobile-overlay" style={{ minHeight: "100vh", padding: "40px 16px" }}>
-            {/* Back button */}
-            <button 
-              className="rm-back-btn"
-              onClick={() => {
-                if (location.state?.fromAttempts) {
-                  navigate(-1);
-                } else {
-                  navigate("/dashboard/results");
-                }
-              }}
-              style={{
-                position: "fixed",
-                top: "20px",
-                left: "20px",
-                zIndex: 110,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "46px",
-                height: "46px",
-                borderRadius: "50%",
-                backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-                border: "1px solid var(--border-color, #d1d5db)",
-                color: isDark ? "#ffffff" : "#000000",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              title="Go Back"
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-            >
-              <ArrowLeft size={22} strokeWidth={2.5} />
-            </button>
+            {/* Top Unified Header Bar: Back button | Segmented Tabs | Theme Toggle */}
+            <div className="rm-top-header-bar">
+              <button 
+                className="rm-top-back-btn"
+                onClick={() => {
+                  if (location.state?.fromAttempts) {
+                    navigate(-1);
+                  } else {
+                    navigate("/dashboard/results");
+                  }
+                }}
+                title="Go Back"
+              >
+                <ArrowLeft size={20} strokeWidth={2.5} />
+              </button>
 
-            {/* Top Segmented Navigation (Overview vs Deep Analytics) */}
-            <div className="mqa-top-nav" style={{ marginBottom: "24px" }}>
-              <button
-                className={`mqa-tab-btn ${resultTab === "overview" ? "active" : ""}`}
-                onClick={() => setResultTab("overview")}
-              >
-                <LayoutGrid size={16} /> Overview
-              </button>
-              <button
-                className={`mqa-tab-btn ${resultTab === "analytics" ? "active" : ""}`}
-                onClick={() => setResultTab("analytics")}
-              >
-                <BarChart3 size={16} /> Deep Analytics & Insights
-              </button>
+              <div className="mqa-top-nav">
+                <button
+                  className={`mqa-tab-btn ${resultTab === "overview" ? "active" : ""}`}
+                  onClick={() => setResultTab("overview")}
+                >
+                  <LayoutGrid size={15} /> <span>Overview</span>
+                </button>
+                <button
+                  className={`mqa-tab-btn ${resultTab === "analytics" ? "active" : ""}`}
+                  onClick={() => setResultTab("analytics")}
+                >
+                  <BarChart3 size={15} /> <span>{isMobile ? "Analysis" : "Deep Analytics & Insights"}</span>
+                </button>
+              </div>
+
+              <div className="rm-top-theme-btn-wrap">
+                <ThemeToggle />
+              </div>
             </div>
 
             {resultTab === "analytics" ? (

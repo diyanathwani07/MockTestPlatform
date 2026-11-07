@@ -133,7 +133,7 @@ export default function MultiQuizAnalyticsDashboard({
             <Sparkles size={20} color="#8B5CF6" /> Performance Diagnosis
           </h3>
           <span className="mqa-badge-pill" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
-            <Layers size={13} /> {sections.length} Sections Evaluated
+            <Layers size={13} /> {sections.length} {sections.length === 1 ? "Section" : "Sections"} Evaluated
           </span>
         </div>
 
@@ -145,11 +145,11 @@ export default function MultiQuizAnalyticsDashboard({
             </div>
             <div className="mqa-stat-info">
               <p className="mqa-stat-label">Strongest Section</p>
-              <h4 className="mqa-stat-value" title={summary.strongestSection?.sectionTitle || "None"}>
-                {summary.strongestSection?.sectionTitle || "—"}
+              <h4 className="mqa-stat-value" title={summary.strongestSection && summary.strongestSection.accuracy > 0 ? summary.strongestSection.sectionTitle : "None yet"}>
+                {summary.strongestSection && summary.strongestSection.accuracy > 0 ? summary.strongestSection.sectionTitle : "None yet"}
               </h4>
-              <span style={{ fontSize: "11px", color: "#16A34A", fontWeight: "700" }}>
-                {summary.strongestSection ? `${summary.strongestSection.accuracy}% Acc` : ""}
+              <span style={{ fontSize: "11px", color: summary.strongestSection && summary.strongestSection.accuracy > 0 ? "#16A34A" : "var(--text-secondary)", fontWeight: "700" }}>
+                {summary.strongestSection && summary.strongestSection.accuracy > 0 ? `${summary.strongestSection.accuracy}% Acc` : "Attempt more questions"}
               </span>
             </div>
           </div>
@@ -162,10 +162,14 @@ export default function MultiQuizAnalyticsDashboard({
             <div className="mqa-stat-info">
               <p className="mqa-stat-label">Needs Attention</p>
               <h4 className="mqa-stat-value" title={summary.weakestSection?.sectionTitle || "None"}>
-                {summary.weakestSection?.sectionTitle || "—"}
+                {summary.weakCount > 0
+                  ? summary.weakestSection?.sectionTitle
+                  : (sections.every(s => s.attempted === 0) ? "All Unattempted" : (summary.weakestSection?.sectionTitle || "All on Track"))}
               </h4>
-              <span style={{ fontSize: "11px", color: "#DC2626", fontWeight: "700" }}>
-                {summary.weakestSection ? `${summary.weakestSection.accuracy}% Acc` : ""}
+              <span style={{ fontSize: "11px", color: summary.weakCount > 0 ? "#DC2626" : "var(--text-secondary)", fontWeight: "700" }}>
+                {summary.weakCount > 0
+                  ? `${summary.weakestSection?.accuracy}% Acc`
+                  : (sections.every(s => s.attempted === 0) ? "0 questions answered" : "Maintaining benchmark")}
               </span>
             </div>
           </div>
@@ -181,7 +185,7 @@ export default function MultiQuizAnalyticsDashboard({
                 <span style={{ color: "#16A34A" }}>{summary.strongCount || 0}</span> Strong • <span style={{ color: "#DC2626" }}>{summary.weakCount || 0}</span> Weak
               </h4>
               <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                {summary.averageCount || 0} Average
+                {summary.averageCount || 0} Average {sections.filter(s => s.strength === "unattempted").length > 0 ? `• ${sections.filter(s => s.strength === "unattempted").length} Unattempted` : ""}
               </span>
             </div>
           </div>
@@ -294,7 +298,9 @@ export default function MultiQuizAnalyticsDashboard({
                     <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>• {formatSeconds(sec.timeTaken)} spent</span>
                   </div>
                   <p className="mqa-sec-coach-text">
-                    {sec.incorrect > sec.correct
+                    {sec.attempted === 0
+                      ? "Section unattempted — answering questions here will establish diagnostic data."
+                      : sec.incorrect > sec.correct
                       ? "Mostly wrong answers — revise fundamental concepts & review solutions."
                       : sec.unanswered > sec.attempted
                       ? "High unanswered count — practice timed drills to improve section pacing."
@@ -629,6 +635,8 @@ function buildClientFallbackAnalytics(result) {
 
   const attemptedSections = sections.filter(s => s.attempted > 0);
   const sorted = [...attemptedSections].sort((a, b) => b.accuracy - a.accuracy);
+  const strongestSection = sorted.find(s => s.accuracy > 0 && s.score > 0) || null;
+  const weakestSection = sorted.slice().reverse().find(s => s.accuracy < 50 || s.strength === "weak") || (sorted.length > 1 ? sorted[sorted.length - 1] : null);
 
   return {
     success: true,
@@ -636,8 +644,8 @@ function buildClientFallbackAnalytics(result) {
     isMultiQuiz,
     sections,
     summary: {
-      strongestSection: sorted[0] || null,
-      weakestSection: sorted[sorted.length - 1] || null,
+      strongestSection,
+      weakestSection,
       strongCount: sections.filter(s => s.strength === "strong").length,
       averageCount: sections.filter(s => s.strength === "average").length,
       weakCount: sections.filter(s => s.strength === "weak").length

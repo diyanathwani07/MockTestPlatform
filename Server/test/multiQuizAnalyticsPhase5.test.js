@@ -100,11 +100,10 @@ function processAnalytics(result, historicalAttempts = []) {
       if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
       return b.score - a.score;
     });
-    strongestSection = sortedByPerformance[0];
+    if (sortedByPerformance[0].accuracy > 0 && sortedByPerformance[0].score > 0) {
+      strongestSection = sortedByPerformance[0];
+    }
     weakestSection = sortedByPerformance[sortedByPerformance.length - 1];
-  } else if (sections.length > 0) {
-    strongestSection = sections[0];
-    weakestSection = sections[sections.length - 1];
   }
 
   const recommendations = [];

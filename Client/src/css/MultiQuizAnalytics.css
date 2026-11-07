@@ -502,44 +502,72 @@ body.dark-mode .mqa-table td {
   .mqa-card {
     padding: 16px 14px !important;
     border-radius: 18px !important;
+    margin-bottom: 14px !important;
   }
   .mqa-top-nav {
-    width: 100% !important;
+    flex: 1 !important;
+    width: auto !important;
     display: flex !important;
+    margin: 0 !important;
+    padding: 3px !important;
+    gap: 4px !important;
   }
   .mqa-tab-btn {
     flex: 1 !important;
     justify-content: center !important;
-    padding: 8px 10px !important;
-    font-size: 12.5px !important;
+    padding: 7px 10px !important;
+    font-size: 13px !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
   }
   .mqa-summary-grid {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr !important;
     gap: 8px !important;
   }
   .mqa-stat-box {
-    padding: 12px 10px !important;
-    gap: 10px !important;
+    padding: 12px 14px !important;
+    gap: 12px !important;
+    border-radius: 14px !important;
   }
   .mqa-stat-icon {
-    width: 36px !important;
-    height: 36px !important;
+    width: 38px !important;
+    height: 38px !important;
   }
   .mqa-stat-value {
-    font-size: 14.5px !important;
+    font-size: 15px !important;
   }
   .mqa-stat-label {
-    font-size: 10px !important;
+    font-size: 10.5px !important;
+  }
+  .mqa-filter-chips {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding: 2px 2px 8px 2px !important;
+    margin-bottom: 12px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .mqa-filter-chips::-webkit-scrollbar {
+    display: none !important;
+  }
+  .mqa-filter-chip {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 6px 14px !important;
+    font-size: 12px !important;
   }
   .mqa-metrics-chips {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 6px !important;
   }
   .mqa-chip {
-    padding: 6px 4px !important;
+    padding: 7px 4px !important;
+    border-radius: 8px !important;
   }
   .mqa-chip-val {
-    font-size: 12.5px !important;
+    font-size: 13px !important;
   }
   .mqa-chip-lbl {
     font-size: 9.5px !important;
@@ -564,8 +592,16 @@ body.dark-mode .mqa-table td {
 .mqa-filter-chips {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  padding: 2px 2px 8px 2px;
   margin-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.mqa-filter-chips::-webkit-scrollbar {
+  display: none;
 }
 
 .mqa-filter-chip {
@@ -577,6 +613,8 @@ body.dark-mode .mqa-table td {
   background: #F8FAFC;
   color: #64748B;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
