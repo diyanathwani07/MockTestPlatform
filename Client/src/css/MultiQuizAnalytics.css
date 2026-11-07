@@ -757,31 +757,48 @@ body.dark-mode .mqa-time-util-wrap {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 74px;
-  height: 74px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
-  border: 3.5px solid #8B5CF6;
+  border: 2.5px solid #8B5CF6;
   background: rgba(139, 92, 246, 0.08);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.2);
   flex-shrink: 0;
+  padding: 4px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+body.dark-mode .mqa-time-circle {
+  background: rgba(139, 92, 246, 0.14);
+  border-color: #8B5CF6;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.28);
 }
 
 .mqa-time-circle-val {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
-  color: #8B5CF6;
-  line-height: 1.1;
+  color: #7C3AED;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+}
+
+body.dark-mode .mqa-time-circle-val {
+  color: #C4B5FD !important;
 }
 
 .mqa-time-circle-lbl {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   color: #64748B;
   text-transform: uppercase;
-  margin-top: 2px;
+  letter-spacing: 0.5px;
+  margin-top: 3px;
+  line-height: 1;
 }
 
 body.dark-mode .mqa-time-circle-lbl {
-  color: #94A3B8;
+  color: #CBD5E1 !important;
 }
 
 .mqa-time-details {
@@ -889,11 +906,17 @@ body.dark-mode .mqa-actions-row .mqa-btn-overview:hover {
     border-radius: 16px !important;
   }
   .mqa-time-circle {
-    width: 64px !important;
-    height: 64px !important;
+    width: 76px !important;
+    height: 76px !important;
+    border-width: 2.5px !important;
   }
   .mqa-time-circle-val {
-    font-size: 13.5px !important;
+    font-size: 15px !important;
+  }
+  .mqa-time-circle-lbl {
+    font-size: 8px !important;
+    letter-spacing: 0.4px !important;
+    margin-top: 2px !important;
   }
   .mqa-actions-row {
     flex-direction: column !important;

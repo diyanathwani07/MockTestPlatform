@@ -1762,8 +1762,12 @@ function Result() {
                   }
                 }}
                 title="Go Back"
+                aria-label="Go back"
+                style={{
+                  color: isDark ? "#FFFFFF" : "#1E293B"
+                }}
               >
-                <ArrowLeft size={20} strokeWidth={2.5} />
+                <ArrowLeft size={20} strokeWidth={2.5} color={isDark ? "#FFFFFF" : "#1E293B"} />
               </button>
 
               <div className="mqa-top-nav">
