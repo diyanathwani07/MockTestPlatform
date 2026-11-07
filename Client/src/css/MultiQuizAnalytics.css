@@ -19,39 +19,72 @@
 
 /* Tab Bar */
 .mqa-top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: rgba(139, 92, 246, 0.08);
-  padding: 6px;
-  border-radius: 16px;
-  border: 1px solid rgba(139, 92, 246, 0.15);
-  margin-bottom: 8px;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: rgba(139, 92, 246, 0.08) !important;
+  padding: 5px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  margin-bottom: 8px !important;
+  width: fit-content !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+body.dark-mode .mqa-top-nav {
+  background: rgba(23, 21, 32, 0.9) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
 }
 
 .mqa-tab-btn {
-  padding: 8px 18px;
-  border-radius: 12px;
-  border: none;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  color: var(--text-secondary, #64748B);
+  padding: 8px 18px !important;
+  border-radius: 12px !important;
+  border: none !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: transparent !important;
+  color: #475569 !important;
+  outline: none !important;
 }
 
-.mqa-tab-btn.active {
-  background: #8B5CF6;
-  color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+body.dark-mode .mqa-tab-btn {
+  color: #CBD5E1 !important;
+}
+
+.mqa-tab-btn:hover {
+  color: #7C3AED !important;
+  background: rgba(139, 92, 246, 0.1) !important;
+}
+
+body.dark-mode .mqa-tab-btn:hover {
+  color: #FFFFFF !important;
+  background: rgba(139, 92, 246, 0.2) !important;
+}
+
+.mqa-tab-btn.active,
+body.dark-mode .mqa-tab-btn.active {
+  background: #8B5CF6 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45) !important;
+}
+
+.mqa-tab-btn span {
+  color: inherit !important;
+  font-weight: 700 !important;
+}
+
+.mqa-tab-btn svg {
+  color: inherit !important;
+  stroke: currentColor !important;
+  flex-shrink: 0 !important;
 }
 
 /* Card Common */

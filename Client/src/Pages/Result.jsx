@@ -1831,7 +1831,7 @@ function Result() {
                     {Number(computedPercentage) >= passThreshold ? (
                       <>Great job, <strong>{user.name || user.fullName}</strong>! You've completed <strong>{examTitle}</strong>.</>
                     ) : (
-                      <>Keep practicing, <strong>{user.name || user.fullName}</strong>! You've completed <strong>{examTitle}</strong>. Review your solutions below to improve.</>
+                      <>Good effort, <strong>{user.name || user.fullName}</strong>! You've completed <strong>{examTitle}</strong>. Review your solutions below to improve.</>
                     )}
                   </p>
                 </div>
@@ -2278,7 +2278,7 @@ function Result() {
                 {Number(computedPercentage) >= passThreshold ? (
                   <>Great job, <strong>{user.name || user.fullName}</strong>! You've completed the quiz.</>
                 ) : (
-                  <>Keep practicing, <strong>{user.name || user.fullName}</strong>! Review your answers below to improve your score.</>
+                  <>Good effort, <strong>{user.name || user.fullName}</strong>! Review your answers below to improve your score.</>
                 )}
               </p>
             </div>

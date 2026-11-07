@@ -610,6 +610,76 @@ body.dark-mode .rm-modal-actions .btn-dashboard:hover {
   box-sizing: border-box;
 }
 
+/* Segmented Navigation Tab Bar in Header */
+.mqa-top-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: rgba(139, 92, 246, 0.08) !important;
+  padding: 5px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+body.dark-mode .mqa-top-nav {
+  background: rgba(23, 21, 32, 0.9) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Inactive Tab Button */
+.mqa-tab-btn {
+  padding: 8px 18px !important;
+  border-radius: 12px !important;
+  border: none !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: transparent !important;
+  color: #475569 !important; /* High contrast slate in light mode */
+  outline: none !important;
+}
+
+body.dark-mode .mqa-tab-btn {
+  color: #CBD5E1 !important; /* Crisp, easily readable light silver in dark mode */
+}
+
+.mqa-tab-btn:hover {
+  color: #7C3AED !important;
+  background: rgba(139, 92, 246, 0.1) !important;
+}
+
+body.dark-mode .mqa-tab-btn:hover {
+  color: #FFFFFF !important;
+  background: rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Active Tab Button - Guaranteed Crisp Pure White in Both Light & Dark */
+.mqa-tab-btn.active,
+body.dark-mode .mqa-tab-btn.active {
+  background: #8B5CF6 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45) !important;
+}
+
+.mqa-tab-btn span {
+  color: inherit !important;
+  font-weight: 700 !important;
+}
+
+.mqa-tab-btn svg {
+  color: inherit !important;
+  stroke: currentColor !important;
+  flex-shrink: 0 !important;
+}
+
 .rm-top-back-btn {
   width: 42px;
   height: 42px;
