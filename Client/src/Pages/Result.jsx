@@ -13,6 +13,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
 import { Skeleton, SkeletonCard, SkeletonStatCard } from "@/components/ui/skeleton";
 import MultiQuizAnalyticsDashboard from "../components/MultiQuizAnalyticsDashboard";
+import StudentChatbot from "../components/StudentChatbot";
 
 const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   const ratings = [
@@ -1727,55 +1728,21 @@ function Result() {
                 )}
               </div>
 
-              {/* Bottom Actions */}
-              <div className="result-actions" style={{ marginTop: "40px", paddingBottom: "60px", display: "flex", justifyContent: "center", gap: "16px" }}>
+              {/* Compact Bottom Actions */}
+              <div className="review-bottom-actions">
                 <button 
-                  className="rm-btn-outline" 
-                  style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
+                  className="btn-back-summary" 
                   onClick={() => setShowAnswers(false)}
                 >
-                  ← Back to Summary
+                  <ArrowLeft size={16} />
+                  <span>Back to Summary</span>
                 </button>
                 <button 
-                  className="rm-btn-solid" 
-                  style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
+                  className="btn-back-dashboard" 
                   onClick={() => navigate("/dashboard")}
                 >
-                  Back to Dashboard
-                </button>
-              </div>
-
-              {/* Floating scroll action button */}
-              <div style={{ position: "fixed", bottom: "30px", right: "30px", zIndex: 1000 }}>
-                <button
-                  onClick={() => {
-                    if (isScrolledDown) {
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    } else {
-                      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
-                    }
-                  }}
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "50%",
-                    backgroundColor: isDark ? "var(--primary)" : "#ffffff",
-                    color: isDark ? "#ffffff" : "var(--primary)",
-                    border: "2px solid var(--border-color, #d1d5db)",
-                    boxShadow: "0 4px 16px rgba(110, 63, 243, 0.3)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    transition: "all 0.25s ease",
-                    fontSize: "16px",
-                    fontWeight: "bold"
-                  }}
-                  title={isScrolledDown ? "Scroll to Top" : "Scroll to Bottom"}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-                >
-                  {isScrolledDown ? "▲" : "▼"}
+                  <LayoutGrid size={16} />
+                  <span>Back to Dashboard</span>
                 </button>
               </div>
             </div>
@@ -2824,66 +2791,30 @@ function Result() {
               })}
             </div>
             
-            <div className="result-actions" style={{ marginTop: "40px", paddingBottom: "60px", display: "flex", justifyContent: "center", gap: "16px" }}>
+            {/* Compact Bottom Actions */}
+            <div className="review-bottom-actions">
               <button 
-                className="rm-btn-outline" 
-                style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
+                className="btn-back-summary" 
                 onClick={() => setShowAnswers(false)}
               >
-                ← Back to Summary
+                <ArrowLeft size={16} />
+                <span>Back to Summary</span>
               </button>
               <button 
-                className="rm-btn-solid" 
-                style={{ padding: "14px 32px", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer" }}
+                className="btn-back-dashboard" 
                 onClick={() => navigate("/dashboard")}
               >
-                Back to Dashboard
+                <LayoutGrid size={16} />
+                <span>Back to Dashboard</span>
               </button>
             </div>
-            
-             {/* Floating scroll action button */}
-             <div style={{
-               position: "fixed",
-               bottom: "30px",
-               right: "30px",
-               zIndex: 1000
-             }}>
-               <button
-                 onClick={() => {
-                   if (isScrolledDown) {
-                     window.scrollTo({ top: 0, behavior: "smooth" });
-                   } else {
-                     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
-                   }
-                 }}
-                 style={{
-                   width: "48px",
-                   height: "48px",
-                   borderRadius: "50%",
-                   backgroundColor: isDark ? "var(--primary)" : "#ffffff",
-                   color: isDark ? "#ffffff" : "var(--primary)",
-                   border: "2px solid var(--border-color, #d1d5db)",
-                   boxShadow: "0 4px 16px rgba(110, 63, 243, 0.3)",
-                   display: "flex",
-                   alignItems: "center",
-                   justifyContent: "center",
-                   cursor: "pointer",
-                   transition: "all 0.25s ease",
-                   fontSize: "16px",
-                   fontWeight: "bold"
-                 }}
-                 title={isScrolledDown ? "Scroll to Top" : "Scroll to Bottom"}
-                 onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
-                 onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-               >
-                 {isScrolledDown ? "▲" : "▼"}
-               </button>
-             </div>
           </div>
         </div>
       )}
         </>
       )}
+      {/* Student AI Chatbot */}
+      <StudentChatbot />
     </div>
   );
 }

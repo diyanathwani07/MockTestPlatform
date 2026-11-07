@@ -11,19 +11,31 @@
 
 /* Floating Action Button */
 .acb-fab {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--primary); color: var(--primary-foreground);
-    border: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    user-select: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%) !important;
+  color: #FFFFFF !important;
+  border: none;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .admin-chatbot-container {
+    bottom: 16px !important;
+    right: 14px !important;
   }
+  .acb-fab {
+    width: 44px !important;
+    height: 44px !important;
+  }
+}
 
 .acb-fab:active {
   cursor: grabbing;
