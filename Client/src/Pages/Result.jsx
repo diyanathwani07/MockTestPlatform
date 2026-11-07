@@ -7,11 +7,12 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
-import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid, Eye, Check, X, Minus, BookOpen, Layers } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid, Eye, Check, X, Minus, BookOpen, Layers, Sparkles, BarChart2 } from "lucide-react";
 import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
 import { Skeleton, SkeletonCard, SkeletonStatCard } from "@/components/ui/skeleton";
+import MultiQuizAnalyticsDashboard from "../components/MultiQuizAnalyticsDashboard";
 
 const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   const ratings = [
@@ -283,7 +284,21 @@ function Result() {
   const total = data?.total ?? 0;
   const correct = data?.correct ?? 0;
   const incorrect = data?.incorrect ?? 0;
-  const unanswered = data?.unanswered ?? 0;
+  const unanswered = React.useMemo(() => {
+    if (data?.unanswered !== undefined && data?.unanswered !== null && Number(data.unanswered) >= 0) {
+      const attempted = (data?.attempted !== undefined && data?.attempted !== null)
+        ? Number(data.attempted)
+        : ((correct || 0) + (incorrect || 0));
+      const totalQ = total || questions.length || 0;
+      if (Number(data.unanswered) === 0 && totalQ > attempted) {
+        return totalQ - attempted;
+      }
+      return Number(data.unanswered);
+    }
+    const attempted = (correct || 0) + (incorrect || 0);
+    const totalQ = total || questions.length || 0;
+    return Math.max(0, totalQ - attempted);
+  }, [data, total, questions.length, correct, incorrect]);
   const percentage = data?.percentage;
   const [questions, setQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]);
@@ -320,6 +335,7 @@ function Result() {
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [reviewFilter, setReviewFilter] = useState("all"); // "all", "correct", "incorrect", "unattempted"
   const [activeSectionTab, setActiveSectionTab] = useState("all");
+  const [resultTab, setResultTab] = useState("overview"); // "overview" | "analytics"
 
   const formatTimingSafe = (seconds) => {
     if (seconds === undefined || seconds === null || seconds === "") return "Not available";
@@ -362,8 +378,10 @@ function Result() {
       const sum = data.sectionResults.reduce((acc, s) => acc + (Number(s.maxMarks) || 0), 0);
       if (sum > 0) return sum;
     }
+    if (total && Number(total) > 0) return total;
+    if (questions.length > 0) return questions.length;
     return total || "Not available";
-  }, [data, isMultiQuiz, total]);
+  }, [data, isMultiQuiz, total, questions.length]);
 
   const accuracyDisplay = React.useMemo(() => {
     if (data?.percentage !== undefined && data?.percentage !== null) {
@@ -1796,19 +1814,48 @@ function Result() {
               <ArrowLeft size={22} strokeWidth={2.5} />
             </button>
 
-            <div style={{
-              display: "flex",
-              gap: "30px",
-              maxWidth: isExam ? "1100px" : "700px",
-              width: "100%",
-              justifyContent: "center",
-              alignItems: "flex-start",
-              boxSizing: "border-box",
-              flexWrap: "wrap",
-              margin: "0 auto"
-            }}>
-              {/* SINGLE UNIFIED RESULT CARD */}
-              <div className="result-modal-card" style={{ margin: 0, flex: 1.2, minWidth: "320px", maxWidth: "680px" }}>
+            {/* Top Segmented Navigation (Overview vs Deep Analytics) */}
+            <div className="mqa-top-nav" style={{ marginBottom: "24px" }}>
+              <button
+                className={`mqa-tab-btn ${resultTab === "overview" ? "active" : ""}`}
+                onClick={() => setResultTab("overview")}
+              >
+                <LayoutGrid size={16} /> Overview
+              </button>
+              <button
+                className={`mqa-tab-btn ${resultTab === "analytics" ? "active" : ""}`}
+                onClick={() => setResultTab("analytics")}
+              >
+                <BarChart3 size={16} /> Deep Analytics & Insights
+              </button>
+            </div>
+
+            {resultTab === "analytics" ? (
+              <div style={{ maxWidth: "860px", width: "100%", margin: "0 auto" }}>
+                <MultiQuizAnalyticsDashboard
+                  resultId={effectiveResultId || data?._id}
+                  initialData={data}
+                  onViewSolutions={() => {
+                    setActiveSectionTab("all");
+                    setShowAnswers(true);
+                  }}
+                  onBackToOverview={() => setResultTab("overview")}
+                />
+              </div>
+            ) : (
+              <div style={{
+                display: "flex",
+                gap: "30px",
+                maxWidth: isExam ? "1100px" : "700px",
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "flex-start",
+                boxSizing: "border-box",
+                flexWrap: "wrap",
+                margin: "0 auto"
+              }}>
+                {/* SINGLE UNIFIED RESULT CARD */}
+                <div className="result-modal-card" style={{ margin: 0, flex: 1.2, minWidth: "320px", maxWidth: "680px" }}>
                 
                 {/* Header with Mascot */}
                 <div className="rm-header">
@@ -1983,6 +2030,30 @@ function Result() {
                           </div>
                         );
                       })}
+                      {/* Button to navigate to Deep Analytics */}
+                      <button
+                        onClick={() => setResultTab("analytics")}
+                        style={{
+                          marginTop: "10px",
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          background: isDark ? "rgba(139, 92, 246, 0.15)" : "#EDE9FE",
+                          color: isDark ? "#C4B5FD" : "#6D28D9",
+                          border: isDark ? "1px solid rgba(139, 92, 246, 0.3)" : "1px solid #DDD6FE",
+                          fontWeight: "700",
+                          fontSize: "13px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          transition: "all 0.2s ease"
+                        }}
+                      >
+                        <Sparkles size={15} />
+                        <span>View Deep Section Analytics & Recommendations →</span>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -2053,6 +2124,7 @@ function Result() {
                 </div>
               )}
             </div>
+          )}
           </div>
         )
       ) : (

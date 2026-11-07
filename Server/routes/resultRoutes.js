@@ -11,7 +11,8 @@ const {
   getResultById,
   updateResultFeedback,
   getAllAttempts,
-  getScoreAnalytics
+  getScoreAnalytics,
+  getMultiQuizAnalytics
 } = require("../controllers/resultController");
 
 const router = express.Router();
@@ -24,6 +25,8 @@ router.put("/feedback/:resultId", protect, updateResultFeedback);
 router.get("/leaderboard", getLeaderboard);
 router.get("/share/:shareId", getSharedResult);
 router.get("/by-share/:shareId", getResultByShareId);
+router.get("/analytics/:resultId", protect, getMultiQuizAnalytics);
+router.get("/:resultId/analytics", protect, getMultiQuizAnalytics);
 router.get("/detail/:resultId", protect, getResultById);
 router.get("/id/:resultId", protect, getResultById);
 router.get("/:userId", protect, getUserResults);
