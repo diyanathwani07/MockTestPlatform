@@ -782,7 +782,12 @@ function Result() {
             <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 8px" }}>{error.title}</h2>
             <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: "0 0 24px", lineHeight: "1.5" }}>{error.message}</p>
             <button
-              onClick={() => navigate(error.actionRoute || "/dashboard")}
+              onClick={() => {
+                if (error.actionRoute === "/login" || error.actionRoute === "/") {
+                  sessionStorage.setItem("redirect_after_login", window.location.pathname + window.location.search);
+                }
+                navigate(error.actionRoute || "/dashboard");
+              }}
               style={{
                 background: "var(--violet)",
                 color: "var(--primary-foreground)",
