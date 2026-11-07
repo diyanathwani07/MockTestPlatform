@@ -710,6 +710,10 @@ const getMultiQuizAnalytics = async (req, res) => {
       totalTimeTaken: result.timeTaken ?? 0,
       sections,
       summary: {
+        totalExamTime: result.timeTaken ?? sections.reduce((acc, s) => acc + (s.timeTaken || 0), 0),
+        avgTimeOverall: ((result.correct || 0) + (result.incorrect || 0)) > 0 
+          ? Math.round((result.timeTaken ?? 0) / (((result.correct || 0) + (result.incorrect || 0)) || 1)) 
+          : 0,
         strongestSection: strongestSection ? {
           sectionTitle: strongestSection.sectionTitle,
           accuracy: strongestSection.accuracy,

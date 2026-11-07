@@ -115,6 +115,10 @@ export default function MultiQuizAnalyticsDashboard({
 
   const { sections = [], summary = {}, recommendations = [], history = {} } = analytics;
 
+  const displayTotalTime = summary.totalExamTime || analytics.totalTimeTaken || initialData?.timeTaken || sections.reduce((acc, s) => acc + (s.timeTaken || 0), 0);
+  const totalAttemptedQuestions = sections.reduce((acc, s) => acc + (s.attempted || 0), 0);
+  const displayAvgPace = summary.avgTimeOverall || (totalAttemptedQuestions > 0 ? Math.round(displayTotalTime / totalAttemptedQuestions) : 0);
+
   const formatSeconds = (sec) => {
     if (!sec && sec !== 0) return "0s";
     const s = Math.round(Number(sec));
@@ -126,84 +130,122 @@ export default function MultiQuizAnalyticsDashboard({
 
   return (
     <div className="mqa-container">
-      {/* 1. Header Overview Metrics */}
-      <div className="mqa-card">
-        <div className="mqa-card-header">
-          <h3 className="mqa-card-title">
-            <Sparkles size={20} color="#8B5CF6" /> Performance Diagnosis
-          </h3>
-          <span className="mqa-badge-pill" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
-            <Layers size={13} /> {sections.length} {sections.length === 1 ? "Section" : "Sections"} Evaluated
-          </span>
+      {/* Top 2-Column Grid on Desktop: Performance Diagnosis + Time Utilization */}
+      <div className="mqa-top-grid">
+        {/* 1. Performance Diagnosis */}
+        <div className="mqa-card">
+          <div className="mqa-card-header">
+            <h3 className="mqa-card-title">
+              <Sparkles size={18} color="#8B5CF6" /> Performance Diagnosis
+            </h3>
+            <span className="mqa-badge-pill" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+              <Layers size={13} /> {sections.length} {sections.length === 1 ? "Section" : "Sections"} Evaluated
+            </span>
+          </div>
+
+          <div className="mqa-summary-grid">
+            {/* Strongest Section */}
+            <div className="mqa-stat-box">
+              <div className="mqa-stat-icon" style={{ background: "rgba(34, 197, 94, 0.12)", color: "#16A34A" }}>
+                <Award size={20} />
+              </div>
+              <div className="mqa-stat-info">
+                <p className="mqa-stat-label">Strongest Section</p>
+                <h4 className="mqa-stat-value" title={summary.strongestSection && summary.strongestSection.accuracy > 0 ? summary.strongestSection.sectionTitle : "None yet"}>
+                  {summary.strongestSection && summary.strongestSection.accuracy > 0 ? summary.strongestSection.sectionTitle : "None yet"}
+                </h4>
+                <span style={{ fontSize: "11px", color: summary.strongestSection && summary.strongestSection.accuracy > 0 ? "#16A34A" : "var(--text-secondary)", fontWeight: "700" }}>
+                  {summary.strongestSection && summary.strongestSection.accuracy > 0 ? `${summary.strongestSection.accuracy}% Acc` : "Attempt more questions"}
+                </span>
+              </div>
+            </div>
+
+            {/* Weakest Section */}
+            <div className="mqa-stat-box">
+              <div className="mqa-stat-icon" style={{ background: "rgba(239, 68, 68, 0.12)", color: "#DC2626" }}>
+                <AlertTriangle size={20} />
+              </div>
+              <div className="mqa-stat-info">
+                <p className="mqa-stat-label">Needs Attention</p>
+                <h4 className="mqa-stat-value" title={summary.weakestSection?.sectionTitle || "None"}>
+                  {summary.weakCount > 0
+                    ? summary.weakestSection?.sectionTitle
+                    : (sections.every(s => s.attempted === 0) ? "All Unattempted" : (summary.weakestSection?.sectionTitle || "All on Track"))}
+                </h4>
+                <span style={{ fontSize: "11px", color: summary.weakCount > 0 ? "#DC2626" : "var(--text-secondary)", fontWeight: "700" }}>
+                  {summary.weakCount > 0
+                    ? `${summary.weakestSection?.accuracy}% Acc`
+                    : (sections.every(s => s.attempted === 0) ? "0 questions answered" : "Maintaining benchmark")}
+                </span>
+              </div>
+            </div>
+
+            {/* Strong vs Weak Tally */}
+            <div className="mqa-stat-box">
+              <div className="mqa-stat-icon" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
+                <BarChart2 size={20} />
+              </div>
+              <div className="mqa-stat-info">
+                <p className="mqa-stat-label">Section Standing</p>
+                <h4 className="mqa-stat-value">
+                  <span style={{ color: "#16A34A" }}>{summary.strongCount || 0}</span> Strong • <span style={{ color: "#DC2626" }}>{summary.weakCount || 0}</span> Weak
+                </h4>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                  {summary.averageCount || 0} Average {sections.filter(s => s.strength === "unattempted").length > 0 ? `• ${sections.filter(s => s.strength === "unattempted").length} Unattempted` : ""}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="mqa-summary-grid">
-          {/* Strongest Section */}
-          <div className="mqa-stat-box">
-            <div className="mqa-stat-icon" style={{ background: "rgba(34, 197, 94, 0.12)", color: "#16A34A" }}>
-              <Award size={22} />
-            </div>
-            <div className="mqa-stat-info">
-              <p className="mqa-stat-label">Strongest Section</p>
-              <h4 className="mqa-stat-value" title={summary.strongestSection && summary.strongestSection.accuracy > 0 ? summary.strongestSection.sectionTitle : "None yet"}>
-                {summary.strongestSection && summary.strongestSection.accuracy > 0 ? summary.strongestSection.sectionTitle : "None yet"}
-              </h4>
-              <span style={{ fontSize: "11px", color: summary.strongestSection && summary.strongestSection.accuracy > 0 ? "#16A34A" : "var(--text-secondary)", fontWeight: "700" }}>
-                {summary.strongestSection && summary.strongestSection.accuracy > 0 ? `${summary.strongestSection.accuracy}% Acc` : "Attempt more questions"}
-              </span>
-            </div>
+        {/* 2. Time Utilization Analysis */}
+        <div className="mqa-card">
+          <div className="mqa-card-header">
+            <h3 className="mqa-card-title">
+              <Clock size={18} color="#8B5CF6" /> Time Utilization Analysis
+            </h3>
+            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+              Exam pacing & efficiency
+            </span>
           </div>
 
-          {/* Weakest Section */}
-          <div className="mqa-stat-box">
-            <div className="mqa-stat-icon" style={{ background: "rgba(239, 68, 68, 0.12)", color: "#DC2626" }}>
-              <AlertTriangle size={22} />
+          <div className="mqa-time-util-wrap">
+            <div className="mqa-time-circle">
+              <span className="mqa-time-circle-val">{formatSeconds(displayTotalTime)}</span>
+              <span className="mqa-time-circle-lbl">Total Time</span>
             </div>
-            <div className="mqa-stat-info">
-              <p className="mqa-stat-label">Needs Attention</p>
-              <h4 className="mqa-stat-value" title={summary.weakestSection?.sectionTitle || "None"}>
-                {summary.weakCount > 0
-                  ? summary.weakestSection?.sectionTitle
-                  : (sections.every(s => s.attempted === 0) ? "All Unattempted" : (summary.weakestSection?.sectionTitle || "All on Track"))}
-              </h4>
-              <span style={{ fontSize: "11px", color: summary.weakCount > 0 ? "#DC2626" : "var(--text-secondary)", fontWeight: "700" }}>
-                {summary.weakCount > 0
-                  ? `${summary.weakestSection?.accuracy}% Acc`
-                  : (sections.every(s => s.attempted === 0) ? "0 questions answered" : "Maintaining benchmark")}
-              </span>
-            </div>
-          </div>
-
-          {/* Strong vs Weak Tally */}
-          <div className="mqa-stat-box">
-            <div className="mqa-stat-icon" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
-              <BarChart2 size={22} />
-            </div>
-            <div className="mqa-stat-info">
-              <p className="mqa-stat-label">Section Standing</p>
-              <h4 className="mqa-stat-value">
-                <span style={{ color: "#16A34A" }}>{summary.strongCount || 0}</span> Strong • <span style={{ color: "#DC2626" }}>{summary.weakCount || 0}</span> Weak
-              </h4>
-              <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                {summary.averageCount || 0} Average {sections.filter(s => s.strength === "unattempted").length > 0 ? `• ${sections.filter(s => s.strength === "unattempted").length} Unattempted` : ""}
-              </span>
+            <div className="mqa-time-details">
+              <div className="mqa-time-item">
+                <span className="mqa-time-label">Avg Pace (Attempted)</span>
+                <span className="mqa-time-val">{displayAvgPace}s / question</span>
+              </div>
+              <div className="mqa-time-item">
+                <span className="mqa-time-label">Sections Evaluated</span>
+                <span className="mqa-time-val">{sections.length} {sections.length === 1 ? "Section" : "Sections"}</span>
+              </div>
+              <div className="mqa-time-item">
+                <span className="mqa-time-label">Fastest Accurate Section</span>
+                <span className="mqa-time-val" style={{ color: "#16A34A" }}>
+                  {summary.strongestSection ? `${summary.strongestSection.sectionTitle} (${formatSeconds(summary.strongestSection.timeTaken)})` : "—"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Detailed Section-Wise Performance Analysis */}
+      {/* 3. Detailed Section-Wise Performance Analysis (Full-Width Row) */}
       <div className="mqa-card">
         <div className="mqa-card-header">
           <h3 className="mqa-card-title">
-            <Layers size={20} color="#8B5CF6" /> Section-Wise Performance Breakdown
+            <Layers size={18} color="#8B5CF6" /> Section-Wise Performance Breakdown
           </h3>
           <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
             Authoritative section results
           </span>
         </div>
 
-        {/* Filter Chips (Image 10: Strengths & Weaknesses topic filters) */}
+        {/* Filter Chips */}
         <div className="mqa-filter-chips">
           <button 
             className={`mqa-filter-chip ${sectionFilter === "all" ? "active" : ""}`}
@@ -347,249 +389,190 @@ export default function MultiQuizAnalyticsDashboard({
         </div>
       </div>
 
-      {/* 2.5 Time Utilization Analysis (Image 10: How you used your time) */}
-      <div className="mqa-card">
-        <div className="mqa-card-header">
-          <h3 className="mqa-card-title">
-            <Clock size={20} color="#8B5CF6" /> Time Utilization Analysis
-          </h3>
-          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-            Exam pacing & efficiency
-          </span>
-        </div>
-
-        <div className="mqa-time-util-wrap">
-          <div className="mqa-time-circle">
-            <span className="mqa-time-circle-val">{formatSeconds(summary.totalExamTime)}</span>
-            <span className="mqa-time-circle-lbl">Total Time</span>
-          </div>
-          <div className="mqa-time-details">
-            <div className="mqa-time-item">
-              <span className="mqa-time-label">Avg Pace Across Attempted</span>
-              <span className="mqa-time-val">{summary.avgTimeOverall || 0}s / question</span>
-            </div>
-            <div className="mqa-time-item">
-              <span className="mqa-time-label">Total Sections Completed</span>
-              <span className="mqa-time-val">{sections.length} Sections</span>
-            </div>
-            <div className="mqa-time-item">
-              <span className="mqa-time-label">Fastest Accurate Section</span>
-              <span className="mqa-time-val" style={{ color: "#16A34A" }}>
-                {summary.strongestSection ? `${summary.strongestSection.sectionTitle} (${formatSeconds(summary.strongestSection.timeTaken)})` : "—"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Personalized Improvement Recommendations */}
-      <div className="mqa-card">
-        <div className="mqa-card-header">
-          <h3 className="mqa-card-title">
-            <Zap size={20} color="#F59E0B" /> Personalized Action Plan
-          </h3>
-          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-            Data-backed coaching insights
-          </span>
-        </div>
-
-        <div className="mqa-recom-list">
-          {recommendations.map((rec, i) => {
-            const isHigh = rec.priority === "high";
-            const isMedium = rec.priority === "medium";
-
-            const iconBg = isHigh
-              ? "rgba(239, 68, 68, 0.12)"
-              : isMedium
-              ? "rgba(245, 158, 11, 0.12)"
-              : "rgba(34, 197, 94, 0.12)";
-
-            const iconColor = isHigh ? "#DC2626" : isMedium ? "#D97706" : "#16A34A";
-
-            const badgeBg = isHigh
-              ? "rgba(239, 68, 68, 0.15)"
-              : isMedium
-              ? "rgba(245, 158, 11, 0.15)"
-              : "rgba(34, 197, 94, 0.15)";
-
-            const badgeText = isHigh ? "High Priority" : isMedium ? "Medium Priority" : "Mastery";
-
-            return (
-              <div key={i} className="mqa-recom-item">
-                <div className="mqa-recom-icon" style={{ background: iconBg, color: iconColor }}>
-                  {rec.type === "concept_revision" && <BookOpen size={18} />}
-                  {rec.type === "negative_marking" && <AlertTriangle size={18} />}
-                  {rec.type === "time_management" && <Clock size={18} />}
-                  {rec.type === "speed_practice" && <Zap size={18} />}
-                  {rec.type === "advanced_practice" && <Award size={18} />}
-                  {!["concept_revision", "negative_marking", "time_management", "speed_practice", "advanced_practice"].includes(rec.type) && (
-                    <Target size={18} />
-                  )}
-                </div>
-                <div className="mqa-recom-content">
-                  <div className="mqa-recom-top">
-                    <h5 className="mqa-recom-heading">{rec.title}</h5>
-                    <span
-                      className="mqa-badge-pill"
-                      style={{ background: badgeBg, color: iconColor, fontSize: "10.5px" }}
-                    >
-                      {badgeText}
-                    </span>
-                  </div>
-                  <p className="mqa-recom-desc">{rec.description}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 4. Historical Progression (Multi-Attempt Comparison) */}
-      {history.hasHistory && history.comparisonWithPrevious && (
+      {/* Bottom 2-Column Grid on Desktop: Personalized Action Plan + Progression */}
+      <div className={`mqa-bottom-grid ${history.hasHistory && history.comparisonWithPrevious ? "" : "single-col"}`}>
+        {/* 4. Personalized Improvement Recommendations */}
         <div className="mqa-card">
           <div className="mqa-card-header">
             <h3 className="mqa-card-title">
-              <History size={20} color="#8B5CF6" /> Attempt History & Progression
+              <Zap size={18} color="#F59E0B" /> Personalized Action Plan
             </h3>
-            <span className="mqa-badge-pill" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
-              Attempt #{history.totalAttempts} vs #{history.totalAttempts - 1}
+            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+              Data-backed coaching insights
             </span>
           </div>
 
-          <div className="mqa-history-summary">
-            <div>
-              <p style={{ margin: "0 0 2px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                Net Score Change
-              </p>
-              <span
-                className={`mqa-delta-badge ${
-                  history.comparisonWithPrevious.scoreDiff > 0
-                    ? "mqa-delta-positive"
-                    : history.comparisonWithPrevious.scoreDiff < 0
-                    ? "mqa-delta-negative"
-                    : "mqa-delta-neutral"
-                }`}
-              >
-                {history.comparisonWithPrevious.scoreDiff > 0 && <TrendingUp size={14} />}
-                {history.comparisonWithPrevious.scoreDiff < 0 && <TrendingDown size={14} />}
-                {history.comparisonWithPrevious.scoreDiff > 0 ? `+${history.comparisonWithPrevious.scoreDiff}` : history.comparisonWithPrevious.scoreDiff} Marks
-              </span>
-            </div>
+          <div className="mqa-recom-list">
+            {recommendations.map((rec, i) => {
+              const isHigh = rec.priority === "high";
+              const isMedium = rec.priority === "medium";
 
-            <div>
-              <p style={{ margin: "0 0 2px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                Accuracy Shift
-              </p>
-              <span
-                className={`mqa-delta-badge ${
-                  history.comparisonWithPrevious.percentageDiff > 0
-                    ? "mqa-delta-positive"
-                    : history.comparisonWithPrevious.percentageDiff < 0
-                    ? "mqa-delta-negative"
-                    : "mqa-delta-neutral"
-                }`}
-              >
-                {history.comparisonWithPrevious.percentageDiff > 0 ? `+${history.comparisonWithPrevious.percentageDiff}%` : `${history.comparisonWithPrevious.percentageDiff}%`}
-              </span>
-            </div>
+              const iconBg = isHigh
+                ? "rgba(239, 68, 68, 0.12)"
+                : isMedium
+                ? "rgba(245, 158, 11, 0.12)"
+                : "rgba(34, 197, 94, 0.12)";
 
-            <div>
-              <p style={{ margin: "0 0 2px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                Total Attempts
-              </p>
-              <span style={{ fontSize: "14px", fontWeight: "800", color: "#8B5CF6" }}>
-                {history.totalAttempts} Attempts Recorded
-              </span>
-            </div>
+              const iconColor = isHigh ? "#DC2626" : isMedium ? "#D97706" : "#16A34A";
+
+              const badgeBg = isHigh
+                ? "rgba(239, 68, 68, 0.15)"
+                : isMedium
+                ? "rgba(245, 158, 11, 0.15)"
+                : "rgba(34, 197, 94, 0.15)";
+
+              const badgeText = isHigh ? "High Priority" : isMedium ? "Medium Priority" : "Mastery";
+
+              return (
+                <div key={i} className="mqa-recom-item">
+                  <div className="mqa-recom-icon" style={{ background: iconBg, color: iconColor }}>
+                    {rec.type === "concept_revision" && <BookOpen size={16} />}
+                    {rec.type === "negative_marking" && <AlertTriangle size={16} />}
+                    {rec.type === "time_management" && <Clock size={16} />}
+                    {rec.type === "speed_practice" && <Zap size={16} />}
+                    {rec.type === "advanced_practice" && <Award size={16} />}
+                    {!["concept_revision", "negative_marking", "time_management", "speed_practice", "advanced_practice"].includes(rec.type) && (
+                      <Target size={16} />
+                    )}
+                  </div>
+                  <div className="mqa-recom-content">
+                    <div className="mqa-recom-top">
+                      <h5 className="mqa-recom-heading">{rec.title}</h5>
+                      <span
+                        className="mqa-badge-pill"
+                        style={{ background: badgeBg, color: iconColor, fontSize: "10.5px" }}
+                      >
+                        {badgeText}
+                      </span>
+                    </div>
+                    <p className="mqa-recom-desc">{rec.description}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          {/* Section Changes Table */}
-          {history.comparisonWithPrevious.sectionChanges?.length > 0 && (
-            <div className="mqa-table-wrap">
-              <table className="mqa-table">
-                <thead>
-                  <tr>
-                    <th>Section</th>
-                    <th>Previous Score</th>
-                    <th>Current Score</th>
-                    <th>Accuracy Delta</th>
-                    <th>Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.comparisonWithPrevious.sectionChanges.map((sc, idx) => (
-                    <tr key={idx}>
-                      <td>{sc.sectionTitle}</td>
-                      <td>{sc.previousScore}</td>
-                      <td>{sc.currentScore}</td>
-                      <td>
-                        <span style={{ color: sc.accuracyDiff >= 0 ? "#16A34A" : "#DC2626" }}>
-                          {sc.accuracyDiff >= 0 ? `+${sc.accuracyDiff}%` : `${sc.accuracyDiff}%`}
-                        </span>
-                      </td>
-                      <td>
-                        {sc.trend === "improving" ? (
-                          <span style={{ color: "#16A34A", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            <TrendingUp size={14} /> Improving
-                          </span>
-                        ) : sc.trend === "declining" ? (
-                          <span style={{ color: "#DC2626", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            <TrendingDown size={14} /> Declining
-                          </span>
-                        ) : (
-                          <span style={{ color: "#64748B" }}>→ Consistent</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
-      )}
 
-      {/* 5. Sticky Bottom Action Bar */}
-      <div style={{ display: "flex", gap: "12px", marginTop: "4px", width: "100%" }}>
+        {/* 5. Historical Progression (Multi-Attempt Comparison) */}
+        {history.hasHistory && history.comparisonWithPrevious && (
+          <div className="mqa-card">
+            <div className="mqa-card-header">
+              <h3 className="mqa-card-title">
+                <History size={18} color="#8B5CF6" /> Attempt History & Progression
+              </h3>
+              <span className="mqa-badge-pill" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                Attempt #{history.totalAttempts} vs #{history.totalAttempts - 1}
+              </span>
+            </div>
+
+            <div className="mqa-history-summary">
+              <div>
+                <p style={{ margin: "0 0 2px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                  Net Score Change
+                </p>
+                <span
+                  className={`mqa-delta-badge ${
+                    history.comparisonWithPrevious.scoreDiff > 0
+                      ? "mqa-delta-positive"
+                      : history.comparisonWithPrevious.scoreDiff < 0
+                      ? "mqa-delta-negative"
+                      : "mqa-delta-neutral"
+                  }`}
+                >
+                  {history.comparisonWithPrevious.scoreDiff > 0 && <TrendingUp size={14} />}
+                  {history.comparisonWithPrevious.scoreDiff < 0 && <TrendingDown size={14} />}
+                  {history.comparisonWithPrevious.scoreDiff > 0 ? `+${history.comparisonWithPrevious.scoreDiff}` : history.comparisonWithPrevious.scoreDiff} Marks
+                </span>
+              </div>
+
+              <div>
+                <p style={{ margin: "0 0 2px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                  Accuracy Shift
+                </p>
+                <span
+                  className={`mqa-delta-badge ${
+                    history.comparisonWithPrevious.percentageDiff > 0
+                      ? "mqa-delta-positive"
+                      : history.comparisonWithPrevious.percentageDiff < 0
+                      ? "mqa-delta-negative"
+                      : "mqa-delta-neutral"
+                  }`}
+                >
+                  {history.comparisonWithPrevious.percentageDiff > 0 ? `+${history.comparisonWithPrevious.percentageDiff}%` : `${history.comparisonWithPrevious.percentageDiff}%`}
+                </span>
+              </div>
+
+              <div>
+                <p style={{ margin: "0 0 2px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                  Total Attempts
+                </p>
+                <span style={{ fontSize: "14px", fontWeight: "800", color: "#8B5CF6" }}>
+                  {history.totalAttempts} Attempts Recorded
+                </span>
+              </div>
+            </div>
+
+            {/* Section Changes Table */}
+            {history.comparisonWithPrevious.sectionChanges?.length > 0 && (
+              <div className="mqa-table-wrap">
+                <table className="mqa-table">
+                  <thead>
+                    <tr>
+                      <th>Section</th>
+                      <th>Previous Score</th>
+                      <th>Current Score</th>
+                      <th>Accuracy Delta</th>
+                      <th>Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.comparisonWithPrevious.sectionChanges.map((sc, idx) => (
+                      <tr key={idx}>
+                        <td>{sc.sectionTitle}</td>
+                        <td>{sc.previousScore}</td>
+                        <td>{sc.currentScore}</td>
+                        <td>
+                          <span style={{ color: sc.accuracyDiff >= 0 ? "#16A34A" : "#DC2626" }}>
+                            {sc.accuracyDiff >= 0 ? `+${sc.accuracyDiff}%` : `${sc.accuracyDiff}%`}
+                          </span>
+                        </td>
+                        <td>
+                          {sc.trend === "improving" ? (
+                            <span style={{ color: "#16A34A", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              <TrendingUp size={14} /> Improving
+                            </span>
+                          ) : sc.trend === "declining" ? (
+                            <span style={{ color: "#DC2626", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              <TrendingDown size={14} /> Declining
+                            </span>
+                          ) : (
+                            <span style={{ color: "#64748B" }}>→ Consistent</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 6. Aligned Bottom Action Bar */}
+      <div className="mqa-actions-row">
         <button
+          className="mqa-btn-solutions"
           onClick={onViewSolutions}
-          style={{
-            flex: 1.2,
-            padding: "14px 20px",
-            borderRadius: "14px",
-            background: "#8B5CF6",
-            color: "#FFFFFF",
-            fontSize: "14.5px",
-            fontWeight: "700",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            boxShadow: "0 4px 14px rgba(139, 92, 246, 0.35)",
-            transition: "all 0.2s"
-          }}
         >
-          <BookOpen size={17} />
-          Review Detailed Solutions
+          <BookOpen size={16} />
+          <span>Review Detailed Solutions</span>
         </button>
         <button
+          className="mqa-btn-overview"
           onClick={onBackToOverview}
-          style={{
-            flex: 0.8,
-            padding: "14px 20px",
-            borderRadius: "14px",
-            background: "var(--bg-card)",
-            color: "var(--text-primary)",
-            border: "1px solid var(--border-color)",
-            fontSize: "14.5px",
-            fontWeight: "700",
-            cursor: "pointer",
-            transition: "all 0.2s"
-          }}
         >
-          Back to Overview
+          <span>Back to Overview</span>
         </button>
       </div>
     </div>

@@ -72,12 +72,12 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
     return (
       <div className="rm-feedback-card" style={{
         background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
-        borderRadius: "24px", padding: "30px", textAlign: "center",
+        borderRadius: "18px", padding: "20px 22px", textAlign: "center",
         boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box"
       }}>
-        <div style={{ fontSize: "40px", marginBottom: "16px" }}>🎉</div>
-        <h4 style={{ color: "var(--text-primary)", fontSize: "18px", fontWeight: "700", marginBottom: "8px" }}>Thank you!</h4>
-        <p style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.4", margin: 0 }}>Your feedback has been submitted successfully and helps us improve our exams.</p>
+        <div style={{ fontSize: "32px", marginBottom: "10px" }}>🎉</div>
+        <h4 style={{ color: "var(--text-primary)", fontSize: "16px", fontWeight: "700", marginBottom: "6px" }}>Thank you!</h4>
+        <p style={{ color: "var(--text-secondary)", fontSize: "12.5px", lineHeight: "1.4", margin: 0 }}>Your feedback has been submitted successfully and helps us improve our exams.</p>
       </div>
     );
   }
@@ -85,31 +85,31 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   return (
     <div className="rm-feedback-card" style={{
       background: "var(--bg-card)", border: "1.5px solid var(--border-color)",
-      borderRadius: "24px", padding: "30px", textAlign: "left",
+      borderRadius: "18px", padding: "20px 22px", textAlign: "left",
       boxShadow: "0 10px 30px rgba(0,0,0,0.15)", boxSizing: "border-box",
       width: "100%"
     }}>
       {/* Header */}
-      <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "20px" }}>
+      <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "14px" }}>
         <div style={{
-          width: "40px", height: "40px", borderRadius: "50%",
+          width: "36px", height: "36px", borderRadius: "50%",
           backgroundColor: "rgba(139, 92, 246, 0.1)", display: "flex",
           alignItems: "center", justifyContent: "center"
         }}>
-          <HelpCircle size={20} color="#8B5CF6" />
+          <HelpCircle size={18} color="#8B5CF6" />
         </div>
         <div>
-          <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>Help us improve</h4>
+          <h4 style={{ margin: 0, fontSize: "14.5px", fontWeight: "700", color: "var(--text-primary)" }}>Help us improve</h4>
           <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Your feedback helps us make exams better.</p>
         </div>
       </div>
 
       {/* Q1 */}
-      <div style={{ marginBottom: "24px" }}>
-        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "12px" }}>
+      <div style={{ marginBottom: "16px" }}>
+        <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "8px" }}>
           1. How would you rate this quiz?
         </span>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "6px" }}>
           {ratings.map((r) => {
             const isSelected = rating === r.value;
             return (
@@ -117,15 +117,15 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
                 key={r.value}
                 onClick={() => setRating(r.value)}
                 style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
-                  cursor: "pointer", flex: 1, padding: "8px 4px", borderRadius: "12px",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
+                  cursor: "pointer", flex: 1, padding: "6px 2px", borderRadius: "10px",
                   border: isSelected ? `1.5px solid ${r.color}` : "1.5px solid transparent",
                   backgroundColor: isSelected ? `${r.color}10` : "transparent",
                   transition: "all 0.2s ease"
                 }}
               >
-                <span style={{ fontSize: "28px", filter: isSelected ? "none" : "grayscale(30%)", transform: isSelected ? "scale(1.15)" : "scale(1)", transition: "all 0.2s" }}>{r.emoji}</span>
-                <span style={{ fontSize: "9.5px", fontWeight: isSelected ? "700" : "500", color: isSelected ? r.color : "var(--text-secondary)" }}>{r.label}</span>
+                <span style={{ fontSize: "24px", filter: isSelected ? "none" : "grayscale(30%)", transform: isSelected ? "scale(1.12)" : "scale(1)", transition: "all 0.2s" }}>{r.emoji}</span>
+                <span style={{ fontSize: "9px", fontWeight: isSelected ? "700" : "500", color: isSelected ? r.color : "var(--text-secondary)" }}>{r.label}</span>
               </div>
             );
           })}
@@ -133,22 +133,23 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
       </div>
 
       {/* Q2 */}
-      <div style={{ marginBottom: "24px" }}>
-        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "8px" }}>
+      <div style={{ marginBottom: "16px" }}>
+        <span style={{ fontSize: "11.5px", fontWeight: "700", color: "var(--text-primary)", display: "block", marginBottom: "6px" }}>
           2. Any comments or suggestions? (Optional)
         </span>
         <textarea
           value={comment}
           onChange={(e) => { if (e.target.value.length <= 500) setComment(e.target.value); }}
           placeholder="Write your feedback here..."
+          rows={3}
           style={{
-            width: "100%", height: "100px", padding: "12px", borderRadius: "12px",
+            width: "100%", height: "76px", padding: "10px 12px", borderRadius: "10px",
             border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-input)",
-            color: "var(--text-primary)", fontSize: "12.5px", outline: "none", resize: "none",
+            color: "var(--text-primary)", fontSize: "12px", outline: "none", resize: "none",
             boxSizing: "border-box"
           }}
         />
-        <div style={{ textAlign: "right", fontSize: "10.5px", color: "var(--text-muted)", marginTop: "4px" }}>
+        <div style={{ textAlign: "right", fontSize: "10px", color: "var(--text-muted)", marginTop: "2px" }}>
           {comment.length}/500
         </div>
       </div>
@@ -158,10 +159,10 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
         onClick={handleSubmit}
         disabled={loading}
         style={{
-          width: "100%", padding: "12px 20px", borderRadius: "12px", border: "none",
+          width: "100%", height: "40px", padding: "0 16px", borderRadius: "10px", border: "none",
           backgroundColor: rating === 0 ? "var(--border-color)" : "var(--violet)",
           color: rating === 0 ? "var(--text-muted)" : "#ffffff", fontWeight: "700",
-          fontSize: "13.5px", cursor: rating === 0 || loading ? "not-allowed" : "pointer",
+          fontSize: "13px", cursor: rating === 0 || loading ? "not-allowed" : "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
           transition: "all 0.2s",
           boxShadow: rating === 0 ? "none" : "0 4px 15px rgba(124, 58, 237, 0.2)"
@@ -169,7 +170,7 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
       >
         <span>Submit Feedback</span>
       </button>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "12px", color: "var(--text-muted)", fontSize: "10px" }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "8px", color: "var(--text-muted)", fontSize: "9.5px" }}>
         <span>🔒 Your feedback is anonymous</span>
       </div>
     </div>
@@ -1819,7 +1820,7 @@ function Result() {
             </div>
 
             {resultTab === "analytics" ? (
-              <div style={{ maxWidth: "860px", width: "100%", margin: "0 auto" }}>
+              <div style={{ maxWidth: "1080px", width: "100%", margin: "0 auto" }}>
                 <MultiQuizAnalyticsDashboard
                   resultId={effectiveResultId || data?._id}
                   initialData={data}
@@ -1831,10 +1832,10 @@ function Result() {
                 />
               </div>
             ) : (
-              <div style={{
+              <div className="rm-overview-wrapper" style={{
                 display: "flex",
-                gap: "30px",
-                maxWidth: isExam ? "1100px" : "700px",
+                gap: "24px",
+                maxWidth: isExam ? "1080px" : "700px",
                 width: "100%",
                 justifyContent: "center",
                 alignItems: "flex-start",
@@ -1843,17 +1844,17 @@ function Result() {
                 margin: "0 auto"
               }}>
                 {/* SINGLE UNIFIED RESULT CARD */}
-                <div className="result-modal-card" style={{ margin: 0, flex: 1.2, minWidth: "320px", maxWidth: "680px" }}>
+                <div className="result-modal-card rm-card-primary" style={{ margin: 0, flex: 1.25, minWidth: "320px", maxWidth: "660px" }}>
                 
                 {/* Header with Mascot */}
                 <div className="rm-header">
-                  <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+                  <div className="rm-trophy" style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>
                     <DotLottieReact 
                       src={Number(computedPercentage) >= passThreshold ? "/Badge.lottie" : "/idk.lottie"} 
                       loop 
                       autoplay 
                       className="rm-mascot-lottie"
-                      style={{ width: "85px", height: "85px", transform: "scale(2.0)" }} 
+                      style={{ width: "54px", height: "54px" }} 
                     />
                   </div>
                   <h2>
@@ -2103,7 +2104,7 @@ function Result() {
 
               {/* Right Column: Feedback Card (if isExam) */}
               {isExam && (effectiveResultId || data?._id || data?.result?._id || data?.resultId) && (
-                <div style={{ flex: 0.8, minWidth: "300px", maxWidth: "440px", width: "100%" }}>
+                <div className="rm-feedback-wrapper" style={{ flex: 0.75, minWidth: "300px", maxWidth: "400px", width: "100%" }}>
                   <FeedbackForm
                     resultId={data?.result?._id || data?._id || data?.resultId || (resultId && resultId.length === 24 ? resultId : null)}
                     initialReaction={data?.reaction}
