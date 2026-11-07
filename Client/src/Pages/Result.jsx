@@ -249,7 +249,15 @@ function Result() {
         }
       } catch (err) {
         console.error("Failed to fetch result data", err);
-        if (err.response?.status === 403) {
+        if (err.response?.status === 401) {
+          setError({
+            type: "UNAUTHORIZED",
+            title: "Sign In Required",
+            message: "You need to be signed in to your account to view this exam result.",
+            actionText: "Sign In to View Result",
+            actionRoute: "/login"
+          });
+        } else if (err.response?.status === 403) {
           setError({
             type: "UNAUTHORIZED",
             title: "Access Denied",
@@ -774,7 +782,7 @@ function Result() {
             <h2 style={{ fontSize: "22px", fontWeight: "800", color: "var(--text-primary)", margin: "0 0 8px" }}>{error.title}</h2>
             <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: "0 0 24px", lineHeight: "1.5" }}>{error.message}</p>
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(error.actionRoute || "/dashboard")}
               style={{
                 background: "var(--violet)",
                 color: "var(--primary-foreground)",
@@ -789,7 +797,7 @@ function Result() {
                 gap: "8px"
               }}
             >
-              <ArrowLeft size={16} /> Back to Dashboard
+              <ArrowLeft size={16} /> {error.actionText || "Back to Dashboard"}
             </button>
           </div>
         </div>
