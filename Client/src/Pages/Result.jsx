@@ -280,10 +280,24 @@ function Result() {
     }
   }, [effectiveResultId]);
 
+  const [questions, setQuestions] = useState([]);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const [shareId, setShareId] = useState(data?.shareId || null);
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [reviewFilter, setReviewFilter] = useState("all"); // "all", "correct", "incorrect", "unattempted"
+  const [activeSectionTab, setActiveSectionTab] = useState("all");
+  const [resultTab, setResultTab] = useState("overview"); // "overview" | "analytics"
+
   const score = data?.score ?? 0;
   const total = data?.total ?? 0;
   const correct = data?.correct ?? 0;
   const incorrect = data?.incorrect ?? 0;
+  const percentage = data?.percentage;
+
+  const isMultiQuiz = Boolean(data?.sectionResults && Array.isArray(data.sectionResults) && data.sectionResults.length > 0);
+
   const unanswered = React.useMemo(() => {
     if (data?.unanswered !== undefined && data?.unanswered !== null && Number(data.unanswered) >= 0) {
       const attempted = (data?.attempted !== undefined && data?.attempted !== null)
@@ -299,11 +313,6 @@ function Result() {
     const totalQ = total || questions.length || 0;
     return Math.max(0, totalQ - attempted);
   }, [data, total, questions.length, correct, incorrect]);
-  const percentage = data?.percentage;
-  const [questions, setQuestions] = useState([]);
-  const [userAnswers, setUserAnswers] = useState([]);
-
-  const isMultiQuiz = Boolean(data?.sectionResults && Array.isArray(data.sectionResults) && data.sectionResults.length > 0);
 
   const examTitle = React.useMemo(() => {
     const rawExamName = (data?.examName || data?.quizId?.examName || location.state?.examName || "")?.trim();
@@ -328,14 +337,6 @@ function Result() {
   }, [data, location.state, isMultiQuiz]);
 
   const isExam = data?.quizType !== "practice";
-
-  const [visibleCount, setVisibleCount] = useState(10);
-  const [shareId, setShareId] = useState(data?.shareId || null);
-  const [showAnswers, setShowAnswers] = useState(false);
-  const [expandedQuestions, setExpandedQuestions] = useState({});
-  const [reviewFilter, setReviewFilter] = useState("all"); // "all", "correct", "incorrect", "unattempted"
-  const [activeSectionTab, setActiveSectionTab] = useState("all");
-  const [resultTab, setResultTab] = useState("overview"); // "overview" | "analytics"
 
   const formatTimingSafe = (seconds) => {
     if (seconds === undefined || seconds === null || seconds === "") return "Not available";
