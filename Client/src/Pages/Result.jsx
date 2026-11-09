@@ -1764,7 +1764,7 @@ function Result() {
           </div>
         ) : (
           /* Multi Quiz Overall Performance & Subject Cards Summary View */
-          <div className="result-modal-overlay rm-mobile-overlay" style={{ minHeight: "100vh", padding: "40px 16px" }}>
+          <div className="result-modal-overlay rm-mobile-overlay" style={{ minHeight: "100vh", padding: "40px 16px 80px 16px" }}>
             {/* Top Unified Header Bar: Back button | Segmented Tabs | Theme Toggle */}
             <div className="rm-top-header-bar">
               <button 
@@ -1779,7 +1779,9 @@ function Result() {
                 title="Go Back"
                 aria-label="Go back"
                 style={{
-                  color: isDark ? "#FFFFFF" : "#1E293B"
+                  color: isDark ? "#FFFFFF" : "#1E293B",
+                  backgroundColor: isDark ? "rgba(255, 255, 255, 0.12)" : "#FFFFFF",
+                  borderColor: isDark ? "rgba(255, 255, 255, 0.25)" : "#E2E8F0"
                 }}
               >
                 <ArrowLeft size={20} strokeWidth={2.5} color={isDark ? "#FFFFFF" : "#1E293B"} />
@@ -1789,14 +1791,20 @@ function Result() {
                 <button
                   className={`mqa-tab-btn ${resultTab === "overview" ? "active" : ""}`}
                   onClick={() => setResultTab("overview")}
+                  style={{
+                    color: resultTab === "overview" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")
+                  }}
                 >
-                  <LayoutGrid size={15} /> <span>Overview</span>
+                  <LayoutGrid size={15} color={resultTab === "overview" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")} /> <span>Overview</span>
                 </button>
                 <button
                   className={`mqa-tab-btn ${resultTab === "analytics" ? "active" : ""}`}
                   onClick={() => setResultTab("analytics")}
+                  style={{
+                    color: resultTab === "analytics" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")
+                  }}
                 >
-                  <BarChart3 size={15} /> <span>{isMobile ? "Analysis" : "Deep Analytics & Insights"}</span>
+                  <BarChart3 size={15} color={resultTab === "analytics" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")} /> <span>{isMobile ? "Analysis" : "Deep Analytics & Insights"}</span>
                 </button>
               </div>
 

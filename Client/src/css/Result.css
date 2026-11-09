@@ -647,8 +647,11 @@ body.dark-mode .mqa-top-nav {
   outline: none !important;
 }
 
-body.dark-mode .mqa-tab-btn {
-  color: #CBD5E1 !important; /* Crisp, easily readable light silver in dark mode */
+body.dark-mode .mqa-tab-btn,
+:root.dark .mqa-tab-btn,
+.dark .mqa-tab-btn,
+[data-theme="dark"] .mqa-tab-btn {
+  color: #E2E8F0 !important; /* Crisp, easily readable light silver in dark mode */
 }
 
 .mqa-tab-btn:hover {
@@ -656,14 +659,20 @@ body.dark-mode .mqa-tab-btn {
   background: rgba(139, 92, 246, 0.1) !important;
 }
 
-body.dark-mode .mqa-tab-btn:hover {
+body.dark-mode .mqa-tab-btn:hover,
+:root.dark .mqa-tab-btn:hover,
+.dark .mqa-tab-btn:hover,
+[data-theme="dark"] .mqa-tab-btn:hover {
   color: #FFFFFF !important;
   background: rgba(139, 92, 246, 0.2) !important;
 }
 
 /* Active Tab Button - Guaranteed Crisp Pure White in Both Light & Dark */
 .mqa-tab-btn.active,
-body.dark-mode .mqa-tab-btn.active {
+body.dark-mode .mqa-tab-btn.active,
+:root.dark .mqa-tab-btn.active,
+.dark .mqa-tab-btn.active,
+[data-theme="dark"] .mqa-tab-btn.active {
   background: #8B5CF6 !important;
   color: #FFFFFF !important;
   box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45) !important;
