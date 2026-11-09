@@ -196,14 +196,16 @@ function Result() {
         return initialData;
       }
     }
-    if (!effectiveResultId) {
-      const stored = localStorage.getItem("lastQuizResult");
-      if (stored && stored !== "undefined") {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error("Failed to parse cached result data", e);
+    const stored = localStorage.getItem("lastQuizResult");
+    if (stored && stored !== "undefined") {
+      try {
+        const parsed = JSON.parse(stored);
+        const storedId = parsed?._id || parsed?.result?._id || parsed?.resultId || parsed?.shareId;
+        if (!effectiveResultId || storedId === effectiveResultId) {
+          return parsed;
         }
+      } catch (e) {
+        console.error("Failed to parse cached result data", e);
       }
     }
     return null;
