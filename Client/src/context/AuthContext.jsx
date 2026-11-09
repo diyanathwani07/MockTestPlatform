@@ -83,6 +83,9 @@ export function AuthProvider({ children }) {
     if (!key) return true;
     if (role === "superadmin") return true;
     if (permissions.includes("full_access")) return true;
+    if (Array.isArray(key)) {
+      return key.some(k => hasPermission(k));
+    }
     if (key === "manage_students" && permissions.includes("manage_users")) return true;
     return permissions.includes(key);
   };

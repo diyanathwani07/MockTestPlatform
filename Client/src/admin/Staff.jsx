@@ -25,7 +25,12 @@ const STAFF_PANEL_PERMISSIONS = [
   { key: "view_reports",          label: "Reports" },
   { key: "audit_logs",            label: "Audit Log" },
   { key: "support_tickets",       label: "Support Tickets" },
-  { key: "manage_roles",          label: "Departments & Permissions" }
+  { key: "manage_roles",          label: "Departments & Permissions" },
+  // Revenue & Monetization
+  { key: "view_revenue",          label: "View Revenue & Financial Analytics" },
+  { key: "manage_revenue",        label: "Manage Revenue Operations" },
+  { key: "manage_ai_plans",       label: "Manage AI Plans" },
+  { key: "manage_ai_subscribers", label: "Manage AI Subscribers" }
 ];
 
 function Staff() {

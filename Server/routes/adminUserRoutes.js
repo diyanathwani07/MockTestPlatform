@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly, superAdminOnly } = require("../middleware/adminMiddleware");
+const requirePermission = require("../middleware/permissionMiddleware");
 const User = require("../models/User");
 const Subscription = require("../models/Subscription");
 const AiPlan = require("../models/AiPlan");
@@ -240,8 +241,8 @@ router.post("/:id/reset-password", protect, superAdminOnly, async (req, res) => 
   }
 });
 
-// UPDATE user's AI subscription plan (adminOnly)
-router.put("/:id/ai-subscription", protect, adminOnly, async (req, res) => {
+// UPDATE user's AI subscription plan (Requires manage_ai_subscribers or manage_students)
+router.put("/:id/ai-subscription", protect, requirePermission(["manage_ai_subscribers", "manage_students"]), async (req, res) => {
   try {
     const { action, planId } = req.body;
     const user = await User.findById(req.params.id);

@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, Settings, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
-  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck, ChevronRight
+  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck, ChevronRight, IndianRupee
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
@@ -32,7 +32,9 @@ const BOTTOM_NAV_ITEMS = [
   { to: "/admin/students",       icon: Users,         label: "Users",               permission: "manage_students" },
   { to: "/admin/staff",          icon: Shield,        label: "Admin",               permission: "manage_staff" },
   { to: "/admin/banners",        icon: Image,         label: "Banners",             permission: "dashboard" },
+  { to: "/admin/revenue",        icon: IndianRupee,   label: "Revenue",             permission: ["view_revenue", "manage_revenue"] },
   { to: "/admin/ai-plans",       icon: Sparkles,      label: "AI Plans",            permission: "manage_ai_plans" },
+  { to: "/admin/ai-subscribers", icon: UserCheck,     label: "AI Subscribers",      permission: "manage_ai_subscribers" },
   { to: "/admin/results",        icon: Trophy,        label: "Results",             permission: "manage_results" },
   { to: "/admin/reports",        icon: LineChart,     label: "Reports",             permission: "view_reports" },
   { to: "/admin/audit-log",      icon: FileText,      label: "Audit Log",           permission: "audit_logs" },
@@ -273,9 +275,15 @@ function AdminSidebar() {
             </div>
           )}
 
-          {/* Bottom navigation items (Users, Admin, Banners, AI Plans, etc.) */}
-          {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) =>
-            (hasPermission(permission) || role === "admin" || role === "superadmin") ? (
+          {/* Bottom navigation items (Users, Admin, Banners, Revenue, AI Plans, etc.) */}
+          {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) => {
+            const isRevenueOrPlan = ["/admin/revenue", "/admin/ai-plans", "/admin/ai-subscribers"].includes(to);
+            // Restricted revenue & AI modules require superadmin or explicit permission (never generic admin)
+            const canView = isRevenueOrPlan 
+              ? (role === "superadmin" || hasPermission(permission))
+              : (hasPermission(permission) || role === "admin" || role === "superadmin");
+
+            return canView ? (
               <NavLink
                 key={to}
                 to={to}
@@ -285,8 +293,8 @@ function AdminSidebar() {
                 <Icon size={20} className="sidebar-icon" />
                 <span>{label}</span>
               </NavLink>
-            ) : null
-          )}
+            ) : null;
+          })}
           
           <button 
             aria-label="Customize theme" 

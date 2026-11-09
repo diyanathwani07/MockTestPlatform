@@ -1,13 +1,26 @@
 const AiPlan = require("../models/AiPlan");
 
 // GET all AI plans
-// Admin can see draft/inactive, students only see active
+// Staff with manage_ai_plans or superadmin can see draft/inactive, students and other staff only see active
 const getAiPlans = async (req, res) => {
   try {
     const query = {};
-    // If not admin, restrict to active status
-    const isStaff = req.user && ["admin", "superadmin", "manager", "employee"].includes(req.user.role);
-    if (!isStaff) {
+    let canManagePlans = false;
+    if (req.user) {
+      if (req.user.role === "superadmin") {
+        canManagePlans = true;
+      } else if (Array.isArray(req.user.permissions) && (req.user.permissions.includes("full_access") || req.user.permissions.includes("manage_ai_plans"))) {
+        canManagePlans = true;
+      } else if (req.user.department) {
+        const Department = require("../models/Department");
+        const dept = await Department.findOne({ name: req.user.department });
+        if (dept && Array.isArray(dept.permissions) && (dept.permissions.includes("full_access") || dept.permissions.includes("manage_ai_plans"))) {
+          canManagePlans = true;
+        }
+      }
+    }
+
+    if (!canManagePlans) {
       query.status = "active";
     }
 

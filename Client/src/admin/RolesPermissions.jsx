@@ -21,7 +21,12 @@ const PANEL_PERMISSIONS = [
   { key: "view_reports",          label: "Reports" },
   { key: "audit_logs",            label: "Audit Log" },
   { key: "support_tickets",       label: "Support Tickets" },
-  { key: "manage_roles",          label: "Roles & Permissions" }
+  { key: "manage_roles",          label: "Roles & Permissions" },
+  // Revenue & Monetization
+  { key: "view_revenue",          label: "View Revenue & Financial Analytics" },
+  { key: "manage_revenue",        label: "Manage Revenue Operations" },
+  { key: "manage_ai_plans",       label: "Manage AI Plans" },
+  { key: "manage_ai_subscribers", label: "Manage AI Subscribers" }
 ];
 
 const COLORS = ["#7C3AED", "#3B82F6", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#64748B"];

@@ -61,7 +61,6 @@ const userSchema = new mongoose.Schema(
     },
     department: {
       type: String,
-      enum: ["Technical Team", "Content Team", "Calling Team", "YouTube Team", "Faculty", "Operations Team", "Help and Support", null],
       default: null,
     },
     permissions: {

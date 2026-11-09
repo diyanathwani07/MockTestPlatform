@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
 import AdminRoute from "./components/AdminRoute";
+import PermissionRoute from "./components/PermissionRoute";
 
 
 const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
@@ -425,27 +426,27 @@ function App() {
         <Route
           path="/admin/ai-plans"
           element={
-            <AdminRoute>
+            <PermissionRoute permission="manage_ai_plans">
               <AdminAiPlans />
-            </AdminRoute>
+            </PermissionRoute>
           }
         />
 
         <Route
           path="/admin/revenue"
           element={
-            <AdminRoute>
+            <PermissionRoute permission={["view_revenue", "manage_revenue"]}>
               <RevenueDashboard />
-            </AdminRoute>
+            </PermissionRoute>
           }
         />
 
         <Route
           path="/admin/ai-subscribers"
           element={
-            <AdminRoute>
+            <PermissionRoute permission="manage_ai_subscribers">
               <AiSubscribers />
-            </AdminRoute>
+            </PermissionRoute>
           }
         />
 
