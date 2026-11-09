@@ -128,6 +128,8 @@ export default function RevenueDashboard() {
   const [transactionsData, setTransactionsData] = useState([]);
   const [txSearch, setTxSearch] = useState("");
   const [txGateway, setTxGateway] = useState("all");
+  const [txCategory, setTxCategory] = useState("all");
+  const [txProvenance, setTxProvenance] = useState("all");
   const [txStatus, setTxStatus] = useState("all");
   const [txPage, setTxPage] = useState(1);
   const [txPagination, setTxPagination] = useState({ total: 0, totalPages: 1, limit: 15 });
@@ -178,7 +180,7 @@ export default function RevenueDashboard() {
   const fetchTransactions = useCallback(async () => {
     try {
       setTransactionsLoading(true);
-      let url = `${import.meta.env.VITE_API_URL}/api/admin/revenue/transactions?page=${txPage}&limit=15&search=${encodeURIComponent(txSearch)}&status=${txStatus}&gateway=${txGateway}`;
+      let url = `${import.meta.env.VITE_API_URL}/api/admin/revenue/transactions?page=${txPage}&limit=15&search=${encodeURIComponent(txSearch)}&status=${txStatus}&gateway=${txGateway}&category=${txCategory}&provenance=${txProvenance}`;
       if (datePreset === "custom" && customFrom) url += `&from=${customFrom}`;
       if (datePreset === "custom" && customTo) url += `&to=${customTo}`;
 
@@ -190,7 +192,7 @@ export default function RevenueDashboard() {
     } finally {
       setTransactionsLoading(false);
     }
-  }, [txPage, txSearch, txStatus, txGateway, datePreset, customFrom, customTo, authHeaders]);
+  }, [txPage, txSearch, txStatus, txGateway, txCategory, txProvenance, datePreset, customFrom, customTo, authHeaders]);
 
   // Fetch Customers
   const fetchCustomers = useCallback(async () => {
@@ -1277,6 +1279,37 @@ export default function RevenueDashboard() {
 
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                   <select
+                    value={txCategory}
+                    onChange={(e) => {
+                      setTxCategory(e.target.value);
+                      setTxPage(1);
+                    }}
+                    style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="ai_plan">AI Plans</option>
+                    <option value="exam">Mock Exams</option>
+                    <option value="practice">Practice Tests</option>
+                    <option value="exam_series">Exam Series</option>
+                    <option value="flashcard">Flashcards</option>
+                  </select>
+
+                  <select
+                    value={txProvenance}
+                    onChange={(e) => {
+                      setTxProvenance(e.target.value);
+                      setTxPage(1);
+                    }}
+                    style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
+                  >
+                    <option value="all">All Provenance</option>
+                    <option value="verified_payment">Verified Bank</option>
+                    <option value="dev_simulation">Dev Simulation</option>
+                    <option value="admin_grant">Admin Grant</option>
+                    <option value="free_access">Free Access</option>
+                  </select>
+
+                  <select
                     value={txGateway}
                     onChange={(e) => {
                       setTxGateway(e.target.value);
@@ -1299,6 +1332,7 @@ export default function RevenueDashboard() {
                     style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
                   >
                     <option value="all">All Statuses</option>
+                    <option value="paid">Paid</option>
                     <option value="active">Active</option>
                     <option value="expired">Expired</option>
                     <option value="cancelled">Cancelled</option>
@@ -1353,7 +1387,7 @@ export default function RevenueDashboard() {
                       ) : transactionsData.map((t) => (
                         <tr key={t._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                           <td style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: "11.5px" }}>
-                            <div style={{ fontWeight: "700", color: "var(--text-primary)" }}>{t.purchaseId || t._id.slice(-8)}</div>
+                            <div style={{ fontWeight: "700", color: "var(--text-primary)" }}>{t.transactionId || t.orderId || t.purchaseId || t._id.slice(-8)}</div>
                             <div style={{ fontSize: "10.5px", color: "var(--text-secondary)" }}>{t.gatewayTxnId || "—"}</div>
                           </td>
                           <td style={{ padding: "12px 16px" }}>
@@ -1361,9 +1395,44 @@ export default function RevenueDashboard() {
                             <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{t.studentId?.email || "—"}</div>
                           </td>
                           <td style={{ padding: "12px 16px" }}>
-                            <span style={{ fontWeight: "600", color: "var(--text-primary)" }}>
-                              {t.planNameSnapshot || t.planId?.name || "AI Plan"}
-                            </span>
+                            <div style={{ fontWeight: "600", color: "var(--text-primary)" }}>
+                              {t.itemTitleSnapshot || t.planNameSnapshot || t.planId?.name || "Product"}
+                            </div>
+                            <div style={{ display: "flex", gap: "4px", marginTop: "4px" }}>
+                              {t.productCategory && (
+                                <span style={{
+                                  fontSize: "9.5px",
+                                  fontWeight: "700",
+                                  padding: "1px 5px",
+                                  borderRadius: "4px",
+                                  background: "rgba(139, 92, 246, 0.12)",
+                                  color: "#8B5CF6",
+                                  textTransform: "uppercase"
+                                }}>
+                                  {t.productCategory.replace("_", " ")}
+                                </span>
+                              )}
+                              {t.provenance && (
+                                <span style={{
+                                  fontSize: "9.5px",
+                                  fontWeight: "700",
+                                  padding: "1px 5px",
+                                  borderRadius: "4px",
+                                  background: t.provenance === "verified_payment"
+                                    ? "rgba(16, 185, 129, 0.12)"
+                                    : t.provenance === "admin_grant"
+                                    ? "rgba(59, 130, 246, 0.12)"
+                                    : "rgba(245, 158, 11, 0.12)",
+                                  color: t.provenance === "verified_payment"
+                                    ? "#10B981"
+                                    : t.provenance === "admin_grant"
+                                    ? "#3B82F6"
+                                    : "#F59E0B"
+                                }}>
+                                  {t.provenance.replace("_", " ")}
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td style={{ padding: "12px 16px", fontWeight: "800", color: "#8B5CF6" }}>
                             ₹{t.amount}

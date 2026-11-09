@@ -396,7 +396,7 @@ router.put("/:id/ai-subscription", async (req, res) => {
 
       const crypto = require("crypto");
       const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
-      await Subscription.create({
+      const subscription = await Subscription.create({
         studentId: student._id,
         planId: plan._id,
         planNameSnapshot: plan.name,
@@ -411,6 +411,33 @@ router.put("/:id/ai-subscription", async (req, res) => {
         paymentGateway: "admin_grant",
         gatewayTxnId: null
       });
+
+      // Record Unified Purchase Transaction for Admin Grant
+      try {
+        const { recordTransaction } = require("../services/ledgerService");
+        await recordTransaction({
+          orderId: purchaseId,
+          studentId: student._id,
+          itemId: plan._id,
+          itemModel: "AiPlan",
+          itemTitleSnapshot: plan.name,
+          productCategory: "ai_plan",
+          amount: 0, // Admin grants are not collected customer revenue
+          currency: plan.currency || "INR",
+          originalPriceSnapshot: plan.originalPrice || plan.sellingPrice || 0,
+          discountSnapshot: plan.sellingPrice || 0,
+          gateway: "admin_grant",
+          paymentStatus: "paid",
+          provenance: "admin_grant",
+          paymentVerificationStatus: "admin_authorized",
+          paymentTimestamp: new Date(),
+          subscriptionId: subscription._id,
+          grantedBy: req.user?._id || null,
+          adminNotes: `Admin upgrade by ${req.user?.fullName || "Admin"}`
+        });
+      } catch (ledgerErr) {
+        console.error("Ledger Recording Error (Admin Grant AI Plan):", ledgerErr);
+      }
 
       student.isPremium = true;
       student.activePlan = plan._id;

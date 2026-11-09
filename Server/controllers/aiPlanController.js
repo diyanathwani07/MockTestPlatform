@@ -333,7 +333,7 @@ const subscribeToPlan = async (req, res) => {
     const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
     const paymentGateway = isPaidPlan ? "phonepe" : "manual";
 
-    await Subscription.create({
+    const subscription = await Subscription.create({
       studentId: user._id,
       planId: plan._id,
       planNameSnapshot: plan.name,
@@ -348,6 +348,49 @@ const subscribeToPlan = async (req, res) => {
       paymentGateway,
       gatewayTxnId: cleanTxnId
     });
+
+    // 6.1 Record Unified Purchase Transaction in Central Ledger
+    try {
+      const { recordTransaction } = require("../services/ledgerService");
+      const provenance = !isPaidPlan
+        ? "free_access"
+        : isExplicitDevSimulation
+        ? "dev_simulation"
+        : "verified_payment";
+      const paymentVerificationStatus = !isPaidPlan
+        ? "not_applicable"
+        : isExplicitDevSimulation
+        ? "simulated"
+        : "verified";
+
+      await recordTransaction({
+        orderId: purchaseId,
+        studentId: user._id,
+        itemId: plan._id,
+        itemModel: "AiPlan",
+        itemTitleSnapshot: plan.name,
+        productCategory: "ai_plan",
+        amount: authoritativePrice,
+        currency: plan.currency || "INR",
+        originalPriceSnapshot: plan.originalPrice || authoritativePrice,
+        discountSnapshot: (plan.originalPrice && plan.originalPrice > authoritativePrice) ? (plan.originalPrice - authoritativePrice) : 0,
+        gateway: !isPaidPlan ? "free_checkout" : paymentGateway,
+        gatewayTxnId: cleanTxnId,
+        paymentStatus: "paid",
+        provenance,
+        paymentVerificationStatus,
+        paymentTimestamp: new Date(),
+        subscriptionId: subscription._id,
+        metadata: {
+          ip: req.ip,
+          maxAITests: plan.maxAITests,
+          durationValue: plan.durationValue,
+          durationUnit: plan.durationUnit
+        }
+      });
+    } catch (ledgerErr) {
+      console.error("Ledger Recording Error (AI Plan Subscription):", ledgerErr);
+    }
 
     // Sync User premium status cache
     user.isPremium = true;

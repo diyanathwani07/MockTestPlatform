@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Subscription = require("../models/Subscription");
 const AiPlan = require("../models/AiPlan");
 const User = require("../models/User");
@@ -5,7 +6,10 @@ const Quiz = require("../models/Quiz");
 const PracticeQuiz = require("../models/PracticeQuiz");
 const ExamSeries = require("../models/ExamSeries");
 const FlashcardSet = require("../models/FlashcardSet");
+const PurchaseTransaction = require("../models/PurchaseTransaction");
 const { syncLegacySubscriptions } = require("../utils/subscriptionUtils");
+const { transitionTransactionStatus } = require("../services/ledgerService");
+const logAction = require("../utils/logger");
 
 /**
  * Helper to compute date boundaries based on date preset or custom range
@@ -17,23 +21,23 @@ function resolveDateFilter(query) {
 
   if (datePreset === "today") {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    dateMatch.startDate = { $gte: startOfToday };
+    dateMatch.createdAt = { $gte: startOfToday };
   } else if (datePreset === "7d" || datePreset === "last_7_days") {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    dateMatch.startDate = { $gte: sevenDaysAgo };
+    dateMatch.createdAt = { $gte: sevenDaysAgo };
   } else if (datePreset === "30d" || datePreset === "last_30_days") {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    dateMatch.startDate = { $gte: thirtyDaysAgo };
+    dateMatch.createdAt = { $gte: thirtyDaysAgo };
   } else if (datePreset === "this_month") {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    dateMatch.startDate = { $gte: startOfMonth };
+    dateMatch.createdAt = { $gte: startOfMonth };
   } else if (datePreset === "this_year") {
     const startOfYear = new Date(now.getFullYear(), 0, 1);
-    dateMatch.startDate = { $gte: startOfYear };
+    dateMatch.createdAt = { $gte: startOfYear };
   } else if (from || to) {
-    dateMatch.startDate = {};
-    if (from) dateMatch.startDate.$gte = new Date(from);
-    if (to) dateMatch.startDate.$lte = new Date(to);
+    dateMatch.createdAt = {};
+    if (from) dateMatch.createdAt.$gte = new Date(from);
+    if (to) dateMatch.createdAt.$lte = new Date(to);
   }
 
   return dateMatch;
@@ -42,6 +46,7 @@ function resolveDateFilter(query) {
 /**
  * GET /api/admin/revenue/analytics (and /overview)
  * Aggregated revenue metrics, trend over time, plan breakdown, category distribution, and recent transactions.
+ * Now queries the Canonical Unified PurchaseTransaction Ledger!
  */
 const getRevenueAnalytics = async (req, res) => {
   try {
@@ -49,111 +54,43 @@ const getRevenueAnalytics = async (req, res) => {
     const { period = "monthly" } = req.query;
     const dateMatch = resolveDateFilter(req.query);
 
-    // Base match for paid revenue calculations (active + expired)
-    const paidMatch = {
-      status: { $in: ["active", "expired"] },
-      ...dateMatch
-    };
-
     // Calculate Today's and This Month's start dates
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // 1. Revenue Over Time Aggregation (Monthly, Yearly, or Daily)
-    let dateFormat = "%Y-%m";
-    if (period === "yearly") dateFormat = "%Y";
-    else if (period === "daily") dateFormat = "%Y-%m-%d";
-
-    const trendAggregation = await Subscription.aggregate([
-      { $match: paidMatch },
-      {
-        $group: {
-          _id: { $dateToString: { format: dateFormat, date: "$startDate" } },
-          revenue: { $sum: "$amount" },
-          count: { $sum: 1 },
-          students: { $addToSet: "$studentId" }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          period: "$_id",
-          revenue: "$revenue",
-          subscriptions: "$count",
-          uniqueStudents: { $size: "$students" }
-        }
-      },
-      { $sort: { period: 1 } }
-    ]);
-
-    // 2. Revenue By Plan Aggregation
-    const planAggregation = await Subscription.aggregate([
-      { $match: paidMatch },
-      {
-        $group: {
-          _id: "$planId",
-          planNameSnapshot: { $first: "$planNameSnapshot" },
-          totalRevenue: { $sum: "$amount" },
-          totalPurchases: { $sum: 1 },
-          activeSubscribers: {
-            $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] }
-          },
-          avgOrderValue: { $avg: "$amount" }
-        }
-      },
-      {
-        $lookup: {
-          from: "aiplans",
-          localField: "_id",
-          foreignField: "_id",
-          as: "planDoc"
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          planId: "$_id",
-          planName: {
-            $ifNull: [
-              "$planNameSnapshot",
-              { $arrayElemAt: ["$planDoc.name", 0] },
-              "Custom / Deleted Plan"
-            ]
-          },
-          totalRevenue: "$totalRevenue",
-          totalPurchases: "$totalPurchases",
-          activeSubscribers: "$activeSubscribers",
-          avgOrderValue: { $round: ["$avgOrderValue", 2] }
-        }
-      },
-      { $sort: { totalRevenue: -1 } }
-    ]);
-
-    // 3. Headline KPIs Aggregation
-    const kpiAggregation = await Subscription.aggregate([
+    // 1. Unified Ledger Aggregation across ALL Monetization Streams
+    const ledgerKpiAggregation = await PurchaseTransaction.aggregate([
       { $match: dateMatch },
       {
         $group: {
           _id: null,
-          totalRevenue: {
-            $sum: {
-              $cond: [{ $in: ["$status", ["active", "expired"]] }, "$amount", 0]
-            }
+          totalTransactions: { $sum: 1 },
+          paidTransactionsCount: {
+            $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] }
           },
-          activeRevenue: {
-            $sum: {
-              $cond: [{ $eq: ["$status", "active"] }, "$amount", 0]
-            }
-          },
-          // Gateway breakdown
-          simulatedPhonePeRevenue: {
+          verifiedRevenue: {
             $sum: {
               $cond: [
                 {
                   $and: [
-                    { $in: ["$status", ["active", "expired"]] },
-                    { $eq: ["$paymentGateway", "phonepe"] }
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "verified_payment"] },
+                    { $eq: ["$paymentVerificationStatus", "verified"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          simulatedRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "dev_simulation"] }
                   ]
                 },
                 "$amount",
@@ -164,15 +101,20 @@ const getRevenueAnalytics = async (req, res) => {
           adminGrantsAmount: {
             $sum: {
               $cond: [
-                {
-                  $and: [
-                    { $in: ["$status", ["active", "expired"]] },
-                    { $eq: ["$paymentGateway", "admin_grant"] }
-                  ]
-                },
-                "$amount",
+                { $eq: ["$provenance", "admin_grant"] },
+                "$originalPriceSnapshot",
                 0
               ]
+            }
+          },
+          adminGrantsCount: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "admin_grant"] }, 1, 0]
+            }
+          },
+          freeAccessCount: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "free_access"] }, 1, 0]
             }
           },
           todayRevenue: {
@@ -180,8 +122,9 @@ const getRevenueAnalytics = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $in: ["$status", ["active", "expired"]] },
-                    { $gte: ["$startDate", startOfToday] }
+                    { $eq: ["$status", "paid"] },
+                    { $gte: ["$createdAt", startOfToday] },
+                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
                   ]
                 },
                 "$amount",
@@ -194,8 +137,9 @@ const getRevenueAnalytics = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $in: ["$status", ["active", "expired"]] },
-                    { $gte: ["$startDate", startOfMonth] }
+                    { $eq: ["$status", "paid"] },
+                    { $gte: ["$createdAt", startOfMonth] },
+                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
                   ]
                 },
                 "$amount",
@@ -203,35 +147,15 @@ const getRevenueAnalytics = async (req, res) => {
               ]
             }
           },
-          paidSubscriptionsCount: {
-            $sum: {
-              $cond: [{ $in: ["$status", ["active", "expired"]] }, 1, 0]
-            }
-          },
-          activeSubscriptionsCount: {
-            $sum: {
-              $cond: [{ $eq: ["$status", "active"] }, 1, 0]
-            }
-          },
-          expiredSubscriptionsCount: {
-            $sum: {
-              $cond: [{ $eq: ["$status", "expired"] }, 1, 0]
-            }
-          },
-          cancelledSubscriptionsCount: {
-            $sum: {
-              $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0]
-            }
-          },
-          refundedSubscriptionsCount: {
-            $sum: {
-              $cond: [{ $eq: ["$status", "refunded"] }, 1, 0]
-            }
-          },
           paidStudents: {
             $addToSet: {
               $cond: [
-                { $in: ["$status", ["active", "expired"]] },
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
+                  ]
+                },
                 "$studentId",
                 "$$REMOVE"
               ]
@@ -241,148 +165,313 @@ const getRevenueAnalytics = async (req, res) => {
       }
     ]);
 
-    const kpiData = kpiAggregation[0] || {
-      totalRevenue: 0,
-      activeRevenue: 0,
-      simulatedPhonePeRevenue: 0,
+    const kpiData = ledgerKpiAggregation[0] || {
+      totalTransactions: 0,
+      paidTransactionsCount: 0,
+      verifiedRevenue: 0,
+      simulatedRevenue: 0,
       adminGrantsAmount: 0,
+      adminGrantsCount: 0,
+      freeAccessCount: 0,
       todayRevenue: 0,
       thisMonthRevenue: 0,
-      paidSubscriptionsCount: 0,
-      activeSubscriptionsCount: 0,
-      expiredSubscriptionsCount: 0,
-      cancelledSubscriptionsCount: 0,
-      refundedSubscriptionsCount: 0,
       paidStudents: []
     };
 
-    const totalRevenue = kpiData.totalRevenue || 0;
-    const activeRevenue = kpiData.activeRevenue || 0;
-    const paidSubscriptionsCount = kpiData.paidSubscriptionsCount || 0;
+    const verifiedRevenue = kpiData.verifiedRevenue || 0;
+    const simulatedRevenue = kpiData.simulatedRevenue || 0;
+    const totalRevenue = verifiedRevenue + simulatedRevenue; // Clean sum
+    const paidTransactionsCount = kpiData.paidTransactionsCount || 0;
     const distinctPayingStudentsCount = (kpiData.paidStudents || []).length;
 
-    // New vs Renewal
-    const newSubscriptions = distinctPayingStudentsCount;
-    const renewalSubscriptions = Math.max(0, paidSubscriptionsCount - newSubscriptions);
+    // Active AI Subscriptions Revenue (for AI SaaS module)
+    const activeSubAggregation = await Subscription.aggregate([
+      {
+        $match: {
+          status: "active",
+          expiryDate: { $gt: now }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          activeRevenue: { $sum: "$amount" },
+          activeCount: { $sum: 1 }
+        }
+      }
+    ]);
+    const activeRevenue = activeSubAggregation[0]?.activeRevenue || 0;
+    const activeSubscriptionsCount = activeSubAggregation[0]?.activeCount || 0;
 
     // ARPU = Total Revenue / Distinct Paying Students
     const arpu = distinctPayingStudentsCount > 0
       ? Math.round((totalRevenue / distinctPayingStudentsCount) * 100) / 100
       : 0;
 
-    // Renewal Rate = renewals / (renewals + expired)
-    const totalPotentialRenewals = renewalSubscriptions + (kpiData.expiredSubscriptionsCount || 0);
-    const renewalRate = totalPotentialRenewals > 0
-      ? Math.round((renewalSubscriptions / totalPotentialRenewals) * 1000) / 10
-      : paidSubscriptionsCount > 0
-      ? Math.round((renewalSubscriptions / paidSubscriptionsCount) * 1000) / 10
-      : 0;
+    // 2. Revenue Over Time Aggregation (Monthly, Yearly, or Daily)
+    let dateFormat = "%Y-%m";
+    if (period === "yearly") dateFormat = "%Y";
+    else if (period === "daily") dateFormat = "%Y-%m-%d";
 
-    // 4. Product Category Breakdown (Honest Accounting without phantom exam prices)
+    const trendAggregation = await PurchaseTransaction.aggregate([
+      {
+        $match: {
+          status: "paid",
+          provenance: { $in: ["verified_payment", "dev_simulation"] },
+          ...dateMatch
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: dateFormat, date: "$createdAt" } },
+          revenue: { $sum: "$amount" },
+          verifiedRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "verified_payment"] }, "$amount", 0]
+            }
+          },
+          simulatedRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "dev_simulation"] }, "$amount", 0]
+            }
+          },
+          count: { $sum: 1 },
+          students: { $addToSet: "$studentId" }
+        }
+      },
+      { $sort: { _id: 1 } },
+      {
+        $project: {
+          _id: 0,
+          period: "$_id",
+          revenue: 1,
+          verifiedRevenue: 1,
+          simulatedRevenue: 1,
+          count: 1,
+          distinctStudents: { $size: "$students" }
+        }
+      }
+    ]);
+
+    // 3. Category Breakdown Aggregation directly from Unified Ledger
+    const categoryStats = await PurchaseTransaction.aggregate([
+      { $match: dateMatch },
+      {
+        $group: {
+          _id: "$productCategory",
+          totalVolume: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          verifiedRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "verified_payment"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          simulatedRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "dev_simulation"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          adminGrantsAmount: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "admin_grant"] }, "$originalPriceSnapshot", 0]
+            }
+          },
+          transactionsCount: {
+            $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] }
+          }
+        }
+      }
+    ]);
+
+    const categoryMap = {};
+    categoryStats.forEach(stat => {
+      categoryMap[stat._id] = stat;
+    });
+
+    // Counts of items and legacy entitlements
     const usersWithExamsCount = await User.countDocuments({ "purchasedExams.0": { $exists: true } });
     const usersWithPracticeCount = await User.countDocuments({ "purchasedPractice.0": { $exists: true } });
     const totalPaidExamsCount = await Quiz.countDocuments({ isPaid: true });
     const totalPaidPracticeCount = await PracticeQuiz.countDocuments({ isPaid: true });
-    const totalSeriesCount = await ExamSeries.countDocuments({ isPaid: true }).catch(() => 0);
+    const totalSeriesCount = await ExamSeries.countDocuments({}).catch(() => 0);
     const totalFlashcardSetsCount = await FlashcardSet.countDocuments({ isPaid: true }).catch(() => 0);
+
+    const aiPlanStats = categoryMap["ai_plan"] || {};
+    const examStats = categoryMap["exam"] || {};
+    const practiceStats = categoryMap["practice"] || {};
+    const seriesStats = categoryMap["exam_series"] || {};
+    const flashcardStats = categoryMap["flashcard"] || {};
 
     const categoryBreakdown = [
       {
         category: "AI Plans & Subscriptions",
-        revenue: totalRevenue,
-        verifiedRevenue: 0,
-        simulatedRevenue: kpiData.simulatedPhonePeRevenue || 0,
-        adminGrantsAmount: kpiData.adminGrantsAmount || 0,
-        transactionsCount: paidSubscriptionsCount,
+        productCategory: "ai_plan",
+        revenue: aiPlanStats.totalVolume || 0,
+        verifiedRevenue: aiPlanStats.verifiedRevenue || 0,
+        simulatedRevenue: aiPlanStats.simulatedRevenue || 0,
+        adminGrantsAmount: aiPlanStats.adminGrantsAmount || 0,
+        transactionsCount: aiPlanStats.transactionsCount || 0,
         hasHistoricalLedger: true,
         statusText: "Ledger Active"
       },
       {
         category: "Mock Exams",
-        revenue: 0,
-        verifiedRevenue: 0,
-        simulatedRevenue: 0,
-        adminGrantsAmount: 0,
+        productCategory: "exam",
+        revenue: examStats.totalVolume || 0,
+        verifiedRevenue: examStats.verifiedRevenue || 0,
+        simulatedRevenue: examStats.simulatedRevenue || 0,
+        adminGrantsAmount: examStats.adminGrantsAmount || 0,
+        transactionsCount: examStats.transactionsCount || 0,
         entitledStudentsCount: usersWithExamsCount,
         catalogCount: totalPaidExamsCount,
-        hasHistoricalLedger: false,
-        statusText: "Historical transaction data unavailable"
+        hasHistoricalLedger: (examStats.transactionsCount || 0) > 0,
+        statusText: (examStats.transactionsCount || 0) > 0
+          ? "Ledger Active"
+          : "Historical transaction data unavailable (Legacy entitlements preserved)"
       },
       {
         category: "Practice Modules",
-        revenue: 0,
-        verifiedRevenue: 0,
-        simulatedRevenue: 0,
-        adminGrantsAmount: 0,
+        productCategory: "practice",
+        revenue: practiceStats.totalVolume || 0,
+        verifiedRevenue: practiceStats.verifiedRevenue || 0,
+        simulatedRevenue: practiceStats.simulatedRevenue || 0,
+        adminGrantsAmount: practiceStats.adminGrantsAmount || 0,
+        transactionsCount: practiceStats.transactionsCount || 0,
         entitledStudentsCount: usersWithPracticeCount,
         catalogCount: totalPaidPracticeCount,
-        hasHistoricalLedger: false,
-        statusText: "Historical transaction data unavailable"
+        hasHistoricalLedger: (practiceStats.transactionsCount || 0) > 0,
+        statusText: (practiceStats.transactionsCount || 0) > 0
+          ? "Ledger Active"
+          : "Historical transaction data unavailable (Legacy entitlements preserved)"
       },
       {
         category: "Exam Series",
-        revenue: 0,
-        verifiedRevenue: 0,
-        simulatedRevenue: 0,
-        adminGrantsAmount: 0,
+        productCategory: "exam_series",
+        revenue: seriesStats.totalVolume || 0,
+        verifiedRevenue: seriesStats.verifiedRevenue || 0,
+        simulatedRevenue: seriesStats.simulatedRevenue || 0,
+        adminGrantsAmount: seriesStats.adminGrantsAmount || 0,
+        transactionsCount: seriesStats.transactionsCount || 0,
         entitledStudentsCount: 0,
         catalogCount: totalSeriesCount,
-        hasHistoricalLedger: false,
-        statusText: "Historical transaction data unavailable"
+        hasHistoricalLedger: (seriesStats.transactionsCount || 0) > 0,
+        statusText: (seriesStats.transactionsCount || 0) > 0
+          ? "Ledger Active"
+          : "Historical transaction data unavailable (Legacy entitlements preserved)"
       },
       {
         category: "Flashcards",
-        revenue: 0,
-        verifiedRevenue: 0,
-        simulatedRevenue: 0,
-        adminGrantsAmount: 0,
+        productCategory: "flashcard",
+        revenue: flashcardStats.totalVolume || 0,
+        verifiedRevenue: flashcardStats.verifiedRevenue || 0,
+        simulatedRevenue: flashcardStats.simulatedRevenue || 0,
+        adminGrantsAmount: flashcardStats.adminGrantsAmount || 0,
+        transactionsCount: flashcardStats.transactionsCount || 0,
         entitledStudentsCount: 0,
         catalogCount: totalFlashcardSetsCount,
-        hasHistoricalLedger: false,
-        statusText: "Historical transaction data unavailable"
+        hasHistoricalLedger: (flashcardStats.transactionsCount || 0) > 0,
+        statusText: (flashcardStats.transactionsCount || 0) > 0
+          ? "Ledger Active"
+          : "Historical transaction data unavailable (Legacy entitlements preserved)"
       }
     ];
 
-    // 5. Recent Subscriptions Table Data (latest 50 transactions)
-    const recentSubscriptions = await Subscription.find(dateMatch)
+    // 4. Revenue By Plan (for AI Plan breakdown)
+    const planAggregation = await PurchaseTransaction.aggregate([
+      {
+        $match: {
+          productCategory: "ai_plan",
+          status: "paid",
+          ...dateMatch
+        }
+      },
+      {
+        $group: {
+          _id: "$itemId",
+          planName: { $first: "$itemTitleSnapshot" },
+          revenue: { $sum: "$amount" },
+          subscribersCount: { $sum: 1 }
+        }
+      },
+      { $sort: { revenue: -1 } },
+      {
+        $project: {
+          _id: 0,
+          planId: "$_id",
+          planName: 1,
+          revenue: 1,
+          subscribersCount: 1
+        }
+      }
+    ]);
+
+    // 5. Recent Transactions from Unified Ledger (Latest 25)
+    const recentTransactions = await PurchaseTransaction.find(dateMatch)
       .populate("studentId", "fullName email avatar phone")
-      .populate("planId", "name durationValue durationUnit sellingPrice")
+      .populate("grantedBy", "fullName email")
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(25);
 
     res.json({
       success: true,
       period,
       verificationNotice: {
         gatewayStatus: "SANDBOX_SIMULATED",
-        message: "Payment processing is currently in simulation mode. Verified bank gateway revenue will display upon production gateway activation.",
-        verifiedCollectedRevenue: 0,
-        simulatedRevenue: kpiData.simulatedPhonePeRevenue || 0,
+        message: "Unified ledger is active across AI Plans, Exams, Practice Tests, Series, and Flashcards. Verified bank gateway revenue will display upon production gateway activation.",
+        verifiedCollectedRevenue: verifiedRevenue,
+        simulatedRevenue,
         adminGrantsAmount: kpiData.adminGrantsAmount || 0
       },
       kpis: {
         totalRevenue,
-        verifiedRevenue: 0, // Real bank revenue is 0 until gateway credentials activated
-        simulatedRevenue: kpiData.simulatedPhonePeRevenue || 0,
+        verifiedRevenue,
+        simulatedRevenue,
         adminGrantsAmount: kpiData.adminGrantsAmount || 0,
+        adminGrantsCount: kpiData.adminGrantsCount || 0,
+        freeAccessCount: kpiData.freeAccessCount || 0,
         todayRevenue: kpiData.todayRevenue || 0,
         thisMonthRevenue: kpiData.thisMonthRevenue || 0,
         activeRevenue,
-        paidSubscriptionsCount,
-        activeSubscriptionsCount: kpiData.activeSubscriptionsCount || 0,
-        expiredSubscriptionsCount: kpiData.expiredSubscriptionsCount || 0,
-        cancelledSubscriptionsCount: kpiData.cancelledSubscriptionsCount || 0,
-        refundedSubscriptionsCount: kpiData.refundedSubscriptionsCount || 0,
+        paidSubscriptionsCount: paidTransactionsCount,
+        activeSubscriptionsCount,
         distinctPayingStudentsCount,
-        newSubscriptions,
-        renewalSubscriptions,
         arpu,
-        renewalRate
+        renewalRate: 0
       },
       revenueOverTime: trendAggregation,
       revenueByPlan: planAggregation,
       categoryBreakdown,
-      recentSubscriptions
+      recentSubscriptions: recentTransactions
     });
   } catch (error) {
     console.error("Get Revenue Analytics Error:", error);
@@ -395,11 +484,22 @@ const getRevenueAnalytics = async (req, res) => {
 
 /**
  * GET /api/admin/revenue/transactions
- * Paginated and filterable list of subscriptions / transactions.
+ * Paginated, searchable, multi-criteria filterable list of transactions from the unified ledger.
  */
 const getRevenueTransactions = async (req, res) => {
   try {
-    const { page = 1, limit = 15, search = "", status = "all", gateway = "all", from, to } = req.query;
+    await syncLegacySubscriptions();
+    const {
+      page = 1,
+      limit = 15,
+      search = "",
+      category = "all",
+      status = "all",
+      provenance = "all",
+      gateway = "all",
+      from,
+      to
+    } = req.query;
 
     const pageNum = Math.max(1, parseInt(page, 10));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
@@ -407,28 +507,36 @@ const getRevenueTransactions = async (req, res) => {
 
     const filter = {};
 
+    // Category filter
+    if (category && category !== "all") {
+      filter.productCategory = category;
+    }
+
     // Status filter
     if (status && status !== "all") {
       filter.status = status;
     }
 
+    // Provenance filter
+    if (provenance && provenance !== "all") {
+      filter.provenance = provenance;
+    }
+
     // Gateway filter
     if (gateway && gateway !== "all") {
-      filter.paymentGateway = gateway;
+      filter.gateway = gateway;
     }
 
     // Date range filter
     if (from || to) {
-      filter.startDate = {};
-      if (from) filter.startDate.$gte = new Date(from);
-      if (to) filter.startDate.$lte = new Date(to);
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) filter.createdAt.$lte = new Date(to);
     }
 
-    // Text search filter (Student name, email, phone, or Purchase/Transaction ID)
+    // Search query (student name/email/phone, transactionId, orderId, gatewayTxnId, itemTitleSnapshot)
     if (search.trim()) {
       const searchRegex = new RegExp(search.trim(), "i");
-
-      // Find matching users
       const matchedUsers = await User.find({
         $or: [
           { fullName: searchRegex },
@@ -440,24 +548,33 @@ const getRevenueTransactions = async (req, res) => {
       const userIds = matchedUsers.map(u => u._id);
 
       filter.$or = [
-        { purchaseId: searchRegex },
+        { transactionId: searchRegex },
+        { orderId: searchRegex },
         { gatewayTxnId: searchRegex },
-        { planNameSnapshot: searchRegex },
+        { itemTitleSnapshot: searchRegex },
         { studentId: { $in: userIds } }
       ];
     }
 
-    const totalCount = await Subscription.countDocuments(filter);
-    const transactions = await Subscription.find(filter)
+    const totalCount = await PurchaseTransaction.countDocuments(filter);
+    const transactions = await PurchaseTransaction.find(filter)
       .populate("studentId", "fullName email avatar phone")
-      .populate("planId", "name durationValue durationUnit sellingPrice")
+      .populate("grantedBy", "fullName email")
       .sort({ createdAt: -1 })
       .skip(skipNum)
       .limit(limitNum);
 
+    // Map backwards-compatible fields for older Phase 2 UI tabs
+    const mappedTransactions = transactions.map(t => {
+      const obj = t.toObject();
+      obj.purchaseId = obj.orderId || obj.transactionId;
+      obj.paymentGateway = obj.gateway;
+      return obj;
+    });
+
     res.json({
       success: true,
-      transactions,
+      transactions: mappedTransactions,
       pagination: {
         total: totalCount,
         page: pageNum,
@@ -475,81 +592,221 @@ const getRevenueTransactions = async (req, res) => {
 };
 
 /**
+ * GET /api/admin/revenue/transactions/:id
+ * Retrieve a single unified transaction's complete audit trail and details.
+ */
+const getSingleTransaction = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let transaction = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      transaction = await PurchaseTransaction.findById(id)
+        .populate("studentId", "fullName email phone avatar")
+        .populate("grantedBy", "fullName email")
+        .populate("subscriptionId");
+    }
+
+    if (!transaction) {
+      transaction = await PurchaseTransaction.findOne({
+        $or: [{ transactionId: id }, { orderId: id }]
+      })
+        .populate("studentId", "fullName email phone avatar")
+        .populate("grantedBy", "fullName email")
+        .populate("subscriptionId");
+    }
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    res.json({
+      success: true,
+      transaction
+    });
+  } catch (error) {
+    console.error("Get Single Transaction Error:", error);
+    res.status(500).json({ message: "Failed to retrieve transaction.", error: error.message });
+  }
+};
+
+/**
+ * PATCH /api/admin/revenue/transactions/:id/status
+ * Authorized administrative status transition (e.g., mark refunded or cancelled)
+ */
+const updateTransactionStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status: newStatus, note = "" } = req.body;
+
+    if (!newStatus) {
+      return res.status(400).json({ message: "New status is required." });
+    }
+
+    let transaction = await PurchaseTransaction.findById(id);
+    if (!transaction) {
+      transaction = await PurchaseTransaction.findOne({ transactionId: id });
+    }
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    const updated = await transitionTransactionStatus(transaction.transactionId, newStatus, req.user, note);
+
+    await logAction(
+      "TRANSACTION_STATUS_UPDATE",
+      req.user.fullName || "Admin",
+      `Changed status of Txn ${transaction.transactionId} from ${transaction.status} to ${newStatus}. Note: ${note}`,
+      "RevenueManagement",
+      req.ip
+    );
+
+    res.json({
+      success: true,
+      message: `Transaction status updated to ${newStatus}.`,
+      transaction: updated
+    });
+  } catch (error) {
+    console.error("Update Transaction Status Error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+/**
  * GET /api/admin/revenue/customers
  * Financial customer directory: lists students who hold subscriptions, purchased exams, or practice tests.
+ * Aggregates lifetime platform spending directly from the canonical ledger.
  */
 const getRevenueCustomers = async (req, res) => {
   try {
+    await syncLegacySubscriptions();
     const { page = 1, limit = 15, search = "", status = "all" } = req.query;
 
     const pageNum = Math.max(1, parseInt(page, 10));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
     const skipNum = (pageNum - 1) * limitNum;
 
-    const userFilter = { role: "user" };
+    // Build customer aggregation from PurchaseTransaction and User
+    const customerSpendAggregation = await PurchaseTransaction.aggregate([
+      {
+        $group: {
+          _id: "$studentId",
+          totalSpent: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          verifiedSpent: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "verified_payment"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          simulatedSpent: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "dev_simulation"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          adminGrantsSpent: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "admin_grant"] }, "$originalPriceSnapshot", 0]
+            }
+          },
+          transactionsCount: { $sum: 1 },
+          lastTransactionDate: { $max: "$createdAt" }
+        }
+      }
+    ]);
 
-    if (search.trim()) {
-      const searchRegex = new RegExp(search.trim(), "i");
-      userFilter.$or = [
-        { fullName: searchRegex },
-        { email: searchRegex },
-        { phone: searchRegex }
-      ];
-    }
+    const spendMap = {};
+    customerSpendAggregation.forEach(c => {
+      spendMap[c._id.toString()] = c;
+    });
 
-    if (status === "active_subscriber") {
-      userFilter.isPremium = true;
-    } else if (status === "free_user") {
-      userFilter.isPremium = false;
-    } else if (status === "has_purchases") {
-      userFilter.$or = [
+    const userQuery = {
+      $or: [
+        { _id: { $in: Object.keys(spendMap) } },
         { "purchasedExams.0": { $exists: true } },
         { "purchasedPractice.0": { $exists: true } },
         { activePlan: { $ne: null } }
+      ]
+    };
+
+    if (search.trim()) {
+      const searchRegex = new RegExp(search.trim(), "i");
+      userQuery.$and = [
+        {
+          $or: [
+            { fullName: searchRegex },
+            { email: searchRegex },
+            { phone: searchRegex }
+          ]
+        }
       ];
     }
 
-    const totalCount = await User.countDocuments(userFilter);
-    const users = await User.find(userFilter)
-      .select("fullName email phone avatar isPremium activePlan purchasedExams purchasedPractice createdAt")
-      .populate("activePlan", "name sellingPrice durationValue durationUnit maxAITests")
-      .populate("purchasedExams", "title price")
-      .populate("purchasedPractice", "title price")
+    const totalCount = await User.countDocuments(userQuery);
+    const users = await User.find(userQuery)
+      .select("fullName email phone avatar createdAt activePlan purchasedExams purchasedPractice status isPremium premiumExpiresAt")
+      .populate("activePlan", "name durationValue durationUnit sellingPrice")
       .sort({ createdAt: -1 })
       .skip(skipNum)
       .limit(limitNum);
 
-    // Fetch subscription stats for each student
-    const studentIds = users.map(u => u._id);
-    const studentSubscriptions = await Subscription.find({ studentId: { $in: studentIds } })
-      .select("studentId amount status paymentGateway startDate expiryDate aiTestsUsed maxAITests")
-      .sort({ createdAt: -1 });
-
     const customers = users.map(user => {
-      const subs = studentSubscriptions.filter(s => s.studentId.toString() === user._id.toString());
-      const totalSpent = subs.reduce((sum, s) => sum + (s.amount || 0), 0);
-      const verifiedSpent = 0; // In sandbox mode
-      const simulatedSpent = subs.filter(s => s.paymentGateway === "phonepe").reduce((sum, s) => sum + (s.amount || 0), 0);
-      const adminGrantsSpent = subs.filter(s => s.paymentGateway === "admin_grant").reduce((sum, s) => sum + (s.amount || 0), 0);
-
-      const latestSub = subs[0] || null;
+      const spend = spendMap[user._id.toString()] || {
+        totalSpent: 0,
+        verifiedSpent: 0,
+        simulatedSpent: 0,
+        adminGrantsSpent: 0,
+        transactionsCount: 0,
+        lastTransactionDate: user.createdAt
+      };
 
       return {
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
-        phone: user.phone || "—",
-        avatar: user.avatar,
-        isPremium: Boolean(user.isPremium),
-        activePlan: user.activePlan || null,
+        phone: user.phone || "",
+        avatar: user.avatar || "",
+        activePlan: user.activePlan,
+        isPremium: !!user.isPremium,
+        premiumExpiresAt: user.premiumExpiresAt,
         purchasedExamsCount: (user.purchasedExams || []).length,
         purchasedPracticeCount: (user.purchasedPractice || []).length,
-        totalSubscriptionsCount: subs.length,
-        totalSpent,
-        verifiedSpent,
-        simulatedSpent,
-        adminGrantsSpent,
-        latestSubscription: latestSub,
+        totalSpent: spend.totalSpent,
+        verifiedSpent: spend.verifiedSpent,
+        simulatedSpent: spend.simulatedSpent,
+        adminGrantsSpent: spend.adminGrantsSpent,
+        transactionsCount: spend.transactionsCount,
+        lastTransactionDate: spend.lastTransactionDate,
         createdAt: user.createdAt
       };
     });
@@ -587,8 +844,8 @@ const getExamsPracticeFinancials = async (req, res) => {
       .select("title subject price totalQuestions duration createdAt")
       .sort({ createdAt: -1 });
 
-    const paidSeries = await ExamSeries.find({ isPaid: true })
-      .select("title subject price description exams createdAt")
+    const paidSeries = await ExamSeries.find({})
+      .select("title slug description isPublished createdAt")
       .sort({ createdAt: -1 })
       .catch(() => []);
 
@@ -597,7 +854,6 @@ const getExamsPracticeFinancials = async (req, res) => {
       .sort({ createdAt: -1 })
       .catch(() => []);
 
-    // Total entitled users
     const usersWithExams = await User.countDocuments({ "purchasedExams.0": { $exists: true } });
     const usersWithPractice = await User.countDocuments({ "purchasedPractice.0": { $exists: true } });
 
@@ -649,7 +905,6 @@ const getAiUsageAnalytics = async (req, res) => {
             $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] }
           },
           highUsageSubscriptions: {
-            // Consumed >= 80% of quota
             $sum: {
               $cond: [
                 {
@@ -710,9 +965,9 @@ const getAiUsageAnalytics = async (req, res) => {
               "Custom / Deleted Plan"
             ]
           },
-          subscribersCount: "$subscribersCount",
-          allocatedTests: "$allocatedTests",
-          usedTests: "$usedTests",
+          subscribersCount: 1,
+          allocatedTests: 1,
+          usedTests: 1,
           utilizationRate: {
             $cond: [
               { $gt: ["$allocatedTests", 0] },
@@ -722,7 +977,7 @@ const getAiUsageAnalytics = async (req, res) => {
           }
         }
       },
-      { $sort: { usedTests: -1 } }
+      { $sort: { allocatedTests: -1 } }
     ]);
 
     res.json({
@@ -747,10 +1002,76 @@ const getAiUsageAnalytics = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/admin/revenue/reports
+ * Pre-compiled analytical reports across all monetization streams.
+ */
+const getRevenueReports = async (req, res) => {
+  try {
+    const transactions = await PurchaseTransaction.find({})
+      .populate("studentId", "fullName email")
+      .populate("grantedBy", "fullName email")
+      .sort({ createdAt: -1 });
+
+    const totalCount = transactions.length;
+    let verifiedRevenue = 0;
+    let simulatedRevenue = 0;
+    let adminGrantsCount = 0;
+    let freeAccessCount = 0;
+
+    const categoryMap = {
+      ai_plan: { count: 0, revenue: 0 },
+      exam: { count: 0, revenue: 0 },
+      practice: { count: 0, revenue: 0 },
+      exam_series: { count: 0, revenue: 0 },
+      flashcard: { count: 0, revenue: 0 }
+    };
+
+    transactions.forEach(t => {
+      const cat = t.productCategory || "ai_plan";
+      if (!categoryMap[cat]) categoryMap[cat] = { count: 0, revenue: 0 };
+
+      if (t.status === "paid") {
+        if (t.provenance === "verified_payment" && t.paymentVerificationStatus === "verified") {
+          verifiedRevenue += t.amount;
+          categoryMap[cat].revenue += t.amount;
+        } else if (t.provenance === "dev_simulation") {
+          simulatedRevenue += t.amount;
+          categoryMap[cat].revenue += t.amount;
+        } else if (t.provenance === "admin_grant") {
+          adminGrantsCount++;
+        } else if (t.provenance === "free_access") {
+          freeAccessCount++;
+        }
+        categoryMap[cat].count++;
+      }
+    });
+
+    res.json({
+      success: true,
+      summary: {
+        totalTransactions: totalCount,
+        verifiedRevenue,
+        simulatedRevenue,
+        totalRevenue: verifiedRevenue + simulatedRevenue,
+        adminGrantsCount,
+        freeAccessCount
+      },
+      categoryPerformance: categoryMap
+    });
+  } catch (error) {
+    console.error("Get Revenue Reports Error:", error);
+    res.status(500).json({ message: "Failed to compile financial reports.", error: error.message });
+  }
+};
+
 module.exports = {
   getRevenueAnalytics,
   getRevenueTransactions,
+  getSingleTransaction,
+  updateTransactionStatus,
   getRevenueCustomers,
   getExamsPracticeFinancials,
-  getAiUsageAnalytics
+  getAiUsageAnalytics,
+  getRevenueReports
 };

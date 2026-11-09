@@ -119,6 +119,10 @@ async function syncLegacySubscriptions() {
         console.log(`[SubscriptionSync] Backfilled subscription record for student: ${user.fullName} (${user.email})`);
       }
     }
+
+    // Automatically synchronize any pending subscriptions into the Unified PurchaseTransaction Ledger
+    const { migrateToUnifiedLedger } = require("../scripts/migrateToUnifiedLedger");
+    await migrateToUnifiedLedger({ dryRun: false, quiet: true });
   } catch (err) {
     console.error("[SubscriptionSync Error]:", err);
   }
