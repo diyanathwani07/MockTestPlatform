@@ -14,7 +14,21 @@ axios.interceptors.response.use(
         msg.toLowerCase().includes("expired") ||
         msg.toLowerCase().includes("unauthorized")
       ) {
+        // Preserve target URL so user returns to the exact result or page after login
+        if (window.location.pathname !== "/" && window.location.pathname !== "/login") {
+          sessionStorage.setItem("redirect_after_login", window.location.pathname + window.location.search);
+        }
         localStorage.clear();
+
+        // Allow Result and public shared pages to handle 401 in-place and render their custom Sign In Required card
+        if (
+          err.config?.skipAuthRedirect ||
+          window.location.pathname.startsWith("/result/") ||
+          window.location.pathname.startsWith("/share-result/")
+        ) {
+          return Promise.reject(err);
+        }
+
         if (window.location.pathname !== "/" && window.location.pathname !== "/login") {
           window.location.href = "/?expired=true";
         }
