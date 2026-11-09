@@ -160,16 +160,13 @@ const generateAITest = async (req, res) => {
       return res.status(400).json({ message: "Invalid question count requested. Choose 10, 20, 30 or 50." });
     }
 
-    // Atomic usage reservation with 10 test default fallback for 0 maxAITests
+    // Atomic usage reservation against subscription maxAITests quota
     let activeSub = await Subscription.findOneAndUpdate(
       {
         studentId: req.user._id,
         status: "active",
         $expr: {
-          $lt: [
-            "$aiTestsUsed",
-            { $cond: { if: { $gt: ["$maxAITests", 0] }, then: "$maxAITests", else: 10 } }
-          ]
+          $lt: ["$aiTestsUsed", "$maxAITests"]
         }
       },
       {
@@ -471,16 +468,13 @@ const generateFromMaterial = async (req, res) => {
         });
       }
 
-      // Atomic usage reservation with 10 test default fallback for 0 maxAITests
+      // Atomic usage reservation against subscription maxAITests quota
     const activeSub = await Subscription.findOneAndUpdate(
       {
         studentId: req.user._id,
         status: "active",
         $expr: {
-          $lt: [
-            "$aiTestsUsed",
-            { $cond: { if: { $gt: ["$maxAITests", 0] }, then: "$maxAITests", else: 10 } }
-          ]
+          $lt: ["$aiTestsUsed", "$maxAITests"]
         }
       },
       {

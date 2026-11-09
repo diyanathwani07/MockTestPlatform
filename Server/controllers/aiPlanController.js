@@ -224,29 +224,85 @@ const logAction = require("../utils/logger");
 const { notifyUser } = require("../services/notificationService");
 const crypto = require("crypto");
 
-// SUBSCRIBE/unlock a plan (Simulated payment callback flow)
+// SUBSCRIBE/unlock a plan (Secure server-side validation & payment integrity)
 const subscribeToPlan = async (req, res) => {
   try {
-    const { planId, gatewayTxnId } = req.body;
+    const { planId, gatewayTxnId, amount } = req.body;
     if (!planId) {
-      return res.status(400).json({ message: "planId is required." });
+      return res.status(400).json({ success: false, message: "planId is required." });
     }
 
     const plan = await AiPlan.findById(planId);
     if (!plan) {
-      return res.status(404).json({ message: "AI Plan not found." });
+      return res.status(404).json({ success: false, message: "AI Plan not found." });
     }
 
     if (plan.status !== "active") {
-      return res.status(400).json({ message: "This plan is not available for purchase." });
+      return res.status(400).json({ success: false, message: "This plan is not available for purchase." });
+    }
+
+    // 1. Amount & Price Tampering Protection
+    const authoritativePrice = Number(plan.sellingPrice) || 0;
+    if (amount !== undefined && Number(amount) !== authoritativePrice) {
+      return res.status(400).json({
+        success: false,
+        code: "AMOUNT_MISMATCH",
+        message: `Amount mismatch. Plan selling price is ₹${authoritativePrice}.`
+      });
+    }
+
+    // 2. Production Payment Integrity Verification
+    // Never activate a paid subscription based only on a client request without a real verified gateway in production.
+    const isPaidPlan = authoritativePrice > 0;
+    const isProduction = process.env.NODE_ENV === "production";
+    const isExplicitDevSimulation = !isProduction && (process.env.ALLOW_PAYMENT_SIMULATION === "true" || process.env.ALLOW_PAYMENT_SIMULATION === undefined);
+
+    if (isPaidPlan && !isExplicitDevSimulation) {
+      return res.status(402).json({
+        success: false,
+        code: "PAYMENT_REQUIRED",
+        message: "Payment verification required. Real payment gateway verification is required in production."
+      });
     }
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ success: false, message: "User not found." });
     }
 
-    // Calculate expiry (starts/restarts from now)
+    // 3. Idempotency Check: Prevent duplicate active subscriptions to the same plan
+    const existingActiveSub = await Subscription.findOne({
+      studentId: user._id,
+      planId: plan._id,
+      status: "active",
+      expiryDate: { $gt: new Date() }
+    });
+
+    if (existingActiveSub) {
+      return res.status(200).json({
+        success: true,
+        idempotent: true,
+        message: "You already have an active subscription for this plan.",
+        subscriptionId: existingActiveSub.purchaseId,
+        expiresAt: existingActiveSub.expiryDate
+      });
+    }
+
+    // 4. Replay Attack & Duplicate Transaction ID Protection
+    let cleanTxnId = null;
+    if (gatewayTxnId && typeof gatewayTxnId === "string" && gatewayTxnId.trim()) {
+      cleanTxnId = gatewayTxnId.trim();
+      const existingTxn = await Subscription.findOne({ gatewayTxnId: cleanTxnId });
+      if (existingTxn) {
+        return res.status(409).json({
+          success: false,
+          code: "DUPLICATE_TRANSACTION",
+          message: "This transaction reference has already been processed."
+        });
+      }
+    }
+
+    // 5. Calculate expiry (starts/restarts from now based strictly on DB plan config)
     const expiryDate = new Date();
     if (plan.durationUnit === "months") {
       expiryDate.setMonth(expiryDate.getMonth() + plan.durationValue);
@@ -260,22 +316,24 @@ const subscribeToPlan = async (req, res) => {
       { $set: { status: "expired" } }
     );
 
-    // Create Subscription record as ACTIVE
+    // 6. Create Subscription record with verified source metadata
     const purchaseId = `PUR-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+    const paymentGateway = isPaidPlan ? "phonepe" : "manual";
+
     await Subscription.create({
       studentId: user._id,
       planId: plan._id,
       planNameSnapshot: plan.name,
       purchaseId,
-      amount: plan.sellingPrice || 0,
+      amount: authoritativePrice,
       currency: plan.currency || "INR",
       maxAITests: plan.maxAITests || 20,
       aiTestsUsed: 0,
       startDate: new Date(),
       expiryDate,
       status: "active",
-      paymentGateway: "phonepe",
-      gatewayTxnId: gatewayTxnId || null
+      paymentGateway,
+      gatewayTxnId: cleanTxnId
     });
 
     // Sync User premium status cache
@@ -284,8 +342,16 @@ const subscribeToPlan = async (req, res) => {
     user.activePlan = plan._id;
     await user.save();
 
-    // Audit logs including purchaseId
-    await logAction("SUBSCRIBE_AI_PLAN_SUCCESS", user.fullName, `${plan.name} (Activated, Purchase ID: ${purchaseId})`, "Purchase", req.ip);
+    // 7. Audit log with clear distinction between simulation and free tiers
+    const logTag = isPaidPlan ? "SIMULATED_AI_PLAN_SUBSCRIPTION" : "FREE_AI_PLAN_ACTIVATION";
+    const logPrefix = isPaidPlan ? "[DEV SIMULATION]" : "[FREE PLAN]";
+    await logAction(
+      logTag,
+      user.fullName || "Student",
+      `${logPrefix} ${plan.name} (Activated, Purchase ID: ${purchaseId}, Txn: ${cleanTxnId || 'N/A'})`,
+      "Purchase",
+      req.ip
+    );
 
     // Send in-app notification
     await notifyUser(user._id, {
@@ -296,13 +362,15 @@ const subscribeToPlan = async (req, res) => {
     });
 
     res.json({
-      message: "Plan subscribed successfully!",
       success: true,
+      message: "Plan subscribed successfully!",
+      purchaseId,
+      expiresAt: expiryDate,
       pending: false
     });
   } catch (error) {
     console.error("Subscribe to AI Plan Error:", error);
-    res.status(500).json({ message: "Failed to subscribe to AI plan.", error: error.message });
+    res.status(500).json({ success: false, message: "Failed to subscribe to AI plan.", error: error.message });
   }
 };
 

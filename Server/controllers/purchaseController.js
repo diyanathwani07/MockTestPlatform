@@ -16,7 +16,20 @@ exports.purchaseExam = async (req, res) => {
       item = await FlashcardSet.findById(examId);
     }
     if (!item) {
+      const ExamSeries = require("../models/ExamSeries");
+      item = await ExamSeries.findById(examId);
+    }
+    if (!item) {
       return res.status(404).json({ message: "Exam or study material not found." });
+    }
+
+    // Client price tampering validation
+    if (req.body.amount !== undefined && item.price !== undefined && Number(req.body.amount) !== Number(item.price)) {
+      return res.status(400).json({
+        success: false,
+        code: "AMOUNT_MISMATCH",
+        message: `Amount mismatch. Price is ₹${item.price}.`
+      });
     }
 
     // In production, unverified client calls cannot unlock paid content without a real payment gateway
@@ -68,6 +81,15 @@ exports.purchasePractice = async (req, res) => {
     const practice = await PracticeQuiz.findById(practiceId);
     if (!practice) {
       return res.status(404).json({ message: "Practice quiz not found." });
+    }
+
+    // Client price tampering validation
+    if (req.body.amount !== undefined && practice.price !== undefined && Number(req.body.amount) !== Number(practice.price)) {
+      return res.status(400).json({
+        success: false,
+        code: "AMOUNT_MISMATCH",
+        message: `Amount mismatch. Practice quiz price is ₹${practice.price}.`
+      });
     }
 
     const isProduction = process.env.NODE_ENV === "production";
