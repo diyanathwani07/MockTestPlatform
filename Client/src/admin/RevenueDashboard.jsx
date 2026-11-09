@@ -79,6 +79,11 @@ const STANDARD_PLANS = [
   { name: "Other Plans", color: "#64748B" }
 ];
 
+const formatCurrency = (val) => {
+  const num = Number(val);
+  return isNaN(num) ? "0" : num.toLocaleString("en-IN");
+};
+
 export default function RevenueDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -252,18 +257,21 @@ export default function RevenueDashboard() {
   }, [activeTab, aiSubTab, fetchTransactions, fetchCustomers, fetchCatalog, fetchAiUsage]);
 
   // KPIs shorthand
-  const kpis = analyticsData?.kpis || {
+  const kpis = {
     totalRevenue: 0,
     verifiedRevenue: 0,
     simulatedRevenue: 0,
     adminGrantsAmount: 0,
     todayRevenue: 0,
     thisMonthRevenue: 0,
+    activeRevenue: 0,
     paidSubscriptionsCount: 0,
     activeSubscriptionsCount: 0,
     distinctPayingStudentsCount: 0,
     arpu: 0,
-    renewalRate: 0
+    renewalRate: 0,
+    renewalSubscriptions: 0,
+    ...(analyticsData?.kpis || {})
   };
 
   // CSV Export utility
@@ -279,7 +287,7 @@ export default function RevenueDashboard() {
           keys
             .map((k) => {
               let cell = row[k] === null || row[k] === undefined ? "" : row[k];
-              cell = cell instanceof Date ? cell.toLocaleString() : cell.toString().replace(/"/g, '""');
+              cell = cell instanceof Date ? cell.toLocaleString() : String(cell).replace(/"/g, '""');
               if (cell.search(/("|,|\n)/g) >= 0) cell = `"${cell}"`;
               return cell;
             })
@@ -309,8 +317,8 @@ export default function RevenueDashboard() {
       Payment_Gateway: t.paymentGateway,
       Provenance: t.paymentGateway === "admin_grant" ? "Admin Grant" : "Sandbox Simulation",
       Status: t.status,
-      Start_Date: new Date(t.startDate).toLocaleDateString(),
-      Expiry_Date: new Date(t.expiryDate).toLocaleDateString()
+      Start_Date: t.startDate ? new Date(t.startDate).toLocaleDateString() : "N/A",
+      Expiry_Date: t.expiryDate ? new Date(t.expiryDate).toLocaleDateString() : "N/A"
     }));
     downloadCsv("PrepMark_Transactions", rows);
   };
@@ -328,7 +336,7 @@ export default function RevenueDashboard() {
       Entitled_Practice: c.purchasedPracticeCount,
       Total_Subscriptions: c.totalSubscriptionsCount,
       Recorded_Spend_INR: c.totalSpent,
-      Joined_Date: new Date(c.createdAt).toLocaleDateString()
+      Joined_Date: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "N/A"
     }));
     downloadCsv("PrepMark_Customers_Financial", rows);
   };
@@ -515,13 +523,13 @@ export default function RevenueDashboard() {
 
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                   <span style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.12)", color: "#10B981", fontWeight: "700" }}>
-                    Verified Bank Revenue: ₹0
+                    Verified Bank Revenue: ₹{formatCurrency(kpis.verifiedRevenue)}
                   </span>
                   <span style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "6px", background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6", fontWeight: "700" }}>
-                    Simulated Sandbox: ₹{kpis.simulatedRevenue.toLocaleString("en-IN")}
+                    Simulated Sandbox: ₹{formatCurrency(kpis.simulatedRevenue)}
                   </span>
                   <span style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "6px", background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B", fontWeight: "700" }}>
-                    Admin Grants: ₹{kpis.adminGrantsAmount.toLocaleString("en-IN")}
+                    Admin Grants: ₹{formatCurrency(kpis.adminGrantsAmount)}
                   </span>
                 </div>
               </div>
@@ -541,10 +549,10 @@ export default function RevenueDashboard() {
                     </div>
                   </div>
                   <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
-                    ₹0
+                    ₹{formatCurrency(kpis.verifiedRevenue)}
                   </div>
                   <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
-                    Simulated Sandbox: <strong style={{ color: "#8B5CF6" }}>₹{kpis.simulatedRevenue.toLocaleString("en-IN")}</strong>
+                    Simulated Sandbox: <strong style={{ color: "#8B5CF6" }}>₹{formatCurrency(kpis.simulatedRevenue)}</strong>
                   </div>
                   <div className="sub-kpi-accent-bar" style={{ background: "#10B981" }} />
                 </div>
@@ -558,7 +566,7 @@ export default function RevenueDashboard() {
                     </div>
                   </div>
                   <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
-                    ₹{kpis.todayRevenue.toLocaleString("en-IN")}
+                    ₹{formatCurrency(kpis.todayRevenue)}
                   </div>
                   <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
                     Since 12:00 AM today
@@ -575,7 +583,7 @@ export default function RevenueDashboard() {
                     </div>
                   </div>
                   <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
-                    ₹{kpis.thisMonthRevenue.toLocaleString("en-IN")}
+                    ₹{formatCurrency(kpis.thisMonthRevenue)}
                   </div>
                   <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
                     Active calendar month
@@ -612,7 +620,7 @@ export default function RevenueDashboard() {
                     {kpis.activeSubscriptionsCount}
                   </div>
                   <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
-                    Active recurring ARR: <strong style={{ color: "#F59E0B" }}>₹{kpis.activeRevenue.toLocaleString("en-IN")}</strong>
+                    Active recurring ARR: <strong style={{ color: "#F59E0B" }}>₹{formatCurrency(kpis.activeRevenue)}</strong>
                   </div>
                   <div className="sub-kpi-accent-bar" style={{ background: "#F59E0B" }} />
                 </div>
@@ -729,7 +737,7 @@ export default function RevenueDashboard() {
 
                         <div style={{ textAlign: "right" }}>
                           <div style={{ fontSize: "13.5px", fontWeight: "800", color: cat.hasHistoricalLedger ? "#8B5CF6" : "var(--text-secondary)" }}>
-                            {cat.hasHistoricalLedger ? `₹${cat.revenue.toLocaleString("en-IN")}` : "Data unavailable"}
+                            {cat.hasHistoricalLedger ? `₹${formatCurrency(cat.revenue)}` : "Data unavailable"}
                           </div>
                           <span style={{
                             fontSize: "10px",
@@ -765,20 +773,21 @@ export default function RevenueDashboard() {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {(analyticsData?.revenueByPlan || []).map((plan) => {
+                      const planRev = plan.revenue ?? plan.totalRevenue ?? 0;
                       const totalRev = kpis.totalRevenue || 1;
-                      const pct = Math.round((plan.totalRevenue / totalRev) * 100);
+                      const pct = Math.round((planRev / totalRev) * 100);
                       return (
                         <div key={plan.planId || plan.planName} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
                             <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName}</span>
-                            <span style={{ fontWeight: "800", color: "#8B5CF6" }}>₹{plan.totalRevenue.toLocaleString("en-IN")} ({pct}%)</span>
+                            <span style={{ fontWeight: "800", color: "#8B5CF6" }}>₹{formatCurrency(planRev)} ({pct}%)</span>
                           </div>
                           <div style={{ width: "100%", height: "6px", background: "var(--bg-page)", borderRadius: "3px", overflow: "hidden" }}>
                             <div style={{ width: `${Math.min(100, pct)}%`, height: "100%", background: "#8B5CF6", borderRadius: "3px" }} />
                           </div>
                           <div style={{ fontSize: "10.5px", color: "var(--text-secondary)", display: "flex", justifyContent: "space-between" }}>
-                            <span>{plan.totalPurchases} purchases</span>
-                            <span>{plan.activeSubscribers} active now</span>
+                            <span>{plan.subscribersCount ?? plan.totalPurchases ?? 0} purchases</span>
+                            <span>{plan.activeSubscribers ?? 0} active now</span>
                           </div>
                         </div>
                       );
@@ -940,7 +949,7 @@ export default function RevenueDashboard() {
                     <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
                       <span className="sub-kpi-label">ACTIVE RECURRING VALUE</span>
                       <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
-                        ₹{kpis.activeRevenue.toLocaleString("en-IN")}
+                        ₹{formatCurrency(kpis.activeRevenue)}
                       </div>
                       <div className="revenue-kpi-subtitle">Current active contract value</div>
                       <div className="sub-kpi-accent-bar" style={{ background: "#F59E0B" }} />
@@ -1453,7 +1462,7 @@ export default function RevenueDashboard() {
                             {getStatusBadge(t.status)}
                           </td>
                           <td style={{ padding: "12px 16px", color: "var(--text-secondary)", fontSize: "11.5px" }}>
-                            {new Date(t.startDate || t.createdAt).toLocaleDateString()}
+                            {(t.startDate || t.createdAt) ? new Date(t.startDate || t.createdAt).toLocaleDateString() : "—"}
                           </td>
                         </tr>
                       ))}
