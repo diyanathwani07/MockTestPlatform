@@ -22,7 +22,7 @@ const AVAILABLE_FEATURES = [
   "Weak Topic Recommendations"
 ];
 
-function AdminAiPlans() {
+function AdminAiPlans({ isEmbedded = false, onNavigateSubtab }) {
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [exams, setExams] = useState([]);
@@ -288,15 +288,11 @@ function AdminAiPlans() {
     }
   };
 
-  return (
-    <div className="admin-layout">
-      <AdminSidebar />
-      <div className="admin-main">
-        <AdminNavbar title="AI Plans" />
-        
-        <div className="admin-content-inner" style={{ padding: "24px" }}>
-          
-          {/* Analytics Overview Cards */}
+  const content = (
+    <>
+      <div className="admin-content-inner" style={{ padding: isEmbedded ? "0" : "24px" }}>
+      
+      {/* Analytics Overview Cards */}
           <div className="admin-stats-grid" style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -311,7 +307,7 @@ function AdminAiPlans() {
             </div>
             <div 
               className="armored-stat-card" 
-              onClick={() => navigate("/admin/ai-subscribers")}
+              onClick={() => onNavigateSubtab ? onNavigateSubtab("subscribers") : navigate("/admin/ai-subscribers")}
               style={{ 
                 background: "var(--bg-card)", 
                 padding: "20px", 
@@ -338,7 +334,7 @@ function AdminAiPlans() {
             </div>
             <div 
               className="armored-stat-card" 
-              onClick={() => navigate("/admin/revenue")}
+              onClick={() => onNavigateSubtab ? onNavigateSubtab("overview") : navigate("/admin/revenue")}
               style={{ 
                 background: "var(--bg-card)", 
                 padding: "20px", 
@@ -491,7 +487,6 @@ function AdminAiPlans() {
             )}
           </div>
         </div>
-      </div>
 
       {/* Reusable Plan Form Modal (Create & Edit Mode with Live Preview!) */}
       {showFormModal && (
@@ -875,6 +870,20 @@ function AdminAiPlans() {
         </div>
       )}
 
+    </>
+  );
+
+  if (isEmbedded) {
+    return content;
+  }
+
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+      <div className="admin-main">
+        <AdminNavbar title="AI Plans" />
+        {content}
+      </div>
     </div>
   );
 }

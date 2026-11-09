@@ -44,7 +44,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const BAR_COLORS = ["#8B5CF6", "#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#06B6D4"];
 
-export default function AiSubscribers() {
+export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) {
   const navigate = useNavigate();
 
   // Overview & Metrics State
@@ -214,48 +214,46 @@ export default function AiSubscribers() {
 
   const planPopularity = overviewData?.planPopularity || [];
 
-  return (
-    <div className="admin-layout">
-      <AdminSidebar />
-      <div className="admin-main">
-        <AdminNavbar title="AI Subscribers" parentText="AI Plans" parentLink="/admin/ai-plans" />
-
-        <div className="subscribers-dashboard-container">
-          
-          {/* ================= 1. PAGE HEADER & INTRO ================= */}
-          <div className="subscribers-page-header">
-            <div className="subscribers-title-area">
-              <div className="subscribers-breadcrumb">
-                <button
-                  onClick={() => navigate("/admin/ai-plans")}
-                  className="subscribers-breadcrumb-link"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  AI Plans
-                </button>
-                <span>/</span>
-                <span>AI Subscribers</span>
-              </div>
-              <h1 className="subscribers-page-title">
-                AI Plan Subscribers
-              </h1>
-              <p className="subscribers-page-subtitle">
-                Manage subscribed students, track subscriber retention, and inspect purchase histories.
-              </p>
-            </div>
-
-            {/* Header Right Action */}
-            <div className="subscribers-header-actions">
+  const content = (
+    <>
+      <div className="subscribers-dashboard-container" style={{ padding: isEmbedded ? "0" : undefined }}>
+      
+      {/* ================= 1. PAGE HEADER & INTRO ================= */}
+      {!isEmbedded && (
+        <div className="subscribers-page-header">
+          <div className="subscribers-title-area">
+            <div className="subscribers-breadcrumb">
               <button
-                onClick={refreshAll}
-                className="revenue-refresh-btn"
-                title="Refresh Subscribers Data"
+                onClick={() => onNavigateSubtab ? onNavigateSubtab("plans") : navigate("/admin/ai-plans")}
+                className="subscribers-breadcrumb-link"
               >
-                <RefreshCcw className={`w-3.5 h-3.5 ${overviewLoading || listLoading ? "animate-spin" : ""}`} />
-                <span>Refresh</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
+                AI Plans
               </button>
+              <span>/</span>
+              <span>AI Subscribers</span>
             </div>
+            <h1 className="subscribers-page-title">
+              AI Plan Subscribers
+            </h1>
+            <p className="subscribers-page-subtitle">
+              Manage subscribed students, track subscriber retention, and inspect purchase histories.
+            </p>
           </div>
+
+          {/* Header Right Action */}
+          <div className="subscribers-header-actions">
+            <button
+              onClick={refreshAll}
+              className="revenue-refresh-btn"
+              title="Refresh Subscribers Data"
+            >
+              <RefreshCcw className={`w-3.5 h-3.5 ${overviewLoading || listLoading ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+      )}
 
           {/* ================= 2. KPI SUMMARY (4 EQUAL-WIDTH CARDS) ================= */}
           <div className="sub-kpi-grid">
@@ -664,7 +662,6 @@ export default function AiSubscribers() {
           </div>
 
         </div>
-      </div>
 
       {/* ================= 5. DRILL-DOWN DRAWER (SINGLE STUDENT PURCHASE HISTORY) ================= */}
       {selectedStudentId && (
@@ -834,6 +831,20 @@ export default function AiSubscribers() {
         </div>
       )}
 
+    </>
+  );
+
+  if (isEmbedded) {
+    return content;
+  }
+
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+      <div className="admin-main">
+        <AdminNavbar title="AI Subscribers" parentText="AI Plans" parentLink="/admin/ai-plans" />
+        {content}
+      </div>
     </div>
   );
 }
