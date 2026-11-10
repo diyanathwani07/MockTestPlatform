@@ -513,7 +513,7 @@ export default function RevenueDashboard() {
                     ₹{formatCurrency(kpis.verifiedRevenue)}
                   </div>
                   <div className="revenue-kpi-subtitle">
-                    Simulated Sandbox: <strong style={{ color: "#8B5CF6" }}>₹{formatCurrency(kpis.simulatedRevenue)}</strong>
+                    Simulated Sandbox: <strong style={{ color: "var(--primary, #8B5CF6)" }}>₹{formatCurrency(kpis.simulatedRevenue)}</strong>
                   </div>
                   <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
                 </div>
@@ -522,7 +522,7 @@ export default function RevenueDashboard() {
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">REVENUE TODAY</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                    <div className="revenue-kpi-icon-box" style={{ background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)" }}>
                       <Clock className="w-4 h-4" />
                     </div>
                   </div>
@@ -532,7 +532,7 @@ export default function RevenueDashboard() {
                   <div className="revenue-kpi-subtitle">
                     Since 12:00 AM today
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "var(--primary, #8B5CF6)" }} />
                 </div>
 
                 {/* 3. Revenue This Month */}
@@ -590,7 +590,7 @@ export default function RevenueDashboard() {
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">PAYING STUDENTS</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                    <div className="revenue-kpi-icon-box" style={{ background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)" }}>
                       <Users className="w-4 h-4" />
                     </div>
                   </div>
@@ -598,9 +598,9 @@ export default function RevenueDashboard() {
                     {kpis.distinctPayingStudentsCount}
                   </div>
                   <div className="revenue-kpi-subtitle">
-                    ARPU: <strong style={{ color: "#8B5CF6" }}>₹{kpis.arpu}</strong>
+                    ARPU: <strong style={{ color: "var(--primary, #8B5CF6)" }}>₹{kpis.arpu}</strong>
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "var(--primary, #8B5CF6)" }} />
                 </div>
               </div>
 
@@ -637,8 +637,8 @@ export default function RevenueDashboard() {
                         <AreaChart data={analyticsData.revenueOverTime}>
                           <defs>
                             <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.4} />
-                              <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
+                              <stop offset="5%" stopColor="var(--primary, #8B5CF6)" stopOpacity={0.4} />
+                              <stop offset="95%" stopColor="var(--primary, #8B5CF6)" stopOpacity={0} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.6} />
@@ -648,7 +648,7 @@ export default function RevenueDashboard() {
                             contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "8px", fontSize: "12px" }}
                             formatter={(val) => [`₹${val}`, "Revenue"]}
                           />
-                          <Area type="monotone" dataKey="revenue" stroke="#8B5CF6" strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)" dot={{ r: 4, fill: "#8B5CF6" }} />
+                          <Area type="monotone" dataKey="revenue" stroke="var(--primary, #8B5CF6)" strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)" dot={{ r: 4, fill: "var(--primary, #8B5CF6)" }} />
                         </AreaChart>
                       </ResponsiveContainer>
                     ) : (
@@ -684,7 +684,7 @@ export default function RevenueDashboard() {
                         </div>
 
                         <div style={{ textAlign: "right" }}>
-                          <div style={{ fontSize: "13.5px", fontWeight: "800", color: cat.hasHistoricalLedger ? "#8B5CF6" : "var(--text-secondary)" }}>
+                          <div style={{ fontSize: "13.5px", fontWeight: "800", color: cat.hasHistoricalLedger ? "var(--primary, #8B5CF6)" : "var(--text-secondary)" }}>
                             {cat.hasHistoricalLedger ? `₹${formatCurrency(cat.revenue)}` : "Data unavailable"}
                           </div>
                           {cat.hasHistoricalLedger && cat.simulatedRevenue > 0 && Number(cat.revenue || 0) === 0 && (
@@ -697,8 +697,8 @@ export default function RevenueDashboard() {
                             padding: "2px 8px",
                             borderRadius: "12px",
                             fontWeight: "600",
-                            background: cat.hasHistoricalLedger ? "rgba(16, 185, 129, 0.12)" : "rgba(139, 92, 246, 0.12)",
-                            color: cat.hasHistoricalLedger ? "#10B981" : "#8B5CF6"
+                            background: cat.hasHistoricalLedger ? "rgba(16, 185, 129, 0.12)" : "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                            color: cat.hasHistoricalLedger ? "#10B981" : "var(--primary, #8B5CF6)"
                           }}>
                             {cat.hasHistoricalLedger ? "Ledger Active" : "Ledger Ready"}
                           </span>
@@ -760,7 +760,7 @@ export default function RevenueDashboard() {
                           <div key={plan.planName} className="revenue-plan-item">
                             <div className="revenue-plan-row-top">
                               <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName}</span>
-                              <span style={{ fontWeight: "800", color: "#8B5CF6" }}>₹{formatCurrency(plan.revenue)} ({pct}%)</span>
+                              <span style={{ fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>₹{formatCurrency(plan.revenue)} ({pct}%)</span>
                             </div>
                             <div className="revenue-plan-track">
                               <div className="revenue-plan-fill" style={{ width: `${Math.min(100, pct)}%` }} />
@@ -786,9 +786,9 @@ export default function RevenueDashboard() {
                     <button
                       onClick={() => handleTabChange("transactions")}
                       style={{
-                        background: "rgba(139, 92, 246, 0.12)",
-                        color: "#8B5CF6",
-                        border: "1px solid rgba(139, 92, 246, 0.3)",
+                        background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                        color: "var(--primary, #8B5CF6)",
+                        border: "1px solid color-mix(in srgb, var(--primary, #8B5CF6) 30%, transparent)",
                         padding: "4px 12px",
                         borderRadius: "8px",
                         fontSize: "12px",
@@ -823,7 +823,7 @@ export default function RevenueDashboard() {
                             <td style={{ padding: "10px 6px" }}>
                               {sub.planNameSnapshot || sub.planId?.name || "AI Plan"}
                             </td>
-                            <td style={{ padding: "10px 6px", fontWeight: "800", color: "#8B5CF6" }}>
+                            <td style={{ padding: "10px 6px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
                               ₹{sub.amount}
                             </td>
                             <td style={{ padding: "10px 6px" }}>
@@ -880,7 +880,7 @@ export default function RevenueDashboard() {
                     <div className="revenue-kpi-card">
                       <div className="revenue-kpi-top">
                         <span className="revenue-kpi-label">TOTAL PLAN SUBSCRIBERS</span>
-                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                        <div className="revenue-kpi-icon-box" style={{ background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)" }}>
                           <Users className="w-4 h-4" />
                         </div>
                       </div>
@@ -888,7 +888,7 @@ export default function RevenueDashboard() {
                         {kpis.paidSubscriptionsCount}
                       </div>
                       <div className="revenue-kpi-subtitle">All-time subscriber enrollments</div>
-                      <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "var(--primary, #8B5CF6)" }} />
                     </div>
 
                     <div className="revenue-kpi-card">
@@ -940,8 +940,8 @@ export default function RevenueDashboard() {
                       style={{
                         padding: "10px 18px",
                         borderRadius: "10px",
-                        background: "#8B5CF6",
-                        color: "#FFFFFF",
+                        background: "var(--primary)",
+                        color: "var(--primary-foreground, #FFFFFF)",
                         border: "none",
                         fontWeight: "700",
                         fontSize: "13px",
@@ -1002,7 +1002,7 @@ export default function RevenueDashboard() {
                     <div className="revenue-kpi-card">
                       <div className="revenue-kpi-top">
                         <span className="revenue-kpi-label">TOTAL TESTS ALLOCATED</span>
-                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                        <div className="revenue-kpi-icon-box" style={{ background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)" }}>
                           <Bot className="w-4 h-4" />
                         </div>
                       </div>
@@ -1010,7 +1010,7 @@ export default function RevenueDashboard() {
                         {usageData?.metrics?.totalAllocatedTests || 0}
                       </div>
                       <div className="revenue-kpi-subtitle">Cumulative test quota issued</div>
-                      <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "var(--primary, #8B5CF6)" }} />
                     </div>
 
                     <div className="revenue-kpi-card">
@@ -1077,11 +1077,11 @@ export default function RevenueDashboard() {
                             <td style={{ padding: "12px 10px", fontWeight: "700", color: "var(--text-primary)" }}>{p.planName}</td>
                             <td style={{ padding: "12px 10px" }}>{p.subscribersCount}</td>
                             <td style={{ padding: "12px 10px" }}>{p.allocatedTests} tests</td>
-                            <td style={{ padding: "12px 10px", fontWeight: "700", color: "#8B5CF6" }}>{p.usedTests} tests</td>
+                            <td style={{ padding: "12px 10px", fontWeight: "700", color: "var(--primary, #8B5CF6)" }}>{p.usedTests} tests</td>
                             <td style={{ padding: "12px 10px" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <div style={{ width: "80px", height: "6px", background: "var(--bg-page)", borderRadius: "3px", overflow: "hidden" }}>
-                                  <div style={{ width: `${Math.min(100, p.utilizationRate)}%`, height: "100%", background: "#8B5CF6", borderRadius: "3px" }} />
+                                  <div style={{ width: `${Math.min(100, p.utilizationRate)}%`, height: "100%", background: "var(--primary, #8B5CF6)", borderRadius: "3px" }} />
                                 </div>
                                 <span style={{ fontWeight: "700" }}>{p.utilizationRate}%</span>
                               </div>
@@ -1101,15 +1101,15 @@ export default function RevenueDashboard() {
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Provenance Notice */}
               <div style={{
-                background: "rgba(139, 92, 246, 0.08)",
-                border: "1px solid rgba(139, 92, 246, 0.25)",
+                background: "color-mix(in srgb, var(--primary, #8B5CF6) 8%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--primary, #8B5CF6) 25%, transparent)",
                 borderRadius: "12px",
                 padding: "14px 18px",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px"
               }}>
-                <ShieldCheck className="w-5 h-5 text-violet-500 flex-shrink-0" />
+                <ShieldCheck className="w-5 h-5 flex-shrink-0" style={{ color: "var(--primary, #8B5CF6)" }} />
                 <div style={{ fontSize: "12.5px", color: "var(--text-secondary)" }}>
                   <strong style={{ color: "var(--text-primary)" }}>Unified Financial Ledger Active: </strong>
                   Exam, Practice, Series, and Flashcard purchases are unified into the central transaction ledger. In accordance with financial audit integrity, verified collected revenue reflects confirmed monetary bank payments, while preserving legacy student entitlements without fabricating unrecorded past payments.
@@ -1121,7 +1121,7 @@ export default function RevenueDashboard() {
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">PAID MOCK EXAMS</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                    <div className="revenue-kpi-icon-box" style={{ background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)" }}>
                       <BookOpen className="w-4 h-4" />
                     </div>
                   </div>
@@ -1129,7 +1129,7 @@ export default function RevenueDashboard() {
                     {catalogData?.summary?.paidQuizzesCount || 0}
                   </div>
                   <div className="revenue-kpi-subtitle">{catalogData?.summary?.entitledQuizUsers || 0} entitled students</div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "var(--primary, #8B5CF6)" }} />
                 </div>
 
                 <div className="revenue-kpi-card">
@@ -1235,13 +1235,13 @@ export default function RevenueDashboard() {
                             label: "Legacy Access"
                           },
                           ledger_ready: {
-                            bg: "rgba(139, 92, 246, 0.12)",
-                            color: "#8B5CF6",
+                            bg: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                            color: "var(--primary, #8B5CF6)",
                             label: "Ledger Ready"
                           }
                         }[item.ledgerStatus] || {
-                          bg: "rgba(139, 92, 246, 0.12)",
-                          color: "#8B5CF6",
+                          bg: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                          color: "var(--primary, #8B5CF6)",
                           label: item.ledgerStatusLabel || "Ledger Ready"
                         };
 
@@ -1256,7 +1256,7 @@ export default function RevenueDashboard() {
                               )}
                             </td>
                             <td style={{ padding: "12px 10px", color: "var(--text-secondary)" }}>{item.subject || "General"}</td>
-                            <td style={{ padding: "12px 10px", fontWeight: "800", color: "#8B5CF6" }}>
+                            <td style={{ padding: "12px 10px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
                               {item.hasPlans ? `From ₹${formatCurrency(item.startingPrice || item.price)}` : `₹${formatCurrency(item.price || 0)}`}
                             </td>
                             <td style={{ padding: "12px 10px", fontWeight: "700", color: item.verifiedRevenue > 0 ? "#10B981" : "var(--text-secondary)" }}>
@@ -1437,8 +1437,8 @@ export default function RevenueDashboard() {
                               fontWeight: "700",
                               padding: "2px 6px",
                               borderRadius: "4px",
-                              background: "rgba(139, 92, 246, 0.12)",
-                              color: "#8B5CF6",
+                              background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                              color: "var(--primary, #8B5CF6)",
                               textTransform: "uppercase"
                             }}>
                               {t.productCategory.replace("_", " ")}
@@ -1449,8 +1449,8 @@ export default function RevenueDashboard() {
                             padding: "2px 6px",
                             borderRadius: "4px",
                             fontWeight: "600",
-                            background: t.paymentGateway === "admin_grant" ? "rgba(245, 158, 11, 0.12)" : "rgba(139, 92, 246, 0.12)",
-                            color: t.paymentGateway === "admin_grant" ? "#F59E0B" : "#8B5CF6"
+                            background: t.paymentGateway === "admin_grant" ? "rgba(245, 158, 11, 0.12)" : "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                            color: t.paymentGateway === "admin_grant" ? "#F59E0B" : "var(--primary, #8B5CF6)"
                           }}>
                             {t.paymentGateway === "admin_grant" ? "Admin Grant" : t.paymentGateway === "phonepe" ? "PhonePe Sandbox" : t.paymentGateway}
                           </span>
@@ -1458,7 +1458,7 @@ export default function RevenueDashboard() {
                       </div>
 
                       <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: "18px", fontWeight: "800", color: "#8B5CF6" }}>
+                        <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
                           ₹{t.amount}
                         </div>
                       </div>
@@ -1526,8 +1526,8 @@ export default function RevenueDashboard() {
                                   fontWeight: "700",
                                   padding: "1px 5px",
                                   borderRadius: "4px",
-                                  background: "rgba(139, 92, 246, 0.12)",
-                                  color: "#8B5CF6",
+                                  background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                                  color: "var(--primary, #8B5CF6)",
                                   textTransform: "uppercase"
                                 }}>
                                   {t.productCategory.replace("_", " ")}
@@ -1555,7 +1555,7 @@ export default function RevenueDashboard() {
                               )}
                             </div>
                           </td>
-                          <td style={{ padding: "12px 16px", fontWeight: "800", color: "#8B5CF6" }}>
+                          <td style={{ padding: "12px 16px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
                             ₹{t.amount}
                           </td>
                           <td style={{ padding: "12px 16px" }}>
@@ -1564,8 +1564,8 @@ export default function RevenueDashboard() {
                               padding: "3px 8px",
                               borderRadius: "6px",
                               fontWeight: "600",
-                              background: t.paymentGateway === "admin_grant" ? "rgba(245, 158, 11, 0.12)" : "rgba(139, 92, 246, 0.12)",
-                              color: t.paymentGateway === "admin_grant" ? "#F59E0B" : "#8B5CF6"
+                              background: t.paymentGateway === "admin_grant" ? "rgba(245, 158, 11, 0.12)" : "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                              color: t.paymentGateway === "admin_grant" ? "#F59E0B" : "var(--primary, #8B5CF6)"
                             }}>
                               {t.paymentGateway === "admin_grant" ? "Admin Grant" : t.paymentGateway === "phonepe" ? "PhonePe Sandbox" : t.paymentGateway}
                             </span>
@@ -1735,7 +1735,7 @@ export default function RevenueDashboard() {
                     <div className="revenue-mobile-card-main">
                       <div>
                         <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Active Plan: </span>
-                        <strong style={{ fontSize: "12px", color: c.activePlan ? "#8B5CF6" : "var(--text-primary)" }}>
+                        <strong style={{ fontSize: "12px", color: c.activePlan ? "var(--primary, #8B5CF6)" : "var(--text-primary)" }}>
                           {c.activePlan?.name || "None"}
                         </strong>
                         <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
@@ -1745,7 +1745,7 @@ export default function RevenueDashboard() {
 
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Recorded Spend</div>
-                        <div style={{ fontSize: "18px", fontWeight: "800", color: "#8B5CF6" }}>
+                        <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
                           ₹{c.totalSpent}
                         </div>
                       </div>
@@ -1756,9 +1756,9 @@ export default function RevenueDashboard() {
                       <button
                         onClick={() => setSelectedCustomer(c)}
                         style={{
-                          background: "rgba(139, 92, 246, 0.12)",
-                          color: "#8B5CF6",
-                          border: "1px solid rgba(139, 92, 246, 0.25)",
+                          background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                          color: "var(--primary, #8B5CF6)",
+                          border: "1px solid color-mix(in srgb, var(--primary, #8B5CF6) 25%, transparent)",
                           padding: "4px 10px",
                           borderRadius: "6px",
                           fontSize: "11px",
@@ -1813,7 +1813,7 @@ export default function RevenueDashboard() {
                           </td>
                           <td>
                             {c.activePlan ? (
-                              <span style={{ fontSize: "11px", padding: "3px 8px", borderRadius: "6px", background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6", fontWeight: "700" }}>
+                              <span style={{ fontSize: "11px", padding: "3px 8px", borderRadius: "6px", background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)", fontWeight: "700" }}>
                                 {c.activePlan.name}
                               </span>
                             ) : (
@@ -1826,7 +1826,7 @@ export default function RevenueDashboard() {
                           <td style={{ fontWeight: "600" }}>
                             {c.purchasedPracticeCount} practice
                           </td>
-                          <td style={{ fontWeight: "800", color: "#8B5CF6" }}>
+                          <td style={{ fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
                             ₹{c.totalSpent}
                           </td>
                           <td>
@@ -1840,9 +1840,9 @@ export default function RevenueDashboard() {
                             <button
                               onClick={() => setSelectedCustomer(c)}
                               style={{
-                                background: "rgba(139, 92, 246, 0.12)",
-                                color: "#8B5CF6",
-                                border: "1px solid rgba(139, 92, 246, 0.25)",
+                                background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
+                                color: "var(--primary, #8B5CF6)",
+                                border: "1px solid color-mix(in srgb, var(--primary, #8B5CF6) 25%, transparent)",
                                 padding: "4px 10px",
                                 borderRadius: "6px",
                                 fontSize: "11px",
@@ -1960,7 +1960,7 @@ export default function RevenueDashboard() {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       <div style={{ background: "var(--bg-page)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                         <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>RECORDED SPEND</span>
-                        <div style={{ fontSize: "18px", fontWeight: "800", color: "#8B5CF6", marginTop: "2px" }}>
+                        <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--primary, #8B5CF6)", marginTop: "2px" }}>
                           ₹{selectedCustomer.totalSpent}
                         </div>
                       </div>
@@ -1977,7 +1977,7 @@ export default function RevenueDashboard() {
                       <h4 style={{ margin: "4px 0", fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>Active Entitlements</h4>
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "var(--bg-page)", borderRadius: "8px", fontSize: "12.5px" }}>
                         <span>Current AI Plan</span>
-                        <strong style={{ color: "#8B5CF6" }}>{selectedCustomer.activePlan?.name || "None"}</strong>
+                        <strong style={{ color: "var(--primary, #8B5CF6)" }}>{selectedCustomer.activePlan?.name || "None"}</strong>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "var(--bg-page)", borderRadius: "8px", fontSize: "12.5px" }}>
                         <span>Entitled Mock Exams</span>
@@ -2054,8 +2054,8 @@ export default function RevenueDashboard() {
                       style={{
                         padding: "8px 12px",
                         borderRadius: "8px",
-                        background: "#8B5CF6",
-                        color: "#FFFFFF",
+                        background: "var(--primary)",
+                        color: "var(--primary-foreground, #FFFFFF)",
                         border: "none",
                         fontWeight: "700",
                         fontSize: "12px",

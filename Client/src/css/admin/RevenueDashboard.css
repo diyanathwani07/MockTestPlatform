@@ -81,7 +81,7 @@
 }
 
 .revenue-date-picker-wrap:focus-within {
-  border-color: #8B5CF6;
+  border-color: var(--primary);
 }
 
 .revenue-preset-select {
@@ -119,12 +119,12 @@
 }
 
 .revenue-date-input:focus {
-  border-color: #8B5CF6;
+  border-color: var(--primary);
 }
 
 .revenue-apply-btn {
-  background: #8B5CF6;
-  color: #FFFFFF;
+  background: var(--primary);
+  color: var(--primary-foreground, #FFFFFF);
   border: none;
   padding: 5px 12px;
   border-radius: 8px;
@@ -135,7 +135,8 @@
 }
 
 .revenue-apply-btn:hover {
-  background: #7C3AED;
+  background: var(--primary-dark, var(--primary));
+  opacity: 0.95;
   transform: translateY(-1px);
 }
 
@@ -159,9 +160,9 @@
 }
 
 .revenue-refresh-btn:hover {
-  background: rgba(139, 92, 246, 0.08);
-  border-color: rgba(139, 92, 246, 0.4);
-  color: #8B5CF6;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  color: var(--primary);
 }
 
 /* ==========================================================================
@@ -219,13 +220,13 @@ body:not(.dark-mode) .revenue-nav-tab:not(.active) svg,
 }
 
 body:not(.dark-mode) .revenue-nav-tab:hover:not(.active) {
-  color: #0F172A !important;
-  background: rgba(124, 58, 237, 0.08) !important;
+  color: var(--text-primary) !important;
+  background: color-mix(in srgb, var(--primary) 8%, transparent) !important;
 }
 
 body:not(.dark-mode) .revenue-nav-tab:hover:not(.active) svg {
-  color: #7C3AED !important;
-  stroke: #7C3AED !important;
+  color: var(--primary) !important;
+  stroke: var(--primary) !important;
 }
 
 /* Inactive Tab in Dark Mode */
@@ -253,22 +254,22 @@ html.dark .revenue-nav-tab:hover:not(.active) {
 body.dark-mode .revenue-nav-tab:hover:not(.active) svg,
 .dark .revenue-nav-tab:hover:not(.active) svg,
 html.dark .revenue-nav-tab:hover:not(.active) svg {
-  color: #A78BFA !important;
-  stroke: #A78BFA !important;
+  color: var(--primary) !important;
+  stroke: var(--primary) !important;
 }
 
-/* ACTIVE TAB: Solid Vivid Purple Pill with Pure White Text (Both Dark & Light Mode) */
+/* ACTIVE TAB: Solid Vivid Primary Pill with Pure White Text (Both Dark & Light Mode) */
 .revenue-nav-tab.active {
-  background: #7C3AED !important;
-  color: #FFFFFF !important;
-  border-color: #7C3AED !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground, #FFFFFF) !important;
+  border-color: var(--primary) !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 35%, transparent) !important;
 }
 
 .revenue-nav-tab.active svg {
-  color: #FFFFFF !important;
-  stroke: #FFFFFF !important;
+  color: var(--primary-foreground, #FFFFFF) !important;
+  stroke: var(--primary-foreground, #FFFFFF) !important;
 }
 
 /* Catalog Sub-tabs (Quizzes, Practice, Series, Flashcards) */
@@ -297,17 +298,17 @@ body.dark-mode .revenue-catalog-tab:not(.active),
 }
 
 .revenue-catalog-tab.active {
-  background: #7C3AED !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35) !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground, #FFFFFF) !important;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--primary) 35%, transparent) !important;
 }
 
 /* ==========================================================================
    3. PROVENANCE & SANDBOX VERIFICATION BANNER
    ========================================================================== */
 .revenue-provenance-banner {
-  background: rgba(139, 92, 246, 0.06);
-  border: 1px solid rgba(139, 92, 246, 0.22);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
   border-radius: 14px;
   padding: 14px 18px;
   display: flex;
@@ -326,8 +327,8 @@ body.dark-mode .revenue-catalog-tab:not(.active),
 }
 
 .revenue-provenance-icon {
-  background: rgba(139, 92, 246, 0.15);
-  color: #8B5CF6;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
   padding: 8px;
   border-radius: 10px;
   display: flex;
@@ -373,9 +374,9 @@ body.dark-mode .revenue-catalog-tab:not(.active),
 }
 
 .revenue-provenance-chip.simulated {
-  background: rgba(139, 92, 246, 0.12);
-  color: #8B5CF6;
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 .revenue-provenance-chip.admin-grants {
@@ -419,7 +420,7 @@ body.dark-mode .revenue-catalog-tab:not(.active),
 
 .revenue-kpi-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(139, 92, 246, 0.35);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
@@ -581,10 +582,10 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 
 /* Active Segment (both Light and Dark Mode) */
 .revenue-timeframe-btn.active {
-  background: #7C3AED !important;
-  color: #FFFFFF !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground, #FFFFFF) !important;
   font-weight: 700 !important;
-  box-shadow: 0 1px 4px rgba(124, 58, 237, 0.35) !important;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--primary) 35%, transparent) !important;
 }
 
 /* Plan Distribution List */
@@ -602,7 +603,7 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-plan-list::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.25);
+  background: color-mix(in srgb, var(--primary) 25%, transparent);
   border-radius: 4px;
 }
 
@@ -629,7 +630,7 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 
 .revenue-plan-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%);
+  background: var(--primary);
   border-radius: 3px;
   transition: width 0.5s ease;
 }
@@ -654,7 +655,7 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-cat-item:hover {
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
   transform: translateX(2px);
 }
 
@@ -685,7 +686,7 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-search-box:focus-within {
-  border-color: #8B5CF6;
+  border-color: var(--primary);
 }
 
 .revenue-search-input {
@@ -719,15 +720,15 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-select-input:focus {
-  border-color: #8B5CF6;
+  border-color: var(--primary);
 }
 
 .revenue-export-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #8B5CF6;
-  color: #FFFFFF;
+  background: var(--primary);
+  color: var(--primary-foreground, #FFFFFF);
   border: none;
   padding: 7px 14px;
   border-radius: 8px;
@@ -740,7 +741,8 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-export-btn:hover {
-  background: #7C3AED;
+  background: var(--primary-dark, var(--primary));
+  opacity: 0.95;
   transform: translateY(-1px);
 }
 
@@ -770,8 +772,8 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-view-toggle-btn.active {
-  background: rgba(139, 92, 246, 0.15);
-  color: #8B5CF6;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
   font-weight: 700;
 }
 
@@ -811,7 +813,7 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-table tr:hover td {
-  background: rgba(139, 92, 246, 0.025);
+  background: color-mix(in srgb, var(--primary) 3%, transparent);
 }
 
 /* Mobile Transaction & Customer Cards */
@@ -835,7 +837,7 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-mobile-card:active {
-  border-color: #8B5CF6;
+  border-color: var(--primary);
 }
 
 .revenue-mobile-card-top {
@@ -930,7 +932,7 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
 }
 
 .revenue-report-card:hover {
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
   transform: translateY(-2px);
 }
 
