@@ -479,7 +479,7 @@ body.dark-mode .revenue-catalog-tab:not(.active),
   display: grid;
   grid-template-columns: 1.3fr 0.9fr;
   gap: 20px;
-  align-items: stretch;
+  align-items: start;
   width: 100%;
 }
 
@@ -487,7 +487,7 @@ body.dark-mode .revenue-catalog-tab:not(.active),
   display: grid;
   grid-template-columns: 0.9fr 1.3fr;
   gap: 20px;
-  align-items: stretch;
+  align-items: start;
   width: 100%;
 }
 
@@ -495,11 +495,12 @@ body.dark-mode .revenue-catalog-tab:not(.active),
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  padding: 20px 22px;
+  padding: 18px 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 14px;
   box-sizing: border-box;
 }
 
@@ -507,7 +508,7 @@ body.dark-mode .revenue-catalog-tab:not(.active),
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 14px;
+  margin-bottom: 4px;
   gap: 12px;
 }
 
@@ -524,40 +525,92 @@ body.dark-mode .revenue-catalog-tab:not(.active),
   margin: 0;
 }
 
+/* Monthly / Yearly Segmented Control Switch */
 .revenue-timeframe-switch {
   display: inline-flex;
   align-items: center;
-  background: var(--bg-page);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 2px;
-  gap: 2px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+  box-sizing: border-box;
+}
+
+body:not(.dark-mode) .revenue-timeframe-switch {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
 }
 
 .revenue-timeframe-btn {
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 7px !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  white-space: nowrap !important;
+  line-height: 1.3 !important;
+  user-select: none !important;
 }
 
+/* Inactive button in Light Mode */
+body:not(.dark-mode) .revenue-timeframe-btn:not(.active),
+:root:not(.dark) .revenue-timeframe-btn:not(.active) {
+  color: #334155 !important; /* Sharp Slate-700 */
+}
+
+body:not(.dark-mode) .revenue-timeframe-btn:hover:not(.active) {
+  color: #0F172A !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Inactive button in Dark Mode */
+body.dark-mode .revenue-timeframe-btn:not(.active),
+.dark .revenue-timeframe-btn:not(.active) {
+  color: #CBD5E1 !important; /* Crisp Slate-300 */
+}
+
+body.dark-mode .revenue-timeframe-btn:hover:not(.active),
+.dark .revenue-timeframe-btn:hover:not(.active) {
+  color: #FFFFFF !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Active Segment (both Light and Dark Mode) */
 .revenue-timeframe-btn.active {
-  background: #8B5CF6;
-  color: #FFFFFF;
+  background: #7C3AED !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 4px rgba(124, 58, 237, 0.35) !important;
 }
 
 /* Plan Distribution List */
+.revenue-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.revenue-plan-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.revenue-plan-list::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.25);
+  border-radius: 4px;
+}
+
 .revenue-plan-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
 .revenue-plan-row-top {

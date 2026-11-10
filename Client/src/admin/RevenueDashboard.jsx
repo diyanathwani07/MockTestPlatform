@@ -628,7 +628,7 @@ export default function RevenueDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ height: "260px", width: "100%" }}>
+                  <div style={{ height: "230px", width: "100%" }}>
                     {loading ? (
                       <Skeleton className="w-full h-full rounded-xl" />
                     ) : (analyticsData?.revenueOverTime?.length || 0) > 0 ? (
@@ -647,7 +647,7 @@ export default function RevenueDashboard() {
                             contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "8px", fontSize: "12px" }}
                             formatter={(val) => [`₹${val}`, "Revenue"]}
                           />
-                          <Area type="monotone" dataKey="revenue" stroke="#8B5CF6" strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)" />
+                          <Area type="monotone" dataKey="revenue" stroke="#8B5CF6" strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)" dot={{ r: 4, fill: "#8B5CF6" }} />
                         </AreaChart>
                       </ResponsiveContainer>
                     ) : (
@@ -676,7 +676,9 @@ export default function RevenueDashboard() {
                             {cat.category}
                           </div>
                           <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                            {cat.hasHistoricalLedger ? `${cat.transactionsCount} subscriptions recorded` : cat.statusText}
+                            {cat.hasHistoricalLedger
+                              ? `${cat.transactionsCount} transaction${cat.transactionsCount === 1 ? '' : 's'} recorded`
+                              : "Live ledger ready • No legacy payments"}
                           </div>
                         </div>
 
@@ -689,10 +691,10 @@ export default function RevenueDashboard() {
                             padding: "2px 8px",
                             borderRadius: "12px",
                             fontWeight: "600",
-                            background: cat.hasHistoricalLedger ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
-                            color: cat.hasHistoricalLedger ? "#10B981" : "#F59E0B"
+                            background: cat.hasHistoricalLedger ? "rgba(16, 185, 129, 0.12)" : "rgba(139, 92, 246, 0.12)",
+                            color: cat.hasHistoricalLedger ? "#10B981" : "#8B5CF6"
                           }}>
-                            {cat.hasHistoricalLedger ? "Ledger Active" : "Phase 3 Ledger"}
+                            {cat.hasHistoricalLedger ? "Ledger Active" : "Ledger Ready"}
                           </span>
                         </div>
                       </div>
@@ -712,15 +714,16 @@ export default function RevenueDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div className="revenue-plan-list">
                     {(analyticsData?.revenueByPlan || []).map((plan) => {
                       const planRev = plan.revenue ?? plan.totalRevenue ?? 0;
                       const totalRev = kpis.totalRevenue || 1;
                       const pct = Math.round((planRev / totalRev) * 100);
+                      const displayName = (plan.planName || "AI Plan").replace(/\s*\d{10,}$/, "");
                       return (
                         <div key={plan.planId || plan.planName} className="revenue-plan-item">
                           <div className="revenue-plan-row-top">
-                            <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName}</span>
+                            <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{displayName}</span>
                             <span style={{ fontWeight: "800", color: "#8B5CF6" }}>₹{formatCurrency(planRev)} ({pct}%)</span>
                           </div>
                           <div className="revenue-plan-track">
@@ -1060,18 +1063,18 @@ export default function RevenueDashboard() {
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Provenance Notice */}
               <div style={{
-                background: "rgba(245, 158, 11, 0.08)",
-                border: "1px solid rgba(245, 158, 11, 0.25)",
+                background: "rgba(139, 92, 246, 0.08)",
+                border: "1px solid rgba(139, 92, 246, 0.25)",
                 borderRadius: "12px",
                 padding: "14px 18px",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px"
               }}>
-                <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                <ShieldCheck className="w-5 h-5 text-violet-500 flex-shrink-0" />
                 <div style={{ fontSize: "12.5px", color: "var(--text-secondary)" }}>
-                  <strong style={{ color: "var(--text-primary)" }}>Transaction Provenance Status: </strong>
-                  Exam, Practice, Series, and Flashcard purchases currently grant active student entitlements directly. Separate monetary order transaction ledgers will be unified in Phase 3. Verified collected revenue displays ₹0 (Historical ledger unavailable).
+                  <strong style={{ color: "var(--text-primary)" }}>Unified Financial Ledger Active: </strong>
+                  Exam, Practice, Series, and Flashcard purchases are unified into the central transaction ledger. In accordance with financial audit integrity, verified collected revenue reflects confirmed monetary bank payments, while preserving legacy student entitlements without fabricating unrecorded past payments.
                 </div>
               </div>
 
@@ -1188,8 +1191,8 @@ export default function RevenueDashboard() {
                           <td style={{ padding: "12px 10px", fontWeight: "800", color: "#8B5CF6" }}>₹{item.price || 0}</td>
                           <td style={{ padding: "12px 10px", color: "var(--text-secondary)" }}>₹0</td>
                           <td style={{ padding: "12px 10px" }}>
-                            <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "10px", background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B", fontWeight: "600" }}>
-                              Historical ledger pending
+                            <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "10px", background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6", fontWeight: "600" }}>
+                              Ledger Ready
                             </span>
                           </td>
                         </tr>
