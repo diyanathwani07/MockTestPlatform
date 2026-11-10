@@ -171,9 +171,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding: 4px;
+  background: var(--bg-card, #FFFFFF);
+  border: 1.5px solid var(--border-color, #E2E8F0);
+  padding: 5px;
   border-radius: 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -186,34 +186,120 @@
   display: none;
 }
 
+/* Base Tab Button */
 .revenue-nav-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 9px;
-  border: 1.5px solid transparent;
-  background: transparent;
-  color: var(--text-secondary);
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  user-select: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 16px !important;
+  border-radius: 9px !important;
+  border: 1.5px solid transparent !important;
+  background: transparent !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  white-space: nowrap !important;
+  user-select: none !important;
+  text-decoration: none !important;
 }
 
-.revenue-nav-tab:hover:not(.active) {
-  color: var(--text-primary);
-  background: rgba(139, 92, 246, 0.06);
+/* Inactive Tab in Light Mode */
+body:not(.dark-mode) .revenue-nav-tab:not(.active),
+:root:not(.dark) .revenue-nav-tab:not(.active) {
+  color: #334155 !important; /* Sharp Slate-700 — 100% visible on light cream/white card */
+  background: transparent !important;
 }
 
+body:not(.dark-mode) .revenue-nav-tab:not(.active) svg,
+:root:not(.dark) .revenue-nav-tab:not(.active) svg {
+  color: #475569 !important;
+  stroke: #475569 !important;
+}
+
+body:not(.dark-mode) .revenue-nav-tab:hover:not(.active) {
+  color: #0F172A !important;
+  background: rgba(124, 58, 237, 0.08) !important;
+}
+
+body:not(.dark-mode) .revenue-nav-tab:hover:not(.active) svg {
+  color: #7C3AED !important;
+  stroke: #7C3AED !important;
+}
+
+/* Inactive Tab in Dark Mode */
+body.dark-mode .revenue-nav-tab:not(.active),
+.dark .revenue-nav-tab:not(.active),
+html.dark .revenue-nav-tab:not(.active) {
+  color: #CBD5E1 !important; /* Crisp Slate-300 — high contrast against dark card */
+  background: transparent !important;
+}
+
+body.dark-mode .revenue-nav-tab:not(.active) svg,
+.dark .revenue-nav-tab:not(.active) svg,
+html.dark .revenue-nav-tab:not(.active) svg {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
+}
+
+body.dark-mode .revenue-nav-tab:hover:not(.active),
+.dark .revenue-nav-tab:hover:not(.active),
+html.dark .revenue-nav-tab:hover:not(.active) {
+  color: #FFFFFF !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .revenue-nav-tab:hover:not(.active) svg,
+.dark .revenue-nav-tab:hover:not(.active) svg,
+html.dark .revenue-nav-tab:hover:not(.active) svg {
+  color: #A78BFA !important;
+  stroke: #A78BFA !important;
+}
+
+/* ACTIVE TAB: Solid Vivid Purple Pill with Pure White Text (Both Dark & Light Mode) */
 .revenue-nav-tab.active {
-  background: rgba(139, 92, 246, 0.12);
-  color: #8B5CF6;
-  border-color: rgba(139, 92, 246, 0.35);
-  font-weight: 700;
-  box-shadow: 0 1px 4px rgba(139, 92, 246, 0.1);
+  background: #7C3AED !important;
+  color: #FFFFFF !important;
+  border-color: #7C3AED !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4) !important;
+}
+
+.revenue-nav-tab.active svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Catalog Sub-tabs (Quizzes, Practice, Series, Flashcards) */
+.revenue-catalog-tab {
+  padding: 6px 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+body:not(.dark-mode) .revenue-catalog-tab:not(.active) {
+  background: transparent !important;
+  color: #334155 !important;
+}
+
+body.dark-mode .revenue-catalog-tab:not(.active),
+.dark .revenue-catalog-tab:not(.active) {
+  background: transparent !important;
+  color: #CBD5E1 !important;
+}
+
+.revenue-catalog-tab.active {
+  background: #7C3AED !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35) !important;
 }
 
 /* ==========================================================================

@@ -1142,17 +1142,8 @@ export default function RevenueDashboard() {
                       <button
                         key={tab}
                         onClick={() => setCatalogTab(tab)}
-                        style={{
-                          padding: "6px 14px",
-                          borderRadius: "8px",
-                          border: "none",
-                          background: catalogTab === tab ? "#8B5CF6" : "transparent",
-                          color: catalogTab === tab ? "#FFFFFF" : "var(--text-secondary)",
-                          fontWeight: catalogTab === tab ? "700" : "500",
-                          fontSize: "12px",
-                          cursor: "pointer",
-                          textTransform: "capitalize"
-                        }}
+                        className={`revenue-catalog-tab ${catalogTab === tab ? "active" : ""}`}
+                        style={{ textTransform: "capitalize" }}
                       >
                         {tab === "quizzes" ? "Mock Exams" : tab === "practice" ? "Practice" : tab === "series" ? "Exam Series" : "Flashcards"}
                       </button>
