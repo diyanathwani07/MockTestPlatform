@@ -687,6 +687,11 @@ export default function RevenueDashboard() {
                           <div style={{ fontSize: "13.5px", fontWeight: "800", color: cat.hasHistoricalLedger ? "#8B5CF6" : "var(--text-secondary)" }}>
                             {cat.hasHistoricalLedger ? `₹${formatCurrency(cat.revenue)}` : "Data unavailable"}
                           </div>
+                          {cat.hasHistoricalLedger && cat.simulatedRevenue > 0 && Number(cat.revenue || 0) === 0 && (
+                            <div style={{ fontSize: "10.5px", color: "var(--text-secondary)", opacity: 0.8, marginTop: "1px" }}>
+                              (Sandbox: ₹{formatCurrency(cat.simulatedRevenue)})
+                            </div>
+                          )}
                           <span style={{
                             fontSize: "10px",
                             padding: "2px 8px",

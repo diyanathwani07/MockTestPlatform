@@ -12,6 +12,7 @@ const Quiz = require("../models/Quiz");
 const PracticeQuiz = require("../models/PracticeQuiz");
 const ExamSeries = require("../models/ExamSeries");
 const FlashcardSet = require("../models/FlashcardSet");
+const PurchaseTransaction = require("../models/PurchaseTransaction");
 const requirePermission = require("../middleware/permissionMiddleware");
 const revenueController = require("../controllers/revenueController");
 
@@ -471,6 +472,12 @@ async function runRevenueDashboardSuite() {
     }
     if (createdSubIds.length > 0) {
       await Subscription.deleteMany({ _id: { $in: createdSubIds } });
+      await PurchaseTransaction.deleteMany({
+        $or: [
+          { subscriptionId: { $in: createdSubIds } },
+          { orderId: { $regex: new RegExp(testSuffix) } }
+        ]
+      });
     }
     await mongoose.disconnect();
     console.log("Disconnected from MongoDB.\n");

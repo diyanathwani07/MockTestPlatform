@@ -638,6 +638,13 @@ async function runUnifiedLedgerSuite() {
     if (createdSeriesIds.length > 0) await ExamSeries.deleteMany({ _id: { $in: createdSeriesIds } });
     if (createdFlashcardIds.length > 0) await FlashcardSet.deleteMany({ _id: { $in: createdFlashcardIds } });
     if (createdTxnIds.length > 0) await PurchaseTransaction.deleteMany({ _id: { $in: createdTxnIds } });
+    await PurchaseTransaction.deleteMany({
+      $or: [
+        { transactionId: { $regex: new RegExp(testSuffix) } },
+        { orderId: { $regex: new RegExp(testSuffix) } },
+        { gatewayTxnId: { $regex: new RegExp(testSuffix) } }
+      ]
+    });
 
     await mongoose.disconnect();
     console.log("Disconnected from MongoDB.\n");

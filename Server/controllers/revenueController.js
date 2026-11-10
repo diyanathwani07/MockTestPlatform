@@ -140,7 +140,8 @@ const getRevenueAnalytics = async (req, res) => {
                   $and: [
                     { $eq: ["$status", "paid"] },
                     { $gte: ["$createdAt", startOfToday] },
-                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
+                    { $eq: ["$provenance", "verified_payment"] },
+                    { $eq: ["$paymentVerificationStatus", "verified"] }
                   ]
                 },
                 "$amount",
@@ -155,7 +156,8 @@ const getRevenueAnalytics = async (req, res) => {
                   $and: [
                     { $eq: ["$status", "paid"] },
                     { $gte: ["$createdAt", startOfMonth] },
-                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
+                    { $eq: ["$provenance", "verified_payment"] },
+                    { $eq: ["$paymentVerificationStatus", "verified"] }
                   ]
                 },
                 "$amount",
@@ -169,7 +171,8 @@ const getRevenueAnalytics = async (req, res) => {
                 {
                   $and: [
                     { $eq: ["$status", "paid"] },
-                    { $in: ["$provenance", ["verified_payment", "dev_simulation"]] }
+                    { $eq: ["$provenance", "verified_payment"] },
+                    { $eq: ["$paymentVerificationStatus", "verified"] }
                   ]
                 },
                 "$studentId",
@@ -240,7 +243,12 @@ const getRevenueAnalytics = async (req, res) => {
       {
         $group: {
           _id: { $dateToString: { format: dateFormat, date: "$createdAt" } },
-          revenue: { $sum: "$amount" },
+          revenue: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "verified_payment"] }, "$amount", 0]
+            }
+          },
+          totalVolume: { $sum: "$amount" },
           verifiedRevenue: {
             $sum: {
               $cond: [{ $eq: ["$provenance", "verified_payment"] }, "$amount", 0]
@@ -352,7 +360,8 @@ const getRevenueAnalytics = async (req, res) => {
       {
         category: "AI Plans & Subscriptions",
         productCategory: "ai_plan",
-        revenue: aiPlanStats.totalVolume || 0,
+        revenue: aiPlanStats.verifiedRevenue || 0,
+        totalVolume: aiPlanStats.totalVolume || 0,
         verifiedRevenue: aiPlanStats.verifiedRevenue || 0,
         simulatedRevenue: aiPlanStats.simulatedRevenue || 0,
         adminGrantsAmount: aiPlanStats.adminGrantsAmount || 0,
@@ -363,7 +372,8 @@ const getRevenueAnalytics = async (req, res) => {
       {
         category: "Mock Exams",
         productCategory: "exam",
-        revenue: examStats.totalVolume || 0,
+        revenue: examStats.verifiedRevenue || 0,
+        totalVolume: examStats.totalVolume || 0,
         verifiedRevenue: examStats.verifiedRevenue || 0,
         simulatedRevenue: examStats.simulatedRevenue || 0,
         adminGrantsAmount: examStats.adminGrantsAmount || 0,
@@ -378,7 +388,8 @@ const getRevenueAnalytics = async (req, res) => {
       {
         category: "Practice Modules",
         productCategory: "practice",
-        revenue: practiceStats.totalVolume || 0,
+        revenue: practiceStats.verifiedRevenue || 0,
+        totalVolume: practiceStats.totalVolume || 0,
         verifiedRevenue: practiceStats.verifiedRevenue || 0,
         simulatedRevenue: practiceStats.simulatedRevenue || 0,
         adminGrantsAmount: practiceStats.adminGrantsAmount || 0,
@@ -393,7 +404,8 @@ const getRevenueAnalytics = async (req, res) => {
       {
         category: "Exam Series",
         productCategory: "exam_series",
-        revenue: seriesStats.totalVolume || 0,
+        revenue: seriesStats.verifiedRevenue || 0,
+        totalVolume: seriesStats.totalVolume || 0,
         verifiedRevenue: seriesStats.verifiedRevenue || 0,
         simulatedRevenue: seriesStats.simulatedRevenue || 0,
         adminGrantsAmount: seriesStats.adminGrantsAmount || 0,
@@ -408,7 +420,8 @@ const getRevenueAnalytics = async (req, res) => {
       {
         category: "Flashcards",
         productCategory: "flashcard",
-        revenue: flashcardStats.totalVolume || 0,
+        revenue: flashcardStats.verifiedRevenue || 0,
+        totalVolume: flashcardStats.totalVolume || 0,
         verifiedRevenue: flashcardStats.verifiedRevenue || 0,
         simulatedRevenue: flashcardStats.simulatedRevenue || 0,
         adminGrantsAmount: flashcardStats.adminGrantsAmount || 0,
@@ -437,7 +450,25 @@ const getRevenueAnalytics = async (req, res) => {
             $ifNull: ["$itemTitleSnapshot", "$itemId"]
           },
           planId: { $first: "$itemId" },
-          revenue: { $sum: "$amount" },
+          revenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$provenance", "verified_payment"] },
+                    { $eq: ["$paymentVerificationStatus", "verified"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          simulatedRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$provenance", "dev_simulation"] }, "$amount", 0]
+            }
+          },
           subscribersCount: { $sum: 1 }
         }
       }
@@ -455,11 +486,13 @@ const getRevenueAnalytics = async (req, res) => {
           planId: item.planId || cleanName,
           planName: cleanName,
           revenue: 0,
+          simulatedRevenue: 0,
           subscribersCount: 0
         });
       }
       const existing = planMap.get(cleanName);
       existing.revenue += (item.revenue || 0);
+      existing.simulatedRevenue += (item.simulatedRevenue || 0);
       existing.subscribersCount += (item.subscribersCount || 0);
     }
 
