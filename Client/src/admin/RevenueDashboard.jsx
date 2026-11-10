@@ -33,7 +33,9 @@ import {
   HelpCircle,
   Zap,
   BarChart3,
-  Bot
+  Bot,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -138,6 +140,7 @@ export default function RevenueDashboard() {
   const [txStatus, setTxStatus] = useState("all");
   const [txPage, setTxPage] = useState(1);
   const [txPagination, setTxPagination] = useState({ total: 0, totalPages: 1, limit: 15 });
+  const [txViewMode, setTxViewMode] = useState("auto"); // "auto" | "cards" | "table"
 
   // Customers Tab State
   const [customersLoading, setCustomersLoading] = useState(false);
@@ -146,6 +149,7 @@ export default function RevenueDashboard() {
   const [custStatus, setCustStatus] = useState("all");
   const [custPage, setCustPage] = useState(1);
   const [custPagination, setCustPagination] = useState({ total: 0, totalPages: 1, limit: 15 });
+  const [custViewMode, setCustViewMode] = useState("auto"); // "auto" | "cards" | "table"
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   // Exams & Practice Tab State
@@ -368,7 +372,7 @@ export default function RevenueDashboard() {
           {/* ================= 1. DASHBOARD HEADER & FILTER BAR ================= */}
           <div className="revenue-page-header">
             <div className="revenue-title-area">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div className="revenue-title-row">
                 <h1 className="revenue-page-title">Revenue Management</h1>
                 <Badge variant="outline" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6", borderColor: "rgba(139, 92, 246, 0.3)", fontSize: "11px", fontWeight: "700" }}>
                   <ShieldCheck className="w-3.5 h-3.5 mr-1" /> RBAC Enforced
@@ -380,24 +384,16 @@ export default function RevenueDashboard() {
             </div>
 
             {/* Header Right Actions: Date Preset Selector & Refresh Button */}
-            <div className="revenue-header-actions" style={{ flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "var(--bg-card)", border: "1px solid var(--border-color)", padding: "4px 8px", borderRadius: "10px" }}>
-                <Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
+            <div className="revenue-header-actions">
+              <div className="revenue-date-picker-wrap">
+                <Calendar className="w-3.5 h-3.5 text-violet-400" />
                 <select
                   value={datePreset}
                   onChange={(e) => setDatePreset(e.target.value)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "var(--text-primary)",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    outline: "none"
-                  }}
+                  className="revenue-preset-select"
                 >
                   {DATE_PRESETS.map((p) => (
-                    <option key={p.key} value={p.key} style={{ background: "var(--bg-page)", color: "var(--text-primary)" }}>
+                    <option key={p.key} value={p.key}>
                       {p.label}
                     </option>
                   ))}
@@ -405,23 +401,23 @@ export default function RevenueDashboard() {
               </div>
 
               {datePreset === "custom" && (
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div className="revenue-custom-dates-bar">
                   <input
                     type="date"
                     value={customFrom}
                     onChange={(e) => setCustomFrom(e.target.value)}
-                    style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "4px 8px", borderRadius: "8px", fontSize: "12px" }}
+                    className="revenue-date-input"
                   />
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>to</span>
                   <input
                     type="date"
                     value={customTo}
                     onChange={(e) => setCustomTo(e.target.value)}
-                    style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "4px 8px", borderRadius: "8px", fontSize: "12px" }}
+                    className="revenue-date-input"
                   />
                   <button
                     onClick={fetchAnalytics}
-                    style={{ background: "#8B5CF6", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "8px", fontSize: "12px", fontWeight: "700", cursor: "pointer" }}
+                    className="revenue-apply-btn"
                   >
                     Apply
                   </button>
@@ -446,15 +442,7 @@ export default function RevenueDashboard() {
           </div>
 
           {/* ================= 2. PRIMARY NAVIGATION TABS (6 SECTIONS) ================= */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            borderBottom: "1px solid var(--border-color)",
-            paddingBottom: "12px",
-            overflowX: "auto",
-            scrollbarWidth: "none"
-          }}>
+          <div className="revenue-nav-tabs-bar">
             {[
               { key: "overview", label: "Overview", icon: TrendingUp },
               { key: "ai-plans", label: "AI Plans", icon: Sparkles },
@@ -468,21 +456,7 @@ export default function RevenueDashboard() {
                 <button
                   key={key}
                   onClick={() => handleTabChange(key)}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "8px 16px",
-                    borderRadius: "10px",
-                    border: isActive ? "1.5px solid #8B5CF6" : "1px solid transparent",
-                    background: isActive ? "rgba(139, 92, 246, 0.12)" : "transparent",
-                    color: isActive ? "#8B5CF6" : "var(--text-secondary)",
-                    fontWeight: isActive ? "700" : "500",
-                    fontSize: "13.5px",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                    whiteSpace: "nowrap"
-                  }}
+                  className={`revenue-nav-tab ${isActive ? "active" : ""}`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{label}</span>
@@ -493,165 +467,147 @@ export default function RevenueDashboard() {
 
           {/* ================= 3. TAB 1: OVERVIEW ================= */}
           {activeTab === "overview" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               
               {/* Financial Integrity & Provenance Alert Banner */}
-              <div style={{
-                background: "rgba(139, 92, 246, 0.08)",
-                border: "1px solid rgba(139, 92, 246, 0.25)",
-                borderRadius: "12px",
-                padding: "14px 18px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "16px",
-                flexWrap: "wrap"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{ background: "rgba(139, 92, 246, 0.18)", color: "#8B5CF6", padding: "8px", borderRadius: "8px" }}>
+              <div className="revenue-provenance-banner">
+                <div className="revenue-provenance-left">
+                  <div className="revenue-provenance-icon">
                     <Info className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
+                    <h4 className="revenue-provenance-title">
                       Financial Provenance & Verification Notice
                     </h4>
-                    <p style={{ margin: 0, fontSize: "12.5px", color: "var(--text-secondary)" }}>
+                    <p className="revenue-provenance-desc">
                       PrepMark is operating in Sandbox Simulation mode. Verified customer revenue reflects ₹0 until production bank gateway activation.
                     </p>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.12)", color: "#10B981", fontWeight: "700" }}>
-                    Verified Bank Revenue: ₹{formatCurrency(kpis.verifiedRevenue)}
+                <div className="revenue-provenance-chips">
+                  <span className="revenue-provenance-chip verified">
+                    Verified Bank: ₹{formatCurrency(kpis.verifiedRevenue)}
                   </span>
-                  <span style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "6px", background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6", fontWeight: "700" }}>
+                  <span className="revenue-provenance-chip simulated">
                     Simulated Sandbox: ₹{formatCurrency(kpis.simulatedRevenue)}
                   </span>
-                  <span style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "6px", background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B", fontWeight: "700" }}>
+                  <span className="revenue-provenance-chip admin-grants">
                     Admin Grants: ₹{formatCurrency(kpis.adminGrantsAmount)}
                   </span>
                 </div>
               </div>
 
               {/* 6 Headline KPI Cards */}
-              <div className="revenue-kpi-grid" style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "16px"
-              }}>
+              <div className="revenue-kpi-grid">
                 {/* 1. Total Verified Revenue */}
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <div className="sub-kpi-top">
-                    <span className="sub-kpi-label">TOTAL VERIFIED REVENUE</span>
-                    <div className="sub-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">TOTAL VERIFIED REVENUE</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-value">
                     ₹{formatCurrency(kpis.verifiedRevenue)}
                   </div>
-                  <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                  <div className="revenue-kpi-subtitle">
                     Simulated Sandbox: <strong style={{ color: "#8B5CF6" }}>₹{formatCurrency(kpis.simulatedRevenue)}</strong>
                   </div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#10B981" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
                 </div>
 
                 {/* 2. Revenue Today */}
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <div className="sub-kpi-top">
-                    <span className="sub-kpi-label">REVENUE TODAY</span>
-                    <div className="sub-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">REVENUE TODAY</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
                       <Clock className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-value">
                     ₹{formatCurrency(kpis.todayRevenue)}
                   </div>
-                  <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                  <div className="revenue-kpi-subtitle">
                     Since 12:00 AM today
                   </div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
                 </div>
 
                 {/* 3. Revenue This Month */}
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <div className="sub-kpi-top">
-                    <span className="sub-kpi-label">REVENUE THIS MONTH</span>
-                    <div className="sub-kpi-icon-box" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">REVENUE THIS MONTH</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
                       <Calendar className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-value">
                     ₹{formatCurrency(kpis.thisMonthRevenue)}
                   </div>
-                  <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                  <div className="revenue-kpi-subtitle">
                     Active calendar month
                   </div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#3B82F6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#3B82F6" }} />
                 </div>
 
                 {/* 4. Successful Transactions */}
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <div className="sub-kpi-top">
-                    <span className="sub-kpi-label">SUCCESSFUL ORDERS</span>
-                    <div className="sub-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">SUCCESSFUL ORDERS</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
                       <Receipt className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-value">
                     {kpis.paidSubscriptionsCount}
                   </div>
-                  <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                  <div className="revenue-kpi-subtitle">
                     All-time recorded purchases
                   </div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#10B981" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
                 </div>
 
                 {/* 5. Active Paid Subscriptions */}
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <div className="sub-kpi-top">
-                    <span className="sub-kpi-label">ACTIVE SUBSCRIPTIONS</span>
-                    <div className="sub-kpi-icon-box" style={{ background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">ACTIVE SUBSCRIPTIONS</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B" }}>
                       <Zap className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-value">
                     {kpis.activeSubscriptionsCount}
                   </div>
-                  <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                  <div className="revenue-kpi-subtitle">
                     Active recurring ARR: <strong style={{ color: "#F59E0B" }}>₹{formatCurrency(kpis.activeRevenue)}</strong>
                   </div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#F59E0B" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#F59E0B" }} />
                 </div>
 
                 {/* 6. Paying Students */}
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <div className="sub-kpi-top">
-                    <span className="sub-kpi-label">PAYING STUDENTS</span>
-                    <div className="sub-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">PAYING STUDENTS</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
                       <Users className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-value">
                     {kpis.distinctPayingStudentsCount}
                   </div>
-                  <div className="revenue-kpi-subtitle" style={{ color: "var(--text-secondary)", fontSize: "12px" }}>
+                  <div className="revenue-kpi-subtitle">
                     ARPU: <strong style={{ color: "#8B5CF6" }}>₹{kpis.arpu}</strong>
                   </div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
                 </div>
               </div>
 
-              {/* 2-Column Charts Row */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1.2fr 0.8fr",
-                gap: "20px"
-              }}>
+              {/* 2-Column Charts Row 1 */}
+              <div className="revenue-analytics-row-1">
                 {/* Left: Revenue Trend Over Time */}
-                <div className="revenue-chart-card" style={{ padding: "20px 24px" }}>
-                  <div className="revenue-chart-header" style={{ marginBottom: "16px" }}>
+                <div className="revenue-chart-card">
+                  <div className="revenue-chart-header">
                     <div>
                       <h3 className="revenue-chart-title">Revenue Trajectory Over Time</h3>
                       <p className="revenue-chart-subtitle">Aggregate revenue trends by selected time interval</p>
@@ -704,8 +660,8 @@ export default function RevenueDashboard() {
                 </div>
 
                 {/* Right: Monetization Category Distribution */}
-                <div className="revenue-chart-card" style={{ padding: "20px 24px" }}>
-                  <div className="revenue-chart-header" style={{ marginBottom: "16px" }}>
+                <div className="revenue-chart-card">
+                  <div className="revenue-chart-header">
                     <div>
                       <h3 className="revenue-chart-title">Monetization Categories</h3>
                       <p className="revenue-chart-subtitle">Revenue contribution & transaction provenance</p>
@@ -714,18 +670,7 @@ export default function RevenueDashboard() {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {(analyticsData?.categoryBreakdown || []).map((cat) => (
-                      <div
-                        key={cat.category}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          padding: "10px 14px",
-                          borderRadius: "10px",
-                          background: "var(--bg-page)",
-                          border: "1px solid var(--border-color)"
-                        }}
-                      >
+                      <div key={cat.category} className="revenue-cat-item">
                         <div>
                           <div style={{ fontSize: "13.5px", fontWeight: "700", color: "var(--text-primary)" }}>
                             {cat.category}
@@ -757,35 +702,31 @@ export default function RevenueDashboard() {
               </div>
 
               {/* Bottom Row: Plan Distribution & Recent Transactions */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "0.85fr 1.15fr",
-                gap: "20px"
-              }}>
+              <div className="revenue-analytics-row-2">
                 {/* Plan Distribution Breakdown */}
-                <div className="revenue-chart-card" style={{ padding: "20px 24px" }}>
-                  <div className="revenue-chart-header" style={{ marginBottom: "16px" }}>
+                <div className="revenue-chart-card">
+                  <div className="revenue-chart-header">
                     <div>
                       <h3 className="revenue-chart-title">Plan-Wise Distribution</h3>
                       <p className="revenue-chart-subtitle">Revenue volume by AI subscription tier</p>
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {(analyticsData?.revenueByPlan || []).map((plan) => {
                       const planRev = plan.revenue ?? plan.totalRevenue ?? 0;
                       const totalRev = kpis.totalRevenue || 1;
                       const pct = Math.round((planRev / totalRev) * 100);
                       return (
-                        <div key={plan.planId || plan.planName} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
+                        <div key={plan.planId || plan.planName} className="revenue-plan-item">
+                          <div className="revenue-plan-row-top">
                             <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName}</span>
                             <span style={{ fontWeight: "800", color: "#8B5CF6" }}>₹{formatCurrency(planRev)} ({pct}%)</span>
                           </div>
-                          <div style={{ width: "100%", height: "6px", background: "var(--bg-page)", borderRadius: "3px", overflow: "hidden" }}>
-                            <div style={{ width: `${Math.min(100, pct)}%`, height: "100%", background: "#8B5CF6", borderRadius: "3px" }} />
+                          <div className="revenue-plan-track">
+                            <div className="revenue-plan-fill" style={{ width: `${Math.min(100, pct)}%` }} />
                           </div>
-                          <div style={{ fontSize: "10.5px", color: "var(--text-secondary)", display: "flex", justifyContent: "space-between" }}>
+                          <div className="revenue-plan-meta">
                             <span>{plan.subscribersCount ?? plan.totalPurchases ?? 0} purchases</span>
                             <span>{plan.activeSubscribers ?? 0} active now</span>
                           </div>
@@ -802,7 +743,7 @@ export default function RevenueDashboard() {
                 </div>
 
                 {/* Recent Transactions List with Jump Button */}
-                <div className="revenue-chart-card" style={{ padding: "20px 24px" }}>
+                <div className="revenue-chart-card">
                   <div className="revenue-chart-header" style={{ marginBottom: "16px" }}>
                     <div>
                       <h3 className="revenue-chart-title">Recent Transactions</h3>
@@ -877,16 +818,7 @@ export default function RevenueDashboard() {
           {activeTab === "ai-plans" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Internal AI Plans Sub-navigation */}
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                background: "var(--bg-card)",
-                padding: "5px",
-                borderRadius: "12px",
-                border: "1px solid var(--border-color)",
-                width: "fit-content"
-              }}>
+              <div className="revenue-nav-tabs-bar revenue-subnav-bar">
                 {[
                   { key: "ai-overview", label: "AI Plan Overview", icon: Sparkles },
                   { key: "manage-plans", label: "Manage AI Plans", icon: Layers },
@@ -898,20 +830,7 @@ export default function RevenueDashboard() {
                     <button
                       key={key}
                       onClick={() => handleAiSubTabChange(key)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        padding: "6px 14px",
-                        borderRadius: "8px",
-                        border: "none",
-                        background: isCurrent ? "#8B5CF6" : "transparent",
-                        color: isCurrent ? "#FFFFFF" : "var(--text-secondary)",
-                        fontWeight: isCurrent ? "700" : "500",
-                        fontSize: "12.5px",
-                        cursor: "pointer",
-                        transition: "all 0.15s ease"
-                      }}
+                      className={`revenue-nav-tab ${isCurrent ? "active" : ""}`}
                     >
                       <Icon className="w-3.5 h-3.5" />
                       <span>{label}</span>
@@ -923,45 +842,61 @@ export default function RevenueDashboard() {
               {/* Sub-tab 1: AI Plan Overview */}
               {aiSubTab === "ai-overview" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    gap: "16px"
-                  }}>
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">TOTAL PLAN SUBSCRIBERS</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-grid">
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">TOTAL PLAN SUBSCRIBERS</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                          <Users className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         {kpis.paidSubscriptionsCount}
                       </div>
                       <div className="revenue-kpi-subtitle">All-time subscriber enrollments</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
                     </div>
 
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">ACTIVE SUBSCRIBERS</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">ACTIVE SUBSCRIBERS</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         {kpis.activeSubscriptionsCount}
                       </div>
                       <div className="revenue-kpi-subtitle">Holding valid quota right now</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#10B981" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
                     </div>
 
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">ACTIVE RECURRING VALUE</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">ACTIVE RECURRING VALUE</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B" }}>
+                          <Zap className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         ₹{formatCurrency(kpis.activeRevenue)}
                       </div>
                       <div className="revenue-kpi-subtitle">Current active contract value</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#F59E0B" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#F59E0B" }} />
                     </div>
 
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">RENEWAL CONVERSION RATE</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">RENEWAL CONVERSION RATE</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
+                          <RefreshCcw className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         {kpis.renewalRate}%
                       </div>
                       <div className="revenue-kpi-subtitle">{kpis.renewalSubscriptions} repeat renewals</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#3B82F6" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#3B82F6" }} />
                     </div>
                   </div>
 
@@ -1022,45 +957,61 @@ export default function RevenueDashboard() {
               {/* Sub-tab 4: AI Usage Analytics */}
               {aiSubTab === "usage-analytics" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    gap: "16px"
-                  }}>
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">TOTAL TESTS ALLOCATED</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                  <div className="revenue-kpi-grid">
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">TOTAL TESTS ALLOCATED</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                          <Bot className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         {usageData?.metrics?.totalAllocatedTests || 0}
                       </div>
                       <div className="revenue-kpi-subtitle">Cumulative test quota issued</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
                     </div>
 
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">TESTS ACTUALLY USED</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">TESTS ACTUALLY USED</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
+                          <Zap className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         {usageData?.metrics?.totalUsedTests || 0}
                       </div>
                       <div className="revenue-kpi-subtitle">Generated by active & past users</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#3B82F6" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#3B82F6" }} />
                     </div>
 
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">OVERALL UTILIZATION RATE</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">OVERALL UTILIZATION RATE</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
+                          <TrendingUp className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         {usageData?.metrics?.overallUtilization || 0}%
                       </div>
                       <div className="revenue-kpi-subtitle">Test quota burn rate</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#10B981" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
                     </div>
 
-                    <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                      <span className="sub-kpi-label">HIGH USAGE SUBSCRIBERS</span>
-                      <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                    <div className="revenue-kpi-card">
+                      <div className="revenue-kpi-top">
+                        <span className="revenue-kpi-label">HIGH USAGE SUBSCRIBERS</span>
+                        <div className="revenue-kpi-icon-box" style={{ background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B" }}>
+                          <Clock className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="revenue-kpi-value">
                         {usageData?.metrics?.highUsageSubscriptions || 0}
                       </div>
                       <div className="revenue-kpi-subtitle">Consumed &gt; 80% test quota</div>
-                      <div className="sub-kpi-accent-bar" style={{ background: "#F59E0B" }} />
+                      <div className="revenue-kpi-accent-bar" style={{ background: "#F59E0B" }} />
                     </div>
                   </div>
 
@@ -1125,45 +1076,61 @@ export default function RevenueDashboard() {
               </div>
 
               {/* 4 Summary Cards */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "16px"
-              }}>
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <span className="sub-kpi-label">PAID MOCK EXAMS</span>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+              <div className="revenue-kpi-grid">
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">PAID MOCK EXAMS</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6" }}>
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="revenue-kpi-value">
                     {catalogData?.summary?.paidQuizzesCount || 0}
                   </div>
                   <div className="revenue-kpi-subtitle">{catalogData?.summary?.entitledQuizUsers || 0} entitled students</div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#8B5CF6" }} />
                 </div>
 
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <span className="sub-kpi-label">PAID PRACTICE TESTS</span>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">PAID PRACTICE TESTS</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
+                      <Layers className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="revenue-kpi-value">
                     {catalogData?.summary?.paidPracticeCount || 0}
                   </div>
                   <div className="revenue-kpi-subtitle">{catalogData?.summary?.entitledPracticeUsers || 0} entitled students</div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#3B82F6" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#3B82F6" }} />
                 </div>
 
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <span className="sub-kpi-label">PAID EXAM SERIES</span>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">PAID EXAM SERIES</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="revenue-kpi-value">
                     {catalogData?.summary?.paidSeriesCount || 0}
                   </div>
                   <div className="revenue-kpi-subtitle">Bundled series catalog</div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#10B981" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
                 </div>
 
-                <div className="sub-card revenue-kpi-card" style={{ padding: "18px 20px" }}>
-                  <span className="sub-kpi-label">PAID FLASHCARD SETS</span>
-                  <div className="revenue-kpi-value" style={{ margin: "6px 0 2px" }}>
+                <div className="revenue-kpi-card">
+                  <div className="revenue-kpi-top">
+                    <span className="revenue-kpi-label">PAID FLASHCARD SETS</span>
+                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(236, 72, 153, 0.12)", color: "#EC4899" }}>
+                      <ShoppingBag className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="revenue-kpi-value">
                     {catalogData?.summary?.paidFlashcardSetsCount || 0}
                   </div>
                   <div className="revenue-kpi-subtitle">Flashcard deck catalog</div>
-                  <div className="sub-kpi-accent-bar" style={{ background: "#EC4899" }} />
+                  <div className="revenue-kpi-accent-bar" style={{ background: "#EC4899" }} />
                 </div>
               </div>
 
@@ -1254,19 +1221,9 @@ export default function RevenueDashboard() {
           {activeTab === "transactions" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Filter & Search Bar */}
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: "12px",
-                background: "var(--bg-card)",
-                padding: "16px 20px",
-                borderRadius: "12px",
-                border: "1px solid var(--border-color)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: "260px" }}>
-                  <Search className="w-4 h-4 text-slate-400" />
+              <div className="revenue-filter-bar">
+                <div className="revenue-search-box">
+                  <Search className="w-4 h-4 text-violet-400" />
                   <input
                     type="text"
                     placeholder="Search by student, email, purchase ID, or txn ID..."
@@ -1275,25 +1232,18 @@ export default function RevenueDashboard() {
                       setTxSearch(e.target.value);
                       setTxPage(1);
                     }}
-                    style={{
-                      width: "100%",
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--text-primary)",
-                      fontSize: "13px",
-                      outline: "none"
-                    }}
+                    className="revenue-search-input"
                   />
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <div className="revenue-filter-controls">
                   <select
                     value={txCategory}
                     onChange={(e) => {
                       setTxCategory(e.target.value);
                       setTxPage(1);
                     }}
-                    style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
+                    className="revenue-select-input"
                   >
                     <option value="all">All Categories</option>
                     <option value="ai_plan">AI Plans</option>
@@ -1309,7 +1259,7 @@ export default function RevenueDashboard() {
                       setTxProvenance(e.target.value);
                       setTxPage(1);
                     }}
-                    style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
+                    className="revenue-select-input"
                   >
                     <option value="all">All Provenance</option>
                     <option value="verified_payment">Verified Bank</option>
@@ -1324,7 +1274,7 @@ export default function RevenueDashboard() {
                       setTxGateway(e.target.value);
                       setTxPage(1);
                     }}
-                    style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
+                    className="revenue-select-input"
                   >
                     <option value="all">All Gateways</option>
                     <option value="phonepe">PhonePe (Sandbox)</option>
@@ -1338,7 +1288,7 @@ export default function RevenueDashboard() {
                       setTxStatus(e.target.value);
                       setTxPage(1);
                     }}
-                    style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
+                    className="revenue-select-input"
                   >
                     <option value="all">All Statuses</option>
                     <option value="paid">Paid</option>
@@ -1348,21 +1298,29 @@ export default function RevenueDashboard() {
                     <option value="refunded">Refunded</option>
                   </select>
 
+                  {/* Mobile View Toggle */}
+                  <div className="revenue-view-toggle">
+                    <button
+                      type="button"
+                      className={`revenue-view-toggle-btn ${txViewMode === "cards" ? "active" : ""}`}
+                      onClick={() => setTxViewMode("cards")}
+                      title="Card View"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className={`revenue-view-toggle-btn ${txViewMode === "table" ? "active" : ""}`}
+                      onClick={() => setTxViewMode("table")}
+                      title="Table View"
+                    >
+                      <List className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   <button
                     onClick={handleExportTransactions}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      background: "#8B5CF6",
-                      color: "#FFFFFF",
-                      border: "none",
-                      padding: "6px 12px",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      cursor: "pointer"
-                    }}
+                    className="revenue-export-btn"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Export CSV
@@ -1370,9 +1328,89 @@ export default function RevenueDashboard() {
                 </div>
               </div>
 
+              {/* Transactions Mobile Cards (Active on mobile screens or when txViewMode is cards) */}
+              <div className="revenue-mobile-card-list" style={{ display: txViewMode === "table" ? "none" : undefined }}>
+                {transactionsLoading ? (
+                  <div className="revenue-chart-card" style={{ padding: "30px", textAlign: "center" }}>
+                    <RefreshCcw className="w-5 h-5 animate-spin mx-auto text-violet-500 mb-2" />
+                    <span style={{ color: "var(--text-secondary)" }}>Loading transactions...</span>
+                  </div>
+                ) : transactionsData.map((t) => (
+                  <div key={t._id} className="revenue-mobile-card">
+                    <div className="revenue-mobile-card-top">
+                      <div>
+                        <div style={{ fontWeight: "700", color: "var(--text-primary)", fontSize: "14px" }}>
+                          {t.studentId?.fullName || "Student"}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                          {t.studentId?.email || "—"}
+                        </div>
+                      </div>
+                      <div>
+                        {getStatusBadge(t.status)}
+                      </div>
+                    </div>
+
+                    <div className="revenue-mobile-card-main">
+                      <div>
+                        <div style={{ fontWeight: "600", fontSize: "13px", color: "var(--text-primary)" }}>
+                          {t.itemTitleSnapshot || t.planNameSnapshot || t.planId?.name || "Product"}
+                        </div>
+                        <div className="revenue-mobile-card-chips" style={{ marginTop: "4px" }}>
+                          {t.productCategory && (
+                            <span style={{
+                              fontSize: "9.5px",
+                              fontWeight: "700",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              background: "rgba(139, 92, 246, 0.12)",
+                              color: "#8B5CF6",
+                              textTransform: "uppercase"
+                            }}>
+                              {t.productCategory.replace("_", " ")}
+                            </span>
+                          )}
+                          <span style={{
+                            fontSize: "9.5px",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            fontWeight: "600",
+                            background: t.paymentGateway === "admin_grant" ? "rgba(245, 158, 11, 0.12)" : "rgba(139, 92, 246, 0.12)",
+                            color: t.paymentGateway === "admin_grant" ? "#F59E0B" : "#8B5CF6"
+                          }}>
+                            {t.paymentGateway === "admin_grant" ? "Admin Grant" : t.paymentGateway === "phonepe" ? "PhonePe Sandbox" : t.paymentGateway}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: "18px", fontWeight: "800", color: "#8B5CF6" }}>
+                          ₹{t.amount}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="revenue-mobile-card-footer">
+                      <span style={{ fontFamily: "monospace", fontSize: "10.5px" }}>
+                        Txn: {t.transactionId || t.orderId || t.purchaseId || t._id.slice(-8)}
+                      </span>
+                      <span>
+                        {(t.startDate || t.createdAt) ? new Date(t.startDate || t.createdAt).toLocaleDateString() : "—"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {!transactionsLoading && transactionsData.length === 0 && (
+                  <div className="revenue-chart-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
+                    No matching transactions found.
+                  </div>
+                )}
+              </div>
+
               {/* Transactions Table */}
-              <div className="revenue-chart-card" style={{ padding: "0", overflow: "hidden" }}>
-                <div style={{ overflowX: "auto" }}>
+              <div className={`revenue-chart-card ${txViewMode === "cards" ? "hide-on-mobile" : ""}`} style={{ padding: "0", overflow: "hidden" }}>
+                <div className="revenue-table-wrapper">
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
                     <thead>
                       <tr style={{ borderBottom: "1px solid var(--border-color)", background: "var(--bg-page)", textAlign: "left", color: "var(--text-secondary)" }}>
@@ -1533,19 +1571,9 @@ export default function RevenueDashboard() {
           {activeTab === "customers" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Filter & Search Bar */}
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: "12px",
-                background: "var(--bg-card)",
-                padding: "16px 20px",
-                borderRadius: "12px",
-                border: "1px solid var(--border-color)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: "260px" }}>
-                  <Search className="w-4 h-4 text-slate-400" />
+              <div className="revenue-filter-bar">
+                <div className="revenue-search-box">
+                  <Search className="w-4 h-4 text-violet-400" />
                   <input
                     type="text"
                     placeholder="Search customers by name, email, or phone..."
@@ -1554,25 +1582,18 @@ export default function RevenueDashboard() {
                       setCustSearch(e.target.value);
                       setCustPage(1);
                     }}
-                    style={{
-                      width: "100%",
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--text-primary)",
-                      fontSize: "13px",
-                      outline: "none"
-                    }}
+                    className="revenue-search-input"
                   />
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div className="revenue-filter-controls">
                   <select
                     value={custStatus}
                     onChange={(e) => {
                       setCustStatus(e.target.value);
                       setCustPage(1);
                     }}
-                    style={{ background: "var(--bg-page)", border: "1px solid var(--border-color)", color: "var(--text-primary)", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", outline: "none" }}
+                    className="revenue-select-input"
                   >
                     <option value="all">All Students</option>
                     <option value="active_subscriber">Active Subscribers</option>
@@ -1580,21 +1601,29 @@ export default function RevenueDashboard() {
                     <option value="free_user">Free Students</option>
                   </select>
 
+                  {/* View Mode Switcher */}
+                  <div className="revenue-view-toggle">
+                    <button
+                      type="button"
+                      className={`revenue-view-toggle-btn ${custViewMode === "cards" ? "active" : ""}`}
+                      onClick={() => setCustViewMode("cards")}
+                      title="Card View"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className={`revenue-view-toggle-btn ${custViewMode === "table" ? "active" : ""}`}
+                      onClick={() => setCustViewMode("table")}
+                      title="Table View"
+                    >
+                      <List className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   <button
                     onClick={handleExportCustomers}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      background: "#8B5CF6",
-                      color: "#FFFFFF",
-                      border: "none",
-                      padding: "6px 12px",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      cursor: "pointer"
-                    }}
+                    className="revenue-export-btn"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Export CSV
@@ -1602,19 +1631,96 @@ export default function RevenueDashboard() {
                 </div>
               </div>
 
+              {/* Customers Mobile Cards (Active on mobile screens or when custViewMode is cards) */}
+              <div className="revenue-mobile-card-list" style={{ display: custViewMode === "table" ? "none" : undefined }}>
+                {customersLoading ? (
+                  <div className="revenue-chart-card" style={{ padding: "30px", textAlign: "center" }}>
+                    <RefreshCcw className="w-5 h-5 animate-spin mx-auto text-violet-500 mb-2" />
+                    <span style={{ color: "var(--text-secondary)" }}>Loading customer records...</span>
+                  </div>
+                ) : customersData.map((c) => (
+                  <div key={c._id} className="revenue-mobile-card">
+                    <div className="revenue-mobile-card-top">
+                      <div>
+                        <div style={{ fontWeight: "700", color: "var(--text-primary)", fontSize: "14px" }}>
+                          {c.fullName}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                          {c.email}
+                        </div>
+                      </div>
+                      <div>
+                        {c.isPremium ? (
+                          <Badge variant="success" className="gap-1 text-[11px]"><CheckCircle2 className="w-3 h-3" /> Premium</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[11px]">Free Student</Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="revenue-mobile-card-main">
+                      <div>
+                        <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Active Plan: </span>
+                        <strong style={{ fontSize: "12px", color: c.activePlan ? "#8B5CF6" : "var(--text-primary)" }}>
+                          {c.activePlan?.name || "None"}
+                        </strong>
+                        <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
+                          {c.purchasedExamsCount} exams • {c.purchasedPracticeCount} practice
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Recorded Spend</div>
+                        <div style={{ fontSize: "18px", fontWeight: "800", color: "#8B5CF6" }}>
+                          ₹{c.totalSpent}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="revenue-mobile-card-footer">
+                      <span>Joined {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "N/A"}</span>
+                      <button
+                        onClick={() => setSelectedCustomer(c)}
+                        style={{
+                          background: "rgba(139, 92, 246, 0.12)",
+                          color: "#8B5CF6",
+                          border: "1px solid rgba(139, 92, 246, 0.25)",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px"
+                        }}
+                      >
+                        <Eye className="w-3 h-3" /> Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {!customersLoading && customersData.length === 0 && (
+                  <div className="revenue-chart-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
+                    No customers found.
+                  </div>
+                )}
+              </div>
+
               {/* Customers Table */}
-              <div className="revenue-chart-card" style={{ padding: "0", overflow: "hidden" }}>
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
+              <div className={`revenue-chart-card ${custViewMode === "cards" ? "hide-on-mobile" : ""}`} style={{ padding: "0", overflow: "hidden" }}>
+                <div className="revenue-table-wrapper">
+                  <table className="revenue-table">
                     <thead>
-                      <tr style={{ borderBottom: "1px solid var(--border-color)", background: "var(--bg-page)", textAlign: "left", color: "var(--text-secondary)" }}>
-                        <th style={{ padding: "12px 16px" }}>Student</th>
-                        <th style={{ padding: "12px 16px" }}>Active Plan</th>
-                        <th style={{ padding: "12px 16px" }}>Entitled Exams</th>
-                        <th style={{ padding: "12px 16px" }}>Entitled Practice</th>
-                        <th style={{ padding: "12px 16px" }}>Recorded Spend</th>
-                        <th style={{ padding: "12px 16px" }}>Status</th>
-                        <th style={{ padding: "12px 16px" }}>Actions</th>
+                      <tr>
+                        <th>Student</th>
+                        <th>Active Plan</th>
+                        <th>Entitled Exams</th>
+                        <th>Entitled Practice</th>
+                        <th>Recorded Spend</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1626,12 +1732,12 @@ export default function RevenueDashboard() {
                           </td>
                         </tr>
                       ) : customersData.map((c) => (
-                        <tr key={c._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                          <td style={{ padding: "12px 16px" }}>
+                        <tr key={c._id}>
+                          <td>
                             <div style={{ fontWeight: "700", color: "var(--text-primary)" }}>{c.fullName}</div>
                             <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{c.email}</div>
                           </td>
-                          <td style={{ padding: "12px 16px" }}>
+                          <td>
                             {c.activePlan ? (
                               <span style={{ fontSize: "11px", padding: "3px 8px", borderRadius: "6px", background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6", fontWeight: "700" }}>
                                 {c.activePlan.name}
@@ -1640,23 +1746,23 @@ export default function RevenueDashboard() {
                               <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>No Active Plan</span>
                             )}
                           </td>
-                          <td style={{ padding: "12px 16px", fontWeight: "600" }}>
+                          <td style={{ fontWeight: "600" }}>
                             {c.purchasedExamsCount} exams
                           </td>
-                          <td style={{ padding: "12px 16px", fontWeight: "600" }}>
+                          <td style={{ fontWeight: "600" }}>
                             {c.purchasedPracticeCount} practice
                           </td>
-                          <td style={{ padding: "12px 16px", fontWeight: "800", color: "#8B5CF6" }}>
+                          <td style={{ fontWeight: "800", color: "#8B5CF6" }}>
                             ₹{c.totalSpent}
                           </td>
-                          <td style={{ padding: "12px 16px" }}>
+                          <td>
                             {c.isPremium ? (
                               <Badge variant="success" className="gap-1 text-[11px]"><CheckCircle2 className="w-3 h-3" /> Premium</Badge>
                             ) : (
                               <Badge variant="secondary" className="text-[11px]">Free Student</Badge>
                             )}
                           </td>
-                          <td style={{ padding: "12px 16px" }}>
+                          <td>
                             <button
                               onClick={() => setSelectedCustomer(c)}
                               style={{
@@ -1697,7 +1803,9 @@ export default function RevenueDashboard() {
                   justifyContent: "space-between",
                   padding: "12px 16px",
                   background: "var(--bg-page)",
-                  borderTop: "1px solid var(--border-color)"
+                  borderTop: "1px solid var(--border-color)",
+                  flexWrap: "wrap",
+                  gap: "8px"
                 }}>
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
                     Page {custPage} of {custPagination.totalPages || 1} ({custPagination.total} total students)
@@ -1741,31 +1849,18 @@ export default function RevenueDashboard() {
 
               {/* Customer Detail Drawer Modal */}
               {selectedCustomer && (
-                <div style={{
-                  position: "fixed",
-                  inset: 0,
-                  backgroundColor: "rgba(0, 0, 0, 0.65)",
-                  backdropFilter: "blur(4px)",
-                  zIndex: 9999,
-                  display: "flex",
-                  justifyContent: "flex-end"
-                }}>
-                  <div style={{
-                    width: "100%",
-                    maxWidth: "460px",
-                    background: "var(--bg-card)",
-                    borderLeft: "1px solid var(--border-color)",
-                    height: "100%",
-                    padding: "28px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "20px",
-                    overflowY: "auto",
-                    boxSizing: "border-box"
-                  }}>
+                <div
+                  className="revenue-drawer-backdrop"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) setSelectedCustomer(null);
+                  }}
+                >
+                  <div className="revenue-drawer-panel">
+                    <div className="revenue-drawer-handle" />
+
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
-                        <h3 style={{ margin: "0 0 2px", fontSize: "18px", fontWeight: "800", color: "var(--text-primary)" }}>
+                        <h3 style={{ margin: "0 0 2px", fontSize: "17px", fontWeight: "800", color: "var(--text-primary)" }}>
                           Customer Financial Profile
                         </h3>
                         <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
@@ -1774,7 +1869,7 @@ export default function RevenueDashboard() {
                       </div>
                       <button
                         onClick={() => setSelectedCustomer(null)}
-                        style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
+                        style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", padding: "4px" }}
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -1849,15 +1944,15 @@ export default function RevenueDashboard() {
           {/* ================= 8. TAB 6: REPORTS ================= */}
           {activeTab === "reports" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div style={{ background: "var(--bg-card)", padding: "20px 24px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+              <div className="revenue-chart-card">
                 <h3 className="revenue-chart-title" style={{ marginBottom: "6px" }}>Financial Reports Hub</h3>
                 <p className="revenue-chart-subtitle">
                   Generate audit-ready reports across revenue trajectories, subscription cohorts, catalog entitlements, and itemized transaction ledgers.
                 </p>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px", marginTop: "20px" }}>
+                <div className="revenue-reports-grid" style={{ marginTop: "20px" }}>
                   {/* Report Card 1 */}
-                  <div style={{ background: "var(--bg-page)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div className="revenue-report-card">
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <TrendingUp className="w-4 h-4 text-violet-500" />
                       <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700" }}>Revenue Summary Report</h4>
@@ -1902,7 +1997,7 @@ export default function RevenueDashboard() {
                   </div>
 
                   {/* Report Card 2 */}
-                  <div style={{ background: "var(--bg-page)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div className="revenue-report-card">
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <Receipt className="w-4 h-4 text-emerald-500" />
                       <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700" }}>Itemized Transactions Report</h4>
@@ -1932,7 +2027,7 @@ export default function RevenueDashboard() {
                   </div>
 
                   {/* Report Card 3 */}
-                  <div style={{ background: "var(--bg-page)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div className="revenue-report-card">
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <Users className="w-4 h-4 text-blue-500" />
                       <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700" }}>Customer Financials Report</h4>
@@ -1962,7 +2057,7 @@ export default function RevenueDashboard() {
                   </div>
 
                   {/* Report Card 4 */}
-                  <div style={{ background: "var(--bg-page)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div className="revenue-report-card">
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <BookOpen className="w-4 h-4 text-amber-500" />
                       <h4 style={{ margin: 0, fontSize: "14px", fontWeight: "700" }}>Catalog Entitlements Report</h4>

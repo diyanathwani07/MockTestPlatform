@@ -70,12 +70,21 @@ async function enforceExpiry(user) {
   return false;
 }
 
+let lastSyncTime = 0;
+let isSyncing = false;
+const SYNC_COOLDOWN_MS = 60 * 60 * 1000; // at most once per hour
+
 /**
  * Automatically backfills and synchronizes any active user subscriptions from the User collection
  * into the Subscription collection so that no legacy or existing active subscriber is missed in
  * Revenue Analytics or AI Subscribers directory.
  */
-async function syncLegacySubscriptions() {
+async function syncLegacySubscriptions(force = false) {
+  const nowTime = Date.now();
+  if (!force && (isSyncing || nowTime - lastSyncTime < SYNC_COOLDOWN_MS)) {
+    return;
+  }
+  isSyncing = true;
   try {
     const usersWithPlan = await User.find({
       $or: [
@@ -123,8 +132,11 @@ async function syncLegacySubscriptions() {
     // Automatically synchronize any pending subscriptions into the Unified PurchaseTransaction Ledger
     const { migrateToUnifiedLedger } = require("../scripts/migrateToUnifiedLedger");
     await migrateToUnifiedLedger({ dryRun: false, quiet: true });
+    lastSyncTime = Date.now();
   } catch (err) {
     console.error("[SubscriptionSync Error]:", err);
+  } finally {
+    isSyncing = false;
   }
 }
 

@@ -8,7 +8,6 @@ const { syncLegacySubscriptions } = require("../utils/subscriptionUtils");
 // 1. GET /api/admin/ai-plans/subscribers (Overview KPIs & Plan Popularity)
 const getSubscribersOverview = async (req, res) => {
   try {
-    await syncLegacySubscriptions();
     const now = new Date();
 
     // 1. Total distinct students with any subscription
@@ -129,7 +128,6 @@ const getSubscribersOverview = async (req, res) => {
 // 2. GET /api/admin/ai-plans/subscribers/list (Paginated, Filterable & Searchable)
 const getSubscribersList = async (req, res) => {
   try {
-    await syncLegacySubscriptions();
     const {
       search = "",
       plan = "all",

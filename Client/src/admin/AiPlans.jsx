@@ -290,15 +290,10 @@ function AdminAiPlans({ isEmbedded = false, onNavigateSubtab }) {
 
   const content = (
     <>
-      <div className="admin-content-inner" style={{ padding: isEmbedded ? "0" : "24px" }}>
+      <div className="admin-content-inner" style={{ padding: isEmbedded ? "0" : "24px", width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}>
       
       {/* Analytics Overview Cards */}
-          <div className="admin-stats-grid" style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-            marginBottom: "24px"
-          }}>
+          <div className="ai-plans-kpi-grid">
             <div className="armored-stat-card" style={{ background: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
               <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>Active Plans</p>
               <h3 style={{ margin: "8px 0 0 0", fontSize: "28px", fontWeight: "800", color: "var(--text-primary)" }}>
@@ -384,7 +379,11 @@ function AdminAiPlans({ isEmbedded = false, onNavigateSubtab }) {
             background: "var(--bg-card)",
             borderRadius: "12px",
             border: "1px solid var(--border-color)",
-            overflow: "hidden"
+            overflow: "hidden",
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+            display: "block"
           }}>
             {loading ? (
               <SkeletonTable rows={4} columns={6} style={{ border: "none" }} />
@@ -393,8 +392,8 @@ function AdminAiPlans({ isEmbedded = false, onNavigateSubtab }) {
                 No AI subscription plans configured. Create one to get started!
               </div>
             ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table className="report-table-body" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <div style={{ overflowX: "auto", width: "100%", maxWidth: "100%", WebkitOverflowScrolling: "touch", display: "block" }}>
+                <table className="report-table-body" style={{ width: "100%", borderCollapse: "collapse", minWidth: "640px" }}>
                   <thead>
                     <tr style={{ background: "rgba(255,255,255,0.02)", borderBottom: "1px solid var(--border-color)" }}>
                       <th style={{ textAlign: "left", padding: "14px 20px", fontSize: "13px", fontWeight: "700", color: "var(--text-secondary)" }}>Plan Name</th>

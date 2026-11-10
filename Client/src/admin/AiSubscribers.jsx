@@ -564,7 +564,7 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
 
                           {/* Lifetime Spend */}
                           <td style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                            ₹{student.lifetimeSpend?.toLocaleString("en-IN")}
+                            ₹{(Number(student.lifetimeSpend) || 0).toLocaleString("en-IN")}
                           </td>
 
                           {/* Purchases Count */}
@@ -745,7 +745,7 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
                     <div className="sub-stat-tile">
                       <div className="sub-stat-tile-label">Lifetime Spend</div>
                       <div className="sub-stat-tile-val" style={{ color: "#34D399" }}>
-                        ₹{drawerData.stats?.totalSpend?.toLocaleString("en-IN")}
+                        ₹{(Number(drawerData.stats?.totalSpend) || 0).toLocaleString("en-IN")}
                       </div>
                     </div>
 

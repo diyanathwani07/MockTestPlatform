@@ -50,7 +50,8 @@ function resolveDateFilter(query) {
  */
 const getRevenueAnalytics = async (req, res) => {
   try {
-    await syncLegacySubscriptions();
+    // Non-blocking sync with throttle
+    syncLegacySubscriptions().catch(() => {});
     const { period = "monthly" } = req.query;
     const dateMatch = resolveDateFilter(req.query);
 
@@ -488,7 +489,6 @@ const getRevenueAnalytics = async (req, res) => {
  */
 const getRevenueTransactions = async (req, res) => {
   try {
-    await syncLegacySubscriptions();
     const {
       page = 1,
       limit = 15,
@@ -680,7 +680,6 @@ const updateTransactionStatus = async (req, res) => {
  */
 const getRevenueCustomers = async (req, res) => {
   try {
-    await syncLegacySubscriptions();
     const { page = 1, limit = 15, search = "", status = "all" } = req.query;
 
     const pageNum = Math.max(1, parseInt(page, 10));

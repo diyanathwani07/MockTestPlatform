@@ -3,6 +3,9 @@
    ========================================================================== */
 
 .subscribers-dashboard-container {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   padding: 28px 36px;
   max-width: 1440px;
   margin: 0 auto;
@@ -192,6 +195,8 @@
 
 /* Main Table & Filter Bar */
 .sub-table-card {
+  min-width: 0;
+  max-width: 100%;
   padding: 22px;
 }
 
@@ -250,6 +255,9 @@
 /* Table Design */
 .sub-table-wrap {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin-top: 16px;
