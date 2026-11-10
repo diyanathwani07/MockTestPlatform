@@ -376,54 +376,71 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
             </div>
 
             <div style={{ height: 220, width: "100%" }}>
-              {overviewLoading ? (
-                <Skeleton className="h-full w-full rounded-lg" />
-              ) : planPopularity.length === 0 ? (
-                <div className="sub-empty-state">
-                  <Layers className="w-8 h-8 opacity-40 text-gray-400" />
-                  <p style={{ fontSize: 12.5, color: "#94a3b8", fontWeight: 500, margin: 0 }}>
-                    No subscriber distribution data recorded yet.
-                  </p>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={planPopularity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color, rgba(128,128,128,0.15))" />
-                    <XAxis
-                      dataKey="planName"
-                      stroke="var(--text-secondary, #94a3b8)"
-                      fontSize={11}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="var(--text-secondary, #94a3b8)"
-                      fontSize={11}
-                      tickLine={false}
-                      axisLine={false}
-                      allowDecimals={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--bg-card, #1c1b2e)",
-                        borderColor: "var(--border-color, #2e2c45)",
-                        borderRadius: "8px",
-                        color: "var(--text-primary, #ffffff)",
-                        fontSize: "12px"
-                      }}
-                      formatter={(val) => [`${val} ${val === 1 ? 'subscriber' : 'subscribers'}`, "Subscribers"]}
-                    />
-                    <Bar dataKey="subscriberCount" radius={[6, 6, 0, 0]}>
-                      {planPopularity.map((entry, idx) => (
-                        <Cell
-                          key={`cell-${idx}`}
-                          fill={BAR_COLORS[idx % BAR_COLORS.length]}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+              {(() => {
+                const map = new Map();
+                (planPopularity || []).forEach((item) => {
+                  const cleanName = (item.planName || "AI Plan").replace(/\s*\d{10,}$/, "").trim() || "AI Plan";
+                  if (!map.has(cleanName)) {
+                    map.set(cleanName, { planName: cleanName, subscriberCount: 0 });
+                  }
+                  map.get(cleanName).subscriberCount += (item.subscriberCount || 0);
+                });
+                const cleanedPopularity = Array.from(map.values()).sort((a, b) => b.subscriberCount - a.subscriberCount);
+
+                if (overviewLoading) {
+                  return <Skeleton className="h-full w-full rounded-lg" />;
+                }
+                if (cleanedPopularity.length === 0) {
+                  return (
+                    <div className="sub-empty-state">
+                      <Layers className="w-8 h-8 opacity-40 text-gray-400" />
+                      <p style={{ fontSize: 12.5, color: "#94a3b8", fontWeight: 500, margin: 0 }}>
+                        No subscriber distribution data recorded yet.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cleanedPopularity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color, rgba(128,128,128,0.15))" />
+                      <XAxis
+                        dataKey="planName"
+                        stroke="var(--text-secondary, #94a3b8)"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="var(--text-secondary, #94a3b8)"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "var(--bg-card, #1c1b2e)",
+                          borderColor: "var(--border-color, #2e2c45)",
+                          borderRadius: "8px",
+                          color: "var(--text-primary, #ffffff)",
+                          fontSize: "12px"
+                        }}
+                        formatter={(val) => [`${val} ${val === 1 ? 'subscriber' : 'subscribers'}`, "Subscribers"]}
+                      />
+                      <Bar dataKey="subscriberCount" radius={[6, 6, 0, 0]}>
+                        {cleanedPopularity.map((entry, idx) => (
+                          <Cell
+                            key={`cell-${idx}`}
+                            fill={BAR_COLORS[idx % BAR_COLORS.length]}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                );
+              })()}
             </div>
           </div>
 

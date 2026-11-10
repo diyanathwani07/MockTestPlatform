@@ -407,8 +407,8 @@ const getRevenueAnalytics = async (req, res) => {
       }
     ];
 
-    // 4. Revenue By Plan (for AI Plan breakdown)
-    const planAggregation = await PurchaseTransaction.aggregate([
+    // 4. Revenue By Plan (Consolidated and Deduplicated by Normalized Plan Name)
+    const rawPlanAggregation = await PurchaseTransaction.aggregate([
       {
         $match: {
           productCategory: "ai_plan",
@@ -418,23 +418,38 @@ const getRevenueAnalytics = async (req, res) => {
       },
       {
         $group: {
-          _id: "$itemId",
-          planName: { $first: "$itemTitleSnapshot" },
+          _id: {
+            $ifNull: ["$itemTitleSnapshot", "$itemId"]
+          },
+          planId: { $first: "$itemId" },
           revenue: { $sum: "$amount" },
           subscribersCount: { $sum: 1 }
         }
-      },
-      { $sort: { revenue: -1 } },
-      {
-        $project: {
-          _id: 0,
-          planId: "$_id",
-          planName: 1,
-          revenue: 1,
-          subscribersCount: 1
-        }
       }
     ]);
+
+    // Group and merge by normalized plan name so repeated test variations consolidate cleanly
+    const planMap = new Map();
+    for (const item of rawPlanAggregation) {
+      const rawName = String(item._id || "AI Plan").trim();
+      // Strip epoch timestamps, e.g. "Pro Monthly 1794222231432" -> "Pro Monthly"
+      const cleanName = rawName.replace(/\s*\d{10,}$/, "").trim() || "AI Plan";
+
+      if (!planMap.has(cleanName)) {
+        planMap.set(cleanName, {
+          planId: item.planId || cleanName,
+          planName: cleanName,
+          revenue: 0,
+          subscribersCount: 0
+        });
+      }
+      const existing = planMap.get(cleanName);
+      existing.revenue += (item.revenue || 0);
+      existing.subscribersCount += (item.subscribersCount || 0);
+    }
+
+    const planAggregation = Array.from(planMap.values())
+      .sort((a, b) => b.revenue - a.revenue);
 
     // 5. Recent Transactions from Unified Ledger (Latest 25)
     const recentTransactions = await PurchaseTransaction.find(dateMatch)

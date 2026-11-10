@@ -715,33 +715,58 @@ export default function RevenueDashboard() {
                   </div>
 
                   <div className="revenue-plan-list">
-                    {(analyticsData?.revenueByPlan || []).map((plan) => {
-                      const planRev = plan.revenue ?? plan.totalRevenue ?? 0;
-                      const totalRev = kpis.totalRevenue || 1;
-                      const pct = Math.round((planRev / totalRev) * 100);
-                      const displayName = (plan.planName || "AI Plan").replace(/\s*\d{10,}$/, "");
-                      return (
-                        <div key={plan.planId || plan.planName} className="revenue-plan-item">
-                          <div className="revenue-plan-row-top">
-                            <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{displayName}</span>
-                            <span style={{ fontWeight: "800", color: "#8B5CF6" }}>₹{formatCurrency(planRev)} ({pct}%)</span>
-                          </div>
-                          <div className="revenue-plan-track">
-                            <div className="revenue-plan-fill" style={{ width: `${Math.min(100, pct)}%` }} />
-                          </div>
-                          <div className="revenue-plan-meta">
-                            <span>{plan.subscribersCount ?? plan.totalPurchases ?? 0} purchases</span>
-                            <span>{plan.activeSubscribers ?? 0} active now</span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {(() => {
+                      const planMap = new Map();
+                      (analyticsData?.revenueByPlan || []).forEach((plan) => {
+                        const planRev = plan.revenue ?? plan.totalRevenue ?? 0;
+                        const purchases = plan.subscribersCount ?? plan.totalPurchases ?? 0;
+                        const active = plan.activeSubscribers ?? 0;
+                        const cleanName = (plan.planName || "AI Plan").replace(/\s*\d{10,}$/, "").trim() || "AI Plan";
+                        
+                        if (!planMap.has(cleanName)) {
+                          planMap.set(cleanName, {
+                            planName: cleanName,
+                            revenue: 0,
+                            purchases: 0,
+                            activeSubscribers: 0
+                          });
+                        }
+                        const p = planMap.get(cleanName);
+                        p.revenue += planRev;
+                        p.purchases += purchases;
+                        p.activeSubscribers += active;
+                      });
 
-                    {(!analyticsData?.revenueByPlan || analyticsData.revenueByPlan.length === 0) && (
-                      <p style={{ fontSize: "13px", color: "var(--text-secondary)", textAlign: "center", margin: "20px 0" }}>
-                        No plan purchase data recorded yet.
-                      </p>
-                    )}
+                      const totalRev = kpis.totalRevenue || 1;
+                      const list = Array.from(planMap.values()).sort((a, b) => b.revenue - a.revenue);
+
+                      if (list.length === 0) {
+                        return (
+                          <p style={{ fontSize: "13px", color: "var(--text-secondary)", textAlign: "center", margin: "20px 0" }}>
+                            No plan purchase data recorded yet.
+                          </p>
+                        );
+                      }
+
+                      return list.map((plan) => {
+                        const pct = Math.round((plan.revenue / totalRev) * 100);
+                        return (
+                          <div key={plan.planName} className="revenue-plan-item">
+                            <div className="revenue-plan-row-top">
+                              <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{plan.planName}</span>
+                              <span style={{ fontWeight: "800", color: "#8B5CF6" }}>₹{formatCurrency(plan.revenue)} ({pct}%)</span>
+                            </div>
+                            <div className="revenue-plan-track">
+                              <div className="revenue-plan-fill" style={{ width: `${Math.min(100, pct)}%` }} />
+                            </div>
+                            <div className="revenue-plan-meta">
+                              <span>{plan.purchases} purchase{plan.purchases === 1 ? '' : 's'}</span>
+                              <span>{plan.activeSubscribers} active now</span>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
 

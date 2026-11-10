@@ -58,8 +58,8 @@ const getSubscribersOverview = async (req, res) => {
         ? Math.round((repeatSubscribersCount / totalSubscribers) * 100)
         : 0;
 
-    // 4. Plan Popularity Breakdown (Distinct Subscriber Count per Plan)
-    const planPopularity = await Subscription.aggregate([
+    // 4. Plan Popularity Breakdown (Distinct Subscriber Count per Plan, Consolidated)
+    const rawPlanPopularity = await Subscription.aggregate([
       {
         $group: {
           _id: {
@@ -97,9 +97,25 @@ const getSubscribersOverview = async (req, res) => {
           },
           subscriberCount: 1
         }
-      },
-      { $sort: { subscriberCount: -1 } }
+      }
     ]);
+
+    // Consolidate repeated plans by normalized name
+    const popMap = new Map();
+    for (const item of rawPlanPopularity) {
+      const cleanName = String(item.planName || "AI Plan").replace(/\s*\d{10,}$/, "").trim() || "AI Plan";
+      if (!popMap.has(cleanName)) {
+        popMap.set(cleanName, {
+          planId: item.planId || cleanName,
+          planName: cleanName,
+          subscriberCount: 0
+        });
+      }
+      popMap.get(cleanName).subscriberCount += (item.subscriberCount || 0);
+    }
+
+    const planPopularity = Array.from(popMap.values())
+      .sort((a, b) => b.subscriberCount - a.subscriberCount);
 
     const mostPopularPlan =
       planPopularity.length > 0 ? planPopularity[0] : null;

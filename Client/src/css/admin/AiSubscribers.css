@@ -310,62 +310,136 @@
   text-align: center;
 }
 
+/* Pagination row */
 .sub-pagination-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 14px;
-  margin-top: 12px;
-  border-top: 1px solid var(--border-color, #2e2c45);
-  font-size: 12px;
-  color: var(--text-secondary, #94a3b8);
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding-top: 14px !important;
+  margin-top: 12px !important;
+  border-top: 1.5px solid var(--border-color, #2e2c45) !important;
+  font-size: 12.5px !important;
+  color: var(--text-secondary, #94a3b8) !important;
+}
+
+body:not(.dark-mode) .sub-pagination-row {
+  border-top-color: #E2E8F0 !important;
+  color: #475569 !important;
 }
 
 /* History Action Button in Table */
 .sub-history-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-input, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.25));
-  border-radius: 6px;
-  padding: 5px 10px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-primary, #ffffff);
-  cursor: pointer;
-  transition: all 0.15s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(139, 92, 246, 0.12) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.35) !important;
+  border-radius: 7px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #8B5CF6 !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  user-select: none !important;
+}
+
+body:not(.dark-mode) .sub-history-btn {
+  background: rgba(124, 58, 237, 0.08) !important;
+  border-color: rgba(124, 58, 237, 0.3) !important;
+  color: #6D28D9 !important; /* Sharp vivid violet on light mode */
 }
 
 .sub-history-btn:hover {
-  background: color-mix(in srgb, var(--primary, #8B5CF6) 18%, var(--bg-card, #1c1b2e));
-  border-color: var(--primary, #8B5CF6);
-  color: var(--text-primary, #ffffff);
+  background: #7C3AED !important;
+  border-color: #7C3AED !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4) !important;
 }
 
-/* Pagination navigation buttons */
+.sub-history-btn:hover svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Pagination navigation buttons (< and >) */
 .sub-page-btn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-input, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.25));
-  border-radius: 6px;
-  color: var(--text-primary, #ffffff);
-  cursor: pointer;
-  transition: all 0.15s ease;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  user-select: none !important;
 }
 
-.sub-page-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--primary, #8B5CF6) 18%, var(--bg-card, #1c1b2e));
-  border-color: var(--primary, #8B5CF6);
+/* Light mode pagination controls */
+body:not(.dark-mode) .sub-page-btn {
+  background: #FFFFFF !important;
+  border: 1.5px solid #CBD5E1 !important;
+  color: #1E293B !important;
 }
 
-.sub-page-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+body:not(.dark-mode) .sub-page-btn svg {
+  color: #1E293B !important;
+  stroke: #1E293B !important;
+}
+
+body:not(.dark-mode) .sub-page-btn:hover:not(:disabled) {
+  background: #F1F5F9 !important;
+  border-color: #7C3AED !important;
+  color: #7C3AED !important;
+}
+
+body:not(.dark-mode) .sub-page-btn:disabled {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #94A3B8 !important;
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+}
+
+body:not(.dark-mode) .sub-page-btn:disabled svg {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
+}
+
+/* Dark mode pagination controls */
+body.dark-mode .sub-page-btn,
+.dark .sub-page-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  color: #F1F5F9 !important;
+}
+
+body.dark-mode .sub-page-btn svg,
+.dark .sub-page-btn svg {
+  color: #F1F5F9 !important;
+  stroke: #F1F5F9 !important;
+}
+
+body.dark-mode .sub-page-btn:hover:not(:disabled),
+.dark .sub-page-btn:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.25) !important;
+  border-color: #8B5CF6 !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .sub-page-btn:disabled,
+.dark .sub-page-btn:disabled {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #64748B !important;
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+body.dark-mode .sub-page-btn:disabled svg,
+.dark .sub-page-btn:disabled svg {
+  color: #64748B !important;
+  stroke: #64748B !important;
 }
 
 /* ==========================================================================
