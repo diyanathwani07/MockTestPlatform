@@ -32,9 +32,7 @@ const BOTTOM_NAV_ITEMS = [
   { to: "/admin/students",       icon: Users,         label: "Users",               permission: "manage_students" },
   { to: "/admin/staff",          icon: Shield,        label: "Admin",               permission: "manage_staff" },
   { to: "/admin/banners",        icon: Image,         label: "Banners",             permission: "dashboard" },
-  { to: "/admin/revenue",        icon: IndianRupee,   label: "Revenue",             permission: ["view_revenue", "manage_revenue"] },
-  { to: "/admin/ai-plans",       icon: Sparkles,      label: "AI Plans",            permission: "manage_ai_plans" },
-  { to: "/admin/ai-subscribers", icon: UserCheck,     label: "AI Subscribers",      permission: "manage_ai_subscribers" },
+  { to: "/admin/revenue",        icon: IndianRupee,   label: "Revenue",             permission: ["view_revenue", "manage_revenue", "manage_ai_plans", "manage_ai_subscribers"] },
   { to: "/admin/results",        icon: Trophy,        label: "Results",             permission: "manage_results" },
   { to: "/admin/reports",        icon: LineChart,     label: "Reports",             permission: "view_reports" },
   { to: "/admin/audit-log",      icon: FileText,      label: "Audit Log",           permission: "audit_logs" },
@@ -275,11 +273,11 @@ function AdminSidebar() {
             </div>
           )}
 
-          {/* Bottom navigation items (Users, Admin, Banners, Revenue, AI Plans, etc.) */}
+          {/* Bottom navigation items (Users, Admin, Banners, Revenue, Results, etc.) */}
           {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) => {
-            const isRevenueOrPlan = ["/admin/revenue", "/admin/ai-plans", "/admin/ai-subscribers"].includes(to);
-            // Restricted revenue & AI modules require superadmin or explicit permission (never generic admin)
-            const canView = isRevenueOrPlan 
+            const isRevenue = to === "/admin/revenue";
+            // Restricted revenue module requires superadmin or explicit permission (never generic admin)
+            const canView = isRevenue 
               ? (role === "superadmin" || hasPermission(permission))
               : (hasPermission(permission) || role === "admin" || role === "superadmin");
 

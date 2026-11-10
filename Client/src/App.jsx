@@ -425,17 +425,13 @@ function App() {
 
         <Route
           path="/admin/ai-plans"
-          element={
-            <PermissionRoute permission="manage_ai_plans">
-              <AdminAiPlans />
-            </PermissionRoute>
-          }
+          element={<Navigate to="/admin/revenue?tab=ai-plans&subtab=manage-plans" replace />}
         />
 
         <Route
           path="/admin/revenue"
           element={
-            <PermissionRoute permission={["view_revenue", "manage_revenue"]}>
+            <PermissionRoute permission={["view_revenue", "manage_revenue", "manage_ai_plans", "manage_ai_subscribers"]}>
               <RevenueDashboard />
             </PermissionRoute>
           }
@@ -443,11 +439,7 @@ function App() {
 
         <Route
           path="/admin/ai-subscribers"
-          element={
-            <PermissionRoute permission="manage_ai_subscribers">
-              <AiSubscribers />
-            </PermissionRoute>
-          }
+          element={<Navigate to="/admin/revenue?tab=ai-plans&subtab=subscribers" replace />}
         />
 
         {/* DOOR 1: Catches people typing /admin */}
