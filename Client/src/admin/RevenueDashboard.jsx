@@ -679,7 +679,7 @@ export default function RevenueDashboard() {
                           <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
                             {cat.hasHistoricalLedger
                               ? `${cat.transactionsCount} transaction${cat.transactionsCount === 1 ? '' : 's'} recorded`
-                              : "Live ledger ready • No legacy payments"}
+                              : "Payment tracking ready • No legacy payments"}
                           </div>
                         </div>
 
@@ -700,7 +700,7 @@ export default function RevenueDashboard() {
                             background: cat.hasHistoricalLedger ? "rgba(16, 185, 129, 0.12)" : "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
                             color: cat.hasHistoricalLedger ? "#10B981" : "var(--primary, #8B5CF6)"
                           }}>
-                            {cat.hasHistoricalLedger ? "Ledger Active" : "Ledger Ready"}
+                            {cat.hasHistoricalLedger ? "Payment Active" : "Payment Ready"}
                           </span>
                         </div>
                       </div>
@@ -1111,7 +1111,7 @@ export default function RevenueDashboard() {
               }}>
                 <ShieldCheck className="w-5 h-5 flex-shrink-0" style={{ color: "var(--primary, #8B5CF6)" }} />
                 <div style={{ fontSize: "12.5px", color: "var(--text-secondary)" }}>
-                  <strong style={{ color: "var(--text-primary)" }}>Unified Financial Ledger Active: </strong>
+                  <strong style={{ color: "var(--text-primary)" }}>Unified Payment Tracking Active: </strong>
                   Exam, Practice, Series, and Flashcard purchases are unified into the central transaction ledger. In accordance with financial audit integrity, verified collected revenue reflects confirmed monetary bank payments, while preserving legacy student entitlements without fabricating unrecorded past payments.
                 </div>
               </div>
@@ -1216,7 +1216,7 @@ export default function RevenueDashboard() {
                       <th style={{ padding: "10px" }}>Subject</th>
                       <th style={{ padding: "10px" }}>Catalog Price</th>
                       <th style={{ padding: "10px" }}>Verified Revenue</th>
-                      <th style={{ padding: "10px" }}>Ledger Status</th>
+                      <th style={{ padding: "10px" }}>Payment Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1227,7 +1227,7 @@ export default function RevenueDashboard() {
                           ledger_active: {
                             bg: "rgba(16, 185, 129, 0.12)",
                             color: "#10B981",
-                            label: "Ledger Active"
+                            label: "Payment Active"
                           },
                           legacy_access: {
                             bg: "rgba(245, 158, 11, 0.12)",
@@ -1237,12 +1237,12 @@ export default function RevenueDashboard() {
                           ledger_ready: {
                             bg: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
                             color: "var(--primary, #8B5CF6)",
-                            label: "Ledger Ready"
+                            label: "Payment Ready"
                           }
                         }[item.ledgerStatus] || {
                           bg: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)",
                           color: "var(--primary, #8B5CF6)",
-                          label: item.ledgerStatusLabel || "Ledger Ready"
+                          label: (item.ledgerStatusLabel || "Payment Ready").replace(/Ledger/gi, "Payment")
                         };
 
                         return (
@@ -2142,10 +2142,10 @@ export default function RevenueDashboard() {
                     <button
                       onClick={() => {
                         const rows = [
-                          { Category: "Mock Exams", Catalog_Items: catalogData?.summary?.paidQuizzesCount || 0, Entitled_Students: catalogData?.summary?.entitledQuizUsers || 0, Ledger_Status: "Unified Ledger Active" },
-                          { Category: "Practice Tests", Catalog_Items: catalogData?.summary?.paidPracticeCount || 0, Entitled_Students: catalogData?.summary?.entitledPracticeUsers || 0, Ledger_Status: "Unified Ledger Active" },
-                          { Category: "Exam Series", Catalog_Items: catalogData?.summary?.paidSeriesCount || 0, Entitled_Students: "N/A", Ledger_Status: "Unified Ledger Active" },
-                          { Category: "Flashcards", Catalog_Items: catalogData?.summary?.paidFlashcardSetsCount || 0, Entitled_Students: "N/A", Ledger_Status: "Unified Ledger Active" }
+                          { Category: "Mock Exams", Catalog_Items: catalogData?.summary?.paidQuizzesCount || 0, Entitled_Students: catalogData?.summary?.entitledQuizUsers || 0, Payment_Status: "Payment Tracking Active" },
+                          { Category: "Practice Tests", Catalog_Items: catalogData?.summary?.paidPracticeCount || 0, Entitled_Students: catalogData?.summary?.entitledPracticeUsers || 0, Payment_Status: "Payment Tracking Active" },
+                          { Category: "Exam Series", Catalog_Items: catalogData?.summary?.paidSeriesCount || 0, Entitled_Students: "N/A", Payment_Status: "Payment Tracking Active" },
+                          { Category: "Flashcards", Catalog_Items: catalogData?.summary?.paidFlashcardSetsCount || 0, Entitled_Students: "N/A", Payment_Status: "Payment Tracking Active" }
                         ];
                         downloadCsv("PrepMark_Catalog_Entitlements", rows);
                       }}
