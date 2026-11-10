@@ -68,7 +68,9 @@ const DATE_PRESETS = [
   { key: "today", label: "Today" },
   { key: "7d", label: "Last 7 Days" },
   { key: "this_month", label: "This Month" },
+  { key: "last_month", label: "Last Month" },
   { key: "this_year", label: "This Year" },
+  { key: "last_year", label: "Last Year" },
   { key: "custom", label: "Custom Range" }
 ];
 
@@ -125,6 +127,7 @@ export default function RevenueDashboard() {
   const [customTo, setCustomTo] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [period, setPeriod] = useState("monthly"); // monthly vs yearly vs daily
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Main Analytics Data
   const [loading, setLoading] = useState(true);
@@ -374,9 +377,6 @@ export default function RevenueDashboard() {
             <div className="revenue-title-area">
               <div className="revenue-title-row">
                 <h1 className="revenue-page-title">Revenue Management</h1>
-                <Badge variant="outline" style={{ background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6", borderColor: "rgba(139, 92, 246, 0.3)", fontSize: "11px", fontWeight: "700" }}>
-                  <ShieldCheck className="w-3.5 h-3.5 mr-1" /> RBAC Enforced
-                </Badge>
               </div>
               <p className="revenue-page-subtitle">
                 Centralized financial operations, subscriber intelligence, catalog monetization, and audit logs.
@@ -431,6 +431,7 @@ export default function RevenueDashboard() {
                   if (activeTab === "customers") fetchCustomers();
                   if (activeTab === "exams-practice") fetchCatalog();
                   if (activeTab === "ai-plans" && aiSubTab === "usage-analytics") fetchAiUsage();
+                  setRefreshTrigger((prev) => prev + 1);
                 }}
                 className="revenue-refresh-btn"
                 title="Refresh All Revenue Data"
@@ -979,7 +980,14 @@ export default function RevenueDashboard() {
 
               {/* Sub-tab 3: AI Subscribers (Embedded AiSubscribers.jsx) */}
               {aiSubTab === "subscribers" && (
-                <AiSubscribers isEmbedded={true} onNavigateSubtab={handleAiSubTabChange} />
+                <AiSubscribers
+                  isEmbedded={true}
+                  onNavigateSubtab={handleAiSubTabChange}
+                  datePreset={datePreset}
+                  customFrom={customFrom}
+                  customTo={customTo}
+                  refreshTrigger={refreshTrigger}
+                />
               )}
 
               {/* Sub-tab 4: AI Usage Analytics */}

@@ -21,7 +21,8 @@ function resolveDateFilter(query) {
 
   if (datePreset === "today") {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    dateMatch.createdAt = { $gte: startOfToday };
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfToday, $lte: endOfToday };
   } else if (datePreset === "7d" || datePreset === "last_7_days") {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     dateMatch.createdAt = { $gte: sevenDaysAgo };
@@ -30,14 +31,28 @@ function resolveDateFilter(query) {
     dateMatch.createdAt = { $gte: thirtyDaysAgo };
   } else if (datePreset === "this_month") {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    dateMatch.createdAt = { $gte: startOfMonth };
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfMonth, $lte: endOfMonth };
+  } else if (datePreset === "last_month") {
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfLastMonth, $lte: endOfLastMonth };
   } else if (datePreset === "this_year") {
     const startOfYear = new Date(now.getFullYear(), 0, 1);
-    dateMatch.createdAt = { $gte: startOfYear };
+    const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfYear, $lte: endOfYear };
+  } else if (datePreset === "last_year") {
+    const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+    const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfLastYear, $lte: endOfLastYear };
   } else if (from || to) {
     dateMatch.createdAt = {};
     if (from) dateMatch.createdAt.$gte = new Date(from);
-    if (to) dateMatch.createdAt.$lte = new Date(to);
+    if (to) {
+      const toDate = new Date(to);
+      toDate.setHours(23, 59, 59, 999);
+      dateMatch.createdAt.$lte = toDate;
+    }
   }
 
   return dateMatch;

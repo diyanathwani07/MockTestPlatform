@@ -5,23 +5,75 @@ const Quiz = require("../models/Quiz");
 const AiPlan = require("../models/AiPlan");
 const { syncLegacySubscriptions } = require("../utils/subscriptionUtils");
 
+function resolveDateFilter(query = {}) {
+  const { datePreset, from, to } = query;
+  const now = new Date();
+  const dateMatch = {};
+
+  if (datePreset === "today") {
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfToday, $lte: endOfToday };
+  } else if (datePreset === "7d" || datePreset === "last_7_days") {
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    dateMatch.createdAt = { $gte: sevenDaysAgo };
+  } else if (datePreset === "30d" || datePreset === "last_30_days") {
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    dateMatch.createdAt = { $gte: thirtyDaysAgo };
+  } else if (datePreset === "this_month") {
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfMonth, $lte: endOfMonth };
+  } else if (datePreset === "last_month") {
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfLastMonth, $lte: endOfLastMonth };
+  } else if (datePreset === "this_year") {
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfYear, $lte: endOfYear };
+  } else if (datePreset === "last_year") {
+    const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+    const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+    dateMatch.createdAt = { $gte: startOfLastYear, $lte: endOfLastYear };
+  } else if (from || to) {
+    dateMatch.createdAt = {};
+    if (from) dateMatch.createdAt.$gte = new Date(from);
+    if (to) {
+      const toDate = new Date(to);
+      toDate.setHours(23, 59, 59, 999);
+      dateMatch.createdAt.$lte = toDate;
+    }
+  }
+
+  return dateMatch;
+}
+
 // 1. GET /api/admin/ai-plans/subscribers (Overview KPIs & Plan Popularity)
 const getSubscribersOverview = async (req, res) => {
   try {
     const now = new Date();
+    const dateMatch = resolveDateFilter(req.query);
 
-    // 1. Total distinct students with any subscription
-    const distinctStudents = await Subscription.distinct("studentId");
+    // 1. Total distinct students with any subscription matching date window or all-time
+    const distinctStudents = Object.keys(dateMatch).length > 0
+      ? await Subscription.distinct("studentId", dateMatch)
+      : await Subscription.distinct("studentId");
     const totalSubscribers = distinctStudents.length;
 
-    // 2. Currently active subscribers count (status === "active" AND expiryDate > now)
-    const activeSubscribersCount = await Subscription.countDocuments({
+    // 2. Currently active subscribers count
+    const activeMatch = {
       status: "active",
       expiryDate: { $gt: now }
-    });
+    };
+    if (dateMatch.createdAt) {
+      activeMatch.createdAt = dateMatch.createdAt;
+    }
+    const activeSubscribersCount = await Subscription.countDocuments(activeMatch);
 
     // 3. New this month vs New last month & repeat purchase rate
     const firstPurchaseDates = await Subscription.aggregate([
+      ...(Object.keys(dateMatch).length > 0 ? [{ $match: dateMatch }] : []),
       {
         $group: {
           _id: "$studentId",
@@ -60,6 +112,7 @@ const getSubscribersOverview = async (req, res) => {
 
     // 4. Plan Popularity Breakdown (Distinct Subscriber Count per Plan, Consolidated)
     const rawPlanPopularity = await Subscription.aggregate([
+      ...(Object.keys(dateMatch).length > 0 ? [{ $match: dateMatch }] : []),
       {
         $group: {
           _id: {

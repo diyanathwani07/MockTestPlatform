@@ -44,7 +44,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const BAR_COLORS = ["#8B5CF6", "#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#06B6D4"];
 
-export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) {
+export default function AiSubscribers({
+  isEmbedded = false,
+  onNavigateSubtab,
+  datePreset = "30d",
+  customFrom = "",
+  customTo = "",
+  refreshTrigger = 0
+}) {
   const navigate = useNavigate();
 
   // Overview & Metrics State
@@ -76,21 +83,21 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
   const [drawerData, setDrawerData] = useState(null);
 
   // 1. Fetch Overview KPIs & Popularity
-  const fetchOverview = async () => {
+  const fetchOverview = useCallback(async () => {
     try {
       setOverviewLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribers`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      let url = `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribers?datePreset=${datePreset}`;
+      if (datePreset === "custom" && customFrom) url += `&from=${customFrom}`;
+      if (datePreset === "custom" && customTo) url += `&to=${customTo}`;
+      const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
       setOverviewData(res.data);
     } catch (error) {
       console.error("Failed to load subscribers overview:", error);
     } finally {
       setOverviewLoading(false);
     }
-  };
+  }, [datePreset, customFrom, customTo]);
 
   // 2. Fetch Available AI Plans
   const fetchPlans = async () => {
@@ -118,6 +125,9 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
         page: currentPage,
         limit: 10
       });
+      if (datePreset) params.set("datePreset", datePreset);
+      if (datePreset === "custom" && customFrom) params.set("from", customFrom);
+      if (datePreset === "custom" && customTo) params.set("to", customTo);
 
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribers/list?${params.toString()}`,
@@ -160,11 +170,11 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
   useEffect(() => {
     fetchOverview();
     fetchPlans();
-  }, []);
+  }, [fetchOverview, refreshTrigger]);
 
   useEffect(() => {
     fetchSubscribersList();
-  }, [fetchSubscribersList]);
+  }, [fetchSubscribersList, refreshTrigger]);
 
   // Handle Search Input with debounce
   const handleSearchChange = (e) => {
@@ -407,14 +417,14 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color, rgba(128,128,128,0.15))" />
                       <XAxis
                         dataKey="planName"
-                        stroke="var(--text-secondary, #94a3b8)"
-                        fontSize={11}
+                        stroke="var(--border-color, rgba(128,128,128,0.2))"
+                        tick={{ fill: "var(--text-secondary, #94a3b8)", fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
-                        stroke="var(--text-secondary, #94a3b8)"
-                        fontSize={11}
+                        stroke="var(--border-color, rgba(128,128,128,0.2))"
+                        tick={{ fill: "var(--text-secondary, #94a3b8)", fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
                         allowDecimals={false}
@@ -425,8 +435,23 @@ export default function AiSubscribers({ isEmbedded = false, onNavigateSubtab }) 
                           borderColor: "var(--border-color, #2e2c45)",
                           borderRadius: "8px",
                           color: "var(--text-primary, #ffffff)",
-                          fontSize: "12px"
+                          fontSize: "12px",
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
+                          padding: "8px 12px"
                         }}
+                        itemStyle={{
+                          color: "var(--text-primary, #ffffff)",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          padding: 0
+                        }}
+                        labelStyle={{
+                          color: "var(--text-primary, #ffffff)",
+                          fontSize: "12.5px",
+                          fontWeight: "700",
+                          marginBottom: "4px"
+                        }}
+                        cursor={{ fill: "rgba(139, 92, 246, 0.08)" }}
                         formatter={(val) => [`${val} ${val === 1 ? 'subscriber' : 'subscribers'}`, "Subscribers"]}
                       />
                       <Bar dataKey="subscriberCount" radius={[6, 6, 0, 0]}>

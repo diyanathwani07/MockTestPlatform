@@ -171,6 +171,44 @@
 /* Popularity Chart Section */
 .sub-popularity-card {
   padding: 22px;
+  background: var(--bg-card, #1c1b2e);
+  border: 1.5px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 14px;
+}
+
+/* Dark mode popularity card */
+body.dark-mode .sub-popularity-card,
+.dark .sub-popularity-card {
+  background: var(--bg-card, #1c1b2e) !important;
+  border-color: var(--border-color, rgba(255, 255, 255, 0.1)) !important;
+}
+
+body.dark-mode .sub-card-title,
+.dark .sub-card-title {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .sub-card-subtitle,
+.dark .sub-card-subtitle {
+  color: #94A3B8 !important;
+}
+
+/* Light mode popularity card */
+body:not(.dark-mode) .sub-popularity-card,
+:root:not(.dark) .sub-popularity-card {
+  background: #FFFFFF !important;
+  border: 1.5px solid #E2E8F0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+body:not(.dark-mode) .sub-card-title,
+:root:not(.dark) .sub-card-title {
+  color: #0F172A !important;
+}
+
+body:not(.dark-mode) .sub-card-subtitle,
+:root:not(.dark) .sub-card-subtitle {
+  color: #64748B !important;
 }
 
 .sub-card-header {
