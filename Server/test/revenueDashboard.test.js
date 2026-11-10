@@ -246,8 +246,8 @@ async function runRevenueDashboardSuite() {
       assert(Array.isArray(categories) && categories.length > 0, "Category breakdown is provided");
       const examCategory = categories.find(c => c.category === "Mock Exams");
       assert(
-        examCategory && examCategory.hasHistoricalLedger === false && examCategory.statusText.includes("Historical transaction data unavailable"),
-        "Mock Exams category honestly declares historical transaction logs unavailable without fabrication"
+        examCategory && (examCategory.hasHistoricalLedger ? examCategory.statusText === "Ledger Active" : examCategory.statusText.includes("Historical transaction data unavailable")),
+        "Mock Exams category accurately reflects transaction ledger presence or legacy preservation without fabrication"
       );
 
       const aiPlanCategory = categories.find(c => c.category === "AI Plans & Subscriptions");
@@ -365,9 +365,24 @@ async function runRevenueDashboardSuite() {
 
       const provenanceNotice = res.data.provenanceNotice;
       assert(
-        provenanceNotice && provenanceNotice.hasHistoricalLedger === false,
-        "Honest provenance notice explains historical absence of separate exam transaction rows"
+        provenanceNotice && provenanceNotice.hasHistoricalLedger === true,
+        "Phase 3 provenance notice confirms unified financial ledger active"
       );
+      assert(
+        provenanceNotice && provenanceNotice.message.includes("unified transaction ledger"),
+        "Provenance notice explains all new monetization events are recorded in unified ledger"
+      );
+
+      const catalogQuizzes = res.data.catalog?.quizzes || [];
+      if (catalogQuizzes.length > 0) {
+        const sampleQuiz = catalogQuizzes[0];
+        assert(
+          ["ledger_active", "ledger_ready", "legacy_access"].includes(sampleQuiz.ledgerStatus),
+          `Catalog quiz returns valid ledger status badge (${sampleQuiz.ledgerStatus})`
+        );
+        assert(typeof sampleQuiz.price === "number", "Catalog quiz price is a valid number");
+        assert(typeof sampleQuiz.verifiedRevenue === "number", "Catalog quiz verifiedRevenue is a valid number");
+      }
     }
 
     // -------------------------------------------------------------

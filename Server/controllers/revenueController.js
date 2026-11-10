@@ -851,11 +851,11 @@ const getRevenueCustomers = async (req, res) => {
 const getExamsPracticeFinancials = async (req, res) => {
   try {
     const paidQuizzes = await Quiz.find({ isPaid: true })
-      .select("title subject price questions count duration createdAt")
+      .select("title subject price plans questions count duration createdAt")
       .sort({ createdAt: -1 });
 
     const paidPractice = await PracticeQuiz.find({ isPaid: true })
-      .select("title subject price totalQuestions duration createdAt")
+      .select("title subject price plans totalQuestions duration createdAt")
       .sort({ createdAt: -1 });
 
     const paidSeries = await ExamSeries.find({})
@@ -868,28 +868,179 @@ const getExamsPracticeFinancials = async (req, res) => {
       .sort({ createdAt: -1 })
       .catch(() => []);
 
-    const usersWithExams = await User.countDocuments({ "purchasedExams.0": { $exists: true } });
-    const usersWithPractice = await User.countDocuments({ "purchasedPractice.0": { $exists: true } });
+    // 1. Gather all catalog item ObjectIds
+    const allItemIds = [
+      ...paidQuizzes.map((q) => q._id),
+      ...paidPractice.map((p) => p._id),
+      ...paidSeries.map((s) => s._id),
+      ...paidFlashcards.map((f) => f._id)
+    ];
+
+    // 2. Aggregate transactions from unified PurchaseTransaction ledger
+    const txAggregation = await PurchaseTransaction.aggregate([
+      { $match: { itemId: { $in: allItemIds } } },
+      {
+        $group: {
+          _id: "$itemId",
+          txCount: { $sum: 1 },
+          verifiedRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "verified_payment"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          },
+          simulatedRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$status", "paid"] },
+                    { $eq: ["$provenance", "dev_simulation"] }
+                  ]
+                },
+                "$amount",
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    const txMap = new Map();
+    txAggregation.forEach((t) => {
+      txMap.set(t._id.toString(), {
+        txCount: t.txCount || 0,
+        verifiedRevenue: t.verifiedRevenue || 0,
+        simulatedRevenue: t.simulatedRevenue || 0
+      });
+    });
+
+    // 3. Scan User collection for historical legacy entitlements without payment records
+    const usersWithEntitlements = await User.find({
+      $or: [
+        { "purchasedExams.0": { $exists: true } },
+        { "purchasedPractice.0": { $exists: true } }
+      ]
+    }).select("purchasedExams purchasedPractice");
+
+    const legacyMap = new Map();
+    let entitledQuizUsersCount = 0;
+    let entitledPracticeUsersCount = 0;
+
+    usersWithEntitlements.forEach((u) => {
+      let userHasExam = false;
+      let userHasPractice = false;
+
+      (u.purchasedExams || []).forEach((eId) => {
+        const idStr = eId.toString();
+        legacyMap.set(idStr, (legacyMap.get(idStr) || 0) + 1);
+        userHasExam = true;
+      });
+
+      (u.purchasedPractice || []).forEach((pId) => {
+        const idStr = pId.toString();
+        legacyMap.set(idStr, (legacyMap.get(idStr) || 0) + 1);
+        userHasPractice = true;
+      });
+
+      if (userHasExam) entitledQuizUsersCount++;
+      if (userHasPractice) entitledPracticeUsersCount++;
+    });
+
+    // 4. Helper to determine accurate backend-driven ledger status and pricing
+    const mapCatalogItem = (item, type) => {
+      const idStr = item._id.toString();
+      const tx = txMap.get(idStr);
+      const txCount = tx ? tx.txCount : 0;
+      const legacyCount = legacyMap.get(idStr) || 0;
+      const verifiedRevenue = tx ? tx.verifiedRevenue : 0;
+      const simulatedRevenue = tx ? tx.simulatedRevenue : 0;
+
+      // Pricing logic: use direct price or starting price from active plans
+      let price = Number(item.price) || 0;
+      let startingPrice = price;
+      let hasPlans = false;
+      let plansCount = 0;
+
+      if (item.plans && Array.isArray(item.plans) && item.plans.length > 0) {
+        plansCount = item.plans.length;
+        const activePlans = item.plans.filter((p) => p.isActive !== false);
+        const validPrices = (activePlans.length > 0 ? activePlans : item.plans)
+          .map((p) => Number(p.price) || 0)
+          .filter((p) => p > 0);
+        if (validPrices.length > 0) {
+          hasPlans = true;
+          startingPrice = Math.min(...validPrices);
+          if (price === 0) {
+            price = startingPrice;
+          }
+        }
+      }
+
+      // Backend-driven status determination
+      let ledgerStatus = "ledger_ready";
+      let ledgerStatusLabel = "Ledger Ready";
+
+      if (txCount > 0) {
+        ledgerStatus = "ledger_active";
+        ledgerStatusLabel = "Ledger Active";
+      } else if (legacyCount > 0) {
+        ledgerStatus = "legacy_access";
+        ledgerStatusLabel = "Legacy Access";
+      } else {
+        ledgerStatus = "ledger_ready";
+        ledgerStatusLabel = "Ledger Ready";
+      }
+
+      return {
+        _id: item._id,
+        title: item.title,
+        subject: item.subject || (type === "series" ? "Exam Series" : "General"),
+        price,
+        startingPrice,
+        hasPlans,
+        plansCount,
+        duration: item.duration || 0,
+        totalQuestions: item.totalQuestions || item.count || (item.questions ? item.questions.length : 0),
+        createdAt: item.createdAt,
+        ledgerStatus,
+        ledgerStatusLabel,
+        txCount,
+        legacyCount,
+        verifiedRevenue,
+        simulatedRevenue
+      };
+    };
 
     res.json({
       success: true,
       provenanceNotice: {
-        hasHistoricalLedger: false,
-        message: "Exam, Practice, Series, and Flashcard purchases currently grant active student entitlements. Detailed monetary transaction order ledgers will be unified in Phase 3. Verified collected revenue displays ₹0."
+        hasHistoricalLedger: true,
+        message:
+          "All new monetization events across AI Plans, Exams, Practice Tests, Series, and Flashcards are recorded in the unified transaction ledger. In accordance with financial audit integrity, verified collected revenue reflects confirmed monetary bank payments, while historical student entitlements without payment records remain preserved."
       },
       summary: {
         paidQuizzesCount: paidQuizzes.length,
-        entitledQuizUsers: usersWithExams,
+        entitledQuizUsers: entitledQuizUsersCount,
         paidPracticeCount: paidPractice.length,
-        entitledPracticeUsers: usersWithPractice,
+        entitledPracticeUsers: entitledPracticeUsersCount,
         paidSeriesCount: paidSeries.length,
         paidFlashcardSetsCount: paidFlashcards.length
       },
       catalog: {
-        quizzes: paidQuizzes,
-        practice: paidPractice,
-        series: paidSeries,
-        flashcards: paidFlashcards
+        quizzes: paidQuizzes.map((q) => mapCatalogItem(q, "quiz")),
+        practice: paidPractice.map((p) => mapCatalogItem(p, "practice")),
+        series: paidSeries.map((s) => mapCatalogItem(s, "series")),
+        flashcards: paidFlashcards.map((f) => mapCatalogItem(f, "flashcard"))
       }
     });
   } catch (error) {

@@ -1209,19 +1209,61 @@ export default function RevenueDashboard() {
                   <tbody>
                     {(catalogData?.catalog?.[catalogTab] || [])
                       .filter((item) => (item.title || "").toLowerCase().includes(catalogSearch.toLowerCase()))
-                      .map((item) => (
-                        <tr key={item._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                          <td style={{ padding: "12px 10px", fontWeight: "700", color: "var(--text-primary)" }}>{item.title}</td>
-                          <td style={{ padding: "12px 10px", color: "var(--text-secondary)" }}>{item.subject || "General"}</td>
-                          <td style={{ padding: "12px 10px", fontWeight: "800", color: "#8B5CF6" }}>₹{item.price || 0}</td>
-                          <td style={{ padding: "12px 10px", color: "var(--text-secondary)" }}>₹0</td>
-                          <td style={{ padding: "12px 10px" }}>
-                            <span style={{ fontSize: "10.5px", padding: "2px 8px", borderRadius: "10px", background: "rgba(139, 92, 246, 0.12)", color: "#8B5CF6", fontWeight: "600" }}>
-                              Ledger Ready
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      .map((item) => {
+                        const statusBadge = {
+                          ledger_active: {
+                            bg: "rgba(16, 185, 129, 0.12)",
+                            color: "#10B981",
+                            label: "Ledger Active"
+                          },
+                          legacy_access: {
+                            bg: "rgba(245, 158, 11, 0.12)",
+                            color: "#F59E0B",
+                            label: "Legacy Access"
+                          },
+                          ledger_ready: {
+                            bg: "rgba(139, 92, 246, 0.12)",
+                            color: "#8B5CF6",
+                            label: "Ledger Ready"
+                          }
+                        }[item.ledgerStatus] || {
+                          bg: "rgba(139, 92, 246, 0.12)",
+                          color: "#8B5CF6",
+                          label: item.ledgerStatusLabel || "Ledger Ready"
+                        };
+
+                        return (
+                          <tr key={item._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
+                            <td style={{ padding: "12px 10px", fontWeight: "700", color: "var(--text-primary)" }}>
+                              <div>{item.title}</div>
+                              {item.plansCount > 0 && (
+                                <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "500" }}>
+                                  {item.plansCount} pricing tier{item.plansCount === 1 ? "" : "s"}
+                                </div>
+                              )}
+                            </td>
+                            <td style={{ padding: "12px 10px", color: "var(--text-secondary)" }}>{item.subject || "General"}</td>
+                            <td style={{ padding: "12px 10px", fontWeight: "800", color: "#8B5CF6" }}>
+                              {item.hasPlans ? `From ₹${formatCurrency(item.startingPrice || item.price)}` : `₹${formatCurrency(item.price || 0)}`}
+                            </td>
+                            <td style={{ padding: "12px 10px", fontWeight: "700", color: item.verifiedRevenue > 0 ? "#10B981" : "var(--text-secondary)" }}>
+                              ₹{formatCurrency(item.verifiedRevenue || 0)}
+                            </td>
+                            <td style={{ padding: "12px 10px" }}>
+                              <span style={{
+                                fontSize: "10.5px",
+                                padding: "2px 8px",
+                                borderRadius: "10px",
+                                background: statusBadge.bg,
+                                color: statusBadge.color,
+                                fontWeight: "600"
+                              }}>
+                                {statusBadge.label}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
 
                     {(!catalogData?.catalog?.[catalogTab] || catalogData.catalog[catalogTab].length === 0) && (
                       <tr>
@@ -2087,10 +2129,10 @@ export default function RevenueDashboard() {
                     <button
                       onClick={() => {
                         const rows = [
-                          { Category: "Mock Exams", Catalog_Items: catalogData?.summary?.paidQuizzesCount || 0, Entitled_Students: catalogData?.summary?.entitledQuizUsers || 0, Ledger_Status: "Pending Phase 3 Migration" },
-                          { Category: "Practice Tests", Catalog_Items: catalogData?.summary?.paidPracticeCount || 0, Entitled_Students: catalogData?.summary?.entitledPracticeUsers || 0, Ledger_Status: "Pending Phase 3 Migration" },
-                          { Category: "Exam Series", Catalog_Items: catalogData?.summary?.paidSeriesCount || 0, Entitled_Students: "N/A", Ledger_Status: "Pending Phase 3 Migration" },
-                          { Category: "Flashcards", Catalog_Items: catalogData?.summary?.paidFlashcardSetsCount || 0, Entitled_Students: "N/A", Ledger_Status: "Pending Phase 3 Migration" }
+                          { Category: "Mock Exams", Catalog_Items: catalogData?.summary?.paidQuizzesCount || 0, Entitled_Students: catalogData?.summary?.entitledQuizUsers || 0, Ledger_Status: "Unified Ledger Active" },
+                          { Category: "Practice Tests", Catalog_Items: catalogData?.summary?.paidPracticeCount || 0, Entitled_Students: catalogData?.summary?.entitledPracticeUsers || 0, Ledger_Status: "Unified Ledger Active" },
+                          { Category: "Exam Series", Catalog_Items: catalogData?.summary?.paidSeriesCount || 0, Entitled_Students: "N/A", Ledger_Status: "Unified Ledger Active" },
+                          { Category: "Flashcards", Catalog_Items: catalogData?.summary?.paidFlashcardSetsCount || 0, Entitled_Students: "N/A", Ledger_Status: "Unified Ledger Active" }
                         ];
                         downloadCsv("PrepMark_Catalog_Entitlements", rows);
                       }}
