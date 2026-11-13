@@ -20,7 +20,7 @@ function Students() {
   const [loading, setLoading] = useState(true);
   const [viewTab, setViewTab] = useState("active"); // "active" or "archived"
   
-  // Left Sidebar Manage Actions Drawer State
+  // Right Sidebar Manage Actions Drawer State
   const [actionsDrawerOpen, setActionsDrawerOpen] = useState(false);
   const [drawerStudent, setDrawerStudent] = useState(null);
   const [drawerSubView, setDrawerSubView] = useState('menu'); // 'menu' | 'ai_plan' | 'tickets' | 'suspend' | 'reset' | 'archive'
@@ -1354,7 +1354,7 @@ function Students() {
             </div>
           )}
 
-          {/* ================= MANAGE ACTIONS LEFT SIDEBAR / DRAWER ================= */}
+          {/* ================= MANAGE ACTIONS RIGHT SIDEBAR / DRAWER ================= */}
           {actionsDrawerOpen && drawerStudent && (
             <div 
               className="actions-drawer-overlay"

@@ -914,7 +914,7 @@ function Staff() {
             </div>
           )}
 
-          {/* ================= MANAGE ACTIONS LEFT SIDEBAR / DRAWER (ADMINS) ================= */}
+          {/* ================= MANAGE ACTIONS RIGHT SIDEBAR / DRAWER (ADMINS) ================= */}
           {actionsDrawerOpen && drawerStaff && (
             <div 
               className="actions-drawer-overlay"
