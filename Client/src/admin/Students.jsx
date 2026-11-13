@@ -1051,7 +1051,15 @@ function Students() {
                               title="Click to view details"
                             >
                               <div className="user-avatar-circle" style={{ overflow: 'hidden' }}>
-                                {s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S"}
+                                {(s.avatar || s.profilePhoto) ? (
+                                  <img 
+                                    src={s.avatar || s.profilePhoto} 
+                                    alt={s.fullName} 
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                  />
+                                ) : (
+                                  s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S"
+                                )}
                               </div>
                               <div>
                                 <div className="user-name-text" style={{ fontWeight: '600' }}>{s.fullName}</div>

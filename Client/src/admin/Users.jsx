@@ -1117,8 +1117,8 @@ function Users() {
                           title="Click to view details"
                         >
                           <div className="user-avatar-circle" style={{ overflow: 'hidden' }}>
-                            {u.avatar ? (
-                              <img src={u.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={u.fullName} />
+                            {(u.avatar || u.profilePhoto) ? (
+                              <img src={u.avatar || u.profilePhoto} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={u.fullName} />
                             ) : (
                               u.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"
                             )}

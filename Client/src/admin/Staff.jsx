@@ -586,9 +586,18 @@ function Staff() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                               <div className="user-avatar-circle" style={{
                                 background: isSuper ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'var(--primary)',
-                                color: '#fff', fontWeight: '700'
+                                color: '#fff', fontWeight: '700',
+                                overflow: 'hidden'
                               }}>
-                                {s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S"}
+                                {(s.avatar || s.profilePhoto) ? (
+                                  <img 
+                                    src={s.avatar || s.profilePhoto} 
+                                    alt={s.fullName} 
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                  />
+                                ) : (
+                                  s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S"
+                                )}
                               </div>
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
