@@ -1,0 +1,490 @@
+/* ==========================================================================
+   IncomingReminderModal.css
+   Clean, native theme-aligned UI for real-time PrepMark voice reminders.
+   Adapts automatically to active light, dark, and custom theme variables.
+   ========================================================================== */
+
+.irm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: irmFadeIn 0.2s ease-out;
+  box-sizing: border-box;
+}
+
+@keyframes irmFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes irmSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes irmWavePulse {
+  0%, 100% { height: 6px; }
+  50%      { height: 18px; }
+}
+
+@keyframes irmPulseRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes irmDotBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+.irm-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background-color: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 22px;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 24px 22px 26px 22px;
+  color: var(--text-primary, #0f172a);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  animation: irmSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+/* Subtle Close Button */
+.irm-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  color: var(--text-secondary, #64748b) !important;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.irm-close-btn:hover {
+  background-color: var(--option-hover, rgba(0, 0, 0, 0.08)) !important;
+  color: var(--text-primary, #0f172a) !important;
+}
+
+/* Status Pill */
+.irm-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  border-radius: 9999px;
+  background-color: var(--secondary, rgba(124, 58, 237, 0.1));
+  border: 1px solid var(--border-color, rgba(124, 58, 237, 0.2));
+  color: var(--primary, #7c3aed);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-bottom: 16px;
+  text-transform: capitalize;
+}
+
+.irm-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--primary, #7c3aed);
+  animation: irmDotBlink 1.4s infinite;
+}
+
+/* Center Avatar & Visualizer */
+.irm-avatar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  margin-bottom: 14px;
+}
+
+.irm-pulse-ring {
+  position: absolute;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background-color: var(--primary, #7c3aed);
+  opacity: 0.15;
+  animation: irmPulseRing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.irm-avatar-circle {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: var(--secondary, #f3e8ff);
+  color: var(--primary, #7c3aed);
+  border: 2px solid var(--border-color, rgba(124, 58, 237, 0.3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.irm-avatar-circle.connecting {
+  background: var(--secondary, #f3e8ff);
+  color: var(--primary, #7c3aed);
+}
+
+.irm-avatar-circle.countdown {
+  background: var(--primary, #7c3aed);
+  color: var(--primary-foreground, #ffffff);
+  border-color: var(--primary, #7c3aed);
+}
+
+.irm-avatar-circle.playing {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+}
+
+.irm-avatar-circle.completed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.irm-avatar-circle.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* Audio Spectrum Visualizer */
+.irm-spectrum-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 18px;
+  margin-top: 10px;
+}
+
+.irm-spectrum-bar {
+  width: 3.5px;
+  background-color: var(--primary, #10b981);
+  border-radius: 3px;
+}
+
+.irm-spectrum-bar:nth-child(1) { height: 8px; animation: irmWavePulse 0.9s infinite ease-in-out; }
+.irm-spectrum-bar:nth-child(2) { height: 16px; animation: irmWavePulse 0.6s infinite ease-in-out; }
+.irm-spectrum-bar:nth-child(3) { height: 12px; animation: irmWavePulse 1.1s infinite ease-in-out; }
+.irm-spectrum-bar:nth-child(4) { height: 18px; animation: irmWavePulse 0.75s infinite ease-in-out; }
+.irm-spectrum-bar:nth-child(5) { height: 9px; animation: irmWavePulse 1s infinite ease-in-out; }
+
+/* Text Headings */
+.irm-caller-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  margin: 2px 0 4px 0;
+  letter-spacing: -0.2px;
+}
+
+.irm-session-status {
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Task Details Box */
+.irm-task-card {
+  width: 100%;
+  margin: 16px 0 12px 0;
+  padding: 13px 15px;
+  border-radius: 14px;
+  background-color: var(--bg-input, var(--option-bg, rgba(0, 0, 0, 0.03)));
+  border: 1px solid var(--border-color, #e2e8f0);
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.irm-task-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--primary, #7c3aed);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.irm-task-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  margin: 0 0 3px 0;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.irm-task-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  margin: 0;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+/* Ringing Expiration Timer */
+.irm-ringing-timer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  margin-bottom: 16px;
+}
+
+.irm-ringing-timer svg {
+  color: var(--primary, #7c3aed);
+}
+
+/* Dialer Actions */
+.irm-dialer-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 36px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.irm-action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Base Circle Action Button */
+.irm-circle-btn {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease !important;
+  padding: 0 !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+
+.irm-circle-btn:hover:not(:disabled) {
+  transform: scale(1.07);
+}
+
+.irm-circle-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* Decline / Hangup - Solid Bright Red Call Button */
+.irm-circle-btn.decline {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45) !important;
+}
+
+.irm-circle-btn.decline:hover {
+  background-color: #dc2626 !important;
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.55) !important;
+}
+
+.irm-circle-btn.decline svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Accept - Solid Bright Green Call Button */
+.irm-circle-btn.accept {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45) !important;
+}
+
+.irm-circle-btn.accept:hover {
+  background-color: #059669 !important;
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.55) !important;
+}
+
+.irm-circle-btn.accept svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Replay Button - User requested: "MAKE A WHITE CIRCLE IN REPLAY" */
+.irm-circle-btn.replay {
+  width: 54px !important;
+  height: 54px !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22) !important;
+}
+
+.irm-circle-btn.replay svg {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+}
+
+.irm-circle-btn.replay:hover:not(:disabled) {
+  background-color: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+  transform: scale(1.07) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28) !important;
+}
+
+.irm-circle-btn.replay:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+/* Action Labels */
+.irm-action-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 8px;
+  line-height: 1.2;
+}
+
+.irm-action-label.decline {
+  color: #ef4444 !important;
+}
+
+.irm-action-label.accept {
+  color: #10b981 !important;
+}
+
+.irm-action-label.replay {
+  color: var(--text-primary, #0f172a) !important;
+}
+
+/* ==========================================================================
+   EXPLICIT DARK THEME OVERRIDES
+   Guarantees full high contrast text and icons in dark mode
+   ========================================================================== */
+body.dark-mode .irm-modal-card,
+[data-theme="dark"] .irm-modal-card,
+.dark .irm-modal-card,
+html[class*="theme-"].dark .irm-modal-card {
+  color: #ffffff !important;
+}
+
+body.dark-mode .irm-caller-name,
+[data-theme="dark"] .irm-caller-name,
+.dark .irm-caller-name,
+html[class*="theme-"].dark .irm-caller-name,
+body.dark-mode .irm-task-title,
+[data-theme="dark"] .irm-task-title,
+.dark .irm-task-title,
+html[class*="theme-"].dark .irm-task-title {
+  color: #ffffff !important;
+}
+
+body.dark-mode .irm-session-status,
+[data-theme="dark"] .irm-session-status,
+.dark .irm-session-status,
+html[class*="theme-"].dark .irm-session-status,
+body.dark-mode .irm-task-desc,
+[data-theme="dark"] .irm-task-desc,
+.dark .irm-task-desc,
+html[class*="theme-"].dark .irm-task-desc {
+  color: #cbd5e1 !important;
+}
+
+body.dark-mode .irm-circle-btn.replay,
+[data-theme="dark"] .irm-circle-btn.replay,
+.dark .irm-circle-btn.replay,
+html[class*="theme-"].dark .irm-circle-btn.replay {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+body.dark-mode .irm-circle-btn.replay svg,
+[data-theme="dark"] .irm-circle-btn.replay svg,
+.dark .irm-circle-btn.replay svg,
+html[class*="theme-"].dark .irm-circle-btn.replay svg {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+}
+
+body.dark-mode .irm-circle-btn.decline,
+[data-theme="dark"] .irm-circle-btn.decline,
+.dark .irm-circle-btn.decline,
+html[class*="theme-"].dark .irm-circle-btn.decline {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .irm-circle-btn.decline svg,
+[data-theme="dark"] .irm-circle-btn.decline svg,
+.dark .irm-circle-btn.decline svg,
+html[class*="theme-"].dark .irm-circle-btn.decline svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+body.dark-mode .irm-action-label.replay,
+[data-theme="dark"] .irm-action-label.replay,
+.dark .irm-action-label.replay,
+html[class*="theme-"].dark .irm-action-label.replay {
+  color: #ffffff !important;
+}
+
+body.dark-mode .irm-action-label.decline,
+[data-theme="dark"] .irm-action-label.decline,
+.dark .irm-action-label.decline,
+html[class*="theme-"].dark .irm-action-label.decline {
+  color: #f87171 !important;
+}
+
+body.dark-mode .irm-action-label.accept,
+[data-theme="dark"] .irm-action-label.accept,
+.dark .irm-action-label.accept,
+html[class*="theme-"].dark .irm-action-label.accept {
+  color: #34d399 !important;
+}

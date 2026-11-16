@@ -20,6 +20,7 @@ import {
   BarChart2
 } from "lucide-react";
 import "../css/MultiQuizAnalytics.css";
+import { useTheme } from "../context/ThemeContext";
 
 export default function MultiQuizAnalyticsDashboard({
   resultId,
@@ -27,6 +28,7 @@ export default function MultiQuizAnalyticsDashboard({
   onViewSolutions,
   onBackToOverview
 }) {
+  const { isDark } = useTheme();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -571,8 +573,15 @@ export default function MultiQuizAnalyticsDashboard({
         <button
           className="mqa-btn-overview"
           onClick={onBackToOverview}
+          style={{
+            color: isDark ? "#FFFFFF" : "#1E293B",
+            backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#F8FAFC",
+            borderColor: isDark ? "rgba(255, 255, 255, 0.22)" : "#CBD5E1",
+            borderWidth: "1.5px",
+            borderStyle: "solid"
+          }}
         >
-          <span>Back to Overview</span>
+          <span style={{ color: isDark ? "#FFFFFF" : "#1E293B" }}>Back to Overview</span>
         </button>
       </div>
     </div>

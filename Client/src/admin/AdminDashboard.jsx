@@ -175,7 +175,7 @@ function AdminDashboard() {
 
   // Real-data aggregates with mockup fallbacks
   const activities = stats.activities && stats.activities.length > 0 ? stats.activities : [
-    { text: 'Quiz "BPSC Mock Test 5" published', time: '22 Jun 2026, 10:25 AM', icon: '📖', bg: '#EDE9FE', color: 'var(--primary)' },
+    { text: 'Quiz "BPSC Mock Test 5" published', time: '22 Jun 2026, 10:25 AM', icon: '📖', bg: 'var(--bg-input, rgba(0, 0, 0, 0.05))', color: 'var(--primary)' },
     { text: 'New quiz "The Loop Exam" created', time: '22 Jun 2026, 09:40 AM', icon: '➕', bg: '#FEF3C7', color: '#D97706' },
     { text: 'User Ravi Kumar attempted "BPSC Mock Test 5"', time: '22 Jun 2026, 09:15 AM', icon: '👥', bg: '#D1FAE5', color: '#10B981' },
     { text: 'Subject "History" updated', time: '21 Jun 2026, 04:45 PM', icon: '✏️', bg: '#DBEAFE', color: '#2563EB' },
@@ -289,9 +289,9 @@ function AdminDashboard() {
                     fontSize: "13px", 
                     cursor: "pointer", 
                     border: "none",
-                    background: activeDashboardView === "main" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
-                    color: activeDashboardView === "main" ? "#ffffff" : "var(--text-secondary, #6B7280)",
-                    boxShadow: activeDashboardView === "main" ? "0 2px 10px rgba(124, 58, 237, 0.35)" : "none",
+                    background: activeDashboardView === "main" ? "var(--primary)" : "transparent",
+                    color: activeDashboardView === "main" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary, #6B7280)",
+                    boxShadow: activeDashboardView === "main" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
                   }}
@@ -307,9 +307,9 @@ function AdminDashboard() {
                     fontSize: "13px", 
                     cursor: "pointer", 
                     border: "none",
-                    background: activeDashboardView === "support" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
-                    color: activeDashboardView === "support" ? "#ffffff" : "var(--text-secondary, #6B7280)",
-                    boxShadow: activeDashboardView === "support" ? "0 2px 10px rgba(124, 58, 237, 0.35)" : "none",
+                    background: activeDashboardView === "support" ? "var(--primary)" : "transparent",
+                    color: activeDashboardView === "support" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary, #6B7280)",
+                    boxShadow: activeDashboardView === "support" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none",
                     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     outline: "none"
                   }}
@@ -326,7 +326,7 @@ function AdminDashboard() {
               {/* Stat Cards */}
               <div className="stat-cards-grid">
                 <div className="stat-card accent-violet">
-                  <div className="stat-card-icon" style={{ background: "rgba(139, 92, 246, 0.15)", color: "#8B5CF6", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="stat-card-icon" style={{ background: "var(--bg-input, rgba(0, 0, 0, 0.05))", color: "var(--primary)", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <FileText size={24} />
                   </div>
                   <div>
@@ -399,9 +399,9 @@ function AdminDashboard() {
 
                     {/* Legends */}
                     <div style={{ display: "flex", gap: "20px", marginBottom: "16px", fontSize: "12.5px", fontWeight: "600" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(139, 92, 246, 0.15)", padding: "4px 12px", borderRadius: "100px" }}>
-                        <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#8B5CF6" }}></span>
-                        <span style={{ color: "#8B5CF6" }}>Created</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "var(--bg-input, rgba(0, 0, 0, 0.05))", padding: "4px 12px", borderRadius: "100px" }}>
+                        <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "var(--primary)" }}></span>
+                        <span style={{ color: "var(--primary)" }}>Created</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(16, 185, 129, 0.08)", padding: "4px 12px", borderRadius: "100px" }}>
                         <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }}></span>
@@ -442,7 +442,7 @@ function AdminDashboard() {
 
                       const stepX = (endX - startX) / (supportChartData.length - 1);
 
-                      const pointsCreated = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsCreated), val: d.ticketsCreated, label: d.label, dataset: "Tickets Created", color: "#8B5CF6" }));
+                      const pointsCreated = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsCreated), val: d.ticketsCreated, label: d.label, dataset: "Tickets Created", color: "var(--primary)" }));
                       const pointsResolved = supportChartData.map((d, i) => ({ x: startX + i * stepX, y: getScaledY(d.ticketsResolved), val: d.ticketsResolved, label: d.label, dataset: "Tickets Resolved", color: "#10B981" }));
 
                       const getSmoothPath = (pts) => {
@@ -588,7 +588,7 @@ function AdminDashboard() {
                   }}>
                     <div style={{ background: "var(--bg-input)", padding: "10px 14px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
                       <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Created ({rangeDays}d)</span>
-                      <span style={{ fontSize: "17px", fontWeight: "700", color: "#8B5CF6" }}>{supportPeriodCreated}</span>
+                      <span style={{ fontSize: "17px", fontWeight: "700", color: "var(--primary)" }}>{supportPeriodCreated}</span>
                     </div>
                     <div style={{ background: "var(--bg-input)", padding: "10px 14px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
                       <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Resolved ({rangeDays}d)</span>
@@ -660,24 +660,24 @@ function AdminDashboard() {
               <div className="stat-cards-grid">
                 {/* Card 1: Users */}
                 <div className="stat-card accent-violet" onClick={() => navigate("/admin/users")} style={{ cursor: "pointer" }}>
-                  <div className="stat-card-icon" style={{ background: "rgba(139, 92, 246, 0.15)", color: "#8B5CF6", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="stat-card-icon" style={{ background: "var(--bg-input, rgba(0, 0, 0, 0.05))", color: "var(--primary)", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Users size={24} />
                   </div>
                   <div>
                     <p className="stat-card-label">Total Users</p>
-                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(usersCount)}</div>
+                    <div className="stat-card-value">{formatNumber(usersCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 12.5% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
                     <svg viewBox="0 0 100 30" width="70" height="25" overflow="hidden">
                       <defs>
                         <linearGradient id="gradient-users" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
+                          <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
                         </linearGradient>
                       </defs>
                       <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6 L100,30 L0,30 Z" fill="url(#gradient-users)" />
-                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6" fill="none" stroke="#8B5CF6" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d="M0,25 Q15,20 30,12 T60,18 T90,2 Q95,6 100,6" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
@@ -689,7 +689,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Total Quizzes</p>
-                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(quizzesCount)}</div>
+                    <div className="stat-card-value">{formatNumber(quizzesCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 8.4% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
@@ -713,7 +713,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Total Questions</p>
-                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(questionsCount)}</div>
+                    <div className="stat-card-value">{formatNumber(questionsCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 15.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
@@ -737,7 +737,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Total Attempts</p>
-                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : formatNumber(attemptsCount)}</div>
+                    <div className="stat-card-value">{formatNumber(attemptsCount)}</div>
                     <span className="stat-card-trend trend-up">↑ 18.7% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span></span>
                   </div>
                   <div className="stat-card-sparkline">
@@ -761,7 +761,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <p className="stat-card-label">Average Score</p>
-                    <div className="stat-card-value">{loading ? <Skeleton width={70} height={26} rounded={6} /> : averageScoreCount}</div>
+                    <div className="stat-card-value">{averageScoreCount}</div>
                     <span className="stat-card-trend" style={{ color: "#9D174D", fontWeight: "600", fontSize: "11px", display: "flex", alignItems: "center", gap: "3px", marginTop: "4px" }}>
                       ↑ 5.3% <span className="trend-text" style={{ color: "var(--text-muted)", fontWeight: "normal" }}>last 7d</span>
                     </span>
@@ -1097,7 +1097,7 @@ function AdminDashboard() {
                       onMouseOut={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <div style={{ width: "34px", height: "34px", borderRadius: "8px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.15)" : explorerView === "subjects" ? "rgba(245, 158, 11, 0.15)" : "rgba(139, 92, 246, 0.15)", color: explorerView === "quizzes" ? "#10B981" : explorerView === "subjects" ? "#F59E0B" : "#8B5CF6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ width: "34px", height: "34px", borderRadius: "8px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.15)" : explorerView === "subjects" ? "rgba(245, 158, 11, 0.15)" : "var(--bg-input, rgba(0, 0, 0, 0.05))", color: explorerView === "quizzes" ? "#10B981" : explorerView === "subjects" ? "#F59E0B" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             {explorerView === "exams" ? <GraduationCap size={18} strokeWidth={2} /> : explorerView === "subjects" ? <Library size={18} strokeWidth={2} /> : <File size={18} strokeWidth={2} />}
                           </div>
                           <div>

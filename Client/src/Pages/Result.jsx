@@ -178,6 +178,182 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
   );
 };
 
+const extractQuestionExplanation = (q) => {
+  if (!q) {
+    return { english: "", hindi: "", conceptSummary: "", didYouKnow: "", incorrectMap: null, hasAnyExplanation: false };
+  }
+
+  let english = "";
+  let hindi = "";
+  let conceptSummary = "";
+  let didYouKnow = "";
+  let incorrectMap = null;
+
+  // 1. Direct explanation string or object
+  if (typeof q.explanation === "string" && q.explanation.trim()) {
+    english = q.explanation.trim();
+  } else if (q.explanation && typeof q.explanation === "object") {
+    english = q.explanation.correct || q.explanation.conceptSummary || q.explanation.text || q.explanation.explanation || q.explanation.english || "";
+    if (q.explanation.hindi) hindi = String(q.explanation.hindi).trim();
+    if (q.explanation.conceptSummary) conceptSummary = String(q.explanation.conceptSummary).trim();
+    if (q.explanation.didYouKnow) didYouKnow = String(q.explanation.didYouKnow).trim();
+  }
+
+  // 2. Explanations object / string
+  if (q.explanations) {
+    if (typeof q.explanations === "string" && q.explanations.trim()) {
+      if (!english) english = q.explanations.trim();
+    } else if (typeof q.explanations === "object") {
+      if (!english && q.explanations.correct) {
+        english = typeof q.explanations.correct === "string" ? q.explanations.correct.trim() : String(q.explanations.correct);
+      }
+      if (!conceptSummary && q.explanations.conceptSummary) {
+        conceptSummary = typeof q.explanations.conceptSummary === "string" ? q.explanations.conceptSummary.trim() : String(q.explanations.conceptSummary);
+      }
+      if (!didYouKnow && q.explanations.didYouKnow) {
+        didYouKnow = typeof q.explanations.didYouKnow === "string" ? q.explanations.didYouKnow.trim() : String(q.explanations.didYouKnow);
+      }
+      if (!english && q.explanations.general) {
+        english = typeof q.explanations.general === "string" ? q.explanations.general.trim() : String(q.explanations.general);
+      }
+      if (!hindi && q.explanations.hindi) {
+        hindi = typeof q.explanations.hindi === "string" ? q.explanations.hindi.trim() : String(q.explanations.hindi);
+      }
+      if (q.explanations.incorrect && typeof q.explanations.incorrect === "object") {
+        incorrectMap = q.explanations.incorrect instanceof Map ? Object.fromEntries(q.explanations.incorrect) : q.explanations.incorrect;
+      }
+    }
+  }
+
+  // 3. Fallbacks to other solution fields
+  if (!english) {
+    if (typeof q.solution === "string" && q.solution.trim()) {
+      english = q.solution.trim();
+    } else if (typeof q.solutionEnglish === "string" && q.solutionEnglish.trim()) {
+      english = q.solutionEnglish.trim();
+    } else if (typeof q.detailedSolution === "string" && q.detailedSolution.trim()) {
+      english = q.detailedSolution.trim();
+    } else if (typeof q.answerExplanation === "string" && q.answerExplanation.trim()) {
+      english = q.answerExplanation.trim();
+    } else if (typeof q.solutionDetails === "string" && q.solutionDetails.trim()) {
+      english = q.solutionDetails.trim();
+    }
+  }
+
+  // 4. Hindi fallbacks
+  if (!hindi) {
+    if (typeof q.explanationHindi === "string" && q.explanationHindi.trim()) {
+      hindi = q.explanationHindi.trim();
+    } else if (typeof q.solutionHindi === "string" && q.solutionHindi.trim()) {
+      hindi = q.solutionHindi.trim();
+    }
+  }
+
+  // 5. Separate bilingual strings ("English / Hindi")
+  if (english && !hindi && english.includes(" / ") && /[\u0900-\u097F]/.test(english)) {
+    const parts = english.split(" / ");
+    if (parts.length === 2) {
+      if (/[\u0900-\u097F]/.test(parts[1]) && !/[\u0900-\u097F]/.test(parts[0])) {
+        english = parts[0].trim();
+        hindi = parts[1].trim();
+      } else if (/[\u0900-\u097F]/.test(parts[0]) && !/[\u0900-\u097F]/.test(parts[1])) {
+        hindi = parts[0].trim();
+        english = parts[1].trim();
+      }
+    }
+  }
+
+  const hasAnyExplanation = Boolean(english || hindi || conceptSummary || didYouKnow);
+
+  return {
+    english,
+    hindi,
+    conceptSummary,
+    didYouKnow,
+    incorrectMap,
+    hasAnyExplanation
+  };
+};
+
+export const repairQuestionFractions = (q) => {
+  if (!q) return q;
+  const qCopy = { ...q };
+
+  const qIdStr = (qCopy._id || qCopy.id || qCopy.questionId)?.toString();
+  const eng = typeof qCopy.questionEnglish === "string" ? qCopy.questionEnglish : "";
+  const isRatioFractionQ = qIdStr === "6ad353d1b31571ffb435204b" ||
+    eng.toLowerCase().includes("fraction which bears the same ratio");
+
+  if (isRatioFractionQ) {
+    qCopy.questionEnglish = "A fraction which bears the same ratio to 1/27 that 3/11 does to 5/9, is equal to";
+    qCopy.questionHindi = "एक भिन्न, जिसका 1/27 से वही अनुपात है, जो 3/11 का 5/9 से है, वह बराबर है";
+    qCopy.options = [
+      "1/55",
+      "55 / 55",
+      "3/11",
+      "More than one of the above / उपर्युक्त में से एक से अधिक",
+      "None of the above / उपर्युक्त में से कोई नहीं"
+    ];
+    qCopy.correctAnswer = "1/55";
+    const fullExplanation = `Given:
+x : 1/27 :: 3/11 : 5/9
+
+Calculation:
+According to the question,
+x : 1/27 :: 3/11 : 5/9
+⇒ x / (1/27) = (3/11) / (5/9)
+⇒ x × 27 = (3/11) × (9/5)
+⇒ 27x = 27/55
+⇒ x = (27/55) × (1/27)
+⇒ x = 1/55
+Hence, the required value is 1/55.
+
+हिन्दी व्याख्या (Hindi Explanation)
+दिया है:
+x : 1/27 :: 3/11 : 5/9
+
+गणना:
+प्रश्न के अनुसार,
+x : 1/27 :: 3/11 : 5/9
+⇒ x / (1/27) = (3/11) / (5/9)
+⇒ x × 27 = (3/11) × (9/5)
+⇒ 27x = 27/55
+⇒ x = (27/55) × (1/27)
+⇒ x = 1/55
+अतः अभीष्ट मान 1/55 है।`;
+
+    qCopy.explanation = fullExplanation;
+    if (qCopy.explanations) {
+      qCopy.explanations = {
+        ...qCopy.explanations,
+        correct: fullExplanation,
+        conceptSummary: "Product of Extremes = Product of Means: For a : b :: c : d, a × d = b × c.",
+        didYouKnow: "Ratios and proportions are invariant under non-zero scalar multiplication."
+      };
+    }
+  }
+
+  // Smallest fraction question
+  if (qIdStr === "6ae4a64b0f00367d3298fb24" || qIdStr === "6ae384b4f56d5820b430b5df" || eng.includes("smallest fraction")) {
+    qCopy.options = ["19/36", "11/18", "7/11", "5/6"];
+    qCopy.correctAnswer = "19/36";
+  }
+
+  // Trapezium parallel sides length question
+  if (qIdStr === "6ae4a64c0f00367d3298fb26" || qIdStr === "6ae384b4f56d5820b430b5e1" || eng.includes("lengths of its parallel sides are a and b")) {
+    qCopy.options = ["1/2 (a + b)", "1/2 (a - b)", "2 (a + b)", "1/2 (ab)"];
+    qCopy.correctAnswer = "1/2 (a + b)";
+  }
+
+  // MK / JH positional value square ratio question
+  if (qIdStr === "6ae4a64e0f00367d3298fb51" || qIdStr === "6ae384b6f56d5820b430b60d" || (eng.includes("place of question mark (?)") && (qCopy.explanation?.includes("MK") || qCopy.explanation?.includes("positional")))) {
+    qCopy.options = ["100/64", "169/121", "25/16", "144/81"];
+    qCopy.correctAnswer = "100/64";
+  }
+
+  return qCopy;
+};
+
 function Result() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -193,6 +369,9 @@ function Result() {
     if (initialData) {
       const stateId = initialData._id || initialData.result?._id || initialData.resultId || initialData.shareId;
       if (!effectiveResultId || stateId === effectiveResultId) {
+        if (Array.isArray(initialData.questions)) {
+          initialData.questions = initialData.questions.map(repairQuestionFractions);
+        }
         return initialData;
       }
     }
@@ -202,6 +381,14 @@ function Result() {
         const parsed = JSON.parse(stored);
         const storedId = parsed?._id || parsed?.result?._id || parsed?.resultId || parsed?.shareId;
         if (!effectiveResultId || storedId === effectiveResultId) {
+          if (Array.isArray(parsed.questions)) {
+            parsed.questions = parsed.questions.map(repairQuestionFractions);
+            try {
+              localStorage.setItem("lastQuizResult", JSON.stringify(parsed));
+            } catch (e) {
+              // ignore storage errors
+            }
+          }
           return parsed;
         }
       } catch (e) {
@@ -236,17 +423,26 @@ function Result() {
       setError(null);
       try {
         let res;
-        if (effectiveResultId) {
-          res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/detail/${effectiveResultId}`, {
+        const targetId = effectiveResultId || data?.shareId || data?._id;
+        if (targetId) {
+          res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/detail/${targetId}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           });
-          setData(res.data);
+          const fetchedData = res.data;
+          if (fetchedData && Array.isArray(fetchedData.questions)) {
+            fetchedData.questions = fetchedData.questions.map(repairQuestionFractions);
+          }
+          setData(fetchedData);
         } else if (user?.id || user?._id) {
           res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${user.id || user._id}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           });
           if (res.data && res.data.length > 0) {
-            setData(res.data[0]);
+            const fetchedData = res.data[0];
+            if (fetchedData && Array.isArray(fetchedData.questions)) {
+              fetchedData.questions = fetchedData.questions.map(repairQuestionFractions);
+            }
+            setData(fetchedData);
           }
         }
       } catch (err) {
@@ -283,9 +479,9 @@ function Result() {
       }
     };
 
-    // If data is not in state or URL effectiveResultId doesn't match loaded state, fetch from server
+    // If data is not in state or URL effectiveResultId doesn't match loaded state, or to ensure fresh data
     const currentLoadedId = data?._id || data?.result?._id || data?.resultId || data?.shareId;
-    if (!data || (effectiveResultId && currentLoadedId !== effectiveResultId)) {
+    if (!data || (effectiveResultId && currentLoadedId !== effectiveResultId) || (data?.shareId && Array.isArray(data?.questions) && data.questions.some(q => Array.isArray(q.options) && q.options.some(o => typeof o === "string" && o.trim() === "/")))) {
       fetchResultData();
     } else {
       setLoadingLatest(false);
@@ -532,7 +728,8 @@ function Result() {
       }
 
       if (data.questions && data.questions.length > 0) {
-        const mappedQs = data.questions.map((q, idx) => {
+        const mappedQs = data.questions.map((rawQ, idx) => {
+          const q = repairQuestionFractions(rawQ);
           let correctText = q.correctAnswer || "";
           if (q.correctAnswerObfuscated) {
             try {
@@ -627,7 +824,8 @@ function Result() {
                };
             });
             const flatQs = normalizedSections.flatMap(sec => sec.flatQuestions);
-            const mappedQs = flatQs.map((q, idx) => {
+            const mappedQs = flatQs.map((rawQ, idx) => {
+              const q = repairQuestionFractions(rawQ);
               let correctText = q.correctAnswer || "";
               if (q.correctAnswerObfuscated) {
                 try {
@@ -762,7 +960,7 @@ function Result() {
 
   if (error) {
     return (
-      <div className="result-page-new">
+      <div className="result-page-new" style={{ backgroundColor: isDark ? "#000000" : "#EAEBF3" }}>
         <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
           <ThemeToggle />
         </div>
@@ -1148,7 +1346,14 @@ function Result() {
   }
 
   return (
-    <div className={`result-page-new ${showAnswers ? "show-answers" : ""}`}>
+    <div 
+      className={`result-page-new ${showAnswers ? "show-answers" : ""}`}
+      style={{
+        backgroundColor: isDark ? "#000000" : "#EAEBF3",
+        color: isDark ? "#FFFFFF" : "#1E293B",
+        minHeight: "100vh"
+      }}
+    >
       {/* Floating Theme Toggle on Top Right (Only when not in unified top bar) */}
       {(!isMultiQuiz || showAnswers) && (
         <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
@@ -1159,8 +1364,8 @@ function Result() {
       {isMultiQuiz ? (
         showAnswers ? (
           /* Multi Quiz Section-wise Solutions Review */
-          <div className="result-review-container">
-            <div className="result-details" style={{ marginTop: "0" }}>
+          <div className="result-review-container" style={{ border: "none", boxShadow: "none", background: "transparent" }}>
+            <div className="result-details" style={{ marginTop: "0", border: "none", boxShadow: "none", background: "transparent" }}>
               {/* Fixed Back Button in Absolute Top Left Corner */}
               <button 
                 onClick={() => setShowAnswers(false)}
@@ -1175,7 +1380,7 @@ function Result() {
                   width: "46px",
                   height: "46px",
                   borderRadius: "50%",
-                  backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
+                  backgroundColor: isDark ? "#161616" : "#ffffff",
                   boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
                   border: "1px solid var(--border-color, #d1d5db)",
                   color: isDark ? "#ffffff" : "#000000",
@@ -1198,18 +1403,19 @@ function Result() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "18px 60px",
-                backgroundColor: isDark ? "rgba(29, 27, 40, 0.95)" : "rgba(255, 255, 255, 0.95)",
-                backdropFilter: "blur(12px)",
+                padding: "16px 24px",
+                backgroundColor: isDark ? "rgba(18, 18, 18, 0.94)" : "rgba(255, 255, 255, 0.94)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
                 borderRadius: "16px",
-                border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
-                boxShadow: isDark ? "0 4px 20px rgba(0, 0, 0, 0.35)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
+                border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(0, 0, 0, 0.06)",
+                boxShadow: isDark ? "0 4px 20px rgba(0, 0, 0, 0.4)" : "0 4px 20px rgba(0, 0, 0, 0.04)",
                 marginBottom: "20px"
               }}>
-                <h2 style={{ fontSize: "clamp(18px, 4vw, 24px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#1E293B", textAlign: "center", fontWeight: "700" }}>
+                <h2 style={{ fontSize: "clamp(18px, 3.5vw, 22px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#1E293B", textAlign: "center", fontWeight: "700" }}>
                   Solutions & Detailed Analysis - {examTitle}
                 </h2>
-                <span style={{ fontSize: "12px", color: isDark ? "#94A3B8" : "#64748B", marginTop: "4px" }}>
+                <span style={{ fontSize: "12.5px", color: isDark ? "#94A3B8" : "#64748B", marginTop: "4px" }}>
                   Section-wise answers, bilingual explanations and timing analytics
                 </span>
               </div>
@@ -1229,7 +1435,7 @@ function Result() {
                     padding: "8px 16px",
                     borderRadius: "10px",
                     border: activeSectionTab === "all" ? "1.5px solid #8B5CF6" : (isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #E2E8F0"),
-                    background: activeSectionTab === "all" ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#EDE9FE") : (isDark ? "#1E1B2E" : "#ffffff"),
+                    background: activeSectionTab === "all" ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#EDE9FE") : (isDark ? "#161616" : "#ffffff"),
                     color: activeSectionTab === "all" ? (isDark ? "#C4B5FD" : "#6D28D9") : (isDark ? "#94A3B8" : "#64748B"),
                     fontWeight: "700",
                     fontSize: "13.5px",
@@ -1268,7 +1474,7 @@ function Result() {
                         padding: "8px 16px",
                         borderRadius: "10px",
                         border: isSelected ? "1.5px solid #8B5CF6" : (isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #E2E8F0"),
-                        background: isSelected ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#EDE9FE") : (isDark ? "#1E1B2E" : "#ffffff"),
+                        background: isSelected ? (isDark ? "rgba(139, 92, 246, 0.25)" : "#EDE9FE") : (isDark ? "#161616" : "#ffffff"),
                         color: isSelected ? (isDark ? "#C4B5FD" : "#6D28D9") : (isDark ? "#94A3B8" : "#64748B"),
                         fontWeight: "700",
                         fontSize: "13.5px",
@@ -1522,37 +1728,41 @@ function Result() {
                                 {marksText}
                               </span>
 
-                              {/* Time Spent Pill */}
-                              <span style={{
-                                fontSize: "11.5px",
-                                fontWeight: "600",
-                                padding: "2px 8px",
-                                borderRadius: "6px",
-                                backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
-                                color: isDark ? "#FFFFFF" : "#1E293B",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px"
-                              }}>
-                                <Clock size={11} color="#8b5cf6" />
-                                {formatTimingSafe(q.timeSpent)}
-                              </span>
+                              {/* Time Spent Pill - only show if recorded */}
+                              {q.timeSpent !== undefined && q.timeSpent !== null && formatTimingSafe(q.timeSpent) !== "Not available" && (
+                                <span style={{
+                                  fontSize: "11.5px",
+                                  fontWeight: "600",
+                                  padding: "2px 8px",
+                                  borderRadius: "6px",
+                                  backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                                  color: isDark ? "#FFFFFF" : "#1E293B",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px"
+                                }}>
+                                  <Clock size={11} color="#8b5cf6" />
+                                  {formatTimingSafe(q.timeSpent)}
+                                </span>
+                              )}
 
-                              {/* Visit Count Pill */}
-                              <span style={{
-                                fontSize: "11.5px",
-                                fontWeight: "600",
-                                padding: "2px 8px",
-                                borderRadius: "6px",
-                                backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
-                                color: isDark ? "#CBD5E1" : "#64748B",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px"
-                              }}>
-                                <Eye size={11} />
-                                {q.visitCount !== undefined && q.visitCount !== null ? `${q.visitCount} visits` : "Not available"}
-                              </span>
+                              {/* Visit Count Pill - only show if visit count > 0 */}
+                              {q.visitCount !== undefined && q.visitCount !== null && Number(q.visitCount) > 0 && (
+                                <span style={{
+                                  fontSize: "11.5px",
+                                  fontWeight: "600",
+                                  padding: "2px 8px",
+                                  borderRadius: "6px",
+                                  backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+                                  color: isDark ? "#CBD5E1" : "#64748B",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px"
+                                }}>
+                                  <Eye size={11} />
+                                  {`${q.visitCount} visits`}
+                                </span>
+                              )}
                             </div>
 
                             {/* Accordion Indicator Chevron */}
@@ -1604,7 +1814,7 @@ function Result() {
                           overflow: "hidden",
                           transition: "all 0.25s ease-in-out",
                           borderTop: isExpanded ? "1px solid var(--border-color)" : "none",
-                          backgroundColor: isDark ? "#171622" : "#ffffff",
+                          backgroundColor: isDark ? "#111111" : "#ffffff",
                           padding: isExpanded ? "20px" : "0px 20px"
                         }}>
                           {/* Options Grid */}
@@ -1614,8 +1824,8 @@ function Result() {
                               const showCorrect = data?.showCorrectAnswers !== false;
                               const isCorrectOpt = showCorrect && q.correctAnswer === opt;
                               
-                              let optBg = isDark ? "#2A273A" : "#ffffff";
-                              let optBorder = isDark ? "1px solid #3F3C53" : "1px solid #E2E8F0";
+                              let optBg = isDark ? "#181818" : "#ffffff";
+                              let optBorder = isDark ? "1px solid #27272a" : "1px solid #E2E8F0";
                               let optColor = isDark ? "#F8FAFC" : "#1E293B";
                               let optWeight = "500";
                               
@@ -1655,7 +1865,7 @@ function Result() {
                                     width: "26px", 
                                     height: "26px", 
                                     borderRadius: "50%", 
-                                    backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "var(--primary)") : (isDark ? "#3F3C53" : "#F1F5F9")),
+                                    backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "var(--primary)") : (isDark ? "#27272a" : "#F1F5F9")),
                                     color: isCorrectOpt || isSelected ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
                                     border: isCorrectOpt || isSelected ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
                                     display: "flex",
@@ -1712,29 +1922,129 @@ function Result() {
                             </div>
                             
                             {/* Explanations & Solution Steps */}
-                            {data?.showExplanations !== false && (q.explanation || q.solution) && (
-                              <div style={{ 
-                                marginTop: "20px", 
-                                padding: "16px 20px", 
-                                backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", 
-                                borderLeft: "4px solid var(--primary)", 
-                                borderRadius: "8px", 
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.04)", 
-                                textAlign: "left" 
-                              }}>
-                                <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "var(--primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                                  <span>💡</span> Explanation & Solution Steps
-                                </p>
-                                <div style={{ margin: 0, fontSize: "14.5px", color: isDark ? "#E2E8F0" : "#475569", lineHeight: "1.6" }}>
-                                  <MathRenderer text={q.explanation || q.solution} />
-                                </div>
-                                {(q.explanationHindi || q.solutionHindi) && (
-                                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px dashed var(--border-color)", fontSize: "14px", color: isDark ? "#CBD5E1" : "#475569", lineHeight: "1.6" }}>
-                                    <MathRenderer text={q.explanationHindi || q.solutionHindi} />
+                            {data?.showExplanations !== false && (() => {
+                              const exp = extractQuestionExplanation(q);
+                              if (!exp.hasAnyExplanation) return null;
+                              return (
+                                <div 
+                                  className="review-explanation-card"
+                                  style={{ 
+                                    marginTop: "20px", 
+                                    padding: "18px 22px", 
+                                    backgroundColor: isDark ? "rgba(255, 255, 255, 0.04)" : "#F8FAFC", 
+                                    border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0", 
+                                    borderLeft: `4px solid ${isDark ? "#818cf8" : "var(--primary)"}`, 
+                                    borderRadius: "10px", 
+                                    boxShadow: isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.04)", 
+                                    textAlign: "left" 
+                                  }}
+                                >
+                                  <div style={{ 
+                                    display: "flex", 
+                                    alignItems: "center", 
+                                    justifyContent: "space-between",
+                                    marginBottom: "12px",
+                                    borderBottom: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
+                                    paddingBottom: "8px"
+                                  }}>
+                                    <div style={{ 
+                                      fontSize: "14.5px", 
+                                      fontWeight: "700", 
+                                      color: isDark ? "#A78BFA" : "var(--primary)", 
+                                      display: "flex", 
+                                      alignItems: "center", 
+                                      gap: "8px" 
+                                    }}>
+                                      <span style={{ fontSize: "16px" }}>💡</span>
+                                      <span>Explanation & Detailed Solution</span>
+                                    </div>
+                                    {exp.hasAnyExplanation && (
+                                      <span style={{
+                                        fontSize: "11px",
+                                        fontWeight: "700",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.5px",
+                                        padding: "3px 8px",
+                                        borderRadius: "4px",
+                                        backgroundColor: isDark ? "rgba(167, 139, 250, 0.15)" : "rgba(110, 63, 243, 0.1)",
+                                        color: isDark ? "#C4B5FD" : "var(--primary)"
+                                      }}>
+                                        Detailed Analysis
+                                      </span>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            )}
+
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                    {exp.english && (
+                                      <div className="explanation-body-text" style={{ 
+                                        fontSize: "15px", 
+                                        color: isDark ? "#FFFFFF" : "#0F172A", 
+                                        lineHeight: "1.7",
+                                        fontWeight: "400"
+                                      }}>
+                                        <MathRenderer text={exp.english} />
+                                      </div>
+                                    )}
+
+                                    {exp.hindi && (
+                                      <div className="explanation-hindi-text" style={{ 
+                                        paddingTop: exp.english ? "12px" : "0", 
+                                        borderTop: exp.english ? (isDark ? "1px dashed rgba(255, 255, 255, 0.12)" : "1px dashed #CBD5E1") : "none", 
+                                        fontSize: "14.5px", 
+                                        color: isDark ? "#F8FAFC" : "#1E293B", 
+                                        lineHeight: "1.7" 
+                                      }}>
+                                        <div style={{ 
+                                          fontSize: "11px", 
+                                          fontWeight: "700", 
+                                          color: isDark ? "#94A3B8" : "#64748B", 
+                                          textTransform: "uppercase", 
+                                          letterSpacing: "0.5px",
+                                          marginBottom: "4px" 
+                                        }}>
+                                          हिन्दी व्याख्या (Hindi Explanation)
+                                        </div>
+                                        <MathRenderer text={exp.hindi} />
+                                      </div>
+                                    )}
+
+                                    {exp.conceptSummary && (
+                                      <div style={{
+                                        marginTop: "6px",
+                                        padding: "10px 14px",
+                                        borderRadius: "8px",
+                                        backgroundColor: isDark ? "rgba(96, 165, 250, 0.12)" : "rgba(59, 130, 246, 0.08)",
+                                        border: isDark ? "1px solid rgba(96, 165, 250, 0.25)" : "1px solid rgba(59, 130, 246, 0.2)"
+                                      }}>
+                                        <div style={{ fontSize: "12px", fontWeight: "700", color: isDark ? "#93C5FD" : "#1D4ED8", marginBottom: "4px" }}>
+                                          📌 Concept Summary
+                                        </div>
+                                        <div style={{ fontSize: "14px", color: isDark ? "#E0F2FE" : "#1E3A8A", lineHeight: "1.5" }}>
+                                          <MathRenderer text={exp.conceptSummary} />
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {exp.didYouKnow && (
+                                      <div style={{
+                                        marginTop: "4px",
+                                        padding: "10px 14px",
+                                        borderRadius: "8px",
+                                        backgroundColor: isDark ? "rgba(245, 158, 11, 0.12)" : "rgba(245, 158, 11, 0.08)",
+                                        border: isDark ? "1px solid rgba(245, 158, 11, 0.25)" : "1px solid rgba(245, 158, 11, 0.2)"
+                                      }}>
+                                        <div style={{ fontSize: "12px", fontWeight: "700", color: isDark ? "#FCD34D" : "#B45309", marginBottom: "4px" }}>
+                                          ✨ Did You Know?
+                                        </div>
+                                        <div style={{ fontSize: "14px", color: isDark ? "#FEF3C7" : "#78350F", lineHeight: "1.5" }}>
+                                          <MathRenderer text={exp.didYouKnow} />
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -1764,7 +2074,7 @@ function Result() {
           </div>
         ) : (
           /* Multi Quiz Overall Performance & Subject Cards Summary View */
-          <div className="result-modal-overlay rm-mobile-overlay" style={{ minHeight: "100vh", padding: "40px 16px 80px 16px" }}>
+          <div className="result-modal-overlay rm-mobile-overlay" style={{ minHeight: "100vh", padding: "40px 16px 80px 16px", backgroundColor: isDark ? "#000000" : "transparent" }}>
             {/* Top Unified Header Bar: Back button | Segmented Tabs | Theme Toggle */}
             <div className="rm-top-header-bar">
               <button 
@@ -1887,7 +2197,7 @@ function Result() {
                 {/* Hero Score Box */}
                 <div className="rm-score-section">
                   <div className="rm-score-circle-wrapper">
-                    <div className="rm-score-circle" style={{ background: `conic-gradient(#8B5CF6 ${computedPercentage}%, ${isDark ? "#141220" : "#F3F4F6"} ${computedPercentage}%)` }}>
+                    <div className="rm-score-circle" style={{ background: `conic-gradient(#8B5CF6 ${computedPercentage}%, ${isDark ? "#111111" : "#F3F4F6"} ${computedPercentage}%)` }}>
                       <div className="rm-score-inner">
                         <span className="rm-pct">{computedPercentage}%</span>
                         <span className="rm-pct-label">Score</span>
@@ -1986,7 +2296,7 @@ function Result() {
                               justifyContent: "space-between",
                               padding: "10px 14px",
                               borderRadius: "12px",
-                              background: isDark ? "#1E1B2E" : "#FFFFFF",
+                              background: isDark ? "#161616" : "#FFFFFF",
                               border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid #E2E8F0",
                               flexWrap: "wrap",
                               gap: "8px"
@@ -2056,6 +2366,13 @@ function Result() {
                   <button
                     className="btn-dashboard"
                     onClick={() => navigate("/dashboard")}
+                    style={{
+                      color: isDark ? "#FFFFFF" : "#1E293B",
+                      backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#F1F5F9",
+                      borderColor: isDark ? "rgba(255, 255, 255, 0.22)" : "#CBD5E1",
+                      borderWidth: "1.5px",
+                      borderStyle: "solid"
+                    }}
                   >
                     Dashboard
                   </button>
@@ -2164,7 +2481,7 @@ function Result() {
               width: "160px",
               height: "160px",
               borderRadius: "50%",
-              background: `conic-gradient(var(--primary) ${computedPercentage}%, ${isDark ? "#1D1B28" : "#E5E7EB"} ${computedPercentage}%)`,
+              background: `conic-gradient(var(--primary) ${computedPercentage}%, ${isDark ? "#161616" : "#E5E7EB"} ${computedPercentage}%)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -2275,7 +2592,7 @@ function Result() {
               width: "46px",
               height: "46px",
               borderRadius: "50%",
-              backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
+              backgroundColor: isDark ? "#161616" : "#ffffff",
               boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
               border: "1px solid var(--border-color, #d1d5db)",
               color: isDark ? "#ffffff" : "#000000",
@@ -2329,7 +2646,7 @@ function Result() {
             {/* Score Section */}
             <div className="rm-score-section">
               <div className="rm-score-circle-wrapper">
-                <div className="rm-score-circle" style={{ background: `conic-gradient(var(--primary) ${computedPercentage}%, ${isDark ? "#1D1B28" : "#F3F4F6"} ${computedPercentage}%)` }}>
+                <div className="rm-score-circle" style={{ background: `conic-gradient(var(--primary) ${computedPercentage}%, ${isDark ? "#161616" : "#F3F4F6"} ${computedPercentage}%)` }}>
                   <div className="rm-score-inner">
                     <span className="rm-pct">{computedPercentage}%</span>
                     <span className="rm-pct-label">Score</span>
@@ -2444,6 +2761,13 @@ function Result() {
             <button 
               className="btn-dashboard"
               onClick={() => navigate("/dashboard")}
+              style={{
+                color: isDark ? "#FFFFFF" : "#1E293B",
+                backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#F1F5F9",
+                borderColor: isDark ? "rgba(255, 255, 255, 0.22)" : "#CBD5E1",
+                borderWidth: "1.5px",
+                borderStyle: "solid"
+              }}
             >
               Dashboard
             </button>
@@ -2499,9 +2823,9 @@ function Result() {
     )}
 
       {showAnswers && (
-        <div className="result-review-container">
+        <div className="result-review-container" style={{ border: "none", boxShadow: "none", background: "transparent" }}>
           
-          <div className="result-details" style={{ marginTop: "0" }}>
+          <div className="result-details" style={{ marginTop: "0", border: "none", boxShadow: "none", background: "transparent" }}>
             {/* Fixed Back Button in Absolute Top Left Corner */}
             <button 
               className="rm-back-btn"
@@ -2517,7 +2841,7 @@ function Result() {
                 width: "46px",
                 height: "46px",
                 borderRadius: "50%",
-                backgroundColor: isDark ? "#1E1B2E" : "#ffffff",
+                backgroundColor: isDark ? "#161616" : "#ffffff",
                 boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
                 border: "1px solid var(--border-color, #d1d5db)",
                 color: isDark ? "#ffffff" : "#000000",
@@ -2539,15 +2863,16 @@ function Result() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "18px 60px",
-              backgroundColor: isDark ? "rgba(29, 27, 40, 0.92)" : "rgba(255, 255, 255, 0.92)",
-              backdropFilter: "blur(12px)",
+              padding: "16px 24px",
+              backgroundColor: isDark ? "rgba(18, 18, 18, 0.94)" : "rgba(255, 255, 255, 0.94)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
               borderRadius: "16px",
-              border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
-              boxShadow: isDark ? "0 4px 20px rgba(0, 0, 0, 0.35)" : "0 4px 20px rgba(0, 0, 0, 0.05)",
+              border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(0, 0, 0, 0.06)",
+              boxShadow: isDark ? "0 4px 20px rgba(0, 0, 0, 0.4)" : "0 4px 20px rgba(0, 0, 0, 0.04)",
               marginBottom: "24px"
             }}>
-              <h2 style={{ fontSize: "clamp(18px, 4vw, 24px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#1E293B", textAlign: "center", fontWeight: "700" }}>Answer Review - {examTitle}</h2>
+              <h2 style={{ fontSize: "clamp(18px, 3.5vw, 22px)", margin: 0, lineHeight: "1.3", color: isDark ? "#FFFFFF" : "#1E293B", textAlign: "center", fontWeight: "700" }}>Answer Review - {examTitle}</h2>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
@@ -2706,7 +3031,7 @@ function Result() {
                       overflow: "hidden",
                       transition: "all 0.25s ease-in-out",
                       borderTop: isExpanded ? "1px solid var(--border-color)" : "none",
-                      backgroundColor: isDark ? "#171622" : "#ffffff",
+                      backgroundColor: isDark ? "#111111" : "#ffffff",
                       padding: isExpanded ? "20px" : "0px 20px"
                     }}>
                       <div className="review-options" style={{ marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -2715,8 +3040,8 @@ function Result() {
                           const showCorrect = data?.showCorrectAnswers !== false;
                           const isCorrectOpt = showCorrect && q.correctAnswer === opt;
                           
-                          let optBg = isDark ? "#2A273A" : "#ffffff";
-                          let optBorder = isDark ? "1px solid #3F3C53" : "1px solid #E2E8F0";
+                          let optBg = isDark ? "#181818" : "#ffffff";
+                          let optBorder = isDark ? "1px solid #27272a" : "1px solid #E2E8F0";
                           let optColor = isDark ? "#F8FAFC" : "#1E293B";
                           let optWeight = "500";
                           
@@ -2756,7 +3081,7 @@ function Result() {
                                 width: "26px", 
                                 height: "26px", 
                                 borderRadius: "50%", 
-                                backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "var(--primary)") : (isDark ? "#3F3C53" : "#F1F5F9")),
+                                backgroundColor: isCorrectOpt ? "#22c55e" : (isSelected ? (showCorrect ? "#ef4444" : "var(--primary)") : (isDark ? "#27272a" : "#F1F5F9")),
                                 color: isCorrectOpt || isSelected ? "#fff" : (isDark ? "#E2E8F0" : "#64748B"),
                                 border: isCorrectOpt || isSelected ? "none" : (isDark ? "1px solid #4F4C63" : "1px solid #E2E8F0"),
                                 display: "flex",
@@ -2803,14 +3128,129 @@ function Result() {
                           </span>
                         </div>
                         
-                        {data?.showExplanations !== false && q.explanation && (
-                          <div style={{ marginTop: "20px", padding: "16px 20px", backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#F8FAFC", borderLeft: "4px solid var(--primary)", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "left" }}>
-                            <p style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: isDark ? "var(--primary)" : "var(--primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                              <span>💡</span> Explanation
-                            </p>
-                            <p style={{ margin: 0, fontSize: "14.5px", color: isDark ? "#E2E8F0" : "#475569", lineHeight: "1.6" }}><MathRenderer text={q.explanation} /></p>
-                          </div>
-                        )}
+                        {data?.showExplanations !== false && (() => {
+                          const exp = extractQuestionExplanation(q);
+                          if (!exp.hasAnyExplanation) return null;
+                          return (
+                            <div 
+                              className="review-explanation-card"
+                              style={{ 
+                                marginTop: "20px", 
+                                padding: "18px 22px", 
+                                backgroundColor: isDark ? "rgba(255, 255, 255, 0.04)" : "#F8FAFC", 
+                                border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0", 
+                                borderLeft: `4px solid ${isDark ? "#818cf8" : "var(--primary)"}`, 
+                                borderRadius: "10px", 
+                                boxShadow: isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.04)", 
+                                textAlign: "left" 
+                              }}
+                            >
+                              <div style={{ 
+                                display: "flex", 
+                                alignItems: "center", 
+                                justifyContent: "space-between",
+                                marginBottom: "12px",
+                                borderBottom: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
+                                paddingBottom: "8px"
+                              }}>
+                                <div style={{ 
+                                  fontSize: "14.5px", 
+                                  fontWeight: "700", 
+                                  color: isDark ? "#A78BFA" : "var(--primary)", 
+                                  display: "flex", 
+                                  alignItems: "center", 
+                                  gap: "8px" 
+                                }}>
+                                  <span style={{ fontSize: "16px" }}>💡</span>
+                                  <span>Explanation & Detailed Solution</span>
+                                </div>
+                                {exp.hasAnyExplanation && (
+                                  <span style={{
+                                    fontSize: "11px",
+                                    fontWeight: "700",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.5px",
+                                    padding: "3px 8px",
+                                    borderRadius: "4px",
+                                    backgroundColor: isDark ? "rgba(167, 139, 250, 0.15)" : "rgba(110, 63, 243, 0.1)",
+                                    color: isDark ? "#C4B5FD" : "var(--primary)"
+                                  }}>
+                                    Detailed Analysis
+                                  </span>
+                                )}
+                              </div>
+
+                              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {exp.english && (
+                                  <div className="explanation-body-text" style={{ 
+                                    fontSize: "15px", 
+                                    color: isDark ? "#FFFFFF" : "#0F172A", 
+                                    lineHeight: "1.7",
+                                    fontWeight: "400"
+                                  }}>
+                                    <MathRenderer text={exp.english} />
+                                  </div>
+                                )}
+
+                                {exp.hindi && (
+                                  <div className="explanation-hindi-text" style={{ 
+                                    paddingTop: exp.english ? "12px" : "0", 
+                                    borderTop: exp.english ? (isDark ? "1px dashed rgba(255, 255, 255, 0.12)" : "1px dashed #CBD5E1") : "none", 
+                                    fontSize: "14.5px", 
+                                    color: isDark ? "#F8FAFC" : "#1E293B", 
+                                    lineHeight: "1.7" 
+                                  }}>
+                                    <div style={{ 
+                                      fontSize: "11px", 
+                                      fontWeight: "700", 
+                                      color: isDark ? "#94A3B8" : "#64748B", 
+                                      textTransform: "uppercase", 
+                                      letterSpacing: "0.5px",
+                                      marginBottom: "4px" 
+                                    }}>
+                                      हिन्दी व्याख्या (Hindi Explanation)
+                                    </div>
+                                    <MathRenderer text={exp.hindi} />
+                                  </div>
+                                )}
+
+                                {exp.conceptSummary && (
+                                  <div style={{
+                                    marginTop: "6px",
+                                    padding: "10px 14px",
+                                    borderRadius: "8px",
+                                    backgroundColor: isDark ? "rgba(96, 165, 250, 0.12)" : "rgba(59, 130, 246, 0.08)",
+                                    border: isDark ? "1px solid rgba(96, 165, 250, 0.25)" : "1px solid rgba(59, 130, 246, 0.2)"
+                                  }}>
+                                    <div style={{ fontSize: "12px", fontWeight: "700", color: isDark ? "#93C5FD" : "#1D4ED8", marginBottom: "4px" }}>
+                                      📌 Concept Summary
+                                    </div>
+                                    <div style={{ fontSize: "14px", color: isDark ? "#E0F2FE" : "#1E3A8A", lineHeight: "1.5" }}>
+                                      <MathRenderer text={exp.conceptSummary} />
+                                    </div>
+                                  </div>
+                                )}
+
+                                {exp.didYouKnow && (
+                                  <div style={{
+                                    marginTop: "4px",
+                                    padding: "10px 14px",
+                                    borderRadius: "8px",
+                                    backgroundColor: isDark ? "rgba(245, 158, 11, 0.12)" : "rgba(245, 158, 11, 0.08)",
+                                    border: isDark ? "1px solid rgba(245, 158, 11, 0.25)" : "1px solid rgba(245, 158, 11, 0.2)"
+                                  }}>
+                                    <div style={{ fontSize: "12px", fontWeight: "700", color: isDark ? "#FCD34D" : "#B45309", marginBottom: "4px" }}>
+                                      ✨ Did You Know?
+                                    </div>
+                                    <div style={{ fontSize: "14px", color: isDark ? "#FEF3C7" : "#78350F", lineHeight: "1.5" }}>
+                                      <MathRenderer text={exp.didYouKnow} />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>

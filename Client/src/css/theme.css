@@ -472,11 +472,21 @@ body.dark-mode .sd-subject-card,
 body.dark-mode .custom-quiz-item,
 body.dark-mode .mp-menu-item,
 body.dark-mode .desktop-legal-card,
-body.dark-mode .result-summary,
-body.dark-mode .result-details {
+body.dark-mode .result-summary {
   border: 1px solid var(--border-color, var(--border-color)) !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
+}
+
+/* Ensure review container never renders an outer bounding box in result view */
+.result-details,
+body.dark-mode .result-details,
+html[class*="theme-"] .result-details,
+.result-review-container,
+body.dark-mode .result-review-container {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 body.dark-mode .card:hover,

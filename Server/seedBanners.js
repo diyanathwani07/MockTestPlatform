@@ -1,36 +1,39 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 require('dotenv').config();
 const Banner = require('./models/Banner');
 
-const MOCK_BANNERS = [
+const TEACHING_PARIKSHA_BANNERS = [
   {
-    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1200&auto=format&fit=crop",
-    category: "New Launch",
-    title: "BPSC TRE 4.0",
-    description: "Prepare smarter with full-length mock tests tailored to the latest pattern.",
-    ctaLabel: "Explore Exam",
+    image: "https://res.cloudinary.com/nzg9ltae/image/upload/v1791025570/banners/tmqtyv9qvifkklxme1fw.png",
+    title: "",
+    description: "",
+    category: "",
+    ctaLabel: "",
     ctaRoute: "/dashboard/exams",
     align: "left",
+    isActive: true,
     order: 1
   },
   {
-    image: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=1200&auto=format&fit=crop",
-    category: "Pro Plan",
-    title: "Unlock AI Tests",
-    description: "Generate unlimited custom AI mock tests with instant analysis and explanations.",
-    ctaLabel: "Upgrade Now",
+    image: "https://res.cloudinary.com/nzg9ltae/image/upload/v1791266909/banners/suuqcss9wtioa27staxk.png",
+    title: "",
+    description: "",
+    category: "",
+    ctaLabel: "",
     ctaRoute: "/dashboard/practice",
-    align: "center",
+    align: "left",
+    isActive: true,
     order: 2
   },
   {
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1200&auto=format&fit=crop",
-    category: "Challenge",
-    title: "Weekly Mega Quiz",
-    description: "Compete with thousands of students and climb the live leaderboard this weekend.",
-    ctaLabel: "Register Free",
-    ctaRoute: "/dashboard/practice",
-    align: "right",
+    image: "https://res.cloudinary.com/nzg9ltae/image/upload/v1791461847/banners/ic6zdjmqrrge1dottxok.png",
+    title: "",
+    description: "",
+    category: "",
+    ctaLabel: "",
+    ctaRoute: "/dashboard/exams",
+    align: "center",
+    isActive: true,
     order: 3
   }
 ];
@@ -42,7 +45,7 @@ mongoose.connect(process.env.MONGO_URI)
   await Banner.deleteMany({});
   console.log("Cleared existing banners.");
   
-  await Banner.insertMany(MOCK_BANNERS);
+  await Banner.insertMany(TEACHING_PARIKSHA_BANNERS);
   console.log("Successfully seeded banners.");
   
   process.exit();

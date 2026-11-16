@@ -8,12 +8,19 @@ const DB_BATCH_SIZE = 500;
 const FCM_MAX_TOKENS = 500; // Firebase Admin Multicast max allowed tokens per call
 
 async function sendFcmPush(userIds, title, message, link) {
+  const stats = {
+    tokensTargeted: 0,
+    successCount: 0,
+    failureCount: 0,
+    cleanedTokensCount: 0,
+    firebaseInitialized: Boolean(admin.apps && admin.apps.length > 0)
+  };
   try {
     if (!admin.apps || admin.apps.length === 0) {
       console.warn("[FCM Push] Firebase Admin is not initialized. Skipping push delivery.");
-      return;
+      return stats;
     }
-    if (!Array.isArray(userIds) || userIds.length === 0) return;
+    if (!Array.isArray(userIds) || userIds.length === 0) return stats;
 
     // Fetch devices in bounded ID batches to avoid oversized Mongo $in queries
     const allTokens = [];
@@ -25,10 +32,11 @@ async function sendFcmPush(userIds, title, message, link) {
       });
     }
 
-    if (allTokens.length === 0) return;
+    if (allTokens.length === 0) return stats;
 
     // Deduplicate tokens
     const uniqueTokens = [...new Set(allTokens)];
+    stats.tokensTargeted = uniqueTokens.length;
 
     const payload = {
       notification: { title, body: message },
@@ -56,6 +64,9 @@ async function sendFcmPush(userIds, title, message, link) {
           android: payload.android
         });
 
+        stats.successCount += response.successCount || 0;
+        stats.failureCount += response.failureCount || 0;
+
         if (response.failureCount > 0) {
           const failedTokens = [];
           response.responses.forEach((resp, idx) => {
@@ -68,14 +79,18 @@ async function sendFcmPush(userIds, title, message, link) {
           });
           if (failedTokens.length > 0) {
             await NotificationDevice.deleteMany({ token: { $in: failedTokens } });
+            stats.cleanedTokensCount += failedTokens.length;
           }
         }
       } catch (batchErr) {
         console.error(`[FCM Push] Batch send error (chunk ${i / FCM_MAX_TOKENS + 1}):`, batchErr.message);
+        stats.failureCount += tokenBatch.length;
       }
     }
+    return stats;
   } catch (error) {
     console.error("[FCM Push] Error:", error.message);
+    return stats;
   }
 }
 
@@ -269,5 +284,6 @@ module.exports = {
   notifyUser,
   notifyAllStudents,
   notifyDepartment,
-  notifyContentTeamSlack
+  notifyContentTeamSlack,
+  sendFcmPush
 };

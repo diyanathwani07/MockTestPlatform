@@ -451,6 +451,15 @@ body.dark-mode .rm-info-chip {
   padding: 20px 16px;
   box-sizing: border-box;
   animation: fadeIn 0.3s ease;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.result-details {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 @keyframes fadeIn {
@@ -560,34 +569,52 @@ body.dark-mode .rm-info-chip {
   background: #7C3AED;
   transform: translateY(-1px);
 }
+:root .rm-modal-actions .btn-dashboard,
+html:not(.dark) .rm-modal-actions .btn-dashboard,
+body:not(.dark-mode) .rm-modal-actions .btn-dashboard,
 .rm-modal-actions .btn-dashboard {
   flex: 0.8;
   height: 42px;
   padding: 0 20px;
   border-radius: 12px;
-  background: #F1F5F9;
-  color: #1E293B;
-  border: 1px solid #CBD5E1;
-  font-size: 14px;
-  font-weight: 700;
+  background: #F1F5F9 !important;
+  color: #1E293B !important;
+  border: 1.5px solid #CBD5E1 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
 }
+
+:root .rm-modal-actions .btn-dashboard:hover,
+html:not(.dark) .rm-modal-actions .btn-dashboard:hover,
+body:not(.dark-mode) .rm-modal-actions .btn-dashboard:hover,
 .rm-modal-actions .btn-dashboard:hover {
-  background: #E2E8F0;
+  background: #E2E8F0 !important;
+  color: #0F172A !important;
+  border-color: #94A3B8 !important;
 }
 
-body.dark-mode .rm-modal-actions .btn-dashboard {
-  background: rgba(255, 255, 255, 0.06);
-  color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+body.dark-mode .rm-modal-actions .btn-dashboard,
+:root.dark .rm-modal-actions .btn-dashboard,
+.dark .rm-modal-actions .btn-dashboard,
+html[class*="theme-"].dark .rm-modal-actions .btn-dashboard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
 }
-body.dark-mode .rm-modal-actions .btn-dashboard:hover {
-  background: rgba(255, 255, 255, 0.1);
+
+body.dark-mode .rm-modal-actions .btn-dashboard:hover,
+:root.dark .rm-modal-actions .btn-dashboard:hover,
+.dark .rm-modal-actions .btn-dashboard:hover,
+html[class*="theme-"].dark .rm-modal-actions .btn-dashboard:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
 }
 
 @media (max-width: 768px) {
@@ -625,7 +652,7 @@ body.dark-mode .rm-modal-actions .btn-dashboard:hover {
 }
 
 body.dark-mode .mqa-top-nav {
-  background: rgba(23, 21, 32, 0.9) !important;
+  background: rgba(17, 17, 17, 0.9) !important;
   border-color: rgba(139, 92, 246, 0.3) !important;
 }
 
@@ -1060,12 +1087,22 @@ body.dark-mode .rm-top-back-btn:hover,
 /* ==========================================================================
    🌙 8. DARK MODE FOR RESULT PAGE
    ========================================================================== */
-body.dark-mode .result-page-new {
-  background: #0E0C15 !important;
+body.dark-mode .result-page-new,
+:root.dark .result-page-new,
+.dark .result-page-new,
+html[class*="theme-"].dark .result-page-new,
+body.dark-mode .result-modal-overlay,
+:root.dark .result-modal-overlay,
+.dark .result-modal-overlay,
+html[class*="theme-"].dark .result-modal-overlay {
+  background: #000000 !important;
 }
 
-body.dark-mode .result-modal-card {
-  background: #171520 !important;
+body.dark-mode .result-modal-card,
+:root.dark .result-modal-card,
+.dark .result-modal-card,
+html[class*="theme-"].dark .result-modal-card {
+  background: #111111 !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
 }
@@ -1079,18 +1116,18 @@ body.dark-mode .rm-header p {
 }
 
 body.dark-mode .rm-info-card {
-  background: #1D1B28 !important;
+  background: #161616 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 body.dark-mode .rm-score-section {
-  background: #1D1B28 !important;
+  background: #161616 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
 }
 
 body.dark-mode .rm-icon-wrapper {
-  background: #12101B !important;
+  background: #181818 !important;
   box-shadow: none !important;
 }
 
@@ -1103,7 +1140,7 @@ body.dark-mode .rm-info-meta {
 }
 
 body.dark-mode .rm-score-inner {
-  background: #171520 !important;
+  background: #111111 !important;
   box-shadow: none !important;
 }
 
@@ -1112,7 +1149,7 @@ body.dark-mode .rm-pct {
 }
 
 body.dark-mode .rm-score-circle {
-  background: conic-gradient(var(--primary) var(--score-pct, 100%), #1D1B28 var(--score-pct, 100%)) !important;
+  background: conic-gradient(var(--primary) var(--score-pct, 100%), #161616 var(--score-pct, 100%)) !important;
 }
 
 body.dark-mode .rm-score-middle {
@@ -1152,7 +1189,7 @@ body.dark-mode .rm-feedback-text strong {
 
 body.dark-mode .rm-metrics-grid {
   border-color: rgba(255, 255, 255, 0.08) !important;
-  background: #171523 !important;
+  background: #141414 !important;
 }
 
 body.dark-mode .rm-metric-data h4 {
@@ -1164,7 +1201,7 @@ body.dark-mode .rm-metric-data p {
 }
 
 body.dark-mode .rm-section-analytics {
-  background-color: #1D1B28 !important;
+  background-color: #161616 !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
@@ -1183,7 +1220,7 @@ body.dark-mode .rm-section-analytics table th {
 }
 
 body.dark-mode .review-list .review-item {
-  background-color: #1D1B28 !important;
+  background-color: #161616 !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #FFFFFF !important;
   box-shadow: none !important;
@@ -1210,7 +1247,7 @@ body.dark-mode .q-text-line {
 }
 
 body.dark-mode .opt-box {
-  background-color: #12101B !important;
+  background-color: #181818 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #D1CFE2 !important;
 }
@@ -1225,8 +1262,46 @@ body.dark-mode .opt-box.correct {
   border-color: #4ade80 !important;
 }
 
-body.dark-mode .explanation-text {
-  color: #8C8A9E !important;
+/* Explanation & Solution Card High-Contrast Styles */
+body.dark-mode .explanation-text,
+body.dark-mode .explanation-body-text,
+body.dark-mode .explanation-hindi-text,
+body.dark-mode .review-explanation-card {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .review-explanation-card {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .review-explanation-card .katex {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .review-explanation-card table td,
+body.dark-mode .review-explanation-card table th {
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+body.dark-mode .review-explanation-card table thead tr {
+  background: rgba(167, 139, 250, 0.18) !important;
+}
+
+/* Light mode overrides for explanation cards */
+body:not(.dark-mode) .review-explanation-card {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+body:not(.dark-mode) .explanation-body-text,
+body:not(.dark-mode) .review-explanation-card .katex {
+  color: #0F172A !important;
+}
+
+body:not(.dark-mode) .explanation-hindi-text {
+  color: #1E293B !important;
 }
 
 /* Dark Mode Overrides for Icons, Medal and Badges in Result Page */
@@ -1392,10 +1467,13 @@ body.dark-mode .review-bottom-actions .btn-back-summary {
   transition: all 0.25s ease;
 }
 
-body.dark-mode .rm-feedback-card {
-  background: #151320;
-  border-color: rgba(255, 255, 255, 0.09);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+body.dark-mode .rm-feedback-card,
+:root.dark .rm-feedback-card,
+.dark .rm-feedback-card,
+html[class*="theme-"].dark .rm-feedback-card {
+  background: #111111 !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5) !important;
 }
 
 .rfb-header {
@@ -1511,8 +1589,11 @@ body.dark-mode .rfb-rating-item:hover {
   transform: translateY(-2px) scale(1.02);
 }
 
-body.dark-mode .rfb-rating-item.selected {
-  background: color-mix(in srgb, var(--rating-color) 18%, #151320) !important;
+body.dark-mode .rfb-rating-item.selected,
+:root.dark .rfb-rating-item.selected,
+.dark .rfb-rating-item.selected,
+html[class*="theme-"].dark .rfb-rating-item.selected {
+  background: color-mix(in srgb, var(--rating-color) 18%, #161616) !important;
   box-shadow: 0 4px 14px color-mix(in srgb, var(--rating-color) 35%, transparent);
 }
 

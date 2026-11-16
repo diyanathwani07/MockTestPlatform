@@ -18,15 +18,15 @@
 
 .create-new-btn {
   border: none;
-  background: linear-gradient(135deg, #2D1B69, var(--primary));
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground, #fff);
   padding: 11px 22px;
   border-radius: 10px;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: transform .15s;
-  box-shadow: 0 6px 16px -4px rgba(45, 27, 105, 0.4);
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25);
 }
 
 .create-new-btn:hover {
@@ -277,4 +277,69 @@
 .manage-quizzes-filter-row select {
   width: 100% !important;
   cursor: pointer !important;
+}
+
+/* ==========================================================================
+   PRIMARY SECTION SWITCHER: QUIZ MANAGEMENT vs STUDY LIBRARY
+   ========================================================================== */
+.mq-section-tabs-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card, #FFFFFF);
+  border: 1.5px solid var(--border-color, #E2E8F0);
+  padding: 5px;
+  border-radius: 12px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.mq-section-tab {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 18px !important;
+  border-radius: 9px !important;
+  border: 1.5px solid transparent !important;
+  background: transparent !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  line-height: 1.4 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  color: var(--text-primary, #334155) !important;
+}
+
+.mq-section-tab svg {
+  color: inherit !important;
+  stroke: currentColor !important;
+}
+
+.mq-section-tab:hover:not(.active) {
+  color: var(--text-primary, #111827) !important;
+  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+}
+
+.mq-section-tab.active {
+  background: var(--primary) !important;
+  color: var(--primary-foreground, #FFFFFF) !important;
+  border-color: var(--primary) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 35%, transparent) !important;
+}
+
+.mq-section-tab.active svg {
+  color: var(--primary-foreground, #FFFFFF) !important;
+  stroke: var(--primary-foreground, #FFFFFF) !important;
+}
+
+:is(.dark, .dark-mode, [data-theme='dark'], body.dark) .mq-section-tabs-bar,
+html[class*="theme-"].dark .mq-section-tabs-bar {
+  background: var(--bg-card, #1A1A27) !important;
+  border-color: var(--border-color, rgba(255, 255, 255, 0.1)) !important;
+}
+
+:is(.dark, .dark-mode, [data-theme='dark'], body.dark) .mq-section-tab:not(.active),
+html[class*="theme-"].dark .mq-section-tab:not(.active) {
+  color: #CBD5E1 !important;
 }

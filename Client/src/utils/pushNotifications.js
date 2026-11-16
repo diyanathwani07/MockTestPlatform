@@ -17,7 +17,7 @@ const registerTokenWithBackend = async (token, platform) => {
   try {
     const jwt = localStorage.getItem('token');
     if (!jwt) return; // User not logged in
-    
+
     const cacheKey = `${platform}:${token}`;
     if (lastRegisteredToken === cacheKey) {
       console.log(`[PushNotifications] Token already registered in this session (${platform}), skipping duplicate.`);
@@ -49,7 +49,7 @@ export const unregisterDeviceToken = async (token) => {
   try {
     const jwt = localStorage.getItem('token');
     if (!jwt) return;
-    
+
     await axios.delete(`${apiUrl}/api/devices/unregister`, {
       data: { token },
       headers: { Authorization: `Bearer ${jwt}` }
@@ -67,7 +67,7 @@ export const unregisterDeviceToken = async (token) => {
  */
 export const setupNativePushNotifications = async () => {
   if (!Capacitor.isNativePlatform()) return;
-  
+
   // Create default notification channel with High importance for heads-up popups on Android
   try {
     await PushNotifications.createChannel({
@@ -143,7 +143,7 @@ export const setupNativePushNotifications = async () => {
 export const setupWebPushNotifications = async () => {
   if (Capacitor.isNativePlatform()) return; // Use native setup instead
   if (!('serviceWorker' in navigator) || !('Notification' in window) || !('PushManager' in window)) return;
-  
+
   try {
     const firebaseConfig = {
       apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -151,14 +151,20 @@ export const setupWebPushNotifications = async () => {
       messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
       appId: import.meta.env.VITE_FIREBASE_APP_ID,
     };
-    
+
     // If no config provided, abort web push setup safely
     if (!firebaseConfig.apiKey) {
       return;
     }
 
-    // Only proceed if already granted or explicitly permitted to avoid blocking FCP/LCP
-    if (Notification.permission !== 'granted') {
+    // Prompt user for permission if not yet decided, or abort if denied
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.log('[PushNotifications] User declined push notification permission.');
+        return;
+      }
+    } else if (Notification.permission !== 'granted') {
       return;
     }
 
@@ -172,12 +178,12 @@ export const setupWebPushNotifications = async () => {
     const swUrl = `/firebase-messaging-sw.js?apiKey=${firebaseConfig.apiKey}&projectId=${firebaseConfig.projectId}&messagingSenderId=${firebaseConfig.messagingSenderId}&appId=${firebaseConfig.appId}`;
     await navigator.serviceWorker.register(swUrl);
     const registration = await navigator.serviceWorker.ready;
-    
-    const currentToken = await getToken(messaging, { 
+
+    const currentToken = await getToken(messaging, {
       vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
       serviceWorkerRegistration: registration
     });
-    
+
     if (currentToken) {
       console.log('[PushNotifications] Web token received: ', currentToken);
       localStorage.setItem('fcm_token_web', currentToken);
@@ -186,6 +192,10 @@ export const setupWebPushNotifications = async () => {
 
     onMessage(messaging, (payload) => {
       console.log('[PushNotifications] Foreground web message received: ', payload);
+      const data = payload.data || payload.notification?.data;
+      if (data && data.type === 'INCOMING_CALL') {
+        incomingReminderService.handleIncomingReminder(data);
+      }
     });
   } catch (error) {
     // Gracefully ignore subscription errors so it never blocks page lifecycle or audits

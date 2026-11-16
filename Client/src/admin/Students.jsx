@@ -605,17 +605,30 @@ function Students() {
                 {/* Profile Header Card */}
                 <div style={{ display: 'flex', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '24px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    {viewedProfileStudent.avatar || viewedProfileStudent.profilePhoto ? (
-                      <img 
-                        src={viewedProfileStudent.avatar || viewedProfileStudent.profilePhoto} 
-                        alt="Profile" 
-                        style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(124, 58, 237, 0.2)' }} 
-                      />
-                    ) : (
-                      <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '32px', fontWeight: '700', textTransform: 'uppercase' }}>
-                        {viewedProfileStudent.fullName?.[0] || 'S'}
-                      </div>
-                    )}
+                    {(() => {
+                        const profAvatar = viewedProfileStudent.avatar || viewedProfileStudent.profilePicture || viewedProfileStudent.profilePhoto;
+                        const profInitials = viewedProfileStudent.fullName?.[0]?.toUpperCase() || 'S';
+                        return (
+                          <>
+                            {profAvatar ? (
+                              <img 
+                                src={profAvatar} 
+                                alt={viewedProfileStudent.fullName || "Profile"} 
+                                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border-color)', display: 'block' }} 
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  if (e.currentTarget.nextSibling) {
+                                    e.currentTarget.nextSibling.style.display = 'flex';
+                                  }
+                                }}
+                              />
+                            ) : null}
+                            <div style={{ display: profAvatar ? 'none' : 'flex', width: '80px', height: '80px', borderRadius: '50%', background: 'var(--primary)', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-foreground, #ffffff)', fontSize: '32px', fontWeight: '700', textTransform: 'uppercase' }}>
+                              {profInitials}
+                            </div>
+                          </>
+                        );
+                      })()}
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)' }}>{viewedProfileStudent.fullName || 'Unknown'}</h2>
@@ -637,7 +650,7 @@ function Students() {
 
                   <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                         <Mail size={16} />
                       </div>
                       <div>
@@ -646,7 +659,7 @@ function Students() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                         <Phone size={16} />
                       </div>
                       <div>
@@ -655,7 +668,7 @@ function Students() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                         <Clock size={16} />
                       </div>
                       <div>
@@ -679,7 +692,7 @@ function Students() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '18px' }}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                       <GraduationCap size={22} />
                     </div>
                     <div>
@@ -766,13 +779,13 @@ function Students() {
                           return subjectStatsList.map((stat, idx) => (
                             <div key={idx} style={{ flex: '0 0 180px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(124, 58, 237, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                                   <FileText size={14} />
                                 </div>
                                 <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stat.name}</span>
                               </div>
                               <div>
-                                <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--violet)' }}>{stat.avgScore}%</h4>
+                                <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--primary)' }}>{stat.avgScore}%</h4>
                                 <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stat.count} Tests | Avg. Score</span>
                               </div>
                             </div>
@@ -854,8 +867,8 @@ function Students() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                               <div style={{
                                 width: '30px', height: '30px', borderRadius: '8px',
-                                background: idx % 3 === 0 ? 'rgba(239, 68, 68, 0.1)' : (idx % 3 === 1 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(124, 58, 237, 0.1)'),
-                                color: idx % 3 === 0 ? '#ef4444' : (idx % 3 === 1 ? '#10b981' : 'var(--violet)'),
+                                background: idx % 3 === 0 ? 'rgba(239, 68, 68, 0.1)' : (idx % 3 === 1 ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-input, rgba(0, 0, 0, 0.05))'),
+                                color: idx % 3 === 0 ? '#ef4444' : (idx % 3 === 1 ? '#10b981' : 'var(--primary)'),
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                               }}>
                                 {idx % 3 === 0 ? <Clock size={14} /> : (idx % 3 === 1 ? <Target size={14} /> : <BookOpen size={14} />)}
@@ -903,7 +916,7 @@ function Students() {
                   <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
                     Manage Users
                   </h2>
-                  <span style={{ fontSize: "13px", color: "var(--primary, #7c3aed)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
+                  <span style={{ fontSize: "13px", color: "var(--primary)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
                     {filteredStudents.length} {viewTab === "active" ? "Active" : "Archived"} Users
                   </span>
                 </div>
@@ -916,9 +929,9 @@ function Students() {
                         padding: '5px 12px',
                         borderRadius: '6px',
                         border: 'none',
-                        background: viewTab === 'active' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                        color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
-                        boxShadow: viewTab === 'active' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                        background: viewTab === 'active' ? 'var(--primary)' : 'transparent',
+                        color: viewTab === 'active' ? 'var(--primary-foreground, #ffffff)' : 'var(--text-secondary)',
+                        boxShadow: viewTab === 'active' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                         fontSize: '12px',
                         fontWeight: '600',
                         cursor: 'pointer',
@@ -934,9 +947,9 @@ function Students() {
                         padding: '5px 12px',
                         borderRadius: '6px',
                         border: 'none',
-                        background: viewTab === 'archived' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                        color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
-                        boxShadow: viewTab === 'archived' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                        background: viewTab === 'archived' ? 'var(--primary)' : 'transparent',
+                        color: viewTab === 'archived' ? 'var(--primary-foreground, #ffffff)' : 'var(--text-secondary)',
+                        boxShadow: viewTab === 'archived' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                         fontSize: '12px',
                         fontWeight: '600',
                         cursor: 'pointer',
@@ -1050,24 +1063,31 @@ function Students() {
                               style={{ cursor: "pointer", display: 'flex', alignItems: 'center', gap: '10px' }}
                               title="Click to view details"
                             >
-                              <div className="user-avatar-circle" style={{ overflow: 'hidden' }}>
-                                {(s.avatar || s.profilePhoto) ? (
-                                  <img 
-                                    src={s.avatar || s.profilePhoto} 
-                                    alt={s.fullName} 
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                  />
-                                ) : (
-                                  s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S"
-                                )}
-                              </div>
-                              <div>
-                                <div className="user-name-text" style={{ fontWeight: '600' }}>{s.fullName}</div>
-                                {s.isPremium && (
-                                  <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                    <Sparkles size={11} /> AI Premium
-                                  </span>
-                                )}
+                              <div className="user-avatar-circle" style={{ overflow: 'hidden', position: 'relative' }}>
+                                {(() => {
+                                  const avatarUrl = s.avatar || s.profilePicture || s.profilePhoto;
+                                  const initials = s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S";
+                                  return (
+                                    <>
+                                      {avatarUrl ? (
+                                        <img 
+                                          src={avatarUrl} 
+                                          alt={s.fullName || "User"} 
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '50%' }} 
+                                          onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            if (e.currentTarget.nextSibling) {
+                                              e.currentTarget.nextSibling.style.display = 'flex';
+                                            }
+                                          }}
+                                        />
+                                      ) : null}
+                                      <span style={{ display: avatarUrl ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                                        {initials}
+                                      </span>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </div>
                           </td>
@@ -1150,9 +1170,9 @@ function Students() {
                       fontSize: '13px',
                       fontWeight: '600',
                       border: 'none',
-                      background: addMode === 'manual' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                      color: addMode === 'manual' ? '#fff' : 'var(--text-secondary)',
-                      boxShadow: addMode === 'manual' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                      background: addMode === 'manual' ? 'var(--primary)' : 'transparent',
+                      color: addMode === 'manual' ? 'var(--primary-foreground, #fff)' : 'var(--text-secondary)',
+                      boxShadow: addMode === 'manual' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                       cursor: 'pointer'
                     }}
                   >
@@ -1167,9 +1187,9 @@ function Students() {
                       fontSize: '13px',
                       fontWeight: '600',
                       border: 'none',
-                      background: addMode === 'csv' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                      color: addMode === 'csv' ? '#fff' : 'var(--text-secondary)',
-                      boxShadow: addMode === 'csv' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                      background: addMode === 'csv' ? 'var(--primary)' : 'transparent',
+                      color: addMode === 'csv' ? 'var(--primary-foreground, #fff)' : 'var(--text-secondary)',
+                      boxShadow: addMode === 'csv' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                       cursor: 'pointer'
                     }}
                   >
@@ -1244,7 +1264,7 @@ function Students() {
                         style={{
                           border: `2px dashed ${dragOver ? 'var(--primary)' : 'var(--border-color)'}`,
                           borderRadius: '12px', padding: '36px', textAlign: 'center', cursor: 'pointer',
-                          background: dragOver ? 'rgba(110,63,243,0.05)' : 'transparent'
+                          background: dragOver ? 'var(--bg-input, rgba(0, 0, 0, 0.05))' : 'transparent'
                         }}
                         onClick={() => csvInputRef.current?.click()}
                       >
@@ -1403,17 +1423,30 @@ function Students() {
                 {/* Target Student Mini-Profile Card */}
                 <div style={{ padding: '16px 20px 0 20px' }}>
                   <div className="actions-drawer-user-card">
-                    {drawerStudent.avatar || drawerStudent.profilePhoto ? (
-                      <img 
-                        src={drawerStudent.avatar || drawerStudent.profilePhoto} 
-                        alt={drawerStudent.fullName} 
-                        style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }}
-                      />
-                    ) : (
-                      <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontWeight: '700', fontSize: '18px', flexShrink: 0 }}>
-                        {drawerStudent.fullName?.charAt(0)?.toUpperCase() || 'S'}
-                      </div>
-                    )}
+                    {(() => {
+                      const drawerAvatar = drawerStudent.avatar || drawerStudent.profilePicture || drawerStudent.profilePhoto;
+                      const drawerInitials = drawerStudent.fullName?.charAt(0)?.toUpperCase() || 'S';
+                      return (
+                        <>
+                          {drawerAvatar ? (
+                            <img 
+                              src={drawerAvatar} 
+                              alt={drawerStudent.fullName || "User"} 
+                              style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)', display: 'block', flexShrink: 0 }}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                if (e.currentTarget.nextSibling) {
+                                  e.currentTarget.nextSibling.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div style={{ display: drawerAvatar ? 'none' : 'flex', width: '46px', height: '46px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%)', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontWeight: '700', fontSize: '18px', flexShrink: 0 }}>
+                            {drawerInitials}
+                          </div>
+                        </>
+                      );
+                    })()}
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -1439,7 +1472,7 @@ function Students() {
                           fontWeight: '700', 
                           padding: '2px 8px', 
                           borderRadius: '6px', 
-                          background: drawerStudent.isPremium ? 'rgba(124, 58, 237, 0.12)' : 'rgba(107, 114, 128, 0.12)',
+                          background: drawerStudent.isPremium ? 'var(--bg-input, rgba(0, 0, 0, 0.05))' : 'rgba(107, 114, 128, 0.12)',
                           color: drawerStudent.isPremium ? 'var(--primary)' : 'var(--text-muted)'
                         }}>
                           <Sparkles size={11} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
@@ -1460,7 +1493,7 @@ function Students() {
                         onClick={() => { setActionsDrawerOpen(false); navigate("/admin/students/" + drawerStudent._id); }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                             <User size={18} />
                           </div>
                           <div>
@@ -1477,7 +1510,7 @@ function Students() {
                         onClick={() => { setSelectedStudent(drawerStudent); setSelectedPlanId(""); fetchAiPlans(); setDrawerSubView('ai_plan'); }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(124, 58, 237, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                             <Sparkles size={18} />
                           </div>
                           <div>
@@ -1799,7 +1832,7 @@ function Students() {
               <div style={{ backgroundColor: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '460px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.35)', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                       <Sparkles size={16} />
                     </div>
                     <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text-primary)' }}>

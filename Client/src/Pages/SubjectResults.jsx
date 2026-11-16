@@ -24,6 +24,18 @@ function SubjectResults() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSubjectTab, setSelectedSubjectTab] = useState("");
 
+  const formatSubjectLabel = (sub) => {
+    if (!sub) return "General";
+    const trimmed = String(sub).trim();
+    if (trimmed.includes(",")) {
+      const parts = trimmed.split(",").map(s => s.trim()).filter(Boolean);
+      if (parts.length > 1) {
+        return `All Subjects (${parts.length} Sections)`;
+      }
+    }
+    return trimmed;
+  };
+
   const subjects = Array.from(new Set(group.map((r) => r.subject || "General")));
 
   useEffect(() => {
@@ -100,16 +112,19 @@ function SubjectResults() {
                   width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: "pointer", color: "var(--text-primary)", flexShrink: 0
                 }}
-                className="hide-on-desktop"
+                className={selectedSubjectTab ? "" : "hide-on-desktop"}
+                title={selectedSubjectTab ? "Back to All Subjects" : "Back to Exams"}
               >
                 <ArrowLeft size={20} />
               </button>
               <div>
                 <h1 className="practice-title" style={{ margin: "0 0 4px 0" }}>
-                  {selectedSubjectTab ? `${selectedSubjectTab} Results` : `${decodedExamName} Results`}
+                  {decodedExamName} Results
                 </h1>
                 <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0 }}>
-                  {selectedSubjectTab ? "Review all your test attempts." : "Select a subject to view your attempts."}
+                  {selectedSubjectTab 
+                    ? `Review all your test attempts for ${formatSubjectLabel(selectedSubjectTab)}.` 
+                    : "Select a subject to view your attempts."}
                 </p>
               </div>
             </div>
@@ -146,9 +161,20 @@ function SubjectResults() {
                   >
 
                     
-                    <h3 className="practice-quiz-title">{sub}</h3>
-                    <p className="practice-quiz-desc">
-                      Review your attempts and performance analytics for this subject.
+                    <h3 className="practice-quiz-title">{formatSubjectLabel(sub)}</h3>
+                    <p 
+                      className="practice-quiz-desc" 
+                      title={sub}
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden"
+                      }}
+                    >
+                      {sub.includes(",") 
+                        ? `Sections: ${sub}` 
+                        : "Review your attempts and performance analytics for this subject."}
                     </p>
 
                     <div className="practice-meta-grid">
@@ -184,8 +210,9 @@ function SubjectResults() {
                         setSelectedSubjectTab(sub);
                         setSelectedDate(""); // Clear date filter when switching tabs
                       }}
+                      title={sub}
                     >
-                      {sub}
+                      {formatSubjectLabel(sub)}
                     </button>
                   ))}
                 </div>
@@ -235,7 +262,7 @@ function SubjectResults() {
 
                           {/* Meta info */}
                           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", fontSize: "12px", color: "var(--text-muted)", marginBottom: "12px" }}>
-                            <span><strong>Subject:</strong> {result.subject || "General"}</span>
+                            <span title={result.subject || "General"}><strong>Subject:</strong> {formatSubjectLabel(result.subject)}</span>
                             
                             <span>•</span>
                             <span><strong>Time:</strong> {formattedTime}</span>

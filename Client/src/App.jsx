@@ -67,6 +67,7 @@ const MySubscriptions = lazy(() => import("./Pages/MySubscriptions"));
 const AdminAiPlans = lazy(() => import("./admin/AiPlans"));
 const RevenueDashboard = lazy(() => import("./admin/RevenueDashboard"));
 const AiSubscribers = lazy(() => import("./admin/AiSubscribers"));
+const AdminLibrary = lazy(() => import("./admin/AdminLibrary"));
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
 import GlobalBackButtonHandler from "./components/GlobalBackButtonHandler";
@@ -435,6 +436,11 @@ function App() {
               <RevenueDashboard />
             </PermissionRoute>
           }
+        />
+
+        <Route
+          path="/admin/library"
+          element={<Navigate to="/admin/manage-quizzes?tab=library" replace />}
         />
 
         <Route

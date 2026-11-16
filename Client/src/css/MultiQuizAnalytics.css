@@ -33,8 +33,11 @@
   margin-right: auto !important;
 }
 
-body.dark-mode .mqa-top-nav {
-  background: rgba(23, 21, 32, 0.9) !important;
+body.dark-mode .mqa-top-nav,
+:root.dark .mqa-top-nav,
+.dark .mqa-top-nav,
+html[class*="theme-"].dark .mqa-top-nav {
+  background: rgba(17, 17, 17, 0.9) !important;
   border-color: rgba(139, 92, 246, 0.3) !important;
 }
 
@@ -106,10 +109,13 @@ body.dark-mode .mqa-tab-btn.active,
   box-sizing: border-box;
 }
 
-body.dark-mode .mqa-card {
-  background: #171520;
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+body.dark-mode .mqa-card,
+:root.dark .mqa-card,
+.dark .mqa-card,
+html[class*="theme-"].dark .mqa-card {
+  background: #111111 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* 2-Column Desktop Grid Layouts */
@@ -196,7 +202,7 @@ body.dark-mode .mqa-card-title {
 }
 
 body.dark-mode .mqa-stat-box {
-  background: #1E1B2E;
+  background: #161616;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -260,7 +266,7 @@ body.dark-mode .mqa-stat-value {
 }
 
 body.dark-mode .mqa-section-row {
-  background: #1A1726;
+  background: #161616;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -352,9 +358,12 @@ body.dark-mode .mqa-tag-unattempted {
   border: 1px solid #EDF2F7;
 }
 
-body.dark-mode .mqa-chip {
-  background: #151320;
-  border-color: rgba(255, 255, 255, 0.04);
+body.dark-mode .mqa-chip,
+:root.dark .mqa-chip,
+.dark .mqa-chip,
+html[class*="theme-"].dark .mqa-chip {
+  background: #181818;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .mqa-chip-val {
@@ -424,7 +433,7 @@ body.dark-mode .mqa-progress-bar-bg {
 }
 
 body.dark-mode .mqa-recom-item {
-  background: #1A1726;
+  background: #161616;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -550,7 +559,7 @@ body.dark-mode .mqa-delta-neutral {
 
 body.dark-mode .mqa-table th {
   color: #8C8A9E;
-  background: #171520;
+  background: #111111;
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -688,7 +697,7 @@ body.dark-mode .mqa-table td {
 }
 
 body.dark-mode .mqa-filter-chip {
-  background: #1E1B2E;
+  background: #161616;
   border-color: rgba(255, 255, 255, 0.08);
   color: #94A3B8;
 }
@@ -758,7 +767,7 @@ body.dark-mode .mqa-sub-pill.skipped {
 }
 
 body.dark-mode .mqa-time-util-wrap {
-  background: #1E1B2E;
+  background: #161616;
 }
 
 .mqa-time-circle {
@@ -839,7 +848,7 @@ body.dark-mode .mqa-time-circle-lbl,
 }
 
 body.dark-mode .mqa-time-item {
-  background: #161424;
+  background: #181818;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -886,16 +895,19 @@ body.dark-mode .mqa-time-item {
   transform: translateY(-1px);
 }
 
+:root .mqa-actions-row .mqa-btn-overview,
+html:not(.dark) .mqa-actions-row .mqa-btn-overview,
+body:not(.dark-mode) .mqa-actions-row .mqa-btn-overview,
 .mqa-actions-row .mqa-btn-overview {
   flex: 0.8;
   height: 42px;
   padding: 0 20px;
   border-radius: 12px;
-  background: #F8FAFC;
-  color: #1E293B;
-  border: 1px solid #CBD5E1;
-  font-size: 14px;
-  font-weight: 700;
+  background: #F8FAFC !important;
+  color: #1E293B !important;
+  border: 1.5px solid #CBD5E1 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -904,18 +916,35 @@ body.dark-mode .mqa-time-item {
   white-space: nowrap;
 }
 
+.mqa-actions-row .mqa-btn-overview span {
+  color: inherit !important;
+}
+
+:root .mqa-actions-row .mqa-btn-overview:hover,
+html:not(.dark) .mqa-actions-row .mqa-btn-overview:hover,
+body:not(.dark-mode) .mqa-actions-row .mqa-btn-overview:hover,
 .mqa-actions-row .mqa-btn-overview:hover {
-  background: #EDF2F7;
+  background: #E2E8F0 !important;
+  color: #0F172A !important;
+  border-color: #94A3B8 !important;
 }
 
-body.dark-mode .mqa-actions-row .mqa-btn-overview {
-  background: rgba(255, 255, 255, 0.06);
-  color: #FFFFFF;
-  border-color: rgba(255, 255, 255, 0.15);
+body.dark-mode .mqa-actions-row .mqa-btn-overview,
+:root.dark .mqa-actions-row .mqa-btn-overview,
+.dark .mqa-actions-row .mqa-btn-overview,
+html[class*="theme-"].dark .mqa-actions-row .mqa-btn-overview {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
 }
 
-body.dark-mode .mqa-actions-row .mqa-btn-overview:hover {
-  background: rgba(255, 255, 255, 0.1);
+body.dark-mode .mqa-actions-row .mqa-btn-overview:hover,
+:root.dark .mqa-actions-row .mqa-btn-overview:hover,
+.dark .mqa-actions-row .mqa-btn-overview:hover,
+html[class*="theme-"].dark .mqa-actions-row .mqa-btn-overview:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
 }
 
 @media (max-width: 640px) {

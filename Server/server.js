@@ -289,6 +289,8 @@ app.use("/v1/api/ai-voice", require("./routes/aiVoiceRoutes"));
 app.use("/api/voice-settings", require("./routes/voiceSettingRoutes"));
 app.use("/api/admin/voice-settings", require("./routes/voiceSettingRoutes"));
 app.use("/v1/api/voice-settings", require("./routes/voiceSettingRoutes"));
+app.use("/api/admin/library", require("./routes/adminLibraryRoutes"));
+app.use("/api/library", require("./routes/studentLibraryRoutes"));
 // Background Scheduler: Checks every 30 seconds for due scheduled quizzes to publish and expired quizzes to unpublish
 const quizPublishInterval = setInterval(async () => {
   try {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import mammoth from "mammoth";
 import {
@@ -29,10 +30,12 @@ import {
   Plus,
   Search,
   Users,
-  X
+  X,
+  Send
 } from "lucide-react";
 import ExamReminderModal from "../components/ExamReminderModal";
 import AdminScheduleCallSection from "./components/AdminScheduleCallSection";
+import AdminPushNotificationSection from "./components/AdminPushNotificationSection";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import { Skeleton, SkeletonCard, SkeletonTable } from "@/components/ui/skeleton";
@@ -62,7 +65,7 @@ const extractErrorMessage = (err, fallback = "An error occurred") => {
         const parsed = JSON.parse(raw);
         return parsed.error?.message || parsed.message || raw;
       }
-    } catch (_) {}
+    } catch (_) { }
     return raw;
   }
   if (typeof raw === "object" && raw !== null) {
@@ -155,9 +158,10 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function VoiceSettings() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState("voice"); // 'voice' | 'schedule' | 'retry' | 'templates'
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "direct_call"); // 'direct_call' | 'push_notifications' | 'voice' | 'schedule' | 'retry' | 'templates' | 'reminders'
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [originalSettings, setOriginalSettings] = useState(DEFAULT_SETTINGS);
   const [updatedByMeta, setUpdatedByMeta] = useState(null);
@@ -184,6 +188,16 @@ export default function VoiceSettings() {
   const [previewCachedKey, setPreviewCachedKey] = useState("");
   const [isPreviewCached, setIsPreviewCached] = useState(false);
   const audioRef = useRef(null);
+
+  // Sync activeTab with URL search param
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam) {
+      setActiveTab(tabParam);
+    } else {
+      setActiveTab("direct_call");
+    }
+  }, [searchParams]);
 
   // Word-to-Speech (DOCX Import) states
   const [docxFile, setDocxFile] = useState(null);
@@ -900,8 +914,8 @@ export default function VoiceSettings() {
                   toast.type === "error"
                     ? "#EF4444"
                     : toast.type === "info"
-                    ? "#3B82F6"
-                    : "#10B981",
+                      ? "#3B82F6"
+                      : "#10B981",
                 wordBreak: "break-word",
                 animation: "slideIn 0.25s ease-out"
               }}
@@ -1052,10 +1066,10 @@ export default function VoiceSettings() {
                   gap: "6px",
                   padding: "9px 18px",
                   borderRadius: "10px",
-                  background: isDirty ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "rgba(255, 255, 255, 0.08)",
-                  color: isDirty ? "#ffffff" : "var(--text-muted)",
-                  boxShadow: isDirty ? "0 2px 10px rgba(124, 58, 237, 0.35)" : "none",
-                  border: "none",
+                  background: isDirty ? "var(--primary)" : "var(--bg-input, #ffffff)",
+                  color: isDirty ? "var(--primary-foreground, #ffffff)" : "var(--text-muted)",
+                  boxShadow: isDirty ? "0 2px 10px rgba(0, 0, 0, 0.15)" : "none",
+                  border: isDirty ? "none" : "1px solid var(--border-color)",
                   cursor: isDirty ? "pointer" : "not-allowed",
                   fontSize: "13px",
                   fontWeight: 600,
@@ -1171,6 +1185,7 @@ export default function VoiceSettings() {
           >
             {[
               { id: "direct_call", label: "Schedule AI Voice Call", icon: PhoneCall },
+              { id: "push_notifications", label: "Push Notifications", icon: Send },
               { id: "voice", label: "Voice & Language", icon: Mic },
               { id: "schedule", label: "Calling Schedule", icon: Calendar },
               { id: "retry", label: "Retry Rules", icon: Sliders },
@@ -1182,17 +1197,20 @@ export default function VoiceSettings() {
                 <button
                   key={id}
                   type="button"
-                  onClick={() => setActiveTab(id)}
+                  onClick={() => {
+                    setActiveTab(id);
+                    setSearchParams({ tab: id }, { replace: true });
+                  }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "8px",
                     padding: "10px 18px",
                     borderRadius: "10px",
-                    border: active ? "1px solid #7c3aed" : "1px solid transparent",
-                    background: active ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
-                    color: active ? "#ffffff" : "var(--text-secondary)",
-                    boxShadow: active ? "0 3px 12px rgba(124, 58, 237, 0.35)" : "none",
+                    border: active ? "1px solid var(--primary)" : "1px solid transparent",
+                    background: active ? "var(--primary)" : "transparent",
+                    color: active ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
+                    boxShadow: active ? "0 3px 12px rgba(0, 0, 0, 0.15)" : "none",
                     cursor: "pointer",
                     fontSize: "14px",
                     fontWeight: active ? "600" : "500",
@@ -1210,6 +1228,11 @@ export default function VoiceSettings() {
           {/* TAB: Schedule AI Voice Call */}
           {activeTab === "direct_call" && (
             <AdminScheduleCallSection voiceSettings={settings} onSettingsUpdated={fetchSettings} />
+          )}
+
+          {/* TAB: Push Notifications */}
+          {activeTab === "push_notifications" && (
+            <AdminPushNotificationSection />
           )}
 
           {/* TAB 1: Voice & Language */}
@@ -1232,9 +1255,9 @@ export default function VoiceSettings() {
                       fontWeight: 600,
                       padding: "4px 10px",
                       borderRadius: "8px",
-                      background: (settings.ttsProvider || "gemini") === "elevenlabs" ? "rgba(59, 130, 246, 0.15)" : "rgba(139, 92, 246, 0.15)",
-                      color: (settings.ttsProvider || "gemini") === "elevenlabs" ? "#60A5FA" : "var(--primary)",
-                      border: `1px solid ${(settings.ttsProvider || "gemini") === "elevenlabs" ? "rgba(59, 130, 246, 0.3)" : "rgba(139, 92, 246, 0.3)"}`
+                      background: (settings.ttsProvider || "gemini") === "elevenlabs" ? "rgba(59, 130, 246, 0.12)" : "var(--bg-input, #ffffff)",
+                      color: (settings.ttsProvider || "gemini") === "elevenlabs" ? "#2563eb" : "var(--primary)",
+                      border: `1px solid ${(settings.ttsProvider || "gemini") === "elevenlabs" ? "rgba(59, 130, 246, 0.25)" : "var(--border-color, #e2e8f0)"}`
                     }}
                   >
                     Active Provider: {(settings.ttsProvider || "gemini") === "elevenlabs" ? "ElevenLabs" : "Gemini"}
@@ -1260,11 +1283,11 @@ export default function VoiceSettings() {
                       borderRadius: "12px",
                       cursor: "pointer",
                       background: (settings.ttsProvider || "gemini") === "gemini"
-                        ? "linear-gradient(135deg, rgba(139, 92, 246, 0.14), rgba(99, 102, 241, 0.08))"
-                        : "var(--bg-card, rgba(255, 255, 255, 0.03))",
+                        ? "var(--bg-input, #ffffff)"
+                        : "var(--bg-card, #ffffff)",
                       border: (settings.ttsProvider || "gemini") === "gemini"
                         ? "2px solid var(--primary)"
-                        : "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                        : "1px solid var(--border-color, #e2e8f0)",
                       transition: "all 0.2s ease",
                       display: "flex",
                       flexDirection: "column",
@@ -1278,7 +1301,8 @@ export default function VoiceSettings() {
                             width: "32px",
                             height: "32px",
                             borderRadius: "8px",
-                            background: "rgba(139, 92, 246, 0.2)",
+                            background: "var(--bg-card, #ffffff)",
+                            border: "1px solid var(--border-color, #e2e8f0)",
                             color: "var(--primary)",
                             display: "flex",
                             alignItems: "center",
@@ -1307,8 +1331,8 @@ export default function VoiceSettings() {
                             fontWeight: 700,
                             padding: "3px 8px",
                             borderRadius: "20px",
-                            background: "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)",
-                            color: "#ffffff"
+                            background: "var(--primary)",
+                            color: "var(--primary-foreground, #ffffff)"
                           }}
                         >
                           <Check size={12} /> Selected
@@ -1451,8 +1475,8 @@ export default function VoiceSettings() {
                         {settings.defaultLanguage === "hi"
                           ? "All reminders are generated using the Hindi voice model."
                           : settings.defaultLanguage === "en"
-                          ? "All reminders are generated using the English voice model."
-                          : "Devanagari text triggers Hindi synthesis, Latin text triggers English."}
+                            ? "All reminders are generated using the English voice model."
+                            : "Devanagari text triggers Hindi synthesis, Latin text triggers English."}
                       </div>
                     </div>
 
@@ -2100,9 +2124,9 @@ export default function VoiceSettings() {
                         padding: "6px 12px",
                         borderRadius: "8px",
                         border: "none",
-                        background: previewProvider === "gemini" ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "transparent",
-                        color: previewProvider === "gemini" ? "#ffffff" : "var(--text-secondary)",
-                        boxShadow: previewProvider === "gemini" ? "0 2px 6px rgba(124, 58, 237, 0.3)" : "none",
+                        background: previewProvider === "gemini" ? "var(--primary)" : "transparent",
+                        color: previewProvider === "gemini" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
+                        boxShadow: previewProvider === "gemini" ? "0 2px 6px rgba(0, 0, 0, 0.15)" : "none",
                         fontSize: "12px",
                         fontWeight: 600,
                         cursor: "pointer",
@@ -2335,8 +2359,8 @@ export default function VoiceSettings() {
                           {generatingPreview
                             ? "Synthesizing Audio..."
                             : isPreviewReady
-                            ? isPlayingPreview ? "Stop Playing" : "Play Saved Audio"
-                            : `Generate Audio (${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"})`}
+                              ? isPlayingPreview ? "Stop Playing" : "Play Saved Audio"
+                              : `Generate Audio (${previewProvider === "elevenlabs" ? "ElevenLabs" : "Gemini"})`}
                         </span>
                       </button>
 
@@ -2376,9 +2400,9 @@ export default function VoiceSettings() {
                             fontSize: "11.5px",
                             padding: "4px 10px",
                             borderRadius: "8px",
-                            background: isPreviewCached ? "rgba(16, 185, 129, 0.12)" : "rgba(124, 58, 237, 0.12)",
+                            background: isPreviewCached ? "rgba(16, 185, 129, 0.12)" : "var(--bg-input, rgba(0, 0, 0, 0.05))",
                             color: isPreviewCached ? "#10B981" : "var(--primary)",
-                            border: `1px solid ${isPreviewCached ? "rgba(16, 185, 129, 0.25)" : "rgba(124, 58, 237, 0.25)"}`,
+                            border: `1px solid ${isPreviewCached ? "rgba(16, 185, 129, 0.25)" : "var(--border-color)"}`,
                             fontWeight: 500
                           }}
                         >
@@ -3007,10 +3031,10 @@ export default function VoiceSettings() {
                           fontWeight: 500,
                           cursor: "pointer",
                           transition: "all 0.15s ease",
-                          background: isSelected ? "linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)" : "var(--bg-input, rgba(255, 255, 255, 0.05))",
-                          color: isSelected ? "#ffffff" : "var(--text-secondary)",
-                          boxShadow: isSelected ? "0 2px 6px rgba(124, 58, 237, 0.3)" : "none",
-                          border: isSelected ? "1px solid #7c3aed" : "1px solid var(--border-color, rgba(255, 255, 255, 0.1))",
+                          background: isSelected ? "var(--primary)" : "var(--bg-input, #ffffff)",
+                          color: isSelected ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
+                          boxShadow: isSelected ? "0 2px 6px rgba(0, 0, 0, 0.15)" : "none",
+                          border: isSelected ? "1px solid var(--primary)" : "1px solid var(--border-color, #e2e8f0)",
                           display: "inline-flex",
                           alignItems: "center",
                           gap: "6px"
@@ -3575,12 +3599,12 @@ export default function VoiceSettings() {
                       padding: "9px 18px",
                       borderRadius: "8px",
                       border: "none",
-                      background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                      color: "#ffffff",
+                      background: "var(--primary)",
+                      color: "var(--primary-foreground, #ffffff)",
                       cursor: "pointer",
                       fontSize: "13px",
                       fontWeight: "700",
-                      boxShadow: "0 4px 14px rgba(124, 58, 237, 0.4)"
+                      boxShadow: "0 4px 14px rgba(0, 0, 0, 0.15)"
                     }}
                   >
                     <Plus size={16} /> Schedule Exam Reminder

@@ -16,14 +16,45 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log("[firebase-messaging-sw.js] Received background message ", payload);
 
-  const notificationTitle = payload.notification.title;
+  const data = payload.data || {};
+  const notification = payload.notification || {};
+
+  const notificationTitle = notification.title ||
+    data.taskTitle ||
+    data.callerName ||
+    "PrepMark Study Reminder";
+
+  const notificationBody = notification.body ||
+    data.reminderAudioText ||
+    data.taskDescription ||
+    (data.taskTitle ? `Reminder for ${data.taskTitle}` : "You have an incoming study reminder.");
+
   const notificationOptions = {
-    body: payload.notification.body,
+    body: notificationBody,
     icon: "/icons/icon-192x192.png",
-    data: payload.data
+    badge: "/icons/icon-192x192.png",
+    vibrate: [300, 100, 300, 100, 300],
+    data: data,
+    tag: data.dispatchId ? `reminder-${data.dispatchId}` : undefined,
+    renotify: true,
+    requireInteraction: true
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  // Broadcast to open browser windows/tabs so active sessions trigger the incoming call modal immediately
+  if (data.type === "INCOMING_CALL") {
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      windowClients.forEach((client) => {
+        client.postMessage({
+          type: "FCM_INCOMING_CALL",
+          data: data
+        });
+      });
+    }).catch(function(err) {
+      console.warn("[firebase-messaging-sw.js] Failed to postMessage to clients:", err);
+    });
+  }
+
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 

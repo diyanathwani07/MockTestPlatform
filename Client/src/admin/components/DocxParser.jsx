@@ -1071,27 +1071,81 @@ function postProcessQuestions(sections) {
 
 function convertOmml(xml) {
   if (!xml) return "";
-  let prev;
+
+  const getFragmentText = (frag) => {
+    if (!frag) return "";
+    let str = "";
+    const tMatches = frag.match(/<[mw]:t\b[^>]*>([\s\S]*?)<\/[mw]:t>/gi);
+    if (tMatches) {
+      str = tMatches.map(t => t.replace(/<[^>]+>/g, '')).join('');
+    }
+    return str.trim();
+  };
+
   let curr = xml;
-  let iter = 0;
-  while (iter < 10) {
-    prev = curr;
-    iter++;
 
-    curr = curr.replace(/<[mw]:t\b[^>]*>([^<]*)<\/[mw]:t>/g, '$1');
-    curr = curr.replace(/<m:f\b[^>]*>(?:(?!<m:f\b)[\s\S])*?<m:num\b[^>]*>([\s\S]*?)<\/m:num>(?:(?!<m:f\b)[\s\S])*?<m:den\b[^>]*>([\s\S]*?)<\/m:den>(?:(?!<m:f\b)[\s\S])*?<\/m:f>/g, '($1/$2)');
-    curr = curr.replace(/<m:sSubSup\b[^>]*>(?:(?!<m:sSubSup\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:sSubSup\b)[\s\S])*?<m:sub\b[^>]*>([\s\S]*?)<\/m:sub>(?:(?!<m:sSubSup\b)[\s\S])*?<m:sup\b[^>]*>([\s\S]*?)<\/m:sup>(?:(?!<m:sSubSup\b)[\s\S])*?<\/m:sSubSup>/g, '$1_($2)^($3)');
-    curr = curr.replace(/<m:sSup\b[^>]*>(?:(?!<m:sSup\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:sSup\b)[\s\S])*?<m:sup\b[^>]*>([\s\S]*?)<\/m:sup>(?:(?!<m:sSup\b)[\s\S])*?<\/m:sSup>/g, '$1^($2)');
-    curr = curr.replace(/<m:sSub\b[^>]*>(?:(?!<m:sSub\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:sSub\b)[\s\S])*?<m:sub\b[^>]*>([\s\S]*?)<\/m:sub>(?:(?!<m:sSub\b)[\s\S])*?<\/m:sSub>/g, '$1_($2)');
-    curr = curr.replace(/<m:rad\b[^>]*>(?:(?!<m:rad\b)[\s\S])*?<m:deg\b[^>]*>([\s\S]*?)<\/m:deg>(?:(?!<m:rad\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:rad\b)[\s\S])*?<\/m:rad>/g, 'root[$1]($2)');
-    curr = curr.replace(/<m:rad\b[^>]*>(?:(?!<m:rad\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:rad\b)[\s\S])*?<\/m:rad>/g, '√($1)');
-    curr = curr.replace(/<m:d\b[^>]*>(?:(?!<m:d\b)[\s\S])*?<m:e\b[^>]*>([\s\S]*?)<\/m:e>(?:(?!<m:d\b)[\s\S])*?<\/m:d>/g, '($1)');
-    curr = curr.replace(/<\/?(?:m:[a-zA-Z]+Pr|w:[a-zA-Z]+|m:r)[^>]*>/g, '');
+  // 1. Process fractions: <m:f> ... <m:num> ... </m:num> ... <m:den> ... </m:den> ... </m:f>
+  curr = curr.replace(/<m:f\b[^>]*>([\s\S]*?)<\/m:f>/gi, (match, fContent) => {
+    const numMatch = fContent.match(/<m:num\b[^>]*>([\s\S]*?)<\/m:num>/i);
+    const denMatch = fContent.match(/<m:den\b[^>]*>([\s\S]*?)<\/m:den>/i);
+    const numText = numMatch ? (convertOmml(numMatch[1]) || getFragmentText(numMatch[1])) : "";
+    const denText = denMatch ? (convertOmml(denMatch[1]) || getFragmentText(denMatch[1])) : "";
+    if (numText && denText) {
+      return `(${numText}/${denText})`;
+    } else if (numText) {
+      return numText;
+    } else if (denText) {
+      return denText;
+    }
+    return "";
+  });
 
-    if (curr === prev) break;
+  // 2. Process super/sub scripts
+  curr = curr.replace(/<m:sSubSup\b[^>]*>([\s\S]*?)<\/m:sSubSup>/gi, (m, c) => {
+    const base = convertOmml(c.match(/<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i)?.[1] || "");
+    const sub = convertOmml(c.match(/<m:sub\b[^>]*>([\s\S]*?)<\/m:sub>/i)?.[1] || "");
+    const sup = convertOmml(c.match(/<m:sup\b[^>]*>([\s\S]*?)<\/m:sup>/i)?.[1] || "");
+    return `${base}_(${sub})^(${sup})`;
+  });
+
+  curr = curr.replace(/<m:sSup\b[^>]*>([\s\S]*?)<\/m:sSup>/gi, (m, c) => {
+    const base = convertOmml(c.match(/<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i)?.[1] || "");
+    const sup = convertOmml(c.match(/<m:sup\b[^>]*>([\s\S]*?)<\/m:sup>/i)?.[1] || "");
+    return `${base}^(${sup})`;
+  });
+
+  curr = curr.replace(/<m:sSub\b[^>]*>([\s\S]*?)<\/m:sSub>/gi, (m, c) => {
+    const base = convertOmml(c.match(/<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i)?.[1] || "");
+    const sub = convertOmml(c.match(/<m:sub\b[^>]*>([\s\S]*?)<\/m:sub>/i)?.[1] || "");
+    return `${base}_(${sub})`;
+  });
+
+  // 3. Process square roots: <m:rad>
+  curr = curr.replace(/<m:rad\b[^>]*>([\s\S]*?)<\/m:rad>/gi, (m, c) => {
+    const deg = convertOmml(c.match(/<m:deg\b[^>]*>([\s\S]*?)<\/m:deg>/i)?.[1] || "");
+    const base = convertOmml(c.match(/<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i)?.[1] || "");
+    return deg ? `root[${deg}](${base})` : `√(${base})`;
+  });
+
+  // 4. Process delimiters: <m:d>
+  curr = curr.replace(/<m:d\b[^>]*>([\s\S]*?)<\/m:d>/gi, (m, c) => {
+    const base = convertOmml(c.match(/<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i)?.[1] || "");
+    return `(${base})`;
+  });
+
+  // 5. Extract all remaining text runs
+  const textRuns = [];
+  const rRegex = /<[mw]:t\b[^>]*>([^<]*)<\/[mw]:t>/gi;
+  let tMatch;
+  while ((tMatch = rRegex.exec(curr)) !== null) {
+    textRuns.push(tMatch[1]);
   }
 
-  return curr.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  if (textRuns.length > 0) {
+    return textRuns.join('').trim();
+  }
+
+  return curr.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 async function preprocessDocxWithMath(arrayBuffer) {

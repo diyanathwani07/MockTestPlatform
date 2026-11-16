@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Eye, Edit2, Calendar, Clock, Trash2, Copy, Search, EyeOff, UploadCloud, Tag, AlertTriangle, X, FileText, CheckCircle, ChevronDown, ChevronUp, Grid, List, User } from "lucide-react";
+import { Eye, Edit2, Calendar, Clock, Trash2, Copy, Search, EyeOff, UploadCloud, Tag, AlertTriangle, X, FileText, CheckCircle, ChevronDown, ChevronUp, Grid, List, User, FolderOpen, ClipboardList } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
 import { useConfirm } from "../context/ConfirmContext";
 import { useAuth } from "../context/AuthContext";
 import { Bell } from "lucide-react";
 import ExamReminderModal from "../components/ExamReminderModal";
 import { SkeletonTable } from "@/components/ui/skeleton";
+import { AdminLibraryView } from "./AdminLibrary";
+import "../css/admin/AdminLayout.css";
+import "../css/admin/ManageQuizzes.css";
 
 function ManageQuizzes() {
   const confirm = useConfirm();
@@ -78,6 +81,20 @@ function ManageQuizzes() {
   const [viewMode, setViewMode] = useState("active"); // "active" or "recycle"
   const [ownershipTab, setOwnershipTab] = useState("mine"); // "mine" or "all"
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeSectionTab = searchParams.get("tab") === "library" ? "library" : "quizzes";
+
+  const handleSectionTabChange = (newTab) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (newTab === "library") {
+        next.set("tab", "library");
+      } else {
+        next.delete("tab");
+      }
+      return next;
+    });
+  };
 
   const closeImportModal = () => {
     setShowBulkImportModal(false);
@@ -435,11 +452,83 @@ function ManageQuizzes() {
       <AdminSidebar />
 
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
-        <AdminNavbar title={<><span className="hidden sm:inline">Manage </span>Quizzes</>} />
+        <AdminNavbar title={activeSectionTab === "library" ? "Manage Quizzes — Study Library" : <><span className="hidden sm:inline">Manage </span>Quizzes</>} />
 
         <div className="admin-content manage-quizzes-view-container" style={{ flex: 1, textAlign: "left" }}>
 
-          {/* ─── APEX COMMAND BAR ─── */}
+          {/* ─── PRIMARY SECTION SWITCH: QUIZ MANAGEMENT vs STUDY LIBRARY ─── */}
+          <div 
+            className="mq-section-tabs-bar"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              backgroundColor: "var(--bg-card, #FFFFFF)",
+              border: "1.5px solid var(--border-color, #E2E8F0)",
+              padding: "5px",
+              borderRadius: "12px",
+              marginBottom: "22px",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)"
+            }}
+          >
+            <button
+              type="button"
+              className={`mq-section-tab ${activeSectionTab === "quizzes" ? "active" : ""}`}
+              onClick={() => handleSectionTabChange("quizzes")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 18px",
+                borderRadius: "9px",
+                border: activeSectionTab === "quizzes" ? "1.5px solid var(--primary)" : "1.5px solid transparent",
+                backgroundColor: activeSectionTab === "quizzes" ? "var(--primary)" : "transparent",
+                color: activeSectionTab === "quizzes" ? "var(--primary-foreground, #FFFFFF)" : "var(--text-secondary, #334155)",
+                fontWeight: activeSectionTab === "quizzes" ? "700" : "600",
+                fontSize: "13.5px",
+                lineHeight: "1.4",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                boxShadow: activeSectionTab === "quizzes" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none",
+                whiteSpace: "nowrap"
+              }}
+            >
+              <ClipboardList size={16} />
+              <span>Quiz Management</span>
+            </button>
+
+            <button
+              type="button"
+              className={`mq-section-tab ${activeSectionTab === "library" ? "active" : ""}`}
+              onClick={() => handleSectionTabChange("library")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 18px",
+                borderRadius: "9px",
+                border: activeSectionTab === "library" ? "1.5px solid var(--primary)" : "1.5px solid transparent",
+                backgroundColor: activeSectionTab === "library" ? "var(--primary)" : "transparent",
+                color: activeSectionTab === "library" ? "var(--primary-foreground, #FFFFFF)" : "var(--text-secondary, #334155)",
+                fontWeight: activeSectionTab === "library" ? "700" : "600",
+                fontSize: "13.5px",
+                lineHeight: "1.4",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                boxShadow: activeSectionTab === "library" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none",
+                whiteSpace: "nowrap"
+              }}
+            >
+              <FolderOpen size={16} />
+              <span>Study Library</span>
+            </button>
+          </div>
+
+          {activeSectionTab === "library" ? (
+            <AdminLibraryView embedded={true} />
+          ) : (
+            <>
+              {/* ─── APEX COMMAND BAR ─── */}
           <div className="armored-admin-card manage-command-bar-card" style={{ 
             backgroundColor: "var(--bg-card)", 
             border: "1.5px solid var(--border-color)", 
@@ -459,7 +548,7 @@ function ManageQuizzes() {
                 <h2 style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>
                   {viewMode === "active" ? "Manage Quizzes" : "Recycle Bin"}
                 </h2>
-                <span style={{ fontSize: "13px", color: "var(--violet)", fontWeight: "600" }}>
+                <span style={{ fontSize: "13px", color: "var(--primary)", fontWeight: "600" }}>
                   {quizzes.length} Total Quizzes | {quizzes.filter(checkIsMine).length} Created by You
                 </span>
               </div>
@@ -476,7 +565,7 @@ function ManageQuizzes() {
                       fontSize: "13px",
                       fontWeight: "600",
                       cursor: "pointer",
-                      backgroundColor: viewMode === "active" ? "var(--violet)" : "transparent",
+                      backgroundColor: viewMode === "active" ? "var(--primary)" : "transparent",
                       color: viewMode === "active" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
                     }}
                   >
@@ -515,7 +604,7 @@ function ManageQuizzes() {
                     gap: "6px",
                     transition: "all 0.2s"
                   }}
-                  onMouseEnter={(e) => { e.target.style.borderColor = "var(--violet)"; e.target.style.color = "var(--violet)"; }}
+                  onMouseEnter={(e) => { e.target.style.borderColor = "var(--primary)"; e.target.style.color = "var(--primary)"; }}
                   onMouseLeave={(e) => { e.target.style.borderColor = "var(--border-color)"; e.target.style.color = "var(--text-primary)"; }}
                 >
                   + Create Exam
@@ -528,8 +617,8 @@ function ManageQuizzes() {
                     borderRadius: "8px",
                     fontSize: "12.5px",
                     fontWeight: "700",
-                    backgroundColor: "var(--violet)",
-                    color: "var(--primary-foreground)",
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-foreground, #ffffff)",
                     border: "none",
                     cursor: "pointer",
                     display: "inline-flex",
@@ -559,9 +648,9 @@ function ManageQuizzes() {
                   gap: "8px",
                   padding: "10px 16px",
                   border: "none",
-                  borderBottom: ownershipTab === "mine" ? "2.5px solid var(--violet)" : "2.5px solid transparent",
+                  borderBottom: ownershipTab === "mine" ? "2.5px solid var(--primary)" : "2.5px solid transparent",
                   backgroundColor: "transparent",
-                  color: ownershipTab === "mine" ? "var(--violet)" : "var(--text-secondary)",
+                  color: ownershipTab === "mine" ? "var(--primary)" : "var(--text-secondary)",
                   fontWeight: "600",
                   fontSize: "14px",
                   cursor: "pointer",
@@ -580,9 +669,9 @@ function ManageQuizzes() {
                   gap: "8px",
                   padding: "10px 16px",
                   border: "none",
-                  borderBottom: ownershipTab === "all" ? "2.5px solid var(--violet)" : "2.5px solid transparent",
+                  borderBottom: ownershipTab === "all" ? "2.5px solid var(--primary)" : "2.5px solid transparent",
                   backgroundColor: "transparent",
-                  color: ownershipTab === "all" ? "var(--violet)" : "var(--text-secondary)",
+                  color: ownershipTab === "all" ? "var(--primary)" : "var(--text-secondary)",
                   fontWeight: "600",
                   fontSize: "14px",
                   cursor: "pointer",
@@ -705,7 +794,7 @@ function ManageQuizzes() {
                           style={{ display: "none" }}
                           onChange={(e) => { if (e.target.files[0]) handleCSVFileSelected(e.target.files[0]); }}
                         />
-                        <UploadCloud size={40} style={{ color: "var(--violet)", marginBottom: "12px" }} />
+                        <UploadCloud size={40} style={{ color: "var(--primary)", marginBottom: "12px" }} />
                         <h4 style={{ margin: "0 0 4px 0", color: "var(--text-primary)" }}>
                           Drag and drop your CSV file here
                         </h4>
@@ -723,9 +812,9 @@ function ManageQuizzes() {
                         </div>
                       </div>
 
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(110, 63, 243, 0.06)", border: "1px solid rgba(110, 63, 243, 0.2)", borderRadius: "10px", padding: "12px 16px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "var(--bg-input, rgba(0, 0, 0, 0.05))", border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px 16px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <FileText size={18} style={{ color: "var(--violet)" }} />
+                          <FileText size={18} style={{ color: "var(--primary)" }} />
                           <div style={{ textAlign: "left" }}>
                             <span style={{ fontSize: "12.5px", fontWeight: "700", display: "block", color: "var(--text-primary)" }}>Need the CSV structure template?</span>
                             <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Download the recommended structure template</span>
@@ -737,7 +826,7 @@ function ManageQuizzes() {
                           style={{
                             background: "none",
                             border: "none",
-                            color: "var(--violet)",
+                            color: "var(--primary)",
                             fontSize: "12px",
                             fontWeight: "700",
                             cursor: "pointer"
@@ -871,7 +960,7 @@ function ManageQuizzes() {
                               <span style={{ fontSize: "13.5px", fontWeight: "700", color: "var(--text-primary)", display: "block" }}>
                                 {exam.examName}
                               </span>
-                              <span style={{ fontSize: "11px", color: "var(--violet)", fontWeight: "600" }}>
+                              <span style={{ fontSize: "11px", color: "var(--primary)", fontWeight: "600" }}>
                                 Code: {exam.examCode} • ⚠ Needs Configuration
                               </span>
                             </div>
@@ -888,7 +977,7 @@ function ManageQuizzes() {
                               style={{
                                 padding: "6px 12px",
                                 borderRadius: "6px",
-                                backgroundColor: "var(--violet)",
+                                backgroundColor: "var(--primary)",
                                 color: "var(--primary-foreground)",
                                 border: "none",
                                 fontSize: "12px",
@@ -930,7 +1019,7 @@ function ManageQuizzes() {
                       className="btn-primary"
                       disabled={csvImporting || csvParsed.exams.filter(e => e.errors.length === 0).length === 0}
                       onClick={handleCSVImportSubmit}
-                      style={{ padding: "10px 20px", borderRadius: "10px", backgroundColor: "var(--violet)", color: "var(--primary-foreground)", border: "none", minHeight: "38px", cursor: "pointer" }}
+                      style={{ padding: "10px 20px", borderRadius: "10px", backgroundColor: "var(--primary)", color: "var(--primary-foreground)", border: "none", minHeight: "38px", cursor: "pointer" }}
                     >
                       {csvImporting ? "Importing..." : "Confirm Import"}
                     </button>
@@ -969,7 +1058,7 @@ function ManageQuizzes() {
                         {/* Title and Badge */}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: "4px", textAlign: "left" }}>
-                            <span style={{ fontSize: "11px", color: "var(--violet)", fontWeight: "700" }}>{quiz.examName || "—"} • {quiz.subject}</span>
+                            <span style={{ fontSize: "11px", color: "var(--primary)", fontWeight: "700" }}>{quiz.examName || "—"} • {quiz.subject}</span>
                             <strong style={{ fontSize: "15px", color: "var(--text-primary)" }}>{quiz.title}</strong>
                           </div>
                           
@@ -1146,7 +1235,7 @@ function ManageQuizzes() {
                           </td>
                         )}
 
-                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--violet)", whiteSpace: "nowrap" }}>
+                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--primary)", whiteSpace: "nowrap" }}>
                           {quiz.examName || "—"}
                         </td>
                         
@@ -1457,7 +1546,7 @@ function ManageQuizzes() {
                               style={{
                                 padding: "8px 16px",
                                 borderRadius: "8px",
-                                backgroundColor: "var(--violet)",
+                                backgroundColor: "var(--primary)",
                                 color: "var(--primary-foreground)",
                                 border: "none",
                                 fontWeight: "700",
@@ -1558,7 +1647,7 @@ function ManageQuizzes() {
                           style={{
                             padding: "8px 14px",
                             borderRadius: "8px",
-                            backgroundColor: "var(--violet)",
+                            backgroundColor: "var(--primary)",
                             color: "var(--primary-foreground)",
                             border: "none",
                             fontSize: "12px",
@@ -1595,6 +1684,8 @@ function ManageQuizzes() {
                 </div>
               </div>
             </div>
+          )}
+          </>
           )}
 
         </div>

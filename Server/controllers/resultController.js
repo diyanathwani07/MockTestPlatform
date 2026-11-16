@@ -89,6 +89,8 @@ const sanitizeResult = (result, quiz, userRole) => {
       resultObj.showResultAfterSubmission = quiz.showResultAfterSubmission !== false;
       resultObj.showPassFailStatus = quiz.showPassFailStatus !== false;
       resultObj.showAnswerReview = quiz.showAnswerReview !== false;
+      resultObj.showCorrectAnswers = quiz.showCorrectAnswers !== false;
+      resultObj.showExplanations = quiz.showExplanations !== false;
       resultObj.passed = result.percentage >= (quiz.passPercentage || 50);
 
       if (quiz.showAnswerReview === false) {
@@ -109,6 +111,11 @@ const sanitizeResult = (result, quiz, userRole) => {
           resultObj.questions = resultObj.questions.map(q => {
             delete q.explanation;
             delete q.solution;
+            delete q.explanations;
+            delete q.detailedSolution;
+            delete q.answerExplanation;
+            delete q.explanationHindi;
+            delete q.solutionHindi;
             return q;
           });
         }
@@ -162,8 +169,14 @@ const sanitizeResult = (result, quiz, userRole) => {
         }
       }
     }
+  } else {
+    resultObj.showResultAfterSubmission = true;
+    resultObj.showPassFailStatus = true;
+    resultObj.showAnswerReview = true;
+    resultObj.showCorrectAnswers = true;
+    resultObj.showExplanations = true;
+    resultObj.passed = result.percentage >= (result.passPercentage || 50);
   }
-  
   return resultObj;
 };
 
@@ -312,6 +325,66 @@ const getResultById = async (req, res) => {
     }
 
     const sanitized = sanitizeResult(result, quiz, userRole);
+
+    // If explanations are allowed and questions lack explanations, enrich from full quiz
+    if (sanitized.showExplanations !== false && result.quizId && Array.isArray(sanitized.questions) && sanitized.questions.length > 0) {
+      const needsEnrichment = sanitized.questions.some(q =>
+        !q.explanation &&
+        (!q.explanations || (!q.explanations.correct && !q.explanations.conceptSummary)) &&
+        !q.detailedSolution &&
+        !q.solution &&
+        !q.explanationHindi &&
+        !q.solutionHindi
+      );
+
+      if (needsEnrichment) {
+        try {
+          const quizService = require("../services/quizService");
+          const fullQuiz = await quizService.previewQuiz(result.quizId);
+          if (fullQuiz) {
+            let quizQs = fullQuiz.questions || [];
+            if ((!quizQs || quizQs.length === 0) && fullQuiz.sections) {
+              quizQs = fullQuiz.sections.flatMap(s => {
+                if (s.type === "coding" && s.subsections) {
+                  return [
+                    ...(s.subsections.easy || []),
+                    ...(s.subsections.medium || []),
+                    ...(s.subsections.hard || []),
+                  ];
+                }
+                return s.questions || [];
+              });
+            }
+
+            const qMap = new Map();
+            quizQs.forEach((qq, qIdx) => {
+              if (qq._id) qMap.set(qq._id.toString(), qq);
+              if (qq.id) qMap.set(qq.id.toString(), qq);
+              qMap.set("idx_" + qIdx, qq);
+            });
+
+            sanitized.questions = sanitized.questions.map((rq, rqIdx) => {
+              const rqId = (rq._id || rq.id || rq.questionId)?.toString();
+              const matched = (rqId && qMap.get(rqId)) || qMap.get("idx_" + rqIdx);
+              if (matched) {
+                if (!rq.explanation && matched.explanation) rq.explanation = matched.explanation;
+                if ((!rq.explanations || Object.keys(rq.explanations).length === 0) && matched.explanations) {
+                  rq.explanations = matched.explanations;
+                }
+                if (!rq.detailedSolution && matched.detailedSolution) rq.detailedSolution = matched.detailedSolution;
+                if (!rq.solution && matched.solution) rq.solution = matched.solution;
+                if (!rq.explanationHindi && matched.explanationHindi) rq.explanationHindi = matched.explanationHindi;
+                if (!rq.solutionHindi && matched.solutionHindi) rq.solutionHindi = matched.solutionHindi;
+              }
+              return rq;
+            });
+          }
+        } catch (enrichErr) {
+          console.warn("Could not enrich questions in getResultById:", enrichErr.message);
+        }
+      }
+    }
+
     res.status(200).json(sanitized);
   } catch (error) {
     console.error("GET RESULT BY ID ERROR:", error);

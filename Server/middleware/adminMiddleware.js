@@ -59,4 +59,19 @@ function canManageStaffRoles(req, res, next) {
   return res.status(403).json({ message: "Access denied. Manage Staff Roles permission required." });
 }
 
-module.exports = { adminOnly, superAdminOnly, canManageStudents, canManageStaff, canManageStaffRoles };
+// Permission middleware: Manage Push Notifications
+function canManageNotifications(req, res, next) {
+  if (!req.user || !["admin", "superadmin", "manager", "employee"].includes(req.user.role)) {
+    return res.status(403).json({ message: "Access denied. Internal staff only." });
+  }
+  if (req.user.role === "superadmin") {
+    return next();
+  }
+  const perms = Array.isArray(req.user.permissions) ? req.user.permissions : [];
+  if (perms.includes("manage_notifications") || perms.includes("full_access")) {
+    return next();
+  }
+  return res.status(403).json({ message: "Access denied. Manage Notifications permission required." });
+}
+
+module.exports = { adminOnly, superAdminOnly, canManageStudents, canManageStaff, canManageStaffRoles, canManageNotifications };

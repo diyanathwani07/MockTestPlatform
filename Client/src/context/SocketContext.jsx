@@ -1,15 +1,17 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
+import { useAuth } from "./AuthContext";
 
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
+  const { token: authToken } = useAuth();
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = authToken || localStorage.getItem("token");
 
     if (!token) {
       if (socketRef.current) {
@@ -81,7 +83,7 @@ export const SocketProvider = ({ children }) => {
         newSocket.disconnect();
       }
     };
-  }, []);
+  }, [authToken]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

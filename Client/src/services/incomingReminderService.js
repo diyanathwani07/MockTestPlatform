@@ -315,4 +315,15 @@ class IncomingReminderService {
 }
 
 export const incomingReminderService = new IncomingReminderService();
+
+// Listen for background FCM push messages dispatched to open tabs via Service Worker postMessage
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'FCM_INCOMING_CALL' && event.data.data) {
+      console.log('[IncomingReminderService] Received FCM_INCOMING_CALL via ServiceWorker postMessage:', event.data.data);
+      incomingReminderService.handleIncomingReminder(event.data.data);
+    }
+  });
+}
+
 export default incomingReminderService;

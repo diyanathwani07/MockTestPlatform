@@ -38,7 +38,7 @@ html[class*="theme-"].dark :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.action-dots-btn):not(.tk-action-view-btn):not(.close-btn):not(.status-btn):not(.page-nav-btn):not(.role-dept-action-btn):not([class*="action-dots"]):not([class*="page-nav"]):not([class*="status-"]):not([class*="close-"]):not([class*="table-btn"]):not(.navbar-back-btn):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]):not(.practice-start-btn):not(.btn-reset):not([class*="btn-reset"]):not(.tk-reply-submit-btn):not(.revenue-nav-tab):not(.revenue-catalog-tab):not(.revenue-timeframe-btn):not(.sub-history-btn):not(.sub-page-btn) {
+:root :is(button, .btn, [class*="-btn"]):not(.action-dots-btn):not(.tk-action-view-btn):not(.close-btn):not(.status-btn):not(.page-nav-btn):not(.role-dept-action-btn):not([class*="action-dots"]):not([class*="page-nav"]):not([class*="status-"]):not([class*="close-"]):not([class*="table-btn"]):not(.navbar-back-btn):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]):not(.practice-start-btn):not(.btn-reset):not([class*="btn-reset"]):not(.tk-reply-submit-btn):not(.revenue-nav-tab):not(.revenue-catalog-tab):not(.revenue-timeframe-btn):not(.sub-history-btn):not(.sub-page-btn):not(.btn-dashboard):not([class*="btn-dashboard"]):not(.mqa-btn-overview):not([class*="btn-overview"]):not(.scope-pill-btn):not(.action-icon-btn):not(.al-btn):not([class*="al-btn"]):not(.btn-secondary-outline):not(.al-tree-header-btn):not(.tree-quick-btn):not(.breadcrumb-link):not(.modal-close-btn):not(.al-modal-close):not(.al-btn-icon):not(.mq-section-tab):not(.irm-circle-btn):not(.irm-close-btn):not(.qb-back-btn):not(.qb-btn-export):not(.qb-btn-filter):not(.qb-btn-edit-answers):not(.qb-page-btn):not([class*="qb-"]):not([class*="page-btn"]) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -54,7 +54,24 @@ html[class*="theme-"] .revenue-nav-tab,
 html[class*="theme-"] .revenue-catalog-tab,
 html[class*="theme-"] .revenue-timeframe-btn,
 html[class*="theme-"] .sub-history-btn,
-html[class*="theme-"] .sub-page-btn {
+html[class*="theme-"] .sub-page-btn,
+html[class*="theme-"] .scope-pill-btn:not(.active),
+html[class*="theme-"] .mq-section-tab:not(.active),
+html[class*="theme-"] .al-btn-secondary,
+html[class*="theme-"] .btn-secondary-outline,
+html[class*="theme-"] .breadcrumb-link,
+html[class*="theme-"] .tree-quick-btn,
+html[class*="theme-"] .action-icon-btn,
+html[class*="theme-"] .al-tree-header-btn,
+html[class*="theme-"] .al-btn-icon,
+html[class*="theme-"] .irm-circle-btn.replay,
+html[class*="theme-"] .irm-close-btn,
+html[class*="theme-"] .qb-back-btn,
+html[class*="theme-"] .qb-btn-export,
+html[class*="theme-"] .qb-btn-filter,
+html[class*="theme-"] .qb-btn-edit-answers,
+html[class*="theme-"] .qb-page-btn,
+html[class*="theme-"] [class*="qb-"] {
   color: inherit !important;
 }
 

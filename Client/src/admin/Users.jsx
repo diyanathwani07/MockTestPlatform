@@ -671,10 +671,10 @@ function Users() {
                     <img 
                       src={viewedProfileUser.avatar || viewedProfileUser.profilePhoto} 
                       alt="Profile" 
-                      style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(110, 63, 243, 0.2)' }} 
+                      style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--border-color)' }} 
                     />
                   ) : (
-                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '32px', fontWeight: '700', textTransform: 'uppercase' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-foreground, #ffffff)', fontSize: '32px', fontWeight: '700', textTransform: 'uppercase' }}>
                       {viewedProfileUser.fullName?.[0] || 'U'}
                     </div>
                   )}
@@ -694,7 +694,7 @@ function Users() {
                 {/* Horizontal Metadata Area */}
                 <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                       <Mail size={16} />
                     </div>
                     <div>
@@ -703,7 +703,7 @@ function Users() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                       <Phone size={16} />
                     </div>
                     <div>
@@ -712,7 +712,7 @@ function Users() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                       <Clock size={16} />
                     </div>
                     <div>
@@ -746,7 +746,7 @@ function Users() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '20px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(139, 92, 246, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                     <Medal size={22} />
                   </div>
                   <div>
@@ -796,13 +796,13 @@ function Users() {
                         return subjectStatsList.map((stat, idx) => (
                           <div key={idx} style={{ flex: '0 0 180px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(110, 63, 243, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--violet)' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                                 <FileText size={14} />
                               </div>
                               <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stat.name}</span>
                             </div>
                             <div>
-                              <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--violet)' }}>{stat.avgScore}%</h4>
+                              <h4 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: 'var(--primary)' }}>{stat.avgScore}%</h4>
                               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stat.count} Tests | Avg. Score</span>
                             </div>
                           </div>
@@ -864,7 +864,7 @@ function Users() {
                   <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>Recent Test Activity</h3>
                   <button 
                     onClick={() => openModal('history', viewedProfileUser)}
-                    style={{ background: 'rgba(110, 63, 243, 0.08)', border: 'none', color: 'var(--violet)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                    style={{ background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', border: 'none', color: 'var(--primary)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
                   >
                     View All
                   </button>
@@ -893,8 +893,8 @@ function Users() {
                             width: '32px',
                             height: '32px',
                             borderRadius: '8px',
-                            background: idx % 3 === 0 ? 'rgba(239, 68, 68, 0.1)' : (idx % 3 === 1 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(110, 63, 243, 0.1)'),
-                            color: idx % 3 === 0 ? '#ef4444' : (idx % 3 === 1 ? '#10b981' : 'var(--violet)'),
+                            background: idx % 3 === 0 ? 'rgba(239, 68, 68, 0.1)' : (idx % 3 === 1 ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-input, rgba(0, 0, 0, 0.05))'),
+                            color: idx % 3 === 0 ? '#ef4444' : (idx % 3 === 1 ? '#10b981' : 'var(--primary)'),
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1014,9 +1014,9 @@ function Users() {
                       padding: '5px 10px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'active' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                      color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
-                      boxShadow: viewTab === 'active' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                      background: viewTab === 'active' ? 'var(--primary)' : 'transparent',
+                      color: viewTab === 'active' ? 'var(--primary-foreground, #ffffff)' : 'var(--text-secondary)',
+                      boxShadow: viewTab === 'active' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
@@ -1032,9 +1032,9 @@ function Users() {
                       padding: '5px 10px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'archived' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                      color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
-                      boxShadow: viewTab === 'archived' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                      background: viewTab === 'archived' ? 'var(--primary)' : 'transparent',
+                      color: viewTab === 'archived' ? 'var(--primary-foreground, #ffffff)' : 'var(--text-secondary)',
+                      boxShadow: viewTab === 'archived' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
@@ -1116,12 +1116,31 @@ function Users() {
                           onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
                           title="Click to view details"
                         >
-                          <div className="user-avatar-circle" style={{ overflow: 'hidden' }}>
-                            {(u.avatar || u.profilePhoto) ? (
-                              <img src={u.avatar || u.profilePhoto} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={u.fullName} />
-                            ) : (
-                              u.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U"
-                            )}
+                          <div className="user-avatar-circle" style={{ overflow: 'hidden', position: 'relative' }}>
+                            {(() => {
+                              const avatarUrl = u.avatar || u.profilePicture || u.profilePhoto;
+                              const initials = u.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
+                              return (
+                                <>
+                                  {avatarUrl ? (
+                                    <img 
+                                      src={avatarUrl} 
+                                      alt={u.fullName || "User"} 
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '50%' }} 
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        if (e.currentTarget.nextSibling) {
+                                          e.currentTarget.nextSibling.style.display = 'flex';
+                                        }
+                                      }}
+                                    />
+                                  ) : null}
+                                  <span style={{ display: avatarUrl ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                                    {initials}
+                                  </span>
+                                </>
+                              );
+                            })()}
                           </div>
                           <div>
                             <div className="user-name-text">{u.fullName}</div>
@@ -1404,10 +1423,10 @@ function Users() {
                     <img 
                       src={selectedUser.avatar || selectedUser.profilePhoto} 
                       alt="Profile" 
-                      style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", border: "4px solid rgba(124, 58, 237, 0.2)", outline: "2px solid #7c3aed" }} 
+                      style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", border: "4px solid var(--border-color)", outline: "2px solid var(--primary)" }} 
                     />
                   ) : (
-                    <div style={{ width: "100px", height: "100px", borderRadius: "50%", background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontSize: "40px", fontWeight: "700", border: "4px solid rgba(124, 58, 237, 0.2)", outline: "2px solid #7c3aed", textTransform: "uppercase" }}>
+                    <div style={{ width: "100px", height: "100px", borderRadius: "50%", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-foreground, #ffffff)", fontSize: "40px", fontWeight: "700", border: "4px solid var(--border-color)", outline: "2px solid var(--primary)", textTransform: "uppercase" }}>
                       {(selectedUser.fullName || selectedUser.name || "U")[0]}
                     </div>
                   )}
@@ -1430,7 +1449,7 @@ function Users() {
                   
                   {/* USER DETAILS */}
                   <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--bg-input, rgba(0, 0, 0, 0.05))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--primary)" }}>
                       <User size={18} />
                     </div>
                     <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
@@ -1443,7 +1462,7 @@ function Users() {
                   </div>
                   {/* ROLE */}
                   <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--bg-input, rgba(0, 0, 0, 0.05))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--primary)" }}>
                       <ShieldCheck size={18} />
                     </div>
                     <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
@@ -1457,7 +1476,7 @@ function Users() {
                   {/* MOCK TESTS ATTEMPTED */}
                   <div style={{ display: "flex", flexDirection: "column", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
                     <div style={{ display: "flex", alignItems: "center" }}>
-                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--bg-input, rgba(0, 0, 0, 0.05))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--primary)" }}>
                         <Activity size={18} />
                       </div>
                       <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
@@ -1529,7 +1548,7 @@ function Users() {
 
                   {/* JOINED ON */}
                   <div style={{ display: "flex", alignItems: "center", padding: "18px 24px", borderBottom: "1.5px solid var(--border-color)" }}>
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--bg-input, rgba(0, 0, 0, 0.05))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--primary)" }}>
                       <Clock size={18} />
                     </div>
                     <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
@@ -1544,7 +1563,7 @@ function Users() {
 
                   {/* PHONE NO */}
                   <div style={{ display: "flex", alignItems: "center", padding: "18px 24px" }}>
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(124, 58, 237, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--violet)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--bg-input, rgba(0, 0, 0, 0.05))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--primary)" }}>
                       <Phone size={18} />
                     </div>
                     <div style={{ width: "160px", paddingLeft: "16px", flexShrink: 0 }}>
@@ -1989,7 +2008,7 @@ function Users() {
                     fontSize: "12px",
                     fontWeight: "700",
                     borderRadius: "6px",
-                    background: selectedPlanId ? "var(--violet)" : "rgba(110, 63, 243, 0.3)",
+                    background: selectedPlanId ? "var(--primary)" : "var(--border-color)",
                     color: "var(--primary-foreground)",
                     border: "none",
                     cursor: selectedPlanId ? "pointer" : "not-allowed",
@@ -2081,7 +2100,7 @@ function Users() {
                                 display: 'flex', 
                                 alignItems: 'center', 
                                 justifyContent: 'center', 
-                                background: 'rgba(110, 63, 243, 0.1)', 
+                                background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', 
                                 color: 'var(--primary)', 
                                 padding: '8px', 
                                 borderRadius: '8px',
@@ -2315,8 +2334,8 @@ function Users() {
                       padding: '8px 12px',
                       borderRadius: '8px',
                       border: '1.5px solid ' + (addMode === 'manual' ? 'var(--primary)' : 'var(--border-color)'),
-                      background: addMode === 'manual' ? 'rgba(110, 63, 243, 0.15)' : 'transparent',
-                      color: addMode === 'manual' ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                      background: addMode === 'manual' ? 'var(--primary)' : 'transparent',
+                      color: addMode === 'manual' ? 'var(--primary-foreground, #fff)' : 'var(--text-secondary)',
                       fontWeight: '600',
                       fontSize: '12.5px',
                       cursor: 'pointer',
@@ -2333,8 +2352,8 @@ function Users() {
                       padding: '8px 12px',
                       borderRadius: '8px',
                       border: '1.5px solid ' + (addMode === 'csv' ? 'var(--primary)' : 'var(--border-color)'),
-                      background: addMode === 'csv' ? 'rgba(110, 63, 243, 0.15)' : 'transparent',
-                      color: addMode === 'csv' ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                      background: addMode === 'csv' ? 'var(--primary)' : 'transparent',
+                      color: addMode === 'csv' ? 'var(--primary-foreground, #fff)' : 'var(--text-secondary)',
                       fontWeight: '600',
                       fontSize: '12.5px',
                       cursor: 'pointer',
@@ -2548,7 +2567,7 @@ function Users() {
                             borderRadius: '12px',
                             padding: '40px 20px',
                             textAlign: 'center',
-                            background: dragOver ? 'rgba(110, 63, 243, 0.05)' : 'rgba(255, 255, 255, 0.01)',
+                            background: dragOver ? 'var(--bg-input, rgba(0, 0, 0, 0.05))' : 'transparent',
                             cursor: 'pointer',
                             transition: 'all 0.2s'
                           }}

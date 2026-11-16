@@ -21,41 +21,64 @@ export const optimizeBannerImage = (url, width = 1200) => {
   return url;
 };
 
-const MOCK_BANNERS = [
+const TEACHING_PARIKSHA_FALLBACK_BANNERS = [
   {
+    _id: "tp-fallback-1",
     id: 1,
-    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=70&w=800&auto=format&fit=crop",
-    category: "New Launch",
-    title: "BPSC TRE 4.0",
-    description: "Prepare smarter with full-length mock tests tailored to the latest pattern.",
-    ctaLabel: "Explore Exam",
+    image: "https://res.cloudinary.com/nzg9ltae/image/upload/v1791025570/banners/tmqtyv9qvifkklxme1fw.png",
+    title: "",
+    description: "",
+    category: "",
+    ctaLabel: "",
     ctaRoute: "/dashboard/exams",
-    align: "left"
+    align: "left",
+    isActive: true,
+    order: 1
   },
   {
+    _id: "tp-fallback-2",
     id: 2,
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=70&w=800&auto=format&fit=crop",
-    category: "Announcement",
-    title: "New Mock Tests Added",
-    description: "Practice the latest exam patterns and track your all-India ranking.",
-    ctaLabel: "Start Practicing",
+    image: "https://res.cloudinary.com/nzg9ltae/image/upload/v1791266909/banners/suuqcss9wtioa27staxk.png",
+    title: "",
+    description: "",
+    category: "",
+    ctaLabel: "",
     ctaRoute: "/dashboard/practice",
-    align: "right"
+    align: "left",
+    isActive: true,
+    order: 2
   },
   {
+    _id: "tp-fallback-3",
     id: 3,
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=70&w=800&auto=format&fit=crop",
-    category: "Pro Tip",
-    title: "Analyze Your Weaknesses",
-    description: "Use our AI-driven score trend to identify which subjects need more focus.",
-    ctaLabel: "View Analytics",
-    ctaRoute: "/dashboard/results",
-    align: "left"
+    image: "https://res.cloudinary.com/nzg9ltae/image/upload/v1791461847/banners/ic6zdjmqrrge1dottxok.png",
+    title: "",
+    description: "",
+    category: "",
+    ctaLabel: "",
+    ctaRoute: "/dashboard/exams",
+    align: "center",
+    isActive: true,
+    order: 3
   }
 ];
 
 export default function DashboardBannerCarousel({ previewBanners = null }) {
-  const [dbBanners, setDbBanners] = useState([]);
+  const [dbBanners, setDbBanners] = useState(() => {
+    if (previewBanners) return [];
+    try {
+      const cached = localStorage.getItem("cached_teaching_pariksha_banners");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to parse cached banners:", e);
+    }
+    return TEACHING_PARIKSHA_FALLBACK_BANNERS;
+  });
   const [loading, setLoading] = useState(!previewBanners);
   const [isPaused, setIsPaused] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
@@ -72,22 +95,29 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
 
   useEffect(() => {
     if (previewBanners) return;
+    let isMounted = true;
     const fetchBanners = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/banners`);
-        if (res.data && res.data.length > 0) {
+        if (isMounted && res.data && res.data.length > 0) {
           setDbBanners(res.data);
+          try {
+            localStorage.setItem("cached_teaching_pariksha_banners", JSON.stringify(res.data));
+          } catch (e) {
+            // ignore storage error
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch banners:", error);
+        console.warn("Notice: Backend server on Render may be spinning up. Using cached/updated Teaching Pariksha banners.", error?.message);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchBanners();
+    return () => { isMounted = false; };
   }, [previewBanners]);
 
-  const rawBanners = previewBanners || (dbBanners.length > 0 ? dbBanners : MOCK_BANNERS);
+  const rawBanners = previewBanners || (dbBanners.length > 0 ? dbBanners : TEACHING_PARIKSHA_FALLBACK_BANNERS);
 
   // If banners array is 2, duplicate once so infinite loop has sufficient buffer
   const carouselList = rawBanners.length === 2 

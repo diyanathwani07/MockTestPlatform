@@ -492,12 +492,14 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
       ) : q.explanation ? (
         <>
           <button 
+            type="button"
+            className="qb-btn-exp"
             onClick={() => setShowExp(!showExp)}
             style={{
               background: 'none',
               border: 'none',
-              color: 'var(--violet)',
-              fontWeight: '800',
+              color: 'var(--primary)',
+              fontWeight: '700',
               fontSize: '13px',
               cursor: 'pointer',
               display: 'inline-flex',
@@ -506,7 +508,6 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
               marginTop: '12px',
               padding: '4px 0',
               outline: 'none',
-              textShadow: '0 1px 2px rgba(0,0,0,0.4)',
               letterSpacing: '0.3px'
             }}
           >
@@ -516,16 +517,16 @@ function QuestionCard({ q, idx, globalNo, onUpdateQuestion, isGlobalEdit }) {
             <div style={{ 
               marginTop: '10px', 
               padding: '12px 16px', 
-              background: 'var(--bg-input, rgba(110, 63, 243, 0.04))', 
+              background: 'var(--bg-input, rgba(0, 0, 0, 0.03))', 
               borderRadius: '8px', 
-              borderLeft: '4px solid var(--violet)',
+              borderLeft: '4px solid var(--primary)',
               borderTop: '1px solid var(--border-color)',
               borderRight: '1px solid var(--border-color)',
               borderBottom: '1px solid var(--border-color)'
             }}>
               <strong style={{ 
                 fontSize: '11.5px', 
-                color: 'var(--violet)', 
+                color: 'var(--primary)', 
                 display: 'block', 
                 marginBottom: '6px', 
                 textTransform: 'uppercase',
@@ -979,11 +980,11 @@ function Questions() {
                     {/* Search Input collections - MOBILE */}
                     <div className="practice-search-pill" style={{ 
                       display: "flex", alignItems: "center", gap: "8px", 
-                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet)", 
+                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "1.5px solid var(--border-color)", 
                       borderRadius: "100px", padding: "10px 16px",
                       width: "100%", boxSizing: "border-box", marginTop: "8px"
                     }}>
-                      <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
+                      <Search size={16} style={{ color: "var(--primary)", flexShrink: 0 }} />
                       <input 
                         type="text" 
                         placeholder="Search collections..." 
@@ -1012,9 +1013,9 @@ function Questions() {
                           fontWeight: "600",
                           transition: "all 0.2s",
                           whiteSpace: "nowrap",
-                          backgroundColor: quizType === "exams" ? "var(--violet)" : "var(--bg-card, #1E1B2E)",
-                          color: quizType === "exams"  ? 'var(--primary-foreground)' : "var(--text-primary)",
-                          boxShadow: quizType === "exams" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
+                          backgroundColor: quizType === "exams" ? "var(--primary)" : "var(--bg-card, #1E1B2E)",
+                          color: quizType === "exams"  ? 'var(--primary-foreground, #ffffff)' : "var(--text-primary)",
+                          boxShadow: quizType === "exams" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none"
                         }}
                       >
                         <FileText size={14} />
@@ -1036,9 +1037,9 @@ function Questions() {
                           fontWeight: "600",
                           transition: "all 0.2s",
                           whiteSpace: "nowrap",
-                          backgroundColor: quizType === "practice" ? "var(--violet)" : "var(--bg-card, #1E1B2E)",
-                          color: quizType === "practice"  ? 'var(--primary-foreground)' : "var(--text-primary)",
-                          boxShadow: quizType === "practice" ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
+                          backgroundColor: quizType === "practice" ? "var(--primary)" : "var(--bg-card, #1E1B2E)",
+                          color: quizType === "practice"  ? 'var(--primary-foreground, #ffffff)' : "var(--text-primary)",
+                          boxShadow: quizType === "practice" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none"
                         }}
                       >
                         <GraduationCap size={14} />
@@ -1062,9 +1063,9 @@ function Questions() {
                           fontSize: "12.5px",
                           fontWeight: "600",
                           whiteSpace: "nowrap",
-                          backgroundColor: !isRecycleBin ? "var(--violet)" : "var(--bg-card, #1E1B2E)",
-                          color: !isRecycleBin  ? 'var(--primary-foreground)' : "var(--text-primary)",
-                          boxShadow: !isRecycleBin ? "0 4px 12px rgba(110, 63, 243, 0.2)" : "none"
+                          backgroundColor: !isRecycleBin ? "var(--primary)" : "var(--bg-card, #1E1B2E)",
+                          color: !isRecycleBin  ? 'var(--primary-foreground, #ffffff)' : "var(--text-primary)",
+                          boxShadow: !isRecycleBin ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none"
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1073,7 +1074,7 @@ function Questions() {
                         </div>
                         <span style={{ 
                           fontSize: "10.5px", 
-                          backgroundColor: !isRecycleBin ? "rgba(255,255,255,0.2)" : "var(--border-color)", 
+                          backgroundColor: !isRecycleBin ? "rgba(255,255,255,0.25)" : "var(--border-color)", 
                           color: !isRecycleBin  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", 
                           padding: "2px 6px", 
                           borderRadius: "20px" 
@@ -1098,7 +1099,7 @@ function Questions() {
                           whiteSpace: "nowrap",
                           backgroundColor: isRecycleBin ? "var(--red, #EF4444)" : "var(--bg-card, #1E1B2E)",
                           color: isRecycleBin  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)",
-                          boxShadow: isRecycleBin ? "0 4px 12px rgba(239, 68, 68, 0.2)" : "none"
+                          boxShadow: isRecycleBin ? "0 2px 8px rgba(239, 68, 68, 0.2)" : "none"
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1107,7 +1108,7 @@ function Questions() {
                         </div>
                         <span style={{ 
                           fontSize: "10.5px", 
-                          backgroundColor: isRecycleBin ? "rgba(255,255,255,0.2)" : "var(--border-color)", 
+                          backgroundColor: isRecycleBin ? "rgba(255,255,255,0.25)" : "var(--border-color)", 
                           color: isRecycleBin  ? "var(--primary-foreground, #ffffff)" : "var(--text-primary)", 
                           padding: "2px 6px", 
                           borderRadius: "20px" 
@@ -1120,11 +1121,11 @@ function Questions() {
                     {/* Search Input collections - DESKTOP (aligned to right on same row) */}
                     <div className="practice-search-pill" style={{ 
                       display: "flex", alignItems: "center", gap: "8px", 
-                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "2px solid var(--violet)", 
+                      backgroundColor: "var(--bg-card, #1E1B2E)", border: "1.5px solid var(--border-color)", 
                       borderRadius: "100px", padding: "10px 16px",
                       width: "300px", boxSizing: "border-box", marginLeft: "auto", flexShrink: 0
                     }}>
-                      <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
+                      <Search size={16} style={{ color: "var(--primary)", flexShrink: 0 }} />
                       <input 
                         type="text" 
                         placeholder="Search collections..." 
@@ -1244,10 +1245,11 @@ function Questions() {
                               fontSize: "9.5px", 
                               fontWeight: "700", 
                               textTransform: "uppercase", 
-                              color: "var(--violet)", 
-                              backgroundColor: "rgba(110, 63, 243, 0.1)", 
+                              color: "var(--primary)", 
+                              backgroundColor: "var(--bg-input, rgba(0, 0, 0, 0.05))", 
                               padding: "4px 8px", 
                               borderRadius: "6px",
+                              border: "1px solid var(--border-color)",
                               letterSpacing: "0.05em"
                             }}>
                               Collection
@@ -1326,7 +1328,7 @@ function Questions() {
                   ) : (
                     <>
                       <div className="qb-view-header-with-back">
-                        <button className="qb-back-btn" onClick={handleBackToQuizzes} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button className="qb-back-btn" onClick={handleBackToQuizzes} title="Back to Quizzes" aria-label="Back to Quizzes">
                           <ArrowLeft size={18} />
                         </button>
                         <div>
@@ -1350,9 +1352,9 @@ function Questions() {
                                 <h5 style={{ margin: 0 }}>{sub.subjectName}</h5>
                                 <p style={{ margin: 0, fontSize: "12.5px" }}>{sub.questionsCount} Questions</p>
                                 {sub.publishedDate && (
-                                  <span style={{ fontSize: "11px", color: "var(--text-muted)", opacity: 0.8, marginTop: "2px" }}>
-                                    Published on {new Date(sub.publishedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                  </span>
+                                   <span style={{ fontSize: "11px", color: "var(--text-muted)", opacity: 0.8, marginTop: "2px" }}>
+                                     Published on {new Date(sub.publishedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                   </span>
                                 )}
                               </div>
                               <ChevronRight size={18} style={{ color: "var(--text-muted)" }} />
@@ -1371,7 +1373,7 @@ function Questions() {
                   <div className="qb-right-header">
                     <div className="qb-right-top">
                       <div className="qb-right-title">
-                        <button className="qb-back-btn" onClick={handleBackToSubjects} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button className="qb-back-btn" onClick={handleBackToSubjects} title="Back to Subjects" aria-label="Back to Subjects">
                           <ArrowLeft size={18} />
                         </button>
                         <div>
@@ -1380,10 +1382,10 @@ function Questions() {
                         </div>
                       </div>
                       <div className="qb-right-actions" style={{ position: "relative" }} ref={exportMenuRef}>
-                        <button className="qb-btn-export" onClick={() => setShowExportMenu(!showExportMenu)}>
+                        <button className="qb-btn-export" onClick={() => setShowExportMenu(!showExportMenu)} title="Export questions">
                           ↓ Export
                         </button>
-                        <button className="qb-btn-filter">
+                        <button className="qb-btn-filter" title="Filter options">
                           <SlidersHorizontal size={16} />
                         </button>
                         <button
@@ -1424,12 +1426,12 @@ function Questions() {
                     <div className="qb-right-searchbar">
                       <div className="qb-search-pill" style={{ 
                         display: "flex", alignItems: "center", gap: "10px",
-                        backgroundColor: "var(--bg-card)", border: "2px solid var(--violet)",
+                        backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)",
                         borderRadius: "100px", padding: "8px 16px",
-                        boxShadow: "0 4px 12px rgba(110, 63, 243, 0.1)",
+                        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
                         maxWidth: "280px", width: "100%",
                       }}>
-                        <Search size={16} style={{ color: "var(--violet)", flexShrink: 0 }} />
+                        <Search size={16} style={{ color: "var(--primary)", flexShrink: 0 }} />
                         <input 
                           placeholder="Search questions..." 
                           value={searchQuery}
@@ -1463,33 +1465,65 @@ function Questions() {
                     )}
                   </div>
 
-                  {totalPages > 1 && (
-                    <div className="qb-pagination">
-                      <button className="qb-page-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>&lt;</button>
-                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                        let page = i + 1;
-                        if (totalPages > 5) {
-                          const start = Math.max(1, currentPage - 2);
-                          page = start + i;
-                          if (page > totalPages) return null;
-                        }
-                        return (
+                  {totalPages > 1 && (() => {
+                    const maxVisible = 5;
+                    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+                    let end = Math.min(totalPages, start + maxVisible - 1);
+                    if (end - start + 1 < maxVisible) {
+                      start = Math.max(1, end - maxVisible + 1);
+                    }
+                    const pages = [];
+                    for (let p = start; p <= end; p++) {
+                      pages.push(p);
+                    }
+
+                    return (
+                      <div className="qb-pagination">
+                        <div className="qb-pagination-info" style={{ fontSize: "12.5px", color: "var(--text-secondary)", fontWeight: "500" }}>
+                          Showing <strong>{(currentPage - 1) * questionsPerPage + 1}</strong>–<strong>{Math.min(currentPage * questionsPerPage, filteredQuestions.length)}</strong> of <strong>{filteredQuestions.length}</strong> questions (Page {currentPage} of {totalPages})
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                           <button
-                            key={page}
-                            className={`qb-page-btn ${currentPage === page ? "active" : ""}`}
-                            onClick={() => setCurrentPage(page)}
+                            className="qb-page-btn"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            title="Previous Page"
                           >
-                            {page}
+                            &lt;
                           </button>
-                        );
-                      })}
-                      {totalPages > 5 && currentPage < totalPages - 2 && <span style={{ color: 'var(--text-muted)' }}>...</span>}
-                      {totalPages > 5 && currentPage < totalPages - 2 && (
-                        <button className="qb-page-btn" onClick={() => setCurrentPage(totalPages)}>{totalPages}</button>
-                      )}
-                      <button className="qb-page-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>&gt;</button>
-                    </div>
-                  )}
+                          {start > 1 && (
+                            <>
+                              <button className={`qb-page-btn ${currentPage === 1 ? "active" : ""}`} onClick={() => setCurrentPage(1)}>1</button>
+                              {start > 2 && <span style={{ color: "var(--text-muted)", padding: "0 2px" }}>...</span>}
+                            </>
+                          )}
+                          {pages.map(page => (
+                            <button
+                              key={page}
+                              className={`qb-page-btn ${currentPage === page ? "active" : ""}`}
+                              onClick={() => setCurrentPage(page)}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                          {end < totalPages && (
+                            <>
+                              {end < totalPages - 1 && <span style={{ color: "var(--text-muted)", padding: "0 2px" }}>...</span>}
+                              <button className={`qb-page-btn ${currentPage === totalPages ? "active" : ""}`} onClick={() => setCurrentPage(totalPages)}>{totalPages}</button>
+                            </>
+                          )}
+                          <button
+                            className="qb-page-btn"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            title="Next Page"
+                          >
+                            &gt;
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

@@ -1,8 +1,30 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Phone, PhoneOff, Bell, Sparkles, Clock, RotateCcw, Volume2, Loader2, CheckCircle2 } from 'lucide-react';
+import {
+  Phone,
+  PhoneOff,
+  Bell,
+  Clock,
+  RotateCcw,
+  Volume2,
+  Loader2,
+  CheckCircle2,
+  X
+} from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 import incomingReminderService from '../services/incomingReminderService';
+import '../css/IncomingReminderModal.css';
 
 export default function IncomingReminderModal() {
+  const themeContext = useTheme();
+  const isDark = Boolean(
+    themeContext?.isDark ||
+    themeContext?.mode === 'dark' ||
+    (typeof document !== 'undefined' &&
+      (document.documentElement.classList.contains('dark') ||
+       document.body.classList.contains('dark-mode') ||
+       document.documentElement.getAttribute('data-theme') === 'dark'))
+  );
+
   const [reminder, setReminder] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [sessionState, setSessionState] = useState('RINGING'); // 'RINGING' | 'CONNECTING' | 'COUNTDOWN' | 'PLAYING' | 'COMPLETED' | 'ERROR'
@@ -102,12 +124,6 @@ export default function IncomingReminderModal() {
     const audio = new Audio(url);
     audioRef.current = audio;
 
-    audio.onplay = () => {
-      if (isCallActiveRef.current) {
-        setSessionState('PLAYING');
-      }
-    };
-
     audio.onended = () => {
       if (isCallActiveRef.current) {
         setSessionState('COMPLETED');
@@ -117,12 +133,13 @@ export default function IncomingReminderModal() {
     audio.onerror = (e) => {
       console.warn('[IncomingReminderModal] Audio playback error:', e);
       if (isCallActiveRef.current) {
-        setErrorMessage('Audio playback failed. Please try replay.');
+        setErrorMessage('Failed to play reminder audio.');
         setSessionState('ERROR');
       }
     };
 
     try {
+      setSessionState('PLAYING');
       await audio.play();
     } catch (err) {
       console.warn('[IncomingReminderModal] play() promise rejected:', err);
@@ -156,7 +173,7 @@ export default function IncomingReminderModal() {
       if (!isCallActiveRef.current) return; // User hung up while audio blob was downloading
       setAudioUrl(url);
 
-      // Start polite 2-second delay to give user time to bring phone to ear / adjust audio
+      // Start polite 2-second delay to give user time to listen / adjust audio
       setSessionState('COUNTDOWN');
       setCountdownLeft(2);
 
@@ -211,10 +228,8 @@ export default function IncomingReminderModal() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Clean caller name: always display PrepMark as requested by user
   const callerDisplayName = 'PrepMark';
 
-  // Clean description if redundant
   const displayDescription = reminder.taskDescription
     ? reminder.taskDescription
         .replace(/Teaching Pariksha(\s*AI)?/gi, 'PrepMark')
@@ -227,293 +242,122 @@ export default function IncomingReminderModal() {
       role="dialog"
       aria-modal="true"
       aria-label="Incoming Study Reminder"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 99999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        animation: 'fadeIn 0.2s ease-out'
-      }}
+      className="irm-overlay"
     >
       <div
+        className="irm-modal-card"
         style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: '380px',
-          borderRadius: '26px',
-          overflow: 'hidden',
-          background: 'linear-gradient(180deg, #181528 0%, #0f0d1b 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.28)',
-          boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(124, 58, 237, 0.18)',
-          padding: '24px 22px 28px 22px',
-          color: '#ffffff',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center'
+          color: isDark ? '#ffffff' : 'var(--text-primary, #0f172a)'
         }}
       >
-        {/* Subtle decorative background ambient glow */}
-        <div
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={sessionState === 'RINGING' ? handleReject : handleEndCall}
+          className="irm-close-btn"
+          aria-label="Close reminder modal"
           style={{
-            position: 'absolute',
-            top: '-60px',
-            left: '-60px',
-            width: '180px',
-            height: '180px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%)',
-            pointerEvents: 'none'
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-60px',
-            right: '-60px',
-            width: '180px',
-            height: '180px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)',
-            pointerEvents: 'none'
-          }}
-        />
-
-        {/* Top Status Badge */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '5px 14px',
-            borderRadius: '9999px',
-            background: 'rgba(139, 92, 246, 0.12)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            color: '#c4b5fd',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '0.6px',
-            textTransform: 'uppercase',
-            marginBottom: '18px'
+            color: isDark ? '#94a3b8' : 'var(--text-secondary, #64748b)'
           }}
         >
-          <Sparkles size={12} style={{ color: '#a78bfa' }} />
+          <X size={18} />
+        </button>
+
+        {/* Status Pill with Live Pulsing Dot */}
+        <div className="irm-status-pill">
+          <span className="irm-live-dot" />
           <span>
             {sessionState === 'RINGING' && 'Incoming Reminder'}
-            {sessionState === 'CONNECTING' && 'Connecting Call...'}
-            {sessionState === 'COUNTDOWN' && 'Session Connected'}
-            {sessionState === 'PLAYING' && 'PrepMark Speaking'}
-            {sessionState === 'COMPLETED' && 'Reminder Finished'}
+            {sessionState === 'CONNECTING' && 'Connecting...'}
+            {sessionState === 'COUNTDOWN' && 'Starting Call'}
+            {sessionState === 'PLAYING' && 'Audio Playing'}
+            {sessionState === 'COMPLETED' && 'Reminder Completed'}
             {sessionState === 'ERROR' && 'Call Alert'}
           </span>
         </div>
 
         {/* Center Visualizer & Avatar */}
-        <div
-          style={{
-            position: 'relative',
-            marginTop: '4px',
-            marginBottom: '14px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '84px'
-          }}
-        >
+        <div className="irm-avatar-wrapper">
           {sessionState === 'RINGING' && (
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div
-                style={{
-                  position: 'absolute',
-                  width: '94px',
-                  height: '94px',
-                  borderRadius: '50%',
-                  background: 'rgba(139, 92, 246, 0.15)',
-                  animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite'
-                }}
-              />
-              <div
-                style={{
-                  position: 'relative',
-                  width: '74px',
-                  height: '74px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
-                  boxShadow: '0 8px 24px rgba(124, 58, 237, 0.45)',
-                  border: '2px solid rgba(196, 181, 253, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <Bell size={32} style={{ color: '#ffffff' }} />
+            <>
+              <div className="irm-pulse-ring" />
+              <div className="irm-avatar-circle">
+                <Bell size={30} />
               </div>
-            </div>
+            </>
           )}
 
           {sessionState === 'CONNECTING' && (
-            <div
-              style={{
-                width: '74px',
-                height: '74px',
-                borderRadius: '50%',
-                background: 'rgba(79, 70, 229, 0.3)',
-                border: '2px solid rgba(167, 139, 250, 0.6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Loader2 size={34} style={{ color: '#c4b5fd', animation: 'spin 1s linear infinite' }} />
+            <div className="irm-avatar-circle connecting">
+              <Loader2 size={32} style={{ animation: 'spin 1s linear infinite' }} />
             </div>
           )}
 
           {sessionState === 'COUNTDOWN' && (
-            <div
-              style={{
-                width: '74px',
-                height: '74px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)',
-                border: '2px solid rgba(196, 181, 253, 0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <span style={{ fontSize: '26px', fontWeight: 800, color: '#ffffff' }}>{countdownLeft}s</span>
+            <div className="irm-avatar-circle countdown">
+              <span style={{ fontSize: '24px', fontWeight: 800 }}>{countdownLeft}s</span>
             </div>
           )}
 
           {sessionState === 'PLAYING' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div
-                style={{
-                  width: '74px',
-                  height: '74px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  boxShadow: '0 8px 24px rgba(16, 185, 129, 0.45)',
-                  border: '2px solid rgba(167, 243, 208, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <Volume2 size={32} style={{ color: '#ffffff' }} />
+              <div className="irm-avatar-circle playing">
+                <Volume2 size={30} />
               </div>
-              {/* Audio spectrum wave bars */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '18px', marginTop: '10px' }}>
-                <span style={{ width: '4px', height: '12px', background: '#34d399', borderRadius: '4px', animation: 'pulse 1s infinite' }} />
-                <span style={{ width: '4px', height: '18px', background: '#10b981', borderRadius: '4px', animation: 'pulse 0.7s infinite' }} />
-                <span style={{ width: '4px', height: '14px', background: '#6ee7b7', borderRadius: '4px', animation: 'pulse 1.2s infinite' }} />
-                <span style={{ width: '4px', height: '18px', background: '#10b981', borderRadius: '4px', animation: 'pulse 0.8s infinite' }} />
-                <span style={{ width: '4px', height: '10px', background: '#34d399', borderRadius: '4px', animation: 'pulse 1.1s infinite' }} />
+              <div className="irm-spectrum-bars">
+                <span className="irm-spectrum-bar" />
+                <span className="irm-spectrum-bar" />
+                <span className="irm-spectrum-bar" />
+                <span className="irm-spectrum-bar" />
+                <span className="irm-spectrum-bar" />
               </div>
             </div>
           )}
 
           {sessionState === 'COMPLETED' && (
-            <div
-              style={{
-                width: '74px',
-                height: '74px',
-                borderRadius: '50%',
-                background: 'rgba(16, 185, 129, 0.15)',
-                border: '2px solid rgba(52, 211, 153, 0.6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <CheckCircle2 size={38} style={{ color: '#34d399' }} />
+            <div className="irm-avatar-circle completed">
+              <CheckCircle2 size={36} />
             </div>
           )}
 
           {sessionState === 'ERROR' && (
-            <div
-              style={{
-                width: '74px',
-                height: '74px',
-                borderRadius: '50%',
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '2px solid rgba(248, 113, 113, 0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <PhoneOff size={32} style={{ color: '#f87171' }} />
+            <div className="irm-avatar-circle error">
+              <PhoneOff size={30} />
             </div>
           )}
         </div>
 
-        {/* Caller Title */}
-        <h2 style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.2px', color: '#ffffff', margin: '4px 0 2px 0' }}>
+        {/* Caller Title & Subtitle */}
+        <h2
+          className="irm-caller-name"
+          style={{ color: isDark ? '#ffffff' : 'var(--text-primary, #0f172a)' }}
+        >
           {callerDisplayName}
         </h2>
-        <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0, fontWeight: 500 }}>
-          {sessionState === 'RINGING' && 'Calling for scheduled study session'}
-          {sessionState === 'CONNECTING' && 'Initializing audio stream...'}
-          {sessionState === 'COUNTDOWN' && `Starting reminder in ${countdownLeft}s...`}
+        <p
+          className="irm-session-status"
+          style={{ color: isDark ? '#cbd5e1' : 'var(--text-secondary, #64748b)' }}
+        >
+          {sessionState === 'RINGING' && 'Scheduled exam reminder'}
+          {sessionState === 'CONNECTING' && 'Connecting audio...'}
+          {sessionState === 'COUNTDOWN' && `Playing voice reminder in ${countdownLeft}s...`}
           {sessionState === 'PLAYING' && `Active Call • ${formatDuration(callDuration)}`}
-          {sessionState === 'COMPLETED' && `Call Ended • ${formatDuration(callDuration)}`}
-          {sessionState === 'ERROR' && (errorMessage || 'Audio session interrupted')}
+          {sessionState === 'COMPLETED' && `Finished • ${formatDuration(callDuration)}`}
+          {sessionState === 'ERROR' && (errorMessage || 'Audio session ended')}
         </p>
 
-        {/* Task Details Glass Card */}
-        <div
-          style={{
-            width: '100%',
-            margin: '16px 0 12px 0',
-            padding: '14px 16px',
-            borderRadius: '16px',
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            textAlign: 'left'
-          }}
-        >
-          <span
-            style={{
-              fontSize: '10.5px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.8px',
-              color: '#a78bfa',
-              display: 'block',
-              marginBottom: '4px'
-            }}
-          >
-            Task Due Now
-          </span>
+        {/* Task Details Card */}
+        <div className="irm-task-card">
+          <span className="irm-task-badge">Study Reminder</span>
           <h3
-            style={{
-              fontSize: '15px',
-              fontWeight: 600,
-              color: '#ffffff',
-              margin: '0 0 4px 0',
-              lineHeight: 1.35,
-              wordBreak: 'break-word'
-            }}
+            className="irm-task-title"
+            style={{ color: isDark ? '#ffffff' : 'var(--text-primary, #0f172a)' }}
           >
             {reminder.taskTitle}
           </h3>
           <p
-            style={{
-              fontSize: '12px',
-              color: '#94a3b8',
-              margin: 0,
-              lineHeight: 1.45,
-              wordBreak: 'break-word'
-            }}
+            className="irm-task-desc"
+            style={{ color: isDark ? '#cbd5e1' : 'var(--text-secondary, #64748b)' }}
           >
             {displayDescription}
           </p>
@@ -522,175 +366,161 @@ export default function IncomingReminderModal() {
         {/* Ringing Timeout Indicator */}
         {sessionState === 'RINGING' && (
           <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              fontSize: '11.5px',
-              color: '#94a3b8',
-              marginBottom: '16px'
-            }}
+            className="irm-ringing-timer"
+            style={{ color: isDark ? '#94a3b8' : 'var(--text-secondary, #64748b)' }}
           >
-            <Clock size={12} style={{ color: '#a78bfa' }} />
-            <span>Ringing expires in {secondsLeft}s</span>
+            <Clock size={13} />
+            <span>Expires in {secondsLeft}s</span>
           </div>
         )}
 
-        {/* Modern Call Dialer Action Controls */}
+        {/* Actions Controls */}
         {sessionState === 'RINGING' ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '40px',
-              width: '100%',
-              marginTop: '4px'
-            }}
-          >
+          <div className="irm-dialer-row">
             {/* Decline Button */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="irm-action-item">
               <button
                 type="button"
                 onClick={handleReject}
                 aria-label="Decline Reminder"
+                className="irm-circle-btn decline"
                 style={{
-                  width: '58px',
-                  height: '58px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '50%',
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)',
-                  boxShadow: '0 8px 22px rgba(225, 29, 72, 0.45)',
+                  boxShadow: '0 4px 16px rgba(239, 68, 68, 0.45)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
+                  cursor: 'pointer'
                 }}
               >
-                <PhoneOff size={24} style={{ color: '#ffffff' }} />
+                <PhoneOff size={22} style={{ color: '#ffffff', stroke: '#ffffff' }} />
               </button>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#f87171', marginTop: '8px' }}>
+              <span
+                className="irm-action-label decline"
+                style={{
+                  color: isDark ? '#f87171' : '#ef4444',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  marginTop: '8px'
+                }}
+              >
                 Decline
               </span>
             </div>
 
             {/* Accept Button */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="irm-action-item">
               <button
                 type="button"
                 onClick={handleAccept}
                 aria-label="Accept and Listen"
+                className="irm-circle-btn accept"
                 style={{
-                  width: '58px',
-                  height: '58px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '50%',
+                  backgroundColor: '#10b981',
+                  color: '#ffffff',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  boxShadow: '0 8px 22px rgba(16, 185, 129, 0.45)',
+                  boxShadow: '0 4px 16px rgba(16, 185, 129, 0.45)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
+                  cursor: 'pointer'
                 }}
               >
-                <Phone size={24} style={{ color: '#ffffff' }} />
+                <Phone size={22} style={{ color: '#ffffff', stroke: '#ffffff' }} />
               </button>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#34d399', marginTop: '8px' }}>
+              <span
+                className="irm-action-label accept"
+                style={{
+                  color: isDark ? '#34d399' : '#10b981',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  marginTop: '8px'
+                }}
+              >
                 Accept
               </span>
             </div>
           </div>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '36px',
-              width: '100%',
-              marginTop: '8px'
-            }}
-          >
-            {/* Replay Button */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="irm-dialer-row">
+            {/* Replay Button - Crisp Solid White Circle */}
+            <div className="irm-action-item">
               <button
                 type="button"
                 onClick={handleReplay}
                 disabled={sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN'}
                 aria-label="Replay Audio"
+                className="irm-circle-btn replay"
                 style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '54px',
+                  height: '54px',
                   borderRadius: '50%',
-                  border: '1.5px solid rgba(139, 92, 246, 0.45)',
-                  background: 'rgba(139, 92, 246, 0.18)',
-                  boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)',
+                  backgroundColor: '#ffffff',
+                  color: '#0f172a',
+                  border: '1.5px solid rgba(0, 0, 0, 0.12)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.22)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN' ? 'not-allowed' : 'pointer',
-                  opacity: sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN' ? 0.4 : 1,
-                  transition: 'transform 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (sessionState !== 'CONNECTING' && sessionState !== 'COUNTDOWN') {
-                    e.currentTarget.style.transform = 'scale(1.08)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
+                  opacity: sessionState === 'CONNECTING' || sessionState === 'COUNTDOWN' ? 0.45 : 1
                 }}
               >
-                <RotateCcw size={20} style={{ color: '#c4b5fd' }} />
+                <RotateCcw size={22} style={{ color: '#0f172a', stroke: '#0f172a', strokeWidth: 2.3 }} />
               </button>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#c4b5fd', marginTop: '6px' }}>
+              <span
+                className="irm-action-label replay"
+                style={{
+                  color: isDark ? '#ffffff' : '#0f172a',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  marginTop: '8px'
+                }}
+              >
                 Replay
               </span>
             </div>
 
-            {/* End Call Button */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* End Call Button - Solid Bright Red Call Button */}
+            <div className="irm-action-item">
               <button
                 type="button"
                 onClick={handleEndCall}
                 aria-label="End Call"
+                className="irm-circle-btn decline"
                 style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '54px',
+                  height: '54px',
                   borderRadius: '50%',
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)',
-                  boxShadow: '0 8px 22px rgba(225, 29, 72, 0.45)',
+                  boxShadow: '0 4px 16px rgba(239, 68, 68, 0.45)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'transform 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
+                  cursor: 'pointer'
                 }}
               >
-                <PhoneOff size={20} style={{ color: '#ffffff' }} />
+                <PhoneOff size={22} style={{ color: '#ffffff', stroke: '#ffffff', strokeWidth: 2.2 }} />
               </button>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#f87171', marginTop: '6px' }}>
+              <span
+                className="irm-action-label decline"
+                style={{
+                  color: isDark ? '#f87171' : '#ef4444',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  marginTop: '8px'
+                }}
+              >
                 End Call
               </span>
             </div>

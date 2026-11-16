@@ -424,11 +424,11 @@ function Staff() {
                   <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
                     Manage Admin
                   </h2>
-                  <span style={{ fontSize: "11px", background: "rgba(110,63,243,0.15)", color: "#a78bfa", padding: "3px 8px", borderRadius: "12px", fontWeight: "700" }}>
+                  <span style={{ fontSize: "11px", background: "var(--bg-input, rgba(0,0,0,0.05))", color: "var(--primary)", padding: "3px 8px", borderRadius: "12px", fontWeight: "700" }}>
                     Restricted Access
                   </span>
                 </div>
-                <span style={{ fontSize: "13px", color: "var(--primary, #7c3aed)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
+                <span style={{ fontSize: "13px", color: "var(--primary)", fontWeight: "600", marginTop: "4px", display: "inline-block" }}>
                   {filteredStaff.length} {viewTab === "active" ? "Active" : "Archived"} Admin Members
                 </span>
               </div>
@@ -441,9 +441,9 @@ function Staff() {
                       padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'active' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                      color: viewTab === 'active' ? '#ffffff' : 'var(--text-secondary)',
-                      boxShadow: viewTab === 'active' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                      background: viewTab === 'active' ? 'var(--primary)' : 'transparent',
+                      color: viewTab === 'active' ? 'var(--primary-foreground, #ffffff)' : 'var(--text-secondary)',
+                      boxShadow: viewTab === 'active' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
@@ -459,9 +459,9 @@ function Staff() {
                       padding: '5px 12px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: viewTab === 'archived' ? 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)' : 'transparent',
-                      color: viewTab === 'archived' ? '#ffffff' : 'var(--text-secondary)',
-                      boxShadow: viewTab === 'archived' ? '0 2px 8px rgba(124, 58, 237, 0.3)' : 'none',
+                      background: viewTab === 'archived' ? 'var(--primary)' : 'transparent',
+                      color: viewTab === 'archived' ? 'var(--primary-foreground, #ffffff)' : 'var(--text-secondary)',
+                      boxShadow: viewTab === 'archived' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
@@ -587,17 +587,32 @@ function Staff() {
                               <div className="user-avatar-circle" style={{
                                 background: isSuper ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'var(--primary)',
                                 color: '#fff', fontWeight: '700',
-                                overflow: 'hidden'
+                                overflow: 'hidden', position: 'relative'
                               }}>
-                                {(s.avatar || s.profilePhoto) ? (
-                                  <img 
-                                    src={s.avatar || s.profilePhoto} 
-                                    alt={s.fullName} 
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                  />
-                                ) : (
-                                  s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S"
-                                )}
+                                {(() => {
+                                  const avatarUrl = s.avatar || s.profilePicture || s.profilePhoto;
+                                  const initials = s.fullName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "S";
+                                  return (
+                                    <>
+                                      {avatarUrl ? (
+                                        <img 
+                                          src={avatarUrl} 
+                                          alt={s.fullName || "Staff"} 
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '50%' }} 
+                                          onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            if (e.currentTarget.nextSibling) {
+                                              e.currentTarget.nextSibling.style.display = 'flex';
+                                            }
+                                          }}
+                                        />
+                                      ) : null}
+                                      <span style={{ display: avatarUrl ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                                        {initials}
+                                      </span>
+                                    </>
+                                  );
+                                })()}
                               </div>
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -991,7 +1006,7 @@ function Staff() {
                           fontWeight: '700', 
                           padding: '2px 8px', 
                           borderRadius: '6px', 
-                          background: 'rgba(124, 58, 237, 0.12)',
+                          background: 'var(--bg-input, rgba(0, 0, 0, 0.05))',
                           color: 'var(--primary)'
                         }}>
                           <Shield size={11} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
@@ -1024,7 +1039,7 @@ function Staff() {
                         onClick={() => { handleOpenEdit(drawerStaff); setDrawerSubView('edit'); }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(124, 58, 237, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--bg-input, rgba(0, 0, 0, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                             <Edit size={18} />
                           </div>
                           <div>
