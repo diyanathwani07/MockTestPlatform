@@ -9,8 +9,8 @@ function requirePermission(permKeys) {
       const user = req.user;
       if (!user) return res.status(401).json({ message: "Unauthorized." });
 
-      // Superadmin or full_access always passes
-      if (user.role === "superadmin") return next();
+      // Superadmin, admin, or full_access always passes
+      if (user.role === "superadmin" || user.role === "admin") return next();
       if (Array.isArray(user.permissions) && user.permissions.includes("full_access")) return next();
 
       // Student/user only allowed student-specific features (if any checked)

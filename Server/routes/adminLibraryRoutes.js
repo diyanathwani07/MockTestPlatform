@@ -22,9 +22,15 @@ router.get(
 // FOLDER MANAGEMENT ROUTES
 // -------------------------------------------------------------
 router.get(
-  "/folders/tree",
+  ["/folders/tree", "/tree"],
   requirePermission(["view_library", "manage_folders", "manage_resources"]),
   libraryFolderController.getTree
+);
+
+router.get(
+  "/folders",
+  requirePermission(["view_library", "manage_folders", "manage_resources"]),
+  libraryFolderController.listFolders
 );
 
 router.get(
@@ -39,33 +45,28 @@ router.post(
   libraryFolderController.createFolder
 );
 
-router.put(
-  "/folders/:id",
-  requirePermission("manage_folders"),
-  libraryFolderController.updateFolder
-);
+router.route("/folders/:id")
+  .put(requirePermission("manage_folders"), libraryFolderController.updateFolder)
+  .patch(requirePermission("manage_folders"), libraryFolderController.updateFolder)
+  .delete(requirePermission("manage_folders"), libraryFolderController.deleteFolder);
 
-router.put(
-  "/folders/:id/move",
-  requirePermission("manage_folders"),
-  libraryFolderController.moveFolder
-);
+router.route("/folders/:id/move")
+  .put(requirePermission("manage_folders"), libraryFolderController.moveFolder)
+  .patch(requirePermission("manage_folders"), libraryFolderController.moveFolder);
 
-router.put(
-  "/folders/:id/reorder",
-  requirePermission("manage_folders"),
-  libraryFolderController.reorderFolders
-);
-
-router.delete(
-  "/folders/:id",
-  requirePermission("manage_folders"),
-  libraryFolderController.deleteFolder
-);
+router.route("/folders/reorder")
+  .put(requirePermission("manage_folders"), libraryFolderController.reorderFolders)
+  .patch(requirePermission("manage_folders"), libraryFolderController.reorderFolders);
 
 // -------------------------------------------------------------
 // RESOURCE MANAGEMENT ROUTES
 // -------------------------------------------------------------
+router.get(
+  "/resources",
+  requirePermission(["view_library", "manage_resources"]),
+  libraryResourceController.listResources
+);
+
 router.post(
   "/resources/upload",
   requirePermission("manage_resources"),
@@ -79,29 +80,18 @@ router.post(
   libraryResourceController.createResource
 );
 
-router.put(
-  "/resources/:id",
-  requirePermission("manage_resources"),
-  libraryResourceController.updateResource
-);
+router.route("/resources/:id")
+  .put(requirePermission("manage_resources"), libraryResourceController.updateResource)
+  .patch(requirePermission("manage_resources"), libraryResourceController.updateResource)
+  .delete(requirePermission("manage_resources"), libraryResourceController.deleteResource);
 
-router.put(
-  "/resources/:id/move",
-  requirePermission("manage_resources"),
-  libraryResourceController.moveResource
-);
+router.route("/resources/:id/move")
+  .put(requirePermission("manage_resources"), libraryResourceController.moveResource)
+  .patch(requirePermission("manage_resources"), libraryResourceController.moveResource);
 
-router.put(
-  "/resources/:id/reorder",
-  requirePermission("manage_resources"),
-  libraryResourceController.reorderResources
-);
-
-router.delete(
-  "/resources/:id",
-  requirePermission("manage_resources"),
-  libraryResourceController.deleteResource
-);
+router.route("/resources/:id/reorder")
+  .put(requirePermission("manage_resources"), libraryResourceController.reorderResources)
+  .patch(requirePermission("manage_resources"), libraryResourceController.reorderResources);
 
 router.delete(
   "/resources/:id/purge",

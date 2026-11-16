@@ -279,7 +279,24 @@ async function adminDownloadResource(req, res) {
   }
 }
 
+/**
+ * GET /api/admin/library/resources
+ * Lists resources in a folder (or root when folderId="root" or null)
+ */
+async function listResources(req, res) {
+  try {
+    const { folderId } = req.query;
+    const targetFolderId = (!folderId || folderId === "root" || folderId === "null") ? null : folderId;
+    const result = await libraryResourceService.listResourcesInFolder(targetFolderId, req.query);
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error("Library listResources error:", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
 module.exports = {
+  listResources,
   uploadResource,
   createResource,
   updateResource,

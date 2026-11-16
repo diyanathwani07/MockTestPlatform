@@ -19,6 +19,30 @@ async function getTree(req, res) {
 }
 
 /**
+ * GET /api/admin/library/folders
+ * Lists folders by scope and parentId.
+ */
+async function listFolders(req, res) {
+  try {
+    const { scope = "global", parentId, examSeriesId } = req.query;
+    const filter = { isDeleted: false, scope };
+    if (parentId === "null" || parentId === null || parentId === undefined || parentId === "") {
+      filter.parentId = null;
+    } else {
+      filter.parentId = parentId;
+    }
+    if (scope === "exam_specific" && examSeriesId) {
+      filter.examSeriesId = examSeriesId;
+    }
+    const folders = await Folder.find(filter).sort({ order: 1, name: 1 }).lean();
+    res.json({ success: true, folders });
+  } catch (error) {
+    console.error("Library listFolders error:", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+/**
  * GET /api/admin/library/folders/:id
  * Retrieves folder details, breadcrumbs, immediate children, and paginated resources.
  */
@@ -152,6 +176,7 @@ async function getStats(req, res) {
 
 module.exports = {
   getTree,
+  listFolders,
   getFolder,
   createFolder,
   updateFolder,
