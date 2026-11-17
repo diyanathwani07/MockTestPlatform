@@ -530,7 +530,7 @@ export default function MobileProfileFlow({
     if (status === "cancelled") {
       return {
         countdownText: "Cancelled",
-        daysDiff,
+        daysDiff: diffDays,
         badgeVariant: "cancelled",
         formattedExpiry,
         isExpired: true
@@ -540,7 +540,7 @@ export default function MobileProfileFlow({
     if (status === "refunded") {
       return {
         countdownText: "Refunded",
-        daysDiff,
+        daysDiff: diffDays,
         badgeVariant: "cancelled",
         formattedExpiry,
         isExpired: true
@@ -550,7 +550,7 @@ export default function MobileProfileFlow({
     if (diffDays > 1) {
       return {
         countdownText: `${diffDays} days left`,
-        daysDiff,
+        daysDiff: diffDays,
         badgeVariant: diffDays <= 3 ? "urgent" : diffDays <= 7 ? "warning" : "active",
         formattedExpiry,
         isExpired: false
@@ -576,7 +576,7 @@ export default function MobileProfileFlow({
       const text = expiredAgo === 1 ? "Expired 1 day ago" : `Expired ${expiredAgo} days ago`;
       return {
         countdownText: text,
-        daysDiff,
+        daysDiff: diffDays,
         badgeVariant: "expired",
         formattedExpiry,
         isExpired: true
