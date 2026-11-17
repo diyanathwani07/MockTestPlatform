@@ -198,8 +198,8 @@ const StudentChatbot = () => {
               placeholder="Ask anything about the platform..."
               disabled={isTyping}
             />
-            <button type="submit" disabled={!input.trim() || isTyping}>
-              <Send size={18} />
+            <button type="submit" disabled={!input.trim() || isTyping} aria-label="Send message">
+              <Send size={18} color="#FFFFFF" strokeWidth={2.2} />
             </button>
           </form>
         </div>

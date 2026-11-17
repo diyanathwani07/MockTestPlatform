@@ -938,24 +938,32 @@ body.dark-mode .rm-top-back-btn:hover,
     box-sizing: border-box !important;
     padding-left: 12px !important;
   }
+  .rm-score-right .rm-score-time-col,
   .rm-score-right > div:first-child {
     display: flex !important;
     align-items: center !important;
-    gap: 4px !important;
+    gap: 6px !important;
     margin: 0 !important;
+    flex-shrink: 0 !important;
   }
+  .rm-score-right .rm-score-time-col svg,
   .rm-score-right > div:first-child svg {
     width: 18px !important;
     height: 18px !important;
+    color: #8B5CF6 !important;
+    flex-shrink: 0 !important;
   }
   .rm-score-right .rm-feedback-title {
     font-size: 13.5px !important;
     margin: 0 !important;
     font-weight: 700 !important;
+    color: var(--text-primary) !important;
   }
   .rm-score-right .rm-feedback-text {
     font-size: 11.5px !important;
     margin: 0 !important;
+    text-align: right !important;
+    color: var(--text-secondary) !important;
   }
 
   /* Metrics Grid */
@@ -1397,10 +1405,23 @@ body.dark-mode .rm-badge {
   transition: all 0.2s ease;
 }
 
-body.dark-mode .review-bottom-actions .btn-back-summary {
-  background: rgba(139, 92, 246, 0.16);
-  border-color: rgba(139, 92, 246, 0.35);
-  color: #C4B5FD;
+body.dark-mode .review-bottom-actions .btn-back-summary,
+:root.dark .review-bottom-actions .btn-back-summary,
+.dark .review-bottom-actions .btn-back-summary,
+[data-theme="dark"] .review-bottom-actions .btn-back-summary,
+html[class*="theme-"].dark .review-bottom-actions .btn-back-summary {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode .review-bottom-actions .btn-back-summary svg,
+:root.dark .review-bottom-actions .btn-back-summary svg,
+.dark .review-bottom-actions .btn-back-summary svg,
+[data-theme="dark"] .review-bottom-actions .btn-back-summary svg,
+html[class*="theme-"].dark .review-bottom-actions .btn-back-summary svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
 }
 
 .review-bottom-actions .btn-back-summary:hover {

@@ -184,8 +184,8 @@ const AdminChatbot = () => {
               onChange={(e) => setInput(e.target.value)}
               disabled={isTyping}
             />
-            <button type="submit" disabled={isTyping || !input.trim()}>
-              <Send size={18} />
+            <button type="submit" disabled={isTyping || !input.trim()} aria-label="Send message">
+              <Send size={18} color="#FFFFFF" strokeWidth={2.2} />
             </button>
           </form>
         </div>

@@ -7,7 +7,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuizHeader from "../components/QuizHeader";
 import "../css/Result.css";
 import axios from "axios";
-import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid, Eye, Check, X, Minus, BookOpen, Layers, Sparkles, BarChart2, Send, Lock } from "lucide-react";
+import { ArrowLeft, ArrowUp, Clock, CheckCircle, XCircle, AlertCircle, BarChart3, Target, Award, ListChecks, Trophy, FileText, CalendarDays, HelpCircle, Medal, Timer, TrendingUp, LayoutGrid, Eye, Check, X, Minus, BookOpen, Layers, Sparkles, BarChart2, Send, Lock } from "lucide-react";
 import MathRenderer from "../components/MathRenderer";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../context/ThemeContext";
@@ -168,12 +168,6 @@ const FeedbackForm = ({ resultId, initialReaction, initialComment }) => {
         <Send size={15} />
         <span>{loading ? "Submitting..." : "Submit Feedback"}</span>
       </button>
-
-      {/* Privacy note */}
-      <div className="rfb-privacy-pill">
-        <Lock size={11} />
-        <span>Your feedback is 100% anonymous & secure</span>
-      </div>
     </div>
   );
 };
@@ -664,13 +658,11 @@ function Result() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > document.documentElement.scrollHeight / 3) {
-        setIsScrolledDown(true);
-      } else {
-        setIsScrolledDown(false);
-      }
+      const scrollPos = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      setIsScrolledDown(scrollPos > 180);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -2217,13 +2209,13 @@ function Result() {
                   </div>
 
                   <div className="rm-score-right">
-                    <div style={{ marginBottom: "6px", color: "#8B5CF6", display: "flex", justifyContent: "center" }}>
-                      <Timer size={28} />
+                    <div className="rm-score-time-col">
+                      <Timer size={20} />
+                      <h4 className="rm-feedback-title">
+                        {formatTimingSafe(data?.timeTaken)}
+                      </h4>
                     </div>
-                    <h4 className="rm-feedback-title" style={{ fontSize: "17px", fontWeight: "800", margin: "0 0 2px" }}>
-                      {formatTimingSafe(data?.timeTaken)}
-                    </h4>
-                    <p className="rm-feedback-text" style={{ fontSize: "11px", margin: 0 }}>
+                    <p className="rm-feedback-text">
                       Accuracy: <strong style={{ color: "#8B5CF6" }}>{accuracyDisplay}%</strong> ({attemptedCount}/{total})
                     </p>
                   </div>
@@ -2298,25 +2290,24 @@ function Result() {
                               borderRadius: "12px",
                               background: isDark ? "#161616" : "#FFFFFF",
                               border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid #E2E8F0",
-                              flexWrap: "wrap",
-                              gap: "8px"
+                              gap: "12px"
                             }}
                           >
-                            <div style={{ minWidth: "140px" }}>
-                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>
+                            <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+                              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)", display: "block", wordBreak: "break-word", lineHeight: "1.3" }}>
                                 {sec.sectionTitle || sec.title || `Section ${idx + 1}`}
                               </span>
-                              <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", gap: "8px", marginTop: "2px" }}>
+                              <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", gap: "8px", marginTop: "3px" }}>
                                 <span style={{ color: "#22C55E" }}>✓ {sec.correct ?? 0}</span>
                                 <span style={{ color: "#EF4444" }}>✕ {sec.incorrect ?? 0}</span>
                                 <span>{secTotal} Qs</span>
                               </div>
                             </div>
-                            <div style={{ textAlign: "right" }}>
+                            <div style={{ textAlign: "right", flexShrink: 0 }}>
                               <span style={{ fontSize: "13.5px", fontWeight: "800", color: "#8B5CF6" }}>
                                 {sec.score ?? 0} <span style={{ fontSize: "11px", fontWeight: "500", color: "var(--text-secondary)" }}>/ {secMax}</span>
                               </span>
-                              <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                              <div style={{ fontSize: "11px", color: "var(--text-muted)", whiteSpace: "nowrap", marginTop: "2px" }}>
                                 Acc: {secAcc} • {formatTimingSafe(sec.timeTaken)}
                               </div>
                             </div>
@@ -3263,6 +3254,7 @@ function Result() {
               <button 
                 className="btn-back-summary" 
                 onClick={() => setShowAnswers(false)}
+                style={isDark ? { color: "#FFFFFF", borderColor: "rgba(255, 255, 255, 0.22)", background: "rgba(255, 255, 255, 0.08)" } : {}}
               >
                 <ArrowLeft size={16} />
                 <span>Back to Summary</span>
@@ -3275,6 +3267,42 @@ function Result() {
                 <span>Back to Dashboard</span>
               </button>
             </div>
+
+            {/* Floating scroll to top button to quickly jump back to Question 1 */}
+            {isScrolledDown && (
+              <button
+                type="button"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
+                  document.body.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                style={{
+                  position: "fixed",
+                  bottom: isMobile ? "145px" : "85px",
+                  right: "22px",
+                  zIndex: 9998,
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "50%",
+                  backgroundColor: "#8B5CF6",
+                  color: "#FFFFFF",
+                  border: "none",
+                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.35)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "all 0.25s ease"
+                }}
+                title="Scroll to Top / Question 1"
+                aria-label="Scroll to top"
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              >
+                <ArrowUp size={22} color="#FFFFFF" strokeWidth={2.5} />
+              </button>
+            )}
           </div>
         </div>
       )}

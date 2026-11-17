@@ -252,8 +252,8 @@ body.dark-mode .acb-input-area input {
 }
 
 .acb-input-area button {
-  background: var(--primary) !important;
-  color: #fff !important;
+  background: #7C3AED !important;
+  color: #FFFFFF !important;
   border: none !important;
   width: 40px !important;
   height: 40px !important;
@@ -264,17 +264,39 @@ body.dark-mode .acb-input-area input {
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s;
   flex: 0 0 40px !important;
 }
 
+.acb-input-area button svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
 .acb-input-area button:hover:not(:disabled) {
-  background: #4F22C5;
+  background: #6D28D9 !important;
+  transform: translateY(-1px);
 }
 
 .acb-input-area button:disabled {
-  opacity: 0.5;
+  background: #94A3B8 !important;
+  opacity: 0.75 !important;
   cursor: not-allowed;
+}
+
+.acb-input-area button:disabled svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+body.dark-mode .acb-input-area button:disabled,
+:root.dark .acb-input-area button:disabled,
+.dark .acb-input-area button:disabled,
+html[class*="theme-"].dark .acb-input-area button:disabled {
+  background: #475569 !important;
+  opacity: 0.75 !important;
 }
 
 /* Media Query for smaller screens */
