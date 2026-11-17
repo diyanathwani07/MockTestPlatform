@@ -155,13 +155,16 @@ function SubjectResults() {
                 return (
                   <div 
                     key={sub} 
-                    className="practice-card"
+                    className="practice-card student-result-card subject-result-card"
                     style={{ cursor: "pointer" }}
                     onClick={() => setSelectedSubjectTab(sub)}
                   >
-
-                    
-                    <h3 className="practice-quiz-title">{formatSubjectLabel(sub)}</h3>
+                    <h3 
+                      className="practice-quiz-title"
+                      style={{ minHeight: "unset", margin: "0 0 4px 0", lineHeight: "1.35" }}
+                    >
+                      {formatSubjectLabel(sub)}
+                    </h3>
                     <p 
                       className="practice-quiz-desc" 
                       title={sub}
@@ -169,7 +172,11 @@ function SubjectResults() {
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
-                        overflow: "hidden"
+                        overflow: "hidden",
+                        margin: "0 0 8px 0",
+                        flex: "unset",
+                        fontSize: "12.5px",
+                        lineHeight: "1.4"
                       }}
                     >
                       {sub.includes(",") 
@@ -177,7 +184,7 @@ function SubjectResults() {
                         : "Review your attempts and performance analytics for this subject."}
                     </p>
 
-                    <div className="practice-meta-grid">
+                    <div className="practice-meta-grid" style={{ marginTop: "4px", marginBottom: "4px" }}>
                       <div className="meta-item">
                         <CheckCircle size={14} />
                         <span>{count} Attempt{count !== 1 ? "s" : ""}</span>
@@ -188,7 +195,7 @@ function SubjectResults() {
                       </div>
                     </div>
 
-                    <button className="practice-start-btn">
+                    <button className="practice-start-btn" style={{ marginTop: "6px" }}>
                       <FileText size={16} />
                       View Attempts &gt;
                     </button>
