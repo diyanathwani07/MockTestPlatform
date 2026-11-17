@@ -3,7 +3,7 @@ import { setupWebPushNotifications } from '../../utils/pushNotifications';
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2, Video, ExternalLink, Sparkles, Eye, EyeOff, RefreshCw, Shield, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Clock, Lock, Bell, BellRing, Globe, Info, Edit3, Camera, Mail, Phone, Calendar, MapPin, Check, Loader2, CreditCard, CheckCircle2, Video, ExternalLink, Sparkles, Eye, EyeOff, RefreshCw, Shield, FileText, Copy, CheckCheck, AlertTriangle, AlertCircle, Zap, ShieldCheck, XCircle } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import AvatarPickerModal from "../AvatarPickerModal";
 import Logo from "../Logo";
@@ -80,6 +80,29 @@ export default function MobileProfileFlow({
   // Real Transaction History state & fetch
   const [transactions, setTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [copiedOrderRef, setCopiedOrderRef] = useState(null);
+
+  const handleCopyOrderRef = (refText) => {
+    if (!refText || refText === "N/A") return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(refText);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = refText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setCopiedOrderRef(refText);
+      setTimeout(() => {
+        setCopiedOrderRef((curr) => (curr === refText ? null : curr));
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy order ref:", err);
+    }
+  };
 
   useEffect(() => {
     if (activeScreen === "transactions" && !isAdmin) {
@@ -447,14 +470,159 @@ export default function MobileProfileFlow({
     </div>
   );
 
+  // Dynamic date-only expiry calculation
+  const getSubscriptionExpiryInfo = (expiryDateStr, status, isOneTime = false) => {
+    if (isOneTime) {
+      return {
+        countdownText: "Lifetime Access",
+        daysDiff: 99999,
+        badgeVariant: "lifetime",
+        formattedExpiry: "Lifetime Access",
+        isExpired: false
+      };
+    }
+
+    if (!expiryDateStr) {
+      return {
+        countdownText: "Active",
+        daysDiff: null,
+        badgeVariant: "active",
+        formattedExpiry: "N/A",
+        isExpired: false
+      };
+    }
+
+    const expiryDate = new Date(expiryDateStr);
+    if (isNaN(expiryDate.getTime())) {
+      return {
+        countdownText: "Active",
+        daysDiff: null,
+        badgeVariant: "active",
+        formattedExpiry: "N/A",
+        isExpired: false
+      };
+    }
+
+    // Date-only calculation without time-of-day / timezone shift
+    const now = new Date();
+    const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const expOnly = new Date(expiryDate.getFullYear(), expiryDate.getMonth(), expiryDate.getDate());
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const diffDays = Math.round((expOnly.getTime() - todayOnly.getTime()) / msPerDay);
+
+    const formattedExpiry = expiryDate.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+
+    if (diffDays > 365 * 2) {
+      return {
+        countdownText: "Lifetime Access",
+        daysDiff: diffDays,
+        badgeVariant: "lifetime",
+        formattedExpiry: "Lifetime Access",
+        isExpired: false
+      };
+    }
+
+    if (status === "cancelled") {
+      return {
+        countdownText: "Cancelled",
+        daysDiff,
+        badgeVariant: "cancelled",
+        formattedExpiry,
+        isExpired: true
+      };
+    }
+
+    if (status === "refunded") {
+      return {
+        countdownText: "Refunded",
+        daysDiff,
+        badgeVariant: "cancelled",
+        formattedExpiry,
+        isExpired: true
+      };
+    }
+
+    if (diffDays > 1) {
+      return {
+        countdownText: `${diffDays} days left`,
+        daysDiff,
+        badgeVariant: diffDays <= 3 ? "urgent" : diffDays <= 7 ? "warning" : "active",
+        formattedExpiry,
+        isExpired: false
+      };
+    } else if (diffDays === 1) {
+      return {
+        countdownText: "1 day left",
+        daysDiff: 1,
+        badgeVariant: "urgent",
+        formattedExpiry,
+        isExpired: false
+      };
+    } else if (diffDays === 0) {
+      return {
+        countdownText: "Expires today",
+        daysDiff: 0,
+        badgeVariant: "urgent",
+        formattedExpiry,
+        isExpired: false
+      };
+    } else {
+      const expiredAgo = Math.abs(diffDays);
+      const text = expiredAgo === 1 ? "Expired 1 day ago" : `Expired ${expiredAgo} days ago`;
+      return {
+        countdownText: text,
+        daysDiff,
+        badgeVariant: "expired",
+        formattedExpiry,
+        isExpired: true
+      };
+    }
+  };
+
   const renderTransactions = () => {
     const now = new Date();
-    const activeSub = transactions.find((sub) => sub.status === "active" && new Date(sub.expiryDate) > now);
+    const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // Prioritize active subscription from history (excluding one-time purchases)
+    const activeSub = transactions.find((sub) => {
+      if (sub.paymentGateway === "One-Time" || sub._id?.startsWith("exam-") || sub._id?.startsWith("prac-")) {
+        return false;
+      }
+      if (sub.status !== "active") return false;
+      if (!sub.expiryDate) return true;
+      const expDate = new Date(sub.expiryDate);
+      const expOnly = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+      return expOnly >= todayOnly;
+    }) || (user?.isPremium ? {
+      _id: "active-user-entitlement",
+      planNameSnapshot: user.activePlanName || "AI Mock Test Plan",
+      purchaseId: user.subscriptionId || "MEMBERSHIP-ACTIVE",
+      amount: user.planPrice || 499,
+      maxAITests: user.maxAITests || 20,
+      aiTestsUsed: user.aiTestsUsed || 0,
+      startDate: user.subscriptionStartDate || new Date(),
+      expiryDate: user.subscriptionExpiresAt || user.expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      status: "active",
+      paymentGateway: "PhonePe"
+    } : null);
+
+    const activeExpiryInfo = activeSub ? getSubscriptionExpiryInfo(activeSub.expiryDate, activeSub.status, false) : null;
+    const activeStartDateStr = activeSub?.startDate || activeSub?.createdAt;
+    const formattedActiveStartDate = activeStartDateStr ? new Date(activeStartDateStr).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    }) : null;
 
     return (
       <div className="mp-screen">
         {renderHeader("Subscriptions & Order History")}
-        <div className="mp-content mp-scrollable" style={{ padding: "16px" }}>
+        <div className="mp-content mp-scrollable" style={{ padding: "16px 16px 85px 16px" }}>
           {loadingTransactions ? (
             <div className="mp-centered" style={{ gap: "12px", minHeight: "300px" }}>
               <Loader2 size={36} style={{ animation: "spin 1s linear infinite", color: "var(--violet)" }} />
@@ -467,79 +635,209 @@ export default function MobileProfileFlow({
               {activeSub ? (
                 <div
                   style={{
-                    background: "linear-gradient(135deg, rgba(110, 63, 243, 0.15), rgba(16, 185, 129, 0.1))",
-                    border: "1.5px solid var(--violet)",
-                    borderRadius: "16px",
+                    background: "linear-gradient(145deg, rgba(110, 63, 243, 0.16) 0%, rgba(16, 185, 129, 0.08) 100%)",
+                    border: "1.5px solid rgba(110, 63, 243, 0.45)",
+                    borderRadius: "18px",
                     padding: "20px",
                     display: "flex",
                     flexDirection: "column",
-                    gap: "14px"
+                    gap: "16px",
+                    boxShadow: "0 8px 24px rgba(110, 63, 243, 0.15)",
+                    backdropFilter: "blur(10px)"
                   }}
                 >
+                  {/* Top Badge & Header */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <CheckCircle2 size={20} color="#10B981" />
-                      <span style={{ fontWeight: "700", fontSize: "16px", color: "var(--text-primary)" }}>
-                        Active Membership
-                      </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "10px",
+                        background: "rgba(110, 63, 243, 0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "var(--violet, #6E3FF3)"
+                      }}>
+                        <ShieldCheck size={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)" }}>
+                          Active Membership
+                        </div>
+                        <div style={{ fontWeight: "800", fontSize: "18px", color: "var(--text-primary)", lineHeight: 1.2 }}>
+                          {activeSub.planNameSnapshot || activeSub.planId?.name || "AI Mock Test Plan"}
+                        </div>
+                      </div>
                     </div>
                     <span style={{
-                      background: "rgba(16, 185, 129, 0.2)",
+                      background: "rgba(16, 185, 129, 0.18)",
                       color: "#10B981",
+                      border: "1px solid rgba(16, 185, 129, 0.35)",
                       fontSize: "11px",
-                      fontWeight: "700",
+                      fontWeight: "800",
                       padding: "4px 12px",
                       borderRadius: "100px",
-                      textTransform: "uppercase"
+                      letterSpacing: "0.5px",
+                      textTransform: "uppercase",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px"
                     }}>
+                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10B981" }} />
                       Active
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                    <div style={{ fontSize: "20px", fontWeight: "800", color: "var(--violet)" }}>
-                      {activeSub.planNameSnapshot || activeSub.planId?.name || "AI Mock Test Plan"}
+                  {/* Prominent Days Remaining Countdown Hero Banner */}
+                  {activeExpiryInfo && (
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "12px 14px",
+                      borderRadius: "12px",
+                      background: activeExpiryInfo.badgeVariant === "urgent"
+                        ? "linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(239, 68, 68, 0.08))"
+                        : activeExpiryInfo.badgeVariant === "warning"
+                        ? "linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(245, 158, 11, 0.08))"
+                        : "linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(16, 185, 129, 0.08))",
+                      border: `1px solid ${
+                        activeExpiryInfo.badgeVariant === "urgent"
+                          ? "rgba(239, 68, 68, 0.45)"
+                          : activeExpiryInfo.badgeVariant === "warning"
+                          ? "rgba(245, 158, 11, 0.45)"
+                          : "rgba(16, 185, 129, 0.45)"
+                      }`
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Clock size={18} color={
+                          activeExpiryInfo.badgeVariant === "urgent"
+                            ? "#EF4444"
+                            : activeExpiryInfo.badgeVariant === "warning"
+                            ? "#F59E0B"
+                            : "#10B981"
+                        } />
+                        <span style={{
+                          fontSize: "15px",
+                          fontWeight: "800",
+                          letterSpacing: "0.8px",
+                          color: activeExpiryInfo.badgeVariant === "urgent"
+                            ? "#EF4444"
+                            : activeExpiryInfo.badgeVariant === "warning"
+                            ? "#F59E0B"
+                            : "#10B981"
+                        }}>
+                          {activeExpiryInfo.countdownText.toUpperCase()}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                        {activeExpiryInfo.isExpired ? "Expired" : "Auto-renews: No"}
+                      </span>
                     </div>
-                    <Link
-                      to="/pricing"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        padding: "8px 16px",
-                        borderRadius: "8px",
-                        background: "var(--violet)",
-                        color: "var(--primary-foreground)",
-                        fontSize: "13px",
-                        fontWeight: "700",
-                        textDecoration: "none",
-                        boxShadow: "0 2px 8px rgba(110, 63, 243, 0.3)"
-                      }}
-                    >
-                      <Sparkles size={15} />
-                      Explore / Upgrade Plans
-                    </Link>
-                  </div>
+                  )}
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px", background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "12px" }}>
+                  {/* 2-Column Info Grid */}
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                    background: "rgba(0, 0, 0, 0.22)",
+                    padding: "14px",
+                    borderRadius: "14px",
+                    border: "1px solid var(--border-color, rgba(255, 255, 255, 0.06))"
+                  }}>
                     <div>
-                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>Valid Until</div>
-                      <div style={{ fontWeight: "600", fontSize: "13px", color: "var(--text-primary)", marginTop: "2px" }}>
-                        {new Date(activeSub.expiryDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "600" }}>
+                        Valid Until
+                      </div>
+                      <div style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)", marginTop: "3px" }}>
+                        {activeExpiryInfo?.formattedExpiry || "N/A"}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>Amount Paid</div>
-                      <div style={{ fontWeight: "600", fontSize: "13px", color: "var(--text-primary)", marginTop: "2px" }}>
-                        ₹{activeSub.amount}
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "600" }}>
+                        Amount Paid
+                      </div>
+                      <div style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)", marginTop: "3px" }}>
+                        ₹{activeSub.amount ?? 0}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>AI Tests Remaining</div>
-                      <div style={{ fontWeight: "600", fontSize: "13px", color: "#10B981", marginTop: "2px" }}>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "600" }}>
+                        AI Tests Remaining
+                      </div>
+                      <div style={{ fontWeight: "700", fontSize: "14px", color: "#10B981", marginTop: "3px" }}>
                         {Math.max(0, (activeSub.maxAITests || 20) - (activeSub.aiTestsUsed || 0))} / {activeSub.maxAITests || 20}
                       </div>
                     </div>
+                    {formattedActiveStartDate ? (
+                      <div>
+                        <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "600" }}>
+                          Purchased On
+                        </div>
+                        <div style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)", marginTop: "3px" }}>
+                          {formattedActiveStartDate}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "600" }}>
+                          Gateway
+                        </div>
+                        <div style={{ fontWeight: "700", fontSize: "14px", color: "var(--text-primary)", marginTop: "3px" }}>
+                          {activeSub.paymentGateway || "PhonePe"}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: "flex", gap: "10px", marginTop: "2px" }}>
+                    <Link
+                      to="/pricing"
+                      style={{
+                        flex: 1,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        background: "var(--violet, #6E3FF3)",
+                        color: "#ffffff",
+                        fontSize: "13px",
+                        fontWeight: "700",
+                        textDecoration: "none",
+                        boxShadow: "0 2px 10px rgba(110, 63, 243, 0.35)",
+                        textAlign: "center"
+                      }}
+                    >
+                      <Sparkles size={15} />
+                      Upgrade / Renew
+                    </Link>
+                    <Link
+                      to="/custom-exam"
+                      style={{
+                        flex: 1,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+                        color: "var(--text-primary)",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        textDecoration: "none",
+                        textAlign: "center"
+                      }}
+                    >
+                      <Zap size={15} color="#10B981" />
+                      Create AI Test
+                    </Link>
                   </div>
                 </div>
               ) : (
@@ -620,89 +918,191 @@ export default function MobileProfileFlow({
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {transactions.map((sub) => {
-                      const isCurrentActive = sub.status === "active" && new Date(sub.expiryDate) > new Date();
+                      const isOneTime = sub.paymentGateway === "One-Time" || sub._id?.startsWith("exam-") || sub._id?.startsWith("prac-");
+                      const expiryInfo = getSubscriptionExpiryInfo(sub.expiryDate, sub.status, isOneTime);
+                      const isCurrentActive = sub.status === "active" && !expiryInfo.isExpired;
+                      
                       const formattedDate = new Date(sub.startDate || sub.createdAt).toLocaleDateString("en-IN", {
                         day: "numeric",
                         month: "short",
                         year: "numeric"
                       });
-                      const formattedExpiry = new Date(sub.expiryDate).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric"
-                      });
+
+                      const orderRef = sub.purchaseId || sub._id || "N/A";
+                      const isCopied = copiedOrderRef === orderRef;
+
+                      // Status badge styling
+                      let statusBg = "rgba(100, 116, 139, 0.15)";
+                      let statusColor = "#94A3B8";
+                      let statusBorder = "rgba(100, 116, 139, 0.3)";
+                      let statusLabel = (sub.status || "COMPLETED").toUpperCase();
+
+                      if (isCurrentActive) {
+                        statusBg = "rgba(16, 185, 129, 0.16)";
+                        statusColor = "#10B981";
+                        statusBorder = "rgba(16, 185, 129, 0.35)";
+                        statusLabel = "ACTIVE";
+                      } else if (sub.status === "cancelled" || sub.status === "refunded") {
+                        statusBg = "rgba(100, 116, 139, 0.16)";
+                        statusColor = "#94A3B8";
+                        statusBorder = "rgba(100, 116, 139, 0.3)";
+                        statusLabel = sub.status.toUpperCase();
+                      } else if (sub.status === "pending") {
+                        statusBg = "rgba(245, 158, 11, 0.16)";
+                        statusColor = "#F59E0B";
+                        statusBorder = "rgba(245, 158, 11, 0.35)";
+                        statusLabel = "PENDING";
+                      } else if (expiryInfo.isExpired) {
+                        statusBg = "rgba(239, 68, 68, 0.14)";
+                        statusColor = "#EF4444";
+                        statusBorder = "rgba(239, 68, 68, 0.3)";
+                        statusLabel = "EXPIRED";
+                      } else if (isOneTime) {
+                        statusBg = "rgba(14, 165, 233, 0.16)";
+                        statusColor = "#0EA5E9";
+                        statusBorder = "rgba(14, 165, 233, 0.35)";
+                        statusLabel = "COMPLETED";
+                      }
 
                       return (
                         <div 
                           key={sub._id || sub.purchaseId}
                           style={{
                             background: "var(--bg-card, #16112a)",
-                            border: "1.5px solid var(--border-color, rgba(255, 255, 255, 0.08))",
+                            border: isCurrentActive ? "1.5px solid rgba(16, 185, 129, 0.4)" : "1px solid var(--border-color, rgba(255, 255, 255, 0.08))",
                             borderRadius: "14px",
                             padding: "16px",
                             display: "flex",
                             flexDirection: "column",
-                            gap: "10px",
-                            boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
+                            gap: "12px",
+                            boxShadow: "0 2px 10px rgba(0,0,0,0.12)"
                           }}
                         >
-                          {/* Top Row: Plan Name + Status */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div style={{ fontWeight: "700", fontSize: "15px", color: "var(--text-primary)" }}>
+                          {/* Header: Plan Name & Status Badge */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+                            <div style={{ fontWeight: "700", fontSize: "15px", color: "var(--text-primary)", lineHeight: 1.3 }}>
                               {sub.planNameSnapshot || sub.planId?.name || "AI Mock Test Plan"}
                             </div>
                             <span style={{
-                              background: isCurrentActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.12)",
-                              color: isCurrentActive ? "#10B981" : "#EF4444",
+                              background: statusBg,
+                              color: statusColor,
+                              border: `1px solid ${statusBorder}`,
                               fontSize: "11px",
                               fontWeight: "700",
                               padding: "3px 10px",
                               borderRadius: "100px",
-                              textTransform: "uppercase"
+                              textTransform: "uppercase",
+                              whiteSpace: "nowrap",
+                              letterSpacing: "0.3px",
+                              flexShrink: 0
                             }}>
-                              {isCurrentActive ? "Active" : sub.status || "Expired"}
+                              {statusLabel}
                             </span>
                           </div>
 
-                          {/* Order Ref & Amount */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                          {/* Payment Row: Prominent Amount + Order Ref with 1-click Copy */}
+                          <div style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "8px",
+                            padding: "8px 12px",
+                            borderRadius: "8px",
+                            background: "rgba(0, 0, 0, 0.18)"
+                          }}>
                             <div>
-                              <div style={{ fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase", fontWeight: 600 }}>ORDER REF</div>
-                              <div style={{ fontSize: "12px", fontFamily: "monospace", color: "var(--text-muted)", marginTop: "2px" }}>
-                                {sub.purchaseId || "N/A"}
+                              <div style={{ fontSize: "10px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "700", letterSpacing: "0.5px" }}>
+                                AMOUNT PAID
+                              </div>
+                              <div style={{ fontSize: "19px", fontWeight: "800", color: "var(--violet, #6E3FF3)", lineHeight: 1.2 }}>
+                                ₹{sub.amount ?? 0}
                               </div>
                             </div>
-                            <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--violet)" }}>
-                              ₹{sub.amount}
+
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                              <div style={{ fontSize: "10px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "700", letterSpacing: "0.5px", marginBottom: "2px" }}>
+                                ORDER REF
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyOrderRef(orderRef)}
+                                title="Click to copy Order ID"
+                                style={{
+                                  background: isCopied ? "rgba(16, 185, 129, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                                  border: `1px solid ${isCopied ? "rgba(16, 185, 129, 0.4)" : "var(--border-color, rgba(255, 255, 255, 0.1))"}`,
+                                  borderRadius: "6px",
+                                  padding: "3px 8px",
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px",
+                                  fontSize: "11px",
+                                  fontFamily: "monospace",
+                                  color: isCopied ? "#10B981" : "var(--text-secondary)",
+                                  transition: "all 0.15s ease"
+                                }}
+                              >
+                                <span>{orderRef.length > 20 ? `${orderRef.substring(0, 16)}...` : orderRef}</span>
+                                {isCopied ? <CheckCheck size={12} color="#10B981" /> : <Copy size={12} />}
+                              </button>
                             </div>
                           </div>
 
-                          <hr style={{ border: "none", borderTop: "1px solid var(--border-color, rgba(255,255,255,0.06))", margin: "2px 0" }} />
-
-                          {/* Details Grid */}
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                          {/* Subscription Information 2-Column Grid */}
+                          <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "10px",
+                            fontSize: "12px"
+                          }}>
                             <div>
-                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Gateway:</span>
-                              <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px", textTransform: "uppercase" }}>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase" }}>Gateway:</span>
+                              <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
                                 {sub.paymentGateway || "PhonePe"}
                               </div>
                             </div>
                             <div>
-                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Purchased:</span>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase" }}>Purchased:</span>
                               <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
                                 {formattedDate}
                               </div>
                             </div>
                             <div>
-                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>Valid Until:</span>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase" }}>Valid Until:</span>
                               <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
-                                {formattedExpiry}
+                                {isOneTime ? "Lifetime Access" : expiryInfo.formattedExpiry}
                               </div>
+                              {!isOneTime && (
+                                <div style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  marginTop: "3px",
+                                  fontSize: "11px",
+                                  fontWeight: "700",
+                                  color: expiryInfo.badgeVariant === "urgent"
+                                    ? "#EF4444"
+                                    : expiryInfo.badgeVariant === "warning"
+                                    ? "#F59E0B"
+                                    : expiryInfo.isExpired
+                                    ? "#94A3B8"
+                                    : "#10B981"
+                                }}>
+                                  <span style={{
+                                    width: "6px",
+                                    height: "6px",
+                                    borderRadius: "50%",
+                                    background: "currentColor"
+                                  }} />
+                                  {expiryInfo.countdownText}
+                                </div>
+                              )}
                             </div>
                             <div>
-                              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>AI Tests:</span>
+                              <span style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase" }}>AI Tests Quota:</span>
                               <div style={{ fontWeight: "600", color: "var(--text-primary)", marginTop: "2px" }}>
-                                {sub.aiTestsUsed || 0} / {sub.maxAITests || 0} Used
+                                {isOneTime ? (sub._id?.startsWith("prac-") ? "Practice Module" : "Full Exam Set") : `${sub.aiTestsUsed || 0} / ${sub.maxAITests || 20} used`}
                               </div>
                             </div>
                           </div>

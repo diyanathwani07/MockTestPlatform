@@ -191,8 +191,13 @@ export default function MySubscriptions() {
 
   const getDaysLeft = (expiryDate) => {
     if (!expiryDate) return 0;
-    const diff = new Date(expiryDate).getTime() - now.getTime();
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    const today = new Date();
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const expDate = new Date(expiryDate);
+    if (isNaN(expDate.getTime())) return 0;
+    const expOnly = new Date(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
+    const diff = expOnly.getTime() - todayOnly.getTime();
+    return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
   };
 
   const hasAnyData = !!activeSubscription || subscriptions.length > 0;

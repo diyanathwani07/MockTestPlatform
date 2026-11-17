@@ -837,17 +837,24 @@ body.dark-mode .sp-badge {
 
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0.9; }
-  to { transform: translateX(0); opacity: 1; }
+  to { transform: none; opacity: 1; }
 }
 
-.mp-header { position: relative; z-index: 10000; 
+.mp-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 14px 20px;
+  padding-top: max(14px, env(safe-area-inset-top, 14px));
   background: var(--bg-card, #16112a);
-  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.05));
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .mp-back-btn {
@@ -877,7 +884,7 @@ body.dark-mode .sp-badge {
 .mp-scrollable {
   flex: 1;
   overflow: visible;
-  padding: 16px 20px 20px 20px;
+  padding: 16px 16px 85px 16px;
   box-sizing: border-box;
 }
 
