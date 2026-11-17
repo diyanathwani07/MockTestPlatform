@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   X,
   Upload,
@@ -44,6 +44,7 @@ export default function UploadResourceModal({
   onClose,
   folder,
   scope,
+  resourceToEdit = null,
   onSubmitFile,
   onSubmitNoteOrLink,
   submitting = false
@@ -67,6 +68,39 @@ export default function UploadResourceModal({
 
   // Error State
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      if (resourceToEdit) {
+        setTitle(resourceToEdit.title || "");
+        setDescription(resourceToEdit.description || "");
+        setAccessTier(resourceToEdit.accessTier || "free");
+        setIsDownloadable(resourceToEdit.isDownloadable ?? true);
+        setIsPublished(resourceToEdit.isPublished ?? true);
+        if (resourceToEdit.resourceType === "note") {
+          setActiveTab("note");
+        } else if (
+          resourceToEdit.resourceType === "web_link" ||
+          resourceToEdit.resourceType === "video_link"
+        ) {
+          setActiveTab("link");
+          setLinkUrl(resourceToEdit.fileUrl || "");
+        } else {
+          setActiveTab("file");
+        }
+      } else {
+        setTitle("");
+        setDescription("");
+        setAccessTier("free");
+        setIsDownloadable(true);
+        setIsPublished(true);
+        setSelectedFile(null);
+        setLinkUrl("");
+        setActiveTab("file");
+      }
+      setError("");
+    }
+  }, [isOpen, resourceToEdit]);
 
   if (!isOpen) return null;
 
@@ -120,17 +154,21 @@ export default function UploadResourceModal({
       return;
     }
 
+    const targetFolderId = folder?._id || "root";
+
     if (activeTab === "file") {
-      if (!selectedFile) {
+      if (!selectedFile && !resourceToEdit) {
         setError("Please choose a file to upload");
         return;
       }
 
       const formData = new FormData();
-      formData.append("file", selectedFile);
+      if (selectedFile) {
+        formData.append("file", selectedFile);
+      }
       formData.append("title", title.trim());
       formData.append("description", description.trim());
-      formData.append("folderId", folder._id);
+      formData.append("folderId", targetFolderId);
       formData.append("accessTier", accessTier);
       formData.append("isDownloadable", isDownloadable);
       formData.append("isPublished", isPublished);
@@ -152,8 +190,11 @@ export default function UploadResourceModal({
       onSubmitNoteOrLink({
         title: title.trim(),
         description: description.trim(),
-        folderId: folder._id,
-        resourceType: linkUrl.includes("youtube.com") || linkUrl.includes("youtu.be") ? "video_link" : "web_link",
+        folderId: targetFolderId,
+        resourceType:
+          linkUrl.includes("youtube.com") || linkUrl.includes("youtu.be")
+            ? "video_link"
+            : "web_link",
         fileUrl: linkUrl.trim(),
         accessTier,
         isDownloadable: false,
@@ -168,7 +209,7 @@ export default function UploadResourceModal({
       onSubmitNoteOrLink({
         title: title.trim(),
         description: description.trim(),
-        folderId: folder._id,
+        folderId: targetFolderId,
         resourceType: "note",
         accessTier,
         isDownloadable: false,
@@ -178,72 +219,107 @@ export default function UploadResourceModal({
   };
 
   return (
-    <div className="library-modal-overlay" onClick={onClose}>
-      <div className="library-modal-card" style={{ maxWidth: "640px" }} onClick={(e) => e.stopPropagation()}>
+    <div className="library-drawer-overlay" onClick={onClose}>
+      <div className="library-drawer" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="library-modal-header">
           <div>
-            <h3>Add Study Resource</h3>
+            <h3>{resourceToEdit ? "Edit Study Resource" : "Add Study Resource"}</h3>
             <span style={{ fontSize: "12px", color: "var(--text-secondary, #6B7280)" }}>
               Destination Folder: <strong>{folder ? folder.name : "Root"}</strong>
             </span>
           </div>
-          <button type="button" className="modal-close-btn" onClick={onClose}>
-            <X size={18} />
+          <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close drawer">
+            <X size={20} />
           </button>
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: "flex", borderBottom: "1px solid var(--border-color, #E5E7EB)", padding: "0 24px" }}>
-          <button
-            type="button"
-            className="scope-pill-btn"
-            style={{
-              borderRadius: "0",
-              borderBottom: activeTab === "file" ? "2px solid var(--primary)" : "2px solid transparent",
-              color: activeTab === "file" ? "var(--primary)" : "inherit"
-            }}
-            onClick={() => {
-              setActiveTab("file");
-              setError("");
-            }}
-          >
-            <Upload size={15} /> Upload File (PDF, DOCX)
-          </button>
-          <button
-            type="button"
-            className="scope-pill-btn"
-            style={{
-              borderRadius: "0",
-              borderBottom: activeTab === "note" ? "2px solid var(--primary)" : "2px solid transparent",
-              color: activeTab === "note" ? "var(--primary)" : "inherit"
-            }}
-            onClick={() => {
-              setActiveTab("note");
-              setError("");
-            }}
-          >
-            <BookOpen size={15} /> Text Note
-          </button>
-          <button
-            type="button"
-            className="scope-pill-btn"
-            style={{
-              borderRadius: "0",
-              borderBottom: activeTab === "link" ? "2px solid var(--primary)" : "2px solid transparent",
-              color: activeTab === "link" ? "var(--primary)" : "inherit"
-            }}
-            onClick={() => {
-              setActiveTab("link");
-              setError("");
-            }}
-          >
-            <Link size={15} /> External Link
-          </button>
-        </div>
+        {!resourceToEdit && (
+          <div className="library-drawer-tabs">
+            <button
+              type="button"
+              className="scope-pill-btn"
+              style={{
+                borderRadius: "0",
+                borderBottom: activeTab === "file" ? "2px solid var(--primary)" : "2px solid transparent",
+                color: activeTab === "file" ? "var(--primary)" : "inherit",
+                fontWeight: activeTab === "file" ? "700" : "500",
+                padding: "12px 16px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "13px",
+                background: "transparent",
+                borderTop: "none",
+                borderLeft: "none",
+                borderRight: "none",
+                cursor: "pointer"
+              }}
+              onClick={() => {
+                setActiveTab("file");
+                setError("");
+              }}
+            >
+              <Upload size={15} /> Upload File (PDF, DOCX)
+            </button>
+            <button
+              type="button"
+              className="scope-pill-btn"
+              style={{
+                borderRadius: "0",
+                borderBottom: activeTab === "note" ? "2px solid var(--primary)" : "2px solid transparent",
+                color: activeTab === "note" ? "var(--primary)" : "inherit",
+                fontWeight: activeTab === "note" ? "700" : "500",
+                padding: "12px 16px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "13px",
+                background: "transparent",
+                borderTop: "none",
+                borderLeft: "none",
+                borderRight: "none",
+                cursor: "pointer"
+              }}
+              onClick={() => {
+                setActiveTab("note");
+                setError("");
+              }}
+            >
+              <BookOpen size={15} /> Text Note
+            </button>
+            <button
+              type="button"
+              className="scope-pill-btn"
+              style={{
+                borderRadius: "0",
+                borderBottom: activeTab === "link" ? "2px solid var(--primary)" : "2px solid transparent",
+                color: activeTab === "link" ? "var(--primary)" : "inherit",
+                fontWeight: activeTab === "link" ? "700" : "500",
+                padding: "12px 16px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "13px",
+                background: "transparent",
+                borderTop: "none",
+                borderLeft: "none",
+                borderRight: "none",
+                cursor: "pointer"
+              }}
+              onClick={() => {
+                setActiveTab("link");
+                setError("");
+              }}
+            >
+              <Link size={15} /> External Link
+            </button>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="library-modal-body">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
+          <div className="library-modal-body" style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "24px" }}>
             {error && (
               <div
                 style={{
@@ -394,7 +470,8 @@ export default function UploadResourceModal({
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "flex-start",
-                        gap: "10px"
+                        gap: "10px",
+                        transition: "all 0.15s ease"
                       }}
                     >
                       <input
@@ -432,7 +509,7 @@ export default function UploadResourceModal({
                   type="checkbox"
                   checked={isDownloadable}
                   onChange={(e) => setIsDownloadable(e.target.checked)}
-                  style={{ width: "18px", height: "18px", accentColor: "var(--primary)" }}
+                  style={{ width: "18px", height: "18px", accentColor: "var(--primary)", cursor: "pointer" }}
                 />
               </div>
             )}
@@ -450,7 +527,7 @@ export default function UploadResourceModal({
                 type="checkbox"
                 checked={isPublished}
                 onChange={(e) => setIsPublished(e.target.checked)}
-                style={{ width: "18px", height: "18px", accentColor: "var(--primary)" }}
+                style={{ width: "18px", height: "18px", accentColor: "var(--primary)", cursor: "pointer" }}
               />
             </div>
           </div>
@@ -469,7 +546,7 @@ export default function UploadResourceModal({
               className="btn-primary-gradient"
               disabled={submitting}
             >
-              {submitting ? "Uploading..." : "Save Resource"}
+              {submitting ? "Saving..." : resourceToEdit ? "Update Resource" : "Save Resource"}
             </button>
           </div>
         </form>

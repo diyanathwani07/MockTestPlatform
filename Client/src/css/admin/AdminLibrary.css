@@ -862,6 +862,110 @@ html[class*="theme-"].dark .folder-explorer-title {
   animation: modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.library-modal-card form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ─── STUDY LIBRARY RIGHT-SIDE DRAWER / SIDEBAR ─── */
+.library-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  z-index: 99999;
+  overflow: hidden;
+  animation: libraryFadeIn 0.2s ease-out;
+}
+
+@keyframes libraryFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.library-drawer {
+  background: var(--bg-card, #FFFFFF);
+  border-left: 1px solid var(--border-color, #E5E7EB);
+  width: 100%;
+  max-width: 620px;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.25);
+  animation: librarySlideRight 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+@keyframes librarySlideRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.library-drawer form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.library-drawer .library-modal-header {
+  flex-shrink: 0;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color, #E5E7EB);
+  background: var(--bg-card, #FFFFFF);
+}
+
+.library-drawer .library-drawer-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color, #E5E7EB);
+  padding: 0 24px;
+  flex-shrink: 0;
+  background: var(--bg-card, #FFFFFF);
+}
+
+.library-drawer .library-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.library-drawer .library-modal-footer {
+  flex-shrink: 0;
+  padding: 18px 24px;
+  border-top: 1px solid var(--border-color, #E5E7EB);
+  background: var(--bg-card, #FFFFFF);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .library-drawer {
+    max-width: 100%;
+    border-left: none;
+  }
+}
+
 @keyframes modalScaleIn {
   from {
     opacity: 0;
@@ -1927,7 +2031,7 @@ html[class*="theme-"].dark .resource-sub-meta {
   color: #94A3B8 !important;
 }
 
-/* Modals */
+/* Modals & Drawers */
 body.dark-mode .al-modal-card,
 :root.dark .al-modal-card,
 .dark .al-modal-card,
@@ -1935,7 +2039,11 @@ html[class*="theme-"].dark .al-modal-card,
 body.dark-mode .library-modal-card,
 :root.dark .library-modal-card,
 .dark .library-modal-card,
-html[class*="theme-"].dark .library-modal-card {
+html[class*="theme-"].dark .library-modal-card,
+body.dark-mode .library-drawer,
+:root.dark .library-drawer,
+.dark .library-drawer,
+html[class*="theme-"].dark .library-drawer {
   background: #111111 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
@@ -1953,6 +2061,18 @@ body.dark-mode .library-modal-header,
 body.dark-mode .library-modal-footer,
 :root.dark .library-modal-header,
 :root.dark .library-modal-footer,
+body.dark-mode .library-drawer .library-modal-header,
+body.dark-mode .library-drawer .library-drawer-tabs,
+body.dark-mode .library-drawer .library-modal-footer,
+:root.dark .library-drawer .library-modal-header,
+:root.dark .library-drawer .library-drawer-tabs,
+:root.dark .library-drawer .library-modal-footer,
+.dark .library-drawer .library-modal-header,
+.dark .library-drawer .library-drawer-tabs,
+.dark .library-drawer .library-modal-footer,
+html[class*="theme-"].dark .library-drawer .library-modal-header,
+html[class*="theme-"].dark .library-drawer .library-drawer-tabs,
+html[class*="theme-"].dark .library-drawer .library-modal-footer,
 .dark .library-modal-header,
 .dark .library-modal-footer,
 html[class*="theme-"].dark .library-modal-header,
