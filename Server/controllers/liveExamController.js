@@ -806,7 +806,15 @@ function gradeQuizAttempt(quiz, userAnswers) {
   let dbQuestions = quiz.questions || [];
   let sectionResults = [];
 
-  if (dbQuestions.length === 0 && quiz.sections && quiz.sections.length > 0) {
+  const hasSectionsWithQuestions = quiz.sections && quiz.sections.length > 0 && quiz.sections.some(sec => {
+    const qCount = (sec.questions?.length || 0) + 
+      (sec.subsections?.easy?.length || 0) + 
+      (sec.subsections?.medium?.length || 0) + 
+      (sec.subsections?.hard?.length || 0);
+    return qCount > 0;
+  });
+
+  if (hasSectionsWithQuestions) {
     const normalizedSections = quiz.sections.map((sec) => {
       let qs = sec.questions || [];
       if (sec.type === "coding" && sec.subsections) {
@@ -820,7 +828,7 @@ function gradeQuizAttempt(quiz, userAnswers) {
         const qObj = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
         qObj.marksPerQuestion = sec.marksPerQuestion ?? quiz.marksPerQuestion ?? 1;
         qObj.negativeMarking = sec.negativeMarking ?? quiz.negativeMarking ?? 0;
-        qObj.sectionId = sec._id;
+        qObj.sectionId = sec._id || sec.sectionId;
         qObj.sectionTitle = sec.title;
         qObj.sectionType = sec.type || "standard";
         return qObj;
@@ -830,8 +838,11 @@ function gradeQuizAttempt(quiz, userAnswers) {
   } else {
     dbQuestions = dbQuestions.map((q) => {
       const qObj = q.toObject ? q.toObject() : JSON.parse(JSON.stringify(q));
-      qObj.marksPerQuestion = quiz.marksPerQuestion ?? 1;
-      qObj.negativeMarking = quiz.negativeMarking ?? 0;
+      qObj.marksPerQuestion = q.marksPerQuestion ?? quiz.marksPerQuestion ?? 1;
+      qObj.negativeMarking = q.negativeMarking ?? quiz.negativeMarking ?? 0;
+      if (q.sectionId) qObj.sectionId = q.sectionId;
+      if (q.sectionTitle) qObj.sectionTitle = q.sectionTitle;
+      if (q.sectionType) qObj.sectionType = q.sectionType;
       return qObj;
     });
   }
@@ -960,17 +971,19 @@ function gradeQuizAttempt(quiz, userAnswers) {
     });
 
     if (Object.keys(sectionStatsMap).length > 0) {
-      sectionResults = Object.values(sectionStatsMap).map(secStat => {
-        const attempted = secStat.correct + secStat.incorrect;
-        const unanswered = Math.max(0, secStat.totalQuestions - attempted);
-        const accuracy = attempted > 0 ? Number(((secStat.correct / attempted) * 100).toFixed(2)) : 0;
-        return {
-          ...secStat,
-          attempted,
-          unanswered,
-          accuracy,
-        };
-      });
+      sectionResults = Object.values(sectionStatsMap)
+        .filter(secStat => secStat.totalQuestions > 0 || (secStat.correct + secStat.incorrect) > 0)
+        .map(secStat => {
+          const attempted = secStat.correct + secStat.incorrect;
+          const unanswered = Math.max(0, secStat.totalQuestions - attempted);
+          const accuracy = attempted > 0 ? Number(((secStat.correct / attempted) * 100).toFixed(2)) : 0;
+          return {
+            ...secStat,
+            attempted,
+            unanswered,
+            accuracy,
+          };
+        });
     }
 
     const maxPossibleMarks = dbQuestions.reduce((sum, q) => sum + (q.marksPerQuestion || 1), 0);

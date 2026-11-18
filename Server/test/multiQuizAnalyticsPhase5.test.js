@@ -41,28 +41,55 @@ function processAnalytics(result, historicalAttempts = []) {
   if (isMultiQuiz) {
     sections = result.sectionResults.map((sec, idx) => {
       const secId = sec.sectionId || `sec-${idx}`;
-      const totalQuestions = Number(sec.totalQuestions) || 0;
-      const attempted = Number(sec.attempted) || 0;
       const correct = Number(sec.correct) || 0;
       const incorrect = Number(sec.incorrect) || 0;
-      const unanswered = sec.unanswered !== undefined && sec.unanswered !== null
+
+      // Defensive Attempted: If sec.attempted is missing, 0, or less than correct + incorrect, derive from correct + incorrect
+      const recordedAttempted = Number(sec.attempted);
+      const attempted = (!isNaN(recordedAttempted) && recordedAttempted >= (correct + incorrect) && recordedAttempted > 0)
+        ? recordedAttempted
+        : (correct + incorrect);
+
+      // Defensive Total Questions: Check matching questions in result.questions or fallback
+      let totalQuestions = Number(sec.totalQuestions) || 0;
+      if (totalQuestions <= 0 && Array.isArray(result.questions) && result.questions.length > 0) {
+        const matchingCount = result.questions.filter(q => {
+          if (!q) return false;
+          const qSecId = q.sectionId ? q.sectionId.toString() : null;
+          const qSecTitle = q.sectionTitle ? q.sectionTitle.trim().toLowerCase() : null;
+          const targetSecId = secId ? secId.toString() : null;
+          const targetTitle = sec.sectionTitle ? sec.sectionTitle.trim().toLowerCase() : null;
+          return (qSecId && targetSecId && qSecId === targetSecId) || (qSecTitle && targetTitle && qSecTitle === targetTitle);
+        }).length;
+        if (matchingCount > 0) {
+          totalQuestions = matchingCount;
+        }
+      }
+      if (totalQuestions <= 0) {
+        const recordedUnanswered = sec.unanswered !== undefined && sec.unanswered !== null ? Number(sec.unanswered) : 0;
+        totalQuestions = Math.max(attempted, attempted + recordedUnanswered);
+      }
+
+      const unanswered = sec.unanswered !== undefined && sec.unanswered !== null && Number(sec.unanswered) >= 0
         ? Number(sec.unanswered)
         : Math.max(0, totalQuestions - attempted);
+
       const score = Number(sec.score) || 0;
       const maxMarks = Number(sec.maxMarks) || (totalQuestions > 0 ? totalQuestions : score);
       const timeTaken = Number(sec.timeTaken) || 0;
       
       let accuracy = 0;
-      if (sec.accuracy !== undefined && sec.accuracy !== null) {
-        accuracy = Number(Number(sec.accuracy).toFixed(1));
-      } else if (attempted > 0) {
+      if (attempted > 0) {
         accuracy = Number(((correct / attempted) * 100).toFixed(1));
+      } else if (sec.accuracy !== undefined && sec.accuracy !== null) {
+        accuracy = Number(Number(sec.accuracy).toFixed(1));
       }
 
-      const avgTimePerQuestion = attempted > 0 
+      const avgTimePerQuestion = (attempted > 0 && timeTaken > 0)
         ? Number((timeTaken / attempted).toFixed(1)) 
-        : (totalQuestions > 0 ? Number((timeTaken / totalQuestions).toFixed(1)) : 0);
+        : (totalQuestions > 0 && timeTaken > 0 ? Number((timeTaken / totalQuestions).toFixed(1)) : 0);
 
+      // Strength Classification:
       let strength = "average";
       if (attempted === 0) {
         strength = "unattempted";
@@ -93,6 +120,7 @@ function processAnalytics(result, historicalAttempts = []) {
 
   let strongestSection = null;
   let weakestSection = null;
+  let fastestAccurateSection = null;
 
   const attemptedSections = sections.filter(s => s.attempted > 0);
   if (attemptedSections.length > 0) {
@@ -104,6 +132,19 @@ function processAnalytics(result, historicalAttempts = []) {
       strongestSection = sortedByPerformance[0];
     }
     weakestSection = sortedByPerformance[sortedByPerformance.length - 1];
+
+    // Fastest Accurate Section:
+    const accurateTimedSections = attemptedSections.filter(s => s.accuracy >= 50 && s.timeTaken > 0 && s.avgTimePerQuestion > 0);
+    if (accurateTimedSections.length > 0) {
+      accurateTimedSections.sort((a, b) => a.avgTimePerQuestion - b.avgTimePerQuestion);
+      fastestAccurateSection = {
+        sectionId: accurateTimedSections[0].sectionId,
+        sectionTitle: accurateTimedSections[0].sectionTitle,
+        accuracy: accurateTimedSections[0].accuracy,
+        timeTaken: accurateTimedSections[0].timeTaken,
+        avgTimePerQuestion: accurateTimedSections[0].avgTimePerQuestion
+      };
+    }
   }
 
   const recommendations = [];
@@ -265,9 +306,11 @@ function processAnalytics(result, historicalAttempts = []) {
     summary: {
       strongestSection,
       weakestSection,
+      fastestAccurateSection,
       strongCount: sections.filter(s => s.strength === "strong").length,
       averageCount: sections.filter(s => s.strength === "average").length,
-      weakCount: sections.filter(s => s.strength === "weak").length
+      weakCount: sections.filter(s => s.strength === "weak").length,
+      unattemptedCount: sections.filter(s => s.strength === "unattempted").length
     },
     recommendations,
     history
@@ -452,6 +495,108 @@ console.log("\nScenario 10: Payload completeness & structure validation");
 testAssert(s1Analytics.success === true, "Payload contains success flag");
 testAssert(Array.isArray(s1Analytics.recommendations), "Payload contains recommendations array");
 testAssert(typeof s1Analytics.summary === "object", "Payload contains structured summary");
+
+// -------------------------------------------------------------------------
+// SCENARIO 11: Legacy result with attempted = 0 but correct = 1 (Self-Healing)
+// -------------------------------------------------------------------------
+console.log("\nScenario 11: Legacy result with attempted = 0 but correct = 1");
+const s11Result = {
+  _id: "res-uptet-evs",
+  score: 1,
+  total: 10,
+  sectionResults: [
+    { sectionId: "sec-evs", sectionTitle: "Environmental Studies", totalQuestions: 10, attempted: 0, correct: 1, incorrect: 0, score: 1, maxMarks: 10 }
+  ]
+};
+const s11Analytics = processAnalytics(s11Result);
+testAssert(s11Analytics.sections[0].attempted === 1, "Attempted self-healed from 0 to 1 based on correct=1");
+testAssert(s11Analytics.sections[0].accuracy === 100, "Accuracy correctly computed as 100% instead of 0%");
+testAssert(s11Analytics.sections[0].unanswered === 9, "Unanswered correctly computed as 9 (10 total - 1 attempted)");
+testAssert(s11Analytics.sections[0].strength === "strong", "Classified as strong due to 100% accuracy and positive score");
+testAssert(s11Analytics.summary.strongestSection?.sectionTitle === "Environmental Studies", "Identified as strongest section");
+
+// -------------------------------------------------------------------------
+// SCENARIO 12: Legacy result with attempted = 0 but incorrect = 2 (Self-Healing)
+// -------------------------------------------------------------------------
+console.log("\nScenario 12: Legacy result with attempted = 0 but incorrect = 2");
+const s12Result = {
+  _id: "res-uptet-cdp",
+  score: -0.66,
+  total: 10,
+  sectionResults: [
+    { sectionId: "sec-cdp", sectionTitle: "Child Development and Pedagogy", totalQuestions: 10, attempted: 0, correct: 0, incorrect: 2, score: -0.66, maxMarks: 10 }
+  ]
+};
+const s12Analytics = processAnalytics(s12Result);
+testAssert(s12Analytics.sections[0].attempted === 2, "Attempted self-healed from 0 to 2 based on incorrect=2");
+testAssert(s12Analytics.sections[0].accuracy === 0, "Accuracy correctly computed as 0%");
+testAssert(s12Analytics.sections[0].unanswered === 8, "Unanswered correctly computed as 8 (10 total - 2 attempted)");
+testAssert(s12Analytics.sections[0].strength === "weak", "Classified as weak instead of unattempted");
+
+// -------------------------------------------------------------------------
+// SCENARIO 13: Genuinely unattempted sections
+// -------------------------------------------------------------------------
+console.log("\nScenario 13: Genuinely unattempted sections");
+const s13Result = {
+  _id: "res-all-unattempted",
+  score: 0,
+  total: 30,
+  sectionResults: [
+    { sectionId: "s1", sectionTitle: "Section 1", totalQuestions: 10, attempted: 0, correct: 0, incorrect: 0, score: 0 },
+    { sectionId: "s2", sectionTitle: "Section 2", totalQuestions: 10, attempted: 0, correct: 0, incorrect: 0, score: 0 },
+    { sectionId: "s3", sectionTitle: "Section 3", totalQuestions: 10, attempted: 0, correct: 0, incorrect: 0, score: 0 }
+  ]
+};
+const s13Analytics = processAnalytics(s13Result);
+testAssert(s13Analytics.summary.strongestSection === null, "Strongest section is null for unattempted quiz");
+testAssert(s13Analytics.summary.fastestAccurateSection === null, "Fastest accurate section is null for unattempted quiz");
+testAssert(s13Analytics.summary.unattemptedCount === 3, "unattemptedCount is 3");
+testAssert(s13Analytics.summary.strongCount === 0 && s13Analytics.summary.weakCount === 0, "No strong or weak sections for unattempted quiz");
+
+// -------------------------------------------------------------------------
+// SCENARIO 14: Fastest accurate section calculation & zero timing
+// -------------------------------------------------------------------------
+console.log("\nScenario 14: Fastest accurate section calculation & zero timing");
+const s14Result = {
+  _id: "res-timing-test",
+  score: 15,
+  total: 30,
+  sectionResults: [
+    { sectionId: "s1", sectionTitle: "Physics", totalQuestions: 10, attempted: 5, correct: 4, incorrect: 1, score: 4, timeTaken: 100 }, // 80% acc, 20s/Q
+    { sectionId: "s2", sectionTitle: "Chemistry", totalQuestions: 10, attempted: 5, correct: 4, incorrect: 1, score: 4, timeTaken: 50 },  // 80% acc, 10s/Q (FASTEST)
+    { sectionId: "s3", sectionTitle: "Math", totalQuestions: 10, attempted: 5, correct: 1, incorrect: 4, score: 1, timeTaken: 30 },       // 20% acc (ineligible, <50%)
+    { sectionId: "s4", sectionTitle: "Biology", totalQuestions: 10, attempted: 5, correct: 5, incorrect: 0, score: 5, timeTaken: 0 }       // 100% acc, 0s (ineligible, no timing)
+  ]
+};
+const s14Analytics = processAnalytics(s14Result);
+testAssert(s14Analytics.summary.fastestAccurateSection !== null, "Fastest accurate section identified");
+testAssert(s14Analytics.summary.fastestAccurateSection?.sectionTitle === "Chemistry", "Chemistry chosen as fastest accurate (10s/Q vs Physics 20s/Q)");
+testAssert(s14Analytics.summary.fastestAccurateSection?.avgTimePerQuestion === 10, "avgTimePerQuestion is 10s");
+
+// -------------------------------------------------------------------------
+// SCENARIO 15: Questions array fallback for missing totalQuestions
+// -------------------------------------------------------------------------
+console.log("\nScenario 15: Questions array fallback for missing totalQuestions");
+const s15Result = {
+  _id: "res-missing-totals",
+  score: 2,
+  total: 5,
+  questions: [
+    { _id: "q1", sectionId: "sec-a", sectionTitle: "Sec A" },
+    { _id: "q2", sectionId: "sec-a", sectionTitle: "Sec A" },
+    { _id: "q3", sectionId: "sec-a", sectionTitle: "Sec A" },
+    { _id: "q4", sectionId: "sec-b", sectionTitle: "Sec B" },
+    { _id: "q5", sectionId: "sec-b", sectionTitle: "Sec B" }
+  ],
+  sectionResults: [
+    { sectionId: "sec-a", sectionTitle: "Sec A", totalQuestions: 0, attempted: 2, correct: 2, incorrect: 0, score: 2 },
+    { sectionId: "sec-b", sectionTitle: "Sec B", totalQuestions: 0, attempted: 1, correct: 0, incorrect: 1, score: 0 }
+  ]
+};
+const s15Analytics = processAnalytics(s15Result);
+testAssert(s15Analytics.sections[0].totalQuestions === 3, "Sec A totalQuestions derived as 3 from questions array");
+testAssert(s15Analytics.sections[1].totalQuestions === 2, "Sec B totalQuestions derived as 2 from questions array");
+testAssert(s15Analytics.sections[0].unanswered === 1, "Sec A unanswered derived as 1 (3 total - 2 attempted)");
 
 console.log("\n==================================================");
 console.log(` RESULTS: ${passedCount} PASSED, ${failedCount} FAILED`);

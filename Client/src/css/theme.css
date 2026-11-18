@@ -88,7 +88,7 @@
   --text-muted:     #6b6880;
 
   /* Sidebar Links */
-  --primary-foreground: #000000;
+  --primary-foreground: #ffffff;
   --sidebar-active-bg: var(--primary);
   --sidebar-active-text: #ffffff;
   --sidebar-hover-bg: rgba(255, 255, 255, 0.05);

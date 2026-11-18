@@ -196,8 +196,24 @@ export default function MobileProfileFlow({
     return (
       <div className="mp-header" style={{ paddingLeft: title === "Profile" ? "60px" : "20px" }}>
         {title !== "Profile" && (
-          <button className="mp-back-btn" onClick={goBack} style={{ position: 'relative', zIndex: 9999 }}>
-            <ChevronLeft size={24} />
+          <button 
+            className="mp-back-btn" 
+            onClick={goBack} 
+            style={{ 
+              position: 'relative', 
+              zIndex: 9999,
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-primary, #ffffff)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              padding: '4px'
+            }}
+            aria-label="Go back"
+          >
+            <ChevronLeft size={24} style={{ color: 'var(--text-primary, #ffffff)', stroke: 'currentColor' }} />
           </button>
         )}
         <h2 className="mp-header-title" style={{ flex: 1, textAlign: title === "Profile" ? "left" : "center", marginLeft: title === "Profile" ? "0" : "-24px" }}>
@@ -804,8 +820,8 @@ export default function MobileProfileFlow({
                         gap: "6px",
                         padding: "10px 14px",
                         borderRadius: "10px",
-                        background: "var(--violet, #6E3FF3)",
-                        color: "#ffffff",
+                        background: "var(--primary, #6E3FF3)",
+                        color: "var(--primary-foreground, #ffffff)",
                         fontSize: "13px",
                         fontWeight: "700",
                         textDecoration: "none",

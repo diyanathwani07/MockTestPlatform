@@ -3,8 +3,8 @@ export const themes = [
     name: "original",
     label: "Original",
     activeColor: {
-      light: "oklch(0.62 0.08 65.54)",
-      dark: "oklch(1 0 0)"
+      light: "#6E3FF3",
+      dark: "#6E3FF3"
     }
   },
   {

@@ -538,27 +538,53 @@ const getMultiQuizAnalytics = async (req, res) => {
     if (isMultiQuiz) {
       sections = result.sectionResults.map((sec, idx) => {
         const secId = sec.sectionId || `sec-${idx}`;
-        const totalQuestions = Number(sec.totalQuestions) || 0;
-        const attempted = Number(sec.attempted) || 0;
         const correct = Number(sec.correct) || 0;
         const incorrect = Number(sec.incorrect) || 0;
-        const unanswered = sec.unanswered !== undefined && sec.unanswered !== null
+
+        // Defensive Attempted: If sec.attempted is missing, 0, or less than correct + incorrect, derive from correct + incorrect
+        const recordedAttempted = Number(sec.attempted);
+        const attempted = (!isNaN(recordedAttempted) && recordedAttempted >= (correct + incorrect) && recordedAttempted > 0)
+          ? recordedAttempted
+          : (correct + incorrect);
+
+        // Defensive Total Questions: Check matching questions in result.questions or fallback to attempted + unanswered
+        let totalQuestions = Number(sec.totalQuestions) || 0;
+        if (totalQuestions <= 0 && Array.isArray(result.questions) && result.questions.length > 0) {
+          const matchingCount = result.questions.filter(q => {
+            if (!q) return false;
+            const qSecId = q.sectionId ? q.sectionId.toString() : null;
+            const qSecTitle = q.sectionTitle ? q.sectionTitle.trim().toLowerCase() : null;
+            const targetSecId = secId ? secId.toString() : null;
+            const targetTitle = sec.sectionTitle ? sec.sectionTitle.trim().toLowerCase() : null;
+            return (qSecId && targetSecId && qSecId === targetSecId) || (qSecTitle && targetTitle && qSecTitle === targetTitle);
+          }).length;
+          if (matchingCount > 0) {
+            totalQuestions = matchingCount;
+          }
+        }
+        if (totalQuestions <= 0) {
+          const recordedUnanswered = sec.unanswered !== undefined && sec.unanswered !== null ? Number(sec.unanswered) : 0;
+          totalQuestions = Math.max(attempted, attempted + recordedUnanswered);
+        }
+
+        const unanswered = sec.unanswered !== undefined && sec.unanswered !== null && Number(sec.unanswered) >= 0
           ? Number(sec.unanswered)
           : Math.max(0, totalQuestions - attempted);
+
         const score = Number(sec.score) || 0;
         const maxMarks = Number(sec.maxMarks) || (totalQuestions > 0 ? totalQuestions : score);
         const timeTaken = Number(sec.timeTaken) || 0;
         
         let accuracy = 0;
-        if (sec.accuracy !== undefined && sec.accuracy !== null) {
-          accuracy = Number(Number(sec.accuracy).toFixed(1));
-        } else if (attempted > 0) {
+        if (attempted > 0) {
           accuracy = Number(((correct / attempted) * 100).toFixed(1));
+        } else if (sec.accuracy !== undefined && sec.accuracy !== null) {
+          accuracy = Number(Number(sec.accuracy).toFixed(1));
         }
 
-        const avgTimePerQuestion = attempted > 0 
+        const avgTimePerQuestion = (attempted > 0 && timeTaken > 0)
           ? Number((timeTaken / attempted).toFixed(1)) 
-          : (totalQuestions > 0 ? Number((timeTaken / totalQuestions).toFixed(1)) : 0);
+          : (totalQuestions > 0 && timeTaken > 0 ? Number((timeTaken / totalQuestions).toFixed(1)) : 0);
 
         // Strength Classification:
         let strength = "average";
@@ -589,9 +615,10 @@ const getMultiQuizAnalytics = async (req, res) => {
       });
     }
 
-    // 2. Summary: Strongest & Weakest Sections
+    // 2. Summary: Strongest, Weakest & Fastest Accurate Sections
     let strongestSection = null;
     let weakestSection = null;
+    let fastestAccurateSection = null;
 
     const attemptedSections = sections.filter(s => s.attempted > 0);
     if (attemptedSections.length > 0) {
@@ -603,6 +630,20 @@ const getMultiQuizAnalytics = async (req, res) => {
         strongestSection = sortedByPerformance[0];
       }
       weakestSection = sortedByPerformance[sortedByPerformance.length - 1];
+
+      // Fastest Accurate Section:
+      // Must have attempted > 0, accuracy >= 50%, timeTaken > 0, avgTimePerQuestion > 0
+      const accurateTimedSections = attemptedSections.filter(s => s.accuracy >= 50 && s.timeTaken > 0 && s.avgTimePerQuestion > 0);
+      if (accurateTimedSections.length > 0) {
+        accurateTimedSections.sort((a, b) => a.avgTimePerQuestion - b.avgTimePerQuestion);
+        fastestAccurateSection = {
+          sectionId: accurateTimedSections[0].sectionId,
+          sectionTitle: accurateTimedSections[0].sectionTitle,
+          accuracy: accurateTimedSections[0].accuracy,
+          timeTaken: accurateTimedSections[0].timeTaken,
+          avgTimePerQuestion: accurateTimedSections[0].avgTimePerQuestion
+        };
+      }
     }
 
     // 3. Dynamic Personalized Recommendations
@@ -788,14 +829,27 @@ const getMultiQuizAnalytics = async (req, res) => {
           ? Math.round((result.timeTaken ?? 0) / (((result.correct || 0) + (result.incorrect || 0)) || 1)) 
           : 0,
         strongestSection: strongestSection ? {
+          sectionId: strongestSection.sectionId,
           sectionTitle: strongestSection.sectionTitle,
           accuracy: strongestSection.accuracy,
-          score: strongestSection.score
+          score: strongestSection.score,
+          timeTaken: strongestSection.timeTaken,
+          avgTimePerQuestion: strongestSection.avgTimePerQuestion
         } : null,
         weakestSection: weakestSection ? {
+          sectionId: weakestSection.sectionId,
           sectionTitle: weakestSection.sectionTitle,
           accuracy: weakestSection.accuracy,
-          score: weakestSection.score
+          score: weakestSection.score,
+          timeTaken: weakestSection.timeTaken,
+          avgTimePerQuestion: weakestSection.avgTimePerQuestion
+        } : null,
+        fastestAccurateSection: fastestAccurateSection ? {
+          sectionId: fastestAccurateSection.sectionId,
+          sectionTitle: fastestAccurateSection.sectionTitle,
+          accuracy: fastestAccurateSection.accuracy,
+          timeTaken: fastestAccurateSection.timeTaken,
+          avgTimePerQuestion: fastestAccurateSection.avgTimePerQuestion
         } : null,
         strongCount: sections.filter(s => s.strength === "strong").length,
         averageCount: sections.filter(s => s.strength === "average").length,

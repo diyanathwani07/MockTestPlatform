@@ -227,8 +227,10 @@ export default function MultiQuizAnalyticsDashboard({
               </div>
               <div className="mqa-time-item">
                 <span className="mqa-time-label">Fastest Accurate Section</span>
-                <span className="mqa-time-val" style={{ color: "#16A34A" }}>
-                  {summary.strongestSection ? `${summary.strongestSection.sectionTitle} (${formatSeconds(summary.strongestSection.timeTaken)})` : "—"}
+                <span className="mqa-time-val" style={{ color: summary.fastestAccurateSection ? "#16A34A" : "var(--text-secondary)" }}>
+                  {summary.fastestAccurateSection
+                    ? `${summary.fastestAccurateSection.sectionTitle} (${summary.fastestAccurateSection.avgTimePerQuestion}s/Q)`
+                    : (sections.every(s => (s.timeTaken || 0) === 0) ? "Time data unavailable" : (sections.some(s => s.attempted > 0) ? "None qualifying (≥50% acc)" : "—"))}
                 </span>
               </div>
             </div>
@@ -339,11 +341,13 @@ export default function MultiQuizAnalyticsDashboard({
                   <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
                     <span className="mqa-sub-pill wrong">✕ {sec.incorrect} Incorrect</span>
                     <span className="mqa-sub-pill skipped">? {sec.unanswered} Skipped</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>• {formatSeconds(sec.timeTaken)} spent</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                      • {sec.timeTaken > 0 ? `${formatSeconds(sec.timeTaken)} spent` : "Timing unavailable"}
+                    </span>
                   </div>
                   <p className="mqa-sec-coach-text">
                     {sec.attempted === 0
-                      ? "Section unattempted — answering questions here will establish diagnostic data."
+                      ? `Not Attempted — ${sec.totalQuestions} questions remaining.`
                       : sec.incorrect > sec.correct
                       ? "Mostly wrong answers — revise fundamental concepts & review solutions."
                       : sec.unanswered > sec.attempted
@@ -377,11 +381,13 @@ export default function MultiQuizAnalyticsDashboard({
                     <span className="mqa-chip-lbl">Skipped</span>
                   </div>
                   <div className="mqa-chip">
-                    <span className="mqa-chip-val">{formatSeconds(sec.timeTaken)}</span>
+                    <span className="mqa-chip-val">{sec.timeTaken > 0 ? formatSeconds(sec.timeTaken) : "N/A"}</span>
                     <span className="mqa-chip-lbl">Time Spent</span>
                   </div>
                   <div className="mqa-chip">
-                    <span className="mqa-chip-val" style={{ color: "#8B5CF6" }}>{sec.avgTimePerQuestion}s</span>
+                    <span className="mqa-chip-val" style={{ color: "#8B5CF6" }}>
+                      {sec.timeTaken > 0 && sec.attempted > 0 ? `${sec.avgTimePerQuestion}s` : "N/A"}
+                    </span>
                     <span className="mqa-chip-lbl">Avg / Q</span>
                   </div>
                 </div>
@@ -592,16 +598,47 @@ export default function MultiQuizAnalyticsDashboard({
 function buildClientFallbackAnalytics(result) {
   const isMultiQuiz = Boolean(result.sectionResults && Array.isArray(result.sectionResults) && result.sectionResults.length > 0);
   const sections = (result.sectionResults || []).map((sec, idx) => {
-    const totalQuestions = Number(sec.totalQuestions) || 0;
-    const attempted = Number(sec.attempted) || 0;
+    const secId = sec.sectionId || `sec-${idx}`;
     const correct = Number(sec.correct) || 0;
     const incorrect = Number(sec.incorrect) || 0;
-    const unanswered = sec.unanswered !== undefined ? Number(sec.unanswered) : Math.max(0, totalQuestions - attempted);
+
+    // Defensive Attempted: If sec.attempted is missing, 0, or less than correct + incorrect, derive from correct + incorrect
+    const recordedAttempted = Number(sec.attempted);
+    const attempted = (!isNaN(recordedAttempted) && recordedAttempted >= (correct + incorrect) && recordedAttempted > 0)
+      ? recordedAttempted
+      : (correct + incorrect);
+
+    // Defensive Total Questions: Check matching questions in result.questions or fallback
+    let totalQuestions = Number(sec.totalQuestions) || 0;
+    if (totalQuestions <= 0 && Array.isArray(result.questions) && result.questions.length > 0) {
+      const matchingCount = result.questions.filter(q => {
+        if (!q) return false;
+        const qSecId = q.sectionId ? q.sectionId.toString() : null;
+        const qSecTitle = q.sectionTitle ? q.sectionTitle.trim().toLowerCase() : null;
+        const targetSecId = secId ? secId.toString() : null;
+        const targetTitle = sec.sectionTitle ? sec.sectionTitle.trim().toLowerCase() : null;
+        return (qSecId && targetSecId && qSecId === targetSecId) || (qSecTitle && targetTitle && qSecTitle === targetTitle);
+      }).length;
+      if (matchingCount > 0) {
+        totalQuestions = matchingCount;
+      }
+    }
+    if (totalQuestions <= 0) {
+      const recordedUnanswered = sec.unanswered !== undefined && sec.unanswered !== null ? Number(sec.unanswered) : 0;
+      totalQuestions = Math.max(attempted, attempted + recordedUnanswered);
+    }
+
+    const unanswered = sec.unanswered !== undefined && sec.unanswered !== null && Number(sec.unanswered) >= 0
+      ? Number(sec.unanswered)
+      : Math.max(0, totalQuestions - attempted);
+
     const score = Number(sec.score) || 0;
-    const maxMarks = Number(sec.maxMarks) || totalQuestions;
+    const maxMarks = Number(sec.maxMarks) || (totalQuestions > 0 ? totalQuestions : score);
     const accuracy = attempted > 0 ? Number(((correct / attempted) * 100).toFixed(1)) : 0;
     const timeTaken = Number(sec.timeTaken) || 0;
-    const avgTimePerQuestion = attempted > 0 ? Number((timeTaken / attempted).toFixed(1)) : 0;
+    const avgTimePerQuestion = (attempted > 0 && timeTaken > 0)
+      ? Number((timeTaken / attempted).toFixed(1))
+      : (totalQuestions > 0 && timeTaken > 0 ? Number((timeTaken / totalQuestions).toFixed(1)) : 0);
 
     let strength = "average";
     if (attempted === 0) strength = "unattempted";
@@ -609,7 +646,7 @@ function buildClientFallbackAnalytics(result) {
     else if (accuracy < 40 || incorrect > correct) strength = "weak";
 
     return {
-      sectionId: sec.sectionId || `sec-${idx}`,
+      sectionId: secId,
       sectionTitle: sec.sectionTitle || `Section ${idx + 1}`,
       totalQuestions,
       attempted,
@@ -630,6 +667,19 @@ function buildClientFallbackAnalytics(result) {
   const strongestSection = sorted.find(s => s.accuracy > 0 && s.score > 0) || null;
   const weakestSection = sorted.slice().reverse().find(s => s.accuracy < 50 || s.strength === "weak") || (sorted.length > 1 ? sorted[sorted.length - 1] : null);
 
+  const accurateTimed = attemptedSections.filter(s => s.accuracy >= 50 && s.timeTaken > 0 && s.avgTimePerQuestion > 0);
+  let fastestAccurateSection = null;
+  if (accurateTimed.length > 0) {
+    accurateTimed.sort((a, b) => a.avgTimePerQuestion - b.avgTimePerQuestion);
+    fastestAccurateSection = {
+      sectionId: accurateTimed[0].sectionId,
+      sectionTitle: accurateTimed[0].sectionTitle,
+      accuracy: accurateTimed[0].accuracy,
+      timeTaken: accurateTimed[0].timeTaken,
+      avgTimePerQuestion: accurateTimed[0].avgTimePerQuestion
+    };
+  }
+
   return {
     success: true,
     resultId: result._id,
@@ -638,9 +688,11 @@ function buildClientFallbackAnalytics(result) {
     summary: {
       strongestSection,
       weakestSection,
+      fastestAccurateSection,
       strongCount: sections.filter(s => s.strength === "strong").length,
       averageCount: sections.filter(s => s.strength === "average").length,
-      weakCount: sections.filter(s => s.strength === "weak").length
+      weakCount: sections.filter(s => s.strength === "weak").length,
+      unattemptedCount: sections.filter(s => s.strength === "unattempted").length
     },
     recommendations: [
       {

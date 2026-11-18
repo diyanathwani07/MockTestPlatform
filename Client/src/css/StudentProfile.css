@@ -858,14 +858,19 @@ body.dark-mode .sp-badge {
 }
 
 .mp-back-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-primary, #fff);
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-primary, #ffffff) !important;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 4px;
+}
+
+.mp-back-btn svg {
+  color: var(--text-primary, #ffffff) !important;
+  stroke: var(--text-primary, #ffffff) !important;
 }
 
 .mp-header-title {
