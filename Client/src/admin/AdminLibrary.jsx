@@ -199,36 +199,54 @@ export function AdminLibraryView({ embedded = false }) {
 
   // Folder Actions
   const handleCreateFolder = async (formData) => {
-    const payload = {
-      ...formData,
-      scope,
-      examSeriesId: scope === "exam_specific" ? selectedExamSeriesId : undefined,
-      parentId: formData.parentId || currentFolderId || null
-    };
+    try {
+      const payload = {
+        ...formData,
+        scope,
+        examSeriesId: scope === "exam_specific" ? selectedExamSeriesId : undefined,
+        parentId: formData.parentId || currentFolderId || null
+      };
 
-    const res = await axios.post(`${baseUrl}/api/admin/library/folders`, payload, getAuthHeaders());
-    showToast(res.data?.message || "Folder created successfully");
-    fetchStats();
-    fetchTree();
-    fetchFolderContent(currentFolderId);
+      const res = await axios.post(`${baseUrl}/api/admin/library/folders`, payload, getAuthHeaders());
+      showToast(res.data?.message || "Folder created successfully");
+      setCreateModal({ isOpen: false, parentFolder: null });
+      fetchStats();
+      fetchTree();
+      fetchFolderContent(currentFolderId);
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to create folder", "error");
+      throw err;
+    }
   };
 
   const handleUpdateFolder = async (folderId, formData) => {
-    const res = await axios.patch(`${baseUrl}/api/admin/library/folders/${folderId}`, formData, getAuthHeaders());
-    showToast(res.data?.message || "Folder updated successfully");
-    fetchTree();
-    fetchFolderContent(currentFolderId);
+    try {
+      const res = await axios.patch(`${baseUrl}/api/admin/library/folders/${folderId}`, formData, getAuthHeaders());
+      showToast(res.data?.message || "Folder updated successfully");
+      setEditModal({ isOpen: false, folder: null });
+      fetchTree();
+      fetchFolderContent(currentFolderId);
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to update folder", "error");
+      throw err;
+    }
   };
 
   const handleMoveFolder = async (folderId, targetParentId) => {
-    const res = await axios.patch(
-      `${baseUrl}/api/admin/library/folders/${folderId}/move`,
-      { targetParentId },
-      getAuthHeaders()
-    );
-    showToast(res.data?.message || "Folder moved successfully");
-    fetchTree();
-    fetchFolderContent(currentFolderId);
+    try {
+      const res = await axios.patch(
+        `${baseUrl}/api/admin/library/folders/${folderId}/move`,
+        { targetParentId },
+        getAuthHeaders()
+      );
+      showToast(res.data?.message || "Folder moved successfully");
+      setMoveFolderModal({ isOpen: false, folder: null });
+      fetchTree();
+      fetchFolderContent(currentFolderId);
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to move folder", "error");
+      throw err;
+    }
   };
 
   const handleArchiveFolderConfirm = (folder) => {
@@ -271,8 +289,9 @@ export function AdminLibraryView({ embedded = false }) {
     if (scope === "exam_specific" && selectedExamSeriesId) {
       formData.append("examSeriesId", selectedExamSeriesId);
     }
-    if (currentFolderId) {
-      formData.append("folderId", currentFolderId);
+    const existingFolderId = formData.get("folderId");
+    if ((!existingFolderId || existingFolderId === "root") && currentFolderId) {
+      formData.set("folderId", currentFolderId);
     }
 
     const res = await axios.post(`${baseUrl}/api/admin/library/resources/upload`, formData, {
@@ -291,20 +310,23 @@ export function AdminLibraryView({ embedded = false }) {
 
     showToast(res.data?.message || "Resource uploaded successfully");
     fetchStats();
+    fetchTree();
     fetchFolderContent(currentFolderId);
   };
 
   const handleCreateNonFileResource = async (payload) => {
+    const effectiveFolderId = payload.folderId && payload.folderId !== "root" ? payload.folderId : (currentFolderId || null);
     const data = {
       ...payload,
       scope,
       examSeriesId: scope === "exam_specific" ? selectedExamSeriesId : undefined,
-      folderId: currentFolderId || null
+      folderId: effectiveFolderId
     };
 
     const res = await axios.post(`${baseUrl}/api/admin/library/resources`, data, getAuthHeaders());
     showToast(res.data?.message || "Resource created successfully");
     fetchStats();
+    fetchTree();
     fetchFolderContent(currentFolderId);
   };
 
@@ -315,13 +337,19 @@ export function AdminLibraryView({ embedded = false }) {
   };
 
   const handleMoveResource = async (resourceId, targetFolderId) => {
-    const res = await axios.patch(
-      `${baseUrl}/api/admin/library/resources/${resourceId}/move`,
-      { targetFolderId },
-      getAuthHeaders()
-    );
-    showToast(res.data?.message || "Resource moved successfully");
-    fetchFolderContent(currentFolderId);
+    try {
+      const res = await axios.patch(
+        `${baseUrl}/api/admin/library/resources/${resourceId}/move`,
+        { targetFolderId },
+        getAuthHeaders()
+      );
+      showToast(res.data?.message || "Resource moved successfully");
+      setMoveResourceModal({ isOpen: false, resource: null });
+      fetchFolderContent(currentFolderId);
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to move resource", "error");
+      throw err;
+    }
   };
 
   const handleTogglePublish = async (resource) => {
@@ -658,7 +686,12 @@ export function AdminLibraryView({ embedded = false }) {
             isOpen={uploadModal.isOpen}
             resourceToEdit={uploadModal.resourceToEdit}
             onClose={() => setUploadModal({ isOpen: false, resourceToEdit: null })}
+            folder={currentFolder}
+            tree={tree}
+            scope={scope}
+            onSubmitFile={handleUploadFileResource}
             onUploadFile={handleUploadFileResource}
+            onSubmitNoteOrLink={handleCreateNonFileResource}
             onCreateNonFile={handleCreateNonFileResource}
             onUpdateResource={handleUpdateResource}
           />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   X,
   Upload,
@@ -9,7 +9,8 @@ import {
   AlertCircle,
   File,
   Eye,
-  Info
+  Info,
+  Folder as FolderIcon
 } from "lucide-react";
 
 const ALLOWED_MIME_TYPES = [
@@ -39,14 +40,34 @@ const ACCESS_TIERS = [
   }
 ];
 
+function flattenFolders(roots) {
+  const result = [];
+  const traverse = (node, depth) => {
+    result.push({
+      _id: (node._id || "").toString(),
+      name: node.name,
+      depth
+    });
+    if (Array.isArray(node.children)) {
+      node.children.forEach((c) => traverse(c, depth + 1));
+    }
+  };
+  (roots || []).forEach((r) => traverse(r, 0));
+  return result;
+}
+
 export default function UploadResourceModal({
   isOpen,
   onClose,
   folder,
+  tree = [],
   scope,
   resourceToEdit = null,
   onSubmitFile,
+  onUploadFile,
   onSubmitNoteOrLink,
+  onCreateNonFile,
+  onUpdateResource,
   submitting = false
 }) {
   const [activeTab, setActiveTab] = useState("file"); // "file" | "note" | "link"
@@ -57,6 +78,8 @@ export default function UploadResourceModal({
   const [accessTier, setAccessTier] = useState("free");
   const [isDownloadable, setIsDownloadable] = useState(true);
   const [isPublished, setIsPublished] = useState(true);
+  const [selectedFolderId, setSelectedFolderId] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // File Upload State
   const [selectedFile, setSelectedFile] = useState(null);
@@ -69,6 +92,8 @@ export default function UploadResourceModal({
   // Error State
   const [error, setError] = useState("");
 
+  const flatFolders = useMemo(() => flattenFolders(tree), [tree]);
+
   useEffect(() => {
     if (isOpen) {
       if (resourceToEdit) {
@@ -77,6 +102,7 @@ export default function UploadResourceModal({
         setAccessTier(resourceToEdit.accessTier || "free");
         setIsDownloadable(resourceToEdit.isDownloadable ?? true);
         setIsPublished(resourceToEdit.isPublished ?? true);
+        setSelectedFolderId((resourceToEdit.folderId?._id || resourceToEdit.folderId || "").toString());
         if (resourceToEdit.resourceType === "note") {
           setActiveTab("note");
         } else if (
@@ -97,10 +123,11 @@ export default function UploadResourceModal({
         setSelectedFile(null);
         setLinkUrl("");
         setActiveTab("file");
+        setSelectedFolderId(folder?._id ? folder._id.toString() : (flatFolders.length > 0 ? flatFolders[0]._id : ""));
       }
       setError("");
     }
-  }, [isOpen, resourceToEdit]);
+  }, [isOpen, resourceToEdit, folder, flatFolders]);
 
   if (!isOpen) return null;
 
@@ -145,7 +172,7 @@ export default function UploadResourceModal({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -154,69 +181,117 @@ export default function UploadResourceModal({
       return;
     }
 
-    const targetFolderId = folder?._id || "root";
+    const targetFolderId = selectedFolderId || folder?._id || "root";
+    const fileFn = onSubmitFile || onUploadFile;
+    const nonFileFn = onSubmitNoteOrLink || onCreateNonFile;
+    const updateFn = onUpdateResource;
 
-    if (activeTab === "file") {
-      if (!selectedFile && !resourceToEdit) {
-        setError("Please choose a file to upload");
+    setLoading(true);
+
+    try {
+      if (resourceToEdit && updateFn) {
+        await updateFn(resourceToEdit._id, {
+          title: title.trim(),
+          description: description.trim(),
+          accessTier,
+          isDownloadable,
+          isPublished
+        });
+        onClose();
         return;
       }
 
-      const formData = new FormData();
-      if (selectedFile) {
-        formData.append("file", selectedFile);
-      }
-      formData.append("title", title.trim());
-      formData.append("description", description.trim());
-      formData.append("folderId", targetFolderId);
-      formData.append("accessTier", accessTier);
-      formData.append("isDownloadable", isDownloadable);
-      formData.append("isPublished", isPublished);
+      if (activeTab === "file") {
+        if (!selectedFile && !resourceToEdit) {
+          setError("Please choose a file to upload");
+          setLoading(false);
+          return;
+        }
 
-      onSubmitFile(formData);
-    } else if (activeTab === "link") {
-      if (!linkUrl.trim()) {
-        setError("Target link URL is required");
-        return;
-      }
+        const formData = new FormData();
+        if (selectedFile) {
+          formData.append("file", selectedFile);
+        }
+        formData.append("title", title.trim());
+        formData.append("description", description.trim());
+        formData.append("folderId", targetFolderId);
+        formData.append("accessTier", accessTier);
+        formData.append("isDownloadable", isDownloadable);
+        formData.append("isPublished", isPublished);
 
-      try {
-        new URL(linkUrl.trim());
-      } catch {
-        setError("Please enter a valid URL (e.g. https://...)");
-        return;
-      }
+        if (fileFn) {
+          await fileFn(formData);
+          onClose();
+        } else {
+          throw new Error("File upload handler is not configured");
+        }
+      } else if (activeTab === "link") {
+        if (!linkUrl.trim()) {
+          setError("Target link URL is required");
+          setLoading(false);
+          return;
+        }
 
-      onSubmitNoteOrLink({
-        title: title.trim(),
-        description: description.trim(),
-        folderId: targetFolderId,
-        resourceType:
-          linkUrl.includes("youtube.com") || linkUrl.includes("youtu.be")
-            ? "video_link"
-            : "web_link",
-        fileUrl: linkUrl.trim(),
-        accessTier,
-        isDownloadable: false,
-        isPublished
-      });
-    } else if (activeTab === "note") {
-      if (!description.trim()) {
-        setError("Note text content is required");
-        return;
-      }
+        try {
+          new URL(linkUrl.trim());
+        } catch {
+          setError("Please enter a valid URL (e.g. https://...)");
+          setLoading(false);
+          return;
+        }
 
-      onSubmitNoteOrLink({
-        title: title.trim(),
-        description: description.trim(),
-        folderId: targetFolderId,
-        resourceType: "note",
-        accessTier,
-        isDownloadable: false,
-        isPublished
-      });
+        if (nonFileFn) {
+          await nonFileFn({
+            title: title.trim(),
+            description: description.trim(),
+            folderId: targetFolderId,
+            resourceType:
+              linkUrl.includes("youtube.com") || linkUrl.includes("youtu.be")
+                ? "video_link"
+                : "web_link",
+            fileUrl: linkUrl.trim(),
+            accessTier,
+            isDownloadable: false,
+            isPublished
+          });
+          onClose();
+        } else {
+          throw new Error("Resource creation handler is not configured");
+        }
+      } else if (activeTab === "note") {
+        if (!description.trim()) {
+          setError("Note text content is required");
+          setLoading(false);
+          return;
+        }
+
+        if (nonFileFn) {
+          await nonFileFn({
+            title: title.trim(),
+            description: description.trim(),
+            folderId: targetFolderId,
+            resourceType: "note",
+            accessTier,
+            isDownloadable: false,
+            isPublished
+          });
+          onClose();
+        } else {
+          throw new Error("Resource creation handler is not configured");
+        }
+      }
+    } catch (err) {
+      console.error("Save study resource error:", err);
+      setError(err.response?.data?.message || err.message || "Failed to save resource");
+    } finally {
+      setLoading(false);
     }
   };
+
+  const selectedFolderObj = useMemo(() => {
+    if (folder) return folder;
+    return flatFolders.find((f) => f._id === selectedFolderId) || null;
+  }, [folder, flatFolders, selectedFolderId]);
 
   return (
     <div className="library-drawer-overlay" onClick={onClose}>
@@ -225,8 +300,9 @@ export default function UploadResourceModal({
         <div className="library-modal-header">
           <div>
             <h3>{resourceToEdit ? "Edit Study Resource" : "Add Study Resource"}</h3>
-            <span style={{ fontSize: "12px", color: "var(--text-secondary, #6B7280)" }}>
-              Destination Folder: <strong>{folder ? folder.name : "Root"}</strong>
+            <span style={{ fontSize: "12px", color: "var(--text-secondary, #6B7280)", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+              <FolderIcon size={13} />
+              Destination Folder: <strong>{selectedFolderObj ? selectedFolderObj.name : "Root / General"}</strong>
             </span>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close drawer">
@@ -336,6 +412,50 @@ export default function UploadResourceModal({
               >
                 <AlertCircle size={15} />
                 <span>{error}</span>
+              </div>
+            )}
+
+            {/* Destination Folder Selector (when not opened inside a specific folder) */}
+            {!folder && !resourceToEdit && (
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label" style={{ fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FolderIcon size={14} color="var(--primary)" />
+                  Destination Folder <span style={{ color: "var(--red, #ef4444)" }}>*</span>
+                </label>
+                {flatFolders.length > 0 ? (
+                  <select
+                    className="form-select"
+                    value={selectedFolderId}
+                    onChange={(e) => setSelectedFolderId(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-color, #E5E7EB)",
+                      background: "var(--bg-input, #ffffff)",
+                      color: "var(--text-primary, #111827)",
+                      fontSize: "13.5px"
+                    }}
+                  >
+                    <option value="">-- Choose Target Folder --</option>
+                    {flatFolders.map((f) => (
+                      <option key={f._id} value={f._id}>
+                        {"— ".repeat(f.depth) + f.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div style={{
+                    padding: "8px 12px",
+                    background: "rgba(110, 63, 243, 0.08)",
+                    border: "1px solid rgba(110, 63, 243, 0.2)",
+                    borderRadius: "8px",
+                    fontSize: "12.5px",
+                    color: "var(--text-secondary)"
+                  }}>
+                    ℹ️ No folders found yet. A default folder will be created automatically.
+                  </div>
+                )}
               </div>
             )}
 
@@ -537,16 +657,16 @@ export default function UploadResourceModal({
               type="button"
               className="btn-secondary-outline"
               onClick={onClose}
-              disabled={submitting}
+              disabled={submitting || loading}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="btn-primary-gradient"
-              disabled={submitting}
+              disabled={submitting || loading}
             >
-              {submitting ? "Saving..." : resourceToEdit ? "Update Resource" : "Save Resource"}
+              {(submitting || loading) ? "Saving..." : resourceToEdit ? "Update Resource" : "Save Resource"}
             </button>
           </div>
         </form>

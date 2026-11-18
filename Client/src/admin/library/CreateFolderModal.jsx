@@ -24,6 +24,7 @@ export default function CreateFolderModal({
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("#8B5CF6");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -31,26 +32,37 @@ export default function CreateFolderModal({
       setDescription("");
       setColor("#8B5CF6");
       setError("");
+      setIsSubmitting(false);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Folder name is required");
       return;
     }
 
-    onSubmit({
-      name: name.trim(),
-      description: description.trim(),
-      color,
-      parentId: parentFolder ? parentFolder._id : null,
-      scope,
-      examSeriesId: scope === "exam_specific" ? examSeriesId : null
-    });
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      await onSubmit({
+        name: name.trim(),
+        description: description.trim(),
+        color,
+        parentId: parentFolder ? parentFolder._id : null,
+        scope,
+        examSeriesId: scope === "exam_specific" ? examSeriesId : null
+      });
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Failed to create folder");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -149,16 +161,16 @@ export default function CreateFolderModal({
               type="button"
               className="btn-secondary-outline"
               onClick={onClose}
-              disabled={submitting}
+              disabled={submitting || isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="btn-primary-gradient"
-              disabled={submitting || !name.trim()}
+              disabled={submitting || isSubmitting || !name.trim()}
             >
-              {submitting ? "Creating..." : "Create Folder"}
+              {(submitting || isSubmitting) ? "Creating..." : "Create Folder"}
             </button>
           </div>
         </form>

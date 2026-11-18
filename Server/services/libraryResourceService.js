@@ -39,6 +39,53 @@ function userHasEnrolledInExam(purchasedExams, targetExamSeriesId) {
 }
 
 /**
+ * Safely resolves the target folder for a resource.
+ * If folderId is not provided or is "root", finds or creates a default root folder for the scope/examSeries.
+ */
+async function resolveTargetFolder(folderId, bodyData = {}, userId) {
+  let folder = null;
+  if (folderId && folderId !== "root" && folderId !== "null" && mongoose.Types.ObjectId.isValid(folderId)) {
+    folder = await Folder.findOne({ _id: folderId, isDeleted: false });
+  }
+
+  if (folder) {
+    if (!folder.isActive) {
+      throw new Error("Cannot add study resources to an inactive folder");
+    }
+    return folder;
+  }
+
+  // If no folderId was provided or folderId === "root", find or create a default root folder
+  const scope = bodyData.scope || "global";
+  const examSeriesId = scope === "exam_specific" ? bodyData.examSeriesId : null;
+  const defaultName = scope === "global" ? "General Resources" : "Exam Materials";
+
+  folder = await Folder.findOne({
+    scope,
+    examSeriesId: examSeriesId || null,
+    parentId: null,
+    isDeleted: false
+  });
+
+  if (!folder) {
+    folder = new Folder({
+      name: defaultName,
+      description: "Default storage for study materials and notes",
+      parentId: null,
+      ancestors: [],
+      scope,
+      examSeriesId: examSeriesId || null,
+      createdBy: userId,
+      isActive: true,
+      isDeleted: false
+    });
+    await folder.save();
+  }
+
+  return folder;
+}
+
+/**
  * Creates a file-based study resource (PDF, DOCX, DOC, Image) uploaded to Cloudinary.
  */
 async function createFileResource(file, bodyData, userId) {
@@ -56,17 +103,7 @@ async function createFileResource(file, bodyData, userId) {
     throw new Error("Resource title is required");
   }
 
-  if (!folderId) {
-    throw new Error("Target folderId is required");
-  }
-
-  const folder = await Folder.findOne({ _id: folderId, isDeleted: false });
-  if (!folder) {
-    throw new Error("Target folder not found or has been archived");
-  }
-  if (!folder.isActive) {
-    throw new Error("Cannot add study resources to an inactive folder");
-  }
+  const folder = await resolveTargetFolder(folderId, bodyData, userId);
 
   // Upload buffer to Cloudinary
   const sanitizedFileName = file.sanitizedFileName || file.originalname;
@@ -156,17 +193,7 @@ async function createLinkOrNoteResource(data, userId) {
     throw new Error("Resource title is required");
   }
 
-  if (!folderId) {
-    throw new Error("Target folderId is required");
-  }
-
-  const folder = await Folder.findOne({ _id: folderId, isDeleted: false });
-  if (!folder) {
-    throw new Error("Target folder not found or has been archived");
-  }
-  if (!folder.isActive) {
-    throw new Error("Cannot add study resources to an inactive folder");
-  }
+  const folder = await resolveTargetFolder(folderId, data, userId);
 
   if (["video_link", "web_link"].includes(resourceType)) {
     if (!fileUrl || typeof fileUrl !== "string" || !fileUrl.trim()) {
@@ -176,7 +203,7 @@ async function createLinkOrNoteResource(data, userId) {
 
   let finalOrder = order;
   if (!finalOrder || finalOrder === 0) {
-    const lastItem = await Resource.findOne({ folderId, isDeleted: false })
+    const lastItem = await Resource.findOne({ folderId: folder._id, isDeleted: false })
       .sort({ order: -1 })
       .select("order");
     finalOrder = lastItem ? (lastItem.order || 0) + 1 : 1;

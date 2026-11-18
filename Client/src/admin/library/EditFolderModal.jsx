@@ -22,6 +22,7 @@ export default function EditFolderModal({
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("#8B5CF6");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (folder) {
@@ -29,23 +30,34 @@ export default function EditFolderModal({
       setDescription(folder.description || "");
       setColor(folder.color || "#8B5CF6");
       setError("");
+      setIsSubmitting(false);
     }
   }, [folder]);
 
   if (!isOpen || !folder) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Folder name is required");
       return;
     }
 
-    onSubmit(folder._id, {
-      name: name.trim(),
-      description: description.trim(),
-      color
-    });
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      await onSubmit(folder._id, {
+        name: name.trim(),
+        description: description.trim(),
+        color
+      });
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Failed to update folder");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -125,16 +137,16 @@ export default function EditFolderModal({
               type="button"
               className="btn-secondary-outline"
               onClick={onClose}
-              disabled={submitting}
+              disabled={submitting || isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="btn-primary-gradient"
-              disabled={submitting || !name.trim()}
+              disabled={submitting || isSubmitting || !name.trim()}
             >
-              {submitting ? "Saving..." : "Save Changes"}
+              {(submitting || isSubmitting) ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>
