@@ -23,10 +23,10 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
-  background: rgba(139, 92, 246, 0.08) !important;
+  background: var(--bg-card, rgba(0, 0, 0, 0.04)) !important;
   padding: 5px !important;
   border-radius: 16px !important;
-  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.15)) !important;
   margin-bottom: 8px !important;
   width: fit-content !important;
   margin-left: auto !important;
@@ -37,8 +37,8 @@ body.dark-mode .mqa-top-nav,
 :root.dark .mqa-top-nav,
 .dark .mqa-top-nav,
 html[class*="theme-"].dark .mqa-top-nav {
-  background: rgba(17, 17, 17, 0.9) !important;
-  border-color: rgba(139, 92, 246, 0.3) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .mqa-tab-btn {
@@ -54,7 +54,7 @@ html[class*="theme-"].dark .mqa-top-nav {
   justify-content: center !important;
   gap: 8px !important;
   background: transparent !important;
-  color: #475569 !important;
+  color: var(--text-secondary, #475569) !important;
   outline: none !important;
 }
 
@@ -66,8 +66,8 @@ body.dark-mode .mqa-tab-btn,
 }
 
 .mqa-tab-btn:hover {
-  color: #7C3AED !important;
-  background: rgba(139, 92, 246, 0.1) !important;
+  color: var(--primary) !important;
+  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
 }
 
 body.dark-mode .mqa-tab-btn:hover,
@@ -75,7 +75,7 @@ body.dark-mode .mqa-tab-btn:hover,
 .dark .mqa-tab-btn:hover,
 [data-theme="dark"] .mqa-tab-btn:hover {
   color: #FFFFFF !important;
-  background: rgba(139, 92, 246, 0.2) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
 }
 
 .mqa-tab-btn.active,
@@ -83,9 +83,9 @@ body.dark-mode .mqa-tab-btn.active,
 :root.dark .mqa-tab-btn.active,
 .dark .mqa-tab-btn.active,
 [data-theme="dark"] .mqa-tab-btn.active {
-  background: #8B5CF6 !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45) !important;
+  background: var(--primary, #FFFFFF) !important;
+  color: var(--primary-foreground, #000000) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
 }
 
 .mqa-tab-btn span {
@@ -875,24 +875,32 @@ body.dark-mode .mqa-time-item {
   height: 42px;
   padding: 0 20px;
   border-radius: 12px;
-  background: #8B5CF6;
-  color: #FFFFFF;
+  background: var(--primary, #FFFFFF);
+  color: var(--primary-foreground, #000000);
   font-size: 14px;
   font-weight: 700;
-  border: none;
+  border: 1px solid var(--border-color, transparent);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .mqa-actions-row .mqa-btn-solutions:hover {
-  background: #7C3AED;
+  filter: brightness(0.92);
   transform: translateY(-1px);
+}
+
+body.dark-mode .mqa-actions-row .mqa-btn-solutions,
+:root.dark .mqa-actions-row .mqa-btn-solutions,
+.dark .mqa-actions-row .mqa-btn-solutions {
+  background: var(--primary, #FFFFFF) !important;
+  color: var(--primary-foreground, #000000) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
 }
 
 :root .mqa-actions-row .mqa-btn-overview,

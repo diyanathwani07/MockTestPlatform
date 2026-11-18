@@ -505,7 +505,7 @@ export default function RevenueDashboard() {
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">TOTAL VERIFIED REVENUE</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
+                    <div className="revenue-kpi-icon-box">
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                   </div>
@@ -513,16 +513,16 @@ export default function RevenueDashboard() {
                     ₹{formatCurrency(kpis.verifiedRevenue)}
                   </div>
                   <div className="revenue-kpi-subtitle">
-                    Simulated Sandbox: <strong style={{ color: "var(--primary, #8B5CF6)" }}>₹{formatCurrency(kpis.simulatedRevenue)}</strong>
+                    Simulated Sandbox: <strong>₹{formatCurrency(kpis.simulatedRevenue)}</strong>
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
+                  <div className="revenue-kpi-accent-bar" />
                 </div>
 
                 {/* 2. Revenue Today */}
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">REVENUE TODAY</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)" }}>
+                    <div className="revenue-kpi-icon-box">
                       <Clock className="w-4 h-4" />
                     </div>
                   </div>
@@ -532,14 +532,14 @@ export default function RevenueDashboard() {
                   <div className="revenue-kpi-subtitle">
                     Since 12:00 AM today
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "var(--primary, #8B5CF6)" }} />
+                  <div className="revenue-kpi-accent-bar" />
                 </div>
 
                 {/* 3. Revenue This Month */}
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">REVENUE THIS MONTH</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" }}>
+                    <div className="revenue-kpi-icon-box">
                       <Calendar className="w-4 h-4" />
                     </div>
                   </div>
@@ -549,14 +549,14 @@ export default function RevenueDashboard() {
                   <div className="revenue-kpi-subtitle">
                     Active calendar month
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "#3B82F6" }} />
+                  <div className="revenue-kpi-accent-bar" />
                 </div>
 
                 {/* 4. Successful Transactions */}
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">SUCCESSFUL ORDERS</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10B981" }}>
+                    <div className="revenue-kpi-icon-box">
                       <Receipt className="w-4 h-4" />
                     </div>
                   </div>
@@ -566,14 +566,14 @@ export default function RevenueDashboard() {
                   <div className="revenue-kpi-subtitle">
                     All-time recorded purchases
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "#10B981" }} />
+                  <div className="revenue-kpi-accent-bar" />
                 </div>
 
                 {/* 5. Active Paid Subscriptions */}
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">ACTIVE SUBSCRIPTIONS</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "rgba(245, 158, 11, 0.12)", color: "#F59E0B" }}>
+                    <div className="revenue-kpi-icon-box">
                       <Zap className="w-4 h-4" />
                     </div>
                   </div>
@@ -581,16 +581,16 @@ export default function RevenueDashboard() {
                     {kpis.activeSubscriptionsCount}
                   </div>
                   <div className="revenue-kpi-subtitle">
-                    Active recurring ARR: <strong style={{ color: "#F59E0B" }}>₹{formatCurrency(kpis.activeRevenue)}</strong>
+                    Active recurring ARR: <strong>₹{formatCurrency(kpis.activeRevenue)}</strong>
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "#F59E0B" }} />
+                  <div className="revenue-kpi-accent-bar" />
                 </div>
 
                 {/* 6. Paying Students */}
                 <div className="revenue-kpi-card">
                   <div className="revenue-kpi-top">
                     <span className="revenue-kpi-label">PAYING STUDENTS</span>
-                    <div className="revenue-kpi-icon-box" style={{ background: "color-mix(in srgb, var(--primary, #8B5CF6) 12%, transparent)", color: "var(--primary, #8B5CF6)" }}>
+                    <div className="revenue-kpi-icon-box">
                       <Users className="w-4 h-4" />
                     </div>
                   </div>
@@ -598,9 +598,9 @@ export default function RevenueDashboard() {
                     {kpis.distinctPayingStudentsCount}
                   </div>
                   <div className="revenue-kpi-subtitle">
-                    ARPU: <strong style={{ color: "var(--primary, #8B5CF6)" }}>₹{kpis.arpu}</strong>
+                    ARPU: <strong>₹{kpis.arpu}</strong>
                   </div>
-                  <div className="revenue-kpi-accent-bar" style={{ background: "var(--primary, #8B5CF6)" }} />
+                  <div className="revenue-kpi-accent-bar" />
                 </div>
               </div>
 

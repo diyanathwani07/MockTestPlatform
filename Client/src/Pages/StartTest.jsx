@@ -191,8 +191,16 @@ function StartTest() {
     }
   };
 
+  // Auto-redirect if quiz was already completed in this browser session (prevents re-entry on browser back)
+  useEffect(() => {
+    if (selectedQuiz?._id && sessionStorage.getItem(`exam_completed_${selectedQuiz._id}`)) {
+      navigate("/dashboard/exams", { replace: true });
+    }
+  }, [selectedQuiz, navigate]);
+
   const navigateToQuiz = () => {
     navigate("/quiz", {
+      replace: true,
       state: {
         subject: selectedQuiz.subject,
         quizId: selectedQuiz._id,

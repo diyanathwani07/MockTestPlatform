@@ -109,17 +109,6 @@ export default function FolderExplorerTree({
           <Layers size={17} style={{ color: "var(--primary)" }} />
           <span>Folder Explorer</span>
         </div>
-        <div style={{ display: "flex", gap: "6px" }}>
-          <button
-            type="button"
-            className="al-tree-header-btn"
-            title="Create root folder"
-            onClick={onCreateRootFolder}
-          >
-            <FolderPlus size={14} />
-            <span>New Folder</span>
-          </button>
-        </div>
       </div>
 
       {/* Filter / Search */}

@@ -551,23 +551,30 @@ body.dark-mode .rm-info-chip {
   height: 42px;
   padding: 0 20px;
   border-radius: 12px;
-  background: #8B5CF6;
-  color: #FFFFFF;
+  background: var(--primary, #FFFFFF);
+  color: var(--primary-foreground, #000000);
   font-size: 14px;
   font-weight: 700;
-  border: none;
+  border: 1px solid var(--border-color, transparent);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   transition: all 0.2s;
   white-space: nowrap;
 }
 .rm-modal-actions .btn-review:hover {
-  background: #7C3AED;
+  filter: brightness(0.92);
   transform: translateY(-1px);
+}
+body.dark-mode .rm-modal-actions .btn-review,
+:root.dark .rm-modal-actions .btn-review,
+.dark .rm-modal-actions .btn-review {
+  background: var(--primary, #FFFFFF) !important;
+  color: var(--primary-foreground, #000000) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
 }
 :root .rm-modal-actions .btn-dashboard,
 html:not(.dark) .rm-modal-actions .btn-dashboard,
@@ -643,17 +650,20 @@ html[class*="theme-"].dark .rm-modal-actions .btn-dashboard:hover {
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
-  background: rgba(139, 92, 246, 0.08) !important;
+  background: var(--bg-card, rgba(0, 0, 0, 0.04)) !important;
   padding: 5px !important;
   border-radius: 16px !important;
-  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.15)) !important;
   margin: 0 auto !important;
   box-sizing: border-box !important;
 }
 
-body.dark-mode .mqa-top-nav {
-  background: rgba(17, 17, 17, 0.9) !important;
-  border-color: rgba(139, 92, 246, 0.3) !important;
+body.dark-mode .mqa-top-nav,
+:root.dark .mqa-top-nav,
+.dark .mqa-top-nav,
+html[class*="theme-"].dark .mqa-top-nav {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 /* Inactive Tab Button */
@@ -670,7 +680,7 @@ body.dark-mode .mqa-top-nav {
   justify-content: center !important;
   gap: 8px !important;
   background: transparent !important;
-  color: #475569 !important; /* High contrast slate in light mode */
+  color: var(--text-secondary, #475569) !important; /* High contrast slate in light mode */
   outline: none !important;
 }
 
@@ -682,8 +692,8 @@ body.dark-mode .mqa-tab-btn,
 }
 
 .mqa-tab-btn:hover {
-  color: #7C3AED !important;
-  background: rgba(139, 92, 246, 0.1) !important;
+  color: var(--primary) !important;
+  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
 }
 
 body.dark-mode .mqa-tab-btn:hover,
@@ -691,7 +701,7 @@ body.dark-mode .mqa-tab-btn:hover,
 .dark .mqa-tab-btn:hover,
 [data-theme="dark"] .mqa-tab-btn:hover {
   color: #FFFFFF !important;
-  background: rgba(139, 92, 246, 0.2) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Active Tab Button - Guaranteed Crisp Pure White in Both Light & Dark */
@@ -700,9 +710,9 @@ body.dark-mode .mqa-tab-btn.active,
 :root.dark .mqa-tab-btn.active,
 .dark .mqa-tab-btn.active,
 [data-theme="dark"] .mqa-tab-btn.active {
-  background: #8B5CF6 !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45) !important;
+  background: var(--primary, #FFFFFF) !important;
+  color: var(--primary-foreground, #000000) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
 }
 
 .mqa-tab-btn span {

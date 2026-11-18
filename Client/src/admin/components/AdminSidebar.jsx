@@ -3,7 +3,8 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, Settings, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
-  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck, ChevronRight, IndianRupee
+  PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck, ChevronRight, IndianRupee,
+  PlusCircle
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
@@ -17,8 +18,9 @@ const TOP_NAV_ITEMS = [
   { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard", permission: "dashboard" },
 ];
 
-// Exactly the six required children under "Create Quiz"
+// Items under "Create Quiz" expandable section
 const CREATE_QUIZ_CHILDREN = [
+  { to: "/admin/create-quiz",    icon: PlusCircle,    label: "Create Quiz",       permission: "edit_quiz" },
   { to: "/admin/manage-quizzes", icon: ClipboardList, label: "Manage Quizzes",    permission: "edit_quiz" },
   { to: "/admin/live-exams",     icon: Radio,         label: "Live Examinations", permission: "edit_quiz" },
   { to: "/admin/exams",          icon: Layers,        label: "Manage Exams",      permission: "edit_quiz" },
@@ -242,11 +244,13 @@ function AdminSidebar() {
                       }
 
                       const isItemActive = location.pathname === to || (
+                        to === "/admin/create-quiz" && (location.pathname.startsWith("/admin/create-quiz"))
+                      ) || (
                         to === "/admin/exams" && location.pathname.startsWith("/admin/exams")
                       ) || (
                         to === "/admin/practice" && (location.pathname.startsWith("/admin/create-practice") || location.pathname.startsWith("/admin/edit-practice"))
                       ) || (
-                        to === "/admin/manage-quizzes" && (location.pathname.startsWith("/admin/edit-quiz") || location.pathname.startsWith("/admin/quizzes") || location.pathname.startsWith("/admin/create-quiz"))
+                        to === "/admin/manage-quizzes" && (location.pathname.startsWith("/admin/edit-quiz") || location.pathname.startsWith("/admin/quizzes"))
                       ) || (
                         to === "/admin/flashcards" && location.pathname.startsWith("/admin/flashcards")
                       ) || (

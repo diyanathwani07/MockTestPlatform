@@ -124,7 +124,7 @@ h2 {
 
 /* New Subject Highlight */
 .subject-highlight {
-    color: #6a11cb;
+    color: var(--primary, #6a11cb);
     font-weight: 600;
 }
 
@@ -139,8 +139,8 @@ h2 {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     border: none;
     border-radius: 15px;
-    background: linear-gradient(90deg, #6a11cb, #7b3ff3);
-    color: white;
+    background: var(--primary, linear-gradient(90deg, #6a11cb, #7b3ff3));
+    color: var(--primary-foreground, white);
     font-size: 20px;
     font-weight: 600;
     cursor: pointer;
@@ -148,6 +148,24 @@ h2 {
 }
 
 .start-btn:hover {
+    transform: translateY(-3px);
+}
+
+/* Dark mode theme alignment - matches MyExams Start Test button */
+body.dark-mode .start-btn,
+:root.dark .start-btn,
+.dark .start-btn,
+[data-theme="dark"] .start-btn {
+    background: var(--primary, #FFFFFF) !important;
+    color: var(--primary-foreground, #000000) !important;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.12) !important;
+}
+
+body.dark-mode .start-btn:hover,
+:root.dark .start-btn:hover,
+.dark .start-btn:hover,
+[data-theme="dark"] .start-btn:hover {
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.22) !important;
     transform: translateY(-3px);
 }
 
@@ -308,7 +326,7 @@ h2 {
     border: 2px solid var(--border-input);
     border-radius: 8px;
     font-size: 15px;
-    color: var(--violet);
+    color: var(--text-primary);
     font-weight: 600;
     background-color: var(--bg-input);
     cursor: pointer;
@@ -317,8 +335,8 @@ h2 {
 }
 
 .subject-dropdown:focus {
-    border-color: var(--violet);
-    box-shadow: 0 0 0 3px rgba(110, 63, 243, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 /* Locked subject display (when coming from Student Dashboard) */
@@ -328,7 +346,7 @@ h2 {
     border: 2px solid var(--border-input);
     border-radius: 8px;
     font-size: 15px;
-    color: var(--violet);
+    color: var(--text-primary);
     font-weight: 600;
     background-color: var(--bg-input);
     display: flex;

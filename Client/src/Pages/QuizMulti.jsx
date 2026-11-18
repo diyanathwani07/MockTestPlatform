@@ -62,6 +62,14 @@ function QuizMulti({ initialQuizData = null, initialAttemptId = null, isPreviewP
   const storageKeyRef = useRef(null);
   const isBreakTimeRef = useRef(false);
   const isSubmittedRef = useRef(false);
+  const isSubmittingRef = useRef(false);
+
+  // Auto-redirect if quiz was already completed in this browser session (prevents re-entry on browser back)
+  useEffect(() => {
+    if (quizId && sessionStorage.getItem(`exam_completed_${quizId}`)) {
+      navigate("/dashboard/exams", { replace: true });
+    }
+  }, [quizId, navigate]);
 
   // Anti-cheat
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -376,7 +384,7 @@ function QuizMulti({ initialQuizData = null, initialAttemptId = null, isPreviewP
     const handleFSChange = () => {
       const isFull = !!document.fullscreenElement;
       setIsFullscreen(isFull);
-      if (!isFull) {
+      if (!isFull && !isSubmittedRef.current && !isSubmittingRef.current) {
         setViolations((v) => {
           const newV = v + 1;
           if (newV >= MAX_VIOLATIONS) {
@@ -393,7 +401,7 @@ function QuizMulti({ initialQuizData = null, initialAttemptId = null, isPreviewP
     };
     
     const handleVisibility = () => {
-      if (document.hidden) {
+      if (document.hidden && !isSubmittedRef.current && !isSubmittingRef.current) {
         // Phase 2 Background-Tab Policy: Tab hidden/switched
         // 1. Commit active dwell time up to this instant and pause dwell tracking
         commitCurrentDwellTime();
@@ -412,15 +420,16 @@ function QuizMulti({ initialQuizData = null, initialAttemptId = null, isPreviewP
           }
           return newV;
         });
-      } else {
+      } else if (!document.hidden) {
         // Tab visible again: Resume dwell timing from now (exam clock continued against absolute deadline)
-        if (!isBreakTimeRef.current && !isSubmittedRef.current && activeQuestionIdRef.current) {
+        if (!isBreakTimeRef.current && !isSubmittedRef.current && !isSubmittingRef.current && activeQuestionIdRef.current) {
           activeDwellStartTimeRef.current = Date.now();
         }
       }
     };
 
     const handleWindowBlur = () => {
+      if (isSubmittedRef.current || isSubmittingRef.current) return;
       commitCurrentDwellTime();
       activeDwellStartTimeRef.current = null;
     };
@@ -708,10 +717,23 @@ function QuizMulti({ initialQuizData = null, initialAttemptId = null, isPreviewP
       return;
     }
 
+    isSubmittingRef.current = true;
+    isSubmittedRef.current = true;
+    setShowWarning(false);
+    setWarningMsg("");
+
+    if (quizId) {
+      sessionStorage.setItem(`exam_completed_${quizId}`, Date.now().toString());
+    }
+
+    // Exit fullscreen cleanly before navigating
+    if (document.exitFullscreen && document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => {});
+    }
+
     try {
       // 1. Commit active dwell time immediately and stop dwell tracker
       commitCurrentDwellTime();
-      isSubmittedRef.current = true;
       activeDwellStartTimeRef.current = null;
 
       // 2. Compile sectionTimings and questionTimings using stable IDs (Constraint 1 & 2)

@@ -23,6 +23,17 @@ function Quiz() {
   const [isMultiQuiz, setIsMultiQuiz] = useState(false);
   const [multiQuizData, setMultiQuizData] = useState(null);
 
+  // Synchronous submission guards to prevent anti-cheat false alarms on submit
+  const isSubmittingRef = useRef(false);
+  const isSubmittedRef = useRef(false);
+
+  // Auto-redirect if quiz was already completed in this browser session (prevents re-entry on browser back)
+  useEffect(() => {
+    if (quizId && sessionStorage.getItem(`exam_completed_${quizId}`)) {
+      navigate("/dashboard/exams", { replace: true });
+    }
+  }, [quizId, navigate]);
+
   // 🪝 1. GRABS THE EXACT EXAM CLICKED IN 'StartTest.jsx'
   const isPreview = searchParams.get("preview") === "true" && localStorage.getItem("role") === "admin";
   const quizId = location.state?.quizId || paramQuizId;
@@ -111,7 +122,7 @@ function Quiz() {
     const handleFSChange = () => {
       const isFull = !!document.fullscreenElement;
       setIsFullscreen(isFull);
-      if (!isFull && !pageLoading) {
+      if (!isFull && !pageLoading && !isSubmittingRef.current && !isSubmittedRef.current) {
         // Student exited fullscreen
         setViolations((v) => {
           const newV = v + 1;
@@ -140,7 +151,7 @@ function Quiz() {
     if (isPreview) return;
 
     const handleVisibility = () => {
-      if (document.hidden && !pageLoading) {
+      if (document.hidden && !pageLoading && !isSubmittingRef.current && !isSubmittedRef.current) {
         setViolations((v) => {
           const newV = v + 1;
           if (newV >= MAX_VIOLATIONS) {
@@ -381,7 +392,19 @@ function Quiz() {
   };
 
   const submitQuiz = async (forced = false) => {
-    if (!forced && !window.confirm("Are you sure you want to submit your exam?")) return;
+    isSubmittingRef.current = true;
+    setShowWarning(false);
+    setWarningMsg("");
+
+    if (!forced && !window.confirm("Are you sure you want to submit your exam?")) {
+      isSubmittingRef.current = false;
+      return;
+    }
+    isSubmittedRef.current = true;
+    if (quizId) {
+      sessionStorage.setItem(`exam_completed_${quizId}`, Date.now().toString());
+    }
+
     // Exit fullscreen cleanly before navigating
     if (document.exitFullscreen && document.fullscreenElement) {
       await document.exitFullscreen().catch(() => {});

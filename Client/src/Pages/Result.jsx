@@ -410,6 +410,19 @@ function Result() {
     }
   }, [data]);
 
+  // Handle browser back button: safely navigate to Dashboard / Exams instead of re-entering quiz / start-test
+  useEffect(() => {
+    const handlePopState = () => {
+      if (location.state?.fromAttempts) {
+        navigate("/dashboard/results", { replace: true });
+      } else {
+        navigate("/dashboard/exams", { replace: true });
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate, location.state]);
+
   useEffect(() => {
     const fetchResultData = async () => {
       const token = localStorage.getItem("token");
@@ -2094,19 +2107,19 @@ function Result() {
                   className={`mqa-tab-btn ${resultTab === "overview" ? "active" : ""}`}
                   onClick={() => setResultTab("overview")}
                   style={{
-                    color: resultTab === "overview" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")
+                    color: resultTab === "overview" ? "var(--primary-foreground, #000000)" : (isDark ? "#E2E8F0" : "#334155")
                   }}
                 >
-                  <LayoutGrid size={15} color={resultTab === "overview" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")} /> <span>Overview</span>
+                  <LayoutGrid size={15} color={resultTab === "overview" ? "var(--primary-foreground, #000000)" : (isDark ? "#E2E8F0" : "#334155")} /> <span>Overview</span>
                 </button>
                 <button
                   className={`mqa-tab-btn ${resultTab === "analytics" ? "active" : ""}`}
                   onClick={() => setResultTab("analytics")}
                   style={{
-                    color: resultTab === "analytics" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")
+                    color: resultTab === "analytics" ? "var(--primary-foreground, #000000)" : (isDark ? "#E2E8F0" : "#334155")
                   }}
                 >
-                  <BarChart3 size={15} color={resultTab === "analytics" ? "#FFFFFF" : (isDark ? "#E2E8F0" : "#334155")} /> <span>{isMobile ? "Analysis" : "Deep Analytics & Insights"}</span>
+                  <BarChart3 size={15} color={resultTab === "analytics" ? "var(--primary-foreground, #000000)" : (isDark ? "#E2E8F0" : "#334155")} /> <span>{isMobile ? "Analysis" : "Deep Analytics & Insights"}</span>
                 </button>
               </div>
 
@@ -2167,7 +2180,7 @@ function Result() {
 
                 {/* Quiz Info */}
                 <div className="rm-info-card">
-                  <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#8B5CF6", backgroundColor: "rgba(139, 92, 246, 0.12)", borderRadius: "14px", width: "52px", height: "52px", flexShrink: 0 }}>
+                  <div className="rm-icon-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: isDark ? "#FFFFFF" : "var(--primary)", backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "color-mix(in srgb, var(--primary) 12%, transparent)", borderRadius: "14px", width: "52px", height: "52px", flexShrink: 0 }}>
                     <FileText size={24} />
                   </div>
                   <div className="rm-info-content">
@@ -2178,7 +2191,7 @@ function Result() {
                       <span className="rm-info-chip"><Clock size={13} /> {formatDurationDisplay(data?.duration)}</span>
                       <span className="rm-info-chip"><HelpCircle size={13} /> {total} Questions</span>
                       {data?.sectionResults?.length > 1 && (
-                        <span className="rm-info-chip" style={{ background: isDark ? "rgba(139, 92, 246, 0.2)" : "#EDE9FE", color: isDark ? "#C4B5FD" : "#6D28D9" }}>
+                        <span className="rm-info-chip" style={{ background: isDark ? "rgba(255, 255, 255, 0.08)" : "color-mix(in srgb, var(--primary) 10%, transparent)", color: isDark ? "#FFFFFF" : "var(--primary)" }}>
                           <Layers size={13} /> {data.sectionResults.length} Sections
                         </span>
                       )}
@@ -2189,7 +2202,7 @@ function Result() {
                 {/* Hero Score Box */}
                 <div className="rm-score-section">
                   <div className="rm-score-circle-wrapper">
-                    <div className="rm-score-circle" style={{ background: `conic-gradient(#8B5CF6 ${computedPercentage}%, ${isDark ? "#111111" : "#F3F4F6"} ${computedPercentage}%)` }}>
+                    <div className="rm-score-circle" style={{ background: `conic-gradient(var(--primary, #FFFFFF) ${computedPercentage}%, ${isDark ? "#222222" : "#F3F4F6"} ${computedPercentage}%)` }}>
                       <div className="rm-score-inner">
                         <span className="rm-pct">{computedPercentage}%</span>
                         <span className="rm-pct-label">Score</span>
@@ -2216,7 +2229,7 @@ function Result() {
                       </h4>
                     </div>
                     <p className="rm-feedback-text">
-                      Accuracy: <strong style={{ color: "#8B5CF6" }}>{accuracyDisplay}%</strong> ({attemptedCount}/{total})
+                      Accuracy: <strong style={{ color: isDark ? "#FFFFFF" : "var(--primary)" }}>{accuracyDisplay}%</strong> ({attemptedCount}/{total})
                     </p>
                   </div>
                 </div>
@@ -2322,9 +2335,9 @@ function Result() {
                           width: "100%",
                           padding: "10px 14px",
                           borderRadius: "10px",
-                          background: isDark ? "rgba(139, 92, 246, 0.15)" : "#EDE9FE",
-                          color: isDark ? "#C4B5FD" : "#6D28D9",
-                          border: isDark ? "1px solid rgba(139, 92, 246, 0.3)" : "1px solid #DDD6FE",
+                          background: isDark ? "rgba(255, 255, 255, 0.06)" : "#F1F5F9",
+                          color: isDark ? "#FFFFFF" : "var(--primary)",
+                          border: isDark ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #CBD5E1",
                           fontWeight: "700",
                           fontSize: "13px",
                           cursor: "pointer",

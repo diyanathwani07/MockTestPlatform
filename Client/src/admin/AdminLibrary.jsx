@@ -429,24 +429,6 @@ export function AdminLibraryView({ embedded = false }) {
               <h1>Study Library</h1>
               <p>Manage and organize study materials for students across global and exam-specific courses.</p>
             </div>
-            <div className="library-header-actions">
-              <button
-                type="button"
-                className="btn-secondary-outline"
-                onClick={() => setCreateModal({ isOpen: true, parentFolder: currentFolder })}
-              >
-                <FolderPlus size={16} />
-                <span>{currentFolder ? "New Subfolder" : "Create Folder"}</span>
-              </button>
-              <button
-                type="button"
-                className="btn-primary-gradient"
-                onClick={() => setUploadModal({ isOpen: true, resourceToEdit: null })}
-              >
-                <Upload size={16} />
-                <span>Upload Resource</span>
-              </button>
-            </div>
           </div>
 
           {/* 2. KPI Stats Overview */}
@@ -728,7 +710,11 @@ export function AdminLibraryView({ embedded = false }) {
   );
 
   if (embedded) {
-    return libraryContent;
+    return (
+      <LibraryErrorBoundary>
+        {libraryContent}
+      </LibraryErrorBoundary>
+    );
   }
 
   return (
@@ -737,11 +723,65 @@ export function AdminLibraryView({ embedded = false }) {
       <div className="admin-main">
         <AdminNavbar title="Study Library" />
         <div className="admin-content">
-          {libraryContent}
+          <LibraryErrorBoundary>
+            {libraryContent}
+          </LibraryErrorBoundary>
         </div>
       </div>
     </div>
   );
+}
+
+class LibraryErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("LibraryErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: "32px",
+          margin: "24px 0",
+          borderRadius: "14px",
+          background: "var(--bg-card, #1A1D24)",
+          border: "1px solid rgba(239, 68, 68, 0.3)",
+          color: "var(--text-primary, #FFFFFF)",
+          textAlign: "center"
+        }}>
+          <h3 style={{ color: "#EF4444", marginBottom: "8px", fontSize: "18px" }}>
+            Something went wrong while displaying Study Library
+          </h3>
+          <p style={{ color: "var(--text-secondary, #9CA3AF)", fontSize: "14px", marginBottom: "20px" }}>
+            {this.state.error?.message || "An unexpected error occurred."}
+          </p>
+          <button
+            type="button"
+            className="btn-primary-gradient"
+            onClick={this.handleReset}
+            style={{ padding: "10px 24px", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}
+          >
+            Reload Study Library
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export default function AdminLibrary() {

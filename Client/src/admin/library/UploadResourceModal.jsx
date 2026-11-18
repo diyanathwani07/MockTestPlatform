@@ -1,15 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   X,
   Upload,
   FileText,
   BookOpen,
   Link,
-  CheckCircle2,
   AlertCircle,
-  File,
-  Eye,
-  Info,
   Folder as FolderIcon
 } from "lucide-react";
 
@@ -42,17 +38,19 @@ const ACCESS_TIERS = [
 
 function flattenFolders(roots) {
   const result = [];
-  const traverse = (node, depth) => {
+  if (!Array.isArray(roots)) return result;
+  const traverse = (node, depth = 0) => {
+    if (!node || typeof node !== "object") return;
     result.push({
       _id: (node._id || "").toString(),
-      name: node.name,
-      depth
+      name: node.name || "Untitled Folder",
+      depth: Math.max(0, depth)
     });
     if (Array.isArray(node.children)) {
       node.children.forEach((c) => traverse(c, depth + 1));
     }
   };
-  (roots || []).forEach((r) => traverse(r, 0));
+  roots.forEach((r) => traverse(r, 0));
   return result;
 }
 
@@ -61,7 +59,7 @@ export default function UploadResourceModal({
   onClose,
   folder,
   tree = [],
-  scope,
+  scope: _scope,
   resourceToEdit = null,
   onSubmitFile,
   onUploadFile,
@@ -93,6 +91,11 @@ export default function UploadResourceModal({
   const [error, setError] = useState("");
 
   const flatFolders = useMemo(() => flattenFolders(tree), [tree]);
+
+  const selectedFolderObj = useMemo(() => {
+    if (folder) return folder;
+    return flatFolders.find((f) => f._id === selectedFolderId) || null;
+  }, [folder, flatFolders, selectedFolderId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -287,11 +290,6 @@ export default function UploadResourceModal({
       setLoading(false);
     }
   };
-
-  const selectedFolderObj = useMemo(() => {
-    if (folder) return folder;
-    return flatFolders.find((f) => f._id === selectedFolderId) || null;
-  }, [folder, flatFolders, selectedFolderId]);
 
   return (
     <div className="library-drawer-overlay" onClick={onClose}>
