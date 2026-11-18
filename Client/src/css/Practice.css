@@ -50,7 +50,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--primary);
+  background: var(--violet, var(--primary));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -62,7 +62,7 @@
 .practice-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4);
-  border-color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 .practice-card-header {
@@ -174,15 +174,15 @@
 
 .practice-card:hover .practice-start-btn,
 .practice-start-btn:hover {
-  background: var(--primary) !important;
-  color: var(--primary-foreground, #ffffff) !important;
-  border-color: var(--primary) !important;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 25%, transparent);
+  background: var(--primary, #8B5CF6) !important;
+  color: #ffffff !important;
+  border-color: var(--primary, #8B5CF6) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
 }
 
 .practice-card:hover .practice-start-btn svg,
 .practice-start-btn:hover svg {
-  color: var(--primary-foreground, #ffffff) !important;
+  color: #ffffff !important;
   stroke: currentColor !important;
 }
 
@@ -1242,16 +1242,14 @@ body.dark-mode .practice-card {
 }
 
 body.dark-mode .practice-card:hover {
-  border-color: var(--primary) !important;
-  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--primary) 25%, transparent) !important;
+  border-color: #6D35D9 !important;
+  box-shadow: none !important;
   transform: translateY(-2px) !important;
 }
 
 /* Tone down hover glow on Start Practice Button */
 body.dark-mode .practice-card:hover .practice-start-btn {
-  background: var(--primary) !important;
-  color: var(--primary-foreground, #ffffff) !important;
-  border-color: var(--primary) !important;
+  background: #6D35D9 !important;
   box-shadow: none !important;
 }
 
