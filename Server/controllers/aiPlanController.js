@@ -444,14 +444,37 @@ const getDashboardMetrics = async (req, res) => {
       ]
     });
     
-    // Simple revenue projection from active plans selling prices
-    const subscribers = await User.find({ isPremium: true, activePlan: { $ne: null } }).populate("activePlan");
+    // Revenue calculation is strictly confidential financial data
+    // Only exposed when kill switch is enabled AND requested by verified Super Admin with active unlock token
     let activeRevenue = 0;
-    subscribers.forEach(sub => {
-      if (sub.activePlan) {
-        activeRevenue += sub.activePlan.sellingPrice;
+    const isKillSwitchEnabled = process.env.ENABLE_REVENUE_DASHBOARD === "true";
+    if (isKillSwitchEnabled && req.user && req.user.role === "superadmin") {
+      const unlockToken = req.headers["x-financial-unlock-token"];
+      if (unlockToken) {
+        try {
+          const jwt = require("jsonwebtoken");
+          const { FINANCIAL_UNLOCK_SECRET } = require("../middleware/revenueSecurityMiddleware");
+          const decoded = jwt.verify(unlockToken, FINANCIAL_UNLOCK_SECRET, {
+            audience: "prepmark_financial",
+            issuer: "prepmark_auth",
+            algorithms: ["HS256"]
+          });
+          if (decoded.userId === req.user._id.toString() && decoded.role === "superadmin") {
+            const dbUser = await User.findById(req.user._id).select("financialSessionVersion role");
+            if (dbUser && (dbUser.financialSessionVersion || 1) === decoded.sessionVersion) {
+              const subscribers = await User.find({ isPremium: true, activePlan: { $ne: null } }).populate("activePlan");
+              subscribers.forEach(sub => {
+                if (sub.activePlan) {
+                  activeRevenue += sub.activePlan.sellingPrice;
+                }
+              });
+            }
+          }
+        } catch (_) {
+          // Token invalid, expired, or revoked -> keep activeRevenue at 0
+        }
       }
-    });
+    }
 
     res.json({
       activePlansCount,

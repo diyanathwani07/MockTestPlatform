@@ -1,5 +1,6 @@
 import { initPushNotifications, unregisterDeviceToken } from '../utils/pushNotifications';
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const AuthContext = createContext(null);
 
@@ -62,6 +63,15 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    try {
+      const t = localStorage.getItem("token");
+      if (t) {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, {
+          headers: { Authorization: `Bearer ${t}` }
+        }).catch(() => {});
+      }
+    } catch (_) {}
+
     try {
       const androidToken = localStorage.getItem('fcm_token');
       const webToken = localStorage.getItem('fcm_token_web');

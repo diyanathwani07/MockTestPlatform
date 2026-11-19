@@ -28,6 +28,7 @@ import {
   Info,
   ShieldCheck,
   Eye,
+  EyeOff,
   ExternalLink,
   X,
   HelpCircle,
@@ -83,7 +84,7 @@ const STANDARD_PLANS = [
   { name: "Other Plans", color: "#64748B" }
 ];
 
-const formatCurrency = (val) => {
+const rawFormatCurrency = (val) => {
   const num = Number(val);
   return isNaN(num) ? "0" : num.toLocaleString("en-IN");
 };
@@ -168,11 +169,137 @@ export default function RevenueDashboard() {
   // Reports Tab State
   const [selectedReportType, setSelectedReportType] = useState("revenue_summary");
 
+  // =========================================================================
+  // FINANCIAL SECURITY LOCK STATE (IN-MEMORY ONLY - NEVER IN LOCALSTORAGE)
+  // =========================================================================
+  const [unlockToken, setUnlockToken] = useState(null);
+  const [isLocked, setIsLocked] = useState(true);
+  const [lockTimeRemaining, setLockTimeRemaining] = useState(0); // in seconds
+  const [passwordInput, setPasswordInput] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [unlockLoading, setUnlockLoading] = useState(false);
+  const [unlockError, setUnlockError] = useState("");
+  const [retryAfterSeconds, setRetryAfterSeconds] = useState(0);
+  const [isMasked, setIsMasked] = useState(false);
+
+  // Maskable currency formatter
+  const formatCurrency = useCallback((val) => {
+    if (isMasked) return "••••••";
+    return rawFormatCurrency(val);
+  }, [isMasked]);
+
   const token = localStorage.getItem("token");
-  const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
+  const authHeaders = useMemo(() => {
+    const headers = { Authorization: `Bearer ${token}` };
+    if (unlockToken) {
+      headers["x-financial-unlock-token"] = unlockToken;
+    }
+    return headers;
+  }, [token, unlockToken]);
+
+  // Handle 401/403 Financial Lock & Revocation triggers
+  const handleFinancialAuthError = useCallback((err) => {
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      if (err.response?.data?.financialLockActive || err.response?.data?.locked || err.response?.data?.revoked) {
+        setUnlockToken(null);
+        setIsLocked(true);
+        setLockTimeRemaining(0);
+        setAnalyticsData(null);
+        setTransactionsData([]);
+        setCustomersData([]);
+        setCatalogData(null);
+        setUsageData(null);
+      }
+    }
+  }, []);
+
+  // Submit Password to Unlock Financial Dashboard
+  const handleVerifyUnlock = async (e) => {
+    if (e) e.preventDefault();
+    if (!passwordInput.trim() || retryAfterSeconds > 0) return;
+    setUnlockLoading(true);
+    setUnlockError("");
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/admin/revenue/verify-unlock`,
+        { password: passwordInput },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success && res.data.unlockToken) {
+        setUnlockToken(res.data.unlockToken);
+        setIsLocked(false);
+        setLockTimeRemaining(res.data.expiresIn || 300);
+        setPasswordInput("");
+        setUnlockError("");
+        setRetryAfterSeconds(0);
+      }
+    } catch (err) {
+      const data = err.response?.data;
+      const errorMsg = data?.message || "Financial verification failed. Please try again.";
+      setUnlockError(errorMsg);
+      if (data?.retryAfter) {
+        setRetryAfterSeconds(Number(data.retryAfter));
+      }
+    } finally {
+      setUnlockLoading(false);
+    }
+  };
+
+  // Explicit Dashboard Lock
+  const handleLockDashboard = async () => {
+    try {
+      if (unlockToken) {
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/admin/revenue/lock`,
+          {},
+          { headers: authHeaders }
+        );
+      }
+    } catch (_) {}
+    setUnlockToken(null);
+    setIsLocked(true);
+    setLockTimeRemaining(0);
+    setAnalyticsData(null);
+    setTransactionsData([]);
+    setCustomersData([]);
+    setCatalogData(null);
+    setUsageData(null);
+  };
+
+  // 5-minute financial unlock session countdown timer
+  useEffect(() => {
+    if (isLocked || !unlockToken || lockTimeRemaining <= 0) return;
+    const interval = setInterval(() => {
+      setLockTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setUnlockToken(null);
+          setIsLocked(true);
+          setAnalyticsData(null);
+          setTransactionsData([]);
+          setCustomersData([]);
+          setCatalogData(null);
+          setUsageData(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isLocked, unlockToken, lockTimeRemaining]);
+
+  // Brute-force rate limit countdown timer
+  useEffect(() => {
+    if (retryAfterSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setRetryAfterSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [retryAfterSeconds]);
 
   // Fetch Main Analytics
   const fetchAnalytics = useCallback(async () => {
+    if (isLocked || !unlockToken) return;
     try {
       setLoading(true);
       let url = `${import.meta.env.VITE_API_URL}/api/admin/revenue/analytics?period=${period}&datePreset=${datePreset}`;
@@ -183,13 +310,15 @@ export default function RevenueDashboard() {
       setAnalyticsData(res.data);
     } catch (err) {
       console.error("Failed to load revenue analytics:", err);
+      handleFinancialAuthError(err);
     } finally {
       setLoading(false);
     }
-  }, [period, datePreset, customFrom, customTo, authHeaders]);
+  }, [period, datePreset, customFrom, customTo, authHeaders, isLocked, unlockToken, handleFinancialAuthError]);
 
   // Fetch Transactions
   const fetchTransactions = useCallback(async () => {
+    if (isLocked || !unlockToken) return;
     try {
       setTransactionsLoading(true);
       let url = `${import.meta.env.VITE_API_URL}/api/admin/revenue/transactions?page=${txPage}&limit=15&search=${encodeURIComponent(txSearch)}&status=${txStatus}&gateway=${txGateway}&category=${txCategory}&provenance=${txProvenance}`;
@@ -201,13 +330,15 @@ export default function RevenueDashboard() {
       setTxPagination(res.data.pagination || { total: 0, totalPages: 1, limit: 15 });
     } catch (err) {
       console.error("Failed to load transactions:", err);
+      handleFinancialAuthError(err);
     } finally {
       setTransactionsLoading(false);
     }
-  }, [txPage, txSearch, txStatus, txGateway, txCategory, txProvenance, datePreset, customFrom, customTo, authHeaders]);
+  }, [txPage, txSearch, txStatus, txGateway, txCategory, txProvenance, datePreset, customFrom, customTo, authHeaders, isLocked, unlockToken, handleFinancialAuthError]);
 
   // Fetch Customers
   const fetchCustomers = useCallback(async () => {
+    if (isLocked || !unlockToken) return;
     try {
       setCustomersLoading(true);
       const url = `${import.meta.env.VITE_API_URL}/api/admin/revenue/customers?page=${custPage}&limit=15&search=${encodeURIComponent(custSearch)}&status=${custStatus}`;
@@ -216,13 +347,15 @@ export default function RevenueDashboard() {
       setCustPagination(res.data.pagination || { total: 0, totalPages: 1, limit: 15 });
     } catch (err) {
       console.error("Failed to load customers:", err);
+      handleFinancialAuthError(err);
     } finally {
       setCustomersLoading(false);
     }
-  }, [custPage, custSearch, custStatus, authHeaders]);
+  }, [custPage, custSearch, custStatus, authHeaders, isLocked, unlockToken, handleFinancialAuthError]);
 
   // Fetch Exams & Practice Catalog
   const fetchCatalog = useCallback(async () => {
+    if (isLocked || !unlockToken) return;
     try {
       setCatalogLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/revenue/exams-practice`, {
@@ -231,13 +364,15 @@ export default function RevenueDashboard() {
       setCatalogData(res.data);
     } catch (err) {
       console.error("Failed to load catalog financials:", err);
+      handleFinancialAuthError(err);
     } finally {
       setCatalogLoading(false);
     }
-  }, [authHeaders]);
+  }, [authHeaders, isLocked, unlockToken, handleFinancialAuthError]);
 
   // Fetch AI Usage Analytics
   const fetchAiUsage = useCallback(async () => {
+    if (isLocked || !unlockToken) return;
     try {
       setUsageLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/revenue/ai-usage`, {
@@ -246,22 +381,27 @@ export default function RevenueDashboard() {
       setUsageData(res.data);
     } catch (err) {
       console.error("Failed to load AI usage analytics:", err);
+      handleFinancialAuthError(err);
     } finally {
       setUsageLoading(false);
     }
-  }, [authHeaders]);
+  }, [authHeaders, isLocked, unlockToken, handleFinancialAuthError]);
 
-  // Initial and reactive data loads
+  // Reactive data loads (Only triggered after unlock verification)
   useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+    if (!isLocked && unlockToken) {
+      fetchAnalytics();
+    }
+  }, [fetchAnalytics, isLocked, unlockToken]);
 
   useEffect(() => {
-    if (activeTab === "transactions") fetchTransactions();
-    if (activeTab === "customers") fetchCustomers();
-    if (activeTab === "exams-practice") fetchCatalog();
-    if (activeTab === "ai-plans" && aiSubTab === "usage-analytics") fetchAiUsage();
-  }, [activeTab, aiSubTab, fetchTransactions, fetchCustomers, fetchCatalog, fetchAiUsage]);
+    if (!isLocked && unlockToken) {
+      if (activeTab === "transactions") fetchTransactions();
+      if (activeTab === "customers") fetchCustomers();
+      if (activeTab === "exams-practice") fetchCatalog();
+      if (activeTab === "ai-plans" && aiSubTab === "usage-analytics") fetchAiUsage();
+    }
+  }, [activeTab, aiSubTab, fetchTransactions, fetchCustomers, fetchCatalog, fetchAiUsage, isLocked, unlockToken]);
 
   // KPIs shorthand
   const kpis = {
@@ -383,66 +523,185 @@ export default function RevenueDashboard() {
               </p>
             </div>
 
-            {/* Header Right Actions: Date Preset Selector & Refresh Button */}
+            {/* Header Right Actions: Conditional on Financial Lock */}
             <div className="revenue-header-actions">
-              <div className="revenue-date-picker-wrap">
-                <Calendar className="w-3.5 h-3.5 text-violet-400" />
-                <select
-                  value={datePreset}
-                  onChange={(e) => setDatePreset(e.target.value)}
-                  className="revenue-preset-select"
-                >
-                  {DATE_PRESETS.map((p) => (
-                    <option key={p.key} value={p.key}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {datePreset === "custom" && (
-                <div className="revenue-custom-dates-bar">
-                  <input
-                    type="date"
-                    value={customFrom}
-                    onChange={(e) => setCustomFrom(e.target.value)}
-                    className="revenue-date-input"
-                  />
-                  <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>to</span>
-                  <input
-                    type="date"
-                    value={customTo}
-                    onChange={(e) => setCustomTo(e.target.value)}
-                    className="revenue-date-input"
-                  />
-                  <button
-                    onClick={fetchAnalytics}
-                    className="revenue-apply-btn"
-                  >
-                    Apply
-                  </button>
+              {isLocked ? (
+                <div className="revenue-session-pill" style={{ background: "rgba(239, 68, 68, 0.12)", borderColor: "rgba(239, 68, 68, 0.25)", color: "#EF4444" }}>
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Financial Console Locked</span>
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Financial Session Status Badge with Live Countdown */}
+                  <div className="revenue-session-pill" title="Active financial unlock session">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Unlocked ({Math.floor(lockTimeRemaining / 60)}:{(lockTimeRemaining % 60).toString().padStart(2, "0")})</span>
+                  </div>
 
-              <button
-                onClick={() => {
-                  fetchAnalytics();
-                  if (activeTab === "transactions") fetchTransactions();
-                  if (activeTab === "customers") fetchCustomers();
-                  if (activeTab === "exams-practice") fetchCatalog();
-                  if (activeTab === "ai-plans" && aiSubTab === "usage-analytics") fetchAiUsage();
-                  setRefreshTrigger((prev) => prev + 1);
-                }}
-                className="revenue-refresh-btn"
-                title="Refresh All Revenue Data"
-              >
-                <RefreshCcw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-                <span>Refresh</span>
-              </button>
+                  {/* Mask / Unmask Sensitive Figures Toggle */}
+                  <button
+                    onClick={() => setIsMasked((prev) => !prev)}
+                    className="revenue-session-btn"
+                    title={isMasked ? "Reveal confidential financial numbers" : "Mask confidential financial numbers"}
+                  >
+                    {isMasked ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    <span>{isMasked ? "Unmask" : "Mask"}</span>
+                  </button>
+
+                  {/* Instant Lock Button */}
+                  <button
+                    onClick={handleLockDashboard}
+                    className="revenue-session-btn lock-btn"
+                    title="Lock financial dashboard immediately"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Lock Now</span>
+                  </button>
+
+                  <div className="revenue-date-picker-wrap">
+                    <Calendar className="w-3.5 h-3.5 text-violet-400" />
+                    <select
+                      value={datePreset}
+                      onChange={(e) => setDatePreset(e.target.value)}
+                      className="revenue-preset-select"
+                    >
+                      {DATE_PRESETS.map((p) => (
+                        <option key={p.key} value={p.key}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {datePreset === "custom" && (
+                    <div className="revenue-custom-dates-bar">
+                      <input
+                        type="date"
+                        value={customFrom}
+                        onChange={(e) => setCustomFrom(e.target.value)}
+                        className="revenue-date-input"
+                      />
+                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>to</span>
+                      <input
+                        type="date"
+                        value={customTo}
+                        onChange={(e) => setCustomTo(e.target.value)}
+                        className="revenue-date-input"
+                      />
+                      <button
+                        onClick={fetchAnalytics}
+                        className="revenue-apply-btn"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      fetchAnalytics();
+                      if (activeTab === "transactions") fetchTransactions();
+                      if (activeTab === "customers") fetchCustomers();
+                      if (activeTab === "exams-practice") fetchCatalog();
+                      if (activeTab === "ai-plans" && aiSubTab === "usage-analytics") fetchAiUsage();
+                      setRefreshTrigger((prev) => prev + 1);
+                    }}
+                    className="revenue-refresh-btn"
+                    title="Refresh All Revenue Data"
+                  >
+                    <RefreshCcw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                    <span>Refresh</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
-          {/* ================= 2. PRIMARY NAVIGATION TABS (6 SECTIONS) ================= */}
+          {/* ================= CONDITIONAL: FINANCIAL LOCK SCREEN VS DASHBOARD CONTENT ================= */}
+          {isLocked ? (
+            <div className="revenue-lock-wrapper">
+              <div className="revenue-lock-card">
+                <div className="revenue-lock-icon-wrap">
+                  <Lock className="w-8 h-8" />
+                </div>
+                <h2 className="revenue-lock-title">Financial Security Lock</h2>
+                <p className="revenue-lock-desc">
+                  Revenue Management contains sensitive monetary transaction ledgers, customer billing details, and audit records. Enter your Super Administrator account password to generate a secure, 5-minute financial unlock session.
+                </p>
+
+                <form onSubmit={handleVerifyUnlock} className="revenue-lock-form">
+                  <div className="revenue-lock-input-group">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      placeholder="Super Admin Account Password"
+                      className="revenue-lock-input"
+                      disabled={unlockLoading || retryAfterSeconds > 0}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="revenue-lock-toggle-pw"
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+
+                  {unlockError && (
+                    <div className="revenue-lock-error">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      <span>{unlockError}</span>
+                    </div>
+                  )}
+
+                  {retryAfterSeconds > 0 && (
+                    <div className="revenue-lock-error" style={{ background: "rgba(245, 158, 11, 0.12)", borderColor: "rgba(245, 158, 11, 0.3)", color: "#F59E0B" }}>
+                      <Clock className="w-4 h-4 flex-shrink-0" />
+                      <span>Too many failed verification attempts. Please retry in {retryAfterSeconds}s.</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="revenue-lock-submit-btn"
+                    disabled={unlockLoading || !passwordInput.trim() || retryAfterSeconds > 0}
+                  >
+                    {unlockLoading ? (
+                      <>
+                        <RefreshCcw className="w-4 h-4 animate-spin" />
+                        <span>Verifying Credentials...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Unlock Financial Dashboard</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="revenue-lock-info-box">
+                  <div className="revenue-lock-info-item">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                    <span><strong>Zero Client Persistence:</strong> Unlock tokens are held purely in volatile memory.</span>
+                  </div>
+                  <div className="revenue-lock-info-item">
+                    <Clock className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                    <span><strong>5-Minute Expiry:</strong> Automatically locks after 300 seconds or on logout.</span>
+                  </div>
+                  <div className="revenue-lock-info-item">
+                    <Lock className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
+                    <span><strong>Audit Recorded:</strong> All access and verification attempts are logged securely.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* ================= 2. PRIMARY NAVIGATION TABS (6 SECTIONS) ================= */}
           <div className="revenue-nav-tabs-bar">
             {[
               { key: "overview", label: "Overview", icon: TrendingUp },
@@ -598,7 +857,7 @@ export default function RevenueDashboard() {
                     {kpis.distinctPayingStudentsCount}
                   </div>
                   <div className="revenue-kpi-subtitle">
-                    ARPU: <strong>₹{kpis.arpu}</strong>
+                    ARPU: <strong>₹{formatCurrency(kpis.arpu)}</strong>
                   </div>
                   <div className="revenue-kpi-accent-bar" />
                 </div>
@@ -824,7 +1083,7 @@ export default function RevenueDashboard() {
                               {sub.planNameSnapshot || sub.planId?.name || "AI Plan"}
                             </td>
                             <td style={{ padding: "10px 6px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
-                              ₹{sub.amount}
+                              ₹{formatCurrency(sub.amount)}
                             </td>
                             <td style={{ padding: "10px 6px" }}>
                               {getStatusBadge(sub.status)}
@@ -980,7 +1239,7 @@ export default function RevenueDashboard() {
 
               {/* Sub-tab 2: Manage AI Plans (Embedded AiPlans.jsx) */}
               {aiSubTab === "manage-plans" && (
-                <AdminAiPlans isEmbedded={true} onNavigateSubtab={handleAiSubTabChange} />
+                <AdminAiPlans isEmbedded={true} onNavigateSubtab={handleAiSubTabChange} unlockToken={unlockToken} />
               )}
 
               {/* Sub-tab 3: AI Subscribers (Embedded AiSubscribers.jsx) */}
@@ -992,6 +1251,7 @@ export default function RevenueDashboard() {
                   customFrom={customFrom}
                   customTo={customTo}
                   refreshTrigger={refreshTrigger}
+                  unlockToken={unlockToken}
                 />
               )}
 
@@ -1459,7 +1719,7 @@ export default function RevenueDashboard() {
 
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
-                          ₹{t.amount}
+                          ₹{formatCurrency(t.amount)}
                         </div>
                       </div>
                     </div>
@@ -1556,7 +1816,7 @@ export default function RevenueDashboard() {
                             </div>
                           </td>
                           <td style={{ padding: "12px 16px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
-                            ₹{t.amount}
+                            ₹{formatCurrency(t.amount)}
                           </td>
                           <td style={{ padding: "12px 16px" }}>
                             <span style={{
@@ -1746,7 +2006,7 @@ export default function RevenueDashboard() {
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Recorded Spend</div>
                         <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
-                          ₹{c.totalSpent}
+                          ₹{formatCurrency(c.totalSpent)}
                         </div>
                       </div>
                     </div>
@@ -1827,7 +2087,7 @@ export default function RevenueDashboard() {
                             {c.purchasedPracticeCount} practice
                           </td>
                           <td style={{ fontWeight: "800", color: "var(--primary, #8B5CF6)" }}>
-                            ₹{c.totalSpent}
+                            ₹{formatCurrency(c.totalSpent)}
                           </td>
                           <td>
                             {c.isPremium ? (
@@ -1961,7 +2221,7 @@ export default function RevenueDashboard() {
                       <div style={{ background: "var(--bg-page)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                         <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>RECORDED SPEND</span>
                         <div style={{ fontSize: "18px", fontWeight: "800", color: "var(--primary, #8B5CF6)", marginTop: "2px" }}>
-                          ₹{selectedCustomer.totalSpent}
+                          ₹{formatCurrency(selectedCustomer.totalSpent)}
                         </div>
                       </div>
                       <div style={{ background: "var(--bg-page)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
@@ -2170,6 +2430,8 @@ export default function RevenueDashboard() {
                 </div>
               </div>
             </div>
+          )}
+            </>
           )}
 
         </div>

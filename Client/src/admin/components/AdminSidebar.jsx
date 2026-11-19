@@ -34,7 +34,7 @@ const BOTTOM_NAV_ITEMS = [
   { to: "/admin/students",       icon: Users,         label: "Users",               permission: "manage_students" },
   { to: "/admin/staff",          icon: Shield,        label: "Admin",               permission: "manage_staff" },
   { to: "/admin/banners",        icon: Image,         label: "Banners",             permission: "dashboard" },
-  { to: "/admin/revenue",        icon: IndianRupee,   label: "Revenue",             permission: ["view_revenue", "manage_revenue", "manage_ai_plans", "manage_ai_subscribers"] },
+  { to: "/admin/revenue",        icon: IndianRupee,   label: "Revenue",             permission: "superadmin" },
   { to: "/admin/results",        icon: Trophy,        label: "Results",             permission: "manage_results" },
   { to: "/admin/reports",        icon: LineChart,     label: "Reports",             permission: "view_reports" },
   { to: "/admin/audit-log",      icon: FileText,      label: "Audit Log",           permission: "audit_logs" },
@@ -280,9 +280,15 @@ function AdminSidebar() {
           {/* Bottom navigation items (Users, Admin, Banners, Revenue, Results, etc.) */}
           {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) => {
             const isRevenue = to === "/admin/revenue";
-            // Restricted revenue module requires superadmin or explicit permission (never generic admin)
+            const isRevenueEnabled = import.meta.env.VITE_ENABLE_REVENUE_DASHBOARD === "true";
+
+            // Strict Super Admin-Only restriction + Environment Kill Switch for Revenue module
+            if (isRevenue && (!isRevenueEnabled || role !== "superadmin")) {
+              return null;
+            }
+
             const canView = isRevenue 
-              ? (role === "superadmin" || hasPermission(permission))
+              ? (isRevenueEnabled && role === "superadmin")
               : (hasPermission(permission) || role === "admin" || role === "superadmin");
 
             return canView ? (

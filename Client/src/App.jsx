@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
 import AdminRoute from "./components/AdminRoute";
 import PermissionRoute from "./components/PermissionRoute";
+import SuperAdminRevenueRoute from "./components/SuperAdminRevenueRoute";
 
 
 const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
@@ -432,9 +433,9 @@ function App() {
         <Route
           path="/admin/revenue"
           element={
-            <PermissionRoute permission={["view_revenue", "manage_revenue", "manage_ai_plans", "manage_ai_subscribers"]}>
+            <SuperAdminRevenueRoute>
               <RevenueDashboard />
-            </PermissionRoute>
+            </SuperAdminRevenueRoute>
           }
         />
 

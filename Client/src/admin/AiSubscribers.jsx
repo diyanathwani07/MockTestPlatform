@@ -50,9 +50,19 @@ export default function AiSubscribers({
   datePreset = "30d",
   customFrom = "",
   customTo = "",
-  refreshTrigger = 0
+  refreshTrigger = 0,
+  unlockToken = null
 }) {
   const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
+  const authHeaders = useMemo(() => {
+    const headers = { Authorization: `Bearer ${token}` };
+    if (unlockToken) {
+      headers["x-financial-unlock-token"] = unlockToken;
+    }
+    return headers;
+  }, [token, unlockToken]);
 
   // Overview & Metrics State
   const [overviewLoading, setOverviewLoading] = useState(true);
@@ -86,26 +96,24 @@ export default function AiSubscribers({
   const fetchOverview = useCallback(async () => {
     try {
       setOverviewLoading(true);
-      const token = localStorage.getItem("token");
       let url = `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribers?datePreset=${datePreset}`;
       if (datePreset === "custom" && customFrom) url += `&from=${customFrom}`;
       if (datePreset === "custom" && customTo) url += `&to=${customTo}`;
-      const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(url, { headers: authHeaders });
       setOverviewData(res.data);
     } catch (error) {
       console.error("Failed to load subscribers overview:", error);
     } finally {
       setOverviewLoading(false);
     }
-  }, [datePreset, customFrom, customTo]);
+  }, [datePreset, customFrom, customTo, authHeaders]);
 
   // 2. Fetch Available AI Plans
   const fetchPlans = async () => {
     try {
-      const token = localStorage.getItem("token");
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/admin/ai-plans`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: authHeaders }
       );
       setAvailablePlans(res.data || []);
     } catch (error) {
@@ -117,7 +125,6 @@ export default function AiSubscribers({
   const fetchSubscribersList = useCallback(async () => {
     try {
       setListLoading(true);
-      const token = localStorage.getItem("token");
       const params = new URLSearchParams({
         search: searchQuery,
         plan: selectedPlan,
@@ -131,7 +138,7 @@ export default function AiSubscribers({
 
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribers/list?${params.toString()}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: authHeaders }
       );
 
       setSubscribers(res.data.subscribers || []);
@@ -141,17 +148,16 @@ export default function AiSubscribers({
     } finally {
       setListLoading(false);
     }
-  }, [searchQuery, selectedPlan, selectedStatus, currentPage]);
+  }, [searchQuery, selectedPlan, selectedStatus, currentPage, datePreset, customFrom, customTo, authHeaders]);
 
   // 4. Fetch Single Student History (for Drawer)
   const openStudentDrawer = async (studentId) => {
     try {
       setSelectedStudentId(studentId);
       setDrawerLoading(true);
-      const token = localStorage.getItem("token");
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/admin/ai-plans/subscribers/${studentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: authHeaders }
       );
       setDrawerData(res.data);
     } catch (error) {

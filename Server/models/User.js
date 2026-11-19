@@ -122,6 +122,16 @@ const userSchema = new mongoose.Schema(
       push: { type: Boolean, default: true },
       email: { type: Boolean, default: true }
     },
+    // Super Admin Financial Security Lock Fields
+    financialSessionVersion: {
+      type: Number,
+      default: 1
+    },
+    financialLockout: {
+      attempts: { type: Number, default: 0 },
+      lockoutUntil: { type: Date, default: null },
+      lastAttemptAt: { type: Date, default: null }
+    },
   },
   {
     timestamps: true,

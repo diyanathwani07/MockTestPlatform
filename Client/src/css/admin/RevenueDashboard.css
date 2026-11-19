@@ -1208,3 +1208,214 @@ body.dark-mode .revenue-timeframe-btn:hover:not(.active),
     gap: 8px;
   }
 }
+
+/* ==========================================================================
+   FINANCIAL SECURITY LOCK SCREEN & TOOLBAR CONTROLS
+   ========================================================================== */
+.revenue-lock-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 520px;
+  padding: 40px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.revenue-lock-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card, #121118);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 18px;
+  padding: 36px 32px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.revenue-lock-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981);
+}
+
+.revenue-lock-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  color: #8B5CF6;
+}
+
+.revenue-lock-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary, #F8FAFC);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.revenue-lock-desc {
+  font-size: 13px;
+  color: var(--text-secondary, #94A3B8);
+  line-height: 1.55;
+  margin: 0 0 24px 0;
+}
+
+.revenue-lock-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.revenue-lock-input-group {
+  position: relative;
+  width: 100%;
+}
+
+.revenue-lock-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-page, #0B0A10);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  padding: 12px 44px 12px 14px;
+  font-size: 14px;
+  color: var(--text-primary, #F8FAFC);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.revenue-lock-input:focus {
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.revenue-lock-toggle-pw {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94A3B8);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.revenue-lock-submit-btn {
+  width: 100%;
+  background: #8B5CF6;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.revenue-lock-submit-btn:hover:not(:disabled) {
+  background: #7C3AED;
+}
+
+.revenue-lock-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.revenue-lock-error {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #EF4444;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.revenue-lock-info-box {
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.revenue-lock-info-item {
+  font-size: 11.5px;
+  color: var(--text-secondary, #94A3B8);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.4;
+}
+
+/* Header Session Indicator & Control Buttons */
+.revenue-session-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #10B981;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.revenue-session-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--bg-card, #121118);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  color: var(--text-secondary, #94A3B8);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.revenue-session-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #F8FAFC);
+}
+
+.revenue-session-btn.lock-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #EF4444;
+}
+

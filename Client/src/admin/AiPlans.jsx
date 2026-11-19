@@ -22,7 +22,7 @@ const AVAILABLE_FEATURES = [
   "Weak Topic Recommendations"
 ];
 
-function AdminAiPlans({ isEmbedded = false, onNavigateSubtab }) {
+function AdminAiPlans({ isEmbedded = false, onNavigateSubtab, unlockToken = null }) {
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [exams, setExams] = useState([]);
@@ -97,8 +97,10 @@ function AdminAiPlans({ isEmbedded = false, onNavigateSubtab }) {
     setMetricsLoading(true);
     try {
       const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      if (unlockToken) headers["x-financial-unlock-token"] = unlockToken;
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/ai-plans/dashboard-metrics`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers
       });
       setMetrics(res.data);
     } catch (err) {

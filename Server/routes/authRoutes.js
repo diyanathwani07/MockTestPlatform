@@ -248,6 +248,7 @@ router.post("/reset-password", passwordRecoveryLimiter, async (req, res) => {
     // Hash the new password before saving
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
+    user.financialSessionVersion = (user.financialSessionVersion || 1) + 1;
     await user.save();
 
     // OTP used, clear it
@@ -412,12 +413,13 @@ router.put("/change-password", protect, async (req, res) => {
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
+    user.financialSessionVersion = (user.financialSessionVersion || 1) + 1;
     await user.save();
 
     await logAction(
       "CHANGE_PASSWORD", 
       user.fullName, 
-      "Updated password successfully", 
+      "Updated password successfully. Revoked active financial unlock sessions.", 
       "UserManagement", 
       req.ip
     );
@@ -426,6 +428,28 @@ router.put("/change-password", protect, async (req, res) => {
   } catch (error) {
     console.error("Change Password Error:", error);
     res.status(500).json({ message: "Failed to change password." });
+  }
+});
+
+// LOGOUT - Server-side session & financial session revocation
+router.post("/logout", protect, async (req, res) => {
+  try {
+    if (req.user && req.user._id) {
+      await User.findByIdAndUpdate(req.user._id, {
+        $inc: { financialSessionVersion: 1 }
+      });
+      await logAction(
+        "USER_LOGOUT",
+        req.user.fullName || req.user.email,
+        "User logged out. Revoked active financial unlock sessions.",
+        "Auth",
+        req.ip
+      );
+    }
+    return res.json({ success: true, message: "Logged out successfully." });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    return res.status(500).json({ success: false, message: "Failed to logout." });
   }
 });
 

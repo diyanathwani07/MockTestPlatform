@@ -22,9 +22,7 @@ const PANEL_PERMISSIONS = [
   { key: "audit_logs",            label: "Audit Log" },
   { key: "support_tickets",       label: "Support Tickets" },
   { key: "manage_roles",          label: "Roles & Permissions" },
-  // Revenue & Monetization
-  { key: "view_revenue",          label: "View Revenue & Financial Analytics" },
-  { key: "manage_revenue",        label: "Manage Revenue Operations" },
+  // AI Plans & Catalog Management (Revenue dashboard is strictly Super Admin only)
   { key: "manage_ai_plans",       label: "Manage AI Plans" },
   { key: "manage_ai_subscribers", label: "Manage AI Subscribers" }
 ];

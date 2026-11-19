@@ -14,20 +14,25 @@ const {
   getDashboardMetrics
 } = require("../controllers/aiPlanController");
 const {
+  checkRevenueKillSwitch,
+  requireSuperAdmin,
+  requireFinancialUnlock
+} = require("../middleware/revenueSecurityMiddleware");
+const {
   getSubscribersOverview,
   getSubscribersList,
   getSubscriberHistory
 } = require("../controllers/subscribersController");
 
-// Subscribers Analytics & Listing Endpoints (Requires manage_ai_subscribers)
-router.get("/subscribers", protect, requirePermission("manage_ai_subscribers"), getSubscribersOverview);
-router.get("/subscribers/list", protect, requirePermission("manage_ai_subscribers"), getSubscribersList);
-router.get("/subscribers/:studentId", protect, requirePermission("manage_ai_subscribers"), getSubscriberHistory);
+// Subscribers Analytics & Listing Endpoints (Strictly Super Admin + Financial Unlock Protected)
+router.get("/subscribers", protect, checkRevenueKillSwitch, requireSuperAdmin, requireFinancialUnlock, getSubscribersOverview);
+router.get("/subscribers/list", protect, checkRevenueKillSwitch, requireSuperAdmin, requireFinancialUnlock, getSubscribersList);
+router.get("/subscribers/:studentId", protect, checkRevenueKillSwitch, requireSuperAdmin, requireFinancialUnlock, getSubscriberHistory);
 
 // Student/Admin listing endpoints
 router.get("/", protect, getAiPlans);
 router.post("/subscribe", protect, paymentLimiter, subscribeToPlan);
-router.get("/dashboard-metrics", protect, requirePermission(["manage_ai_plans", "view_revenue", "manage_revenue"]), getDashboardMetrics);
+router.get("/dashboard-metrics", protect, requirePermission("manage_ai_plans"), getDashboardMetrics);
 router.get("/:id", protect, getAiPlanById);
 
 // Admin-only management endpoints (Requires manage_ai_plans)

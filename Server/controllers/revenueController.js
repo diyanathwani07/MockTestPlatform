@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const Subscription = require("../models/Subscription");
 const AiPlan = require("../models/AiPlan");
 const User = require("../models/User");
@@ -10,6 +13,218 @@ const PurchaseTransaction = require("../models/PurchaseTransaction");
 const { syncLegacySubscriptions } = require("../utils/subscriptionUtils");
 const { transitionTransactionStatus } = require("../services/ledgerService");
 const logAction = require("../utils/logger");
+const { FINANCIAL_UNLOCK_SECRET } = require("../middleware/revenueSecurityMiddleware");
+
+// Configuration for Super Admin Financial Verification Rate Limiting & Lockout
+const MAX_VERIFICATION_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15-minute temporary lockout
+
+/**
+ * POST /api/admin/revenue/verify-unlock
+ * Super Admin Financial Security Lock credential re-verification.
+ * Persists failed attempts and lockouts directly in MongoDB (survives restarts, shared across instances).
+ * Returns a 5-minute server-signed financial unlock token with audience, issuer, and sessionVersion binding.
+ */
+const verifyFinancialUnlock = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || user.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only Super Admin can unlock financial metrics."
+      });
+    }
+
+    const userId = user._id.toString();
+    const now = Date.now();
+
+    // 1. Fetch current user from MongoDB with financial security metadata
+    const dbUser = await User.findById(user._id);
+    if (!dbUser || dbUser.role !== "superadmin") {
+      return res.status(404).json({ success: false, message: "Super Admin account not found." });
+    }
+
+    // 2. Check for active lockout in MongoDB
+    const lockout = dbUser.financialLockout || {};
+    if (lockout.lockoutUntil && new Date(lockout.lockoutUntil).getTime() > now) {
+      const remainingSeconds = Math.ceil((new Date(lockout.lockoutUntil).getTime() - now) / 1000);
+      const remainingMinutes = Math.ceil(remainingSeconds / 60);
+
+      await logAction(
+        "FINANCIAL_VERIFICATION_LOCKOUT_BLOCKED",
+        user.fullName || "Super Admin",
+        `Verification attempt blocked during active lockout (${remainingSeconds}s remaining).`,
+        "Revenue Security",
+        req.ip
+      );
+
+      return res.status(429).json({
+        success: false,
+        lockedOut: true,
+        retryAfter: remainingSeconds,
+        message: `Too many failed verification attempts. Financial verification is temporarily locked for ${remainingMinutes} minute(s).`
+      });
+    }
+
+    const { password } = req.body;
+    if (!password || typeof password !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Password is required for financial verification."
+      });
+    }
+
+    // 3. Compare password
+    const isMatch = await bcrypt.compare(password, dbUser.password);
+
+    if (!isMatch) {
+      // If previous lockout has expired, reset attempts to 1, otherwise increment atomically
+      const isPastLockout = lockout.lockoutUntil && new Date(lockout.lockoutUntil).getTime() <= now;
+      let updatedUser;
+      if (isPastLockout) {
+        updatedUser = await User.findByIdAndUpdate(
+          user._id,
+          {
+            $set: {
+              "financialLockout.attempts": 1,
+              "financialLockout.lastAttemptAt": new Date(now),
+              "financialLockout.lockoutUntil": null
+            }
+          },
+          { new: true }
+        );
+      } else {
+        updatedUser = await User.findByIdAndUpdate(
+          user._id,
+          {
+            $inc: { "financialLockout.attempts": 1 },
+            $set: { "financialLockout.lastAttemptAt": new Date(now) }
+          },
+          { new: true }
+        );
+      }
+
+      const currentAttempts = updatedUser?.financialLockout?.attempts || 1;
+      const isNowLockedOut = currentAttempts >= MAX_VERIFICATION_ATTEMPTS;
+      const lockoutUntil = isNowLockedOut ? new Date(now + LOCKOUT_DURATION_MS) : null;
+
+      if (isNowLockedOut) {
+        await User.findByIdAndUpdate(user._id, {
+          $set: { "financialLockout.lockoutUntil": lockoutUntil }
+        });
+      }
+
+      await logAction(
+        isNowLockedOut ? "FINANCIAL_VERIFICATION_LOCKOUT" : "FINANCIAL_VERIFICATION_FAILED",
+        user.fullName || "Super Admin",
+        isNowLockedOut
+          ? `Consecutive failed attempts reached (${currentAttempts}/${MAX_VERIFICATION_ATTEMPTS}). 15-minute temporary lockout imposed.`
+          : `Failed verification attempt (${currentAttempts}/${MAX_VERIFICATION_ATTEMPTS}).`,
+        "Revenue Security",
+        req.ip
+      );
+
+      if (isNowLockedOut) {
+        return res.status(429).json({
+          success: false,
+          lockedOut: true,
+          retryAfter: 900,
+          message: "Too many failed verification attempts. Financial verification is temporarily locked for 15 minutes."
+        });
+      }
+
+      return res.status(401).json({
+        success: false,
+        attemptsRemaining: Math.max(0, MAX_VERIFICATION_ATTEMPTS - currentAttempts),
+        message: "Invalid verification credentials. Verification failed."
+      });
+    }
+
+    // 4. Verification successful -> clear failure tracker in MongoDB
+    await User.findByIdAndUpdate(user._id, {
+      $set: {
+        "financialLockout.attempts": 0,
+        "financialLockout.lockoutUntil": null,
+        "financialLockout.lastAttemptAt": new Date(now)
+      }
+    });
+
+    const currentVersion = dbUser.financialSessionVersion || 1;
+
+    // 5. Generate server-signed 5-minute financial unlock token
+    // Includes jti, sessionVersion, sub, aud, and iss
+    const unlockToken = jwt.sign(
+      {
+        userId,
+        sub: userId,
+        role: "superadmin",
+        type: "financial_unlock",
+        sessionVersion: currentVersion,
+        jti: crypto.randomUUID(),
+        verifiedAt: now
+      },
+      FINANCIAL_UNLOCK_SECRET,
+      {
+        expiresIn: "5m",
+        audience: "prepmark_financial",
+        issuer: "prepmark_auth",
+        algorithm: "HS256"
+      }
+    );
+
+    await logAction(
+      "FINANCIAL_VERIFICATION_SUCCESS",
+      user.fullName || "Super Admin",
+      "Successfully verified financial credentials. Issued 5-minute unlock token.",
+      "Revenue Security",
+      req.ip
+    );
+
+    return res.json({
+      success: true,
+      message: "Financial Security Lock unlocked successfully.",
+      unlockToken,
+      expiresIn: 300
+    });
+  } catch (error) {
+    console.error("Financial Verification Error:", error);
+    return res.status(500).json({ success: false, message: "Verification processing error." });
+  }
+};
+
+/**
+ * POST /api/admin/revenue/lock
+ * Explicit financial dashboard lock endpoint.
+ * Invalidate financial session version server-side in MongoDB.
+ */
+const lockFinancialDashboard = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user?._id) {
+      await User.findByIdAndUpdate(user._id, {
+        $inc: { financialSessionVersion: 1 }
+      });
+    }
+
+    await logAction(
+      "FINANCIAL_DASHBOARD_LOCKED",
+      user?.fullName || "Super Admin",
+      "Financial dashboard explicitly locked by user. Financial session revoked on server.",
+      "Revenue Security",
+      req.ip
+    );
+
+    return res.json({
+      success: true,
+      locked: true,
+      revoked: true,
+      message: "Financial dashboard locked successfully and session revoked."
+    });
+  } catch (error) {
+    console.error("Lock Financial Dashboard Error:", error);
+    return res.status(500).json({ success: false, message: "Lock action failed." });
+  }
+};
 
 /**
  * Helper to compute date boundaries based on date preset or custom range
@@ -1279,6 +1494,8 @@ const getRevenueReports = async (req, res) => {
 };
 
 module.exports = {
+  verifyFinancialUnlock,
+  lockFinancialDashboard,
   getRevenueAnalytics,
   getRevenueTransactions,
   getSingleTransaction,
