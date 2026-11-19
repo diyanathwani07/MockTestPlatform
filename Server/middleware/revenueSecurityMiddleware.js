@@ -9,7 +9,8 @@ const FINANCIAL_UNLOCK_SECRET = process.env.FINANCIAL_UNLOCK_SECRET || (process.
  * Defaults to false if missing or invalid.
  */
 function checkRevenueKillSwitch(req, res, next) {
-  const isEnabled = process.env.ENABLE_REVENUE_DASHBOARD === "true";
+  // Enabled by default unless explicitly turned off with "false"
+  const isEnabled = process.env.ENABLE_REVENUE_DASHBOARD !== "false";
   if (!isEnabled) {
     return res.status(403).json({
       success: false,
