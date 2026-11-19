@@ -4,13 +4,14 @@ import { useAuth } from "../context/AuthContext";
 import { ShieldAlert, AlertTriangle, ArrowLeft } from "lucide-react";
 
 export default function SuperAdminRevenueRoute({ children }) {
-  const { role, loading, token } = useAuth();
+  const { role, user, loading, token } = useAuth();
   const navigate = useNavigate();
 
   if (loading) return null;
   if (!token) return <Navigate to="/" replace />;
 
   const isRevenueEnabled = import.meta.env.VITE_ENABLE_REVENUE_DASHBOARD === "true";
+  const effectiveRole = (role || user?.role || "").toLowerCase().trim();
 
   // Kill Switch check
   if (!isRevenueEnabled) {
@@ -82,7 +83,7 @@ export default function SuperAdminRevenueRoute({ children }) {
   }
 
   // Super Admin Authorization check
-  if (role !== "superadmin") {
+  if (effectiveRole !== "superadmin") {
     return (
       <div style={{
         minHeight: "100vh",

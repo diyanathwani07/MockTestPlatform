@@ -57,7 +57,7 @@ const isChildRouteActive = (pathname) => {
 function AdminSidebar() {
   const { collapsed, toggleSidebarCollapse, mobileOpen: isOpen, setMobileOpen: setIsOpen } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { hasPermission, logout, role } = useAuth();
+  const { hasPermission, logout, role, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleThemePicker } = useTheme();
@@ -281,15 +281,17 @@ function AdminSidebar() {
           {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) => {
             const isRevenue = to === "/admin/revenue";
             const isRevenueEnabled = import.meta.env.VITE_ENABLE_REVENUE_DASHBOARD === "true";
+            const effectiveRole = (role || user?.role || "").toLowerCase().trim();
+            const isSuperAdmin = effectiveRole === "superadmin";
 
             // Strict Super Admin-Only restriction + Environment Kill Switch for Revenue module
-            if (isRevenue && (!isRevenueEnabled || role !== "superadmin")) {
+            if (isRevenue && (!isRevenueEnabled || !isSuperAdmin)) {
               return null;
             }
 
             const canView = isRevenue 
-              ? (isRevenueEnabled && role === "superadmin")
-              : (hasPermission(permission) || role === "admin" || role === "superadmin");
+              ? (isRevenueEnabled && isSuperAdmin)
+              : (hasPermission(permission) || effectiveRole === "admin" || isSuperAdmin);
 
             return canView ? (
               <NavLink
