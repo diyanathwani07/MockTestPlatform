@@ -280,8 +280,19 @@ function AdminSidebar() {
           {/* Bottom navigation items (Users, Admin, Banners, Revenue, Results, etc.) */}
           {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label, permission }) => {
             const isRevenue = to === "/admin/revenue";
-            const isRevenueEnabled = import.meta.env.VITE_ENABLE_REVENUE_DASHBOARD === "true";
-            const effectiveRole = (role || user?.role || "").toLowerCase().trim();
+            const isRevenueEnabled = import.meta.env.VITE_ENABLE_REVENUE_DASHBOARD !== "false";
+            const effectiveRole = (
+              role || 
+              user?.role || 
+              (() => {
+                try {
+                  return JSON.parse(localStorage.getItem("user") || "{}")?.role;
+                } catch {
+                  return localStorage.getItem("role");
+                }
+              })() || 
+              ""
+            ).toLowerCase().trim();
             const isSuperAdmin = effectiveRole === "superadmin";
 
             // Strict Super Admin-Only restriction + Environment Kill Switch for Revenue module

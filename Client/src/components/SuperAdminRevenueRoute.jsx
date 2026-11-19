@@ -10,8 +10,19 @@ export default function SuperAdminRevenueRoute({ children }) {
   if (loading) return null;
   if (!token) return <Navigate to="/" replace />;
 
-  const isRevenueEnabled = import.meta.env.VITE_ENABLE_REVENUE_DASHBOARD === "true";
-  const effectiveRole = (role || user?.role || "").toLowerCase().trim();
+  const isRevenueEnabled = import.meta.env.VITE_ENABLE_REVENUE_DASHBOARD !== "false";
+  const effectiveRole = (
+    role || 
+    user?.role || 
+    (() => {
+      try {
+        return JSON.parse(localStorage.getItem("user") || "{}")?.role;
+      } catch {
+        return localStorage.getItem("role");
+      }
+    })() || 
+    ""
+  ).toLowerCase().trim();
 
   // Kill Switch check
   if (!isRevenueEnabled) {
