@@ -57,6 +57,7 @@ import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminAiPlans from "./AiPlans";
 import AiSubscribers from "./AiSubscribers";
+import { useAuth } from "../context/AuthContext";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/RevenueDashboard.css";
 
@@ -92,6 +93,7 @@ const rawFormatCurrency = (val) => {
 export default function RevenueDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   // Parse active tab and subtab from URL query parameters
   const queryParams = new URLSearchParams(location.search);
@@ -617,37 +619,119 @@ export default function RevenueDashboard() {
             </div>
           </div>
 
+          {/* ================= 2. PRIMARY NAVIGATION TABS (6 SECTIONS) ================= */}
+          <div className="revenue-nav-tabs-bar">
+            {[
+              { key: "overview", label: "Overview", icon: TrendingUp },
+              { key: "ai-plans", label: "AI Plans", icon: Sparkles },
+              { key: "exams-practice", label: "Exams & Practice", icon: BookOpen },
+              { key: "transactions", label: "Transactions", icon: Receipt },
+              { key: "customers", label: "Customers", icon: Users },
+              { key: "reports", label: "Reports", icon: FileText }
+            ].map(({ key, label, icon: Icon }) => {
+              const isActive = activeTab === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleTabChange(key)}
+                  className={`revenue-nav-tab ${isActive ? "active" : ""}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* ================= CONDITIONAL: FINANCIAL LOCK SCREEN VS DASHBOARD CONTENT ================= */}
           {isLocked ? (
-            <div className="revenue-lock-wrapper">
-              <div className="revenue-lock-card">
-                <div className="revenue-lock-icon-wrap">
-                  <Lock className="w-8 h-8" />
+            <div className="revenue-lock-container">
+              {/* Subtle background preview with blurred placeholder dashboard structure */}
+              <div className="revenue-lock-bg-preview" aria-hidden="true">
+                <div className="revenue-provenance-banner" style={{ opacity: 0.6 }}>
+                  <div className="revenue-provenance-left">
+                    <div className="revenue-provenance-icon">
+                      <Info className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="revenue-provenance-title">Financial Provenance & Verification Notice</div>
+                      <div className="revenue-provenance-desc">PrepMark unified monetary ledger and bank provenance system.</div>
+                    </div>
+                  </div>
+                  <div className="revenue-provenance-pills">
+                    <span className="revenue-provenance-pill verified">Verified Bank: ₹••••</span>
+                    <span className="revenue-provenance-pill simulated">Simulated Sandbox: ₹••••</span>
+                    <span className="revenue-provenance-pill admin-grant">Admin Grants: ₹••••</span>
+                  </div>
                 </div>
+
+                <div className="revenue-stats-grid" style={{ opacity: 0.5 }}>
+                  {[
+                    { label: "TOTAL VERIFIED REVENUE", val: "₹••••••", meta: "Verified monetary settlements" },
+                    { label: "REVENUE TODAY", val: "₹••••", meta: "Since 12:00 AM today" },
+                    { label: "REVENUE THIS MONTH", val: "₹••••••", meta: "Active calendar month" },
+                    { label: "SUCCESSFUL ORDERS", val: "••", meta: "Recorded purchases" },
+                    { label: "ACTIVE SUBSCRIPTIONS", val: "••", meta: "Recurring ARR" },
+                    { label: "PAYING STUDENTS", val: "••", meta: "Average revenue per user" }
+                  ].map((item, idx) => (
+                    <div key={idx} className="revenue-stat-card">
+                      <div className="revenue-stat-header">
+                        <span className="revenue-stat-label">{item.label}</span>
+                      </div>
+                      <div className="revenue-stat-value">{item.val}</div>
+                      <div className="revenue-stat-meta">{item.meta}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Centered Glassmorphism Security Gate */}
+              <div className="revenue-lock-card">
+                <div className="revenue-lock-badge-pill">
+                  <ShieldCheck size={14} className="text-violet-400" />
+                  <span>PrepMark Financial Security Gate</span>
+                </div>
+
+                <div className="revenue-lock-icon-wrap">
+                  <Lock className="w-7 h-7" />
+                </div>
+                
                 <h2 className="revenue-lock-title">Financial Security Lock</h2>
+                
+                <div className="revenue-lock-account-pill">
+                  <span className="revenue-lock-account-dot"></span>
+                  <span>Super Admin: <strong>{user?.fullName || "Diya"}</strong> ({user?.email || "diyanathwani007@gmail.com"})</span>
+                </div>
+
                 <p className="revenue-lock-desc">
-                  Revenue Management contains sensitive monetary transaction ledgers, customer billing details, and audit records. Enter your Super Administrator account password to generate a secure, 5-minute financial unlock session.
+                  This console contains sensitive financial data, customer billing profiles, transaction ledgers, and revenue reports. Enter your <strong>Super Admin account login password</strong> to unlock a 5-minute session.
                 </p>
 
                 <form onSubmit={handleVerifyUnlock} className="revenue-lock-form">
-                  <div className="revenue-lock-input-group">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={passwordInput}
-                      onChange={(e) => setPasswordInput(e.target.value)}
-                      placeholder="Super Admin Account Password"
-                      className="revenue-lock-input"
-                      disabled={unlockLoading || retryAfterSeconds > 0}
-                      autoFocus
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="revenue-lock-toggle-pw"
-                      title={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+                  <div className="revenue-lock-field-wrap">
+                    <label className="revenue-lock-field-label">Account Password</label>
+                    <div className="revenue-lock-input-group">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        placeholder="Enter your PrepMark login password"
+                        className="revenue-lock-input"
+                        disabled={unlockLoading || retryAfterSeconds > 0}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="revenue-lock-toggle-pw"
+                        title={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                    <span className="revenue-lock-field-hint">
+                      💡 Tip: Use the same password you use to log into PrepMark.
+                    </span>
                   </div>
 
                   {unlockError && (
@@ -686,11 +770,11 @@ export default function RevenueDashboard() {
                 <div className="revenue-lock-info-box">
                   <div className="revenue-lock-info-item">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                    <span><strong>Zero Client Persistence:</strong> Unlock tokens are held purely in volatile memory.</span>
+                    <span><strong>In-Memory Only:</strong> Unlock tokens are held purely in memory (never written to disk).</span>
                   </div>
                   <div className="revenue-lock-info-item">
                     <Clock className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                    <span><strong>5-Minute Expiry:</strong> Automatically locks after 300 seconds or on logout.</span>
+                    <span><strong>5-Minute Auto-Lock:</strong> Automatically locks after 300 seconds or on logout.</span>
                   </div>
                   <div className="revenue-lock-info-item">
                     <Lock className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
@@ -701,29 +785,6 @@ export default function RevenueDashboard() {
             </div>
           ) : (
             <>
-              {/* ================= 2. PRIMARY NAVIGATION TABS (6 SECTIONS) ================= */}
-          <div className="revenue-nav-tabs-bar">
-            {[
-              { key: "overview", label: "Overview", icon: TrendingUp },
-              { key: "ai-plans", label: "AI Plans", icon: Sparkles },
-              { key: "exams-practice", label: "Exams & Practice", icon: BookOpen },
-              { key: "transactions", label: "Transactions", icon: Receipt },
-              { key: "customers", label: "Customers", icon: Users },
-              { key: "reports", label: "Reports", icon: FileText }
-            ].map(({ key, label, icon: Icon }) => {
-              const isActive = activeTab === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => handleTabChange(key)}
-                  className={`revenue-nav-tab ${isActive ? "active" : ""}`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{label}</span>
-                </button>
-              );
-            })}
-          </div>
 
           {/* ================= 3. TAB 1: OVERVIEW ================= */}
           {activeTab === "overview" && (
