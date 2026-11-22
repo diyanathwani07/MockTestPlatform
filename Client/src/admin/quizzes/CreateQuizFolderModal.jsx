@@ -53,45 +53,88 @@ export default function CreateQuizFolderModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-end bg-black/65 backdrop-blur-sm animate-fadeIn transition-opacity"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99999,
+        backgroundColor: "rgba(0, 0, 0, 0.65)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        justifyContent: "flex-end"
+      }}
       onClick={onClose}
     >
       {/* ─── RIGHT SIDEBAR DRAWER PANEL ─── */}
       <div 
-        className="w-full max-w-md sm:max-w-lg h-full shadow-2xl border-l flex flex-col overflow-hidden animate-slideInRight"
         style={{
+          width: "100%",
+          maxWidth: "480px",
+          height: "100%",
           backgroundColor: "var(--bg-card)",
-          borderColor: "var(--border-color)",
-          color: "var(--text-primary)"
+          borderLeft: "1px solid var(--border-color)",
+          color: "var(--text-primary)",
+          boxShadow: "-10px 0 35px rgba(0, 0, 0, 0.35)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden"
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
         <div
-          className="flex items-center justify-between px-6 py-4 border-b shrink-0"
-          style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "18px 24px",
+            borderBottom: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-card)",
+            flexShrink: 0
+          }}
         >
-          <div className="flex items-center gap-3">
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs"
-              style={{ backgroundColor: "rgba(110, 63, 243, 0.12)", color: "#6E3FF3" }}
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(110, 63, 243, 0.12)",
+                color: "#6E3FF3",
+                flexShrink: 0
+              }}
             >
               <FolderPlus size={20} />
             </div>
             <div>
-              <h3 className="text-base font-bold m-0" style={{ color: "var(--text-primary)" }}>
-                {initialData ? "Edit Folder" : parentFolder ? `Create Subfolder` : "Create Root Folder"}
+              <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
+                {initialData ? "Edit Folder" : parentFolder ? `Create Subfolder` : "Create Folder"}
               </h3>
-              <p className="text-xs m-0 mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                {parentFolder ? `Parent: ${parentFolder.title}` : "Right Sidebar • Course & Directory Setup"}
+              <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>
+                {parentFolder ? `Inside: ${parentFolder.title}` : "Organize quizzes into structured directories"}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-transparent border-none cursor-pointer"
-            style={{ color: "var(--text-secondary)" }}
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "transparent",
+              border: "none",
+              color: "var(--text-secondary)",
+              cursor: "pointer"
+            }}
             title="Close Drawer"
           >
             <X size={18} />
@@ -99,14 +142,14 @@ export default function CreateQuizFolderModal({
         </div>
 
         {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+        <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: "auto", padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
           {/* Folder Title */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              Folder Title <span className="text-red-500">*</span>
+            <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+              Folder Title <span style={{ color: "#ef4444" }}>*</span>
             </label>
-            <div className="relative flex items-center">
-              <Folder size={16} className="absolute left-3.5 pointer-events-none" style={{ color: "var(--text-muted)" }} />
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <Folder size={16} style={{ position: "absolute", left: "14px", color: "var(--text-muted)", pointerEvents: "none" }} />
               <input
                 type="text"
                 required
@@ -115,11 +158,18 @@ export default function CreateQuizFolderModal({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={{
+                  width: "100%",
+                  height: "42px",
+                  paddingLeft: "42px",
+                  paddingRight: "14px",
+                  fontSize: "13px",
+                  fontWeight: "600",
                   backgroundColor: "var(--bg-input)",
-                  borderColor: "var(--border-color)",
-                  color: "var(--text-primary)"
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  color: "var(--text-primary)",
+                  outline: "none"
                 }}
-                className="w-full pl-10 pr-3.5 py-2.5 text-xs font-semibold border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
           </div>
@@ -127,18 +177,25 @@ export default function CreateQuizFolderModal({
           {/* Target Exam Series */}
           {examSeriesList && examSeriesList.length > 0 && (
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                 Target Exam Series (Optional)
               </label>
               <select
                 value={examSeriesId}
                 onChange={(e) => setExamSeriesId(e.target.value)}
                 style={{
+                  width: "100%",
+                  height: "42px",
+                  padding: "0 14px",
+                  fontSize: "13px",
+                  fontWeight: "500",
                   backgroundColor: "var(--bg-input)",
-                  borderColor: "var(--border-color)",
-                  color: "var(--text-primary)"
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  color: "var(--text-primary)",
+                  outline: "none",
+                  cursor: "pointer"
                 }}
-                className="w-full px-3.5 py-2.5 text-xs font-medium border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
               >
                 <option value="" style={{ backgroundColor: "var(--bg-card)", color: "var(--text-primary)" }}>
                   No Specific Series (General Folder)
@@ -154,7 +211,7 @@ export default function CreateQuizFolderModal({
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-secondary)" }}>
+            <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
               Description (Optional)
             </label>
             <textarea
@@ -163,51 +220,73 @@ export default function CreateQuizFolderModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               style={{
+                width: "100%",
+                padding: "10px 14px",
+                fontSize: "13px",
                 backgroundColor: "var(--bg-input)",
-                borderColor: "var(--border-color)",
-                color: "var(--text-primary)"
+                border: "1px solid var(--border-color)",
+                borderRadius: "10px",
+                color: "var(--text-primary)",
+                outline: "none",
+                resize: "none",
+                fontFamily: "inherit",
+                boxSizing: "border-box"
               }}
-              className="w-full px-3.5 py-2.5 text-xs font-normal border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none font-sans"
             />
           </div>
 
           {/* Thumbnail / Banner URL */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-secondary)" }}>
+            <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
               Cover Banner / Thumbnail URL
             </label>
-            <div className="flex gap-2">
+            <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
               <input
                 type="url"
                 placeholder="https://example.com/folder-banner.png"
                 value={thumbnail}
                 onChange={(e) => setThumbnail(e.target.value)}
                 style={{
+                  flex: 1,
+                  height: "40px",
+                  padding: "0 14px",
+                  fontSize: "12.5px",
                   backgroundColor: "var(--bg-input)",
-                  borderColor: "var(--border-color)",
-                  color: "var(--text-primary)"
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  color: "var(--text-primary)",
+                  outline: "none"
                 }}
-                className="flex-1 px-3.5 py-2 text-xs border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
               {thumbnail && (
                 <button
                   type="button"
                   onClick={() => setThumbnail("")}
-                  className="px-2.5 py-2 text-xs rounded-xl border bg-transparent cursor-pointer"
-                  style={{ borderColor: "var(--border-color)", color: "var(--text-secondary)" }}
+                  style={{
+                    padding: "0 12px",
+                    height: "40px",
+                    borderRadius: "10px",
+                    border: "1px solid var(--border-color)",
+                    backgroundColor: "transparent",
+                    color: "var(--text-secondary)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
                   title="Clear thumbnail"
                 >
-                  <X size={14} />
+                  <X size={15} />
                 </button>
               )}
             </div>
 
             {/* AppX Preset Cards */}
-            <div className="mt-3">
-              <span className="text-[11px] font-semibold mb-2 block" style={{ color: "var(--text-muted)" }}>
-                AppX Presets:
+            <div>
+              <span style={{ fontSize: "11.5px", fontWeight: "600", color: "var(--text-muted)", display: "block", marginBottom: "8px" }}>
+                Quick Preset Banners:
               </span>
-              <div className="grid grid-cols-2 gap-2">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                 {PRESET_BANNERS.map((preset) => {
                   const isSelected = thumbnail === preset.url;
                   return (
@@ -215,19 +294,25 @@ export default function CreateQuizFolderModal({
                       key={preset.label}
                       type="button"
                       onClick={() => setThumbnail(preset.url)}
-                      className="p-2 rounded-xl border text-left flex items-center justify-between cursor-pointer transition-all"
                       style={{
+                        padding: "8px 12px",
+                        borderRadius: "10px",
+                        border: isSelected ? "1.5px solid #6E3FF3" : "1px solid var(--border-color)",
                         backgroundColor: isSelected ? "rgba(110, 63, 243, 0.12)" : "var(--bg-input)",
-                        borderColor: isSelected ? "#6E3FF3" : "var(--border-color)"
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        cursor: "pointer",
+                        transition: "all 0.15s"
                       }}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.color }} />
-                        <span className="text-[11px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: preset.color, display: "inline-block" }} />
+                        <span style={{ fontSize: "11.5px", fontWeight: "600", color: "var(--text-primary)" }}>
                           {preset.label}
                         </span>
                       </div>
-                      {isSelected && <Check size={13} className="text-primary" />}
+                      {isSelected && <Check size={14} style={{ color: "#6E3FF3" }} />}
                     </button>
                   );
                 })}
@@ -236,43 +321,66 @@ export default function CreateQuizFolderModal({
           </div>
 
           {/* Live Folder Preview Card */}
-          <div className="pt-2 border-t" style={{ borderColor: "var(--border-color)" }}>
-            <span className="text-[11px] font-bold uppercase tracking-wider mb-2 block" style={{ color: "var(--text-muted)" }}>
-              Live Folder Preview
+          <div style={{ paddingTop: "14px", borderTop: "1px solid var(--border-color)" }}>
+            <span style={{ display: "block", fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)", marginBottom: "8px" }}>
+              Live Folder Card Preview
             </span>
             <div
-              className="rounded-2xl border overflow-hidden shadow-xs flex flex-col"
-              style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
+              style={{
+                borderRadius: "14px",
+                border: "1px solid var(--border-color)",
+                overflow: "hidden",
+                backgroundColor: "var(--bg-card)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)"
+              }}
             >
               <div
-                className="h-24 w-full relative overflow-hidden flex items-center justify-center border-b"
-                style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border-color)" }}
+                style={{
+                  height: "90px",
+                  width: "100%",
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "var(--bg-input)",
+                  borderBottom: "1px solid var(--border-color)"
+                }}
               >
                 {thumbnail ? (
                   <img
                     src={thumbnail}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     onError={(e) => { e.target.style.display = "none"; }}
                   />
                 ) : (
                   <div
-                    className="w-10 h-10 rounded-xl shadow-xs flex items-center justify-center text-amber-500 border"
-                    style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#f59e0b",
+                      backgroundColor: "var(--bg-card)",
+                      border: "1px solid var(--border-color)"
+                    }}
                   >
-                    <Folder size={20} />
+                    <Folder size={22} />
                   </div>
                 )}
               </div>
-              <div className="p-3">
-                <h4 className="text-xs font-bold line-clamp-1 m-0" style={{ color: "var(--text-primary)" }}>
+              <div style={{ padding: "12px 14px" }}>
+                <h4 style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {title.trim() || "Untitled Folder"}
                 </h4>
-                <p className="text-[11px] line-clamp-1 m-0 mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                <p style={{ margin: "3px 0 0 0", fontSize: "11.5px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {description.trim() || "Course directory folder"}
                 </p>
-                <div className="flex items-center justify-between pt-2 border-t mt-2 text-[10px]" style={{ borderColor: "var(--border-color)" }}>
-                  <span className="px-1.5 py-0.5 rounded font-semibold" style={{ backgroundColor: "var(--bg-input)", color: "var(--text-secondary)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "8px", borderTop: "1px solid var(--border-color)", marginTop: "8px", fontSize: "10.5px" }}>
+                  <span style={{ padding: "2px 6px", borderRadius: "4px", fontWeight: "600", backgroundColor: "var(--bg-input)", color: "var(--text-secondary)" }}>
                     Folder
                   </span>
                   <span style={{ color: "var(--text-muted)" }}>0 quizzes</span>
@@ -284,15 +392,32 @@ export default function CreateQuizFolderModal({
 
         {/* Sticky Drawer Footer */}
         <div
-          className="flex items-center justify-end gap-3 px-6 py-4 border-t shrink-0"
-          style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: "10px",
+            padding: "16px 24px",
+            borderTop: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-card)",
+            flexShrink: 0
+          }}
         >
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-xs font-semibold rounded-xl transition-colors bg-transparent border cursor-pointer hover:bg-black/5 dark:hover:bg-white/5"
-            style={{ borderColor: "var(--border-color)", color: "var(--text-secondary)" }}
+            style={{
+              height: "40px",
+              padding: "0 18px",
+              fontSize: "12.5px",
+              fontWeight: "600",
+              borderRadius: "10px",
+              border: "1px solid var(--border-color)",
+              backgroundColor: "var(--bg-input)",
+              color: "var(--text-secondary)",
+              cursor: "pointer"
+            }}
           >
             Cancel
           </button>
@@ -300,8 +425,22 @@ export default function CreateQuizFolderModal({
             type="button"
             onClick={handleSubmit}
             disabled={loading || !title.trim()}
-            className="btn-prepmark-primary inline-flex items-center gap-2 px-5 py-2 text-xs font-bold rounded-xl transition-all border-none cursor-pointer disabled:opacity-50"
-            style={{ backgroundColor: "#6E3FF3", color: "#ffffff" }}
+            style={{
+              height: "40px",
+              padding: "0 22px",
+              fontSize: "12.5px",
+              fontWeight: "700",
+              borderRadius: "10px",
+              border: "none",
+              backgroundColor: "#6E3FF3",
+              color: "#ffffff",
+              cursor: loading || !title.trim() ? "not-allowed" : "pointer",
+              opacity: loading || !title.trim() ? 0.6 : 1,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 2px 10px rgba(110, 63, 243, 0.35)"
+            }}
           >
             {loading ? <RefreshCw size={14} className="animate-spin" /> : <FolderPlus size={15} />}
             <span>{initialData ? "Save Changes" : "Create Folder"}</span>

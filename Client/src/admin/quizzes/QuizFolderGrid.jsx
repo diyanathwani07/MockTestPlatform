@@ -18,11 +18,14 @@ export default function QuizFolderGrid({
 
   return (
     <div className="mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        <Layers size={16} className="text-primary" />
-        <h3 className="text-xs font-bold uppercase tracking-wider m-0" style={{ color: "var(--text-secondary)" }}>
-          Folders ({folders.length})
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+        <Layers size={16} style={{ color: "#f59e0b" }} />
+        <h3 style={{ margin: 0, fontSize: "12.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-primary)" }}>
+          Folders & Directories
         </h3>
+        <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "10px", backgroundColor: "var(--bg-input)", border: "1px solid var(--border-color)", color: "var(--text-secondary)" }}>
+          {folders.length}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

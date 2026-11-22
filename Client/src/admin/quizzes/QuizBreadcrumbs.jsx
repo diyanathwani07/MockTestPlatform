@@ -57,10 +57,10 @@ export default function QuizBreadcrumbs({
           }}
           title="Root directory (Home)"
         >
-          <Home size={14} className={isRootDragOver ? "text-primary" : "text-primary"} />
+          <Home size={14} style={{ color: "#6E3FF3" }} />
           <span>Home</span>
           {isRootDragOver && (
-            <span className="text-[10px] bg-primary text-white px-1.5 py-0.5 rounded font-bold ml-1">
+            <span style={{ fontSize: "10px", backgroundColor: "#6E3FF3", color: "#ffffff", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", marginLeft: "4px" }}>
               Drop to Move
             </span>
           )}
@@ -92,7 +92,7 @@ export default function QuizBreadcrumbs({
                 }}
                 title={crumb.title}
               >
-                {!isFirst ? <FolderOpen size={14} className="text-primary shrink-0" /> : <Home size={14} className="text-primary shrink-0" />}
+                {!isFirst ? <FolderOpen size={14} style={{ color: "#6E3FF3", flexShrink: 0 }} /> : <Home size={14} style={{ color: "#6E3FF3", flexShrink: 0 }} />}
                 <span className="truncate">{crumb.title}</span>
               </span>
             ) : (
@@ -115,13 +115,13 @@ export default function QuizBreadcrumbs({
                 title={isDragOver ? `Drop to move into "${crumb.title}"` : `Navigate to ${crumb.title}`}
               >
                 {isFirst ? (
-                  <Home size={13} className={isDragOver ? "text-primary" : "text-gray-400 dark:text-gray-500"} />
+                  <Home size={13} style={{ color: isDragOver ? "#6E3FF3" : "var(--text-muted)" }} />
                 ) : (
-                  <Folder size={13} className={isDragOver ? "text-primary" : "text-amber-500/80"} />
+                  <Folder size={13} style={{ color: isDragOver ? "#6E3FF3" : "#f59e0b" }} />
                 )}
                 <span className="truncate">{crumb.title}</span>
                 {isDragOver && (
-                  <span className="text-[9px] bg-primary text-white px-1 py-0.5 rounded font-bold ml-0.5 shrink-0">
+                  <span style={{ fontSize: "9px", backgroundColor: "#6E3FF3", color: "#ffffff", padding: "2px 5px", borderRadius: "3px", fontWeight: "700", marginLeft: "2px", flexShrink: 0 }}>
                     Drop
                   </span>
                 )}

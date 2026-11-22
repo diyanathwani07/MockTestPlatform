@@ -20,31 +20,58 @@ export default function QuizExplorerToolbar({
 }) {
   return (
     <div
-      className="flex flex-wrap items-center justify-between gap-3 mb-4 p-3 rounded-2xl shadow-xs border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "12px",
+        marginBottom: "16px",
+        padding: "12px 16px",
+        borderRadius: "16px",
+        border: "1px solid var(--border-color)",
+        backgroundColor: "var(--bg-card)",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.03)"
+      }}
     >
       {/* Left: Search & Filter */}
-      <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1 1 300px", minWidth: "260px" }}>
         {/* Search Input Box */}
         <div
-          className="flex items-center gap-2 px-3 h-[38px] rounded-xl flex-1 max-w-sm border transition-all"
-          style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border-color)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "0 12px",
+            height: "38px",
+            borderRadius: "10px",
+            flex: "1 1 auto",
+            maxWidth: "360px",
+            border: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-input)"
+          }}
         >
-          <Search size={15} style={{ color: "var(--text-muted)" }} className="shrink-0" />
+          <Search size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
           <input
             type="text"
             placeholder={isGlobalSearch ? "Search all quizzes & folders everywhere..." : "Search folders & quizzes in this directory..."}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            style={{ color: "var(--text-primary)" }}
-            className="w-full bg-transparent border-none text-xs focus:outline-none p-0"
+            style={{
+              width: "100%",
+              backgroundColor: "transparent",
+              border: "none",
+              outline: "none",
+              fontSize: "12.5px",
+              color: "var(--text-primary)",
+              padding: 0
+            }}
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              style={{ color: "var(--text-muted)" }}
-              className="hover:opacity-75 bg-transparent border-none p-0 cursor-pointer"
+              style={{ color: "var(--text-muted)", backgroundColor: "transparent", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center" }}
             >
               <X size={13} />
             </button>
@@ -56,11 +83,21 @@ export default function QuizExplorerToolbar({
           type="button"
           onClick={() => onToggleGlobalSearch && onToggleGlobalSearch(!isGlobalSearch)}
           style={{
-            backgroundColor: isGlobalSearch ? "var(--primary, #6E3FF3)" : "var(--bg-input)",
+            height: "38px",
+            padding: "0 12px",
+            borderRadius: "10px",
+            fontSize: "12px",
+            fontWeight: "600",
+            border: isGlobalSearch ? "1px solid #6E3FF3" : "1px solid var(--border-color)",
+            backgroundColor: isGlobalSearch ? "#6E3FF3" : "var(--bg-input)",
             color: isGlobalSearch ? "#ffffff" : "var(--text-secondary)",
-            borderColor: isGlobalSearch ? "var(--primary, #6E3FF3)" : "var(--border-color)"
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            flexShrink: 0,
+            transition: "all 0.15s ease"
           }}
-          className="flex items-center gap-1.5 px-3 h-[38px] rounded-xl text-xs font-bold transition-all border cursor-pointer shrink-0"
           title={isGlobalSearch ? "Searching everywhere across all subfolders" : "Searching only inside this folder. Click to search everywhere"}
         >
           <Globe size={13} className={isGlobalSearch ? "animate-pulse" : ""} style={{ color: isGlobalSearch ? "#ffffff" : "var(--text-muted)" }} />
@@ -69,15 +106,34 @@ export default function QuizExplorerToolbar({
 
         {/* Status Filter */}
         <div
-          className="flex items-center gap-1.5 px-3 h-[38px] rounded-xl text-xs border shrink-0"
-          style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border-color)", color: "var(--text-secondary)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            height: "38px",
+            padding: "0 12px",
+            borderRadius: "10px",
+            border: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-input)",
+            color: "var(--text-secondary)",
+            fontSize: "12px",
+            flexShrink: 0
+          }}
         >
-          <Filter size={13} style={{ color: "var(--text-muted)" }} className="shrink-0" />
+          <Filter size={13} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            style={{ backgroundColor: "transparent", color: "var(--text-primary)" }}
-            className="border-none text-xs font-semibold focus:outline-none cursor-pointer p-0"
+            style={{
+              backgroundColor: "transparent",
+              color: "var(--text-primary)",
+              border: "none",
+              outline: "none",
+              fontSize: "12px",
+              fontWeight: "600",
+              cursor: "pointer",
+              padding: 0
+            }}
           >
             <option style={{ backgroundColor: "var(--bg-card)", color: "var(--text-primary)" }} value="all">All Status</option>
             <option style={{ backgroundColor: "var(--bg-card)", color: "var(--text-primary)" }} value="published">Published</option>
@@ -87,14 +143,28 @@ export default function QuizExplorerToolbar({
       </div>
 
       {/* Right: View Toggles & Actions */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
         {/* Save Order Button (AppX Reshuffle) */}
         {hasPendingSort && (
           <button
             type="button"
             onClick={onSaveSort}
             disabled={isSavingSort}
-            className="inline-flex items-center gap-1.5 px-3.5 h-[38px] rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm border-none cursor-pointer transition-all animate-pulse shrink-0"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              height: "38px",
+              padding: "0 14px",
+              borderRadius: "10px",
+              fontSize: "12px",
+              fontWeight: "700",
+              backgroundColor: "#f59e0b",
+              color: "#ffffff",
+              border: "none",
+              cursor: "pointer",
+              flexShrink: 0
+            }}
           >
             <Save size={14} />
             <span>{isSavingSort ? "Saving Order..." : "Save Order"}</span>
@@ -103,18 +173,34 @@ export default function QuizExplorerToolbar({
 
         {/* View Mode Switcher (List vs Grid) */}
         <div
-          className="flex items-center p-0.5 h-[38px] rounded-xl border shrink-0"
-          style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border-color)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "2px",
+            height: "38px",
+            borderRadius: "10px",
+            border: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-input)",
+            flexShrink: 0
+          }}
         >
           <button
             type="button"
             onClick={() => onViewModeChange("list")}
             style={{
+              height: "32px",
+              padding: "0 10px",
+              borderRadius: "8px",
+              border: "none",
               backgroundColor: viewMode === "list" ? "var(--bg-card)" : "transparent",
               color: viewMode === "list" ? "var(--text-primary)" : "var(--text-muted)",
-              boxShadow: viewMode === "list" ? "0 1px 3px rgba(0,0,0,0.15)" : "none"
+              boxShadow: viewMode === "list" ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s ease"
             }}
-            className="h-[32px] px-2.5 rounded-lg border-none cursor-pointer transition-all flex items-center justify-center font-bold"
             title="List View (Table)"
           >
             <List size={15} />
@@ -123,11 +209,19 @@ export default function QuizExplorerToolbar({
             type="button"
             onClick={() => onViewModeChange("grid")}
             style={{
+              height: "32px",
+              padding: "0 10px",
+              borderRadius: "8px",
+              border: "none",
               backgroundColor: viewMode === "grid" ? "var(--bg-card)" : "transparent",
               color: viewMode === "grid" ? "var(--text-primary)" : "var(--text-muted)",
-              boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.15)" : "none"
+              boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s ease"
             }}
-            className="h-[32px] px-2.5 rounded-lg border-none cursor-pointer transition-all flex items-center justify-center font-bold"
             title="Grid View (Cards)"
           >
             <LayoutGrid size={15} />
@@ -139,8 +233,22 @@ export default function QuizExplorerToolbar({
           <button
             type="button"
             onClick={onOpenRecycleBin}
-            style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)", color: "var(--text-secondary)" }}
-            className="inline-flex items-center gap-1.5 px-3 h-[38px] rounded-xl text-xs font-semibold hover:text-red-500 border transition-colors cursor-pointer shrink-0"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              height: "38px",
+              padding: "0 12px",
+              borderRadius: "10px",
+              fontSize: "12px",
+              fontWeight: "600",
+              border: "1px solid var(--border-color)",
+              backgroundColor: "var(--bg-input)",
+              color: "var(--text-secondary)",
+              cursor: "pointer",
+              flexShrink: 0,
+              transition: "all 0.15s ease"
+            }}
             title="Open Recycle Bin"
           >
             <Trash2 size={13} style={{ color: "var(--text-muted)" }} />
@@ -153,10 +261,24 @@ export default function QuizExplorerToolbar({
           <button
             type="button"
             onClick={onCreateCourse}
-            style={{ backgroundColor: "rgba(110, 63, 243, 0.15)", color: "#c4b5fd", borderColor: "rgba(110, 63, 243, 0.4)" }}
-            className="inline-flex items-center gap-1.5 px-3.5 h-[38px] rounded-xl text-xs font-bold border cursor-pointer transition-colors hover:opacity-90 shrink-0"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              height: "38px",
+              padding: "0 14px",
+              borderRadius: "10px",
+              fontSize: "12px",
+              fontWeight: "700",
+              border: "1px solid rgba(110, 63, 243, 0.3)",
+              backgroundColor: "rgba(110, 63, 243, 0.12)",
+              color: "#6E3FF3",
+              cursor: "pointer",
+              flexShrink: 0,
+              transition: "all 0.15s ease"
+            }}
           >
-            <Sparkles size={14} className="text-purple-400" />
+            <Sparkles size={14} style={{ color: "#6E3FF3" }} />
             <span>Course Builder</span>
           </button>
         )}
@@ -165,11 +287,25 @@ export default function QuizExplorerToolbar({
         <button
           type="button"
           onClick={onCreateFolder}
-          style={{ backgroundColor: "var(--bg-input)", color: "var(--text-primary)", borderColor: "var(--border-color)" }}
-          className="inline-flex items-center gap-1.5 px-3.5 h-[38px] rounded-xl text-xs font-bold border cursor-pointer transition-colors hover:opacity-85 shrink-0"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            height: "38px",
+            padding: "0 14px",
+            borderRadius: "10px",
+            fontSize: "12px",
+            fontWeight: "700",
+            border: "1px solid rgba(245, 158, 11, 0.35)",
+            backgroundColor: "rgba(245, 158, 11, 0.12)",
+            color: "#d97706",
+            cursor: "pointer",
+            flexShrink: 0,
+            transition: "all 0.15s ease"
+          }}
           title="Create New Folder in Right Sidebar"
         >
-          <FolderPlus size={15} className="text-amber-500" />
+          <FolderPlus size={15} style={{ color: "#d97706" }} />
           <span>New Folder</span>
         </button>
 
@@ -177,8 +313,23 @@ export default function QuizExplorerToolbar({
         <button
           type="button"
           onClick={onCreateQuiz}
-          style={{ backgroundColor: "#6E3FF3", color: "#ffffff" }}
-          className="btn-prepmark-primary inline-flex items-center gap-1.5 px-4 h-[38px] rounded-xl text-xs font-bold transition-all border-none cursor-pointer shrink-0"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            height: "38px",
+            padding: "0 16px",
+            borderRadius: "10px",
+            fontSize: "12px",
+            fontWeight: "700",
+            border: "none",
+            backgroundColor: "#6E3FF3",
+            color: "#ffffff",
+            cursor: "pointer",
+            flexShrink: 0,
+            boxShadow: "0 2px 8px rgba(110, 63, 243, 0.3)",
+            transition: "all 0.15s ease"
+          }}
         >
           <Plus size={15} />
           <span>Create Quiz</span>

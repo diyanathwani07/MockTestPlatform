@@ -138,7 +138,7 @@ export default function AppXCourseEditorModal({
     }
   };
 
-  // AI Description Generator (AppX Screenshot 8 Feature)
+  // AI Description Generator (AppX Feature)
   const handleGenerateAiDescription = () => {
     setAiGenerating(true);
     setTimeout(() => {
@@ -179,10 +179,10 @@ export default function AppXCourseEditorModal({
     setLinkedQuizzes(linkedQuizzes.filter((q) => q._id !== quizId));
   };
 
-  // Save handler
+  // Submit Handler
   const handleSave = async () => {
     if (!title.trim()) {
-      alert("Please enter a course title.");
+      alert("Please provide a course title.");
       setActiveTab(1);
       return;
     }
@@ -191,12 +191,11 @@ export default function AppXCourseEditorModal({
     try {
       const payload = {
         title: title.trim(),
-        description: description.trim(),
-        detailedDescription: description.trim(),
-        thumbnail: thumbnail.trim(),
         price: Number(price) || 0,
         mrp: Number(mrp) || 0,
         isFeatured,
+        description: description.trim(),
+        thumbnail: thumbnail.trim(),
         examSeriesId: examSeriesId || null,
         parentId: parentFolderId || null,
         validityType,
@@ -230,32 +229,79 @@ export default function AppXCourseEditorModal({
   const discountPercent = mrp > 0 && price < mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-md animate-fadeIn">
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99999,
+        backgroundColor: "rgba(0, 0, 0, 0.75)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px"
+      }}
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-6xl max-h-[92vh] rounded-3xl shadow-2xl border flex flex-col overflow-hidden animate-scaleUp"
-        style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)", color: "var(--text-primary)" }}
+        style={{
+          width: "95vw",
+          maxWidth: "1080px",
+          height: "88vh",
+          maxHeight: "860px",
+          minHeight: "560px",
+          backgroundColor: "var(--bg-card)",
+          border: "1px solid var(--border-color)",
+          color: "var(--text-primary)",
+          borderRadius: "20px",
+          boxShadow: "0 25px 60px rgba(0, 0, 0, 0.45)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden"
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── TOP HEADER (AppX Bar) ── */}
         <div
-          className="flex items-center justify-between px-6 py-4 border-b shrink-0"
-          style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 24px",
+            borderBottom: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-card)",
+            flexShrink: 0
+          }}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+            <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", flexShrink: 0 }}>
               {folderId ? "Edit:" : "Create:"}
             </span>
-            <h2 className="text-base font-bold m-0 uppercase tracking-tight truncate max-w-xl" style={{ color: "var(--text-primary)" }}>
+            <h2 style={{ margin: 0, fontSize: "15px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.02em", color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {title.trim() || "PRELIMS LANGUAGE COURSE (HINDI, ENGLISH & URDU)"}
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
             <button
               type="button"
               onClick={onClose}
-              style={{ color: "var(--text-secondary)" }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold hover:opacity-75 rounded-xl transition-colors bg-transparent border-none cursor-pointer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 14px",
+                fontSize: "12.5px",
+                fontWeight: "600",
+                color: "var(--text-secondary)",
+                backgroundColor: "transparent",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer"
+              }}
             >
               <X size={15} />
               <span>Close</span>
@@ -265,8 +311,21 @@ export default function AppXCourseEditorModal({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              style={{ backgroundColor: "#6E3FF3", color: "#ffffff" }}
-              className="btn-prepmark-primary inline-flex items-center gap-2 px-5 py-2 text-xs font-bold rounded-xl shadow-md transition-all border-none cursor-pointer disabled:opacity-60 hover:opacity-90"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 20px",
+                fontSize: "12.5px",
+                fontWeight: "700",
+                backgroundColor: "#6E3FF3",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "10px",
+                cursor: saving ? "not-allowed" : "pointer",
+                boxShadow: "0 2px 10px rgba(110, 63, 243, 0.35)",
+                transition: "all 0.15s"
+              }}
             >
               {saving ? <RefreshCw size={15} className="animate-spin" /> : <Save size={15} />}
               <span>{saving ? "Saving Changes..." : "Save Changes"}</span>
@@ -276,13 +335,21 @@ export default function AppXCourseEditorModal({
 
         {/* ── STEPPER BAR (AppX 4 Steps) ── */}
         <div
-          className="px-6 py-3 border-b flex items-center gap-6 overflow-x-auto shrink-0 text-xs font-semibold"
-          style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border-color)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            padding: "10px 24px",
+            borderBottom: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-input)",
+            overflowX: "auto",
+            flexShrink: 0
+          }}
         >
           {[
             { id: 1, label: "Basic Course Information" },
-            { id: 2, label: "Pricing" },
-            { id: 3, label: "Content" },
+            { id: 2, label: "Pricing & Validity" },
+            { id: 3, label: "Content (Quizzes)" },
             { id: 4, label: "Additional Settings" }
           ].map((step) => {
             const isActive = activeTab === step.id;
@@ -293,20 +360,33 @@ export default function AppXCourseEditorModal({
                 key={step.id}
                 type="button"
                 onClick={() => setActiveTab(step.id)}
-                className={`flex items-center gap-2 border-none bg-transparent cursor-pointer transition-colors py-1 ${isActive
-                    ? "font-bold border-b-2"
-                    : isCompleted
-                      ? "font-semibold"
-                      : "hover:opacity-80"
-                  }`}
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  border: "none",
+                  backgroundColor: isActive ? "var(--bg-card)" : "transparent",
                   color: isActive ? "var(--text-primary)" : isCompleted ? "#10b981" : "var(--text-muted)",
-                  borderBottomColor: isActive ? "#6E3FF3" : "transparent"
+                  boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                  cursor: "pointer",
+                  fontSize: "12.5px",
+                  fontWeight: isActive ? "700" : "500",
+                  whiteSpace: "nowrap",
+                  transition: "all 0.15s ease"
                 }}
               >
                 <span
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
                   style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: "700",
                     backgroundColor: isActive ? "#6E3FF3" : isCompleted ? "#10b981" : "var(--bg-input)",
                     color: isActive || isCompleted ? "#ffffff" : "var(--text-secondary)",
                     border: isActive || isCompleted ? "none" : "1px solid var(--border-color)"
@@ -321,27 +401,27 @@ export default function AppXCourseEditorModal({
         </div>
 
         {/* ── MAIN BODY (2 Columns: Left Form + Right Sticky Preview) ── */}
-        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT COLUMN: STEP CONTENT (7.5 cols) */}
-          <div className="lg:col-span-7 xl:col-span-8 flex flex-col justify-between">
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px", display: "grid", gridTemplateColumns: "1fr 340px", gap: "28px" }}>
+          {/* LEFT COLUMN: STEP CONTENT */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {loading ? (
-              <div className="p-16 text-center text-gray-400 flex flex-col items-center justify-center">
-                <RefreshCw size={24} className="animate-spin text-primary mb-2" />
-                <span className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>Loading course settings...</span>
+              <div style={{ padding: "60px 0", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                <RefreshCw size={26} className="animate-spin" style={{ color: "#6E3FF3" }} />
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)" }}>Loading course settings...</span>
               </div>
             ) : (
               <div>
                 {/* ── STEP 1: BASIC COURSE INFORMATION ── */}
                 {activeTab === 1 && (
-                  <div className="space-y-5 animate-fadeIn">
-                    <div className="flex flex-col sm:flex-row gap-4 items-start">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 180px", gap: "16px", alignItems: "start" }}>
                       {/* Title */}
-                      <div className="w-full sm:flex-1">
-                        <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                          Title <span className="text-red-500">*</span>
+                      <div>
+                        <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                          Title <span style={{ color: "#ef4444" }}>*</span>
                         </label>
-                        <div className="relative flex items-center">
-                          <BookOpen size={16} className="absolute left-3.5 pointer-events-none" style={{ color: "var(--text-muted)" }} />
+                        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                          <BookOpen size={16} style={{ position: "absolute", left: "14px", color: "var(--text-muted)", pointerEvents: "none" }} />
                           <input
                             type="text"
                             required
@@ -349,77 +429,153 @@ export default function AppXCourseEditorModal({
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             style={{
+                              width: "100%",
+                              height: "42px",
+                              paddingLeft: "42px",
+                              paddingRight: "14px",
+                              fontSize: "13px",
+                              fontWeight: "600",
                               backgroundColor: "var(--bg-input)",
-                              borderColor: "var(--border-color)",
-                              color: "var(--text-primary)"
+                              border: "1px solid var(--border-color)",
+                              borderRadius: "10px",
+                              color: "var(--text-primary)",
+                              outline: "none"
                             }}
-                            className="w-full pl-10 pr-3.5 py-2.5 text-xs font-semibold border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                           />
                         </div>
                       </div>
 
                       {/* Price */}
-                      <div className="w-full sm:w-48 shrink-0">
-                        <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                          Price (₹) <span className="text-red-500">*</span>
+                      <div>
+                        <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                          Price (₹) <span style={{ color: "#ef4444" }}>*</span>
                         </label>
-                        <div className="relative flex items-center">
-                          <span className="absolute left-3.5 text-xs font-bold pointer-events-none" style={{ color: "var(--text-muted)" }}>₹</span>
+                        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                          <span style={{ position: "absolute", left: "14px", fontSize: "13px", fontWeight: "700", color: "var(--text-muted)", pointerEvents: "none" }}>₹</span>
                           <input
                             type="number"
                             min="0"
                             value={price}
                             onChange={(e) => setPrice(Number(e.target.value) || 0)}
                             style={{
+                              width: "100%",
+                              height: "42px",
+                              paddingLeft: "32px",
+                              paddingRight: "14px",
+                              fontSize: "14px",
+                              fontWeight: "700",
                               backgroundColor: "var(--bg-input)",
-                              borderColor: "var(--border-color)",
-                              color: "var(--text-primary)"
+                              border: "1px solid var(--border-color)",
+                              borderRadius: "10px",
+                              color: "var(--text-primary)",
+                              outline: "none"
                             }}
-                            className="w-full pl-8 pr-3.5 py-2.5 text-xs font-bold border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                           />
                         </div>
-                        <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>Final price student pays</p>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "10.5px", color: "var(--text-muted)" }}>Final price student pays</p>
                       </div>
                     </div>
 
                     {/* Featured Course Toggle */}
-                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 dark:bg-input border border-gray-200/80 dark:border-border">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isFeatured ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400" : "bg-gray-200 dark:bg-secondary text-gray-500"}`}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "12px 16px",
+                        borderRadius: "12px",
+                        backgroundColor: "var(--bg-input)",
+                        border: "1px solid var(--border-color)"
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div
+                          style={{
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: isFeatured ? "rgba(245, 158, 11, 0.15)" : "var(--bg-card)",
+                            color: isFeatured ? "#f59e0b" : "var(--text-muted)",
+                            border: "1px solid var(--border-color)"
+                          }}
+                        >
                           <Star size={18} />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-gray-900 dark:text-foreground m-0">Featured Course Badge</p>
-                          <p className="text-[11px] text-gray-500 dark:text-gray-400 m-0">Highlight this course on student banners & top shelves</p>
+                          <p style={{ margin: 0, fontSize: "12.5px", fontWeight: "700", color: "var(--text-primary)" }}>Featured Course Badge</p>
+                          <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Highlight this course on student banners & top shelves</p>
                         </div>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label style={{ position: "relative", display: "inline-block", width: "44px", height: "24px", cursor: "pointer" }}>
                         <input
                           type="checkbox"
                           checked={isFeatured}
                           onChange={(e) => setIsFeatured(e.target.checked)}
-                          className="sr-only peer"
+                          style={{ opacity: 0, width: 0, height: 0 }}
                         />
-                        <div className="w-11 h-6 bg-gray-200 dark:bg-secondary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        <span
+                          style={{
+                            position: "absolute",
+                            cursor: "pointer",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: isFeatured ? "#6E3FF3" : "var(--border-color)",
+                            transition: "0.2s",
+                            borderRadius: "24px"
+                          }}
+                        >
+                          <span
+                            style={{
+                              position: "absolute",
+                              content: '""',
+                              height: "18px",
+                              width: "18px",
+                              left: isFeatured ? "23px" : "3px",
+                              bottom: "3px",
+                              backgroundColor: "#ffffff",
+                              transition: "0.2s",
+                              borderRadius: "50%"
+                            }}
+                          />
+                        </span>
                       </label>
                     </div>
 
                     {/* AI Generation Tool Banner (AppX Feature) */}
                     <div
-                      className="p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-3"
                       style={{
+                        padding: "14px 18px",
+                        borderRadius: "14px",
+                        border: "1px solid rgba(110, 63, 243, 0.3)",
                         backgroundColor: "rgba(110, 63, 243, 0.08)",
-                        borderColor: "rgba(110, 63, 243, 0.25)"
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "12px",
+                        flexWrap: "wrap"
                       }}
                     >
-                      <div className="flex items-center gap-2.5">
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <span
-                          className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider text-white"
-                          style={{ backgroundColor: "#6E3FF3" }}
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: "6px",
+                            fontSize: "10px",
+                            fontWeight: "800",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            color: "#ffffff",
+                            backgroundColor: "#6E3FF3"
+                          }}
                         >
                           NEW
                         </span>
-                        <p className="text-xs font-medium m-0" style={{ color: "var(--text-primary)" }}>
+                        <p style={{ margin: 0, fontSize: "12px", fontWeight: "600", color: "var(--text-primary)" }}>
                           Let our AI tool work its magic to generate a compelling course description in seconds!
                         </p>
                       </div>
@@ -427,8 +583,20 @@ export default function AppXCourseEditorModal({
                         type="button"
                         onClick={handleGenerateAiDescription}
                         disabled={aiGenerating}
-                        className="btn-prepmark-primary inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all border-none cursor-pointer disabled:opacity-50"
-                        style={{ backgroundColor: "#6E3FF3", color: "#ffffff" }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "8px 16px",
+                          borderRadius: "10px",
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          backgroundColor: "#6E3FF3",
+                          color: "#ffffff",
+                          border: "none",
+                          cursor: aiGenerating ? "not-allowed" : "pointer",
+                          boxShadow: "0 2px 8px rgba(110, 63, 243, 0.35)"
+                        }}
                       >
                         <Sparkles size={14} className={aiGenerating ? "animate-spin" : ""} />
                         <span>{aiGenerating ? "Generating..." : "Generate using AI"}</span>
@@ -437,26 +605,34 @@ export default function AppXCourseEditorModal({
 
                     {/* Course Description */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-secondary)" }}>
+                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                         Course Description
                       </label>
                       <textarea
-                        rows={6}
+                        rows={5}
                         placeholder="Write detailed syllabus, lecture schedule, and course features..."
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         style={{
+                          width: "100%",
+                          padding: "12px 14px",
+                          fontSize: "13px",
                           backgroundColor: "var(--bg-input)",
-                          borderColor: "var(--border-color)",
-                          color: "var(--text-primary)"
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "10px",
+                          color: "var(--text-primary)",
+                          outline: "none",
+                          resize: "vertical",
+                          fontFamily: "inherit",
+                          lineHeight: "1.5",
+                          boxSizing: "border-box"
                         }}
-                        className="w-full p-3.5 text-xs border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-y leading-relaxed font-sans"
                       />
                     </div>
 
                     {/* Thumbnail Cover URL & Presets */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
+                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                         Cover Thumbnail URL
                       </label>
                       <input
@@ -464,16 +640,37 @@ export default function AppXCourseEditorModal({
                         placeholder="https://example.com/banner.png"
                         value={thumbnail}
                         onChange={(e) => setThumbnail(e.target.value)}
-                        className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-input border border-gray-200 dark:border-border rounded-xl text-gray-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          padding: "0 14px",
+                          fontSize: "12.5px",
+                          backgroundColor: "var(--bg-input)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "10px",
+                          color: "var(--text-primary)",
+                          outline: "none",
+                          marginBottom: "10px",
+                          boxSizing: "border-box"
+                        }}
                       />
-                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500">AppX Presets:</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: "11.5px", fontWeight: "600", color: "var(--text-muted)" }}>AppX Presets:</span>
                         {PRESET_BANNERS.map((p, idx) => (
                           <button
                             key={idx}
                             type="button"
                             onClick={() => setThumbnail(p.url)}
-                            className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-gray-100 dark:bg-secondary hover:bg-gray-200 dark:hover:bg-accent text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-border cursor-pointer transition-colors"
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: "600",
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                              backgroundColor: thumbnail === p.url ? "rgba(110, 63, 243, 0.12)" : "var(--bg-input)",
+                              color: thumbnail === p.url ? "#6E3FF3" : "var(--text-secondary)",
+                              border: thumbnail === p.url ? "1px solid #6E3FF3" : "1px solid var(--border-color)",
+                              cursor: "pointer"
+                            }}
                           >
                             {p.label}
                           </button>
@@ -485,53 +682,53 @@ export default function AppXCourseEditorModal({
 
                 {/* ── STEP 2: PRICING & VALIDITY ── */}
                 {activeTab === 2 && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                       {/* MRP */}
-                      <div className="p-4 rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-input shadow-xs">
-                        <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      <div style={{ padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-input)" }}>
+                        <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "4px" }}>
                           Original MRP (₹)
                         </label>
-                        <div className="flex items-center">
-                          <span className="text-gray-400 text-sm font-bold mr-2">₹</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-muted)" }}>₹</span>
                           <input
                             type="number"
                             min="0"
                             value={mrp}
-                            onChange={(e) => setMrp(e.target.value)}
-                            className="w-full text-base font-bold text-gray-900 dark:text-foreground border-none bg-transparent focus:outline-none"
+                            onChange={(e) => setMrp(Number(e.target.value) || 0)}
+                            style={{ width: "100%", fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", backgroundColor: "transparent", border: "none", outline: "none" }}
                           />
                         </div>
-                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Crossed-out anchor price</p>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "var(--text-muted)" }}>Crossed-out anchor price</p>
                       </div>
 
                       {/* Selling Price */}
-                      <div className="p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs">
-                        <label className="block text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-1">
+                      <div style={{ padding: "16px", borderRadius: "12px", border: "1px solid rgba(16, 185, 129, 0.3)", backgroundColor: "rgba(16, 185, 129, 0.08)" }}>
+                        <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "#10b981", marginBottom: "4px" }}>
                           Discounted Selling Price (₹)
                         </label>
-                        <div className="flex items-center">
-                          <span className="text-emerald-600 dark:text-emerald-400 text-sm font-bold mr-2">₹</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontSize: "15px", fontWeight: "700", color: "#10b981" }}>₹</span>
                           <input
                             type="number"
                             min="0"
                             value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            className="w-full text-base font-bold text-emerald-900 dark:text-emerald-200 border-none bg-transparent focus:outline-none"
+                            onChange={(e) => setPrice(Number(e.target.value) || 0)}
+                            style={{ width: "100%", fontSize: "18px", fontWeight: "700", color: "#10b981", backgroundColor: "transparent", border: "none", outline: "none" }}
                           />
                         </div>
-                        <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-1">
+                        <p style={{ margin: "4px 0 0 0", fontSize: "11px", fontWeight: "600", color: "#10b981" }}>
                           {discountPercent > 0 ? `Student saves ${discountPercent}% off MRP` : "No discount applied"}
                         </p>
                       </div>
                     </div>
 
                     {/* Validity Settings */}
-                    <div className="p-5 rounded-2xl border border-gray-200 dark:border-border bg-white dark:bg-input">
-                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">
+                    <div style={{ padding: "18px", borderRadius: "14px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-input)" }}>
+                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "12px" }}>
                         Course Validity Period
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
                         {[
                           { id: "date", label: "Fixed Expiry Date", desc: "e.g. 30/06/2027" },
                           { id: "days", label: "Days from Enrollment", desc: "e.g. 365 Days" },
@@ -540,38 +737,43 @@ export default function AppXCourseEditorModal({
                           <div
                             key={v.id}
                             onClick={() => setValidityType(v.id)}
-                            className={`p-3 rounded-xl border cursor-pointer transition-all ${validityType === v.id
-                                ? "border-primary bg-primary/10 text-primary shadow-xs font-semibold"
-                                : "border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-accent text-gray-700 dark:text-gray-300"
-                              }`}
+                            style={{
+                              padding: "12px",
+                              borderRadius: "10px",
+                              border: validityType === v.id ? "1.5px solid #6E3FF3" : "1px solid var(--border-color)",
+                              backgroundColor: validityType === v.id ? "rgba(110, 63, 243, 0.1)" : "var(--bg-card)",
+                              color: validityType === v.id ? "var(--primary)" : "var(--text-primary)",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease"
+                            }}
                           >
-                            <p className="text-xs font-bold m-0">{v.label}</p>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400 m-0 mt-0.5">{v.desc}</p>
+                            <p style={{ margin: 0, fontSize: "12.5px", fontWeight: "700" }}>{v.label}</p>
+                            <p style={{ margin: "2px 0 0 0", fontSize: "10.5px", color: "var(--text-secondary)" }}>{v.desc}</p>
                           </div>
                         ))}
                       </div>
 
                       {validityType === "date" && (
-                        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-border flex items-center gap-3">
-                          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Select Expiry Date:</label>
+                        <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "10px" }}>
+                          <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Select Expiry Date:</label>
                           <input
                             type="date"
                             value={validityDate}
                             onChange={(e) => setValidityDate(e.target.value)}
-                            className="px-3 py-1.5 text-xs bg-gray-50 dark:bg-card border border-gray-200 dark:border-border rounded-lg text-gray-800 dark:text-foreground focus:outline-none focus:border-primary"
+                            style={{ height: "36px", padding: "0 10px", borderRadius: "8px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontSize: "12px", outline: "none" }}
                           />
                         </div>
                       )}
 
                       {validityType === "days" && (
-                        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-border flex items-center gap-3">
-                          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Days of Access:</label>
+                        <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "10px" }}>
+                          <label style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>Days of Access:</label>
                           <input
                             type="number"
                             min="1"
                             value={validityDays}
-                            onChange={(e) => setValidityDays(e.target.value)}
-                            className="w-28 px-3 py-1.5 text-xs bg-gray-50 dark:bg-card border border-gray-200 dark:border-border rounded-lg text-gray-800 dark:text-foreground focus:outline-none focus:border-primary font-bold"
+                            onChange={(e) => setValidityDays(Number(e.target.value) || 365)}
+                            style={{ width: "90px", height: "36px", padding: "0 10px", borderRadius: "8px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)", fontSize: "13px", fontWeight: "700", outline: "none" }}
                           />
                         </div>
                       )}
@@ -581,13 +783,13 @@ export default function AppXCourseEditorModal({
 
                 {/* ── STEP 3: CONTENT / QUIZ BINDER ── */}
                 {activeTab === 3 && (
-                  <div className="space-y-4 animate-fadeIn">
-                    <div className="flex items-center justify-between">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div>
-                        <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider m-0">
+                        <h4 style={{ margin: 0, fontSize: "12.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-primary)" }}>
                           Quizzes Linked Inside This Course ({linkedQuizzes.length})
                         </h4>
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 m-0 mt-0.5">
+                        <p style={{ margin: "2px 0 0 0", fontSize: "11.5px", color: "var(--text-secondary)" }}>
                           Students enrolled in this course will gain immediate access to these tests
                         </p>
                       </div>
@@ -598,7 +800,19 @@ export default function AppXCourseEditorModal({
                           fetchAvailableQuizzes();
                           setShowAddQuizPicker(true);
                         }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-xl border-none cursor-pointer shadow-xs transition-colors"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "8px 14px",
+                          borderRadius: "10px",
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          backgroundColor: "#6E3FF3",
+                          color: "#ffffff",
+                          border: "none",
+                          cursor: "pointer"
+                        }}
                       >
                         <Plus size={14} />
                         <span>Link Quizzes</span>
@@ -607,39 +821,39 @@ export default function AppXCourseEditorModal({
 
                     {/* Linked Quizzes Table */}
                     {linkedQuizzes.length === 0 ? (
-                      <div className="p-12 text-center text-gray-400 bg-gray-50/50 dark:bg-input/40 rounded-2xl border border-dashed border-gray-300 dark:border-border">
-                        <Layers size={36} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 m-0">No quizzes linked to this course yet</p>
-                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Click "Link Quizzes" above to attach existing tests</p>
+                      <div style={{ padding: "48px 24px", textAlign: "center", borderRadius: "14px", border: "1.5px dashed var(--border-color)", backgroundColor: "var(--bg-input)" }}>
+                        <Layers size={36} style={{ color: "var(--text-muted)", marginBottom: "8px" }} />
+                        <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>No quizzes linked to this course yet</p>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "11.5px", color: "var(--text-secondary)" }}>Click "Link Quizzes" above to attach existing tests</p>
                       </div>
                     ) : (
-                      <div className="border border-gray-200 dark:border-border rounded-2xl overflow-hidden bg-white dark:bg-card shadow-xs">
-                        <table className="w-full text-left border-collapse text-xs">
+                      <div style={{ borderRadius: "12px", border: "1px solid var(--border-color)", overflow: "hidden", backgroundColor: "var(--bg-card)" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px", textAlign: "left" }}>
                           <thead>
-                            <tr className="bg-gray-50 dark:bg-input/80 border-b border-gray-200 dark:border-border text-gray-500 dark:text-gray-400 font-bold uppercase text-[10px]">
-                              <th className="py-2.5 px-3">#</th>
-                              <th className="py-2.5 px-3">Quiz Name</th>
-                              <th className="py-2.5 px-3">Questions</th>
-                              <th className="py-2.5 px-3">Status</th>
-                              <th className="py-2.5 px-3 text-right">Action</th>
+                            <tr style={{ backgroundColor: "var(--bg-input)", borderBottom: "1px solid var(--border-color)", fontSize: "10.5px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                              <th style={{ padding: "10px 14px" }}>#</th>
+                              <th style={{ padding: "10px 14px" }}>Quiz Name</th>
+                              <th style={{ padding: "10px 14px" }}>Questions</th>
+                              <th style={{ padding: "10px 14px" }}>Status</th>
+                              <th style={{ padding: "10px 14px", textAlign: "right" }}>Action</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-100 dark:divide-border">
+                          <tbody>
                             {linkedQuizzes.map((q, idx) => (
-                              <tr key={q._id} className="hover:bg-gray-50/80 dark:hover:bg-accent/40 transition-colors">
-                                <td className="py-2 px-3 text-gray-400 font-semibold">{idx + 1}</td>
-                                <td className="py-2 px-3 font-semibold text-gray-800 dark:text-foreground">{q.title}</td>
-                                <td className="py-2 px-3 text-gray-500 dark:text-gray-400">{q.questionCount || 0} Qs</td>
-                                <td className="py-2 px-3">
-                                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${q.status === "Published" || q.published ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" : "bg-gray-100 dark:bg-secondary text-gray-600 dark:text-gray-300"}`}>
+                              <tr key={q._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
+                                <td style={{ padding: "10px 14px", color: "var(--text-muted)", fontWeight: "600" }}>{idx + 1}</td>
+                                <td style={{ padding: "10px 14px", fontWeight: "600", color: "var(--text-primary)" }}>{q.title}</td>
+                                <td style={{ padding: "10px 14px", color: "var(--text-secondary)" }}>{q.questionCount || 0} Qs</td>
+                                <td style={{ padding: "10px 14px" }}>
+                                  <span style={{ padding: "2px 8px", borderRadius: "12px", fontSize: "10.5px", fontWeight: "700", backgroundColor: q.status === "Published" || q.published ? "rgba(16, 185, 129, 0.1)" : "var(--bg-input)", color: q.status === "Published" || q.published ? "#10b981" : "var(--text-secondary)" }}>
                                     {q.status === "Published" || q.published ? "Published" : "Draft"}
                                   </span>
                                 </td>
-                                <td className="py-2 px-3 text-right">
+                                <td style={{ padding: "10px 14px", textAlign: "right" }}>
                                   <button
                                     type="button"
                                     onClick={() => handleUnlinkQuiz(q._id)}
-                                    className="text-red-500 hover:text-red-700 p-1 bg-transparent border-none cursor-pointer"
+                                    style={{ color: "#ef4444", padding: "4px", backgroundColor: "transparent", border: "none", cursor: "pointer" }}
                                     title="Unlink from course"
                                   >
                                     <Trash2 size={14} />
@@ -654,33 +868,44 @@ export default function AppXCourseEditorModal({
 
                     {/* Quiz Picker Drawer / Popover */}
                     {showAddQuizPicker && (
-                      <div className="p-4 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 mt-4 animate-fadeIn">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs font-bold text-indigo-950 dark:text-indigo-200 uppercase">
+                      <div style={{ padding: "16px", borderRadius: "14px", backgroundColor: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                          <span style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "var(--text-primary)" }}>
                             Select Tests to Link into This Course:
                           </span>
                           <button
                             type="button"
                             onClick={() => setShowAddQuizPicker(false)}
-                            className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xs bg-transparent border-none cursor-pointer font-bold"
+                            style={{ fontSize: "12px", fontWeight: "700", color: "var(--primary)", backgroundColor: "transparent", border: "none", cursor: "pointer" }}
                           >
                             Done
                           </button>
                         </div>
-                        <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                        <div style={{ maxHeight: "200px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "6px" }}>
                           {allAvailableQuizzes.length === 0 ? (
-                            <p className="text-xs text-gray-400 py-2">No unassigned quizzes available</p>
+                            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", padding: "10px 0" }}>No unassigned quizzes available</p>
                           ) : (
                             allAvailableQuizzes.map((quiz) => (
                               <div
                                 key={quiz._id}
-                                className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-card border border-gray-200 dark:border-border text-xs hover:border-primary transition-colors"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "8px 12px",
+                                  borderRadius: "8px",
+                                  backgroundColor: "var(--bg-card)",
+                                  border: "1px solid var(--border-color)",
+                                  fontSize: "12.5px"
+                                }}
                               >
-                                <span className="font-semibold text-gray-800 dark:text-foreground truncate mr-2">{quiz.title}</span>
+                                <span style={{ fontWeight: "600", color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginRight: "8px" }}>
+                                  {quiz.title}
+                                </span>
                                 <button
                                   type="button"
                                   onClick={() => handleLinkQuiz(quiz)}
-                                  className="px-2.5 py-1 text-[11px] font-bold text-white bg-primary rounded-lg border-none cursor-pointer shrink-0"
+                                  style={{ padding: "4px 10px", fontSize: "11px", fontWeight: "700", color: "#ffffff", backgroundColor: "#6E3FF3", borderRadius: "6px", border: "none", cursor: "pointer", flexShrink: 0 }}
                                 >
                                   + Add
                                 </button>
@@ -695,20 +920,34 @@ export default function AppXCourseEditorModal({
 
                 {/* ── STEP 4: ADDITIONAL SETTINGS ── */}
                 {activeTab === 4 && (
-                  <div className="space-y-5 animate-fadeIn">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                     {/* Exam Series Binding */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
+                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                         Target Exam Series
                       </label>
                       <select
                         value={examSeriesId}
                         onChange={(e) => setExamSeriesId(e.target.value)}
-                        className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-input border border-gray-200 dark:border-border rounded-xl text-gray-900 dark:text-foreground focus:outline-none focus:border-primary font-medium"
+                        style={{
+                          width: "100%",
+                          height: "42px",
+                          padding: "0 14px",
+                          fontSize: "13px",
+                          fontWeight: "500",
+                          backgroundColor: "var(--bg-input)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "10px",
+                          color: "var(--text-primary)",
+                          outline: "none",
+                          cursor: "pointer"
+                        }}
                       >
-                        <option value="">No Specific Series (General Master Course)</option>
+                        <option value="" style={{ backgroundColor: "var(--bg-card)", color: "var(--text-primary)" }}>
+                          No Specific Series (General Master Course)
+                        </option>
                         {examSeriesList.map((exam) => (
-                          <option key={exam._id} value={exam._id}>
+                          <option key={exam._id} value={exam._id} style={{ backgroundColor: "var(--bg-card)", color: "var(--text-primary)" }}>
                             {exam.title || exam.name}
                           </option>
                         ))}
@@ -717,20 +956,43 @@ export default function AppXCourseEditorModal({
 
                     {/* Tags Input */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
+                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                         Tags & Keywords (Press Enter to add)
                       </label>
-                      <div className="flex flex-wrap items-center gap-1.5 p-2 bg-white dark:bg-input border border-gray-200 dark:border-border rounded-xl min-h-[42px]">
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "8px 12px",
+                          backgroundColor: "var(--bg-input)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "10px",
+                          minHeight: "42px"
+                        }}
+                      >
                         {tags.map((t, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 dark:bg-secondary text-gray-800 dark:text-gray-200"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              fontSize: "11px",
+                              fontWeight: "600",
+                              backgroundColor: "var(--bg-card)",
+                              border: "1px solid var(--border-color)",
+                              color: "var(--text-primary)"
+                            }}
                           >
                             <span>#{t}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveTag(t)}
-                              className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-transparent border-none p-0 cursor-pointer"
+                              style={{ color: "var(--text-muted)", backgroundColor: "transparent", border: "none", cursor: "pointer", padding: 0 }}
                             >
                               ✕
                             </button>
@@ -742,14 +1004,14 @@ export default function AppXCourseEditorModal({
                           value={newTagInput}
                           onChange={(e) => setNewTagInput(e.target.value)}
                           onKeyDown={handleAddTag}
-                          className="flex-1 min-w-[80px] text-xs bg-transparent border-none p-1 focus:outline-none text-gray-900 dark:text-foreground"
+                          style={{ flex: 1, minWidth: "90px", fontSize: "12px", backgroundColor: "transparent", border: "none", outline: "none", color: "var(--text-primary)" }}
                         />
                       </div>
                     </div>
 
-                    {/* Display Order / Rank (sortOrder) */}
+                    {/* Display Order / Rank */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
+                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                         Display Order / Rank (sortOrder)
                       </label>
                       <input
@@ -758,116 +1020,113 @@ export default function AppXCourseEditorModal({
                         value={sortOrder}
                         onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
                         placeholder="0"
-                        className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-input border border-gray-200 dark:border-border rounded-xl text-gray-900 dark:text-foreground focus:outline-none focus:border-primary font-medium"
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          padding: "0 14px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          backgroundColor: "var(--bg-input)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "10px",
+                          color: "var(--text-primary)",
+                          outline: "none",
+                          boxSizing: "border-box"
+                        }}
                       />
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 block">
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginTop: "4px" }}>
                         Lower numerical rank displays first in list and grid views (e.g. -10, 0, 10).
                       </span>
                     </div>
 
                     {/* Instructions */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
+                      <label style={{ display: "block", fontSize: "11.5px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: "6px" }}>
                         Special Instructions / Guidelines for Students
                       </label>
                       <textarea
-                        rows={4}
+                        rows={3}
                         placeholder="e.g. Tests will unlock every Monday at 9:00 AM. Requires desktop or app."
                         value={instructions}
                         onChange={(e) => setInstructions(e.target.value)}
-                        className="w-full p-3.5 text-xs bg-white dark:bg-input border border-gray-200 dark:border-border rounded-xl text-gray-800 dark:text-foreground focus:outline-none focus:border-primary resize-none font-sans"
+                        style={{
+                          width: "100%",
+                          padding: "10px 14px",
+                          fontSize: "12.5px",
+                          backgroundColor: "var(--bg-input)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "10px",
+                          color: "var(--text-primary)",
+                          outline: "none",
+                          resize: "none",
+                          fontFamily: "inherit",
+                          boxSizing: "border-box"
+                        }}
                       />
                     </div>
                   </div>
                 )}
               </div>
             )}
-
-            {/* Stepper Navigation Buttons */}
-            <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100 dark:border-border">
-              <button
-                type="button"
-                disabled={activeTab === 1}
-                onClick={() => setActiveTab((prev) => Math.max(1, prev - 1))}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-accent border-none cursor-pointer disabled:opacity-40 transition-colors"
-              >
-                <ChevronLeft size={15} />
-                <span>Previous</span>
-              </button>
-
-              {activeTab < 4 ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab((prev) => Math.min(4, prev + 1))}
-                  style={{ backgroundColor: "#6E3FF3", color: "#ffffff" }}
-                  className="btn-prepmark-primary inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-bold border-none cursor-pointer shadow-md transition-all"
-                >
-                  <span>Next</span>
-                  <ChevronRight size={15} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  style={{ backgroundColor: "#6E3FF3", color: "#ffffff" }}
-                  className="btn-prepmark-primary inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-bold border-none cursor-pointer shadow-md transition-all"
-                >
-                  <Save size={15} />
-                  <span>{saving ? "Saving..." : "Save Course"}</span>
-                </button>
-              )}
-            </div>
           </div>
 
-          {/* RIGHT COLUMN: APPX LIVE PREVIEW CARD (4.5 cols) */}
+          {/* RIGHT COLUMN: APPX LIVE PREVIEW CARD */}
           <div
-            className="lg:col-span-5 xl:col-span-4 border-t lg:border-t-0 lg:border-l pt-6 lg:pt-0 pl-0 lg:pl-6 flex flex-col items-center"
-            style={{ borderColor: "var(--border-color)" }}
+            style={{
+              borderLeft: "1px solid var(--border-color)",
+              paddingLeft: "24px",
+              display: "flex",
+              flexDirection: "column"
+            }}
           >
-            <div className="w-full sticky top-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+            <div style={{ position: "sticky", top: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)" }}>
                   PREVIEW
                 </span>
-                <span className="text-[10px] font-medium" style={{ color: "var(--text-secondary)" }}>
+                <span style={{ fontSize: "10.5px", fontWeight: "500", color: "var(--text-secondary)" }}>
                   Live Student View
                 </span>
               </div>
 
               {/* Exact AppX Preview Card */}
               <div
-                className="w-full rounded-2xl border overflow-hidden shadow-lg transition-all flex flex-col justify-between"
-                style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)", color: "var(--text-primary)" }}
+                style={{
+                  width: "100%",
+                  borderRadius: "16px",
+                  border: "1px solid var(--border-color)",
+                  overflow: "hidden",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+                  backgroundColor: "var(--bg-card)",
+                  color: "var(--text-primary)"
+                }}
               >
                 {/* Banner Thumbnail */}
-                <div className="h-44 w-full bg-gradient-to-br from-indigo-900 via-gray-900 to-black relative overflow-hidden flex items-center justify-center">
+                <div style={{ height: "160px", width: "100%", backgroundColor: "var(--bg-input)", position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {thumbnail ? (
                     <img
                       src={thumbnail}
                       alt="Course Banner"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      onError={(e) => { e.target.style.display = "none"; }}
                     />
                   ) : (
-                    <div className="text-white/40 flex flex-col items-center gap-1">
-                      <BookOpen size={36} />
-                      <span className="text-xs">No Cover Image</span>
+                    <div style={{ color: "var(--text-muted)", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                      <BookOpen size={32} />
+                      <span style={{ fontSize: "11.5px" }}>No Cover Image</span>
                     </div>
                   )}
 
                   {/* Badges */}
-                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                  <div style={{ position: "absolute", top: "10px", left: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
                     {isFeatured && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-gray-950 shadow-xs flex items-center gap-1">
+                      <span style={{ padding: "3px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: "700", backgroundColor: "#f59e0b", color: "#000000", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                         <Star size={10} />
                         <span>Featured</span>
                       </span>
                     )}
                     {discountPercent > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white shadow-xs">
+                      <span style={{ padding: "3px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: "700", backgroundColor: "#10b981", color: "#ffffff" }}>
                         {discountPercent}% Off
                       </span>
                     )}
@@ -875,51 +1134,42 @@ export default function AppXCourseEditorModal({
                 </div>
 
                 {/* Card Body */}
-                <div className="p-4 flex flex-col justify-between flex-1">
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-foreground m-0 line-clamp-2 leading-snug">
-                      {title.trim() || "PRELIMS LANGUAGE COURSE (HINDI, ENGLISH & URDU)"}
-                    </h3>
+                <div style={{ padding: "16px" }}>
+                  <h3 style={{ margin: 0, fontSize: "13.5px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.4", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                    {title.trim() || "PRELIMS LANGUAGE COURSE (HINDI, ENGLISH & URDU)"}
+                  </h3>
 
-                    {/* Price & MRP Row */}
-                    <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-base font-extrabold text-gray-900 dark:text-foreground">
-                        {price > 0 ? `Rs. ${price}/-` : "Free"}
+                  {/* Price & MRP Row */}
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "10px" }}>
+                    <span style={{ fontSize: "16px", fontWeight: "800", color: "var(--text-primary)" }}>
+                      {price > 0 ? `Rs. ${price}/-` : "Free"}
+                    </span>
+                    {mrp > price && price > 0 && (
+                      <span style={{ fontSize: "12px", color: "var(--text-muted)", textDecoration: "line-through" }}>
+                        ₹{mrp}
                       </span>
-                      {mrp > price && price > 0 && (
-                        <span className="text-xs text-gray-400 line-through">
-                          ₹{mrp}
-                        </span>
-                      )}
-                      {discountPercent > 0 && (
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                          {discountPercent}% Off
-                        </span>
-                      )}
-                    </div>
+                    )}
+                    {discountPercent > 0 && (
+                      <span style={{ fontSize: "12px", fontWeight: "700", color: "#10b981" }}>
+                        {discountPercent}% Off
+                      </span>
+                    )}
+                  </div>
 
-                    {/* Validity */}
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1">
-                      <Calendar size={12} className="text-gray-400 dark:text-gray-500" />
-                      <span>
-                        Validity : {validityType === "date" ? (validityDate || "30/06/2027") : validityType === "days" ? `${validityDays} Days` : "Lifetime"}
-                      </span>
-                    </div>
+                  {/* Validity */}
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "8px", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <Calendar size={12} style={{ color: "var(--text-muted)" }} />
+                    <span>
+                      Validity : {validityType === "date" ? (validityDate || "30/06/2027") : validityType === "days" ? `${validityDays} Days` : "Lifetime"}
+                    </span>
                   </div>
 
                   {/* Footer Tags & Enroll Button */}
-                  <div className="pt-3 mt-3 border-t border-gray-100 dark:border-border flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-pink-50 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 border border-pink-200/50 dark:border-pink-800/40">
-                        course
-                      </span>
-                      {isFeatured && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40">
-                          featured
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs font-bold text-primary">
+                  <div style={{ paddingTop: "12px", marginTop: "12px", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ padding: "2px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: "600", backgroundColor: "rgba(110, 63, 243, 0.12)", color: "#6E3FF3" }}>
+                      course
+                    </span>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#6E3FF3" }}>
                       Enroll Now →
                     </span>
                   </div>
@@ -927,6 +1177,89 @@ export default function AppXCourseEditorModal({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── STICKY MODAL FOOTER ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 24px",
+            borderTop: "1px solid var(--border-color)",
+            backgroundColor: "var(--bg-card)",
+            flexShrink: 0
+          }}
+        >
+          <button
+            type="button"
+            disabled={activeTab === 1}
+            onClick={() => setActiveTab((prev) => Math.max(1, prev - 1))}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "8px 16px",
+              borderRadius: "10px",
+              fontSize: "12px",
+              fontWeight: "600",
+              color: "var(--text-secondary)",
+              backgroundColor: "var(--bg-input)",
+              border: "1px solid var(--border-color)",
+              cursor: activeTab === 1 ? "not-allowed" : "pointer",
+              opacity: activeTab === 1 ? 0.4 : 1
+            }}
+          >
+            <ChevronLeft size={15} />
+            <span>Previous</span>
+          </button>
+
+          {activeTab < 4 ? (
+            <button
+              type="button"
+              onClick={() => setActiveTab((prev) => Math.min(4, prev + 1))}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 22px",
+                borderRadius: "10px",
+                fontSize: "12px",
+                fontWeight: "700",
+                backgroundColor: "#6E3FF3",
+                color: "#ffffff",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(110, 63, 243, 0.3)"
+              }}
+            >
+              <span>Next</span>
+              <ChevronRight size={15} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 22px",
+                borderRadius: "10px",
+                fontSize: "12px",
+                fontWeight: "700",
+                backgroundColor: "#6E3FF3",
+                color: "#ffffff",
+                border: "none",
+                cursor: saving ? "not-allowed" : "pointer",
+                boxShadow: "0 2px 8px rgba(110, 63, 243, 0.3)"
+              }}
+            >
+              <Save size={15} />
+              <span>{saving ? "Saving..." : "Save Course"}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

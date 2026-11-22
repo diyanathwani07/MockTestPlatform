@@ -640,14 +640,18 @@ html.theme-vercel.dark .student-sidebar .sidebar-link.active svg {
   stroke: #000000 !important;
 }
 
-/* Vercel Dark: Primary buttons (White bg, Black text) */
+/* Vercel Dark: Primary buttons & Auth submit buttons (White bg, Black text) */
 html.theme-vercel.dark .btn-prepmark-primary,
 html.theme-vercel.dark button.btn-prepmark-primary,
 html.theme-vercel.dark .practice-create-btn,
 html.theme-vercel.dark .practice-toggle-active,
 html.theme-vercel.dark .btn-primary,
 html.theme-vercel.dark .manage-command-btn.primary,
-html.theme-vercel.dark .acb-fab {
+html.theme-vercel.dark .acb-fab,
+html.theme-vercel.dark .login-page button[type="submit"],
+html.theme-vercel.dark .login-card button[type="submit"],
+html.theme-vercel.dark .register-card button,
+html.theme-vercel.dark .forgot-password-card button[type="submit"] {
   background-color: #ffffff !important;
   color: #000000 !important;
   border: 1px solid #ffffff !important;
@@ -659,14 +663,24 @@ html.theme-vercel.dark .practice-create-btn:hover,
 html.theme-vercel.dark .practice-toggle-active:hover,
 html.theme-vercel.dark .btn-primary:hover,
 html.theme-vercel.dark .manage-command-btn.primary:hover,
-html.theme-vercel.dark .acb-fab:hover {
+html.theme-vercel.dark .acb-fab:hover,
+html.theme-vercel.dark .login-page button[type="submit"]:hover,
+html.theme-vercel.dark .login-card button[type="submit"]:hover,
+html.theme-vercel.dark .register-card button:hover,
+html.theme-vercel.dark .forgot-password-card button[type="submit"]:hover {
   background-color: #eaeaea !important;
   color: #000000 !important;
 }
 html.theme-vercel.dark .btn-prepmark-primary svg,
 html.theme-vercel.dark button.btn-prepmark-primary svg,
 html.theme-vercel.dark .practice-create-btn svg,
-html.theme-vercel.dark .acb-fab svg {
+html.theme-vercel.dark .acb-fab svg,
+html.theme-vercel.dark .login-page button[type="submit"] svg,
+html.theme-vercel.dark .login-card button[type="submit"] svg,
+html.theme-vercel.dark .login-page button[type="submit"] span,
+html.theme-vercel.dark .login-card button[type="submit"] span,
+html.theme-vercel.dark .register-card button *,
+html.theme-vercel.dark .forgot-password-card button[type="submit"] * {
   color: #000000 !important;
   stroke: #000000 !important;
 }
@@ -686,14 +700,18 @@ html.theme-vercel:not(.dark) .student-sidebar .sidebar-link.active svg {
   stroke: #ffffff !important;
 }
 
-/* Vercel Light: Primary buttons (Black bg, White text) */
+/* Vercel Light: Primary buttons & Auth submit buttons (Black bg, White text) */
 html.theme-vercel:not(.dark) .btn-prepmark-primary,
 html.theme-vercel:not(.dark) button.btn-prepmark-primary,
 html.theme-vercel:not(.dark) .practice-create-btn,
 html.theme-vercel:not(.dark) .practice-toggle-active,
 html.theme-vercel:not(.dark) .btn-primary,
 html.theme-vercel:not(.dark) .manage-command-btn.primary,
-html.theme-vercel:not(.dark) .acb-fab {
+html.theme-vercel:not(.dark) .acb-fab,
+html.theme-vercel:not(.dark) .login-page button[type="submit"],
+html.theme-vercel:not(.dark) .login-card button[type="submit"],
+html.theme-vercel:not(.dark) .register-card button,
+html.theme-vercel:not(.dark) .forgot-password-card button[type="submit"] {
   background-color: #000000 !important;
   color: #ffffff !important;
   border: 1px solid #000000 !important;
@@ -705,14 +723,24 @@ html.theme-vercel:not(.dark) .practice-create-btn:hover,
 html.theme-vercel:not(.dark) .practice-toggle-active:hover,
 html.theme-vercel:not(.dark) .btn-primary:hover,
 html.theme-vercel:not(.dark) .manage-command-btn.primary:hover,
-html.theme-vercel:not(.dark) .acb-fab:hover {
+html.theme-vercel:not(.dark) .acb-fab:hover,
+html.theme-vercel:not(.dark) .login-page button[type="submit"]:hover,
+html.theme-vercel:not(.dark) .login-card button[type="submit"]:hover,
+html.theme-vercel:not(.dark) .register-card button:hover,
+html.theme-vercel:not(.dark) .forgot-password-card button[type="submit"]:hover {
   background-color: #222222 !important;
   color: #ffffff !important;
 }
 html.theme-vercel:not(.dark) .btn-prepmark-primary svg,
 html.theme-vercel:not(.dark) button.btn-prepmark-primary svg,
 html.theme-vercel:not(.dark) .practice-create-btn svg,
-html.theme-vercel:not(.dark) .acb-fab svg {
+html.theme-vercel:not(.dark) .acb-fab svg,
+html.theme-vercel:not(.dark) .login-page button[type="submit"] svg,
+html.theme-vercel:not(.dark) .login-card button[type="submit"] svg,
+html.theme-vercel:not(.dark) .login-page button[type="submit"] span,
+html.theme-vercel:not(.dark) .login-card button[type="submit"] span,
+html.theme-vercel:not(.dark) .register-card button *,
+html.theme-vercel:not(.dark) .forgot-password-card button[type="submit"] * {
   color: #ffffff !important;
   stroke: #ffffff !important;
 }

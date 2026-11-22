@@ -375,10 +375,20 @@ export default function QuizExplorerWorkspace({
     <div className="w-full">
       {/* 1. Directory Navigation & Metrics Bar */}
       <div
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 px-3 py-2.5 rounded-2xl border"
-        style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          marginBottom: "12px",
+          padding: "8px 16px",
+          borderRadius: "14px",
+          border: "1px solid var(--border-color)",
+          backgroundColor: "var(--bg-card)",
+          flexWrap: "wrap"
+        }}
       >
-        <div className="flex-1 min-w-0">
+        <div style={{ flex: "1 1 240px", minWidth: "180px" }}>
           <QuizBreadcrumbs
             breadcrumbs={breadcrumbs}
             onNavigate={handleNavigateFolder}
@@ -386,37 +396,52 @@ export default function QuizExplorerWorkspace({
           />
         </div>
 
-        {/* Directory Metrics Chips */}
-        <div className="flex items-center gap-1.5 flex-wrap shrink-0">
-          <span
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border"
-            style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border-color)", color: "var(--text-secondary)" }}
+        {/* Directory Metrics Chips: Unified Sleek Badge */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "6px 14px",
+              borderRadius: "10px",
+              fontSize: "12px",
+              fontWeight: "600",
+              backgroundColor: "var(--bg-input)",
+              border: "1px solid var(--border-color)",
+              color: "var(--text-secondary)"
+            }}
           >
-            <strong style={{ color: "var(--text-primary)" }}>{folders.length}</strong>
-            <span>Folder{folders.length !== 1 ? "s" : ""}</span>
-          </span>
-
-          <span
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border"
-            style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border-color)", color: "var(--text-secondary)" }}
-          >
-            <strong style={{ color: "var(--text-primary)" }}>{quizzes.length}</strong>
-            <span>Quiz{quizzes.length !== 1 ? "zes" : ""}</span>
-          </span>
-
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <CheckCircle2 size={12} />
-            <strong>{quizzes.filter(q => q.status === "Published" || q.published).length}</strong>
-            <span>Published</span>
-          </span>
-
-          {quizzes.filter(q => q.status !== "Published" && !q.published).length > 0 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-              <AlertCircle size={12} />
-              <strong>{quizzes.filter(q => q.status !== "Published" && !q.published).length}</strong>
-              <span>Draft</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              <Folder size={13} style={{ color: "#f59e0b" }} />
+              <strong style={{ color: "var(--text-primary)" }}>{folders.length}</strong>
+              <span>Folder{folders.length !== 1 ? "s" : ""}</span>
             </span>
-          )}
+
+            <span style={{ color: "var(--border-color)" }}>|</span>
+
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              <FileText size={13} style={{ color: "var(--primary)" }} />
+              <strong style={{ color: "var(--text-primary)" }}>{quizzes.length}</strong>
+              <span>Quiz{quizzes.length !== 1 ? "zes" : ""}</span>
+            </span>
+
+            {quizzes.length > 0 && (
+              <>
+                <span style={{ color: "var(--border-color)" }}>|</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#10b981", fontWeight: "700" }}>
+                  <CheckCircle2 size={13} />
+                  <span>{quizzes.filter(q => q.status === "Published" || q.published).length} Published</span>
+                </span>
+                {quizzes.some(q => q.status !== "Published" && !q.published) && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#f59e0b", fontWeight: "700", marginLeft: "4px" }}>
+                    <AlertCircle size={13} />
+                    <span>{quizzes.filter(q => q.status !== "Published" && !q.published).length} Draft</span>
+                  </span>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
