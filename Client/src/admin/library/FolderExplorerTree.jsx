@@ -7,7 +7,8 @@ import {
   Search,
   FolderPlus,
   Layers,
-  Sparkles
+  Sparkles,
+  X
 } from "lucide-react";
 
 /**
@@ -113,14 +114,26 @@ export default function FolderExplorerTree({
 
       {/* Filter / Search */}
       <div className="tree-search-bar">
-        <Search size={14} className="tree-search-icon" />
-        <input
-          type="text"
-          className="tree-search-input"
-          placeholder="Filter folders..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="tree-search-wrapper">
+          <Search size={14} className="tree-search-icon" />
+          <input
+            type="text"
+            className="tree-search-input"
+            placeholder="Filter folders..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              className="tree-search-clear-btn"
+              onClick={() => setSearchQuery("")}
+              title="Clear filter"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Quick Expansion Controls */}

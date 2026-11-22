@@ -311,10 +311,10 @@
   height: 54px;
   border: none;
   border-radius: 14px;
-  background: var(--violet) !important;
-  color: #ffffff;
+  background: var(--primary, #6E3FF3) !important;
+  color: #ffffff !important;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.25s ease;
 }

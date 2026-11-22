@@ -237,12 +237,12 @@ export default function ResourceListTable({
                           <Trash2 size={14} />
                         </button>
 
-                        {/* Super Admin Permanent Purge */}
+                        {/* Super Admin Permanent Delete */}
                         {isSuperAdmin && (
                           <button
                             type="button"
                             className="action-icon-btn danger"
-                            title="Super Admin Permanent Purge"
+                            title="Permanently Delete (Super Admin)"
                             onClick={() => onPurgeResource(res)}
                             style={{ borderColor: "#FCA5A5", color: "#DC2626" }}
                           >

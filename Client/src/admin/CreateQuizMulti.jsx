@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Sparkles, Calendar, Clock } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminNavbar from "./components/AdminNavbar";
@@ -58,8 +58,12 @@ const defaultSection = (index) => ({
 function CreateQuizMulti() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialFolderId = searchParams.get("folderId") || null;
 
   const [quizMeta, setQuizMeta] = useState({
+    folderId: initialFolderId,
     examName: "",
     subject: "",
     title: "",
@@ -327,6 +331,8 @@ function CreateQuizMulti() {
             currency: dbQuiz.currency || "INR",
             plans: dbQuiz.plans || [],
             detailedDescription: dbQuiz.detailedDescription || "",
+            folderId: dbQuiz.folderId?._id || dbQuiz.folderId || initialFolderId,
+            sortOrder: dbQuiz.sortOrder !== undefined ? dbQuiz.sortOrder : 0,
             examSeriesId: dbQuiz.examSeriesId?._id || dbQuiz.examSeriesId || "",
             publishAs: dbQuiz.publishAs || "exam",
             resultReleaseMode: dbQuiz.resultReleaseMode || "immediate",
@@ -879,7 +885,7 @@ function CreateQuizMulti() {
         text: `Assessment successfully saved as ${finalStatus}!`,
         type: "success"
       });
-      setTimeout(() => navigate("/admin/manage-quizzes"), 1500);
+      setTimeout(() => navigate(initialFolderId ? `/admin/manage-quizzes?folderId=${initialFolderId}` : "/admin/manage-quizzes"), 1500);
     } catch (err) {
       console.error(err);
       setMessage({

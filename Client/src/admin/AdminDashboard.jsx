@@ -37,18 +37,18 @@ function AdminDashboard() {
   const itemsPerPage = 4;
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-  
-  const hasGlobalAccess = currentUser.role === "superadmin" || 
+
+  const hasGlobalAccess = currentUser.role === "superadmin" ||
     (currentUser.role === "admin" && (!currentUser.permissions || currentUser.permissions.length === 0 || currentUser.permissions.includes("*")));
-  
-  const hasSupportAccess = hasGlobalAccess || 
-    (currentUser.permissions && currentUser.permissions.includes("support_tickets")) || 
-    currentUser.department === "Calling Team" || 
+
+  const hasSupportAccess = hasGlobalAccess ||
+    (currentUser.permissions && currentUser.permissions.includes("support_tickets")) ||
+    currentUser.department === "Calling Team" ||
     currentUser.department === "Operations Team";
-    
-  const hasContentAccess = hasGlobalAccess || 
-    (currentUser.permissions && currentUser.permissions.includes("quizzes")) || 
-    currentUser.department === "Content Team" || 
+
+  const hasContentAccess = hasGlobalAccess ||
+    (currentUser.permissions && currentUser.permissions.includes("quizzes")) ||
+    currentUser.department === "Content Team" ||
     currentUser.department === "Faculty";
 
   const [tickets, setTickets] = useState([]);
@@ -111,7 +111,7 @@ function AdminDashboard() {
     today.setHours(12, 0, 0, 0); // Normalize to noon to prevent midnight/DST crossovers
     const result = [];
     const dailyStats = {};
-    
+
     const formatDateKey = (dateObj) => {
       const day = dateObj.getDate();
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -126,7 +126,7 @@ function AdminDashboard() {
       dailyStats[dateString] = { ticketsCreated: 0, ticketsResolved: 0 };
       result.push(dateString);
     }
-    
+
     tickets.forEach(ticket => {
       if (!ticket.createdAt) return;
       const createdDate = new Date(ticket.createdAt);
@@ -155,8 +155,8 @@ function AdminDashboard() {
   const supportChartData = generateSupportChartData(rangeDays);
   const supportPeriodCreated = supportChartData.reduce((acc, d) => acc + (d.ticketsCreated || 0), 0);
   const supportPeriodResolved = supportChartData.reduce((acc, d) => acc + (d.ticketsResolved || 0), 0);
-  const supportResolutionRate = supportPeriodCreated > 0 
-    ? Math.round((supportPeriodResolved / supportPeriodCreated) * 100) 
+  const supportResolutionRate = supportPeriodCreated > 0
+    ? Math.round((supportPeriodResolved / supportPeriodCreated) * 100)
     : (resolvedTicketsCount > 0 ? 100 : 0);
 
 
@@ -213,8 +213,8 @@ function AdminDashboard() {
     return result;
   };
 
-  const chartDataList = stats.chartData && stats.chartData.length > 0 
-    ? stats.chartData 
+  const chartDataList = stats.chartData && stats.chartData.length > 0
+    ? stats.chartData
     : generateFallbackChartData(rangeDays);
 
   const activeUsersCount = stats.activeUsers || 856;
@@ -232,7 +232,7 @@ function AdminDashboard() {
 
   let explorerView = "exams";
   let explorerList = [];
-  
+
   if (explorerPath.length === 0) {
     explorerView = "exams";
     explorerList = Object.keys(explorerData).map(exam => ({
@@ -280,14 +280,14 @@ function AdminDashboard() {
           {hasGlobalAccess && (
             <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "28px" }}>
               <div style={{ display: "inline-flex", background: "var(--bg-input, #F9FAFB)", border: "1.5px solid var(--border-color, #E5E7EB)", borderRadius: "100px", padding: "4px" }}>
-                <button 
+                <button
                   onClick={() => setActiveDashboardView("main")}
-                  style={{ 
-                    padding: "8px 24px", 
-                    borderRadius: "100px", 
-                    fontWeight: "700", 
-                    fontSize: "13px", 
-                    cursor: "pointer", 
+                  style={{
+                    padding: "8px 24px",
+                    borderRadius: "100px",
+                    fontWeight: "700",
+                    fontSize: "13px",
+                    cursor: "pointer",
                     border: "none",
                     background: activeDashboardView === "main" ? "var(--primary)" : "transparent",
                     color: activeDashboardView === "main" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary, #6B7280)",
@@ -298,14 +298,14 @@ function AdminDashboard() {
                 >
                   Quiz & User Analytics
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveDashboardView("support")}
-                  style={{ 
-                    padding: "8px 24px", 
-                    borderRadius: "100px", 
-                    fontWeight: "700", 
-                    fontSize: "13px", 
-                    cursor: "pointer", 
+                  style={{
+                    padding: "8px 24px",
+                    borderRadius: "100px",
+                    fontWeight: "700",
+                    fontSize: "13px",
+                    cursor: "pointer",
                     border: "none",
                     background: activeDashboardView === "support" ? "var(--primary)" : "transparent",
                     color: activeDashboardView === "support" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary, #6B7280)",
@@ -385,8 +385,8 @@ function AdminDashboard() {
                         )}
                       </h3>
                       <div>
-                        <select 
-                          value={rangeDays} 
+                        <select
+                          value={rangeDays}
                           onChange={(e) => setRangeDays(parseInt(e.target.value, 10))}
                           aria-label="Select date range for support performance"
                           style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
@@ -422,7 +422,7 @@ function AdminDashboard() {
                       const plotHeight = bottomY - topY;
 
                       const maxVal = Math.max(0, ...supportChartData.map(d => Math.max(d.ticketsCreated, d.ticketsResolved)));
-                      
+
                       let dynamicMax = 4;
                       if (maxVal <= 4) dynamicMax = 4;
                       else if (maxVal <= 8) dynamicMax = 8;
@@ -489,7 +489,7 @@ function AdminDashboard() {
                             <line x1={startX} y1={topY + plotHeight * 0.5} x2={endX} y2={topY + plotHeight * 0.5} stroke="var(--border-color)" strokeWidth="1" />
                             <line x1={startX} y1={topY + plotHeight * 0.75} x2={endX} y2={topY + plotHeight * 0.75} stroke="var(--border-color)" strokeWidth="1" />
                             <line x1={startX} y1={bottomY} x2={endX} y2={bottomY} stroke="var(--border-color)" strokeWidth="1" />
-                            
+
                             <text x="45" y={topY + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax)}</text>
                             <text x="45" y={topY + plotHeight * 0.25 + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.75)}</text>
                             <text x="45" y={topY + plotHeight * 0.5 + 4} fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.5)}</text>
@@ -503,19 +503,19 @@ function AdminDashboard() {
                             <path d={pathResolvedStroke} fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
                             {pointsCreated.concat(pointsResolved).map((pt, i) => (
-                              <g 
+                              <g
                                 key={`target-${i}`}
                                 onMouseEnter={() => setHoveredPoint(pt)}
                                 onMouseLeave={() => setHoveredPoint(null)}
                                 style={{ cursor: "pointer" }}
                               >
                                 <circle cx={pt.x} cy={pt.y} r="12" fill="transparent" />
-                                <circle 
-                                  cx={pt.x} cy={pt.y} 
-                                  r={pt.val > 0 ? "6" : "3.5"} 
-                                  fill={hoveredPoint && hoveredPoint.x === pt.x && hoveredPoint.y === pt.y ? pt.color : (pt.val > 0 ? pt.color : "#ffffff")} 
-                                  stroke={pt.color} 
-                                  strokeWidth={pt.val > 0 ? "3" : "2"} 
+                                <circle
+                                  cx={pt.x} cy={pt.y}
+                                  r={pt.val > 0 ? "6" : "3.5"}
+                                  fill={hoveredPoint && hoveredPoint.x === pt.x && hoveredPoint.y === pt.y ? pt.color : (pt.val > 0 ? pt.color : "#ffffff")}
+                                  stroke={pt.color}
+                                  strokeWidth={pt.val > 0 ? "3" : "2"}
                                   style={{ transition: "all 0.15s" }}
                                 />
                               </g>
@@ -601,8 +601,8 @@ function AdminDashboard() {
                 <div className="form-card" style={{ margin: 0, padding: "24px", display: "flex", flexDirection: "column" }}>
                   <div className="dashboard-card-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                     <h3 className="dashboard-card-title">Unassigned Support Tickets</h3>
-                    <button 
-                      onClick={() => navigate("/admin/tickets")} 
+                    <button
+                      onClick={() => navigate("/admin/tickets")}
                       style={{ background: "none", border: "none", padding: 0, fontSize: "13px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}
                     >
                       View All →
@@ -795,8 +795,8 @@ function AdminDashboard() {
                       )}
                     </h3>
                     <div>
-                      <select 
-                        value={rangeDays} 
+                      <select
+                        value={rangeDays}
                         onChange={(e) => setRangeDays(parseInt(e.target.value, 10))}
                         aria-label="Select date range for analytics"
                         style={{ padding: "6px 12px", border: "1.5px solid var(--border-input)", borderRadius: "8px", fontSize: "12px", background: "var(--bg-input)", color: "var(--text-primary)", fontWeight: "600", cursor: "pointer" }}
@@ -826,7 +826,7 @@ function AdminDashboard() {
                       const height = 250;
 
                       const maxVal = Math.max(10, ...chartDataList.map(d => Math.max(d.quizzesCreated, d.attempts)));
-                      
+
                       let dynamicMax = 10;
                       if (maxVal <= 10) dynamicMax = 10;
                       else if (maxVal <= 20) dynamicMax = 20;
@@ -902,7 +902,7 @@ function AdminDashboard() {
                             <line x1={startX} y1="115" x2={endX} y2="115" stroke="var(--border-color)" strokeWidth="1" />
                             <line x1={startX} y1="157.5" x2={endX} y2="157.5" stroke="var(--border-color)" strokeWidth="1" />
                             <line x1={startX} y1="200" x2={endX} y2="200" stroke="var(--border-color)" strokeWidth="1" />
-                            
+
                             <text x="45" y="34" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax)}</text>
                             <text x="45" y="76.5" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.75)}</text>
                             <text x="45" y="119" fill="var(--text-muted)" fontSize="11" textAnchor="end" fontWeight="500">{formatYLabel(dynamicMax * 0.5)}</text>
@@ -916,19 +916,19 @@ function AdminDashboard() {
                             <path d={pathAttemptsStroke} fill="none" stroke="#FF9F40" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
                             {pointsQuizzes.concat(pointsAttempts).map((pt, i) => (
-                              <g 
+                              <g
                                 key={`target-${i}`}
                                 onMouseEnter={() => setHoveredPoint(pt)}
                                 onMouseLeave={() => setHoveredPoint(null)}
                                 style={{ cursor: "pointer" }}
                               >
                                 <circle cx={pt.x} cy={pt.y} r="12" fill="transparent" />
-                                <circle 
-                                  cx={pt.x} cy={pt.y} 
-                                  r={pt.val > 0 ? "6" : "3.5"} 
-                                  fill={hoveredPoint && hoveredPoint.x === pt.x && hoveredPoint.y === pt.y ? pt.color : (pt.val > 0 ? pt.color : "#ffffff")} 
-                                  stroke={pt.color} 
-                                  strokeWidth={pt.val > 0 ? "3" : "2"} 
+                                <circle
+                                  cx={pt.x} cy={pt.y}
+                                  r={pt.val > 0 ? "6" : "3.5"}
+                                  fill={hoveredPoint && hoveredPoint.x === pt.x && hoveredPoint.y === pt.y ? pt.color : (pt.val > 0 ? pt.color : "#ffffff")}
+                                  stroke={pt.color}
+                                  strokeWidth={pt.val > 0 ? "3" : "2"}
                                   style={{ transition: "all 0.15s" }}
                                 />
                               </g>
@@ -1036,22 +1036,22 @@ function AdminDashboard() {
                 <div className="form-card quiz-explorer-card" style={{ margin: 0, padding: "16px 18px", gridColumn: "span 2", display: "flex", flexDirection: "column" }}>
                   <div className="dashboard-card-title-row" style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "12px", marginBottom: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
                     <h3 className="dashboard-card-title" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "15px", margin: 0 }}>
-                      <span 
-                        style={{ cursor: "pointer", color: explorerPath.length === 0 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }} 
+                      <span
+                        style={{ cursor: "pointer", color: explorerPath.length === 0 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }}
                         onClick={() => { setExplorerPath([]); setExplorerPage(1); }}
-                        onMouseOver={(e) => { if(explorerPath.length > 0) e.target.style.color = "var(--text-primary)"; }}
-                        onMouseOut={(e) => { if(explorerPath.length > 0) e.target.style.color = "var(--text-secondary)"; }}
+                        onMouseOver={(e) => { if (explorerPath.length > 0) e.target.style.color = "var(--text-primary)"; }}
+                        onMouseOut={(e) => { if (explorerPath.length > 0) e.target.style.color = "var(--text-secondary)"; }}
                       >
                         Exams
                       </span>
                       {explorerPath.length > 0 && (
                         <>
                           <span style={{ color: "var(--text-muted)" }}>/</span>
-                          <span 
-                            style={{ cursor: "pointer", color: explorerPath.length === 1 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }} 
+                          <span
+                            style={{ cursor: "pointer", color: explorerPath.length === 1 ? "var(--text-primary)" : "var(--text-secondary)", transition: "color 0.2s" }}
                             onClick={() => { setExplorerPath([explorerPath[0]]); setExplorerPage(1); }}
-                            onMouseOver={(e) => { if(explorerPath.length > 1) e.target.style.color = "var(--text-primary)"; }}
-                            onMouseOut={(e) => { if(explorerPath.length > 1) e.target.style.color = "var(--text-secondary)"; }}
+                            onMouseOver={(e) => { if (explorerPath.length > 1) e.target.style.color = "var(--text-primary)"; }}
+                            onMouseOut={(e) => { if (explorerPath.length > 1) e.target.style.color = "var(--text-secondary)"; }}
                           >
                             {explorerPath[0]}
                           </span>
@@ -1064,7 +1064,7 @@ function AdminDashboard() {
                         </>
                       )}
                     </h3>
-                    
+
                     <div className="pagination-controls" style={{ display: "flex", gap: "4px", alignItems: "center" }}>
                       <button className="page-nav-btn" onClick={() => setExplorerPage(Math.max(1, explorerPage - 1))} disabled={explorerPage === 1} style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px", color: "var(--text-primary)" }}>&lt;</button>
                       <button className="page-nav-btn active-page" style={{ margin: 0, width: "30px", height: "30px", minHeight: "30px", fontSize: "12px" }}>{explorerPage}</button>
@@ -1082,19 +1082,19 @@ function AdminDashboard() {
                           setExplorerPath([explorerPath[0], item.name]);
                           setExplorerPage(1);
                         }
-                      }} style={{ 
-                        padding: "10px 14px", 
-                        borderRadius: "8px", 
-                        display: "flex", 
-                        justifyContent: "space-between", 
+                      }} style={{
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        display: "flex",
+                        justifyContent: "space-between",
                         alignItems: "center",
                         cursor: explorerView === "quizzes" ? "default" : "pointer",
                         border: "1px solid var(--border-color)",
                         background: "var(--bg-card)",
                         transition: "all 0.2s"
                       }}
-                      onMouseOver={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 3px 8px rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = "var(--border-input)"; } }}
-                      onMouseOut={(e) => { if(explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
+                        onMouseOver={(e) => { if (explorerView !== "quizzes") { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 3px 8px rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = "var(--border-input)"; } }}
+                        onMouseOut={(e) => { if (explorerView !== "quizzes") { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "var(--border-color)"; } }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                           <div style={{ width: "34px", height: "34px", borderRadius: "8px", background: explorerView === "quizzes" ? "rgba(16, 185, 129, 0.15)" : explorerView === "subjects" ? "rgba(245, 158, 11, 0.15)" : "var(--bg-input, rgba(0, 0, 0, 0.05))", color: explorerView === "quizzes" ? "#10B981" : explorerView === "subjects" ? "#F59E0B" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1103,9 +1103,9 @@ function AdminDashboard() {
                           <div>
                             <p style={{ margin: 0, fontWeight: "600", color: "var(--text-primary)", fontSize: "13.5px" }}>{item.name}</p>
                             <p style={{ margin: 0, fontSize: "11.5px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                              {explorerView === "exams" ? `${item.count} Subjects • ${item.totalQuizzes} Quizzes` : 
-                               explorerView === "subjects" ? `${item.count} Quizzes` : 
-                               `Created: ${item.date}`}
+                              {explorerView === "exams" ? `${item.count} Subjects • ${item.totalQuizzes} Quizzes` :
+                                explorerView === "subjects" ? `${item.count} Quizzes` :
+                                  `Created: ${item.date}`}
                             </p>
                           </div>
                         </div>
@@ -1113,13 +1113,13 @@ function AdminDashboard() {
                           <div style={{ color: "var(--text-muted)", display: "flex", alignItems: "center" }}><ArrowRight size={15} strokeWidth={2.5} /></div>
                         )}
                         {explorerView === "quizzes" && (
-                          <span style={{ 
-                            fontSize: "11px", 
-                            padding: "4px 8px", 
-                            borderRadius: "6px", 
-                            background: item.status === "Published" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)", 
+                          <span style={{
+                            fontSize: "11px",
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                            background: item.status === "Published" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)",
                             color: item.status === "Published" ? "#10B981" : "#F59E0B",
-                            fontWeight: "700" 
+                            fontWeight: "700"
                           }}>
                             {item.status}
                           </span>

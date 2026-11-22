@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Info, Calendar, Clock, Sparkles } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
@@ -37,8 +37,12 @@ const formatDateTimeLocal = (dateString) => {
 
 function CreateQuiz() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialFolderId = searchParams.get("folderId") || null;
 
   const [quizMeta, setQuizMeta] = useState({
+    folderId: initialFolderId,
     examName: "",
     subject: "",
     title: "",
@@ -911,7 +915,7 @@ function CreateQuiz() {
           }!`,
           type: "status-success",
         });
-        setTimeout(() => navigate("/admin/manage-quizzes"), 1200);
+        setTimeout(() => navigate(initialFolderId ? `/admin/manage-quizzes?folderId=${initialFolderId}` : "/admin/manage-quizzes"), 1200);
       }
     } catch (error) {
       console.error("Create Quiz Error:", error);

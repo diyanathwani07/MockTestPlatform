@@ -243,10 +243,10 @@ body:not(.dark-mode) .quiz-table td { border-bottom: 1px solid var(--border-colo
 body:not(.dark-mode) .quiz-table tbody tr:hover { background-color: var(--option-hover, #F4F2FA) !important; }
 
 /* Light Form Inputs */
-body:not(.dark-mode) .admin-layout input:not([type="checkbox"]):not(.manage-quizzes-filter-row *):not(.pill-search-container *):not(.custom-date-picker-container *):not(.lb-search *):not(.me-search-wrapper *):not(.hs-search-bar *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *), 
+body:not(.dark-mode) .admin-layout input:not([type="checkbox"]):not(.manage-quizzes-filter-row *):not(.pill-search-container *):not(.custom-date-picker-container *):not(.lb-search *):not(.me-search-wrapper *):not(.hs-search-bar *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *):not(.tree-search-bar *):not(.tree-search-wrapper *), 
 body:not(.dark-mode) .admin-layout textarea, 
 body:not(.dark-mode) .admin-layout select:not(.manage-quizzes-filter-row *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *),
-body:not(.dark-mode) .admin-main input:not([type="checkbox"]):not(.manage-quizzes-filter-row *):not(.pill-search-container *):not(.custom-date-picker-container *):not(.lb-search *):not(.me-search-wrapper *):not(.hs-search-bar *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *), 
+body:not(.dark-mode) .admin-main input:not([type="checkbox"]):not(.manage-quizzes-filter-row *):not(.pill-search-container *):not(.custom-date-picker-container *):not(.lb-search *):not(.me-search-wrapper *):not(.hs-search-bar *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *):not(.tree-search-bar *):not(.tree-search-wrapper *), 
 body:not(.dark-mode) .admin-main textarea, 
 body:not(.dark-mode) .admin-main select:not(.manage-quizzes-filter-row *):not(.me-search-filter *):not(.practice-search-pill *):not(.qb-search-pill *):not(.report-search-pill *):not(.tk-search *) {
   background-color: var(--bg-input, #FAFAFC) !important; color: var(--text-primary, #1a1a2e) !important; border: 1px solid var(--border-color, #DCD6EC) !important;
@@ -680,9 +680,12 @@ body.dark-mode .admin-sidebar .sidebar-link.logout-btn svg {
    ========================================================================== */
 .user-info-cell { display: flex; align-items: center; gap: 12px; }
 .user-avatar-circle {
-  width: 36px; height: 36px; border-radius: 50%; background: var(--primary);
-  color: var(--primary-foreground, #ffffff); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%; background: #231d3d; border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; flex-shrink: 0;
   overflow: hidden; position: relative;
+}
+body:not(.dark-mode) .user-avatar-circle {
+  background: #f3e8ff; border: 1px solid #e4d8f5; color: #6E3FF3;
 }
 .user-avatar-circle img {
   width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%;
@@ -1299,7 +1302,9 @@ body.dark-mode select option {
 .lb-search input,
 .hs-search-bar input,
 .pill-search-container input,
-.pill-search-input {
+.pill-search-input,
+.tree-search-input,
+.tree-search-wrapper input {
   background: transparent !important;
   background-color: transparent !important;
   border: none !important;

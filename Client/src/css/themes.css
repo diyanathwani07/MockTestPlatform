@@ -8,7 +8,7 @@ html[class*="theme-"] :is(body, #root, *) {
   --bg-page: var(--background) !important;
   --bg-card: var(--card) !important;
   --bg-panel: var(--card) !important;
-  --bg-input: #ffffff !important;
+  --bg-input: var(--input, #ffffff) !important;
   --bg-header: var(--card) !important;
   --bg-sidebar: var(--background) !important;
   --text-primary: var(--foreground) !important;
@@ -38,7 +38,7 @@ html[class*="theme-"].dark :is(body, #root, *) {
 }
 
 /* Enforce accessible contrast when solid buttons/cards use primary or violet background */
-:root :is(button, .btn, [class*="-btn"]):not(.action-dots-btn):not(.tk-action-view-btn):not(.close-btn):not(.status-btn):not(.page-nav-btn):not(.role-dept-action-btn):not([class*="action-dots"]):not([class*="page-nav"]):not([class*="status-"]):not([class*="close-"]):not([class*="table-btn"]):not(.navbar-back-btn):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]):not(.practice-start-btn):not(.btn-reset):not([class*="btn-reset"]):not(.tk-reply-submit-btn):not(.revenue-nav-tab):not(.revenue-catalog-tab):not(.revenue-timeframe-btn):not(.sub-history-btn):not(.sub-page-btn):not(.btn-dashboard):not([class*="btn-dashboard"]):not(.mqa-btn-overview):not([class*="btn-overview"]):not(.scope-pill-btn):not(.action-icon-btn):not(.al-btn):not([class*="al-btn"]):not(.btn-secondary-outline):not(.al-tree-header-btn):not(.tree-quick-btn):not(.breadcrumb-link):not(.modal-close-btn):not(.al-modal-close):not(.al-btn-icon):not(.mq-section-tab):not(.irm-circle-btn):not(.irm-close-btn):not(.qb-back-btn):not(.qb-btn-export):not(.qb-btn-filter):not(.qb-btn-edit-answers):not(.qb-page-btn):not([class*="qb-"]):not([class*="page-btn"]):not(.mp-back-btn):not(.practice-back-btn):not(.back-btn):not(.rm-back-btn):not(.rm-top-back-btn):not(.actions-back-btn):not(.pp-back-btn):not([class*="back-btn"]) {
+:root :is(button, .btn, [class*="-btn"]):not(.tp-banner-nav-btn):not(.action-dots-btn):not(.tk-action-view-btn):not(.close-btn):not(.status-btn):not(.page-nav-btn):not(.role-dept-action-btn):not([class*="action-dots"]):not([class*="page-nav"]):not([class*="status-"]):not([class*="close-"]):not([class*="table-btn"]):not(.navbar-back-btn):not(.hs-tab-btn):not(.me-tab-btn):not(.hs-ticket-view-btn):not(.theme-toggle-btn):not(.icon-btn):not(.avatar-neon-trigger):not(.lb-filter-select-mob):not(.lb-dropdown-opt):not(.lb-filter-select):not([class*="lb-dropdown"]):not(.sidebar-collapse-btn):not(.live-btn-secondary):not(.live-btn-camera):not([class*="refresh"]):not([class*="secondary"]):not([class*="outline"]):not([class*="ghost"]):not([class*="cancel"]):not([class*="filter"]):not(.live-exams-refresh-btn):not(.revenue-refresh-btn):not(.refresh-btn):not(.sidebar-link):not(.logout-btn):not([class*="palette"]):not(.palette-btn):not(.btn-save-draft):not(.add-question-btn):not(.remove-btn-compact):not([class*="draft"]):not(.dashboard-view-all-btn):not(.btn-add-plan):not([class*="view-all"]):not(.practice-start-btn):not(.btn-reset):not([class*="btn-reset"]):not(.tk-reply-submit-btn):not(.revenue-nav-tab):not(.revenue-catalog-tab):not(.revenue-timeframe-btn):not(.sub-history-btn):not(.sub-page-btn):not(.btn-dashboard):not([class*="btn-dashboard"]):not(.mqa-btn-overview):not([class*="btn-overview"]):not(.scope-pill-btn):not(.action-icon-btn):not(.al-btn):not([class*="al-btn"]):not(.btn-secondary-outline):not(.al-tree-header-btn):not(.tree-quick-btn):not(.breadcrumb-link):not(.modal-close-btn):not(.al-modal-close):not(.al-btn-icon):not(.mq-section-tab):not(.irm-circle-btn):not(.irm-close-btn):not(.qb-back-btn):not(.qb-btn-export):not(.qb-btn-filter):not(.qb-btn-edit-answers):not(.qb-page-btn):not([class*="qb-"]):not([class*="page-btn"]):not(.mp-back-btn):not(.practice-back-btn):not(.back-btn):not(.rm-back-btn):not(.rm-top-back-btn):not(.actions-back-btn):not(.pp-back-btn):not([class*="back-btn"]) {
   color: var(--primary-foreground);
 }
 html[class*="theme-"] :is(button, .btn, [class*="-btn"])[style*="background: transparent"],
@@ -79,7 +79,8 @@ html[class*="theme-"] .rm-back-btn,
 html[class*="theme-"] .rm-top-back-btn,
 html[class*="theme-"] .actions-back-btn,
 html[class*="theme-"] .pp-back-btn,
-html[class*="theme-"] [class*="back-btn"] {
+html[class*="theme-"] [class*="back-btn"],
+html[class*="theme-"] .tp-banner-nav-btn {
   color: inherit !important;
 }
 
@@ -559,7 +560,7 @@ body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [
   --ring: #1d9bf0;
 }
 
-/* ============ Vercel ============ */
+/* ============ Vercel (Strict Monochrome Black & White) ============ */
 .theme-vercel {
   --background: #ffffff;
   --foreground: #000000;
@@ -575,13 +576,14 @@ body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [
   --muted-foreground: #666666;
   --accent: #eaeaea;
   --accent-foreground: #000000;
-  --destructive: #e00000;
+  --destructive: #000000;
   --destructive-foreground: #ffffff;
   --border: #eaeaea;
   --input: #eaeaea;
   --ring: #000000;
+  --violet: #000000;
 }
-.theme-vercel.dark, .theme-vercel :is(.dark *) {
+.theme-vercel.dark, .theme-vercel :is(.dark *), html.theme-vercel.dark, html.theme-vercel.dark body {
   --background: #000000;
   --foreground: #ffffff;
   --card: #111111;
@@ -590,17 +592,184 @@ body.dark-mode :is(.lb-filter-select-mob, .lb-filter-select, .lb-dropdown-opt, [
   --popover-foreground: #ffffff;
   --primary: #ffffff;
   --primary-foreground: #000000;
-  --secondary: #333333;
+  --secondary: #222222;
   --secondary-foreground: #ffffff;
-  --muted: #333333;
+  --muted: #222222;
   --muted-foreground: #888888;
-  --accent: #333333;
+  --accent: #222222;
   --accent-foreground: #ffffff;
-  --destructive: #e00000;
+  --destructive: #ffffff;
   --destructive-foreground: #000000;
   --border: #333333;
-  --input: #333333;
+  --input: #1a1a1a;
   --ring: #ffffff;
+  --violet: #ffffff;
+}
+
+/* --- Vercel Component Overrides: 100% Monochrome Black & White --- */
+html.theme-vercel.dark,
+html.theme-vercel.dark body,
+.theme-vercel.dark {
+  --bg-page: #000000 !important;
+  --bg-card: #111111 !important;
+  --bg-panel: #111111 !important;
+  --bg-sidebar: #000000 !important;
+  --bg-header: #111111 !important;
+  --hero-bg: #111111 !important;
+  --text-primary: #ffffff !important;
+  --text-secondary: #888888 !important;
+  --text-muted: #888888 !important;
+  --border-color: #333333 !important;
+  --sidebar-active-bg: #ffffff !important;
+  --sidebar-active-text: #000000 !important;
+  --violet: #ffffff !important;
+}
+
+/* Vercel Dark: Active Sidebar Links (White bg, Black text/icon) */
+html.theme-vercel.dark .sidebar-link.active,
+html.theme-vercel.dark .admin-sidebar .sidebar-link.active,
+html.theme-vercel.dark .student-sidebar .sidebar-link.active {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2) !important;
+}
+html.theme-vercel.dark .sidebar-link.active svg,
+html.theme-vercel.dark .admin-sidebar .sidebar-link.active svg,
+html.theme-vercel.dark .student-sidebar .sidebar-link.active svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+/* Vercel Dark: Primary buttons (White bg, Black text) */
+html.theme-vercel.dark .btn-prepmark-primary,
+html.theme-vercel.dark button.btn-prepmark-primary,
+html.theme-vercel.dark .practice-create-btn,
+html.theme-vercel.dark .practice-toggle-active,
+html.theme-vercel.dark .btn-primary,
+html.theme-vercel.dark .manage-command-btn.primary,
+html.theme-vercel.dark .acb-fab {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15) !important;
+}
+html.theme-vercel.dark .btn-prepmark-primary:hover,
+html.theme-vercel.dark button.btn-prepmark-primary:hover,
+html.theme-vercel.dark .practice-create-btn:hover,
+html.theme-vercel.dark .practice-toggle-active:hover,
+html.theme-vercel.dark .btn-primary:hover,
+html.theme-vercel.dark .manage-command-btn.primary:hover,
+html.theme-vercel.dark .acb-fab:hover {
+  background-color: #eaeaea !important;
+  color: #000000 !important;
+}
+html.theme-vercel.dark .btn-prepmark-primary svg,
+html.theme-vercel.dark button.btn-prepmark-primary svg,
+html.theme-vercel.dark .practice-create-btn svg,
+html.theme-vercel.dark .acb-fab svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+/* Vercel Light: Active Sidebar Links (Black bg, White text/icon) */
+html.theme-vercel:not(.dark) .sidebar-link.active,
+html.theme-vercel:not(.dark) .admin-sidebar .sidebar-link.active,
+html.theme-vercel:not(.dark) .student-sidebar .sidebar-link.active {
+  background: #000000 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
+}
+html.theme-vercel:not(.dark) .sidebar-link.active svg,
+html.theme-vercel:not(.dark) .admin-sidebar .sidebar-link.active svg,
+html.theme-vercel:not(.dark) .student-sidebar .sidebar-link.active svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Vercel Light: Primary buttons (Black bg, White text) */
+html.theme-vercel:not(.dark) .btn-prepmark-primary,
+html.theme-vercel:not(.dark) button.btn-prepmark-primary,
+html.theme-vercel:not(.dark) .practice-create-btn,
+html.theme-vercel:not(.dark) .practice-toggle-active,
+html.theme-vercel:not(.dark) .btn-primary,
+html.theme-vercel:not(.dark) .manage-command-btn.primary,
+html.theme-vercel:not(.dark) .acb-fab {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+html.theme-vercel:not(.dark) .btn-prepmark-primary:hover,
+html.theme-vercel:not(.dark) button.btn-prepmark-primary:hover,
+html.theme-vercel:not(.dark) .practice-create-btn:hover,
+html.theme-vercel:not(.dark) .practice-toggle-active:hover,
+html.theme-vercel:not(.dark) .btn-primary:hover,
+html.theme-vercel:not(.dark) .manage-command-btn.primary:hover,
+html.theme-vercel:not(.dark) .acb-fab:hover {
+  background-color: #222222 !important;
+  color: #ffffff !important;
+}
+html.theme-vercel:not(.dark) .btn-prepmark-primary svg,
+html.theme-vercel:not(.dark) button.btn-prepmark-primary svg,
+html.theme-vercel:not(.dark) .practice-create-btn svg,
+html.theme-vercel:not(.dark) .acb-fab svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Vercel Both: Carousel Active Dot (Monochrome) */
+html.theme-vercel.dark .tp-pagination-dot.is-active {
+  background-color: #ffffff !important;
+}
+html.theme-vercel:not(.dark) .tp-pagination-dot.is-active {
+  background-color: #000000 !important;
+}
+
+/* Vercel Both: Remove all purple from action view & view all buttons */
+html.theme-vercel :is(.dashboard-view-all-btn, .btn-add-plan, [class*="view-all"]) {
+  background: var(--secondary) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+html.theme-vercel :is(.dashboard-view-all-btn, .btn-add-plan, [class*="view-all"]):hover {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+html.theme-vercel .tk-action-view-btn {
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+html.theme-vercel .tk-action-view-btn svg {
+  color: var(--foreground) !important;
+  stroke: currentColor !important;
+}
+
+/* Vercel Brand Icon */
+html.theme-vercel .sidebar-brand-icon {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+html.theme-vercel .sidebar-brand-icon svg {
+  color: var(--primary-foreground) !important;
+  stroke: var(--primary-foreground) !important;
+}
+
+/* Vercel Banner Nav Arrows Hover */
+html.theme-vercel.dark .tp-banner-nav-btn:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+html.theme-vercel.dark .tp-banner-nav-btn:hover svg {
+  stroke: #000000 !important;
+}
+html.theme-vercel:not(.dark) .tp-banner-nav-btn:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+html.theme-vercel:not(.dark) .tp-banner-nav-btn:hover svg {
+  stroke: #ffffff !important;
 }
 
 

@@ -446,6 +446,8 @@ function EditQuiz() {
           practicePrice: dbQuiz.practicePrice !== undefined ? dbQuiz.practicePrice : (isPracticeRoute ? dbQuiz.price : 0),
           detailedDescription: dbQuiz.detailedDescription || "",
           plans: dbQuiz.plans || [],
+          folderId: dbQuiz.folderId?._id || dbQuiz.folderId || null,
+          sortOrder: dbQuiz.sortOrder !== undefined ? dbQuiz.sortOrder : 0,
           passPercentage: dbQuiz.passPercentage !== undefined ? dbQuiz.passPercentage : 50,
           resultReleaseMode: dbQuiz.resultReleaseMode || "immediate",
           resultReleaseDate: dbQuiz.resultReleaseDate || null,

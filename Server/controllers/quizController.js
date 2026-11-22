@@ -275,6 +275,23 @@ const updateQuiz = async (req, res) => {
     // Whenever quiz is updated, it is configured
     updateData.needsConfiguration = false;
 
+    // Validate folderId if provided, preserve existing folderId if undefined
+    if (updateData.folderId !== undefined) {
+      if (updateData.folderId && updateData.folderId !== "null" && updateData.folderId !== "root") {
+        const QuizFolder = require("../models/QuizFolder");
+        if (mongoose.Types.ObjectId.isValid(updateData.folderId)) {
+          const folderExists = await QuizFolder.exists({ _id: updateData.folderId });
+          if (!folderExists) {
+            delete updateData.folderId; // Do not set to non-existent folder
+          }
+        } else {
+          delete updateData.folderId;
+        }
+      } else {
+        updateData.folderId = null;
+      }
+    }
+
     const quiz = await Quiz.findByIdAndUpdate(
       req.params.id, 
       { $set: updateData }, 
@@ -421,16 +438,28 @@ const deleteQuiz = async (req, res) => {
 // RESTORE a soft-deleted quiz
 const restoreQuiz = async (req, res) => {
   try {
-    const quiz = await Quiz.findByIdAndUpdate(
-      req.params.id, 
-      { isDeleted: false, deletedAt: null, status: "Draft" }, 
-      { new: true }
-    );
-    if (!quiz) {
+    const QuizFolder = require("../models/QuizFolder");
+    const quizToRestore = await Quiz.findById(req.params.id);
+    if (!quizToRestore) {
       return res.status(404).json({ message: "Quiz not found." });
     }
-    await logAction("RESTORE_QUIZ", req.user?.fullName || "Admin", quiz.title, "Quiz", req.ip);
-    res.json({ message: "Quiz restored successfully.", quiz });
+
+    let resolvedFolderId = quizToRestore.folderId;
+    if (resolvedFolderId) {
+      const folderExists = await QuizFolder.exists({ _id: resolvedFolderId });
+      if (!folderExists) {
+        resolvedFolderId = null; // Re-home orphan quiz to Root (Home) if parent folder was deleted
+      }
+    }
+
+    quizToRestore.isDeleted = false;
+    quizToRestore.deletedAt = null;
+    quizToRestore.status = "Draft";
+    quizToRestore.folderId = resolvedFolderId;
+    await quizToRestore.save();
+
+    await logAction("RESTORE_QUIZ", req.user?.fullName || "Admin", quizToRestore.title, "Quiz", req.ip);
+    res.json({ message: "Quiz restored successfully.", quiz: quizToRestore });
   } catch (error) {
     console.error("Restore Quiz Error:", error);
     res.status(500).json({ message: "Failed to restore quiz." });

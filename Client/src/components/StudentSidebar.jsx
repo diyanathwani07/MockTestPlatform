@@ -7,6 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 import StudentChatbot from "./StudentChatbot";
 import { useSidebar } from "../context/SidebarContext";
 import { useExam } from "../context/ExamContext";
+import { preloadRoute } from "../utils/routePreloader";
 import axios from "axios";
 const PixelSnow = React.lazy(() => import("./shadcn-space/animations/PixelSnow"));
 
@@ -198,29 +199,65 @@ function StudentSidebar() {
         </div>
 
         <nav className="sidebar-nav" style={{ position: "relative", zIndex: 2 }}>
-          <NavLink to="/dashboard" className="sidebar-link" onClick={() => setIsOpen(false)} end>
+          <NavLink 
+            to="/dashboard" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)} 
+            onMouseEnter={() => preloadRoute('/dashboard')}
+            onTouchStart={() => preloadRoute('/dashboard')}
+            onFocus={() => preloadRoute('/dashboard')}
+            end
+          >
             <Home size={20} />
             <span>Dashboard</span>
           </NavLink>
           
-          <NavLink to="/dashboard/exams-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/exams-list" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/exams-list')}
+            onTouchStart={() => preloadRoute('/dashboard/exams-list')}
+            onFocus={() => preloadRoute('/dashboard/exams-list')}
+          >
               <FileText size={20} />
               <span>My Exams</span>
             </NavLink>
 
-          <NavLink to="/dashboard/live-exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/live-exams" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/live-exams')}
+            onTouchStart={() => preloadRoute('/dashboard/live-exams')}
+            onFocus={() => preloadRoute('/dashboard/live-exams')}
+          >
             <Radio size={20} />
             <span>Live Exams</span>
           </NavLink>
 
           {hasPurchasedPractice && (
-            <NavLink to="/dashboard/practice-list" className="sidebar-link" onClick={() => setIsOpen(false)}>
+            <NavLink 
+              to="/dashboard/practice-list" 
+              className="sidebar-link" 
+              onClick={() => setIsOpen(false)}
+              onMouseEnter={() => preloadRoute('/dashboard/practice-list')}
+              onTouchStart={() => preloadRoute('/dashboard/practice-list')}
+              onFocus={() => preloadRoute('/dashboard/practice-list')}
+            >
               <BookOpen size={20} />
               <span>My Practice</span>
             </NavLink>
           )}
 
-          <NavLink to="/dashboard/exams" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/exams" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/exams')}
+            onTouchStart={() => preloadRoute('/dashboard/exams')}
+            onFocus={() => preloadRoute('/dashboard/exams')}
+          >
             <FileText size={20} />
             <span>Exams</span>
           </NavLink>
@@ -236,23 +273,58 @@ function StudentSidebar() {
             <RefreshCw size={20} />
             <span>{selectedExam ? selectedExam.title : "Change Exam"}</span>
           </button>
-          <NavLink to="/dashboard/practice" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/practice" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/practice')}
+            onTouchStart={() => preloadRoute('/dashboard/practice')}
+            onFocus={() => preloadRoute('/dashboard/practice')}
+          >
             <BookOpen size={20} />
             <span>Practice</span>
           </NavLink>
-          <NavLink to="/dashboard/create-custom-quiz" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/create-custom-quiz" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/create-custom-quiz')}
+            onTouchStart={() => preloadRoute('/dashboard/create-custom-quiz')}
+            onFocus={() => preloadRoute('/dashboard/create-custom-quiz')}
+          >
             <PlusCircle size={20} />
             <span>Custom Test</span>
           </NavLink>
-          <NavLink to="/dashboard/results" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/results" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/results')}
+            onTouchStart={() => preloadRoute('/dashboard/results')}
+            onFocus={() => preloadRoute('/dashboard/results')}
+          >
             <LineChart size={20} />
             <span>Results</span>
           </NavLink>
-          <NavLink to="/dashboard/leaderboard" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/leaderboard" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/leaderboard')}
+            onTouchStart={() => preloadRoute('/dashboard/leaderboard')}
+            onFocus={() => preloadRoute('/dashboard/leaderboard')}
+          >
             <Trophy size={20} />
             <span>Leaderboard</span>
           </NavLink>
-          <NavLink to="/dashboard/help" className="sidebar-link" onClick={() => setIsOpen(false)}>
+          <NavLink 
+            to="/dashboard/help" 
+            className="sidebar-link" 
+            onClick={() => setIsOpen(false)}
+            onMouseEnter={() => preloadRoute('/dashboard/help')}
+            onTouchStart={() => preloadRoute('/dashboard/help')}
+            onFocus={() => preloadRoute('/dashboard/help')}
+          >
             <LifeBuoy size={20} />
             <span>Help & Support</span>
           </NavLink>

@@ -1,74 +1,77 @@
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
+import { lazyWithRetry } from "./utils/lazyWithRetry";
+import { preloadAdminPanels, preloadStudentPanels } from "./utils/routePreloader";
+import NavigationProgress from "./components/NavigationProgress";
+const ForgotPassword = lazyWithRetry(() => import("./Pages/ForgotPassword"));
 import AdminRoute from "./components/AdminRoute";
 import PermissionRoute from "./components/PermissionRoute";
 import SuperAdminRevenueRoute from "./components/SuperAdminRevenueRoute";
 
 
-const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
-const CreateQuiz = lazy(() => import("./admin/CreateQuiz"));
-const EditQuiz = lazy(() => import("./admin/EditQuiz"));
-const ManageQuizzes = lazy(() => import("./admin/ManageQuizzes"));
-const AdminFlashcards = lazy(() => import("./admin/AdminFlashcards"));
-const CreateFlashcardSet = lazy(() => import("./admin/CreateFlashcardSet"));
-const ManageFlashcards = lazy(() => import("./admin/ManageFlashcards"));
-const AdminQuestions = lazy(() => import("./admin/Questions"));
-const AdminUsers = lazy(() => import("./admin/Users"));
-const AdminStudents = lazy(() => import("./admin/Students"));
-const AdminStaff = lazy(() => import("./admin/Staff"));
-const AdminResults = lazy(() => import("./admin/Results"));
-const Reports = lazy(() => import("./admin/Reports"));
-const Settings = lazy(() => import("./admin/Settings"));
-const VoiceSettings = lazy(() => import("./admin/VoiceSettings"));
+const AdminDashboard = lazyWithRetry(() => import("./admin/AdminDashboard"));
+const CreateQuiz = lazyWithRetry(() => import("./admin/CreateQuiz"));
+const EditQuiz = lazyWithRetry(() => import("./admin/EditQuiz"));
+const ManageQuizzes = lazyWithRetry(() => import("./admin/ManageQuizzes"));
+const AdminFlashcards = lazyWithRetry(() => import("./admin/AdminFlashcards"));
+const CreateFlashcardSet = lazyWithRetry(() => import("./admin/CreateFlashcardSet"));
+const ManageFlashcards = lazyWithRetry(() => import("./admin/ManageFlashcards"));
+const AdminQuestions = lazyWithRetry(() => import("./admin/Questions"));
+const AdminUsers = lazyWithRetry(() => import("./admin/Users"));
+const AdminStudents = lazyWithRetry(() => import("./admin/Students"));
+const AdminStaff = lazyWithRetry(() => import("./admin/Staff"));
+const AdminResults = lazyWithRetry(() => import("./admin/Results"));
+const Reports = lazyWithRetry(() => import("./admin/Reports"));
+const Settings = lazyWithRetry(() => import("./admin/Settings"));
+const VoiceSettings = lazyWithRetry(() => import("./admin/VoiceSettings"));
 
 
-const AuditLog = lazy(() => import("./admin/AuditLog")); // <── (Requires src/admin/AuditLog.jsx to exist!)
-const AdminProfile = lazy(() => import("./admin/components/AdminProfile")); // <── Re-routed into 'components'
-const PracticeQuizzes = lazy(() => import("./admin/PracticeQuizzes"));
-const CreatePracticeMulti = lazy(() => import("./admin/CreatePracticeMulti"));
-const RolesPermissions = lazy(() => import("./admin/RolesPermissions"));
-const AdminTickets = lazy(() => import("./admin/AdminTickets"));
-const ExamSeriesManager = lazy(() => import("./admin/ExamSeriesManager"));
-const CreateQuizMulti = lazy(() => import("./admin/CreateQuizMulti"));
-const AdminAttempts = lazy(() => import("./admin/AdminAttempts"));
-const AdminScoreAnalytics = lazy(() => import("./admin/AdminScoreAnalytics"));
-const AdminBanners = lazy(() => import("./admin/AdminBanners"));
-const LiveExamsList = lazy(() => import("./admin/LiveExams/LiveExamsList"));
-const LiveExamLobby = lazy(() => import("./Pages/LiveExam/LiveExamLobby"));
-const LiveExamPlayer = lazy(() => import("./Pages/LiveExam/LiveExamPlayer"));
-const StudentLiveExams = lazy(() => import("./Pages/LiveExam/StudentLiveExams"));
+const AuditLog = lazyWithRetry(() => import("./admin/AuditLog"));
+const AdminProfile = lazyWithRetry(() => import("./admin/components/AdminProfile"));
+const PracticeQuizzes = lazyWithRetry(() => import("./admin/PracticeQuizzes"));
+const CreatePracticeMulti = lazyWithRetry(() => import("./admin/CreatePracticeMulti"));
+const RolesPermissions = lazyWithRetry(() => import("./admin/RolesPermissions"));
+const AdminTickets = lazyWithRetry(() => import("./admin/AdminTickets"));
+const ExamSeriesManager = lazyWithRetry(() => import("./admin/ExamSeriesManager"));
+const CreateQuizMulti = lazyWithRetry(() => import("./admin/CreateQuizMulti"));
+const AdminAttempts = lazyWithRetry(() => import("./admin/AdminAttempts"));
+const AdminScoreAnalytics = lazyWithRetry(() => import("./admin/AdminScoreAnalytics"));
+const AdminBanners = lazyWithRetry(() => import("./admin/AdminBanners"));
+const LiveExamsList = lazyWithRetry(() => import("./admin/LiveExams/LiveExamsList"));
+const LiveExamLobby = lazyWithRetry(() => import("./Pages/LiveExam/LiveExamLobby"));
+const LiveExamPlayer = lazyWithRetry(() => import("./Pages/LiveExam/LiveExamPlayer"));
+const StudentLiveExams = lazyWithRetry(() => import("./Pages/LiveExam/StudentLiveExams"));
 
-const Login = lazy(() => import("./Pages/Login"));
-const StudentOnboarding = lazy(() => import("./Pages/StudentOnboarding"));
-const Register = lazy(() => import("./Pages/Register"));
-const StreakPage = lazy(() => import("./Pages/StreakPage"));
-const StudentDashboard = lazy(() => import("./Pages/StudentDashboard"));
-const StartTest = lazy(() => import("./Pages/StartTest"));
-const Quiz = lazy(() => import("./Pages/Quiz"));
-const Result = lazy(() => import("./Pages/Result"));
-const MyExams = lazy(() => import("./Pages/MyExams"));
-const ExamSeriesDetails = lazy(() => import("./Pages/ExamSeriesDetails"));
-const FlashcardStudyView = lazy(() => import("./Pages/FlashcardStudyView"));
-const PracticeDashboard = lazy(() => import("./Pages/PracticeDashboard"));
-const PracticeTest = lazy(() => import("./Pages/PracticeTest"));
-const PracticeResult = lazy(() => import("./Pages/PracticeResult"));
-const StudentResults = lazy(() => import("./Pages/StudentResults"));
-const SubjectResults = lazy(() => import("./Pages/SubjectResults"));
-const Leaderboard = lazy(() => import("./Pages/Leaderboard"));
-const SharedResult = lazy(() => import("./Pages/SharedResult"));
-const HelpSupport = lazy(() => import("./Pages/HelpSupport"));
-const StudentProfile = lazy(() => import("./Pages/StudentProfile"));
-const ExamsPage = lazy(() => import("./Pages/ExamsPage"));
-const PracticePage = lazy(() => import("./Pages/PracticePage"));
-const CreateCustomQuiz = lazy(() => import("./Pages/CreateCustomQuiz"));
-const PricingPlans = lazy(() => import("./Pages/PricingPlans"));
-const MySubscriptions = lazy(() => import("./Pages/MySubscriptions"));
-const AdminAiPlans = lazy(() => import("./admin/AiPlans"));
-const RevenueDashboard = lazy(() => import("./admin/RevenueDashboard"));
-const AiSubscribers = lazy(() => import("./admin/AiSubscribers"));
-const AdminLibrary = lazy(() => import("./admin/AdminLibrary"));
+const Login = lazyWithRetry(() => import("./Pages/Login"));
+const StudentOnboarding = lazyWithRetry(() => import("./Pages/StudentOnboarding"));
+const Register = lazyWithRetry(() => import("./Pages/Register"));
+const StreakPage = lazyWithRetry(() => import("./Pages/StreakPage"));
+const StudentDashboard = lazyWithRetry(() => import("./Pages/StudentDashboard"));
+const StartTest = lazyWithRetry(() => import("./Pages/StartTest"));
+const Quiz = lazyWithRetry(() => import("./Pages/Quiz"));
+const Result = lazyWithRetry(() => import("./Pages/Result"));
+const MyExams = lazyWithRetry(() => import("./Pages/MyExams"));
+const ExamSeriesDetails = lazyWithRetry(() => import("./Pages/ExamSeriesDetails"));
+const FlashcardStudyView = lazyWithRetry(() => import("./Pages/FlashcardStudyView"));
+const PracticeDashboard = lazyWithRetry(() => import("./Pages/PracticeDashboard"));
+const PracticeTest = lazyWithRetry(() => import("./Pages/PracticeTest"));
+const PracticeResult = lazyWithRetry(() => import("./Pages/PracticeResult"));
+const StudentResults = lazyWithRetry(() => import("./Pages/StudentResults"));
+const SubjectResults = lazyWithRetry(() => import("./Pages/SubjectResults"));
+const Leaderboard = lazyWithRetry(() => import("./Pages/Leaderboard"));
+const SharedResult = lazyWithRetry(() => import("./Pages/SharedResult"));
+const HelpSupport = lazyWithRetry(() => import("./Pages/HelpSupport"));
+const StudentProfile = lazyWithRetry(() => import("./Pages/StudentProfile"));
+const ExamsPage = lazyWithRetry(() => import("./Pages/ExamsPage"));
+const PracticePage = lazyWithRetry(() => import("./Pages/PracticePage"));
+const CreateCustomQuiz = lazyWithRetry(() => import("./Pages/CreateCustomQuiz"));
+const PricingPlans = lazyWithRetry(() => import("./Pages/PricingPlans"));
+const MySubscriptions = lazyWithRetry(() => import("./Pages/MySubscriptions"));
+const AdminAiPlans = lazyWithRetry(() => import("./admin/AiPlans"));
+const RevenueDashboard = lazyWithRetry(() => import("./admin/RevenueDashboard"));
+const AiSubscribers = lazyWithRetry(() => import("./admin/AiSubscribers"));
+const AdminLibrary = lazyWithRetry(() => import("./admin/AdminLibrary"));
 import ThemeButton from "./components/ThemeButton";
 import ThemePicker from "./components/ThemePicker";
 import GlobalBackButtonHandler from "./components/GlobalBackButtonHandler";
@@ -95,36 +98,26 @@ function IncomingReminderSocketListener() {
 
   return null;
 }
-const TermsConditions = lazy(() => import("./Pages/TermsConditions"));
-const PrivacyPolicy = lazy(() => import("./Pages/PrivacyPolicy"));
-const RefundPolicy = lazy(() => import("./Pages/RefundPolicy"));
+const TermsConditions = lazyWithRetry(() => import("./Pages/TermsConditions"));
+const PrivacyPolicy = lazyWithRetry(() => import("./Pages/PrivacyPolicy"));
+const RefundPolicy = lazyWithRetry(() => import("./Pages/RefundPolicy"));
 
 function App() {
   useEffect(() => {
-    // Idle preload high-frequency admin panels if currently on /admin to eliminate switching lag
-    if (typeof window !== "undefined" && window.location.pathname.startsWith('/admin')) {
-      const preloadAdmin = () => {
-        import("./admin/AdminDashboard");
-        import("./admin/ManageQuizzes");
-        import("./admin/Students");
-        import("./admin/Staff");
-        import("./admin/Users");
-        import("./admin/AdminBanners");
-        import("./admin/Questions");
-        import("./admin/PracticeQuizzes");
-        import("./admin/AdminTickets");
-        import("./admin/VoiceSettings");
-      };
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(preloadAdmin, { timeout: 2000 });
-      } else {
-        setTimeout(preloadAdmin, 1500);
+    // Proactive background preloading to ensure instant sub-10ms navigation
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      if (path.startsWith('/admin')) {
+        preloadAdminPanels();
+      } else if (path.startsWith('/dashboard') || path.startsWith('/student') || path === '/') {
+        preloadStudentPanels();
       }
     }
   }, []);
 
   return (
     <BrowserRouter>
+      <NavigationProgress />
       <GlobalBackButtonHandler />
       <SocketProvider>
         <Suspense fallback={<div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main, #0B0A10)' }}><div className="loader" style={{ width: '48px', height: '48px', border: '5px solid #4A358A', borderBottomColor: 'transparent', borderRadius: '50%', display: 'inline-block', boxSizing: 'border-box', animation: 'rotation 1s linear infinite' }}></div><style>{`@keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style></div>}>

@@ -28,6 +28,39 @@ const {
   bulkImportQuizzes,
 } = require("../controllers/quizController");
 
+const {
+  getFolderExplorer,
+  getAllFolders,
+  getFolderById,
+  createFolder,
+  updateFolder,
+  deleteFolder,
+  cloneFolder,
+  reshuffleItems,
+  moveItems,
+  bulkUpdateStatus,
+  bulkDeleteQuizzes,
+  getRecycleBin,
+  getFolderAnalytics,
+  exportFolderPackage
+} = require("../controllers/quizFolderController");
+
+// AppX-Grade Infinite Folder Explorer & Reshuffle endpoints (Admin only)
+router.get("/explorer", protect, adminOnly, getFolderExplorer);
+router.get("/recycle-bin", protect, adminOnly, getRecycleBin);
+router.get("/folders/all", protect, adminOnly, getAllFolders);
+router.get("/folders/:id", protect, adminOnly, getFolderById);
+router.get("/folders/:id/analytics", protect, adminOnly, getFolderAnalytics);
+router.get("/folders/:id/export", protect, adminOnly, exportFolderPackage);
+router.post("/folders", protect, adminOnly, createFolder);
+router.post("/folders/:id/clone", protect, adminOnly, cloneFolder);
+router.patch("/folders/:id", protect, adminOnly, updateFolder);
+router.delete("/folders/:id", protect, adminOnly, deleteFolder);
+router.patch("/reshuffle", protect, adminOnly, reshuffleItems);
+router.patch("/move", protect, adminOnly, moveItems);
+router.patch("/bulk-status", protect, adminOnly, bulkUpdateStatus);
+router.post("/bulk-delete", protect, adminOnly, bulkDeleteQuizzes);
+
 // Dashboard stats — admin only
 
 router.get("/metadata/suggestions", protect, adminOnly, getQuizSuggestions);

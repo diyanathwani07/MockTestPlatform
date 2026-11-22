@@ -132,9 +132,13 @@ const quizSchema = new mongoose.Schema(
     },
     thumbnail: { type: String, default: "" },
     tags: { type: [String], default: [] },
+    folderId: { type: mongoose.Schema.Types.ObjectId, ref: "QuizFolder", default: null, index: true },
+    sortOrder: { type: Number, default: 0, index: true },
   },
   { timestamps: true }
 );
+
+quizSchema.index({ folderId: 1, sortOrder: 1, createdAt: -1 });
 
 // Helpers to detect format
 quizSchema.statics.isModularSection = function (section) {

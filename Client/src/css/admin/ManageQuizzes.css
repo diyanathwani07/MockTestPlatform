@@ -56,9 +56,9 @@
 
 /* Search Field */
 .search-input, 
-.manage-quizzes-view-container input[type="text"],
-.manage-users-view-container input[type="text"],
-.manage-series-view-container input[type="text"] {
+.manage-quizzes-view-container .pill-search-container input[type="text"],
+.manage-users-view-container .pill-search-container input[type="text"],
+.manage-series-view-container .pill-search-container input[type="text"] {
   background: transparent;
   color: var(--text-primary, #2b2840);
   border: none;
@@ -245,9 +245,9 @@
   }
   
   .search-input, 
-  .manage-quizzes-view-container input[type="text"],
-  .manage-users-view-container input[type="text"],
-  .manage-series-view-container input[type="text"] {
+  .manage-quizzes-view-container .pill-search-container input[type="text"],
+  .manage-users-view-container .pill-search-container input[type="text"],
+  .manage-series-view-container .pill-search-container input[type="text"] {
     max-width: 100%;
   }
 

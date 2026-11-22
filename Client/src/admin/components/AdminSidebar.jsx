@@ -4,13 +4,14 @@ import {
   Image, LayoutDashboard, Edit3, ClipboardList, HelpCircle, Users, Trophy,
   LineChart, FileText, Settings, Menu, LogOut, LifeBuoy, Sparkles, BookOpen, Shield, Palette, Layers,
   PanelLeft, PanelLeftClose, PanelLeftOpen, Radio, Volume2, GraduationCap, UserCheck, ChevronRight, IndianRupee,
-  PlusCircle
+  PlusCircle, FolderPlus
 } from 'lucide-react';
 import { useTheme } from "../../context/ThemeContext";
 import Logo from '../../components/Logo';
 import AdminChatbot from './AdminChatbot';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
+import { preloadRoute } from '../../utils/routePreloader';
 import "../../css/admin/AdminLayout.css";
 
 // Top navigation items before the expandable group
@@ -21,6 +22,7 @@ const TOP_NAV_ITEMS = [
 // Items under "Create Quiz" expandable section
 const CREATE_QUIZ_CHILDREN = [
   { to: "/admin/create-quiz",    icon: PlusCircle,    label: "Create Quiz",       permission: "edit_quiz" },
+  { to: "/admin/manage-quizzes?action=create-folder", icon: FolderPlus, label: "Create Folder", permission: "edit_quiz" },
   { to: "/admin/manage-quizzes", icon: ClipboardList, label: "Manage Quizzes",    permission: "edit_quiz" },
   { to: "/admin/live-exams",     icon: Radio,         label: "Live Examinations", permission: "edit_quiz" },
   { to: "/admin/exams",          icon: Layers,        label: "Manage Exams",      permission: "edit_quiz" },
@@ -210,6 +212,9 @@ function AdminSidebar() {
                 to={to}
                 className="sidebar-link"
                 onClick={() => setIsOpen(false)}
+                onMouseEnter={() => preloadRoute(to)}
+                onTouchStart={() => preloadRoute(to)}
+                onFocus={() => preloadRoute(to)}
                 end={to === "/admin/dashboard"}
               >
                 <Icon size={20} className="sidebar-icon" />
@@ -265,6 +270,9 @@ function AdminSidebar() {
                           to={to}
                           className={`sidebar-link sidebar-sublink ${isItemActive ? 'active' : ''}`}
                           onClick={() => setIsOpen(false)}
+                          onMouseEnter={() => preloadRoute(to)}
+                          onTouchStart={() => preloadRoute(to)}
+                          onFocus={() => preloadRoute(to)}
                         >
                           <Icon size={18} className="sidebar-icon" />
                           <span>{label}</span>
@@ -310,6 +318,9 @@ function AdminSidebar() {
                 to={to}
                 className="sidebar-link"
                 onClick={() => setIsOpen(false)}
+                onMouseEnter={() => preloadRoute(to)}
+                onTouchStart={() => preloadRoute(to)}
+                onFocus={() => preloadRoute(to)}
               >
                 <Icon size={20} className="sidebar-icon" />
                 <span>{label}</span>

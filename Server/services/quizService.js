@@ -207,6 +207,8 @@ const createQuiz = async (data) => {
     aiSourceUrl: data.aiSourceUrl || "",
     thumbnail: data.thumbnail || "",
     tags: data.tags || [],
+    folderId: data.folderId && mongoose.Types.ObjectId.isValid(data.folderId) ? data.folderId : null,
+    sortOrder: Number(data.sortOrder) || 0,
   });
 };
 
@@ -444,6 +446,18 @@ const duplicateQuiz = async (quizId, createdBy) => {
     sections: clonedRefs,
     questions: [],
     createdBy: createdBy || quiz.createdBy,
+    folderId: quiz.folderId || null,
+    sortOrder: (quiz.sortOrder || 0) + 1,
+    isPaid: quiz.isPaid || false,
+    price: quiz.price || 0,
+    isPracticePaid: quiz.isPracticePaid || false,
+    practicePrice: quiz.practicePrice || 0,
+    detailedDescription: quiz.detailedDescription || "",
+    plans: quiz.plans || [],
+    thumbnail: quiz.thumbnail || "",
+    tags: quiz.tags || [],
+    examSeriesId: quiz.examSeriesId || null,
+    examStructureId: quiz.examStructureId || null,
   });
 };
 

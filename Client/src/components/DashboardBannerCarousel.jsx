@@ -315,7 +315,7 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
         onClick={handlePrev}
         aria-label="Previous banner"
       >
-        <ChevronLeft size={22} />
+        <ChevronLeft size={22} strokeWidth={2.4} />
       </button>
 
       <button 
@@ -323,7 +323,7 @@ export default function DashboardBannerCarousel({ previewBanners = null }) {
         onClick={handleNext}
         aria-label="Next banner"
       >
-        <ChevronRight size={22} />
+        <ChevronRight size={22} strokeWidth={2.4} />
       </button>
 
       {/* Pagination Dots */}

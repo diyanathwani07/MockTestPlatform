@@ -65,21 +65,21 @@
   --scrollbar-thumb-hover: #A0A0AD;
 }
 
-[data-theme="dark"], body.dark-mode {
+[data-theme="dark"], body.dark-mode, :root.dark {
   /* Bottom Nav Variables */
   --bottom-nav-start: var(--bg-card);
   --bottom-nav-end: var(--bg-page);
   --bottom-nav-text: #A7A3BD;
 
-  /* Backgrounds */
-  
-  
-  
-  --bg-input:       #171727;
-  --bg-header:      #171727;
-  --bg-sidebar:     var(--bg-sidebar);
-  --hero-bg:        linear-gradient(135deg, var(--bg-card) 0%, var(--primary-dark, var(--primary)) 100%);
-  --icon-bg:        var(--primary);
+  /* Backgrounds (PrepMark Original Dark Theme) */
+  --bg-page:        #0f0d1a;
+  --bg-card:        #16112a;
+  --bg-panel:       #16112a;
+  --bg-input:       #1b1532;
+  --bg-header:      #0f0d1a;
+  --bg-sidebar:     #0f0d1a;
+  --hero-bg:        linear-gradient(135deg, #16112a 0%, #0f0d1a 100%);
+  --icon-bg:        #231d3d;
   --icon-color:     #ffffff;
 
   /* Text */
@@ -87,28 +87,29 @@
   --text-secondary: #A7A3BD;
   --text-muted:     #6b6880;
 
-  /* Sidebar Links */
-  --primary-foreground: #000000;
-  --sidebar-active-bg: var(--primary);
+  /* Brand Primary & Sidebar Links */
+  --primary:            #6E3FF3;
+  --primary-foreground: #ffffff;
+  --sidebar-active-bg:  #6E3FF3;
   --sidebar-active-text: #ffffff;
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-hover-bg:   rgba(255, 255, 255, 0.08);
 
   /* Borders */
-  --border-color:   var(--border-color);
-  --border-input:   var(--border-color);
+  --border-color:   rgba(255, 255, 255, 0.1);
+  --border-input:   rgba(255, 255, 255, 0.15);
 
   /* Cards */
-  --card-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
-  --card-hover-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+  --card-shadow:    0 1px 3px rgba(0, 0, 0, 0.5);
+  --card-hover-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.6);
 
   /* Option cards */
-  --option-bg:      rgba(28, 27, 46, 0.45);
-  --option-hover:   rgba(37, 36, 56, 0.70);
+  --option-bg:      #1a1532;
+  --option-hover:   #231d3d;
 
   /* Scrollbar */
-  --scrollbar-bg:   #0f0e17;
-  --scrollbar-thumb: #2d2b45;
-  --scrollbar-thumb-hover: #4a476a;
+  --scrollbar-bg:   #0f0d1a;
+  --scrollbar-thumb: #231d3d;
+  --scrollbar-thumb-hover: #352b57;
 }
 
 /* ============================================
@@ -432,7 +433,9 @@ body.dark-mode .theme-pill-switch {
 .hs-search-bar input,
 .manage-quizzes-filter-row > div:first-child input,
 .pill-search-container input,
-.me-search-input {
+.me-search-input,
+.tree-search-input,
+.tree-search-wrapper input {
   background: transparent !important;
   border: none !important;
   outline: none !important;
@@ -539,20 +542,59 @@ body.dark-mode .role-admin {
   border-color: rgba(56, 189, 248, 0.15) !important;
 }
 
-/* 3. Global Action Buttons (Tone down overly bright purple hover states) */
+/* 3. Global Action Buttons */
 body.dark-mode .btn-primary:hover,
 body.dark-mode .practice-start-btn:hover,
 body.dark-mode .manage-command-btn.primary:hover {
-  background: var(--primary) !important;
-  box-shadow: none !important;
+  background: #6E3FF3 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(110, 63, 243, 0.4) !important;
 }
 
-/* 4. Subdued active sidebar link */
+/* 4. PrepMark Signature Primary Action Buttons (Never pure white or invisible) */
+.btn-prepmark-primary,
+button.btn-prepmark-primary {
+  background-color: #6E3FF3 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(110, 63, 243, 0.3) !important;
+}
+
+.btn-prepmark-primary:hover,
+button.btn-prepmark-primary:hover {
+  background-color: #5b2ee5 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.btn-prepmark-primary svg,
+button.btn-prepmark-primary svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* 4b. Right Sidebar Slide-Over Animation */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0.9; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 5. Subdued active sidebar link (Never a solid white flash) */
 body.dark-mode .sidebar-link.active,
 body.dark-mode .admin-sidebar-nav a.active {
-  background: var(--primary) !important;
-  color: #FFFFFF !important;
+  background: var(--sidebar-active-bg, #222222) !important;
+  color: var(--sidebar-active-text, #ffffff) !important;
   box-shadow: none !important;
-  border-color: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .sidebar-link.active svg,
+body.dark-mode .admin-sidebar-nav a.active svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 

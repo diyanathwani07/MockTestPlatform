@@ -30,6 +30,7 @@
 .tp-banner-slide {
   flex: 0 0 62%;
   aspect-ratio: 16 / 9;
+  max-height: 380px;
   box-sizing: border-box;
   margin: 0 8px;
   border-radius: 22px;
@@ -182,10 +183,10 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: var(--bg-card, #ffffff);
-  border: 1.5px solid var(--border-color, rgba(255, 255, 255, 0.15));
-  color: var(--text-primary, #ffffff);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  color: #1e1b4b;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,11 +195,52 @@
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.tp-banner-nav-btn svg {
+  stroke: currentColor !important;
+  color: currentColor !important;
+  stroke-width: 2.5px;
+}
+
+/* Light Theme Navigation Buttons */
+body:not(.dark-mode) .tp-banner-nav-btn,
+html:not(.dark) .tp-banner-nav-btn {
+  background-color: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  color: #1e1b4b !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10) !important;
+}
+
+body:not(.dark-mode) .tp-banner-nav-btn svg,
+html:not(.dark) .tp-banner-nav-btn svg {
+  stroke: #1e1b4b !important;
+  color: #1e1b4b !important;
+}
+
+/* Dark Theme Navigation Buttons */
+body.dark-mode .tp-banner-nav-btn,
+html.dark .tp-banner-nav-btn {
+  background-color: #1e1e2d !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-mode .tp-banner-nav-btn svg,
+html.dark .tp-banner-nav-btn svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
 .tp-banner-nav-btn:hover {
-  background-color: var(--primary, #6366f1);
-  color: #ffffff;
-  border-color: var(--primary, #6366f1);
+  background-color: var(--primary, #6366f1) !important;
+  color: #ffffff !important;
+  border-color: var(--primary, #6366f1) !important;
   transform: translateY(-50%) scale(1.08);
+}
+
+.tp-banner-nav-btn:hover svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
 }
 
 .tp-banner-nav-btn.prev {
@@ -242,9 +284,16 @@
     flex: 0 0 100%;
     margin: 0;
     border-radius: 14px;
+    aspect-ratio: 2.1 / 1;
+    max-height: 200px;
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
+  }
+
+  .tp-banner-card.single-card {
+    aspect-ratio: 2.1 / 1;
+    max-height: 200px;
   }
 
   .tp-banner-nav-btn {
@@ -261,5 +310,14 @@
 
   .tp-banner-desc {
     font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tp-banner-slide,
+  .tp-banner-card.single-card {
+    aspect-ratio: 2 / 1;
+    max-height: 160px;
+    border-radius: 12px;
   }
 }

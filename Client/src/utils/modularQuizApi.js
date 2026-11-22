@@ -224,6 +224,8 @@ export const saveModularQuiz = async ({
     practicePrice: Number(quizMeta.practicePrice || 0),
     detailedDescription: quizMeta.detailedDescription || "",
     plans: (quizMeta.isPaid || quizMeta.isPracticePaid) ? (quizMeta.plans || []) : [],
+    folderId: quizMeta.folderId || null,
+    sortOrder: Number(quizMeta.sortOrder || 0),
   };
 
   if (quizId) {
@@ -337,6 +339,8 @@ export const saveSingleQuizModular = async ({ quizMeta, questions, isPublishing,
     practicePrice: Number(quizMeta.practicePrice || 0),
     detailedDescription: quizMeta.detailedDescription || "",
     plans: (quizMeta.isPaid || quizMeta.isPracticePaid) ? (quizMeta.plans || []) : [],
+    folderId: quizMeta.folderId || null,
+    sortOrder: Number(quizMeta.sortOrder || 0),
   };
 
   delete payload._id;

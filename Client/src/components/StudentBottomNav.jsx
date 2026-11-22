@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Home, Target, ClipboardList, FilePlus, LineChart } from "lucide-react";
+import { preloadRoute } from "../utils/routePreloader";
 import "../css/StudentBottomNav.css";
 
 const StudentBottomNav = () => {
@@ -155,6 +156,8 @@ const StudentBottomNav = () => {
         <NavLink 
           to="/dashboard/exams"
           aria-label="Exams"
+          onMouseEnter={() => preloadRoute('/dashboard/exams')}
+          onTouchStart={() => preloadRoute('/dashboard/exams')}
           className={({ isActive }) => `relative w-[56px] h-[61px] flex justify-center items-center pointer-events-auto transition-transform active:scale-95 ${isActive ? 'scale-105' : ''}`}
         >
           {/* Main Pin Shape */}
@@ -215,6 +218,8 @@ const StudentBottomNav = () => {
             to="/dashboard"
             end
             aria-label="Dashboard"
+            onMouseEnter={() => preloadRoute('/dashboard')}
+            onTouchStart={() => preloadRoute('/dashboard')}
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(Home, "Dashboard", isActive)}
@@ -222,6 +227,8 @@ const StudentBottomNav = () => {
           <NavLink 
             to="/dashboard/practice"
             aria-label="Practice"
+            onMouseEnter={() => preloadRoute('/dashboard/practice')}
+            onTouchStart={() => preloadRoute('/dashboard/practice')}
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(Target, "Practice", isActive)}
@@ -236,6 +243,8 @@ const StudentBottomNav = () => {
           <NavLink 
             to="/dashboard/create-custom-quiz"
             aria-label="Custom Quiz"
+            onMouseEnter={() => preloadRoute('/dashboard/create-custom-quiz')}
+            onTouchStart={() => preloadRoute('/dashboard/create-custom-quiz')}
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(FilePlus, "Custom", isActive)}
@@ -243,6 +252,8 @@ const StudentBottomNav = () => {
           <NavLink 
             to="/dashboard/results"
             aria-label="Results"
+            onMouseEnter={() => preloadRoute('/dashboard/results')}
+            onTouchStart={() => preloadRoute('/dashboard/results')}
             className="relative z-10 flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95"
           >
             {({ isActive }) => renderIcon(LineChart, "Results", isActive)}

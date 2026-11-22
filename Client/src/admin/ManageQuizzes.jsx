@@ -3,14 +3,14 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import AdminNavbar from "./components/AdminNavbar";
 import AdminSidebar from "./components/AdminSidebar";
-import { Eye, Edit2, Calendar, Clock, Trash2, Copy, Search, EyeOff, UploadCloud, Tag, AlertTriangle, X, FileText, CheckCircle, ChevronDown, ChevronUp, Grid, List, User, FolderOpen, ClipboardList } from "lucide-react";
+import { Eye, Edit2, Calendar, Clock, Trash2, Copy, Search, EyeOff, UploadCloud, Tag, AlertTriangle, X, FileText, CheckCircle, ChevronDown, ChevronUp, Grid, List, User, FolderOpen, ClipboardList, Plus, Layers, CheckCircle2, AlertCircle } from "lucide-react";
 import MuiDatePicker from "../components/MuiDatePicker";
 import { useConfirm } from "../context/ConfirmContext";
 import { useAuth } from "../context/AuthContext";
 import { Bell } from "lucide-react";
 import ExamReminderModal from "../components/ExamReminderModal";
 import { SkeletonTable } from "@/components/ui/skeleton";
-import { AdminLibraryView } from "./AdminLibrary";
+import QuizExplorerWorkspace from "./quizzes/QuizExplorerWorkspace";
 import "../css/admin/AdminLayout.css";
 import "../css/admin/ManageQuizzes.css";
 
@@ -78,23 +78,9 @@ function ManageQuizzes() {
     };
   }, [activeDropdown]);
   const [selectedExportQuiz, setSelectedExportQuiz] = useState(null);
-  const [viewMode, setViewMode] = useState("active"); // "active" or "recycle"
+  const [viewMode, setViewMode] = useState("explorer"); // "explorer" | "active" | "recycle"
   const [ownershipTab, setOwnershipTab] = useState("mine"); // "mine" or "all"
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeSectionTab = searchParams.get("tab") === "library" ? "library" : "quizzes";
-
-  const handleSectionTabChange = (newTab) => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      if (newTab === "library") {
-        next.set("tab", "library");
-      } else {
-        next.delete("tab");
-      }
-      return next;
-    });
-  };
 
   const closeImportModal = () => {
     setShowBulkImportModal(false);
@@ -279,7 +265,7 @@ function ManageQuizzes() {
       "CTET Paper 1,CTET-P1,Child Development,multi,Child Development,,,,,,\n" +
       "CTET Paper 1,CTET-P1,Mathematics,multi,Mathematics,,,,,,\n" +
       "CTET Paper 1,CTET-P1,EVS,multi,Environmental Studies,,,,,";
-    
+
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -324,7 +310,7 @@ function ManageQuizzes() {
   const fetchQuizzes = async (mode = viewMode) => {
     try {
       setLoading(true);
-      const endpoint = mode === "recycle" 
+      const endpoint = mode === "recycle"
         ? `${import.meta.env.VITE_API_URL}/api/quizzes?deleted=true`
         : `${import.meta.env.VITE_API_URL}/api/quizzes`;
       const response = await axios.get(endpoint);
@@ -355,7 +341,7 @@ function ManageQuizzes() {
     const titleText = (q.title || "").toLowerCase();
     const subjectText = (q.subject || "").toLowerCase();
     const matchesSearch = searchTerms.every(term => titleText.includes(term) || subjectText.includes(term));
-    
+
     let matchesDate = true;
     if (filterDate && q.createdAt) {
       const qDate = new Date(q.createdAt).toISOString().split('T')[0];
@@ -452,306 +438,437 @@ function ManageQuizzes() {
       <AdminSidebar />
 
       <div className="admin-main" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, backgroundColor: "var(--bg-page)" }}>
-        <AdminNavbar title={activeSectionTab === "library" ? "Manage Quizzes — Study Library" : <><span className="hidden sm:inline">Manage </span>Quizzes</>} />
+        <AdminNavbar title={<><span className="hidden sm:inline">Manage </span>Quizzes</>} />
 
         <div className="admin-content manage-quizzes-view-container" style={{ flex: 1, textAlign: "left" }}>
 
-          {/* ─── PRIMARY SECTION SWITCH: QUIZ MANAGEMENT vs STUDY LIBRARY ─── */}
-          <div 
-            className="mq-section-tabs-bar"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              backgroundColor: "var(--bg-card, #FFFFFF)",
-              border: "1.5px solid var(--border-color, #E2E8F0)",
-              padding: "5px",
-              borderRadius: "12px",
-              marginBottom: "22px",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)"
-            }}
-          >
-            <button
-              type="button"
-              className={`mq-section-tab ${activeSectionTab === "quizzes" ? "active" : ""}`}
-              onClick={() => handleSectionTabChange("quizzes")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "9px",
-                border: activeSectionTab === "quizzes" ? "1.5px solid var(--primary)" : "1.5px solid transparent",
-                backgroundColor: activeSectionTab === "quizzes" ? "var(--primary)" : "transparent",
-                color: activeSectionTab === "quizzes" ? "var(--primary-foreground, #FFFFFF)" : "var(--text-secondary, #334155)",
-                fontWeight: activeSectionTab === "quizzes" ? "700" : "600",
-                fontSize: "13.5px",
-                lineHeight: "1.4",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-                boxShadow: activeSectionTab === "quizzes" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none",
-                whiteSpace: "nowrap"
-              }}
-            >
-              <ClipboardList size={16} />
-              <span>Quiz Management</span>
-            </button>
-
-            <button
-              type="button"
-              className={`mq-section-tab ${activeSectionTab === "library" ? "active" : ""}`}
-              onClick={() => handleSectionTabChange("library")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "9px",
-                border: activeSectionTab === "library" ? "1.5px solid var(--primary)" : "1.5px solid transparent",
-                backgroundColor: activeSectionTab === "library" ? "var(--primary)" : "transparent",
-                color: activeSectionTab === "library" ? "var(--primary-foreground, #FFFFFF)" : "var(--text-secondary, #334155)",
-                fontWeight: activeSectionTab === "library" ? "700" : "600",
-                fontSize: "13.5px",
-                lineHeight: "1.4",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-                boxShadow: activeSectionTab === "library" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none",
-                whiteSpace: "nowrap"
-              }}
-            >
-              <FolderOpen size={16} />
-              <span>Study Library</span>
-            </button>
-          </div>
-
-          {activeSectionTab === "library" ? (
-            <AdminLibraryView embedded={true} />
-          ) : (
-            <>
-              {/* ─── APEX COMMAND BAR ─── */}
-          <div className="armored-admin-card manage-command-bar-card" style={{ 
-            backgroundColor: "var(--bg-card)", 
-            border: "1.5px solid var(--border-color)", 
-            borderRadius: "16px", 
-            marginBottom: "28px", 
-            padding: "24px",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+          {/* ─── APEX COMMAND BAR / DASHBOARD HEADER ─── */}
+          <div className="armored-admin-card manage-command-bar-card" style={{
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "16px",
+            marginBottom: "16px",
+            padding: isMobile ? "16px" : "20px 24px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-start",
+            gap: "18px",
             textAlign: "left",
-            width: "100%"
+            width: "100%",
+            boxSizing: "border-box"
           }}>
-            
-            <div className="manage-quizzes-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
-              <div style={{ textAlign: "left" }}>
-                <h2 style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0" }}>
-                  {viewMode === "active" ? "Manage Quizzes" : "Recycle Bin"}
-                </h2>
-                <span style={{ fontSize: "13px", color: "var(--primary)", fontWeight: "600" }}>
-                  {quizzes.length} Total Quizzes | {quizzes.filter(checkIsMine).length} Created by You
-                </span>
+
+            {/* Top Row: Title, Subtitle & Action Controls */}
+            <div className="manage-quizzes-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%", flexWrap: "wrap", gap: "16px" }}>
+              <div style={{ textAlign: "left", flex: "1 1 260px" }}>
+                <h1 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: "700", color: "var(--text-primary)", margin: "0 0 4px 0", letterSpacing: "-0.01em" }}>
+                  Quiz Management
+                </h1>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, fontWeight: "400" }}>
+                  Organize, manage and monitor your exams and quizzes.
+                </p>
               </div>
-              
-              <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                <div style={{ display: "flex", gap: "8px", backgroundColor: "var(--bg-page)", padding: "4px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+
+              {/* Action Controls & Navigation Switcher */}
+              <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "flex-start" : "flex-end" }}>
+                {/* Segmented View Switcher */}
+                <div style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  backgroundColor: "var(--bg-input)",
+                  padding: "3px",
+                  borderRadius: "10px",
+                  border: "1px solid var(--border-color)",
+                  gap: "2px"
+                }}>
                   <button
-                    onClick={() => setViewMode("active")}
-                    className={viewMode === "active" ? "practice-toggle-active" : ""}
+                    type="button"
+                    onClick={() => setViewMode("explorer")}
                     style={{
-                      padding: "6px 12px",
-                      borderRadius: "6px",
-                      border: "1px solid var(--border-color, transparent)",
-                      fontSize: "13px",
-                      fontWeight: "600",
+                      padding: "6px 14px",
+                      borderRadius: "7px",
+                      border: "none",
+                      fontSize: "12.5px",
+                      fontWeight: viewMode === "explorer" ? "600" : "500",
                       cursor: "pointer",
-                      backgroundColor: viewMode === "active" ? "var(--primary)" : "transparent",
-                      color: viewMode === "active" ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
+                      backgroundColor: viewMode === "explorer" ? "var(--bg-card)" : "transparent",
+                      color: viewMode === "explorer" ? "var(--text-primary)" : "var(--text-secondary)",
+                      boxShadow: viewMode === "explorer" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                      transition: "all 0.15s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px"
                     }}
                   >
-                    Active
+                    <FolderOpen size={14} style={{ color: viewMode === "explorer" ? "var(--primary)" : "currentColor" }} />
+                    <span>Folders & Reshuffle</span>
                   </button>
                   <button
-                    onClick={() => setViewMode("recycle")}
+                    type="button"
+                    onClick={() => setViewMode("active")}
                     style={{
-                      padding: "6px 12px",
-                      borderRadius: "6px",
+                      padding: "6px 14px",
+                      borderRadius: "7px",
                       border: "none",
-                      fontSize: "13px",
-                      fontWeight: "600",
+                      fontSize: "12.5px",
+                      fontWeight: viewMode === "active" ? "600" : "500",
                       cursor: "pointer",
-                      backgroundColor: viewMode === "recycle" ? "var(--red)" : "transparent",
-                      color: viewMode === "recycle"  ? "var(--primary-foreground, #ffffff)" : "var(--text-secondary)",
+                      backgroundColor: viewMode === "active" ? "var(--bg-card)" : "transparent",
+                      color: viewMode === "active" ? "var(--text-primary)" : "var(--text-secondary)",
+                      boxShadow: viewMode === "active" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                      transition: "all 0.15s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px"
                     }}
                   >
-                    Recycle Bin
+                    <List size={14} style={{ color: viewMode === "active" ? "var(--primary)" : "currentColor" }} />
+                    <span>Classic List</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("recycle")}
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: "7px",
+                      border: "none",
+                      fontSize: "12.5px",
+                      fontWeight: viewMode === "recycle" ? "600" : "500",
+                      cursor: "pointer",
+                      backgroundColor: viewMode === "recycle" ? "rgba(239, 68, 68, 0.1)" : "transparent",
+                      color: viewMode === "recycle" ? "#ef4444" : "var(--text-secondary)",
+                      boxShadow: viewMode === "recycle" ? "0 1px 3px rgba(239, 68, 68, 0.12)" : "none",
+                      transition: "all 0.15s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <Trash2 size={14} style={{ color: viewMode === "recycle" ? "#ef4444" : "currentColor" }} />
+                    <span>Recycle Bin</span>
                   </button>
                 </div>
 
+                {/* Secondary Action: Bulk Upload */}
                 <button
-                  onClick={() => navigate('/admin/create-quiz')}
+                  type="button"
+                  onClick={() => setShowBulkImportModal(true)}
                   style={{
-                    padding: "8px 16px",
-                    borderRadius: "8px",
+                    height: "36px",
+                    padding: "0 14px",
+                    borderRadius: "10px",
                     fontSize: "12.5px",
-                    fontWeight: "700",
-                    backgroundColor: "transparent",
+                    fontWeight: "600",
+                    backgroundColor: "var(--bg-input)",
                     color: "var(--text-primary)",
-                    border: "1.5px solid var(--border-color)",
+                    border: "1px solid var(--border-color)",
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "6px",
                     transition: "all 0.2s"
                   }}
-                  onMouseEnter={(e) => { e.target.style.borderColor = "var(--primary)"; e.target.style.color = "var(--primary)"; }}
-                  onMouseLeave={(e) => { e.target.style.borderColor = "var(--border-color)"; e.target.style.color = "var(--text-primary)"; }}
+                  className="hover:opacity-85"
                 >
-                  + Create Exam
+                  <UploadCloud size={14} style={{ color: "var(--text-secondary)" }} />
+                  <span>Bulk Upload</span>
                 </button>
 
+                {/* Primary Action: Create Exam */}
                 <button
-                  onClick={() => setShowBulkImportModal(true)}
+                  type="button"
+                  onClick={() => navigate('/admin/create-quiz')}
                   style={{
-                    padding: "8px 16px",
-                    borderRadius: "8px",
+                    height: "36px",
+                    padding: "0 16px",
+                    borderRadius: "10px",
                     fontSize: "12.5px",
-                    fontWeight: "700",
-                    backgroundColor: "var(--primary)",
-                    color: "var(--primary-foreground, #ffffff)",
+                    fontWeight: "600",
+                    backgroundColor: "#6E3FF3",
+                    color: "#ffffff",
                     border: "none",
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "6px"
+                    gap: "6px",
+                    boxShadow: "0 2px 8px rgba(110, 63, 243, 0.35)",
+                    transition: "all 0.2s"
                   }}
+                  className="btn-prepmark-primary hover:opacity-90"
                 >
-                  <UploadCloud size={14} /> Bulk Upload Exam Series
+                  <Plus size={15} />
+                  <span>Create Exam</span>
                 </button>
               </div>
             </div>
 
-            {/* Ownership Tabs */}
-            <div style={{ 
-              display: "flex", 
-              borderBottom: "1.5px solid var(--border-color)", 
-              width: "100%", 
-              marginBottom: "16px",
-              overflowX: "auto",
-              scrollbarWidth: "none"
+            {/* Bottom Row: Compact Metric Chips / Stat Cards */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(135px, 1fr))",
+              gap: "10px",
+              width: "100%",
+              paddingTop: "14px",
+              borderTop: "1px solid var(--border-color)"
             }}>
-              <button
-                onClick={() => setOwnershipTab("mine")}
-                style={{
-                  display: "inline-flex",
+              {/* Stat 1: Total Quizzes */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 12px",
+                borderRadius: "10px",
+                backgroundColor: "var(--bg-input)",
+                border: "1px solid var(--border-color)"
+              }}>
+                <div style={{
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(110, 63, 243, 0.12)",
+                  color: "var(--primary)",
+                  display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "10px 16px",
-                  border: "none",
-                  borderBottom: ownershipTab === "mine" ? "2.5px solid var(--primary)" : "2.5px solid transparent",
-                  backgroundColor: "transparent",
-                  color: ownershipTab === "mine" ? "var(--primary)" : "var(--text-secondary)",
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                <User size={15} />
-                My Quizzes
-              </button>
-              <button
-                onClick={() => setOwnershipTab("all")}
-                style={{
-                  display: "inline-flex",
+                  justifyContent: "center",
+                  flexShrink: 0
+                }}>
+                  <Layers size={15} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                    Total Quizzes
+                  </div>
+                  <div style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1.2 }}>
+                    {loading ? "—" : quizzes.length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 2: Created by You */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 12px",
+                borderRadius: "10px",
+                backgroundColor: "var(--bg-input)",
+                border: "1px solid var(--border-color)"
+              }}>
+                <div style={{
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(59, 130, 246, 0.12)",
+                  color: "#3b82f6",
+                  display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "10px 16px",
-                  border: "none",
-                  borderBottom: ownershipTab === "all" ? "2.5px solid var(--primary)" : "2.5px solid transparent",
-                  backgroundColor: "transparent",
-                  color: ownershipTab === "all" ? "var(--primary)" : "var(--text-secondary)",
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                <Grid size={15} />
-                All Quizzes
-              </button>
+                  justifyContent: "center",
+                  flexShrink: 0
+                }}>
+                  <User size={15} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                    Created by You
+                  </div>
+                  <div style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1.2 }}>
+                    {loading ? "—" : quizzes.filter(checkIsMine).length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 3: Published */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 12px",
+                borderRadius: "10px",
+                backgroundColor: "var(--bg-input)",
+                border: "1px solid var(--border-color)"
+              }}>
+                <div style={{
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(16, 185, 129, 0.12)",
+                  color: "#10b981",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0
+                }}>
+                  <CheckCircle2 size={15} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                    Published
+                  </div>
+                  <div style={{ fontSize: "15px", fontWeight: "700", color: "#10b981", lineHeight: 1.2 }}>
+                    {loading ? "—" : quizzes.filter(q => q.status === "Published" || q.published).length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 4: Drafts */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 12px",
+                borderRadius: "10px",
+                backgroundColor: "var(--bg-input)",
+                border: "1px solid var(--border-color)"
+              }}>
+                <div style={{
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(245, 158, 11, 0.12)",
+                  color: "#f59e0b",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0
+                }}>
+                  <AlertCircle size={15} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: "500", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                    Drafts
+                  </div>
+                  <div style={{ fontSize: "15px", fontWeight: "700", color: "#f59e0b", lineHeight: 1.2 }}>
+                    {loading ? "—" : quizzes.filter(q => q.status !== "Published" && !q.published).length}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="manage-quizzes-filter-row" style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "100%", overflowX: "auto", flexWrap: "wrap", paddingBottom: "4px" }}>
-              {/* Sleek Rounded Search Bar */}
-              <div style={{ 
-                flex: isMobile ? "0 1 150px" : "0 1 240px",
-                minWidth: "120px",
-                maxWidth: isMobile ? "150px" : "240px",
-                display: "flex", alignItems: "center", gap: "6px", 
-                backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)", 
-                borderRadius: "8px", padding: "6px 12px",
-                boxShadow: "none", position: "relative"
-              }}>
-                <Search size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-                <input 
-                  type="text" 
-                  placeholder="Search..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "12px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "18px" }}
-                />
-                {searchTerm && (
-                  <span 
-                    onClick={() => setSearchTerm("")}
-                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}
-                    title="Clear search"
+            {/* Ownership Tabs & Classic Filters (Hidden in Explorer Mode) */}
+            {viewMode !== "explorer" && (
+              <>
+                <div style={{
+                  display: "flex",
+                  borderBottom: "1.5px solid var(--border-color)",
+                  width: "100%",
+                  marginBottom: "16px",
+                  overflowX: "auto",
+                  scrollbarWidth: "none"
+                }}>
+                  <button
+                    onClick={() => setOwnershipTab("mine")}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "10px 16px",
+                      border: "none",
+                      borderBottom: ownershipTab === "mine" ? "2.5px solid var(--primary)" : "2.5px solid transparent",
+                      backgroundColor: "transparent",
+                      color: ownershipTab === "mine" ? "var(--primary)" : "var(--text-secondary)",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      whiteSpace: "nowrap"
+                    }}
                   >
-                    ✕
-                  </span>
-                )}
-              </div>
+                    <User size={15} />
+                    My Quizzes
+                  </button>
+                  <button
+                    onClick={() => setOwnershipTab("all")}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "10px 16px",
+                      border: "none",
+                      borderBottom: ownershipTab === "all" ? "2.5px solid var(--primary)" : "2.5px solid transparent",
+                      backgroundColor: "transparent",
+                      color: ownershipTab === "all" ? "var(--primary)" : "var(--text-secondary)",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    <Grid size={15} />
+                    All Quizzes
+                  </button>
+                </div>
 
-              {/* Date Filter */}
-              <div style={{ 
-                flex: isMobile ? "1 1 auto" : "0 1 180px",
-                minWidth: "150px"
-              }}>
-                <MuiDatePicker value={filterDate} onChange={setFilterDate} label="mm-dd-yyyy" />
-              </div>
+                <div className="manage-quizzes-filter-row" style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "100%", overflowX: "auto", flexWrap: "wrap", paddingBottom: "4px" }}>
+                  {/* Sleek Rounded Search Bar */}
+                  <div style={{
+                    flex: isMobile ? "0 1 150px" : "0 1 240px",
+                    minWidth: "120px",
+                    maxWidth: isMobile ? "150px" : "240px",
+                    display: "flex", alignItems: "center", gap: "6px",
+                    backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)",
+                    borderRadius: "8px", padding: "6px 12px",
+                    boxShadow: "none", position: "relative"
+                  }}>
+                    <Search size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "12px", color: "var(--text-primary)", fontWeight: "500", paddingRight: "18px" }}
+                    />
+                    {searchTerm && (
+                      <span
+                        onClick={() => setSearchTerm("")}
+                        style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}
+                        title="Clear search"
+                      >
+                        ✕
+                      </span>
+                    )}
+                  </div>
 
-              {/* Type Filter */}
-              <div style={{ 
-                flex: "0 1 125px",
-                minWidth: "120px",
-                maxWidth: "125px",
-                display: "flex", alignItems: "center", gap: "4px", 
-                backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)", 
-                borderRadius: "8px", padding: "6px 12px"
-              }}>
-                <Tag size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
-                <select 
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  style={{ 
-                    border: "none", 
-                    background: "transparent", 
-                    outline: "none", 
-                    fontSize: "12px", 
-                    color: "var(--text-primary)", 
-                    fontWeight: "500", 
-                    width: "100%",
-                    cursor: "pointer"
-                  }}
-                >
-                  <option value="all">Types</option>
-                  <option value="exams">Exams</option>
-                  <option value="practice">Practice</option>
-                </select>
-              </div>
-            </div>
+                  {/* Date Filter */}
+                  <div style={{
+                    flex: isMobile ? "1 1 auto" : "0 1 180px",
+                    minWidth: "150px"
+                  }}>
+                    <MuiDatePicker value={filterDate} onChange={setFilterDate} label="mm-dd-yyyy" />
+                  </div>
+
+                  {/* Type Filter */}
+                  <div style={{
+                    flex: "0 1 125px",
+                    minWidth: "120px",
+                    maxWidth: "125px",
+                    display: "flex", alignItems: "center", gap: "4px",
+                    backgroundColor: "var(--bg-input, #FAFAFC)", border: "1px solid var(--border-color)",
+                    borderRadius: "8px", padding: "6px 12px"
+                  }}>
+                    <Tag size={13} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+                    <select
+                      value={filterType}
+                      onChange={(e) => setFilterType(e.target.value)}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        outline: "none",
+                        fontSize: "12px",
+                        color: "var(--text-primary)",
+                        fontWeight: "500",
+                        width: "100%",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <option value="all">Types</option>
+                      <option value="exams">Exams</option>
+                      <option value="practice">Practice</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
 
           </div>
 
@@ -1029,547 +1146,558 @@ function ManageQuizzes() {
             </div>
           )}
 
-          {/* ─── DATA TABLE ─── */}
-          <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: 0, overflowX: "auto", minHeight: "340px", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-            {loading ? (
-              <SkeletonTable rows={6} columns={5} style={{ border: "none", borderRadius: "16px" }} />
-            ) : isMobile ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "16px" }}>
-                {filteredQuizzes.length > 0 ? (
-                  filteredQuizzes.map((quiz) => {
-                    const isMine = checkIsMine(quiz);
-                    const creatorName = quiz.createdBy?.fullName || "Staff Account";
-                    const firstLetter = creatorName.charAt(0).toUpperCase() || "S";
-                    const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
-                    const charCode = creatorName.charCodeAt(0) || 0;
-                    const bgColor = colors[charCode % colors.length];
-
-                    return (
-                      <div key={quiz._id} style={{ 
-                        backgroundColor: "var(--bg-card)", 
-                        border: "1px solid var(--border-color)", 
-                        borderRadius: "12px", 
-                        padding: "16px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "12px",
-                        position: "relative"
-                      }}>
-                        {/* Title and Badge */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "4px", textAlign: "left" }}>
-                            <span style={{ fontSize: "11px", color: "var(--primary)", fontWeight: "700" }}>{quiz.examName || "—"} • {quiz.subject}</span>
-                            <strong style={{ fontSize: "15px", color: "var(--text-primary)" }}>{quiz.title}</strong>
-                          </div>
-                          
-                          {/* Actions button */}
-                          <div style={{ position: "relative" }}>
-                            <button 
-                              onClick={(e) => toggleActionDropdown(e, quiz._id)}
-                              style={{ 
-                                background: "transparent", 
-                                border: "none", 
-                                color: "var(--text-primary)", 
-                                fontSize: "18px", 
-                                fontWeight: "bold", 
-                                cursor: "pointer", 
-                                outline: "none"
-                              }}
-                            >
-                              ⋮
-                            </button>
-                            {activeDropdown === quiz._id && (
-                              <>
-                                <div onClick={() => setActiveDropdown(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }} />
-                                <div style={{ 
-                                  position: "fixed", 
-                                  top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
-                                  bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : "auto",
-                                  right: `${dropdownPos.right}px`, 
-                                  backgroundColor: "var(--bg-card)", 
-                                  border: "1.5px solid var(--border-color)", 
-                                  borderRadius: "10px", 
-                                  padding: "6px 0", 
-                                  minWidth: "140px", 
-                                  maxHeight: "calc(100vh - 36px)",
-                                  overflowY: "auto",
-                                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)", 
-                                  zIndex: 9999,
-                                  textAlign: "left"
-                                }}>
-                                  {viewMode === "active" ? (
-                                    <>
-                                      <div onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title } }); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Eye size={15} /> Preview</div>
-                                      <div onClick={() => { setActiveDropdown(null); handleDuplicateQuiz(quiz._id); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Copy size={15} /> Duplicate Quiz</div>
-                                      <div onClick={() => { setActiveDropdown(null); setReminderModalQuiz(quiz); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Bell size={15} /> Voice Reminder</div>
-                                      {(() => {
-                                        const hasEditPermission = isMine || role === "superadmin" || hasPermission("edit_others_quizzes") || hasPermission("manage_all_quizzes");
-                                        if (!hasEditPermission) return null;
-                                        return (
-                                          <>
-                                            <div onClick={() => { setActiveDropdown(null); navigate((quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? `/admin/edit-quiz-multi/${quiz._id}` : `/admin/edit-quiz/${quiz._id}`); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}><Edit2 size={15} /> Edit</div>
-                                            <div onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", display: "flex", alignItems: "center", gap: "8px" }}><Trash2 size={15} /> Delete</div>
-                                          </>
-                                        );
-                                      })()}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div onClick={() => { setActiveDropdown(null); handleRestore(quiz._id, quiz.title); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}><Eye size={15} /> Restore</div>
-                                      <div onClick={() => { setActiveDropdown(null); handlePermanentDelete(quiz._id, quiz.title); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", display: "flex", alignItems: "center", gap: "8px" }}><Trash2 size={15} /> Delete Permanently</div>
-                                    </>
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Mid Section: Created By & Date */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border-color)", borderBottom: "1px solid var(--border-color)", padding: "10px 0" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: bgColor, color: "#fff", display: "flex", alignItems: "center", justifyContext: "center", fontSize: "11px", fontWeight: "bold" }}>
-                              {firstLetter}
-                            </div>
-                            <span style={{ fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)" }}>
-                              {isMine ? "You" : creatorName}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "500" }}>
-                            {new Date(quiz.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </span>
-                        </div>
-
-                        {/* Bottom Row: Type & Status */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                          <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", backgroundColor: "var(--bg-sidebar)", padding: "4px 10px", borderRadius: "6px" }}>
-                            {quiz.quizType === "practice" ? "Practice Set" : ((quiz.sections && quiz.sections.length > 1) ? "Full Length" : (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? "Modular" : "Sectional")}
-                          </span>
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
-                            <span style={{
-                              backgroundColor: 
-                                quiz.status === "Published" ? "#E4F8F0" : 
-                                quiz.status === "Scheduled" ? "#EFF6FF" : 
-                                quiz.status === "Expired" ? "#FEF3C7" : "#F1F5F9",
-                              color: 
-                                quiz.status === "Published" ? "#10B981" : 
-                                quiz.status === "Scheduled" ? "#3B82F6" : 
-                                quiz.status === "Expired" ? "#D97706" : "#475569",
-                              padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700"
-                            }}>
-                              {quiz.status || "Draft"}
-                            </span>
-                            {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
-                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Clock size={11} style={{ color: "#3B82F6", flexShrink: 0 }} />
-                                {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                              </span>
-                            ) : quiz.scheduledDate ? (
-                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                <Calendar size={11} style={{ color: "#3B82F6", flexShrink: 0 }} />
-                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div style={{ padding: "40px 20px", textAlign: "center", color: "var(--text-muted)" }}>
-                    📭 No matching quizzes found.
-                  </div>
-                )}
-              </div>
-            ) : (
-                                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                <thead>
-                  <tr style={{ backgroundColor: "transparent", borderBottom: "1px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
-                    {ownershipTab !== "mine" && <th style={{ padding: "18px 28px", fontWeight: "700" }}>Created By</th>}
-                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Exam</th>
-                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Subject</th>
-                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Title</th>
-                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Created On</th>
-                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Type</th>
-                    <th style={{ padding: "18px 24px", fontWeight: "700" }}>Status</th>
-                    <th style={{ padding: "18px 28px", fontWeight: "700", textAlign: "right" }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="report-table-body">
+          {/* ─── DATA VIEW (AppX Explorer vs Classic Table) ─── */}
+          {viewMode === "explorer" ? (
+            <QuizExplorerWorkspace
+              baseUrl={import.meta.env.VITE_API_URL || ""}
+              onCreateQuiz={(fId) => navigate(fId ? `/admin/create-quiz?folderId=${fId}` : '/admin/create-quiz')}
+              onEditQuiz={(id) => navigate(`/admin/edit-quiz/${id}`)}
+              onManageQuestions={(id) => navigate(`/admin/questions/${id}`)}
+              onDuplicateQuiz={handleDuplicateQuiz}
+              onDeleteQuiz={(quiz) => handleDelete(quiz._id, quiz.title)}
+            />
+          ) : (
+            <div className="armored-admin-card" style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "16px", padding: 0, overflowX: "auto", minHeight: "340px", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
+              {loading ? (
+                <SkeletonTable rows={6} columns={5} style={{ border: "none", borderRadius: "16px" }} />
+              ) : isMobile ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "16px" }}>
                   {filteredQuizzes.length > 0 ? (
-                    filteredQuizzes.map((quiz) => (
-                      <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "14px" }}>
-                        
-                        {ownershipTab !== "mine" && (
-                          <td style={{ padding: "18px 28px", whiteSpace: "nowrap" }}>
-                            {(() => {
-                              const isMine = checkIsMine(quiz);
-                              const creatorName = quiz.createdBy?.fullName || "System Admin";
-                              const firstLetter = creatorName.charAt(0).toUpperCase();
-                              const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
-                              const charCode = creatorName.charCodeAt(0) || 0;
-                              const bgColor = colors[charCode % colors.length];
-                              return (
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    filteredQuizzes.map((quiz) => {
+                      const isMine = checkIsMine(quiz);
+                      const creatorName = quiz.createdBy?.fullName || "Staff Account";
+                      const firstLetter = creatorName.charAt(0).toUpperCase() || "S";
+                      const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+                      const charCode = creatorName.charCodeAt(0) || 0;
+                      const bgColor = colors[charCode % colors.length];
+
+                      return (
+                        <div key={quiz._id} style={{
+                          backgroundColor: "var(--bg-card)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "12px",
+                          padding: "16px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "12px",
+                          position: "relative"
+                        }}>
+                          {/* Title and Badge */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px", textAlign: "left" }}>
+                              <span style={{ fontSize: "11px", color: "var(--primary)", fontWeight: "700" }}>{quiz.examName || "—"} • {quiz.subject}</span>
+                              <strong style={{ fontSize: "15px", color: "var(--text-primary)" }}>{quiz.title}</strong>
+                            </div>
+
+                            {/* Actions button */}
+                            <div style={{ position: "relative" }}>
+                              <button
+                                onClick={(e) => toggleActionDropdown(e, quiz._id)}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  color: "var(--text-primary)",
+                                  fontSize: "18px",
+                                  fontWeight: "bold",
+                                  cursor: "pointer",
+                                  outline: "none"
+                                }}
+                              >
+                                ⋮
+                              </button>
+                              {activeDropdown === quiz._id && (
+                                <>
+                                  <div onClick={() => setActiveDropdown(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }} />
                                   <div style={{
-                                    width: "26px",
-                                    height: "26px",
-                                    borderRadius: "50%",
-                                    backgroundColor: bgColor,
-                                    color: "#fff",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: "12px",
-                                    fontWeight: "bold",
-                                    textTransform: "uppercase"
+                                    position: "fixed",
+                                    top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
+                                    bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : "auto",
+                                    right: `${dropdownPos.right}px`,
+                                    backgroundColor: "var(--bg-card)",
+                                    border: "1.5px solid var(--border-color)",
+                                    borderRadius: "10px",
+                                    padding: "6px 0",
+                                    minWidth: "140px",
+                                    maxHeight: "calc(100vh - 36px)",
+                                    overflowY: "auto",
+                                    boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                                    zIndex: 9999,
+                                    textAlign: "left"
                                   }}>
-                                    {firstLetter}
+                                    {viewMode === "active" ? (
+                                      <>
+                                        <div onClick={() => { setActiveDropdown(null); navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title } }); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Eye size={15} /> Preview</div>
+                                        <div onClick={() => { setActiveDropdown(null); handleDuplicateQuiz(quiz._id); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Copy size={15} /> Duplicate Quiz</div>
+                                        <div onClick={() => { setActiveDropdown(null); setReminderModalQuiz(quiz); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Bell size={15} /> Voice Reminder</div>
+                                        {(() => {
+                                          const hasEditPermission = isMine || role === "superadmin" || hasPermission("edit_others_quizzes") || hasPermission("manage_all_quizzes");
+                                          if (!hasEditPermission) return null;
+                                          return (
+                                            <>
+                                              <div onClick={() => { setActiveDropdown(null); navigate((quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? `/admin/edit-quiz-multi/${quiz._id}` : `/admin/edit-quiz/${quiz._id}`); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}><Edit2 size={15} /> Edit</div>
+                                              <div onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", display: "flex", alignItems: "center", gap: "8px" }}><Trash2 size={15} /> Delete</div>
+                                            </>
+                                          );
+                                        })()}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div onClick={() => { setActiveDropdown(null); handleRestore(quiz._id, quiz.title); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}><Eye size={15} /> Restore</div>
+                                        <div onClick={() => { setActiveDropdown(null); handlePermanentDelete(quiz._id, quiz.title); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", display: "flex", alignItems: "center", gap: "8px" }}><Trash2 size={15} /> Delete Permanently</div>
+                                      </>
+                                    )}
                                   </div>
-                                  <span style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "13.5px" }}>
-                                    {isMine ? "You" : creatorName}
-                                  </span>
-                                </div>
-                              );
-                            })()}
-                          </td>
-                        )}
-
-                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--primary)", whiteSpace: "nowrap" }}>
-                          {quiz.examName || "—"}
-                        </td>
-                        
-                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", whiteSpace: "normal", maxWidth: "250px", wordWrap: "break-word" }}>
-                            {quiz.subject}
-                        </td>
-                        
-                        <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            {(() => {
-                              const title = quiz.title || "";
-                              const limit = 25;
-                              const isLong = title.length > limit;
-                              const isExpanded = !!expandedQuizTitles[quiz._id];
-                              const displayTitle = isLong && !isExpanded ? `${title.substring(0, limit)}...` : title;
-                              return (
-                                <span 
-                                  onClick={() => {
-                                    if (isLong) {
-                                      setExpandedQuizTitles(prev => ({ ...prev, [quiz._id]: !prev[quiz._id] }));
-                                    }
-                                  }}
-                                  style={{
-                                    cursor: isLong ? "pointer" : "default",
-                                    whiteSpace: isExpanded ? "normal" : "nowrap",
-                                    wordBreak: "break-word"
-                                  }}
-                                  title={isLong ? (isExpanded ? "Click to collapse" : "Click to expand") : undefined}
-                                >
-                                  {displayTitle}
-                                </span>
-                              );
-                            })()}
-                            {(quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? (
-                              <span style={{ fontSize: "10px", backgroundColor: "rgba(59, 130, 246, 0.2)", color: "#3B82F6", border: "1px solid #3B82F6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>
-                                {(quiz.sections && quiz.sections.length > 1) ? "Multi" : "Modular"}
-                              </span>
-                            ) : (
-                              <span style={{ fontSize: "10px", backgroundColor: "rgba(139, 92, 246, 0.2)", color: "#8B5CF6", border: "1px solid #8B5CF6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>Single</span>
-                            )}
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </td>
 
-                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13.5px", whiteSpace: "nowrap" }}>
-                          {new Date(quiz.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </td>
-
-                        <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13.5px", whiteSpace: "nowrap" }}>
-                          {quiz.quizType === "practice" ? "Practice Set" : (quiz.sections && quiz.sections.length > 1 ? "Full Length" : "Sectional")}
-                        </td>
-                        
-                        <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                            <span style={{
-                              backgroundColor: 
-                                quiz.status === "Published" ? "#E4F8F0" : 
-                                quiz.status === "Scheduled" ? "#EFF6FF" : 
-                                quiz.status === "Expired" ? "#FEF3C7" : "#F1F5F9",
-                              color: 
-                                quiz.status === "Published" ? "#10B981" : 
-                                quiz.status === "Scheduled" ? "#3B82F6" : 
-                                quiz.status === "Expired" ? "#D97706" : "#475569",
-                              padding: "3px 8px", borderRadius: "5px", fontSize: "11px", fontWeight: "700", display: "inline-block", width: "max-content"
-                            }}>
-                              {quiz.status || "Draft"}
+                          {/* Mid Section: Created By & Date */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border-color)", borderBottom: "1px solid var(--border-color)", padding: "10px 0" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: bgColor, color: "#fff", display: "flex", alignItems: "center", justifyContext: "center", fontSize: "11px", fontWeight: "bold" }}>
+                                {firstLetter}
+                              </div>
+                              <span style={{ fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)" }}>
+                                {isMine ? "You" : creatorName}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "500" }}>
+                              {new Date(quiz.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
-                            {quiz.status === "Scheduled" && quiz.scheduledDate ? (
-                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
-                                <Calendar size={10} style={{ color: "#3B82F6", flexShrink: 0 }} />
-                                {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                                {quiz.unpublishDate ? ` – ${new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ""}
-                              </span>
-                            ) : null}
-                            {quiz.status === "Published" && quiz.unpublishDate && (
-                              <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
-                                <Clock size={10} style={{ color: "#F59E0B", flexShrink: 0 }} />
-                                {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                              </span>
-                            )}
-                            {quiz.status === "Expired" && quiz.unpublishDate && (
-                              <span style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
-                                <Clock size={10} style={{ color: "var(--red)", flexShrink: 0 }} />
-                                {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                              </span>
-                            )}
                           </div>
-                        </td>
 
-                        <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>
-                          <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
-                            <button 
-                              onClick={(e) => toggleActionDropdown(e, quiz._id)}
-                              style={{ 
-                                background: "transparent", 
-                                border: "none", 
-                                color: "var(--text-primary)", 
-                                fontSize: "18px", 
-                                fontWeight: "bold", 
-                                cursor: "pointer", 
-                                padding: "4px 12px", 
-                                outline: "none"
-                              }}
-                              title="Quiz Actions"
-                            >
-                              ⋮
-                            </button>
-                            
-                            {activeDropdown === quiz._id && (
-                              <>
-                                {/* Global backdrop to dismiss dropdown on outer click */}
-                                <div 
-                                  onClick={() => setActiveDropdown(null)}
-                                  style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
-                                />
-                                
-                                {/* Floating context dropdown menu */}
-                                <div style={{ 
-                                  position: "fixed", 
-                                  top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
-                                  bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : "auto",
-                                  right: `${dropdownPos.right}px`, 
-                                  backgroundColor: "var(--bg-card)", 
-                                  border: "1.5px solid var(--border-color)", 
-                                  borderRadius: "10px", 
-                                  padding: "6px 0", 
-                                  minWidth: "140px", 
-                                  maxHeight: "calc(100vh - 36px)",
-                                  overflowY: "auto",
-                                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)", 
-                                  zIndex: 9999,
-                                  textAlign: "left"
-                                }}>
-                                  {viewMode === "active" ? (
-                                    <>
-                                      <div 
-                                        onClick={() => { 
-                                          setActiveDropdown(null); 
-                                          navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } }); 
-                                        }}
-                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                      >
-                                        <Eye size={15} /> Preview
-                                      </div>
+                          {/* Bottom Row: Type & Status */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                            <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", backgroundColor: "var(--bg-sidebar)", padding: "4px 10px", borderRadius: "6px" }}>
+                              {quiz.quizType === "practice" ? "Practice Set" : ((quiz.sections && quiz.sections.length > 1) ? "Full Length" : (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? "Modular" : "Sectional")}
+                            </span>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+                              <span style={{
+                                backgroundColor:
+                                  quiz.status === "Published" ? "#E4F8F0" :
+                                    quiz.status === "Scheduled" ? "#EFF6FF" :
+                                      quiz.status === "Expired" ? "#FEF3C7" : "#F1F5F9",
+                                color:
+                                  quiz.status === "Published" ? "#10B981" :
+                                    quiz.status === "Scheduled" ? "#3B82F6" :
+                                      quiz.status === "Expired" ? "#D97706" : "#475569",
+                                padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700"
+                              }}>
+                                {quiz.status || "Draft"}
+                              </span>
+                              {quiz.status === "Scheduled" && quiz.scheduledDate && quiz.unpublishDate ? (
+                                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  <Clock size={11} style={{ color: "#3B82F6", flexShrink: 0 }} />
+                                  {new Date(quiz.scheduledDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – {new Date(quiz.unpublishDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                </span>
+                              ) : quiz.scheduledDate ? (
+                                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  <Calendar size={11} style={{ color: "#3B82F6", flexShrink: 0 }} />
+                                  {new Date(quiz.scheduledDate).toLocaleDateString('en-GB').replace(/\//g, '-')}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div style={{ padding: "40px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+                      📭 No matching quizzes found.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ backgroundColor: "transparent", borderBottom: "1px solid var(--border-color)", fontSize: "11px", color: "var(--text-primary)", textTransform: "uppercase" }}>
+                      {ownershipTab !== "mine" && <th style={{ padding: "18px 28px", fontWeight: "700" }}>Created By</th>}
+                      <th style={{ padding: "18px 24px", fontWeight: "700" }}>Exam</th>
+                      <th style={{ padding: "18px 24px", fontWeight: "700" }}>Subject</th>
+                      <th style={{ padding: "18px 24px", fontWeight: "700" }}>Title</th>
+                      <th style={{ padding: "18px 24px", fontWeight: "700" }}>Created On</th>
+                      <th style={{ padding: "18px 24px", fontWeight: "700" }}>Type</th>
+                      <th style={{ padding: "18px 24px", fontWeight: "700" }}>Status</th>
+                      <th style={{ padding: "18px 28px", fontWeight: "700", textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="report-table-body">
+                    {filteredQuizzes.length > 0 ? (
+                      filteredQuizzes.map((quiz) => (
+                        <tr key={quiz._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: "14px" }}>
 
-                                      {/* Duplicate Quiz */}
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handleDuplicateQuiz(quiz._id); }}
-                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                      >
-                                        <Copy size={15} /> Duplicate Quiz
-                                      </div>
-                                      <div onClick={() => { setActiveDropdown(null); setReminderModalQuiz(quiz); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Bell size={15} /> Voice Reminder</div>
+                          {ownershipTab !== "mine" && (
+                            <td style={{ padding: "18px 28px", whiteSpace: "nowrap" }}>
+                              {(() => {
+                                const isMine = checkIsMine(quiz);
+                                const creatorName = quiz.createdBy?.fullName || "System Admin";
+                                const firstLetter = creatorName.charAt(0).toUpperCase();
+                                const colors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+                                const charCode = creatorName.charCodeAt(0) || 0;
+                                const bgColor = colors[charCode % colors.length];
+                                return (
+                                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <div style={{
+                                      width: "26px",
+                                      height: "26px",
+                                      borderRadius: "50%",
+                                      backgroundColor: bgColor,
+                                      color: "#fff",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      fontSize: "12px",
+                                      fontWeight: "bold",
+                                      textTransform: "uppercase"
+                                    }}>
+                                      {firstLetter}
+                                    </div>
+                                    <span style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "13.5px" }}>
+                                      {isMine ? "You" : creatorName}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+                            </td>
+                          )}
 
-                                      {(() => {
-                                        const isMine = checkIsMine(quiz);
-                                        const hasEditPermission = isMine || role === "superadmin" || hasPermission("edit_others_quizzes") || hasPermission("manage_all_quizzes");
-                                        if (!hasEditPermission) return null;
-                                        return (
-                                          <>
-                                            <div 
-                                              onClick={() => { 
-                                                setActiveDropdown(null); 
-                                                if (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) {
-                                                  navigate(`/admin/edit-quiz-multi/${quiz._id}`);
-                                                } else {
-                                                  navigate(`/admin/edit-quiz/${quiz._id}`); 
-                                                }
-                                              }}
-                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                            >
-                                              <Edit2 size={15} /> Edit
-                                            </div>
-                                            {!((quiz.isModular || (quiz.sections && quiz.sections.length > 0))) && (
-                                            <div 
-                                              onClick={() => { 
-                                                setActiveDropdown(null); 
-                                                navigate(`/admin/edit-quiz-multi/${quiz._id}`);
-                                              }}
-                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                            >
-                                              <Edit2 size={15} /> Edit as Multi
-                                            </div>
-                                            )}
-                                            <div 
-                                              onClick={() => { 
-                                                setActiveDropdown(null); 
-                                                if (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) {
-                                                  navigate(`/admin/edit-quiz-multi/${quiz._id}`);
-                                                } else {
-                                                  navigate(`/admin/edit-quiz/${quiz._id}`); 
-                                                }
-                                              }}
-                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                            >
-                                              <Calendar size={15} /> Schedule
-                                            </div>
-                                            {quiz.status === "Published" || quiz.published ? (
-                                              <div 
-                                                onClick={async () => {
-                                                   setActiveDropdown(null);
-                                                   const isConfirmed = await confirm({
-                                                     title: "Unpublish Assessment?",
-                                                     message: `Are you sure you want to unpublish "${quiz.title}"? Students will no longer see it.`,
-                                                     type: "warning",
-                                                     confirmText: "Unpublish",
-                                                   });
-                                                   if (isConfirmed) {
-                                                     try {
-                                                       const token = localStorage.getItem("token");
-                                                       await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: false, status: "Draft" }, { headers: { Authorization: `Bearer ${token}` }});
-                                                       fetchQuizzes();
-                                                     } catch (error) { console.error("Failed to unpublish", error); }
-                                                   }
-                                                 }}
-                                                style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                                onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                                onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                              >
-                                                <EyeOff size={15} /> Unpublish
-                                              </div>
-                                            ) : (
-                                              <div 
-                                                onClick={async () => {
+                          <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--primary)", whiteSpace: "nowrap" }}>
+                            {quiz.examName || "—"}
+                          </td>
+
+                          <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", whiteSpace: "normal", maxWidth: "250px", wordWrap: "break-word" }}>
+                            {quiz.subject}
+                          </td>
+
+                          <td style={{ padding: "18px 24px", fontWeight: "700", color: "var(--text-primary)" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              {(() => {
+                                const title = quiz.title || "";
+                                const limit = 25;
+                                const isLong = title.length > limit;
+                                const isExpanded = !!expandedQuizTitles[quiz._id];
+                                const displayTitle = isLong && !isExpanded ? `${title.substring(0, limit)}...` : title;
+                                return (
+                                  <span
+                                    onClick={() => {
+                                      if (isLong) {
+                                        setExpandedQuizTitles(prev => ({ ...prev, [quiz._id]: !prev[quiz._id] }));
+                                      }
+                                    }}
+                                    style={{
+                                      cursor: isLong ? "pointer" : "default",
+                                      whiteSpace: isExpanded ? "normal" : "nowrap",
+                                      wordBreak: "break-word"
+                                    }}
+                                    title={isLong ? (isExpanded ? "Click to collapse" : "Click to expand") : undefined}
+                                  >
+                                    {displayTitle}
+                                  </span>
+                                );
+                              })()}
+                              {(quiz.isModular || (quiz.sections && quiz.sections.length > 0)) ? (
+                                <span style={{ fontSize: "10px", backgroundColor: "rgba(59, 130, 246, 0.2)", color: "#3B82F6", border: "1px solid #3B82F6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>
+                                  {(quiz.sections && quiz.sections.length > 1) ? "Multi" : "Modular"}
+                                </span>
+                              ) : (
+                                <span style={{ fontSize: "10px", backgroundColor: "rgba(139, 92, 246, 0.2)", color: "#8B5CF6", border: "1px solid #8B5CF6", padding: "2px 6px", borderRadius: "4px", fontWeight: "700", textTransform: "uppercase", flexShrink: 0 }}>Single</span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13.5px", whiteSpace: "nowrap" }}>
+                            {new Date(quiz.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </td>
+
+                          <td style={{ padding: "18px 24px", color: "var(--text-secondary)", fontWeight: "600", fontSize: "13.5px", whiteSpace: "nowrap" }}>
+                            {quiz.quizType === "practice" ? "Practice Set" : (quiz.sections && quiz.sections.length > 1 ? "Full Length" : "Sectional")}
+                          </td>
+
+                          <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                              <span style={{
+                                backgroundColor:
+                                  quiz.status === "Published" ? "#E4F8F0" :
+                                    quiz.status === "Scheduled" ? "#EFF6FF" :
+                                      quiz.status === "Expired" ? "#FEF3C7" : "#F1F5F9",
+                                color:
+                                  quiz.status === "Published" ? "#10B981" :
+                                    quiz.status === "Scheduled" ? "#3B82F6" :
+                                      quiz.status === "Expired" ? "#D97706" : "#475569",
+                                padding: "3px 8px", borderRadius: "5px", fontSize: "11px", fontWeight: "700", display: "inline-block", width: "max-content"
+                              }}>
+                                {quiz.status || "Draft"}
+                              </span>
+                              {quiz.status === "Scheduled" && quiz.scheduledDate ? (
+                                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                  <Calendar size={10} style={{ color: "#3B82F6", flexShrink: 0 }} />
+                                  {new Date(quiz.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                  {quiz.unpublishDate ? ` – ${new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ""}
+                                </span>
+                              ) : null}
+                              {quiz.status === "Published" && quiz.unpublishDate && (
+                                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                  <Clock size={10} style={{ color: "#F59E0B", flexShrink: 0 }} />
+                                  {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                </span>
+                              )}
+                              {quiz.status === "Expired" && quiz.unpublishDate && (
+                                <span style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                  <Clock size={10} style={{ color: "var(--red)", flexShrink: 0 }} />
+                                  {new Date(quiz.unpublishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td style={{ padding: "18px 28px", textAlign: "right", overflow: "visible", whiteSpace: "nowrap" }}>
+                            <div style={{ display: "flex", justifyContent: "flex-end", position: "relative" }}>
+                              <button
+                                onClick={(e) => toggleActionDropdown(e, quiz._id)}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  color: "var(--text-primary)",
+                                  fontSize: "18px",
+                                  fontWeight: "bold",
+                                  cursor: "pointer",
+                                  padding: "4px 12px",
+                                  outline: "none"
+                                }}
+                                title="Quiz Actions"
+                              >
+                                ⋮
+                              </button>
+
+                              {activeDropdown === quiz._id && (
+                                <>
+                                  {/* Global backdrop to dismiss dropdown on outer click */}
+                                  <div
+                                    onClick={() => setActiveDropdown(null)}
+                                    style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: "transparent" }}
+                                  />
+
+                                  {/* Floating context dropdown menu */}
+                                  <div style={{
+                                    position: "fixed",
+                                    top: dropdownPos.top != null ? `${dropdownPos.top}px` : "auto",
+                                    bottom: dropdownPos.bottom != null ? `${dropdownPos.bottom}px` : "auto",
+                                    right: `${dropdownPos.right}px`,
+                                    backgroundColor: "var(--bg-card)",
+                                    border: "1.5px solid var(--border-color)",
+                                    borderRadius: "10px",
+                                    padding: "6px 0",
+                                    minWidth: "140px",
+                                    maxHeight: "calc(100vh - 36px)",
+                                    overflowY: "auto",
+                                    boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                                    zIndex: 9999,
+                                    textAlign: "left"
+                                  }}>
+                                    {viewMode === "active" ? (
+                                      <>
+                                        <div
+                                          onClick={() => {
+                                            setActiveDropdown(null);
+                                            navigate(`/quiz/${quiz._id}?preview=true`, { state: { subject: quiz.subject, title: quiz.title, duration: quiz.duration, examName: quiz.examName } });
+                                          }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <Eye size={15} /> Preview
+                                        </div>
+
+                                        {/* Duplicate Quiz */}
+                                        <div
+                                          onClick={() => { setActiveDropdown(null); handleDuplicateQuiz(quiz._id); }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <Copy size={15} /> Duplicate Quiz
+                                        </div>
+                                        <div onClick={() => { setActiveDropdown(null); setReminderModalQuiz(quiz); }} style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }} onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"} onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}><Bell size={15} /> Voice Reminder</div>
+
+                                        {(() => {
+                                          const isMine = checkIsMine(quiz);
+                                          const hasEditPermission = isMine || role === "superadmin" || hasPermission("edit_others_quizzes") || hasPermission("manage_all_quizzes");
+                                          if (!hasEditPermission) return null;
+                                          return (
+                                            <>
+                                              <div
+                                                onClick={() => {
                                                   setActiveDropdown(null);
-                                                  try {
-                                                    const token = localStorage.getItem("token");
-                                                    await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: true, status: "Published", scheduledDate: null }, { headers: { Authorization: `Bearer ${token}` }});
-                                                    fetchQuizzes();
-                                                  } catch (error) { console.error("Failed to publish", error); }
+                                                  if (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) {
+                                                    navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                                  } else {
+                                                    navigate(`/admin/edit-quiz/${quiz._id}`);
+                                                  }
                                                 }}
                                                 style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                                 onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                                 onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                               >
-                                                <UploadCloud size={15} /> Publish
+                                                <Edit2 size={15} /> Edit
                                               </div>
-                                            )}
-                                            {quiz.sections && quiz.sections.length > 0 && (
-                                              <div 
-                                                onClick={() => { setActiveDropdown(null); setSelectedExportQuiz(quiz); }}
+                                              {!((quiz.isModular || (quiz.sections && quiz.sections.length > 0))) && (
+                                                <div
+                                                  onClick={() => {
+                                                    setActiveDropdown(null);
+                                                    navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                                  }}
+                                                  style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                                  onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                                  onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                                >
+                                                  <Edit2 size={15} /> Edit as Multi
+                                                </div>
+                                              )}
+                                              <div
+                                                onClick={() => {
+                                                  setActiveDropdown(null);
+                                                  if (quiz.isModular || (quiz.sections && quiz.sections.length > 0)) {
+                                                    navigate(`/admin/edit-quiz-multi/${quiz._id}`);
+                                                  } else {
+                                                    navigate(`/admin/edit-quiz/${quiz._id}`);
+                                                  }
+                                                }}
                                                 style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
                                                 onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
                                                 onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                                               >
-                                                <Copy size={15} /> Duplicate Section
+                                                <Calendar size={15} /> Schedule
                                               </div>
-                                            )}
-                                            <div 
-                                              onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
-                                              style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                            >
-                                              <Trash2 size={15} /> Delete
-                                            </div>
-                                          </>
-                                        );
-                                      })()}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handleRestore(quiz._id, quiz.title); }}
-                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                      >
-                                        <Eye size={15} /> Restore
-                                      </div>
-                                      <div 
-                                        onClick={() => { setActiveDropdown(null); handlePermanentDelete(quiz._id, quiz.title); }}
-                                        style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                                      >
-                                        <Trash2 size={15} /> Delete Permanently
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </td>
+                                              {quiz.status === "Published" || quiz.published ? (
+                                                <div
+                                                  onClick={async () => {
+                                                    setActiveDropdown(null);
+                                                    const isConfirmed = await confirm({
+                                                      title: "Unpublish Assessment?",
+                                                      message: `Are you sure you want to unpublish "${quiz.title}"? Students will no longer see it.`,
+                                                      type: "warning",
+                                                      confirmText: "Unpublish",
+                                                    });
+                                                    if (isConfirmed) {
+                                                      try {
+                                                        const token = localStorage.getItem("token");
+                                                        await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: false, status: "Draft" }, { headers: { Authorization: `Bearer ${token}` } });
+                                                        fetchQuizzes();
+                                                      } catch (error) { console.error("Failed to unpublish", error); }
+                                                    }
+                                                  }}
+                                                  style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                                  onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                                  onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                                >
+                                                  <EyeOff size={15} /> Unpublish
+                                                </div>
+                                              ) : (
+                                                <div
+                                                  onClick={async () => {
+                                                    setActiveDropdown(null);
+                                                    try {
+                                                      const token = localStorage.getItem("token");
+                                                      await axios.put(`${import.meta.env.VITE_API_URL}/api/quizzes/${quiz._id}`, { published: true, status: "Published", scheduledDate: null }, { headers: { Authorization: `Bearer ${token}` } });
+                                                      fetchQuizzes();
+                                                    } catch (error) { console.error("Failed to publish", error); }
+                                                  }}
+                                                  style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                                  onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                                  onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                                >
+                                                  <UploadCloud size={15} /> Publish
+                                                </div>
+                                              )}
+                                              {quiz.sections && quiz.sections.length > 0 && (
+                                                <div
+                                                  onClick={() => { setActiveDropdown(null); setSelectedExportQuiz(quiz); }}
+                                                  style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                                  onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                                  onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                                >
+                                                  <Copy size={15} /> Duplicate Section
+                                                </div>
+                                              )}
+                                              <div
+                                                onClick={() => { setActiveDropdown(null); handleDelete(quiz._id, quiz.title); }}
+                                                style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                                onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                                onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                              >
+                                                <Trash2 size={15} /> Delete
+                                              </div>
+                                            </>
+                                          );
+                                        })()}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div
+                                          onClick={() => { setActiveDropdown(null); handleRestore(quiz._id, quiz.title); }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--text-primary)", transition: "background 0.15s", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "var(--option-hover)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <Eye size={15} /> Restore
+                                        </div>
+                                        <div
+                                          onClick={() => { setActiveDropdown(null); handlePermanentDelete(quiz._id, quiz.title); }}
+                                          style={{ padding: "8px 16px", cursor: "pointer", fontSize: "12.5px", fontWeight: "600", color: "var(--red)", transition: "background 0.15s", borderTop: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: "8px" }}
+                                          onMouseEnter={(e) => e.target.style.backgroundColor = "rgba(226, 67, 107, 0.08)"}
+                                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                                        >
+                                          <Trash2 size={15} /> Delete Permanently
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </td>
 
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8" style={{ padding: "64px 20px", textAlign: "center" }}>
+                          {ownershipTab === "mine" ? (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+                              <span style={{ fontSize: "28px" }}>📭</span>
+                              <h4 style={{ margin: 0, color: "var(--text-primary)", fontSize: "16px", fontWeight: "700" }}>No quizzes created yet</h4>
+                              <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13.5px" }}>You haven't created any quizzes. Create your first quiz to see it here.</p>
+                              <button
+                                onClick={() => navigate('/admin/create-quiz')}
+                                style={{
+                                  padding: "8px 16px",
+                                  borderRadius: "8px",
+                                  backgroundColor: "var(--primary)",
+                                  color: "var(--primary-foreground)",
+                                  border: "none",
+                                  fontWeight: "700",
+                                  fontSize: "13.0px",
+                                  cursor: "pointer",
+                                  marginTop: "8px"
+                                }}
+                              >
+                                + Create Quiz
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ color: "var(--text-muted)", fontSize: "15px" }}>
+                              📭 No matching quizzes found.
+                            </span>
+                          )}
+                        </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="8" style={{ padding: "64px 20px", textAlign: "center" }}>
-                        {ownershipTab === "mine" ? (
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-                            <span style={{ fontSize: "28px" }}>📭</span>
-                            <h4 style={{ margin: 0, color: "var(--text-primary)", fontSize: "16px", fontWeight: "700" }}>No quizzes created yet</h4>
-                            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13.5px" }}>You haven't created any quizzes. Create your first quiz to see it here.</p>
-                            <button
-                              onClick={() => navigate('/admin/create-quiz')}
-                              style={{
-                                padding: "8px 16px",
-                                borderRadius: "8px",
-                                backgroundColor: "var(--primary)",
-                                color: "var(--primary-foreground)",
-                                border: "none",
-                                fontWeight: "700",
-                                fontSize: "13.0px",
-                                cursor: "pointer",
-                                marginTop: "8px"
-                              }}
-                            >
-                              + Create Quiz
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ color: "var(--text-muted)", fontSize: "15px" }}>
-                            📭 No matching quizzes found.
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
 
           {/* Export Section Modal */}
           {selectedExportQuiz && (
@@ -1598,7 +1726,7 @@ function ManageQuizzes() {
                 <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
                   Select a section from <strong>{selectedExportQuiz.title}</strong> to create a new standalone, draft quiz.
                 </p>
-                
+
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "250px", overflowY: "auto", marginBottom: "24px" }}>
                   {selectedExportQuiz.sections.map((sec) => {
                     const sectionData = sec.sectionId;
@@ -1664,7 +1792,7 @@ function ManageQuizzes() {
                     );
                   })}
                 </div>
-                
+
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <button
                     onClick={() => setSelectedExportQuiz(null)}
@@ -1684,8 +1812,6 @@ function ManageQuizzes() {
                 </div>
               </div>
             </div>
-          )}
-          </>
           )}
 
         </div>

@@ -385,25 +385,25 @@ export function AdminLibraryView({ embedded = false }) {
 
   const handlePurgeResourceConfirm = (resource) => {
     if (!isSuperAdmin) {
-      showToast("Only Super Admins can permanently purge assets", "error");
+      showToast("Only Super Admins can permanently delete assets", "error");
       return;
     }
     setConfirmModal({
       isOpen: true,
-      title: "Permanent Purge Asset",
-      message: `Permanently delete "${resource.title}" from PrepMark database and Cloudinary storage?`,
-      confirmLabel: "Purge Permanently",
+      title: "Permanently Delete Asset",
+      message: `Permanently delete "${resource.title}" from PrepMark database and cloud storage?`,
+      confirmLabel: "Delete Permanently",
       confirmVariant: "danger",
       isPurge: true,
       action: async () => {
         try {
           const res = await axios.delete(`${baseUrl}/api/admin/library/resources/${resource._id}/permanent`, getAuthHeaders());
-          showToast(res.data?.message || "Resource and Cloudinary asset permanently destroyed");
+          showToast(res.data?.message || "Resource permanently deleted");
           setConfirmModal({ isOpen: false });
           fetchStats();
           fetchFolderContent(currentFolderId);
         } catch (err) {
-          showToast(err.response?.data?.message || "Failed to purge resource", "error");
+          showToast(err.response?.data?.message || "Failed to delete resource", "error");
         }
       }
     });
@@ -423,16 +423,8 @@ export function AdminLibraryView({ embedded = false }) {
         </div>
       )}
 
-          {/* 1. Dashboard Header */}
-          <div className="library-header">
-            <div className="library-header-text">
-              <h1>Study Library</h1>
-              <p>Manage and organize study materials for students across global and exam-specific courses.</p>
-            </div>
-          </div>
-
-          {/* 2. KPI Stats Overview */}
-          <LibraryStatsCards stats={stats} />
+      {/* 2. KPI Stats Overview */}
+      <LibraryStatsCards stats={stats} />
 
           {/* 3. Scope Switching Tabs */}
           <LibraryScopeTabs

@@ -4,7 +4,8 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(() => {
-    return localStorage.getItem("selected-theme") || "original";
+    const stored = localStorage.getItem("selected-theme");
+    return stored || "original";
   });
 
   const [mode, setModeState] = useState(() => {
@@ -48,9 +49,11 @@ export function ThemeProvider({ children }) {
     if (mode === "dark") {
       root.classList.add("dark");
       document.body.classList.add("dark-mode");
+      root.setAttribute("data-theme", "dark");
     } else {
       root.classList.remove("dark");
       document.body.classList.remove("dark-mode");
+      root.removeAttribute("data-theme");
     }
   }, [theme, mode]);
 

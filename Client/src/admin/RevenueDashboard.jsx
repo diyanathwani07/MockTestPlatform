@@ -95,6 +95,29 @@ export default function RevenueDashboard() {
   const location = useLocation();
   const { user } = useAuth();
 
+  // Strict Super Admin Access Guard - Prevent any employee or normal admin from accessing this page
+  const effectiveRole = (
+    user?.role ||
+    (() => {
+      try {
+        return JSON.parse(localStorage.getItem("user") || "{}")?.role;
+      } catch {
+        return localStorage.getItem("role");
+      }
+    })() ||
+    ""
+  ).toLowerCase().trim();
+
+  useEffect(() => {
+    if (user && effectiveRole !== "superadmin") {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [user, effectiveRole, navigate]);
+
+  if (user && effectiveRole !== "superadmin") {
+    return null;
+  }
+
   // Parse active tab and subtab from URL query parameters
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get("tab") || "overview";
@@ -525,41 +548,10 @@ export default function RevenueDashboard() {
               </p>
             </div>
 
-            {/* Header Right Actions: Conditional on Financial Lock */}
+            {/* Header Right Actions */}
             <div className="revenue-header-actions">
-              {isLocked ? (
-                <div className="revenue-session-pill" style={{ background: "rgba(239, 68, 68, 0.12)", borderColor: "rgba(239, 68, 68, 0.25)", color: "#EF4444" }}>
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>Financial Console Locked</span>
-                </div>
-              ) : (
+              {!isLocked && (
                 <>
-                  {/* Financial Session Status Badge with Live Countdown */}
-                  <div className="revenue-session-pill" title="Active financial unlock session">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Unlocked ({Math.floor(lockTimeRemaining / 60)}:{(lockTimeRemaining % 60).toString().padStart(2, "0")})</span>
-                  </div>
-
-                  {/* Mask / Unmask Sensitive Figures Toggle */}
-                  <button
-                    onClick={() => setIsMasked((prev) => !prev)}
-                    className="revenue-session-btn"
-                    title={isMasked ? "Reveal confidential financial numbers" : "Mask confidential financial numbers"}
-                  >
-                    {isMasked ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    <span>{isMasked ? "Unmask" : "Mask"}</span>
-                  </button>
-
-                  {/* Instant Lock Button */}
-                  <button
-                    onClick={handleLockDashboard}
-                    className="revenue-session-btn lock-btn"
-                    title="Lock financial dashboard immediately"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Lock Now</span>
-                  </button>
-
                   <div className="revenue-date-picker-wrap">
                     <Calendar className="w-3.5 h-3.5 text-violet-400" />
                     <select
@@ -601,15 +593,16 @@ export default function RevenueDashboard() {
 
                   <button
                     onClick={() => {
-                      fetchAnalytics();
+                      setRefreshTrigger((prev) => prev + 1);
+                      if (activeTab === "overview") fetchAnalytics();
                       if (activeTab === "transactions") fetchTransactions();
                       if (activeTab === "customers") fetchCustomers();
                       if (activeTab === "exams-practice") fetchCatalog();
                       if (activeTab === "ai-plans" && aiSubTab === "usage-analytics") fetchAiUsage();
-                      setRefreshTrigger((prev) => prev + 1);
                     }}
+                    disabled={loading || transactionsLoading || customersLoading || catalogLoading}
                     className="revenue-refresh-btn"
-                    title="Refresh All Revenue Data"
+                    title="Refresh data"
                   >
                     <RefreshCcw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
                     <span>Refresh</span>
@@ -689,33 +682,24 @@ export default function RevenueDashboard() {
               <div className="revenue-lock-card">
                 <div className="revenue-lock-badge-pill">
                   <ShieldCheck size={14} className="text-violet-400" />
-                  <span>PrepMark Financial Security Gate</span>
+                  <span>Restricted Access</span>
                 </div>
 
                 <div className="revenue-lock-icon-wrap">
                   <Lock className="w-7 h-7" />
                 </div>
                 
-                <h2 className="revenue-lock-title">Financial Security Lock</h2>
-                
-                <div className="revenue-lock-account-pill">
-                  <span className="revenue-lock-account-dot"></span>
-                  <span>Super Admin: <strong>{user?.fullName || "Diya"}</strong> ({user?.email || "diyanathwani007@gmail.com"})</span>
-                </div>
-
-                <p className="revenue-lock-desc">
-                  This console contains sensitive financial data, customer billing profiles, transaction ledgers, and revenue reports. Enter your <strong>Super Admin account login password</strong> to unlock a 5-minute session.
-                </p>
+                <h2 className="revenue-lock-title">Financial Security Verification</h2>
 
                 <form onSubmit={handleVerifyUnlock} className="revenue-lock-form">
                   <div className="revenue-lock-field-wrap">
-                    <label className="revenue-lock-field-label">Account Password</label>
+                    <label className="revenue-lock-field-label">Password</label>
                     <div className="revenue-lock-input-group">
                       <input
                         type={showPassword ? "text" : "password"}
                         value={passwordInput}
                         onChange={(e) => setPasswordInput(e.target.value)}
-                        placeholder="Enter your PrepMark login password"
+                        placeholder="••••••••"
                         className="revenue-lock-input"
                         disabled={unlockLoading || retryAfterSeconds > 0}
                         autoFocus
@@ -729,9 +713,6 @@ export default function RevenueDashboard() {
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
-                    <span className="revenue-lock-field-hint">
-                      💡 Tip: Use the same password you use to log into PrepMark.
-                    </span>
                   </div>
 
                   {unlockError && (
@@ -756,7 +737,7 @@ export default function RevenueDashboard() {
                     {unlockLoading ? (
                       <>
                         <RefreshCcw className="w-4 h-4 animate-spin" />
-                        <span>Verifying Credentials...</span>
+                        <span>Verifying...</span>
                       </>
                     ) : (
                       <>
@@ -766,21 +747,6 @@ export default function RevenueDashboard() {
                     )}
                   </button>
                 </form>
-
-                <div className="revenue-lock-info-box">
-                  <div className="revenue-lock-info-item">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                    <span><strong>In-Memory Only:</strong> Unlock tokens are held purely in memory (never written to disk).</span>
-                  </div>
-                  <div className="revenue-lock-info-item">
-                    <Clock className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                    <span><strong>5-Minute Auto-Lock:</strong> Automatically locks after 300 seconds or on logout.</span>
-                  </div>
-                  <div className="revenue-lock-info-item">
-                    <Lock className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
-                    <span><strong>Audit Recorded:</strong> All access and verification attempts are logged securely.</span>
-                  </div>
-                </div>
               </div>
             </div>
           ) : (
