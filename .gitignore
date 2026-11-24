@@ -46,3 +46,4 @@ update_*.js
 replace_*.js
 migrate_*.js
 test_*.js
+*REPORT*.md
